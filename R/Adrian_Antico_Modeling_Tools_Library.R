@@ -6,21 +6,21 @@
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
 #' @param data This is your source data you'd like to modify
-#' @param MissFactor Supply the value to impute missing factor levels with
-#' @param MissNum Supply  the value to impute missing numeric values with
+#' @param MissFactor Supply the value to impute missing factor levels
+#' @param MissNum Supply  the value to impute missing numeric values
 #' @examples
 #' data <- ModelDataPrep(data,
-#'                       Impute       = TRUE,
+#'                       Impute = TRUE,
 #'                       CharToFactor = TRUE,
-#'                       MissFactor   = "0",
-#'                       MissNum      = -1)
+#'                       MissFactor = "0",
+#'                       MissNum    = -1)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
-                          Impute       = TRUE,
+                          Impute     = TRUE,
                           CharToFactor = TRUE,
-                          MissFactor   = "0",
-                          MissNum      = -1) {
+                          MissFactor = "0",
+                          MissNum    = -1) {
 
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
