@@ -10,10 +10,10 @@
 #' @param MissNum Supply  the value to impute missing numeric values with
 #' @examples
 #' data <- ModelDataPrep(data,
-#'                       Impute = TRUE,
+#'                       Impute       = TRUE,
 #'                       CharToFactor = TRUE,
-#'                       MissFactor = "0",
-#'                       MissNum    = -1)
+#'                       MissFactor   = "0",
+#'                       MissNum      = -1)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
