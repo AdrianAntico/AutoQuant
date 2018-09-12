@@ -11,6 +11,7 @@
 #' @examples
 #' data <- ModelDataPrep(data,
 #'                       Impute = TRUE,
+#'                       CharToFactor = TRUE,
 #'                       MissFactor = "0",
 #'                       MissNum    = -1)
 #' @return Returns the original data table with corrected values
