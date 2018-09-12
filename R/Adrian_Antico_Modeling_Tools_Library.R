@@ -17,10 +17,10 @@
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
-                          Impute     = TRUE,
+                          Impute       = TRUE,
                           CharToFactor = TRUE,
-                          MissFactor = "0",
-                          MissNum    = -1) {
+                          MissFactor   = "0",
+                          MissNum      = -1) {
 
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
