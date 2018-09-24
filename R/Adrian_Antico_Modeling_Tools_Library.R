@@ -2190,7 +2190,7 @@ Word2VecModel <- function(datax,
     h2o.rm(w2v.model)
     h2o.shutdown(prompt = FALSE)
   }
-  return(data)
+  return(data) 
 }
 
 
