@@ -2018,7 +2018,7 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Add threshold line to charts
-          if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","quantile")) {
+          if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
             out1 <- out1 + geom_hline(yintercept = Thresh)
             out1 <- out1 #+ geom_text(aes(x = interc, y = Thresh, label = Label, hjust = 1.75, angle = 90))
             calibr[[j]] <- out1
@@ -2135,7 +2135,7 @@ Word2VecModel <- function(datax,
     h2o.init(nthreads = 4, max_mem_size = "14G")
 
     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
-    data[, TEMP := gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘", "", data[[string]])]
+    data[, TEMP := gsub("'|\"|'|"|"|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'", "", data[[string]])]
     data[,":="(TEMP=gsub("  ", " ", TEMP))]
     data2 <- data[, "TEMP"]
     data3 <- as.h2o(data2, destination_frame = "TEMP", col.types=c("String"))
@@ -2211,3 +2211,6 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
+
+
+
