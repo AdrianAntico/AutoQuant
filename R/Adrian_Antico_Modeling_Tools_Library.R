@@ -343,8 +343,8 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-ChartTheme <- function(BackGround = "aquamarine",
-                       OtherColor = "purple4",
+ChartTheme <- function(BackGround = "lightsteelblue1",
+                       OtherColor = "navyblue",
                        Size = 0.25) {
   chart_theme <- theme(plot.background = element_rect(fill = "gray94"),
                        panel.background = element_rect(fill = BackGround, colour = OtherColor, size = 0.25, color = OtherColor),
@@ -386,6 +386,7 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #' @param type Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
 #' @param bucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
+#' @param Function Supply the function you wish to use for aggregation.
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
 #' aa <- data.table(target = runif(10000))
@@ -405,8 +406,10 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #'                          IndepVar    = "Independent_Variable",
 #'                          type        = "calibration", # c("calibration","boxplot"),
 #'                          bucket      = 0.05,
-#'                          Background  = "blue",
-#'                          Borders     = "red")
+#'                          Background  = "lightsteelblue1",
+#'                          Borders     = "navyblue",
+#'                          FactLevels  = 10,
+#'                          Function    = function(x) mean(x, na.rm = TRUE)) {)
 #' @export
 ParDepCalPlots <- function(data,
                            PredColName = "PredictedValues",
@@ -416,7 +419,8 @@ ParDepCalPlots <- function(data,
                            bucket      = 0.05,
                            Background  = "lightsteelblue1",
                            Borders     = "navyblue",
-                           FactLevels  = 10) {
+                           FactLevels  = 10,
+                           Function    = function(x) mean(x, na.rm = TRUE)) {
 
   # Turn off ggplot2 warnings
   options(warn = -1)
@@ -445,7 +449,8 @@ ParDepCalPlots <- function(data,
   } else {
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
-    preds2 <- preds2[, .(mean(get(ActColName), na.rm = TRUE), mean(get(PredColName), na.rm = TRUE), max(id)), by = get(IndepVar)][order(-V3)]
+    #preds2 <- preds2[, ]
+    preds2 <- preds2[, .(Function(get(ActColName), na.rm = TRUE), Function(get(PredColName), na.rm = TRUE), max(id)), by = get(IndepVar)][order(-V3)]
     if(nrow(preds2) > FactLevels) {
       temp1 <- preds2[1:FactLevels][, V3 := NULL]
       temp2 <- preds2[(FactLevels+1):nrow(preds2)]
@@ -468,7 +473,7 @@ ParDepCalPlots <- function(data,
   # Build plots
   if (type == "calibration") {
     # Aggregate by rank for calibration
-    preds3 <- preds2[, lapply(.SD, mean, na.rm = TRUE), by = rank][order(rank)]
+    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot
@@ -496,7 +501,7 @@ ParDepCalPlots <- function(data,
     data <- rbindlist(list(actual, predicted))[order(rank)]
     data[, rank := as.factor(rank)]
     data <- data[ , eval(IndepVar) := as.numeric(get(IndepVar))]
-    data <- data[ , eval(IndepVar) := round(mean(get(IndepVar), na.rm = TRUE),3), by = rank]
+    data <- data[ , eval(IndepVar) := round(Function(get(IndepVar), na.rm = TRUE),3), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
     plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
@@ -988,19 +993,20 @@ GDL_Feature_Engineering <- function(data,
 #' @param nthreads Set the number of threads to run function
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @examples
+#'Correl <- 0.85
 #'aa <- data.table(target = runif(10000))
 #'aa[, x1 := qnorm(target)]
 #'aa[, x2 := runif(10000)]
-#'aa[, Independent_Variable1 := log(pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))]
-#'aa[, Independent_Variable2 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))]
-#'aa[, Independent_Variable3 := exp(pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))]
-#'aa[, Independent_Variable4 := exp(exp(pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2))))]
-#'aa[, Independent_Variable5 := sqrt(pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))]
-#'aa[, Independent_Variable6 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))^0.10]
-#'aa[, Independent_Variable7 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))^0.25]
-#'aa[, Independent_Variable8 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))^0.75]
-#'aa[, Independent_Variable9 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))^2]
-#'aa[, Independent_Variable10 := (pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))^4]
+#'aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#'aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#'aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#'aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#'aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#'aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#'aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#'aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#'aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#'aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 #'aa[, ':=' (x1 = NULL, x2 = NULL)]
 #'aa[, target := as.factor(ifelse(target > 0.5,1,0))]
 #'Construct <- data.table(Targets         = "target",
@@ -1987,19 +1993,32 @@ AutoH20Modeler <- function(Construct,
       if(!(tolower(Construct[i,2][[1]]) %in% c("multinomial"))) {
         for (col in cols) {
           j <- j + 1
-          #if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-          #interc <<- mean(calib[[eval(col)]], na.rm = TRUE)
-          #}
-          out1 <- ParDepCalPlots(calib,
-                                 PredColName = predName,
-                                 ActColName  = Construct[i,1][[1]],
-                                 IndepVar    = col,
-                                 type        = "calibration",
-                                 bucket      = 0.05,
-                                 Background  = "lightsteelblue1",
-                                 Borders     = "navyblue",
-                                 FactLevels  = 10)
-          if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
+          if(tolower(Construct[i,2][[1]]) == "quantile") {
+            out1 <- ParDepCalPlots(calib,
+                                   PredColName = predName,
+                                   ActColName  = Construct[i,1][[1]],
+                                   IndepVar    = col,
+                                   type        = "calibration",
+                                   bucket      = 0.05,
+                                   Background  = "lightsteelblue1",
+                                   Borders     = "navyblue",
+                                   FactLevels  = 10,
+                                   Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))
+          } else {
+            out1 <- ParDepCalPlots(calib,
+                                   PredColName = predName,
+                                   ActColName  = Construct[i,1][[1]],
+                                   IndepVar    = col,
+                                   type        = "calibration",
+                                   bucket      = 0.05,
+                                   Background  = "lightsteelblue1",
+                                   Borders     = "navyblue",
+                                   FactLevels  = 10,
+                                   Function    = function(x) mean(x, na.rm = TRUE))
+          }
+
+          # Add threshold line to charts
+          if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","quantile")) {
             out1 <- out1 + geom_hline(yintercept = Thresh)
             out1 <- out1 #+ geom_text(aes(x = interc, y = Thresh, label = Label, hjust = 1.75, angle = 90))
             calibr[[j]] <- out1
@@ -2007,7 +2026,7 @@ AutoH20Modeler <- function(Construct,
             calibr[[j]] <- out1
           }
 
-          # If not regression do not do
+          # Expected value regression
           if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
             boxplotr[[j]] <- ParDepCalPlots(calib,
                                             PredColName = predName,
@@ -2190,7 +2209,5 @@ Word2VecModel <- function(datax,
     h2o.rm(w2v.model)
     h2o.shutdown(prompt = FALSE)
   }
-  return(data) 
+  return(data)
 }
-
-
