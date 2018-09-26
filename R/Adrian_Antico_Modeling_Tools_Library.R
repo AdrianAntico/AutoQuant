@@ -450,7 +450,7 @@ ParDepCalPlots <- function(data,
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
     #preds2 <- preds2[, ]
-    preds2 <- preds2[, .(Function(get(ActColName), na.rm = TRUE), Function(get(PredColName), na.rm = TRUE), max(id)), by = get(IndepVar)][order(-V3)]
+    preds2 <- preds2[, .(Function(get(ActColName)), Function(get(PredColName)), max(id)), by = get(IndepVar)][order(-V3)]
     if(nrow(preds2) > FactLevels) {
       temp1 <- preds2[1:FactLevels][, V3 := NULL]
       temp2 <- preds2[(FactLevels+1):nrow(preds2)]
@@ -501,7 +501,7 @@ ParDepCalPlots <- function(data,
     data <- rbindlist(list(actual, predicted))[order(rank)]
     data[, rank := as.factor(rank)]
     data <- data[ , eval(IndepVar) := as.numeric(get(IndepVar))]
-    data <- data[ , eval(IndepVar) := round(Function(get(IndepVar), na.rm = TRUE),3), by = rank]
+    data <- data[ , eval(IndepVar) := round(Function(get(IndepVar)),3), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
     plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
@@ -2211,6 +2211,3 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
-
-
-
