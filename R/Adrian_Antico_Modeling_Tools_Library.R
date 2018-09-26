@@ -409,7 +409,7 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #'                          Background  = "lightsteelblue1",
 #'                          Borders     = "navyblue",
 #'                          FactLevels  = 10,
-#'                          Function    = function(x) mean(x, na.rm = TRUE)) {)
+#'                          Function    = function(x) mean(x, na.rm = TRUE))
 #' @export
 ParDepCalPlots <- function(data,
                            PredColName = "PredictedValues",
