@@ -12,9 +12,11 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 
 \item{Impute}{Defaults to TRUE which tells the function to impute the data}
 
-\item{MissFactor}{Supply the value to impute missing factor levels with}
+\item{CharToFactor}{Defaults to TRUE which tells the function to convert characters to factors}
 
-\item{MissNum}{Supply  the value to impute missing numeric values with}
+\item{MissFactor}{Supply the value to impute missing factor levels}
+
+\item{MissNum}{Supply  the value to impute missing numeric values}
 }
 \value{
 Returns the original data table with corrected values
@@ -25,6 +27,7 @@ This function replaces inf values with NA, converts characters to factors, and i
 \examples{
 data <- ModelDataPrep(data,
                       Impute = TRUE,
+                      CharToFactor = TRUE,
                       MissFactor = "0",
                       MissNum    = -1)
 }

@@ -4,7 +4,7 @@
 \alias{ChartTheme}
 \title{ChartTheme function is a ggplot theme generator for ggplots}
 \usage{
-ChartTheme(BackGround = "aquamarine", OtherColor = "purple4",
+ChartTheme(BackGround = "lightsteelblue1", OtherColor = "navyblue",
   Size = 0.25)
 }
 \arguments{

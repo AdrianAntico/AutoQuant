@@ -8,7 +8,7 @@ ParDepCalPlots(data, PredColName = "PredictedValues",
   ActColName = "ActualValues", IndepVar = "Independent_Variable_Name",
   type = "calibration", bucket = 0.05,
   Background = "lightsteelblue1", Borders = "navyblue",
-  FactLevels = 10)
+  FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -24,6 +24,8 @@ ParDepCalPlots(data, PredColName = "PredictedValues",
 \item{bucket}{Number of buckets to partition the space on (0,1) for evaluation}
 
 \item{FactLevels}{The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")}
+
+\item{Function}{Supply the function you wish to use for aggregation.}
 }
 \value{
 Partial dependence calibration plot or boxplot
@@ -49,8 +51,10 @@ output <- ParDepCalPlots(preds2,
                          IndepVar    = "Independent_Variable",
                          type        = "calibration", # c("calibration","boxplot"),
                          bucket      = 0.05,
-                         Background  = "blue",
-                         Borders     = "red")
+                         Background  = "lightsteelblue1",
+                         Borders     = "navyblue",
+                         FactLevels  = 10,
+                         Function    = function(x) mean(x, na.rm = TRUE))
 }
 \author{
 Adrian Antico at RemixInstitute.com
