@@ -1648,7 +1648,7 @@ AutoH20Modeler <- function(Construct,
     # Proceed
 
     if (Construct[i,11][[1]]) {
-      if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
+      if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) | tolower(Construct[i,3][[1]]) == "logloss") {
         if(cc < dd) {
           # Save model
           if(Construct[i,21][[1]] == TRUE) {
@@ -1686,11 +1686,11 @@ AutoH20Modeler <- function(Construct,
           if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
+              save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
+              save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
@@ -1779,11 +1779,11 @@ AutoH20Modeler <- function(Construct,
           if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
+              save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
+              save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
@@ -1840,11 +1840,11 @@ AutoH20Modeler <- function(Construct,
       if(Construct[i,21][[1]] == TRUE) {
         if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
         if(tolower(Construct[i,22][[1]]) == "standard") {
-          save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
+          save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
           set(grid_tuned_paths, i = i, j = 2L, value = save_model)
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         } else {
-          save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
+          save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
           set(grid_tuned_paths, i = i, j = 2L, value = save_model)
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
