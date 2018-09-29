@@ -1303,11 +1303,12 @@ AutoH20Modeler <- function(Construct,
   if (file.exists(paste0(model_path, "/grid_tuned_paths.Rdata"))) {
     load(paste0(model_path,"/grid_tuned_paths.Rdata"))
   } else {
-    grid_tuned_paths <- data.table(Model = rep("a", nrow(Construct)),
-                                   Path = rep("a", nrow(Construct)),
+    grid_tuned_paths <- data.table(Model     = rep("a", nrow(Construct)),
+                                   Path      = rep("a", nrow(Construct)),
                                    GT_Metric = rep(1234.5678, nrow(Construct)),
                                    BL_Metric = rep(1234.5678, nrow(Construct)),
-                                   BinThresh = rep(1234.5678, nrow(Construct)))
+                                   BinThresh = rep(1234.5678, nrow(Construct)),
+                                   MojoPath  = = rep("a", nrow(Construct)))
   }
 
   ######################################
@@ -1659,8 +1660,9 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
               save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+              saveMojo <- h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+              set(grid_tuned_paths, i = i, j = 6L, value = saveMojo)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
@@ -1692,8 +1694,9 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
               save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+              saveMojo <- h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+              set(grid_tuned_paths, i = i, j = 6L, value = saveMojo)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
@@ -1727,8 +1730,9 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
               save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+              saveMojo <- h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+              set(grid_tuned_paths, i = i, j = 6L, value = saveMojo)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
@@ -1787,8 +1791,9 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
               save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+              saveMojo <- h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
               set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+              set(grid_tuned_paths, i = i, j = 6L, value = saveMojo)
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
@@ -1849,8 +1854,9 @@ AutoH20Modeler <- function(Construct,
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         } else {
           save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-          h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+          saveMojo <- h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
           set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+          set(grid_tuned_paths, i = i, j = 6L, value = saveMojo)
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
       }
