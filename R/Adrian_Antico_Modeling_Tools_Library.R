@@ -1308,7 +1308,7 @@ AutoH20Modeler <- function(Construct,
                                    GT_Metric = rep(1234.5678, nrow(Construct)),
                                    BL_Metric = rep(1234.5678, nrow(Construct)),
                                    BinThresh = rep(1234.5678, nrow(Construct)),
-                                   MojoPath  = = rep("a", nrow(Construct)))
+                                   MojoPath  = rep("a", nrow(Construct)))
   }
 
   ######################################
