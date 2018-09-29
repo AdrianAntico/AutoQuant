@@ -1651,7 +1651,7 @@ AutoH20Modeler <- function(Construct,
       if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
         if(cc < dd) {
           # Save model
-          if(tolower(Construct[i,21][[1]]) == TRUE) {
+          if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
               save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
@@ -1683,7 +1683,7 @@ AutoH20Modeler <- function(Construct,
           }
         } else {
           # Save model
-          if(tolower(Construct[i,21][[1]]) == TRUE) {
+          if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
               save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
@@ -1717,7 +1717,7 @@ AutoH20Modeler <- function(Construct,
       } else {
         if(cc > dd) {
           # Save model
-          if(tolower(Construct[i,21][[1]]) == TRUE) {
+          if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
               save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
@@ -1776,7 +1776,7 @@ AutoH20Modeler <- function(Construct,
           }
         } else {
           # Save model
-          if(tolower(Construct[i,21][[1]]) == TRUE) {
+          if(Construct[i,21][[1]] == TRUE) {
             if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
             if(tolower(Construct[i,22][[1]]) == "standard") {
               save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
@@ -1837,7 +1837,7 @@ AutoH20Modeler <- function(Construct,
       }
     } else {
       # Save model
-      if(tolower(Construct[i,21][[1]]) == TRUE) {
+      if(Construct[i,21][[1]] == TRUE) {
         if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
         if(tolower(Construct[i,22][[1]]) == "standard") {
           save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
