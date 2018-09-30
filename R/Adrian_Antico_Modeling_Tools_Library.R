@@ -775,7 +775,7 @@ GDL_Feature_Engineering <- function(data,
       for(l in seq_along(lags)) {
         for (t in targets) {
           if(!(paste0(groupingVars[i],"_LAG_",lags[l],"_",t) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lag[l], type = "lag"), by = get(groupingVars[i])]
+            data[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
           }
         }
       }
@@ -786,7 +786,7 @@ GDL_Feature_Engineering <- function(data,
         # Lag the dates first
         for(l in seq_along(lags)) {
           if(!(paste0(groupingVars[i],"TEMP",lags[l]) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lag[l], type = "lag"), by = get(groupingVars[i])]
+            data[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag"), by = get(groupingVars[i])]
           }
         }
 
@@ -794,28 +794,28 @@ GDL_Feature_Engineering <- function(data,
         if(WindowingLag != 0) {
           for(l in seq_along(lags)) {
             if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) || l == 1) {
-              data[, paste0(timeDiffTarget,lag[l]) := as.numeric(
+              data[, paste0(timeDiffTarget,lags[l]) := as.numeric(
                 difftime(
-                  get(paste0(groupingVars[i],"TEMP",(lag[l-1]))),
-                  get(paste0(groupingVars[i],"TEMP",lag[l])),
+                  get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
+                  get(paste0(groupingVars[i],"TEMP",lags[l])),
                   units = eval(timeAgg))), by = get(groupingVars[i])]
             }
           }
         } else {
           for(l in seq_along(lags)) {
             if (l == 1) {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lag[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lag[l]) := as.numeric(
+              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
                   difftime(get(sortDateName),
-                           get(paste0(groupingVars[i],"TEMP",lag[l])),
+                           get(paste0(groupingVars[i],"TEMP",lags[l])),
                            units = eval(timeAgg))), by = get(groupingVars[i])]
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lag[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lag[l]) := as.numeric(
+              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
                   difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lag[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lag[l])),
+                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
+                    get(paste0(groupingVars[i],"TEMP",lags[l])),
                     units = eval(timeAgg))), by = get(groupingVars[i])]
               }
             }
@@ -824,7 +824,7 @@ GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          data[, paste0(groupingVars[i],"TEMP",lag[l]) := NULL]
+          data[, paste0(groupingVars[i],"TEMP",lags[l]) := NULL]
         }
 
         # Store new target
@@ -901,8 +901,8 @@ GDL_Feature_Engineering <- function(data,
     # Lags
     for(l in seq_along(lags)) {
       for (t in targets) {
-        if(!(paste0("LAG_",lag[l],"_",t) %in% SkipCols)) {
-          data[, paste0("LAG_",lag[l],"_",t) := data.table::shift(get(t), n = lag[l], type = "lag")]
+        if(!(paste0("LAG_",lags[l],"_",t) %in% SkipCols)) {
+          data[, paste0("LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag")]
         }
       }
     }
@@ -912,37 +912,37 @@ GDL_Feature_Engineering <- function(data,
 
       # Lag the dates first
       for(l in seq_along(lags)) {
-        if(!(paste0("TEMP",lag[l]) %in% SkipCols)) {
-          data[, paste0("TEMP",lag[l]) := data.table::shift(get(sortDateName), n = lag[l], type = "lag")]
+        if(!(paste0("TEMP",lags[l]) %in% SkipCols)) {
+          data[, paste0("TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
       if(WindowingLag != 0) {
         for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,"_",lag[l]) %in% SkipCols)) {
-            data[, paste0(timeDiffTarget,"_",lag[l]) := as.numeric(
+          if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
+            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
               difftime(
-                get(paste0("TEMP",(lag[l]-1))),
-                get(paste0("TEMP",lag[l])),
+                get(paste0("TEMP",(lags[l]-1))),
+                get(paste0("TEMP",lags[l])),
                 units = eval(timeAgg)))]
           }
         }
       } else {
         for(l in seq_along(lags)) {
           if (l == 1) {
-            if(!(paste0(timeDiffTarget,"_",lag[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lag[l]) := as.numeric(
+            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
                 difftime(get(sortDateName),
-                         get(paste0("TEMP",lag[l])),
+                         get(paste0("TEMP",lags[l])),
                          units = eval(timeAgg)))]
             }
           } else {
-            if(!(paste0(timeDiffTarget,"_",lag[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lag[l]) := as.numeric(
+            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
                 difftime(
-                  get(paste0("TEMP",(lag[l-1]))),
-                  get(paste0("TEMP",lag[l])),
+                  get(paste0("TEMP",(lags[l-1]))),
+                  get(paste0("TEMP",lags[l])),
                   units = eval(timeAgg)))]
             }
           }
@@ -951,7 +951,7 @@ GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        data[, paste0("TEMP",lag[l]) := NULL]
+        data[, paste0("TEMP",lags[l]) := NULL]
       }
 
       # Store new target
@@ -2331,3 +2331,6 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
+
+
+
