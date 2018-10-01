@@ -2168,6 +2168,9 @@ AutoH20Modeler <- function(Construct,
       }
     }
 
+    # Save grid_tuned_paths
+    save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+
     # Clear H20 environment between runs
     h2o.rm(data_h2o)
     h2o.rm(data_train)
