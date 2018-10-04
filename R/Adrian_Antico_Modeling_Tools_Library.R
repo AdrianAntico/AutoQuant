@@ -1275,19 +1275,6 @@ AutoH20Modeler <- function(Construct,
       set(ErrorCollection, i = j, j = 1L, value = i)
       set(ErrorCollection, i = j, j = 2L, value = c(paste0("Models supported are: GBM, randomForest, and deeplearning, while ",Construct[i,6][[1]]," is not")))
     }
-
-    # Ensure target column is of the correct type, but not repeatedly
-    if (i > 1) {
-      if (Construct[i,7][[1]] != Construct[(i-1),7][[1]]) {
-        if(tolower(Construct[i,2][[1]]) %in% c("binomial","bernoulli","quasibinomial")) {
-          col <- names(eval(parse(text = paste0(Construct[i,7][[1]]))))[eval(parse(text = paste0(Construct[i,8][[1]])))]
-          set(eval(parse(text = noquote(paste0(Construct[i,7][[1]])))), i = i, j = col, value = factor(eval(parse(text = noquote(paste0(Construct[i,7][[1]]))))[[col]]))
-        }
-      }
-    } else if (tolower(Construct[i,2][[1]]) %in% c("binomial","bernoulli","quasibinomial")) {
-      col <- names(eval(parse(text = paste0(Construct[i,7][[1]]))))[eval(parse(text = paste0(Construct[i,8][[1]])))]
-      set(eval(parse(text = noquote(paste0(Construct[i,7][[1]])))), i = i, j = col, value = factor(eval(parse(text = noquote(paste0(Construct[i,7][[1]]))))[[col]]))
-    }
   }
 
   # Error stopping point and Construct file save
@@ -2334,6 +2321,3 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
-
-
-
