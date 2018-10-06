@@ -1741,13 +1741,13 @@ AutoH20Modeler <- function(Construct,
           # Store threshold
           store_results <- data.table(best_model@model$training_metrics@metrics$thresholds_and_metric_scores)
           if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
             Label  <<- "f1"
           } else if (Construct[i,15][[1]] == "f2") {
-            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
             Label  <<- "f2"
           } else if (Construct[i,15][[1]] == "f0point5") {
-            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
             Label <<- "f0point5"
           } else if (Construct[i,15][[1]] == "CS") {
             predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
@@ -1802,13 +1802,13 @@ AutoH20Modeler <- function(Construct,
           # Store threshold
           store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
           if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
             Label  <<- "f1"
           } else if (Construct[i,15][[1]] == "f2") {
-            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
             Label  <<- "f2"
           } else if (Construct[i,15][[1]] == "f0point5") {
-            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
             Label <<- "f0point5"
           } else if (Construct[i,15][[1]] == "CS") {
             predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
@@ -1866,13 +1866,13 @@ AutoH20Modeler <- function(Construct,
       if(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
         store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
         if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-          Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+          Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
           Label  <<- "f1"
         } else if (Construct[i,15][[1]] == "f2") {
-          Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+          Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
           Label  <<- "f2"
         } else if (Construct[i,15][[1]] == "f0point5") {
-          Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) print("Skipping Thresh"))
+          Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
           Label <<- "f0point5"
         } else if (Construct[i,15][[1]] == "CS") {
           predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
@@ -2335,3 +2335,6 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
+
+
+
