@@ -1,3 +1,17 @@
+#' tempDatesFun Convert Excel datetime char columns to Date columns
+#'
+#' tempDatesFun takes the Excel datetime column, which imports as character, and converts it into a date type
+#'
+#' @author Adrian Antico at RemixInstitute.com
+#' @examples
+#' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
+#' Cdata[, DAY_DATE := as.Date(DAY_DATE, "%m/%d/%Y")]
+#' @return An object to pass along to ggplot objects following the "+" sign
+#' @export
+tempDatesFun <- Vectorize(function(x) {
+  strsplit(x, " ")[[1]][1]
+})
+
 #' SimpleCap function is for capitalizing the first letter of words
 #'
 #' SimpleCap function is for capitalizing the first letter of words (need I say more?)
