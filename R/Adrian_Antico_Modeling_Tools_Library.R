@@ -1566,7 +1566,7 @@ AutoH20Modeler <- function(Construct,
 
       # Collect accuracy metric on validation data
       if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-        cc <- h2o.auc(h2o.performance(bl_model, valid = TRUE))
+        cc <- h2o.auc(h2o.performance(best_model, valid = TRUE))
       } else {
         cc <- eval(parse(text = paste0("h2o.",tolower(StoppingMetric),"(h2o.performance(best_model, valid = TRUE))")))
       }
