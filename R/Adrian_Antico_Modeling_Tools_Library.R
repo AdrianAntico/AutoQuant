@@ -1423,7 +1423,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
   }
 }
 
-#' An Automated Scoring Feature Engineering Function
+#' An Fast Automated Feature Engineering Function
 #'
 #' For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico at RemixInstitute.com
@@ -1484,7 +1484,7 @@ FAST_GDL_Feature_Engineering <- function(data,
   if(!is.data.table(data)) data <- as.data.table(data)
 
   # Max data to keep
-  MAX_RECORDS_FULL <- max(max(lags+1),max(periods+1),RecordsKeep)
+  MAX_RECORDS_FULL <- max(max(lags+1),max(periods*2),RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags+1),RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods+1),RecordsKeep)
 
