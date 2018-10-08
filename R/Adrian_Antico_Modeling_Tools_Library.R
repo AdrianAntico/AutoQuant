@@ -1064,6 +1064,7 @@ GDL_Feature_Engineering <- function(data,
 #' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
+#' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus newly created features
 #' @examples
 #' quick_model <- Scoring_GDL_Feature_Engineering(quick_model,
@@ -1102,7 +1103,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             Timer          = FALSE,
                                             SkipCols       = FALSE,
                                             SimpleImpute   = TRUE,
-                                            AscRowByGroup  = "BadgeRowNum") {
+                                            AscRowByGroup  = "BadgeRowNum",
+                                            RecordsKeep    = 1) {
 
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
@@ -1213,7 +1215,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
 
       # Keep final values
-      tempData1 <- tempData[BadgeRowNum == 1]
+      tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
       # Moving stats
       for (j in seq_along(periods)) {
@@ -1228,7 +1230,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 print(CounterIndicator / runs)
               }
               # Merge files
-              temp4 <- temp3[get(AscRowByGroup) == 1][, c(eval(AscRowByGroup), eval(t)) := NULL]
+              temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
               tempData1 <- merge(tempData1, temp4, by = eval(groupingVars[i]))
             }
           }
@@ -1365,7 +1367,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     }
 
     # Keep final values
-    tempData1 <- tempData[BadgeRowNum == 1]
+    tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
     # Moving stats
     for (j in seq_along(periods)) {
@@ -1381,7 +1383,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               print(CounterIndicator / runs)
             }
             # Merge files
-            temp4 <- temp3[get(AscRowByGroup) == 1][, c(eval(AscRowByGroup), eval(t)) := NULL]
+            temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
             tempData1 <- cbind(tempData1, temp4)
           }
         }
