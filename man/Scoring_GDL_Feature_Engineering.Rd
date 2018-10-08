@@ -13,7 +13,7 @@ Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
   sortDateName = "DAY_DATE", timeDiffTarget = NULL,
   timeAgg = "hours", WindowingLag = 1, Type = "Lag", Timer = FALSE,
   SkipCols = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = "BadgeRowNum")
+  AscRowByGroup = "BadgeRowNum", RecordsKeep = 1)
 }
 \arguments{
 \item{data}{Core instruction file for automation}
@@ -43,6 +43,8 @@ Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
 
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
+
+\item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
 
 \item{statsFuns}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
 }
