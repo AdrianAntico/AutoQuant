@@ -1615,7 +1615,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               if(statsNames[k] == "mean") {
                 temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "median") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmed(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.50, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "sd") {
                 temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runsd(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "quantile85") {
