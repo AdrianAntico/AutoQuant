@@ -19,6 +19,7 @@ Imports: data.table,
     lubridate,
     ggplot2,
     plotly,
-    RcppRoll
+    RcppRoll,
+    caTools
 Suggests: data.table,
     plotly
