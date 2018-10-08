@@ -1613,7 +1613,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               keep <- c(groupingVars[i],t,AscRowByGroup)
               temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
               if(statsNames[k] == "mean") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim", alg = "fast"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "median") {
                 temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.50, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "sd") {
