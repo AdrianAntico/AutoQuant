@@ -1465,8 +1465,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
 FAST_GDL_Feature_Engineering <- function(data,
                                          lags           = c(1:6,12,seq(24,168,24)),
                                          periods        = c(6,12,24,72,168,720,4320,8640),
-                                         statsFUNs      = c("mean","median","sd","min","max"),
-                                         statsNames     = c("mean","median","sd","min","max"),
+                                         statsFUNs      = c("mean","median","sd","quantile85","quantile95"),
+                                         statsNames     = c("mean","median","sd","quantile85","quantile95"),
                                          targets        = c("ScaledConsumption"),
                                          groupingVars   = c("BADGE_NBR"),
                                          sortDateName   = "DAY_DATE",
@@ -1613,15 +1613,15 @@ FAST_GDL_Feature_Engineering <- function(data,
               keep <- c(groupingVars[i],t,AscRowByGroup)
               temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
               if(statsNames[k] == "mean") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := roll_mean(get(t), n = periods[j], na.rm = TRUE), by = get(groupingVars[i])]
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "median") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := roll_median(get(t), n = periods[j], na.rm = TRUE), by = get(groupingVars[i])]
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmed(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               } else if(statsNames[k] == "sd") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) :=  roll_sd(get(t), n = periods[j], na.rm = TRUE), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "min") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := roll_min(get(t), n = periods[j], na.rm = TRUE), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "max") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := roll_max(get(t), n = periods[j], na.rm = TRUE), by = get(groupingVars[i])]
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runsd(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+              } else if(statsNames[k] == "quantile85") {
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.85, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+              } else if(statsNames[k] == "quantile95") {
+                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.95, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
               }
               if(Timer) {
                 CounterIndicator = CounterIndicator + 1
