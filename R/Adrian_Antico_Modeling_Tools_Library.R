@@ -1772,17 +1772,26 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (k in seq_along(statsNames)) {
         for (t in targets) {
           if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-
             keep <- c(groupingVars[i],t,AscRowByGroup)
-            temp2 <- tempData[get(AscRowByGroup) <= max(periods[j])][, ..keep]
-            temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := lapply(.SD, statsFUNs[k][[1]]), .SDcols = eval(t)]
+            temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
+            if(statsNames[k] == "mean") {
+              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim", alg = "fast")]
+            } else if(statsNames[k] == "median") {
+              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.50, k = periods[j], endrule = "trim")]
+            } else if(statsNames[k] == "sd") {
+              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runsd(get(t), k = periods[j], endrule = "trim")]
+            } else if(statsNames[k] == "quantile85") {
+              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.85, k = periods[j], endrule = "trim")]
+            } else if(statsNames[k] == "quantile95") {
+              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.95, k = periods[j], endrule = "trim")]
+            }
             if(Timer) {
               CounterIndicator = CounterIndicator + 1
               print(CounterIndicator / runs)
             }
             # Merge files
-            temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
-            tempData1 <- cbind(tempData1, temp4)
+            temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
+            tempData1 <- merge(tempData1, temp4, by = c(eval(AscRowByGroup)))
           }
         }
       }
