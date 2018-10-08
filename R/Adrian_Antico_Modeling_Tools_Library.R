@@ -1137,7 +1137,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
 
       # Remove records
-      tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1))]
+      tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1),RecordsKeep)]
 
       # Lags
       for(l in seq_along(lags)) {
@@ -1274,7 +1274,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     }
 
     # Remove records
-    tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1))]
+    tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1),RecordsKeep)]
 
     # Lags
     for(l in seq_along(lags)) {
