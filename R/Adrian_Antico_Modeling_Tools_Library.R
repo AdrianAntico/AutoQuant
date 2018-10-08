@@ -1109,6 +1109,11 @@ Scoring_GDL_Feature_Engineering <- function(data,
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
+  # Max data to keep
+  MAX_RECORDS_FULL <- max(max(lags+1),max(periods+1),RecordsKeep)
+  MAX_RECORDS_LAGS <- max(max(lags+1),RecordsKeep)
+  MAX_RECORDS_ROLL <- max(max(periods+1),RecordsKeep)
+
   # Set up counter for countdown
   CounterIndicator = 0
   if (!is.null(timeDiffTarget)) {
@@ -1137,7 +1142,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
 
       # Remove records
-      tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1),RecordsKeep)]
+      tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_LAGS]
 
       # Lags
       for(l in seq_along(lags)) {
@@ -1223,15 +1228,15 @@ Scoring_GDL_Feature_Engineering <- function(data,
           for (t in targets) {
             if(!(paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
               keep <- c(groupingVars[i],t,AscRowByGroup)
-              temp2 <- tempData[get(AscRowByGroup) <= max(periods[j])][, ..keep]
+              temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
               temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := lapply(.SD, statsFUNs[k][[1]]), by = get(groupingVars[i]), .SDcols = eval(t)]
               if(Timer) {
                 CounterIndicator = CounterIndicator + 1
                 print(CounterIndicator / runs)
               }
               # Merge files
-              temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
-              tempData1 <- merge(tempData1, temp4, by = eval(groupingVars[i]))
+              temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
+              tempData1 <- merge(tempData1, temp4, by = c(eval(groupingVars[i]),eval(AscRowByGroup)))
             }
           }
         }
