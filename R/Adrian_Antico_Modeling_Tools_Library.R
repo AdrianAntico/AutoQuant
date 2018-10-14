@@ -1143,7 +1143,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
 
       # Remove records
-      tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_LAGS]
+      tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
       # Lags
       for(l in seq_along(lags)) {
@@ -1280,7 +1280,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     }
 
     # Remove records
-    tempData <- data[get(AscRowByGroup) <= max(max(lags+1),max(periods+1),RecordsKeep)]
+    tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
     # Lags
     for(l in seq_along(lags)) {
@@ -1382,7 +1382,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
 
             keep <- c(groupingVars[i],t,AscRowByGroup)
-            temp2 <- tempData[get(AscRowByGroup) <= max(periods[j])][, ..keep]
+            temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_FULL][, ..keep]
             temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := lapply(.SD, statsFUNs[k][[1]]), .SDcols = eval(t)]
             if(Timer) {
               CounterIndicator = CounterIndicator + 1
