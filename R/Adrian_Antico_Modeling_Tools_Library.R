@@ -43,7 +43,7 @@ AutoTS <- function(data,
   ModelList <- list()
 
   # Define TS Frequency
-  if(tolower(TimeUnit) == " hour") {
+  if(tolower(TimeUnit) == "hour") {
     freq = 24
   } else if (tolower(TimeUnit) == "day") {
     freq = 365
