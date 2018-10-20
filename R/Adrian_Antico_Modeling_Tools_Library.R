@@ -92,6 +92,7 @@ AutoTS <- function(data,
 
   # ARFIMA-------------
   # 1)
+  print("ARFIMA FITTING")
   ARFIMA_model <- tryCatch({forecast::arfima(y = dataTSTrain[, TargetName],
                                              lambda = TRUE,
                                              biasadj = TRUE)},
@@ -119,6 +120,7 @@ AutoTS <- function(data,
 
   # ARIMA-------------
   # 1)
+  print("ARIMA FITTING")
   ARIMA_model <- tryCatch({forecast::auto.arima(y = dataTSTrain[, TargetName],
                                      max.p = Lags,
                                      max.q = Lags,
@@ -153,6 +155,7 @@ AutoTS <- function(data,
 
   # EXPONENTIAL SMOOTHING-------------
   # 1)
+  print("ETS FITTING")
   if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
     EXPSMOOTH_model <- forecast::ets(y = dataTSTrain[, TargetName],
                                      model = "ZZN",
@@ -189,6 +192,7 @@ AutoTS <- function(data,
 
   # Neural Network-------------
   # 1)
+  print("NNet FITTING")
   k <- 0L
   temp <- data.table(Lag = rep(1L, 50), Slag = rep(1L, 50), meanResid = rnorm(50), sdResid = rnorm(50))
   for (lags in 1:Lags) {
@@ -226,11 +230,11 @@ AutoTS <- function(data,
     # Collect model filename
     EvalList[[i]] <- data_test_NN
     ModelList[[i]] <- NNETAR_model
-    ModelName[[i]] <- "NNet"
   }
 
   # CUBIC SMOOTHING SPLINE-------------
   # 1)
+  print("SPLINE FITTING")
   splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)},
                            error = function(x) "empty")
 
@@ -256,6 +260,7 @@ AutoTS <- function(data,
 
   # TBATS-------------
   # 1)
+  print("TBATS FITTING")
   TBATS_model <- tryCatch({forecast::tbats(y = dataTSTrain[, TargetName],
                                  use.arma.errors = TRUE,
                                  lambda = TRUE,
@@ -284,6 +289,7 @@ AutoTS <- function(data,
 
   # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
   # 1)
+  print("TSLM FITTING")
   TSLM_model <- tryCatch({forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
                                lambda = TRUE,
                                biasadj = TRUE)},
@@ -307,10 +313,10 @@ AutoTS <- function(data,
     # Collect model filename
     EvalList[[i]] <- data_test_TSLM
     ModelList[[i]] <- TSLM_model
-    ModelName[[i]] <- "TSLM"
   }
 
   # Prophet Model-------------
+  print("PROPHET FITTING")
   if(TimeUnit == "hour") {
     ProphetTimeUnit <- 3600
   } else {
