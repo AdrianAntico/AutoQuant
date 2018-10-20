@@ -77,7 +77,8 @@ AutoTS <- function(data,
 
   if(Ensemble) {
     MaxTDate <- data_train[, max(get(DateName))]
-    FC_TRAIN_Data <- data.table(Date = seq(1:HoldOutPeriods))
+    FC_TRAIN_Data <- copy(data_train)
+    FC_TRAIN_Data <- FC_TRAIN_Data[(nrow(FC_TRAIN_Data)-HoldOutPeriods + 1):nrow(FC_TRAIN_Data),]
     FC_TRAIN_Data[, Date := MaxTDate + Date]
   }
 
@@ -111,16 +112,16 @@ AutoTS <- function(data,
   # ARIMA-------------
   # 1)
   ARIMA_model <- tryCatch({forecast::auto.arima(y = dataTSTrain[, TargetName],
-                                                max.p = Lags,
-                                                max.q = Lags,
-                                                max.P = SLags,
-                                                max.Q = SLags,
-                                                max.d = 1,
-                                                max.D = 1,
-                                                ic = "bic",
-                                                lambda = TRUE,
-                                                biasadj = TRUE)},
-                          error = function(x) "empty")
+                                     max.p = Lags,
+                                     max.q = Lags,
+                                     max.P = SLags,
+                                     max.Q = SLags,
+                                     max.d = 1,
+                                     max.D = 1,
+                                     ic = "bic",
+                                     lambda = TRUE,
+                                     biasadj = TRUE)},
+                         error = function(x) "empty")
 
   # Collect Test Data for Model Comparison
   # 2)
@@ -151,11 +152,11 @@ AutoTS <- function(data,
                                      restrict = TRUE)
   } else {
     EXPSMOOTH_model <- tryCatch({forecast::ets(y = dataTSTrain[, TargetName],
-                                               model = "ZZZ",
-                                               allow.multiplicative.trend = TRUE,
-                                               restrict = TRUE,
-                                               lambda = TRUE,
-                                               biasadj = TRUE)},
+                                     model = "ZZZ",
+                                     allow.multiplicative.trend = TRUE,
+                                     restrict = TRUE,
+                                     lambda = TRUE,
+                                     biasadj = TRUE)},
                                 error = function(x) "empty")
   }
   # Collect Test Data for Model Comparison
@@ -223,7 +224,7 @@ AutoTS <- function(data,
   # CUBIC SMOOTHING SPLINE-------------
   # 1)
   splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)},
-                            error = function(x) "empty")
+                           error = function(x) "empty")
 
   if(tolower(class(splinef_model)) == "forecast") {
     i <- i + 1
@@ -248,9 +249,9 @@ AutoTS <- function(data,
   # TBATS-------------
   # 1)
   TBATS_model <- tryCatch({forecast::tbats(y = dataTSTrain[, TargetName],
-                                           use.arma.errors = TRUE,
-                                           lambda = TRUE,
-                                           biasadj = TRUE)},
+                                 use.arma.errors = TRUE,
+                                 lambda = TRUE,
+                                 biasadj = TRUE)},
                           error = function(x) "empty")
 
   if(class(TBATS_model) == "tbats" | class(TBATS_model) == "bats") {
@@ -276,8 +277,8 @@ AutoTS <- function(data,
   # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
   # 1)
   TSLM_model <- tryCatch({forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                                         lambda = TRUE,
-                                         biasadj = TRUE)},
+                               lambda = TRUE,
+                               biasadj = TRUE)},
                          error = function(x) "empty")
 
   if(tolower(class(TSLM_model)[1]) == "tslm") {
@@ -286,14 +287,14 @@ AutoTS <- function(data,
     # 2)
     data_test_TSLM <- copy(data_test)
     data_test_TSLM[, ':=' (Target = as.numeric(Target),
-                           ModelName = rep("TSLM",HoldOutPeriods),
-                           FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
+                            ModelName = rep("TSLM",HoldOutPeriods),
+                            FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
 
     # Add Evaluation Columns
     # 3)
     data_test_TSLM[, ':=' (Resid = get(TargetName) - FC_Eval,
-                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
+                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
 
     # Collect model filename
     EvalList[[i]] <- data_test_TSLM
@@ -370,13 +371,14 @@ AutoTS <- function(data,
         FC_Data[, paste0("Forecast_", modList[z]) := as.numeric(forecast(ModelList[[z]], h = HoldOutPeriods + FCPeriods)$mean)]
       }
     }
-
-    # Build secondary prediction with ensemble data
-
   } else {
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ModelList[[BestModelRef]], h = FCPeriods)$mean)]
   }
-  return(list(FC_Data,Eval))
+  if(Ensemble) {
+    return(list(FC_Data,Eval,FC_TRAIN_Data))
+  } else {
+    return(list(FC_Data,Eval))
+  }
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
