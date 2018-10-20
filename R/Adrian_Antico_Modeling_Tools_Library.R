@@ -389,7 +389,7 @@ AutoTS <- function(data,
       }
     }
   } else {
-    if(Modelname == "PROPHET") {
+    if(BestModel == "PROPHET") {
       PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
       FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
     } else {
