@@ -389,7 +389,12 @@ AutoTS <- function(data,
       }
     }
   } else {
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ModelList[[BestModelRef]], h = FCPeriods)$mean)]
+    if(Modelname == "PROPHET") {
+      PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
+      FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
+    } else {
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ModelList[[BestModelRef]], h = FCPeriods)$mean)]
+    }
   }
   if(Ensemble) {
     return(list(FC_Data,Eval,FC_TRAIN_Data))
