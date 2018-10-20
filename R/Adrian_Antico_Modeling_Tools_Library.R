@@ -2,7 +2,7 @@
 #'
 #' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts. Ensemble is also a feature where a randomForest model is build on the model outputs to utilize all in a more accuracte forecast.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico and DougVegas at RemixInstitute.com
 #' @param data is the source time series data.table
 #' @param TargetName is the name of the dependent variable in your data.table
 #' @param DateName is the name of the date column in your data.table
