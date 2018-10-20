@@ -42,23 +42,11 @@ AutoTS <- function(data,
   EvalList <- list()
   ModelList <- list()
 
-  # Define TS Frequency
-  if(tolower(TimeUnit) == "hour") {
-    freq = 24
-  } else if (tolower(TimeUnit) == "day") {
-    freq = 365
-  } else if (tolower(TimeUnit) == "week") {
-    freq = 52
-  } else if (tolower(TimeUnit) == "month") {
-    freq = 12
-  } else if (tolower(TimeUnit) == "quarter") {
-    freq = 4
-  } else if (tolower(TimeUnit) == "year") {
-    freq = 1
-  }
-
   # Convert to data.table if not already
   if (!is.data.table(data)) data <- as.data.table(data)
+
+  # Convert to as_date()
+  data[, eval(DateName) := as_date(get(DateName))]
 
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
@@ -66,14 +54,34 @@ AutoTS <- function(data,
   # Create Test data
   data_test <- data[(nrow(data)-HoldOutPeriods+1):nrow(data)]
 
-  # Convert data.tables to ts objects
-  dataTSTrain <- copy(data_train)
-  dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
-
   # Check for different time aggregations
   MaxDate <- data_train[, max(get(DateName))]
   FC_Data <- data.table(Date = seq(1:(HoldOutPeriods + FCPeriods)))
-  FC_Data[, Date := MaxDate + Date]
+
+  # Define TS Frequency
+  if(tolower(TimeUnit) == "hour") {
+    freq = 24
+    FC_Data[, Date := MaxDate + hours(Date)]
+  } else if (tolower(TimeUnit) == "day") {
+    freq = 365
+    FC_Data[, Date := MaxDate + days(Date)]
+  } else if (tolower(TimeUnit) == "week") {
+    freq = 52
+    FC_Data[, Date := MaxDate + weeks(Date)]
+  } else if (tolower(TimeUnit) == "month") {
+    freq = 12
+    FC_Data[, Date := MaxDate + months(Date)]
+  } else if (tolower(TimeUnit) == "quarter") {
+    freq = 4
+    FC_Data[, Date := MaxDate + months(4*Date)]
+  } else if (tolower(TimeUnit) == "year") {
+    freq = 1
+    FC_Data[, Date := MaxDate + years(Date)]
+  }
+
+  # Convert data.tables to ts objects
+  dataTSTrain <- copy(data_train)
+  dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
 
   if(Ensemble) {
     MaxTDate <- data_train[, max(get(DateName))]
