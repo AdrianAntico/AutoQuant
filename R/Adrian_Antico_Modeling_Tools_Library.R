@@ -13,8 +13,8 @@
 #' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
 #' @param Ensemble set to TRUE if you want to utilize this functionality
 #' @examples
-#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data <- data.table(DateTime = as_date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - days(temp)][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
 #'                    TargetName     = "Target",
@@ -267,7 +267,7 @@ AutoTS <- function(data,
                                  biasadj = TRUE)},
                           error = function(x) "empty")
 
-  if(class(TBATS_model) == "tbats" | class(TBATS_model) == "bats") {
+  if(class(TBATS_model)[1] == "tbats" | class(TBATS_model)[1] == "bats") {
     i <- i + 1
     # Collect Test Data for Model Comparison
     # 2)
