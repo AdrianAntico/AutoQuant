@@ -198,6 +198,7 @@ AutoTS <- function(data,
   for (lags in 1:Lags) {
     for (slags in 1:SLags) {
       k <- k + 1L
+      print(k)
       NNETAR_model_temp <- forecast::nnetar(y = dataTSTrain[, TargetName], p = lags, P = slags)
       set(temp, i = k, j = 1L, value = lags)
       set(temp, i = k, j = 2L, value = slags)
@@ -353,6 +354,7 @@ AutoTS <- function(data,
   }
 
   # Model Collection-------------
+  print("FIND WINNER")
   dataEval <- rbindlist(EvalList)
 
   # Model Evaluation
@@ -370,6 +372,7 @@ AutoTS <- function(data,
   BestModelRef <- BestModelEval[1, "ID"][[1]]
 
   # Generate Forecasts
+  print("GENERATE FORECASTS")
   if(Ensemble) {
     z <- 0
     for (Modelname in modList) {
