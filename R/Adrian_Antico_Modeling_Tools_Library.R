@@ -19,78 +19,92 @@
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @return Original data.table with added column with cluster number identifier
 #' @export
-GLRM_KMeans_Col <- function(data,
-                            GridTuneGLRM = TRUE,
-                            nthreads = 4,
-                            MaxMem = "14G",
-                            glrmCols = 1:ncol(data),
-                            IgnoreConstCols = TRUE,
-                            glrmFactors = 5,
-                            Loss = "Quadratic",
-                            Gamma_x = 0.5,
-                            Gamma_y = 0,
-                            glrmMaxIters = 1000,
-                            SVDMethod = "Randomized",
-                            MaxRunTimeSecs = 3600,
-                            KMeansK = 50) {
-
+GLRM_KMeans_Cols <- function(data,
+                             GridTuneGLRM = TRUE,
+                             nthreads = 4,
+                             MaxMem = "14G",
+                             glrmCols = 1:ncol(data),
+                             IgnoreConstCols = TRUE,
+                             glrmFactors = 5,
+                             Loss = "Quadratic",
+                             Gamma_x = 0.5,
+                             Gamma_y = 0,
+                             glrmMaxIters = 1000,
+                             SVDMethod = "Randomized", # c("Randomized","GramSVD","Power")
+                             MaxRunTimeSecs = 3600,
+                             KMeansK = 50) {
+  
   # Build glmr model
   h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- as.h2o(data)
   if(GridTuneGLRM) {
-
+    
+    # Stopping metric
+    stopping_metric = "mse"
+    
     # Define grid tune search scheme in a named list
     search_criteria  <- list(strategy             = "RandomDiscrete",
                              max_runtime_secs     = 3600,
                              max_models           = 30,
                              seed                 = 1234,
                              stopping_rounds      = 10,
-                             stopping_metric      = "mse",
+                             stopping_metric      = stopping_metric,
                              stopping_tolerance   = 1e-3)
-
+    
     # Define hyperparameters
     HyperParams <- list(transform = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
                         k = 1:5,
                         regularization_x = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
                         regularization_y = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
-                        gamma_x = seq(0.01,0.10,0.01),
-                        gamma_y = seq(0.01,0.10,0.01),
+                        gamma_x = seq(0.00,0.50,0.05),
+                        gamma_y = seq(0.00,0.50,0.05),
                         svd_method = c("Randomized","GramSVD","Power"))
-
+    
     # Run grid tune
     grid <- h2o.grid("glrm",
-                     search_criteria = search_criteria,
                      training_frame = datax,
                      grid_id = "Temp",
                      ignore_const_cols = IgnoreConstCols,
                      loss = Loss,
+                     search_criteria = search_criteria,
                      hyper_params = HyperParams)
-
+    
+    # Grab models
+    grid_models <- lapply(grid@model_ids, function(model_id) { model = h2o.getModel(model_id) })
+    
+    # Test models
+    ModelObj <- rbindlist(list(lapply(grid_models, function(model) {
+      model@model$objective
+    })))
+    
+    # Collect best model
+    keep <- c("variable","value")
+    x <- as.numeric(gsub("[^0-9]", "", melt(ModelObj)[, ..keep][order(value)][1,1][[1]]))
+    
     # Get best performer
-    Grid_Out <- h2o.getGrid(grid_id = "Temp", sort_by = stopping_metric, decreasing = FALSE)
-    model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
-
+    model <- grid_models[[x]]
+    
   } else {
     model <- h2o.glrm(training_frame = datax,
                       cols = glrmCols,
                       ignore_const_cols = IgnoreConstCols,
-                      k = glrmFactors,
-                      loss = Loss,
-                      gamma_x = Gamma_x,
-                      gamma_y = Gamma_y,
+                      k = glrmFactors, 
+                      loss = Loss, 
+                      gamma_x = Gamma_x, 
+                      gamma_y = Gamma_y, 
                       max_iterations = glrmMaxIters,
                       svd_method = SVDMethod,
-                      max_runtime_secs = MaxRunTimeSecs)
+                      max_runtime_secs = MaxRunTimeSecs)    
   }
 
   # Run k-means
   x_raw <- h2o.getFrame(model@model$representation_name)
   Nam <- colnames(x_raw)
-  k <- h2o.kmeans(training_frame = x_raw,
-                  x = Nam,
+  k <- h2o.kmeans(training_frame = x_raw, 
+                  x = Nam, 
                   k = KMeansK,
                   estimate_k = TRUE)
-
+  
   # Combine outputs
   preds <- as.data.table(h2o.predict(k, x_raw))
   h2o.shutdown(prompt = FALSE)
