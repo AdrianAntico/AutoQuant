@@ -79,10 +79,7 @@ GLRM_KMeans_Cols <- function(data,
     
     # Collect best model
     keep <- c("variable","value")
-    x <- as.numeric(gsub("[^0-9]", "", melt(ModelObj)[, ..keep][order(value)][1,1][[1]]))
-    
-    # Get best performer
-    model <- grid_models[[x]]
+    model <- grid_models[[as.numeric(gsub("[^0-9]", "", melt(ModelObj)[, ..keep][order(value)][1,1][[1]]))]]
     
   } else {
     model <- h2o.glrm(training_frame = datax,
