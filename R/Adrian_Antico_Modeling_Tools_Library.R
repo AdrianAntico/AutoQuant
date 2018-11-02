@@ -100,13 +100,13 @@ GLRM_KMeans_Cols <- function(data,
   # Run k-means
   x_raw <- h2o.getFrame(model@model$representation_name)
   Nam <- colnames(x_raw)
-  k <- h2o.kmeans(training_frame = x_raw, 
-                  x = Nam, 
-                  k = KMeansK,
-                  estimate_k = TRUE)
+  kMon <- h2o.kmeans(training_frame = x_raw, 
+                     x = Nam, 
+                     k = KMeansK,
+                     estimate_k = TRUE)
   
   # Combine outputs
-  preds <- as.data.table(h2o.predict(k, x_raw))
+  preds <- as.data.table(h2o.predict(kMon, x_raw))
   h2o.shutdown(prompt = FALSE)
   return(as.data.table(cbind(preds, data)))
 }
