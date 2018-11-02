@@ -59,6 +59,7 @@ GLRM_KMeans_Col <- function(data,
 
     # Run grid tune
     grid <- h2o.grid("glrm",
+                     search_criteria = search_criteria,
                      training_frame = datax,
                      grid_id = "Temp",
                      ignore_const_cols = IgnoreConstCols,
