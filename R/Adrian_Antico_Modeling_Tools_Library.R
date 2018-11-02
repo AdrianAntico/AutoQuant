@@ -3489,8 +3489,8 @@ Word2VecModel <- function(datax,
 
     # Save model
     w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-    set(StoreFile, i = i, j = 1, value = ModelID[i])
-    set(StoreFile, i = i, j = 2, value = w2vPath)
+    set(StoreFile, i = i, j = 1L, value = ModelID[i])
+    set(StoreFile, i = i, j = 2L, value = w2vPath)
     save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     h2o.rm('data3')
 
