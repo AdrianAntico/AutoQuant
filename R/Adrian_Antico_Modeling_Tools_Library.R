@@ -1,3 +1,101 @@
+#' GLRM_KMeans_Col Automated row clustering for mixed column types
+#'
+#' GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
+#'
+#' @author Adrian Antico at RemixInstitute.com
+#' @param data is the source time series data.table
+#' @param GridTuneGLRM If you want to grid tune the glrm model
+#' @param nthreads set based on number of threads your machine has available
+#' @param MaxMem set based on the amount of memory your machine has available
+#' @param glrmCols the column numbers for the glrm
+#' @param IgnoreConstCols tell H20 to ignore any columns that have zero variance
+#' @param glrmFactors similar to the number of factors to return from PCA
+#' @param Loss set to one of "Quadratic", "Absolute", "Huber", "Poisson", "Hinge", "Logistic", "Periodic"
+#' @param Gamma_x regularization weight on X matrix
+#' @param Gamma_y regularization weight on y matrix
+#' @param glrmMaxIters max number of iterations
+#' @param SVDMethod choose from "Randomized","GramSVD","Power"
+#' @param MaxRunTimeSecs set the timeout for max run time
+#' @param KMeansK number of factors to test out in k-means to find the optimal number
+#' @return Original data.table with added column with cluster number identifier
+#' @export
+GLRM_KMeans_Col <- function(data,
+                            GridTuneGLRM = TRUE,
+                            nthreads = 4,
+                            MaxMem = "14G",
+                            glrmCols = 1:ncol(data),
+                            IgnoreConstCols = TRUE,
+                            glrmFactors = 5,
+                            Loss = "Quadratic",
+                            Gamma_x = 0.5,
+                            Gamma_y = 0,
+                            glrmMaxIters = 1000,
+                            SVDMethod = "Randomized",
+                            MaxRunTimeSecs = 3600,
+                            KMeansK = 50) {
+
+  # Build glmr model
+  h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
+  datax <- as.h2o(data)
+  if(GridTuneGLRM) {
+
+    # Define grid tune search scheme in a named list
+    search_criteria  <- list(strategy             = "RandomDiscrete",
+                             max_runtime_secs     = 3600,
+                             max_models           = 30,
+                             seed                 = 1234,
+                             stopping_rounds      = 10,
+                             stopping_metric      = "mse",
+                             stopping_tolerance   = 1e-3)
+
+    # Define hyperparameters
+    HyperParams <- list(transform = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
+                        k = 1:5,
+                        regularization_x = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
+                        regularization_y = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
+                        gamma_x = seq(0.01,0.10,0.01),
+                        gamma_y = seq(0.01,0.10,0.01),
+                        svd_method = c("Randomized","GramSVD","Power"))
+
+    # Run grid tune
+    grid <- h2o.grid("glrm",
+                     training_frame = datax,
+                     grid_id = "Temp",
+                     ignore_const_cols = IgnoreConstCols,
+                     loss = Loss,
+                     hyper_params = HyperParams)
+
+    # Get best performer
+    Grid_Out <- h2o.getGrid(grid_id = "Temp", sort_by = stopping_metric, decreasing = FALSE)
+    model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+
+  } else {
+    model <- h2o.glrm(training_frame = datax,
+                      cols = glrmCols,
+                      ignore_const_cols = IgnoreConstCols,
+                      k = glrmFactors,
+                      loss = Loss,
+                      gamma_x = Gamma_x,
+                      gamma_y = Gamma_y,
+                      max_iterations = glrmMaxIters,
+                      svd_method = SVDMethod,
+                      max_runtime_secs = MaxRunTimeSecs)
+  }
+
+  # Run k-means
+  x_raw <- h2o.getFrame(model@model$representation_name)
+  Nam <- colnames(x_raw)
+  k <- h2o.kmeans(training_frame = x_raw,
+                  x = Nam,
+                  k = KMeansK,
+                  estimate_k = TRUE)
+
+  # Combine outputs
+  preds <- as.data.table(h2o.predict(k, x_raw))
+  h2o.shutdown(prompt = FALSE)
+  return(as.data.table(cbind(preds, data)))
+}
+
 #' AutoTS is an automated time series modeling function
 #'
 #' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts. Ensemble is also a feature where a randomForest model is build on the model outputs to utilize all in a more accuracte forecast.
