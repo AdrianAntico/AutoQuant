@@ -20,19 +20,19 @@
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 GLRM_KMeans_Cols <- function(data,
-                             GridTuneGLRM = TRUE,
-                             nthreads = 4,
-                             MaxMem = "14G",
-                             glrmCols = 1:ncol(data),
+                             GridTuneGLRM    = TRUE,
+                             nthreads        = 4,
+                             MaxMem          = "14G",
+                             glrmCols        = 1:ncol(data),
                              IgnoreConstCols = TRUE,
-                             glrmFactors = 5,
-                             Loss = "Quadratic",
-                             Gamma_x = 0.5,
-                             Gamma_y = 0,
-                             glrmMaxIters = 1000,
-                             SVDMethod = "Randomized", # c("Randomized","GramSVD","Power")
-                             MaxRunTimeSecs = 3600,
-                             KMeansK = 50) {
+                             glrmFactors     = 5,
+                             Loss            = "Quadratic",
+                             Gamma_x         = 0.5,
+                             Gamma_y         = 0,
+                             glrmMaxIters    = 1000,
+                             SVDMethod       = "Randomized", # c("Randomized","GramSVD","Power")
+                             MaxRunTimeSecs  = 3600,
+                             KMeansK         = 50)  {
   
   # Build glmr model
   h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
