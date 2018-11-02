@@ -1,3 +1,23 @@
+# Functions in order:
+#   GLRM_KMeans_Col
+#   AutoTS
+#   tempDatesFun
+#   SimpleCap
+#   RemixTheme
+#   ModelDataPrep
+#   threshOptim
+#   nlsModelFit
+#   multiplot
+#   ChartTheme
+#   percRank
+#   ParDepCalPlots
+#   EvalPlot
+#   GDL_Feature_Engineering
+#   Scoring_GDL_Feature_Engineering
+#   FAST_GDL_Feature_Engineering
+#   AutoH20Modeler
+#   Word2VecModel
+
 #' GLRM_KMeans_Col Automated row clustering for mixed column types
 #'
 #' GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
@@ -19,20 +39,20 @@
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @return Original data.table with added column with cluster number identifier
 #' @export
-GLRM_KMeans_Cols <- function(data,
-                             GridTuneGLRM    = TRUE,
-                             nthreads        = 4,
-                             MaxMem          = "14G",
-                             glrmCols        = 1:ncol(data),
-                             IgnoreConstCols = TRUE,
-                             glrmFactors     = 5,
-                             Loss            = "Quadratic",
-                             Gamma_x         = 0.5,
-                             Gamma_y         = 0,
-                             glrmMaxIters    = 1000,
-                             SVDMethod       = "Randomized", # c("Randomized","GramSVD","Power")
-                             MaxRunTimeSecs  = 3600,
-                             KMeansK         = 50)  {
+GLRM_KMeans_Col <- function(data,
+                            GridTuneGLRM    = TRUE,
+                            nthreads        = 4,
+                            MaxMem          = "14G",
+                            glrmCols        = 1:ncol(data),
+                            IgnoreConstCols = TRUE,
+                            glrmFactors     = 5,
+                            Loss            = "Quadratic",
+                            Gamma_x         = 0.5,
+                            Gamma_y         = 0,
+                            glrmMaxIters    = 1000,
+                            SVDMethod       = "Randomized", # c("Randomized","GramSVD","Power")
+                            MaxRunTimeSecs  = 3600,
+                            KMeansK         = 50)  {
   
   # Build glmr model
   h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
