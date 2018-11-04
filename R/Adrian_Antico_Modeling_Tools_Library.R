@@ -1,4 +1,5 @@
 # Functions in order:
+#   ResidualOutliers
 #   GLRM_KMeans_Col
 #   AutoTS
 #   tempDatesFun
