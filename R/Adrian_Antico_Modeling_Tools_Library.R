@@ -70,7 +70,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
   # Reorder data, remove the coefhat column to send to database or stakeholder
   setcolorder(x, c("ind","type","tstat","coefhat"))
-  x[, "coefhat" := NULL]
+  x[, coefhat := NULL]
   remove(tsData)
   return(list(x,fit,resid))
 }
