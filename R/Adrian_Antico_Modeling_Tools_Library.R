@@ -18,6 +18,62 @@
 #   AutoH20Modeler
 #   Word2VecModel
 
+#' ResidualOutliers is an automated time series outlier detection function
+#'
+#' ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima.
+#'
+#' @author Adrian Antico at RemixInstitute.com
+#' @param data the source residuals data.table
+#' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
+#' @param cvar the t-stat value for tsoutliers
+#' @examples
+#' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
+#' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
+#' data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
+#' stuff    <- outlierDetection(data = data, maxN = 5, cvar = 4)
+#' outliers <- stuff[[1]]
+#' model    <- stuff[[2]]
+#' resid    <- stuff[[3]]
+#' @return A data.table with outliers, the arima model, and residuals from the arima fit
+#' @export
+ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
+
+  # Convert to time series object
+  tsData <- ts(data[[2]], frequency = 1, start = 1, end = nrow(data))
+
+  # Build the auto arimia
+  fit <- forecast::auto.arima(
+    tsData,
+    max.p   = maxN,
+    max.q   = maxN,
+    max.P   = maxN,
+    max.Q   = maxN,
+    start.p = maxN,
+    start.q = maxN,
+    start.P = maxN,
+    start.Q = maxN)
+
+  # Store the arima parameters
+  pars  <- tsoutliers::coefs2poly(fit)
+
+  # Store the arima residuals
+  resid <- residuals(fit)
+
+  # Find the outliers
+  x <- as.data.table(
+    tsoutliers::locate.outliers(
+      resid=resid,
+      pars=pars,
+      cval=cvar,
+      types= c("AO","TC","LS","IO","SLS")))
+
+  # Reorder data, remove the coefhat column to send to database or stakeholder
+  setcolorder(x, c("ind","type","tstat","coefhat"))
+  x[, "coefhat" := NULL]
+  remove(tsData)
+  return(list(x,fit,resid))
+}
+
 #' GLRM_KMeans_Col Automated row clustering for mixed column types
 #'
 #' GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
