@@ -742,7 +742,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
         set(nls_collection, 1, 2, value = val0)
-        #plot(preds)
       },error=function(x) {return("skip")})
     } else {
       tryCatch({
@@ -751,7 +750,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
         set(nls_collection, 1, 2, value = val0)
-        #plot(baseline)
       },error=function(x) {return("skip")})
     }
   },error=function(x) {return("skip")})
@@ -761,7 +759,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds1[preds1 < 0] <- 0
     val    <- mean(abs(zz - preds1))
     set(nls_collection, 2, 2, value = val1)
-    #plot(preds1)
   },error=function(x) {return("skip")})
 
   # Asymp offset model
@@ -771,7 +768,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds2[preds2 < 0] <- 0
     va2    <- mean(abs(zz - preds2))
     set(nls_collection, 3, 2, value = val2)
-    #plot(preds2)
   },error=function(x) {return("skip")})
 
   # Asymp origin model
@@ -781,7 +777,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds3[preds3 < 0] <- 0
     va3    <- mean(abs(zz - preds3))
     set(nls_collection, 4, 2, value = val3)
-    #plot(preds3)
   },error=function(x) {return("skip")})
 
   # Biexp model
@@ -791,7 +786,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds4[preds4 < 0] <- 0
     val4   <- mean(abs(zz - preds4))
     set(nls_collection, 5, 2, value = val4)
-    #plot(preds4)
   },error=function(x) {return("skip")})
 
   # Four parameter logistic model
@@ -801,7 +795,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds5[preds5 < 0] <- 0
     val5   <- mean(abs(zz - preds5))
     set(nls_collection, 6, 2, value = val5)
-    #plot(preds5)
   },error=function(x) {return("skip")})
 
   # Gompertz model
@@ -811,7 +804,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds6[preds6 < 0] <- 0
     val6   <- mean(abs(zz - preds6))
     set(nls_collection, 7, 2, value = val6)
-    #plot(preds6)
   },error=function(x) {return("skip")})
 
   # Logistic model
@@ -821,7 +813,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds7[preds7 < 0] <- 0
     val7   <- mean(abs(zz - preds7))
     set(nls_collection, 8, 2, value = val7)
-    #plot(preds7)
   },error=function(x) {return("skip")})
 
   # Michaelis-Menton model
@@ -831,7 +822,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds8[preds8 < 0] <- 0
     val8   <- mean(abs(zz - preds8))
     set(nls_collection, 9, 2, value = val8)
-    #plot(preds8)
   },error=function(x) {return("skip")})
 
   # Weibull Growth model
@@ -841,7 +831,6 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds9[preds9 < 0] <- 0
     val9   <- mean(abs(zz - preds9))
     set(nls_collection, 10, 2, value = val9)
-    #plot(preds9)
   },error=function(x) {return("skip")})
 
   # Store best model name
