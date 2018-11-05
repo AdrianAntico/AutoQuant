@@ -1,4 +1,5 @@
 # Functions in order:
+#   GenTSAnomVars
 #   ResidualOutliers
 #   GLRM_KMeans_Col
 #   AutoTS
@@ -18,6 +19,75 @@
 #   FAST_GDL_Feature_Engineering
 #   AutoH20Modeler
 #   Word2VecModel
+
+#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
+#'
+#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them.
+#'
+#' @author Adrian Antico at RemixInstitute.com
+#' @param data the source residuals data.table
+#' @param GroupVar1 this is a group by variable
+#' @param GroupVar2 this is another group by variable
+#' @param DateVar this is a time variable for grouping
+#' @param High this is the threshold on the high end
+#' @param Low this is the threshold on the low end
+#' @param KeepAllCols set to TRUE to remove the intermediate features
+#' @examples
+#' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
+#' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
+#' data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
+#' stuff    <- GenTSAnomVars(data,
+#'                           GroupVar1   = "a",
+#'                           GroupVar2   = NULL,
+#'                           DateVar     = NULL,
+#'                           High        = 1.96,
+#'                           Low         = -1.96,
+#'                           KeepAllCols = FALSE)
+#' @return The original data.table with the added columns merged in
+#' @export
+GenTSAnomVars <- function(data,
+                          GroupVar1 = "BADGE_NBR",
+                          GroupVar2 = NULL,
+                          DateVar = "DAY_DATE",
+                          High = 1.96,
+                          Low = -1.96,
+                          KeepAllCols = FALSE) {
+  if(is.null(GroupVar2)) {
+    data <- data[order(get(GroupVar1), get(DateVar))]
+    data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
+    data[, AnomHigh := as.numeric(ifelse(ScaledConsumption > High, 1, 0))]
+    data[, AnomLow := as.numeric(ifelse(ScaledConsumption < Low, 1, 0))]
+    data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
+    data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
+    data[, AnomHighRate := CumAnomHigh / RowNumAsc]
+    data[, AnomLowRate := CumAnomLow / RowNumAsc]
+    if(!KeepAllCols) {
+      data[, ':=' (AnomHigh = NULL,
+                   AnomLow = NULL,
+                   CumAnomHigh = NULL,
+                   CumAnomLow = NULL,
+                   RowNumAsc = NULL)]
+    }
+    return(data)
+  } else {
+    data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
+    data[, RowNumAsc := 1:.N, by = list(get(GroupVar1), get(GroupVar2))]
+    data[, AnomHigh := as.numeric(ifelse(ScaledConsumption > High, 1, 0))]
+    data[, AnomLow := as.numeric(ifelse(ScaledConsumption < Low, 1, 0))]
+    data[, CumAnomHigh := cumsum(AnomHigh), by = list(get(GroupVar1), get(GroupVar2))]
+    data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
+    data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
+    data[, paste0(GroupVar2, "AnomLowRate") := CumAnomLow / RowNumAsc]
+    if(!KeepAllCols) {
+      data[, ':=' (AnomHigh = NULL,
+                   AnomLow = NULL,
+                   CumAnomHigh = NULL,
+                   CumAnomLow = NULL,
+                   RowNumAsc = NULL)]
+    }
+    return(data)
+  }
+}
 
 #' ResidualOutliers is an automated time series outlier detection function
 #'
