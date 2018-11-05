@@ -35,7 +35,7 @@
 #' outliers <- stuff[[1]]
 #' model    <- stuff[[2]]
 #' resid    <- stuff[[3]]
-#' @return A data.table with outliers, the arima model, and residuals from the arima fit
+#' @return A data.table with outliers left joined to source data, the arima model, and residuals from the arima fit
 #' @export
 ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
