@@ -31,7 +31,7 @@
 #' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
 #' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
 #' data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
-#' stuff    <- outlierDetection(data = data, maxN = 5, cvar = 4)
+#' stuff    <- ResidualOutliers(data = data, maxN = 5, cvar = 4)
 #' outliers <- stuff[[1]]
 #' model    <- stuff[[2]]
 #' resid    <- stuff[[3]]
@@ -40,11 +40,11 @@
 ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
   # Convert to time series object
-  tsData <- ts(data[[2]], frequency = 1, start = 1, end = nrow(data))
+  tsData <- ts(data, frequency = 1, start = 1, end = nrow(data))
 
   # Build the auto arimia
   fit <- forecast::auto.arima(
-    tsData,
+    tsData[,2],
     max.p   = maxN,
     max.q   = maxN,
     max.P   = maxN,
@@ -58,21 +58,27 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
   pars  <- tsoutliers::coefs2poly(fit)
 
   # Store the arima residuals
-  resid <- residuals(fit)
+  resid <- cbind(tsData,residuals(fit))
 
   # Find the outliers
   x <- as.data.table(
     tsoutliers::locate.outliers(
-      resid=resid,
+      resid=resid[,3],
       pars=pars,
       cval=cvar,
       types= c("AO","TC","LS","IO","SLS")))
 
+  # Merge back to source data
+  residDT <- as.data.table(resid)
+  z <- merge(residDT, x, by.x = "tsData.a", by.y = "ind", all.x = TRUE)
+  setnames(z,
+           c("tsData.a", "tsData.predicted", "residuals(fit)"),
+           c("ObsNum", "Preds", "Residuals"))
+
   # Reorder data, remove the coefhat column to send to database or stakeholder
-  setcolorder(x, c("ind","type","tstat","coefhat"))
-  x[, coefhat := NULL]
+  z[, coefhat := NULL]
   remove(tsData)
-  return(list(x,fit,resid))
+  return(list(z,fit,resid))
 }
 
 #' GLRM_KMeans_Col Automated row clustering for mixed column types
