@@ -46,11 +46,11 @@
 #' @return The original data.table with the added columns merged in
 #' @export
 GenTSAnomVars <- function(data,
-                          GroupVar1 = "BADGE_NBR",
-                          GroupVar2 = NULL,
-                          DateVar = "DAY_DATE",
-                          High = 1.96,
-                          Low = -1.96,
+                          GroupVar1   = "BADGE_NBR",
+                          GroupVar2   = NULL,
+                          DateVar     = "DAY_DATE",
+                          High        = 1.96,
+                          Low         = -1.96,
                           KeepAllCols = FALSE) {
   if(is.null(GroupVar2)) {
     data <- data[order(get(GroupVar1), get(DateVar))]
