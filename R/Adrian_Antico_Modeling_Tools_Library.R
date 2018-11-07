@@ -3657,65 +3657,201 @@ AutoH20Modeler <- function(Construct,
 #'              vects = 50,
 #'              SaveStopWords = FALSE)
 #' @export
+#' Automated word2vec data generation via H20
+#'
+#' This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
+#' @author Adrian Antico
+#' @param data Source data table to merge vects onto
+#' @param stringCol A string name for the column to convert via word2vec
+#' @param KeepStringCol Set to TRUE if you want to keep the original string column that you convert via word2vec
+#' @param model_path A string path to the location where you want the model and metadata stored
+#' @param ModelID A vector of your model names
+#' @param vects The number of vectors to retain from the word2vec model
+#' @param SaveStopWords Set to TRUE to save the stop words used
+#' @param MinWords For H20 word2vec model
+#' @param WindowSize For H20 word2vec model
+#' @param Epochs For H20 word2vec model
+#' @param StopWords For H20 word2vec model
+#' @examples
+#'Word2VecModel(data,
+#'              stringCol = "Comment",
+#'              KeepStringCol = FALSE,
+#'              model_path = getwd(),
+#'              vects = 50,
+#'              SaveStopWords = FALSE)
+#' @export
+# Word2VecModel <- function(datax,
+#                           stringCol     = c("TITLE", "DESCR", "LI_NAME", "ACTION_TAKEN_TEXT", "SUG_DISP"),
+#                           KeepStringCol = FALSE,
+#                           model_path    = "Query_Multilabel_Models",
+#                           ModelID       = c("TITLE", "DESCR", "LI_NAME", "ACTION_TAKEN_TEXT", "SUG_DISP"),
+#                           vects         = 25,
+#                           SaveStopWords = FALSE,
+#                           MinWords      = 1,
+#                           WindowSize    = 1,
+#                           Epochs        = 25,
+#                           StopWords     = NULL) {
+# 
+#   # Ensure data is a data.table
+#   data <- as.data.table(datax)
+# 
+#   # Create storage file
+#   N <- length(stringCol)
+#   StoreFile <- data.table(ModelName = rep("a", N), Path = c("aa",N))
+#   i <- 0
+# 
+#   # Loop through all the string columns
+#   for (string in stringCol) {
+#     i <- i + 1
+#     Sys.sleep(10)
+#     data[, eval(string) := as.character(get(string))]
+#     h2o.init(nthreads = 4, max_mem_size = "14G")
+# 
+#     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
+#     data[, TEMP := gsub("'|\"|'|"|"|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'", "", data[[string]])]
+#     data[,":="(TEMP=gsub("  ", " ", TEMP))]
+#     data2 <- data[, "TEMP"]
+#     data3 <- as.h2o(data2, destination_frame = "TEMP", col.types=c("String"))
+# 
+#     # Using only questions from the training set because the test set has 'questions' that are fake
+#     if(is.null(StopWords)) {
+#       STOP_WORDS = c("ax","i","you","edu","s","t","m","subject","can","lines","re","what","blank",
+#                      "there","all","we","one","the","a","an","of","or","in","for","by","on",
+#                      "but","is","in","not","with","as","was","if","they","are","this","and","it","have",
+#                      "from","at","my","be","by","that","to","from","com","org","so")
+#     } else {
+#       STOP_WORDS <- StopWords
+#     }
+# 
+# 
+#     # Store stop words?
+#     if(SaveStopWords) {
+#       save(STOP_WORDS, file = paste0(model_path,"/STOP_WORDS.Rdata"))
+#     }
+# 
+#     # Tokenize
+#     tokenized <- as.data.table(h2o.tokenize(data3, "\\\\W+"))
+# 
+#     # convert to lower case
+#     tokenized_lower <- tokenized[, C1 := tolower(C1)]
+# 
+#     # remove stop words
+#     tokenized_words <- tokenized_lower[!(C1 %in% STOP_WORDS)]
+#     tokenized_words <- as.h2o(tokenized_words[!(is.na(C1))])
+# 
+#     # Build model
+#     w2v.model <- h2o.word2vec(tokenized_words,
+#                               model_id           = ModelID[i],
+#                               word_model         = "SkipGram",
+#                               norm_model         = "HSM",
+#                               vec_size           = vects,
+#                               min_word_freq      = MinWords,
+#                               window_size        = WindowSize,
+#                               init_learning_rate = 0.025,
+#                               sent_sample_rate   = 0.05,
+#                               epochs             = Epochs)
+# 
+#     # Save model
+#     w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+#     set(StoreFile, i = i, j = 1, value = ModelID[i])
+#     set(StoreFile, i = i, j = 2, value = w2vPath)
+#     save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+#     h2o.rm('data3')
+# 
+#     # Score model
+#     all_vecs <- h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
+# 
+#     # Convert to data.table
+#     all_vecs <- as.data.table(all_vecs)
+#     data <- data.table(cbind(data, all_vecs))
+# 
+#     # Remove string cols
+#     data[, ':=' (TEMP = NULL)]
+#     if(!KeepStringCol) {
+#       data[, eval(string) := NULL]
+#     }
+# 
+#     # Replace Colnames
+#     cols <- names(data[, (ncol(data)-vects+1):ncol(data)])
+#     for (c in cols) {
+#       data[, paste0(string,"_",c) := get(c)]
+#       data[, eval(c) := NULL]
+#     }
+# 
+#     # Final Prep
+#     h2o.rm(w2v.model)
+#     h2o.shutdown(prompt = FALSE)
+#   }
+#   return(data)
+# }
 Word2VecModel <- function(datax,
-                          stringCol     = c("TITLE", "DESCR", "LI_NAME", "ACTION_TAKEN_TEXT", "SUG_DISP"),
+                          stringCol     = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
+                                            "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
+                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans","Q84_Ans"),
                           KeepStringCol = FALSE,
-                          model_path    = "Query_Multilabel_Models",
-                          ModelID       = c("TITLE", "DESCR", "LI_NAME", "ACTION_TAKEN_TEXT", "SUG_DISP"),
-                          vects         = 25,
+                          model_path    = "/mnt/PVADA_DEV/CCNA/CommSurvey",
+                          ModelID       = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
+                                            "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
+                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans","Q84_Ans"),
+                          vects         = 5,
                           SaveStopWords = FALSE,
                           MinWords      = 1,
                           WindowSize    = 1,
                           Epochs        = 25,
                           StopWords     = NULL) {
-
+  
   # Ensure data is a data.table
   data <- as.data.table(datax)
-
+  
   # Create storage file
   N <- length(stringCol)
   StoreFile <- data.table(ModelName = rep("a", N), Path = c("aa",N))
   i <- 0
-
+  
   # Loop through all the string columns
   for (string in stringCol) {
     i <- i + 1
     Sys.sleep(10)
     data[, eval(string) := as.character(get(string))]
     h2o.init(nthreads = 4, max_mem_size = "14G")
-
+    
     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
-    data[, TEMP := gsub("'|\"|'|"|"|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'", "", data[[string]])]
-    data[,":="(TEMP=gsub("  ", " ", TEMP))]
+    data[,":="(TEMP=gsub("  ", " ", data[[string]]))]
     data2 <- data[, "TEMP"]
     data3 <- as.h2o(data2, destination_frame = "TEMP", col.types=c("String"))
-
+    
     # Using only questions from the training set because the test set has 'questions' that are fake
     if(is.null(StopWords)) {
       STOP_WORDS = c("ax","i","you","edu","s","t","m","subject","can","lines","re","what","blank",
                      "there","all","we","one","the","a","an","of","or","in","for","by","on",
                      "but","is","in","not","with","as","was","if","they","are","this","and","it","have",
-                     "from","at","my","be","by","that","to","from","com","org","so")
+                     "from","at","my","be","by","that","to","from","com","org","so","NA")
     } else {
       STOP_WORDS <- StopWords
     }
-
-
+    
+    
     # Store stop words?
     if(SaveStopWords) {
       save(STOP_WORDS, file = paste0(model_path,"/STOP_WORDS.Rdata"))
     }
-
-    # Tokenize
-    tokenized <- as.data.table(h2o.tokenize(data3, "\\\\W+"))
-
-    # convert to lower case
-    tokenized_lower <- tokenized[, C1 := tolower(C1)]
-
-    # remove stop words
-    tokenized_words <- tokenized_lower[!(C1 %in% STOP_WORDS)]
-    tokenized_words <- as.h2o(tokenized_words[!(is.na(C1))])
-
+    
+    tokenize <- function(sentences, stop.words = STOP_WORDS) {
+      tokenized <- h2o.tokenize(sentences, "\\\\W+")
+      
+      # convert to lower case
+      tokenized.lower <- h2o.tolower(tokenized)
+      # remove short words (less than 2 characters)
+      tokenized.lengths <- h2o.nchar(tokenized.lower)
+      tokenized.filtered <- tokenized.lower[is.na(tokenized.lengths) || tokenized.lengths >= 2,]
+      # remove words that contain numbers
+      tokenized.words <- tokenized.lower[h2o.grep("[0-9]", tokenized.lower, invert = TRUE, output.logical = TRUE),]
+      
+      # remove stop words
+      tokenized.words[is.na(tokenized.words) || (! tokenized.words %in% STOP_WORDS),]
+    }
+    tokenized_words <- tokenize(data3, STOP_WORDS)
+    
     # Build model
     w2v.model <- h2o.word2vec(tokenized_words,
                               model_id           = ModelID[i],
@@ -3727,34 +3863,34 @@ Word2VecModel <- function(datax,
                               init_learning_rate = 0.025,
                               sent_sample_rate   = 0.05,
                               epochs             = Epochs)
-
+    
     # Save model
     w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
     set(StoreFile, i = i, j = 1, value = ModelID[i])
     set(StoreFile, i = i, j = 2, value = w2vPath)
     save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     h2o.rm('data3')
-
+    
     # Score model
     all_vecs <- h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
-
+    
     # Convert to data.table
     all_vecs <- as.data.table(all_vecs)
     data <- data.table(cbind(data, all_vecs))
-
+    
     # Remove string cols
     data[, ':=' (TEMP = NULL)]
     if(!KeepStringCol) {
       data[, eval(string) := NULL]
     }
-
+    
     # Replace Colnames
     cols <- names(data[, (ncol(data)-vects+1):ncol(data)])
     for (c in cols) {
       data[, paste0(string,"_",c) := get(c)]
       data[, eval(c) := NULL]
     }
-
+    
     # Final Prep
     h2o.rm(w2v.model)
     h2o.shutdown(prompt = FALSE)
