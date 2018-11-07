@@ -3695,7 +3695,7 @@ Word2VecModel <- function(datax,
       STOP_WORDS = c("ax","i","you","edu","s","t","m","subject","can","lines","re","what","blank",
                      "there","all","we","one","the","a","an","of","or","in","for","by","on",
                      "but","is","in","not","with","as","was","if","they","are","this","and","it","have",
-                     "from","at","my","be","by","that","to","from","com","org","like","likes","so")
+                     "from","at","my","be","by","that","to","from","com","org","so")
     } else {
       STOP_WORDS <- StopWords
     }
