@@ -4,9 +4,8 @@
 \alias{GenTSAnomVars}
 \title{GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure}
 \usage{
-GenTSAnomVars(data, GroupVar1 = "BADGE_NBR", GroupVar2 = NULL,
-  DateVar = "DAY_DATE", High = 1.96, Low = -1.96,
-  KeepAllCols = FALSE)
+GenTSAnomVars(data, GroupVar1 = "SKU", GroupVar2 = NULL,
+  DateVar = "DATE", High = 1.96, Low = -1.96, KeepAllCols = FALSE)
 }
 \arguments{
 \item{data}{the source residuals data.table}

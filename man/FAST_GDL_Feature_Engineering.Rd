@@ -2,12 +2,12 @@
 % Please edit documentation in R/Adrian_Antico_Modeling_Tools_Library.R
 \name{FAST_GDL_Feature_Engineering}
 \alias{FAST_GDL_Feature_Engineering}
-\title{An Automated Scoring Feature Engineering Function}
+\title{An Fast Automated Feature Engineering Function}
 \usage{
 FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
   periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-  statsFUNs = c("mean", "median", "sd", "min", "max"),
-  statsNames = c("mean", "median", "sd", "min", "max"),
+  statsFUNs = c("mean", "median", "sd", "quantile85", "quantile95"),
+  statsNames = c("mean", "median", "sd", "quantile85", "quantile95"),
   targets = c("ScaledConsumption"), groupingVars = c("BADGE_NBR"),
   sortDateName = "DAY_DATE", timeDiffTarget = NULL,
   timeAgg = "hours", WindowingLag = 1, Type = "Lag", Timer = FALSE,
@@ -51,7 +51,7 @@ FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
 data.table of original data plus newly created features
 }
 \description{
-For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
+For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 }
 \examples{
 quick_model <- FAST_GDL_Feature_Engineering(quick_model,
