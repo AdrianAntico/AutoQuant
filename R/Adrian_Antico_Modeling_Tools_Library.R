@@ -1,4 +1,5 @@
 # Functions in order:
+#   CountSingleDigits
 #   GenTSAnomVars
 #   ResidualOutliers
 #   GLRM_KMeans_Col
@@ -19,6 +20,21 @@
 #   FAST_GDL_Feature_Engineering
 #   AutoH20Modeler
 #   Word2VecModel
+
+#' CountSingleDigits counts the number of digits in a string
+#'
+#' @author Adrian Antico at RemixInstitute.com
+#' @param data the source data.table
+#' @param col the column number with the string to evaluate
+#' @examples
+#' VIMP[, variable2 := ifelse(CountSingleDigits(VIMP,1) == 2, substr(variable, 1,7), substr(variable, 1,6))]
+#' @return The original data.table with the added columns merged in
+#' @export
+CountSingleDigits <- function(data, col) {
+  unlist(lapply(substr(data[[col]],1,3), function(x) {
+    nchar(gsub("[^0-9]+", "", x))
+    }))
+}
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
 #'
