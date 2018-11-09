@@ -33,7 +33,7 @@
 CountSingleDigits <- function(data, col) {
   unlist(lapply(substr(data[[col]],1,3), function(x) {
     nchar(gsub("[^0-9]+", "", x))
-    }))
+  }))
 }
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
@@ -62,9 +62,9 @@ CountSingleDigits <- function(data, col) {
 #' @return The original data.table with the added columns merged in
 #' @export
 GenTSAnomVars <- function(data,
-                          GroupVar1   = "BADGE_NBR",
+                          GroupVar1   = "SKU",
                           GroupVar2   = NULL,
-                          DateVar     = "DAY_DATE",
+                          DateVar     = "DATE",
                           High        = 1.96,
                           Low         = -1.96,
                           KeepAllCols = FALSE) {
@@ -121,7 +121,7 @@ GenTSAnomVars <- function(data,
 #' outliers <- stuff[[1]]
 #' model    <- stuff[[2]]
 #' resid    <- stuff[[3]]
-#' @return A data.table with outliers left joined to source data, the arima model, and residuals from the arima fit
+#' @return A data.table with outliers, the arima model, and residuals from the arima fit
 #' @export
 ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
@@ -281,8 +281,8 @@ GLRM_KMeans_Col <- function(data,
 #' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
 #' @param Ensemble set to TRUE if you want to utilize this functionality
 #' @examples
-#' data <- data.table(DateTime = as_date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - days(temp)][, temp := NULL]
+#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
 #'                    TargetName     = "Target",
@@ -390,16 +390,16 @@ AutoTS <- function(data,
   # 1)
   print("ARIMA FITTING")
   ARIMA_model <- tryCatch({forecast::auto.arima(y = dataTSTrain[, TargetName],
-                                     max.p = Lags,
-                                     max.q = Lags,
-                                     max.P = SLags,
-                                     max.Q = SLags,
-                                     max.d = 1,
-                                     max.D = 1,
-                                     ic = "bic",
-                                     lambda = TRUE,
-                                     biasadj = TRUE)},
-                         error = function(x) "empty")
+                                                max.p = Lags,
+                                                max.q = Lags,
+                                                max.P = SLags,
+                                                max.Q = SLags,
+                                                max.d = 1,
+                                                max.D = 1,
+                                                ic = "bic",
+                                                lambda = TRUE,
+                                                biasadj = TRUE)},
+                          error = function(x) "empty")
 
   # Collect Test Data for Model Comparison
   # 2)
@@ -431,11 +431,11 @@ AutoTS <- function(data,
                                      restrict = TRUE)
   } else {
     EXPSMOOTH_model <- tryCatch({forecast::ets(y = dataTSTrain[, TargetName],
-                                     model = "ZZZ",
-                                     allow.multiplicative.trend = TRUE,
-                                     restrict = TRUE,
-                                     lambda = TRUE,
-                                     biasadj = TRUE)},
+                                               model = "ZZZ",
+                                               allow.multiplicative.trend = TRUE,
+                                               restrict = TRUE,
+                                               lambda = TRUE,
+                                               biasadj = TRUE)},
                                 error = function(x) "empty")
   }
   # Collect Test Data for Model Comparison
@@ -505,7 +505,7 @@ AutoTS <- function(data,
   # 1)
   print("SPLINE FITTING")
   splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)},
-                           error = function(x) "empty")
+                            error = function(x) "empty")
 
   if(tolower(class(splinef_model)) == "forecast") {
     i <- i + 1
@@ -531,9 +531,9 @@ AutoTS <- function(data,
   # 1)
   print("TBATS FITTING")
   TBATS_model <- tryCatch({forecast::tbats(y = dataTSTrain[, TargetName],
-                                 use.arma.errors = TRUE,
-                                 lambda = TRUE,
-                                 biasadj = TRUE)},
+                                           use.arma.errors = TRUE,
+                                           lambda = TRUE,
+                                           biasadj = TRUE)},
                           error = function(x) "empty")
 
   if(class(TBATS_model)[1] == "tbats" | class(TBATS_model)[1] == "bats") {
@@ -560,8 +560,8 @@ AutoTS <- function(data,
   # 1)
   print("TSLM FITTING")
   TSLM_model <- tryCatch({forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                               lambda = TRUE,
-                               biasadj = TRUE)},
+                                         lambda = TRUE,
+                                         biasadj = TRUE)},
                          error = function(x) "empty")
 
   if(tolower(class(TSLM_model)[1]) == "tslm") {
@@ -570,14 +570,14 @@ AutoTS <- function(data,
     # 2)
     data_test_TSLM <- copy(data_test)
     data_test_TSLM[, ':=' (Target = as.numeric(Target),
-                            ModelName = rep("TSLM",HoldOutPeriods),
-                            FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
+                           ModelName = rep("TSLM",HoldOutPeriods),
+                           FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
 
     # Add Evaluation Columns
     # 3)
     data_test_TSLM[, ':=' (Resid = get(TargetName) - FC_Eval,
-                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
+                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
 
     # Collect model filename
     EvalList[[i]] <- data_test_TSLM
@@ -657,7 +657,7 @@ AutoTS <- function(data,
       }
     }
   } else {
-    if(BestModel == "PROPHET") {
+    if(Modelname == "PROPHET") {
       PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
       FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
     } else {
@@ -2087,7 +2087,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
 #' An Fast Automated Feature Engineering Function
 #'
-#' For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
+#' For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico at RemixInstitute.com
 #' @param data Core instruction file for automation
 #' @param lags The ceiling amount of memory H20 will utilize
@@ -3653,7 +3653,7 @@ AutoH20Modeler <- function(Construct,
 #' For NLP work
 #'
 #' This function tokenizes data
-#' @author Adrian Antico
+#' @author Adrian Antico at RemixInstitute.com
 #' @param sentences Source data table to merge vects onto
 #' @param stop.words A string name for the column to convert via word2vec
 #' @export
@@ -3682,11 +3682,16 @@ tokenizeH20 <- function(data3) {
 #' @param StopWords For H20 word2vec model
 #' @examples
 #'Word2VecModel(data,
-#'              stringCol = "Comment",
+#'              stringCol     = "Comment",
 #'              KeepStringCol = FALSE,
-#'              model_path = getwd(),
-#'              vects = 50,
-#'              SaveStopWords = FALSE)
+#'              model_path    = getwd(),
+#'              ModelID       = "bla",
+#'              vects         = 50,
+#'              SaveStopWords = FALSE,
+#'              MinWords      = 1,
+#'              WindowSize    = 1,
+#'              Epochs        = 25,
+#'              StopWords     = NULL)
 #' @export
 Word2VecModel <- function(datax,
                           stringCol     = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
@@ -3772,4 +3777,5 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
+
 
