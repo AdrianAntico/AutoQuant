@@ -61,6 +61,8 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{SaveModel}{Set to TRUE to save model}
 
 \item{SaveModelType}{Set to standard for h2o file, mojo for mojo file}
+
+\item{PredsAllData}{Set to TRUE to export all data (train + validate) with predicted values}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
@@ -112,7 +114,8 @@ Construct <- data.table(Targets         = "target",
                        fpProfit        = rep(-1,N),
                        fnProfit        = rep(-5,N),
                        SaveModel       = rep("FALSE",N),
-                       SaveModelType   = rep("Mojo",N))
+                       SaveModelType   = rep("Mojo",N),
+                       PredsAllData    = TRUE)
 AutoH20Modeler(Construct,
               max_memory = "28G",
               ratios = 0.75,
