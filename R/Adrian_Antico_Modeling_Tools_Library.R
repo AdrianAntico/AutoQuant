@@ -1,26 +1,3 @@
-# Functions in order:
-#   CountSingleDigits
-#   GenTSAnomVars
-#   ResidualOutliers
-#   GLRM_KMeans_Col
-#   AutoTS
-#   tempDatesFun
-#   SimpleCap
-#   RemixTheme
-#   ModelDataPrep
-#   threshOptim
-#   nlsModelFit
-#   multiplot
-#   ChartTheme
-#   percRank
-#   ParDepCalPlots
-#   EvalPlot
-#   GDL_Feature_Engineering
-#   Scoring_GDL_Feature_Engineering
-#   FAST_GDL_Feature_Engineering
-#   AutoH20Modeler
-#   Word2VecModel
-
 #' CountSingleDigits counts the number of digits in a string
 #'
 #' @author Adrian Antico at RemixInstitute.com
@@ -2524,6 +2501,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param fnProfit False Negative Profit amount
 #' @param SaveModel Set to TRUE to save model
 #' @param SaveModelType Set to standard for h2o file, mojo for mojo file
+#' @param PredsAllData Set to TRUE to export all data (train + validate) with predicted values
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @examples
 #'Correl <- 0.85
@@ -2563,7 +2541,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                        fpProfit        = rep(-1,N),
 #'                        fnProfit        = rep(-5,N),
 #'                        SaveModel       = rep("FALSE",N),
-#'                        SaveModelType   = rep("Mojo",N))
+#'                        SaveModelType   = rep("Mojo",N),
+#'                        PredsAllData    = TRUE)
 #'AutoH20Modeler(Construct,
 #'               max_memory = "28G",
 #'               ratios = 0.75,
@@ -3122,6 +3101,8 @@ AutoH20Modeler <- function(Construct,
           preds <- h2o.predict(best_model, newdata = validate)[,1]
           if(Construct[i,14][[1]] == "All") {
             predsPD <- h2o.predict(best_model, newdata = data_h2o)[,1]
+            PredsPD <- as.data.table(predsPD)
+            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
           } else if (Construct[i,14][[1]] == "Train") {
             predsPD <- h2o.predict(best_model, newdata = train)[,1]
           } else if (Construct[i,14][[1]] == "Validate") {
@@ -3156,6 +3137,8 @@ AutoH20Modeler <- function(Construct,
           preds <- h2o.predict(bl_model, newdata = validate)[,1]
           if(Construct[i,14][[1]] == "All") {
             predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,1]
+            PredsPD <- as.data.table(predsPD)
+            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
           } else if (Construct[i,14][[1]] == "Train") {
             predsPD <- h2o.predict(bl_model, newdata = train)[,1]
           } else if (Construct[i,14][[1]] == "Validate") {
@@ -3219,6 +3202,8 @@ AutoH20Modeler <- function(Construct,
           preds <- h2o.predict(best_model, newdata = validate)[,3]
           if(Construct[i,14][[1]] == "All") {
             predsPD <- h2o.predict(best_model, newdata = data_h2o)[,3]
+            PredsPD <- as.data.table(predsPD)
+            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
           } else if (Construct[i,14][[1]] == "Train") {
             predsPD <- h2o.predict(best_model, newdata = train)[,3]
           } else if (Construct[i,14][[1]] == "Validate") {
@@ -3280,6 +3265,8 @@ AutoH20Modeler <- function(Construct,
           preds <- h2o.predict(bl_model, newdata = validate)[,3]
           if(Construct[i,14][[1]] == "All") {
             predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+            PredsPD <- as.data.table(predsPD)
+            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
           } else if (Construct[i,14][[1]] == "Train") {
             predsPD <- h2o.predict(bl_model, newdata = train)[,3]
           } else if (Construct[i,14][[1]] == "Validate") {
@@ -3334,6 +3321,8 @@ AutoH20Modeler <- function(Construct,
         preds <- h2o.predict(bl_model, newdata = validate)[,3]
         if(tolower(Construct[i,14][[1]]) == "all") {
           predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+          PredsPD <- as.data.table(predsPD)
+          fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
         } else if (tolower(Construct[i,14][[1]]) == "train") {
           predsPD <- h2o.predict(bl_model, newdata = train)[,3]
         } else if (tolower(Construct[i,14][[1]]) == "validate") {
@@ -3344,6 +3333,8 @@ AutoH20Modeler <- function(Construct,
         preds <- h2o.predict(bl_model, newdata = validate)[,1]
         if(tolower(Construct[i,14][[1]]) == "all") {
           predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,1]
+          PredsPD <- as.data.table(predsPD)
+          fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
         } else if (tolower(Construct[i,14][[1]]) == "train") {
           predsPD <- h2o.predict(bl_model, newdata = train)[,1]
         } else if (tolower(Construct[i,14][[1]]) == "validate") {
@@ -3777,5 +3768,3 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
-
-
