@@ -1,3 +1,42 @@
+#' NumWeekdays is a vectorized function to count up the number of weekdays in a range of dates
+#'
+#' @author Adrian Antico
+#' @param a The start date
+#' @param b The end date
+#' @examples
+#' data[, Weekdaycounts := NumWeekdays(Date1, Date2)]
+#' @return The counts either as a scalar or a column in your table
+#' @export
+NumWeekdays <- Vectorize(function(a, b) {
+  sum(!weekdays(seq(a, b, "days")) %in% c("Saturday", "Sunday"))
+})
+
+#' HolidayCounts is a vectorized function to count up the number of holidays in a range of dates
+#'
+#' @author Adrian Antico
+#' @param a The start date
+#' @param b The end date
+#' @examples
+#' data[, holidays := HolidayCounts(Date1, Date2)]
+#' @return The counts either as a scalar or a column in your table
+#' @export
+HolidayCounts <- Vectorize(function(a,b) {
+  d <- seq(a, b, 1)
+  sum(chron::is.holiday(d))
+})
+
+#' PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
+#'
+#' @author Adrian Antico
+#' @param N The number of objects to display
+#' @examples
+#' PrintObjectsSize(N = 10)
+#' @return The objects in your environment and their sizes
+#' @export
+PrintObjectsSize <- function(N = 10) {
+  print(sort(-sapply(ls(),function(x){object.size(get(x))}))[1:N]/1024/1024)
+}
+
 #' CountSingleDigits counts the number of digits in a string
 #'
 #' @author Adrian Antico at RemixInstitute.com
@@ -17,7 +56,7 @@ CountSingleDigits <- function(data, col) {
 #'
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data the source residuals data.table
 #' @param GroupVar1 this is a group by variable
 #' @param GroupVar2 this is another group by variable
@@ -86,7 +125,7 @@ GenTSAnomVars <- function(data,
 #'
 #' ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data the source residuals data.table
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
@@ -148,7 +187,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #'
 #' GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data is the source time series data.table
 #' @param GridTuneGLRM If you want to grid tune the glrm model
 #' @param nthreads set based on number of threads your machine has available
@@ -247,7 +286,7 @@ GLRM_KMeans_Col <- function(data,
 #'
 #' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts. Ensemble is also a feature where a randomForest model is build on the model outputs to utilize all in a more accuracte forecast.
 #'
-#' @author Adrian Antico and DougVegas at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data is the source time series data.table
 #' @param TargetName is the name of the dependent variable in your data.table
 #' @param DateName is the name of the date column in your data.table
@@ -652,7 +691,7 @@ AutoTS <- function(data,
 #'
 #' tempDatesFun takes the Excel datetime column, which imports as character, and converts it into a date type
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @examples
 #' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 #' Cdata[, DAY_DATE := as.Date(DAY_DATE, "%m/%d/%Y")]
@@ -666,7 +705,7 @@ tempDatesFun <- Vectorize(function(x) {
 #'
 #' SimpleCap function is for capitalizing the first letter of words (need I say more?)
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @examples
 #' x <- adrian
 #' x <- SimpleCap(x)
@@ -721,7 +760,7 @@ RemixTheme <- function(){
 #'
 #' This function replaces inf values with NA, converts characters to factors, and imputes with constants
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
 #' @param data This is your source data you'd like to modify
@@ -775,7 +814,7 @@ ModelDataPrep <- function(data,
 #'
 #' This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data data is the data table you are building the modeling on
 #' @param actTar The column number where the actual target variable is located (in binary form)
 #' @param predTar The column number where the predicted values are located
@@ -838,7 +877,7 @@ threshOptim <- function(data,
 #'
 #' This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data Data is the data table you are building the modeling on
 #' @param y Y is the target variable name in quotes
 #' @param x X is the independent variable name in quotes
@@ -990,7 +1029,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #'
 #' Sick of copying this one into your code? Well, not anymore.
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param plotlist This is the list of your charts
 #' @param rows This is the number of rows in your multiplot
 #' @param cols This is the number of columns in your multiplot
@@ -1042,7 +1081,7 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #'
 #' This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param Background This is the color of the background on the chart
 #' @param OtherColor This is the color for borders and text
 #' @examples
@@ -1074,7 +1113,7 @@ ChartTheme <- function(BackGround = "lightsteelblue1",
 #'
 #' This function computes percentile ranks for each row in your data like Excel's PERCENT_RANK
 #'
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param x X is your variable of interest
 #' @examples
 #' percRank(x)
@@ -1085,7 +1124,7 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #' Function automatically builds partial dependence calibration plots for model evaluation
 #'
 #' This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #'
 #' @param data Data containing predicted values and actual values for comparison
 #' @param PredColName String representation of the column name with predicted values from model
@@ -1243,7 +1282,7 @@ ParDepCalPlots <- function(data,
 #' Function automatically builds calibration plots for model evaluation
 #'
 #' This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data Data containing predicted values and actual values for comparison
 #' @param PredColName String representation of column name with predicted values from model
 #' @param ActColName String representation of column name with actual values from model
@@ -1334,7 +1373,7 @@ EvalPlot <- function(data,
 #' An Automated Feature Engineering Function
 #'
 #' Builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data Core instruction file for automation
 #' @param lags The ceiling amount of memory H20 will utilize
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
@@ -1687,7 +1726,7 @@ GDL_Feature_Engineering <- function(data,
 #' An Automated Scoring Feature Engineering Function
 #'
 #' For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data Core instruction file for automation
 #' @param lags The ceiling amount of memory H20 will utilize
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
@@ -2065,7 +2104,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' An Fast Automated Feature Engineering Function
 #'
 #' For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param data Core instruction file for automation
 #' @param lags The ceiling amount of memory H20 will utilize
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
@@ -2473,7 +2512,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' 5. Evaluation: Generates partial dependence calibration plots (and boxplots for regression) for the winning model
 #' 6. Evaluation: Generates variable importance tables and a table of non-important features
 #' 7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @param Construct Core instruction file for automation
 #' @param max_memory The ceiling amount of memory H20 will utilize
 #' @param ratios The percentage of train samples from source data (remainder goes to validation set)
@@ -3717,7 +3756,7 @@ Word2VecModel <- function(datax,
 
     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
     data[,':=' (TEMP=gsub("  ", " ", data[[string]]))]
-    data[,':=' (TEMP=gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘", "", TEMP))]
+    data[,':=' (TEMP=gsub("'|\"|'|"|"|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'", "", TEMP))]
     data2 <- data[, "TEMP"]
 
     # Tokenize
