@@ -3290,7 +3290,7 @@ AutoH20Modeler <- function(Construct,
             Thresh <<- temp[[1]]
             Label <<- "CS"
           }
-          set(grid_tuned_paths, i = i, j = 5, value = Thresh)
+          set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
 
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(bl_model))
