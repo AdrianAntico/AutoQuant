@@ -1,3 +1,47 @@
+#' DummifyDT creates dummy variables for the selected columns
+#'
+#' @author Adrian Antico
+#' @param data the data set to run the micro auc on
+#' @param cols a vector with the names of the columns you wish to dichotomize
+#' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
+#' @examples
+#' cols <- c("ColumnA")
+#' data <- DummifyDT(data, cols)
+#' @return data table with new dummy variables columns and optionally removes base columns
+#' @export
+# Dummify meters
+DummifyDT <- function(data, cols, KeepBaseCols = TRUE) {
+  for (i in seq_along(cols)) {
+    inds <- unique(data[[eval(cols[i])]])
+    data[, paste0(eval(cols[i]),inds) := lapply(inds, function(x) ifelse(noquote(eval(cols[i])) == x,1,0))]
+    if(!KeepBaseCols) data[, eval(cols[i]) := NULL]
+  }
+  return(data)
+}
+
+#' H20MultinomialAUC computes the micro auc from a multinomial model
+#'
+#' @author Adrian Antico
+#' @param validate the data set to run the micro auc on
+#' @param best_model the model object you wish to test
+#' @examples
+#' auc_val <- H20MultinomialAUC(validate, best_model)
+#' @return Micro AUC
+#' @export
+H20MultinomialAUC <- function(validate, best_model, targetColNum = 1, targetName = "bla") {
+  xx <- as.data.table(h2o.cbind(validate[,targetColNum],h2o.predict(best_model, newdata = validate)))
+  xx[, predict := as.character(predict)]
+  xx[, vals := 0.5]
+  z <- ncol(xx)
+  col <- targetName
+  for (l in 1:nrow(xx)) {
+    cols <- xx[l, get(col)][[1]]
+    valss <- xx[l, ..cols][[1]]
+    set(xx, l, j = z, value = valss)
+  }
+  return(round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(xx$target, xx$vals)$auc, "\\d+\\.*\\d*"))),4))
+}
+
 #' NumWeekdays is a vectorized function to count up the number of weekdays in a range of dates
 #'
 #' @author Adrian Antico
