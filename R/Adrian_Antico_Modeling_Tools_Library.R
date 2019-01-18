@@ -14,6 +14,7 @@ DummifyDT <- function(data, cols, KeepBaseCols = TRUE) {
   for (i in seq_along(cols)) {
     inds <- unique(data[[eval(cols[i])]])
     data[, paste0(eval(cols[i]),inds) := lapply(inds, function(x) ifelse(noquote(eval(cols[i])) == x,1,0))]
+    data[, paste0(eval(cols[i]),"_Base") := 0]
     if(!KeepBaseCols) data[, eval(cols[i]) := NULL]
   }
   return(data)
