@@ -1,6 +1,6 @@
-# R_Modeling_Tools
+R_Modeling_Tools
 
-##### Supervised Learning Functions: 
+Supervised Learning Functions: 
 1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, evolutionary grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) with numeric and factor variables without the need for one-hot-encoding.
     2. RandomForest
     3. GBM
@@ -26,24 +26,24 @@
     12. Weibull
     13. Polynomial regression or monotonic regression
 
-##### Unsupervised Learning Functions: 
+Unsupervised Learning Functions: 
 4. **GenTSAnomVars**: NEED TO MODIFY TO ENABLE ROLLING STATS VERSUS CUMULATIVE FROM TIME INCEPTION (or offer both) - (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 5. **ResidualOutliers**: (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 6. **GLRM_KMeans_Col**: (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a K-Optimal searching K-Means algorithm
 
-##### Feature Engineering Functions: 
+Feature Engineering Functions: 
 7. **FAST_GDL_Feature_Engineering**: Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set.
 8. **GDL_Feature_Engineering**: Generate a wider set of features (similar in structure to FAST_GDL) using any aggregation statistic for the rolling stats.
 9. **Scoring_GDL_Feature_Engineering**: Generate the model features from FAST_GDL or GDL for scoring purposes when the scoring data is for forward looking predictions (not historical, which can be obtained from FAST_GDL or GDL).
 10. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring purposes.
 11. **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
 
-##### Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
+Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 12. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 13. **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
 14. **threshOptim**: Great for situations with assymetric costs across confusion matrix. Generate a cost-sensitive optimized threshold for classification models
 
-##### Utilities and Misc. Functions:
+Utilities and Misc. Functions:
 15. CountSingleDigits - From a project. Can probably delete.
 16. tokenizeH20 - Tokenize and H20 string column.
 17. tempDatesFun - Special case for character conversion to date when importing from Excel.
@@ -53,3 +53,7 @@
 21. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
 22. multiplot - Useful for displaying multiple plots in a single pane.
 23. PrintObjectsSize - print out objects and their sizes that are in the envrionment
+24. NumWeekdays - counts up the number of weekdays between two dates, inclusive
+25. NumHolidays - counts up the number of holidays between two dates, inclusive
+26. H20MultinomialAUC - computes micro auc for a multinomial model
+27. DummifyDT - dichotomizes any number of columns in a data.table with the option to remove the original columns
