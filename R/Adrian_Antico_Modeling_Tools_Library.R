@@ -2667,7 +2667,7 @@ AutoH20Modeler <- function(Construct,
   j = 0
   for (i in 1:nrow(Construct)) {
     # Algorithm specific
-    if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest")) {
+    if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest","automl")) {
 
       # GBM and RF loss functions existence
       if (!(tolower(Construct[i,3][[1]]) %in% c("auto","deviance","mse", "rmse", "mae", "rmsle", "auc", "lift_top_group","misclassification", "mean_per_class_error","logloss"))) {
@@ -2854,6 +2854,21 @@ AutoH20Modeler <- function(Construct,
     validate       <- data_train[[2]]
     target         <- eval(parse(text = paste0(Construct[i,8][[1]])))
     features       <- eval(parse(text = paste0(Construct[i,9][[1]])))
+    XGB            <- h2o.xgboost.available()
+    if (XGB) {
+      if (tolower(Construct[i,2][[1]]) != "quantile") {
+        ModelExclude   <- NULL
+      } else {
+        ModelExclude   <- c("XGBoost","GLM","DRF")
+      }
+    } else {
+      if (tolower(Construct[i,2][[1]]) != "quantile") {
+        ModelExclude   <- c("XGBoost")
+      } else {
+        ModelExclude   <- c("XGBoost","GLM","DRF")
+      }
+    }
+
     N              <- length(features)
     P5             <- 2^(-1/5)
     P4             <- 2^(-1/4)
@@ -2960,8 +2975,8 @@ AutoH20Modeler <- function(Construct,
                                min_split_improvement            = c(0,1e-8,1e-6,1e-4),
                                histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
         }
-      } else {
-        stop("This error should not occur")
+      } else if (tolower(Construct[i,6][[1]]) == "automl"){
+          print("automl is preset with tuning parameters")
       }
     }
 
@@ -3047,18 +3062,32 @@ AutoH20Modeler <- function(Construct,
                            y                    = target,
                            training_frame       = train,
                            validation_frame     = validate,
-                           #distribution         = Construct[i,2][[1]],
                            max_runtime_secs     = 3600,
                            stopping_rounds      = 5,
                            stopping_tolerance   = 1e-4,
                            stopping_metric      = StoppingMetric,
                            score_tree_interval  = 10,
                            seed                 = 1234)
+        } else if (tolower(Construct[i,6][[1]]) == "automl") {
+          aml <- h2o.automl(x                  = features,
+                            y                  = target,
+                            training_frame     = train,
+                            validation_frame   = validate,
+                            max_models         = 30,
+                            max_runtime_secs   = 3600,
+                            stopping_metric    = StoppingMetric,
+                            stopping_tolerance = 1e-4,
+                            stopping_rounds    = 10,
+                            project_name       = "TestAML",
+                            exclude_algos      = ModelExclude,
+                            sort_metric        = StoppingMetric)
         }
       }
 
       # Store all models built sorted by metric
-      if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","multinomial")) {
+      if (tolower(Construct[i,6][[1]]) == "automl") {
+        Grid_Out <- h2o.getAutoML(project_name = "TestAML")
+      } else if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","multinomial")) {
         Decreasing = TRUE
         Grid_Out   <- h2o.getGrid(grid_id = Construct[i,5][[1]], sort_by = StoppingMetric, decreasing = Decreasing)
       } else {
@@ -3067,7 +3096,11 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Store best model
-      best_model <- h2o.getModel(Grid_Out@model_ids[[1]])
+      if (tolower(Construct[i,6][[1]]) == "automl") {
+        best_model <- Grid_Out@leader
+      } else {
+        best_model <- h2o.getModel(Grid_Out@model_ids[[1]])
+      }
 
       # Collect accuracy metric on validation data
       if(tolower(Construct[i,3][[1]]) == "crossentropy") {
@@ -3085,15 +3118,33 @@ AutoH20Modeler <- function(Construct,
 
     # Check to see if quantile is selected
     # Choose model
-
-    if(tolower(Construct[i,2][[1]]) == "quantile") {
-      if(tolower(Construct[i,6][[1]]) == "gbm") {
+    if(tolower(Construct[i,6][[1]]) != "automl") {
+      if(tolower(Construct[i,2][[1]]) == "quantile") {
+        if(tolower(Construct[i,6][[1]]) == "gbm") {
+          bl_model <- h2o.gbm(x                = features,
+                              y                = target,
+                              training_frame   = train,
+                              validation_frame = validate,
+                              distribution     = Construct[i,2][[1]],
+                              quantile_alpha   = Construct[i,4][[1]],
+                              model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
+                              ntrees           = BL_Trees)
+        } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
+          bl_model <- h2o.deeplearning(x                = features,
+                                       y                = target,
+                                       hidden           = c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
+                                       training_frame   = train,
+                                       validation_frame = validate,
+                                       distribution     = Construct[i,2][[1]],
+                                       model_id         = paste0("BL_DL_",Construct[i,5][[1]]),
+                                       quantile_alpha   = Construct[i,4][[1]])
+        }
+      } else if (tolower(Construct[i,6][[1]]) == "gbm") {
         bl_model <- h2o.gbm(x                = features,
                             y                = target,
                             training_frame   = train,
                             validation_frame = validate,
                             distribution     = Construct[i,2][[1]],
-                            quantile_alpha   = Construct[i,4][[1]],
                             model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
                             ntrees           = BL_Trees)
       } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
@@ -3102,49 +3153,33 @@ AutoH20Modeler <- function(Construct,
                                      hidden           = c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
                                      training_frame   = train,
                                      validation_frame = validate,
-                                     distribution     = Construct[i,2][[1]],
                                      model_id         = paste0("BL_DL_",Construct[i,5][[1]]),
-                                     quantile_alpha   = Construct[i,4][[1]])
+                                     distribution     = Construct[i,2][[1]])
+      } else if (tolower(Construct[i,6][[1]]) == "randomforest") {
+        bl_model <- h2o.randomForest(x                = features,
+                                     y                = target,
+                                     training_frame   = train,
+                                     validation_frame = validate,
+                                     #distribution     = Construct[i,2][[1]],
+                                     model_id         = paste0("BL_RF_",Construct[i,5][[1]]),
+                                     ntrees           = BL_Trees)
       }
-    } else if (tolower(Construct[i,6][[1]]) == "gbm") {
-      bl_model <- h2o.gbm(x                = features,
-                          y                = target,
-                          training_frame   = train,
-                          validation_frame = validate,
-                          distribution     = Construct[i,2][[1]],
-                          model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
-                          ntrees           = BL_Trees)
-    } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-      bl_model <- h2o.deeplearning(x                = features,
-                                   y                = target,
-                                   hidden           = c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
-                                   training_frame   = train,
-                                   validation_frame = validate,
-                                   model_id         = paste0("BL_DL_",Construct[i,5][[1]]),
-                                   distribution     = Construct[i,2][[1]])
-    } else if (tolower(Construct[i,6][[1]]) == "randomforest") {
-      bl_model <- h2o.randomForest(x                = features,
-                                   y                = target,
-                                   training_frame   = train,
-                                   validation_frame = validate,
-                                   #distribution     = Construct[i,2][[1]],
-                                   model_id         = paste0("BL_RF_",Construct[i,5][[1]]),
-                                   ntrees           = BL_Trees)
-    }
 
-    # Collect accuracy metric on validation data
-    if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-      if(tolower(Construct[i,2][[1]]) == "multinomial") {
-        dd <- h2o.logloss(h2o.performance(bl_model, valid = TRUE))
+      # Collect accuracy metric on validation data
+      if(tolower(Construct[i,3][[1]]) == "crossentropy") {
+        if(tolower(Construct[i,2][[1]]) == "multinomial") {
+          dd <- h2o.logloss(h2o.performance(bl_model, valid = TRUE))
+        } else {
+          dd <- h2o.auc(h2o.performance(bl_model, valid = TRUE))
+        }
       } else {
-        dd <- h2o.auc(h2o.performance(bl_model, valid = TRUE))
+        dd <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(bl_model, valid = TRUE))")))
       }
-    } else {
-      dd <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(bl_model, valid = TRUE))")))
+
+      # Store results in metadata file
+      set(grid_tuned_paths, i = i, j = 4L, value = dd)
     }
 
-    # Store results in metadata file
-    set(grid_tuned_paths, i = i, j = 4L, value = dd)
 
     ######################################
     # Model Evaluation & Saving
@@ -3154,7 +3189,44 @@ AutoH20Modeler <- function(Construct,
     # Check to see if Distribution is multinomial
     # Proceed
 
-    if (Construct[i,11][[1]]) {
+    if(tolower(Construct[i,6][[1]] == "automl")) {
+      if(Construct[i,21][[1]] == TRUE) {
+        if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
+        if(tolower(Construct[i,22][[1]]) == "standard") {
+          save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
+          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+        } else {
+          save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
+          h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
+          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
+          set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
+          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+        }
+      }
+
+      # Save VarImp and VarNOTImp
+      VIMP <- as.data.table(h2o.varimp(best_model))
+      save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
+      NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+      if (length(NIF) > 0) {
+        save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+      }
+
+      # Gather predicted values
+      preds <- h2o.predict(best_model, newdata = validate)[,1]
+      if(Construct[i,14][[1]] == "All") {
+        predsPD <- h2o.predict(best_model, newdata = data_h2o)[,1]
+        PredsPD <- as.data.table(predsPD)
+        fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
+      } else if (Construct[i,14][[1]] == "Train") {
+        predsPD <- h2o.predict(best_model, newdata = train)[,1]
+      } else if (Construct[i,14][[1]] == "Validate") {
+        predsPD <- h2o.predict(best_model, newdata = validate)[,1]
+      }
+    }
+
+    if (Construct[i,11][[1]] == TRUE & tolower(Construct[i,6][[1]]) != "automl") {
       if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) | tolower(Construct[i,3][[1]]) == "logloss") {
         if(cc < dd) {
           # Save model
@@ -3358,7 +3430,7 @@ AutoH20Modeler <- function(Construct,
           }
         }
       }
-    } else {
+    } else if (tolower(Construct[i,6][[1]]) != "automl") {
       # Save model
       if(Construct[i,21][[1]] == TRUE) {
         if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
@@ -3592,39 +3664,14 @@ AutoH20Modeler <- function(Construct,
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
       }
 
-      # IF WE WANT MULTINOMIAL AUC THE BELOW CAN GET YOU THERE
-      # if (Construct[i,11][[1]]) {
-      #   xx <- as.data.table(h2o.cbind(validate[,1],h2o.predict(best_model, newdata = validate)))
-      #   xx[, predict := as.character(predict)]
-      #   xx[, vals := 0.5]
-      #   z <- ncol(xx)
-      #   col <- Construct[i,1][[1]]
-      #   for (l in 1:nrow(xx)) {
-      #     cols <- xx[l, get(col)][[1]]
-      #     valss <- xx[l, ..cols][[1]]
-      #     set(xx, l, j = z, value = valss)
-      #   }
-      #   aucM <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(xx$target, xx$vals)$auc, "\\d+\\.*\\d*"))),4)
-      #   set(grid_tuned_paths, i = i, j = 4, value = aucM)
-      # } else {
-      #   xx <- as.data.table(h2o.cbind(validate[,1],h2o.predict(bl_model, newdata = validate)))
-      #   xx[, predict := as.character(predict)]
-      #   xx[, vals := 0.5]
-      #   z <- ncol(xx)
-      #   col <- Construct[i,1][[1]]
-      #   for (l in 1:nrow(xx)) {
-      #     cols <- xx[l, get(col)][[1]]
-      #     valss <- xx[l, ..cols][[1]]
-      #     set(xx, l, j = z, value = valss)
-      #   }
-      #   aucM <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(xx$target, xx$vals)$auc, "\\d+\\.*\\d*"))),4)
-      #   set(grid_tuned_paths, i = i, j = 4, value = aucM)
-      # }
+      # Multinomial AUC function here::
+
     }
 
     # Partial dependence calibration plots
     if(Construct[i,13][[1]] >= 1) {
-      cols <- VIMP[1:Construct[i,13][[1]], 1][[1]]
+      rows <- nrow(VIMP)
+      cols <- VIMP[1:min(Construct[i,13][[1]],rows), 1][[1]]
       calibr <- list()
       boxplotr <- list()
       j <- 0
@@ -3697,7 +3744,9 @@ AutoH20Modeler <- function(Construct,
     if (Construct[i,11][[1]]) {
       h2o.rm(best_model)
     }
-    h2o.rm(bl_model)
+    if (Construct[i,6][[1]] != "automl") {
+      h2o.rm(bl_model)
+    }
     h2o.rm(preds)
     h2o.shutdown(prompt = FALSE)
 
