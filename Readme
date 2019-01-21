@@ -5,6 +5,7 @@ Supervised Learning Functions:
     2. RandomForest
     3. GBM
     4. Deeplearning
+    5. AutoML - includes DFR, XGBoost (if available), DL, GLM, GBM
 2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts, and evaluation metrics. 
     3. ARIFIMA: Auto Regressive Fractional Integrated Moving Average
     4. ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
