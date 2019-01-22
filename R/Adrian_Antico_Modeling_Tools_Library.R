@@ -11,11 +11,14 @@
 #' @export
 # Dummify meters
 DummifyDT <- function(data, cols, KeepBaseCols = TRUE) {
-  for (i in seq_along(cols)) {
-    inds <- unique(data[[eval(cols[i])]])
-    data[, paste0(eval(cols[i]),inds) := lapply(inds, function(x) ifelse(noquote(eval(cols[i])) == x,1,0))]
-    data[, paste0(eval(cols[i]),"_Base") := 0]
-    if(!KeepBaseCols) data[, eval(cols[i]) := NULL]
+  for (col in cols) {
+    setorderv(data, col, order = 1)
+    inds <- unique(data[[eval(col)]])
+    for (ind in inds) {
+      data[, (paste0(col,"_",ind)) := ifelse(get(col) == ind, 1, 0)]        
+    }
+    data[, paste0(col,"_Base") := 0]
+    if(!KeepBaseCols) data[, eval(col) := NULL]
   }
   return(data)
 }
