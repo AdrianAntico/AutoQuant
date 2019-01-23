@@ -3209,11 +3209,16 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Save VarImp and VarNOTImp
-      VIMP <- as.data.table(h2o.varimp(best_model))
-      save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
-      NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
-      if (length(NIF) > 0) {
-        save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+      # Save VarImp and VarNOTImp
+      if(best_model@algorithm != "stackedensemble") {
+        VIMP <- as.data.table(h2o.varimp(best_model))
+        save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
+        NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+        if (length(NIF) > 0) {
+          save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+        }
+      } else {
+        set(Construct, i = i, j = 13L, value = 0)
       }
 
       # Gather predicted values
