@@ -3578,7 +3578,7 @@ AutoH20Modeler <- function(Construct,
                          bucket      = 0.05,
                          aggrfun     = function(x) mean(x, na.rm = TRUE))
 
-        out1 <- out1 + geom_hline(yintercept = Thresh)
+        out1 <- tryCatch({out1 + geom_hline(yintercept = Thresh)}, error = function(x) out1)
         out1 <- out1 #+ geom_text(aes(x = interc, y = Thresh, label = Label, hjust = 1.75, angle = 90))
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
       } else {
