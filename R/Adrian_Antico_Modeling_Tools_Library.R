@@ -2642,15 +2642,17 @@ AutoH20Modeler <- function(Construct,
                            ratios,
                            BL_Trees,
                            nthreads,
-                           model_path) {
-
+                           model_path,
+                           MaxRuntimeSeconds = 3600,
+                           MaxModels = 30) {
+  
   ######################################
   # Error handling
   ######################################
-
+  
   # 1. Check for errors
   # 2. Replace values with proper case values
-
+  
   # ERROR PROCESS CHECKING
   # 1. Identify model type, record if not in supported model list
   # 2. Check to see if loss function is in supported loss function list for model types
@@ -2659,19 +2661,19 @@ AutoH20Modeler <- function(Construct,
   # 5. For regression, check to see if distribution type corresponds to correct option set for loss functions
   # 6. For quantile regression, ensure the model is in the available model list for quantile regression
   # 7. For quantile regression, ensure chosen quantiles are within 0 and 1
-
+  
   # REPLACING VALUES WITH PROPER CASE VALUES
   # 1. Store current value from Construct file
   # 2. Create data.table with current value repeated, lower case possible values, proper cased actual values
   # 3. Subset based on current value matching lower case value, and grabbing proper case value
   # 4. Replace current value for proper case value in Construct file
-
+  
   ErrorCollection <- data.table(Row = rep(-720,10000), Msg = "I like modeling")
   j = 0
   for (i in 1:nrow(Construct)) {
     # Algorithm specific
     if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest","automl")) {
-
+      
       # GBM and RF loss functions existence
       if (!(tolower(Construct[i,3][[1]]) %in% c("auto","deviance","mse", "rmse", "mae", "rmsle", "auc", "lift_top_group","misclassification", "mean_per_class_error","logloss"))) {
         j = j + 1
@@ -2685,7 +2687,7 @@ AutoH20Modeler <- function(Construct,
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 3L, value = ReplaceValue)
       }
-
+      
       # GBM and RF distributions
       if (!(tolower(Construct[i,2][[1]]) %in% c("auto","bernoulli","quasibinomial","multinomial","gaussian","poisson","gamma","tweedie","laplace","quantile","huber"))) {
         set(ErrorCollection, i = j, j = 1L, value = i)
@@ -2698,44 +2700,50 @@ AutoH20Modeler <- function(Construct,
         ReplaceValue2 <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 2L, value = ReplaceValue2)
       }
-
+      
       # Distribution and loss combos for non-regression
       if(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","multinomial") && !(tolower(Construct[i,3][[1]]) %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: AUC | logloss | AUTO | lift_top_group | misclassification | mean_per_class_error")))
       }
-
+      
       # Distribution and loss combos for regression
       if(tolower(Construct[i,2][[1]]) %in% c("gaussian","poisson","gamma","tweedie","laplace","quantile","huber") && !(tolower(Construct[i,3][[1]]) %in% c("auto","mse", "rmse", "mae", "rmsle"))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,2][[1]]," is not in list: AUTO | MSE | RMSE | MAE | RMSLE")))
       }
-
+      
       # Quantile Regression with GBM
       if(tolower(Construct[i,2][[1]]) %in% c("quantile") && (Construct[i,4][[1]] > 1 || Construct[i,4][[1]] < 0 || !is.numeric(Construct[i,4][[1]]))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantiles using ",Construct[i,6][[1]]," must be a number less than or equal to 1 AND greater than or equal to 0")))
       }
-
+      
       # RF Quantile regression fail
       if(tolower(Construct[i,6][[1]]) == "randomforest" && tolower(Construct[i,2][[1]]) == "quantile") {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression is only supported by GBM and Deeplearning models, not ",Construct[i,6][[1]]," models")))
       }
-
+      
       # Quantile regression loss metrics
       if(tolower(Construct[i,2][[1]]) == "quantile" && tolower(Construct[i,3][[1]]) != "mae") {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression is best supported by MAE when using ",Construct[i,6][[1]]," models")))
       }
-
+      
+      if(tolower(Construct[i,6][[1]]) == "automl" & Construct[i,11][[1]] != TRUE) {
+        j = j + 1
+        set(ErrorCollection, i = j, j = 1L, value = i)
+        set(ErrorCollection, i = j, j = 2L, value = c("using automl requires GridTune = TRUE"))
+      }
+      
     } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-
+      
       # Deeplearning loss functions
       if (!(tolower(Construct[i,3][[1]]) %in% c("automatic", "crossentropy", "quadratic","huber", "absolute", "quantile"))) {
         j = j + 1
@@ -2749,7 +2757,7 @@ AutoH20Modeler <- function(Construct,
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 3L, value = ReplaceVal)
       }
-
+      
       # Deeplearning distributions
       if (!(tolower(Construct[i,2][[1]]) %in% c("auto", "bernoulli","multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber"))) {
         j = j + 1
@@ -2763,42 +2771,42 @@ AutoH20Modeler <- function(Construct,
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 2L, value = ReplaceVal2)
       }
-
+      
       # Distribution and loss combos for non-regression
       if(tolower(Construct[i,2][[1]]) %in% c("bernoulli","multinomial") && !(tolower(Construct[i,3][[1]]) %in% c("automatic", "crossentropy"))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: Automatic | CrossEntropy")))
       }
-
+      
       # Distribution and loss combos for regression
       if(tolower(Construct[i,2][[1]]) %in% c("gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber") && !(tolower(Construct[i,3][[1]]) %in% c("automatic","quadratic","huber", "absolute", "quantile"))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: Automatic | Quadratic | Huber | Absolute | Quantile")))
       }
-
+      
       # Quantile regression loss metrics
       if(tolower(Construct[i,2][[1]]) == "quantile" && tolower(Construct[i,3][[1]]) != "quantile") {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression needs to use Quantile for the loss function with ",Construct[i,6][[1]]," models")))
       }
-
+      
       # Quantile Regression with DL
       if(tolower(Construct[i,2][[1]]) %in% c("quantile") && (Construct[i,4][[1]] > 1 || Construct[i,4][[1]] < 0 || !is.numeric(Construct[i,4][[1]]))) {
         j = j + 1
         set(ErrorCollection, i = j, j = 1L, value = i)
         set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantiles using ",Construct[i,6][[1]]," must be a number less than or equal to 1 AND greater than or equal to 0")))
       }
-
+      
     } else {
       j = j + 1
       set(ErrorCollection, i = j, j = 1L, value = i)
       set(ErrorCollection, i = j, j = 2L, value = c(paste0("Models supported are: GBM, randomForest, and deeplearning, while ",Construct[i,6][[1]]," is not")))
     }
   }
-
+  
   # Error stopping point and Construct file save
   ErrorCollection <- ErrorCollection[Row != -720]
   if(nrow(ErrorCollection) >= 1) {
@@ -2807,7 +2815,7 @@ AutoH20Modeler <- function(Construct,
   } else {
     save(Construct, file = paste0(model_path, "/Construct.Rdata"))
   }
-
+  
   # Set up grid_tuned_paths.R file
   if (file.exists(paste0(model_path, "/grid_tuned_paths.Rdata"))) {
     load(paste0(model_path,"/grid_tuned_paths.Rdata"))
@@ -2819,13 +2827,13 @@ AutoH20Modeler <- function(Construct,
                                    BinThresh = rep(1234.5678, nrow(Construct)),
                                    PathJar   = rep("a", nrow(Construct)))
   }
-
+  
   ######################################
   # Loop through model building
   ######################################
-
+  
   for(i in 1:nrow(Construct)) {
-
+    
     # No crossentropy stopping metric
     if(tolower(Construct[i,3][[1]]) == "crossentropy") {
       if(tolower(Construct[i,2][[1]]) == "multinomial") {
@@ -2836,21 +2844,21 @@ AutoH20Modeler <- function(Construct,
     } else {
       StoppingMetric = Construct[i,3][[1]]
     }
-
+    
     # Define grid tune search scheme in a named list
     search_criteria  <- list(strategy             = "RandomDiscrete",
-                             max_runtime_secs     = 3600,
-                             max_models           = 30,
+                             max_runtime_secs     = MaxRuntimeSeconds,
+                             max_models           = MaxModels,
                              seed                 = 1234,
                              stopping_rounds      = 10,
                              stopping_metric      = StoppingMetric,
                              stopping_tolerance   = 1e-3)
-
+    
     # Set up H20 environment instance
     Sys.sleep(10)
     h2o.init(nthreads = nthreads, max_mem_size = max_memory, enable_assertions = FALSE)
     data_h2o       <- eval(parse(text = paste0("as.h2o(",Construct[i,7][[1]],")")))
-
+    
     # Keep setting
     data_train     <- h2o.splitFrame(data_h2o, ratios = ratios)
     train          <- data_train[[1]]
@@ -2871,22 +2879,22 @@ AutoH20Modeler <- function(Construct,
         ModelExclude   <- c("XGBoost","GLM","DRF")
       }
     }
-
+    
     N              <- length(features)
     P5             <- 2^(-1/5)
     P4             <- 2^(-1/4)
     P3             <- 2^(-1/3)
     set(grid_tuned_paths, i = i, j = 1L, value = Construct[i,5][[1]])
-
+    
     ######################################
     # Hyperparameters
     ######################################
-
+    
     # 1. Check if GridTune is true
     # 2. Check to see which model is chosen
     # 3. Check to see if this is classification / multinomial or not
     # 4. Select hyperparameter list
-
+    
     if (Construct[i,11][[1]]) {
       if (tolower(Construct[i,6][[1]]) == "gbm") {
         if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
@@ -2915,7 +2923,7 @@ AutoH20Modeler <- function(Construct,
                                min_split_improvement            = c(0,1e-8,1e-6,1e-4),
                                histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
         }
-
+        
       } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
         if (tolower(Construct[i,3][[1]] %in% c("automatic", "crossentropy"))) {
           hyper_params <- list(activation = c("Rectifier", "Maxout", "Tanh", "RectifierWithDropout", "MaxoutWithDropout", "TanhWithDropout"),
@@ -2979,18 +2987,18 @@ AutoH20Modeler <- function(Construct,
                                histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
         }
       } else if (tolower(Construct[i,6][[1]]) == "automl"){
-          print("automl is preset with tuning parameters")
+        print("automl is preset with tuning parameters")
       }
     }
-
+    
     ######################################
     # Grid Tune Models
     ######################################
-
+    
     # Check to see if GridTune is TRUE
     # Check to see if Distribution is quantile
     # Select model
-
+    
     # Grid tuned model build
     if (Construct[i,11][[1]]) {
       if(tolower(Construct[i,2][[1]]) == "quantile") {
@@ -3007,7 +3015,7 @@ AutoH20Modeler <- function(Construct,
                            quantile_alpha       = Construct[i,4][[1]],
                            learn_rate           = 0.05,
                            learn_rate_annealing = 0.99,
-                           max_runtime_secs     = 3600,
+                           max_runtime_secs     = MaxRuntimeSeconds,
                            stopping_rounds      = 5,
                            stopping_tolerance   = 1e-4,
                            stopping_metric      = StoppingMetric,
@@ -3039,7 +3047,7 @@ AutoH20Modeler <- function(Construct,
                            distribution         = Construct[i,2][[1]],
                            learn_rate           = 0.05,
                            learn_rate_annealing = 0.99,
-                           max_runtime_secs     = 3600,
+                           max_runtime_secs     = MaxRuntimeSeconds,
                            stopping_rounds      = 5,
                            stopping_tolerance   = 1e-4,
                            stopping_metric      = StoppingMetric,
@@ -3065,7 +3073,7 @@ AutoH20Modeler <- function(Construct,
                            y                    = target,
                            training_frame       = train,
                            validation_frame     = validate,
-                           max_runtime_secs     = 3600,
+                           max_runtime_secs     = MaxRuntimeSeconds,
                            stopping_rounds      = 5,
                            stopping_tolerance   = 1e-4,
                            stopping_metric      = StoppingMetric,
@@ -3076,8 +3084,8 @@ AutoH20Modeler <- function(Construct,
                             y                  = target,
                             training_frame     = train,
                             validation_frame   = validate,
-                            max_models         = 30,
-                            max_runtime_secs   = 3600,
+                            max_models         = MaxModels,
+                            max_runtime_secs   = MaxRuntimeSeconds,
                             stopping_metric    = StoppingMetric,
                             stopping_tolerance = 1e-4,
                             stopping_rounds    = 10,
@@ -3086,7 +3094,7 @@ AutoH20Modeler <- function(Construct,
                             sort_metric        = StoppingMetric)
         }
       }
-
+      
       # Store all models built sorted by metric
       if (tolower(Construct[i,6][[1]]) == "automl") {
         Grid_Out <- h2o.getAutoML(project_name = "TestAML")
@@ -3097,14 +3105,14 @@ AutoH20Modeler <- function(Construct,
         Decreasing = FALSE
         Grid_Out   <- h2o.getGrid(grid_id = Construct[i,5][[1]], sort_by = StoppingMetric, decreasing = Decreasing)
       }
-
+      
       # Store best model
       if (tolower(Construct[i,6][[1]]) == "automl") {
         best_model <- Grid_Out@leader
       } else {
         best_model <- h2o.getModel(Grid_Out@model_ids[[1]])
       }
-
+      
       # Collect accuracy metric on validation data
       if(tolower(Construct[i,3][[1]]) == "crossentropy") {
         cc <- h2o.auc(h2o.performance(best_model, valid = TRUE))
@@ -3114,11 +3122,11 @@ AutoH20Modeler <- function(Construct,
       # Store results in metadata file
       set(grid_tuned_paths, i = i, j = 3L, value = cc)
     }
-
+    
     ######################################
     # Baseline Models
     ######################################
-
+    
     # Check to see if quantile is selected
     # Choose model
     if(tolower(Construct[i,6][[1]]) != "automl") {
@@ -3167,7 +3175,7 @@ AutoH20Modeler <- function(Construct,
                                      model_id         = paste0("BL_RF_",Construct[i,5][[1]]),
                                      ntrees           = BL_Trees)
       }
-
+      
       # Collect accuracy metric on validation data
       if(tolower(Construct[i,3][[1]]) == "crossentropy") {
         if(tolower(Construct[i,2][[1]]) == "multinomial") {
@@ -3178,20 +3186,20 @@ AutoH20Modeler <- function(Construct,
       } else {
         dd <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(bl_model, valid = TRUE))")))
       }
-
+      
       # Store results in metadata file
       set(grid_tuned_paths, i = i, j = 4L, value = dd)
     }
-
-
+    
+    
     ######################################
     # Model Evaluation & Saving
     ######################################
-
+    
     # Check to see if GridTune is TRUE
     # Check to see if Distribution is multinomial
     # Proceed
-
+    
     if(tolower(Construct[i,6][[1]] == "automl")) {
       if(Construct[i,21][[1]] == TRUE) {
         if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
@@ -3207,20 +3215,23 @@ AutoH20Modeler <- function(Construct,
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
       }
-
-      # Save VarImp and VarNOTImp
+      
       # Save VarImp and VarNOTImp
       if(best_model@algorithm != "stackedensemble") {
         VIMP <- as.data.table(h2o.varimp(best_model))
         save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
-        NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+        if(tolower(best_model@algorithm) != "glm") {
+          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]          
+        } else {
+          NIF <- NULL
+        }
         if (length(NIF) > 0) {
           save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
         }
       } else {
         set(Construct, i = i, j = 13L, value = 0)
       }
-
+      
       # Gather predicted values
       preds <- h2o.predict(best_model, newdata = validate)[,1]
       if(Construct[i,14][[1]] == "All") {
@@ -3233,7 +3244,7 @@ AutoH20Modeler <- function(Construct,
         predsPD <- h2o.predict(best_model, newdata = validate)[,1]
       }
     }
-
+    
     if (Construct[i,11][[1]] == TRUE & tolower(Construct[i,6][[1]]) != "automl") {
       if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) | tolower(Construct[i,3][[1]]) == "logloss") {
         if(cc < dd) {
@@ -3252,7 +3263,7 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
-
+          
           # Save VarImp and VarNOTImp
           VIMP <- as.data.table(h2o.varimp(best_model))
           save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
@@ -3260,7 +3271,7 @@ AutoH20Modeler <- function(Construct,
           if (length(NIF) > 0) {
             save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
           }
-
+          
           # Gather predicted values
           preds <- h2o.predict(best_model, newdata = validate)[,1]
           if(Construct[i,14][[1]] == "All") {
@@ -3288,7 +3299,7 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
-
+          
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(bl_model))
           save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
@@ -3296,7 +3307,7 @@ AutoH20Modeler <- function(Construct,
           if (length(NIF) > 0) {
             save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
           }
-
+          
           # Gather predicted values
           preds <- h2o.predict(bl_model, newdata = validate)[,1]
           if(Construct[i,14][[1]] == "All") {
@@ -3326,7 +3337,7 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
-
+          
           # Store threshold
           store_results <- data.table(best_model@model$training_metrics@metrics$thresholds_and_metric_scores)
           if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
@@ -3353,7 +3364,7 @@ AutoH20Modeler <- function(Construct,
             Label <<- "CS"
           }
           set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
-
+          
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(best_model))
           save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
@@ -3361,7 +3372,7 @@ AutoH20Modeler <- function(Construct,
           if (length(NIF) > 0) {
             save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
           }
-
+          
           # Gather predicted values
           preds <- h2o.predict(best_model, newdata = validate)[,3]
           if(Construct[i,14][[1]] == "All") {
@@ -3389,7 +3400,7 @@ AutoH20Modeler <- function(Construct,
               save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
-
+          
           # Store threshold
           store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
           if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
@@ -3416,7 +3427,7 @@ AutoH20Modeler <- function(Construct,
             Label <<- "CS"
           }
           set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
-
+          
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(bl_model))
           save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
@@ -3424,7 +3435,7 @@ AutoH20Modeler <- function(Construct,
           if (length(NIF) > 0) {
             save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
           }
-
+          
           # Gather predicted values
           preds <- h2o.predict(bl_model, newdata = validate)[,3]
           if(Construct[i,14][[1]] == "All") {
@@ -3454,7 +3465,7 @@ AutoH20Modeler <- function(Construct,
           save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
       }
-
+      
       # Store threshold for binary classification
       if(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
         store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
@@ -3505,7 +3516,7 @@ AutoH20Modeler <- function(Construct,
           predsPD <- h2o.predict(bl_model, newdata = validate)[,1]
         }
       }
-
+      
       # Save VarImp
       VIMP <- as.data.table(h2o.varimp(bl_model))
       save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
@@ -3514,11 +3525,11 @@ AutoH20Modeler <- function(Construct,
         save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
       }
     }
-
+    
     ######################################
     # Model Evaluation Plots
     ######################################
-
+    
     # Generate plots
     col <- Construct[i,1][[1]]
     calibration <- as.data.table(h2o.cbind(preds, validate[, col]))
@@ -3546,11 +3557,11 @@ AutoH20Modeler <- function(Construct,
       }
     }
     predName <- names(calibration[,1])
-
+    
     # Generate evaluation plots
     if (tolower(Construct[i,2][[1]]) != "multinomial") {
       if (tolower(Construct[i,2][[1]]) == "quantile") {
-
+        
         # Calibration plot
         out1 <- EvalPlot(calibration,
                          PredColName = predName,
@@ -3559,7 +3570,7 @@ AutoH20Modeler <- function(Construct,
                          bucket      = 0.05,
                          aggrfun     = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
-
+        
         # Calibration boxplot
         out2 <- EvalPlot(calibration,
                          PredColName = predName,
@@ -3568,7 +3579,7 @@ AutoH20Modeler <- function(Construct,
                          bucket      = 0.05)
         ggsave(paste0(model_path, "/CalBP_", Construct[i,5][[1]], ".png"))
       } else if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-
+        
         # Calibration plot
         #interc <<- mean(calibration[[eval(predName)]], na.rm = TRUE)
         out1 <- EvalPlot(calibration,
@@ -3577,9 +3588,10 @@ AutoH20Modeler <- function(Construct,
                          type        = "calibration",
                          bucket      = 0.05,
                          aggrfun     = function(x) mean(x, na.rm = TRUE))
-
-        out1 <- tryCatch({out1 + geom_hline(yintercept = Thresh)}, error = function(x) out1)
-        out1 <- out1 #+ geom_text(aes(x = interc, y = Thresh, label = Label, hjust = 1.75, angle = 90))
+        
+        if(exists("Thresh")) {
+          out1 <- out1 + geom_hline(yintercept = Thresh)
+        }
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
       } else {
         # Calibration plot
@@ -3590,7 +3602,7 @@ AutoH20Modeler <- function(Construct,
                          bucket      = 0.05,
                          aggrfun     = function(x) mean(x, na.rm = TRUE))
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
-
+        
         # Calibration boxplot
         out2 <- EvalPlot(calibration,
                          PredColName = predName,
@@ -3627,7 +3639,7 @@ AutoH20Modeler <- function(Construct,
           store[[k]] <- temp
         }
         xxx <- rbindlist(store)
-
+        
         # Calibration plot
         out1 <- EvalPlot(xxx,
                          PredColName = "Preds",
@@ -3661,7 +3673,7 @@ AutoH20Modeler <- function(Construct,
           store[[k]] <- temp
         }
         xxx <- rbindlist(store)
-
+        
         # Calibration plot
         out1 <- EvalPlot(xxx,
                          PredColName = "Preds",
@@ -3671,13 +3683,14 @@ AutoH20Modeler <- function(Construct,
                          aggrfun     = function(x) mean(x, na.rm = TRUE))
         ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
       }
-
+      
       # Multinomial AUC function here::
-
+      
     }
-
+    
     # Partial dependence calibration plots
     if(Construct[i,13][[1]] >= 1) {
+      VIMP <- VIMP[!is.na(VIMP[,2][[1]])]
       rows <- nrow(VIMP)
       cols <- VIMP[1:min(Construct[i,13][[1]],rows), 1][[1]]
       calibr <- list()
@@ -3709,16 +3722,17 @@ AutoH20Modeler <- function(Construct,
                                    FactLevels  = 10,
                                    Function    = function(x) mean(x, na.rm = TRUE))
           }
-
+          
           # Add threshold line to charts
           if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-            out1 <- out1 + geom_hline(yintercept = Thresh)
-            out1 <- out1 #+ geom_text(aes(x = interc, y = Thresh, label = Label, hjust = 1.75, angle = 90))
+            if(exists("Thresh")) {
+              out1 <- out1 + geom_hline(yintercept = Thresh)              
+            }
             calibr[[j]] <- out1
           } else {
             calibr[[j]] <- out1
           }
-
+          
           # Expected value regression
           if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
             boxplotr[[j]] <- ParDepCalPlots(calib,
@@ -3732,7 +3746,7 @@ AutoH20Modeler <- function(Construct,
                                             FactLevels  = 10)
           }
         }
-
+        
         # Save output
         if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
           save(boxplotr, file = paste0(model_path,"/",Construct[i,5][[1]],"_ParDepCalBoxPlots.Rdata"))
@@ -3740,10 +3754,10 @@ AutoH20Modeler <- function(Construct,
         save(calibr, file = paste0(model_path,"/",Construct[i,5][[1]],"_ParDepCalPlots.Rdata"))
       }
     }
-
+    
     # Save grid_tuned_paths
     save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-
+    
     # Clear H20 environment between runs
     h2o.rm(data_h2o)
     h2o.rm(data_train)
@@ -3757,7 +3771,7 @@ AutoH20Modeler <- function(Construct,
     }
     h2o.rm(preds)
     h2o.shutdown(prompt = FALSE)
-
+    
     # Clear R environment between runs
     if (Construct[i,11][[1]]) {
       if (Construct[i,2] != "multinomial") {
@@ -3772,7 +3786,7 @@ AutoH20Modeler <- function(Construct,
         rm(dd, VIMP, features, target, save_model)
       }
     }
-
+    
     # Remove data if no longer needed
     if (i > 1) {
       if (Construct[i,7][[1]] != Construct[(i-1),7][[1]]) {
