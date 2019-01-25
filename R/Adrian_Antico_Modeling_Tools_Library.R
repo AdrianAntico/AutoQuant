@@ -3826,6 +3826,7 @@ tokenizeH20 <- function(data3) {
 #' @param WindowSize For H20 word2vec model
 #' @param Epochs For H20 word2vec model
 #' @param StopWords For H20 word2vec model
+#' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo
 #' @examples
 #'Word2VecModel(data,
 #'              stringCol     = "Comment",
@@ -3842,18 +3843,19 @@ tokenizeH20 <- function(data3) {
 Word2VecModel <- function(datax,
                           stringCol     = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
                                             "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
-                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans","Q84_Ans"),
+                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans"),
                           KeepStringCol = FALSE,
                           model_path    = getwd(),
                           ModelID       = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
                                             "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
-                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans","Q84_Ans"),
+                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans"),
                           vects         = 5,
                           SaveStopWords = FALSE,
                           MinWords      = 1,
                           WindowSize    = 1,
                           Epochs        = 25,
-                          StopWords     = NULL) {
+                          StopWords     = NULL,
+                          SaveModel     = "standard") {
 
   # Ensure data is a data.table
   data <- as.data.table(datax)
@@ -3891,10 +3893,23 @@ Word2VecModel <- function(datax,
                               epochs             = Epochs)
 
     # Save model
-    w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-    set(StoreFile, i = i, j = 1, value = ModelID[i])
-    set(StoreFile, i = i, j = 2, value = w2vPath)
-    save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+    if(tolower(SaveModel) == "standard") {
+      w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+      set(StoreFile, i = i, j = 1L, value = ModelID[i])
+      set(StoreFile, i = i, j = 2L, value = w2vPath)
+      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+    } else {
+      w2vPath <- h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+      h2o.download_mojo(model = w2v.model,
+                        path = model_path,
+                        get_genmodel_jar = TRUE,
+                        genmodel_path = model_path,
+                        genmodel_name = ModelID[i])
+      set(StoreFile, i = i, j = 1L, value = ModelID[i])
+      set(StoreFile, i = i, j = 2L, value = w2vPath)
+      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+    }
+
     h2o.rm('data3')
 
     # Score model
