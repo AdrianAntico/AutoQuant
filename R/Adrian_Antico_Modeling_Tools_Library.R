@@ -1833,9 +1833,9 @@ DT_GDL_Feature_Engineering <- function(data,
   
   # Define total runs
   if (!is.null(groupingVars)) {
-    runs <- length(groupingVars) * length(periods) * length(statsNames) * tarNum * length(lags)
+    runs <- length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
   } else {
-    runs <- length(periods) * length(statsNames) * tarNum * length(lags)
+    runs <- tarNum * (length(periods) * length(statsNames) + length(lags))
   }
   
   # Begin feature engineering
