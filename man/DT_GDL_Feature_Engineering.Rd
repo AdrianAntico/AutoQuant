@@ -4,10 +4,10 @@
 \alias{DT_GDL_Feature_Engineering}
 \title{An Automated Feature Engineering Function Using data.table frollmean}
 \usage{
-DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3,
-  5, 10, 15, 20, 25), statsNames = c("MA3", "MA5", "MA10", "MA15",
-  "MA20", "MA25"), targets = c("qty"), groupingVars = c("Group1",
-  "Group2"), sortDateName = "date", timeDiffTarget = c("TimeDiffName"),
+DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
+  periods = c(seq(5, 95, 5)), statsNames = c("MA"),
+  targets = c("qty"), groupingVars = c("Group1", "Group2"),
+  sortDateName = "date", timeDiffTarget = c("TimeDiffName"),
   timeAgg = c("auto", "secs", "mins", "hours", "days", "weeks"),
   WindowingLag = 0, Type = c("Lag", "Lead"), Timer = TRUE,
   SkipCols = NULL, SimpleImpute = TRUE)
@@ -49,7 +49,7 @@ Builds autoregressive and moving average from target columns and distributed lag
 quick_model <- DT_GDL_Feature_Engineering(quick_model,
                                           lags           = c(seq(1,5,1)),
                                           periods        = c(3,5,10,15,20,25),
-                                          statsNames     = c("min","max","mean","sd","q20","q80"),
+                                          statsNames     = c("MA"),
                                           targets        = c("qty","price"),
                                           groupingVars   = c("SKU","VENDOR_NAME"),
                                           sortDateName   = "RECEIPT_DATE",
