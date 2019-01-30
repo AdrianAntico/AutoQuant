@@ -1987,6 +1987,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Done!!
+    print(CounterIndicator)
     return(data)
     
   } else {
