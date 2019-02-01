@@ -925,6 +925,15 @@ threshOptim <- function(data,
       utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr)) + noneRate * MidTierCost
       store[[j]] <- c(i, utility)
     }
+    all <- rbindlist(list(store))
+    utilities <- melt(all[2,])
+    setnames(utilities, "value", "Utilities")
+    thresholds <- melt(all[1,])
+    setnames(thresholds, "value", "Thresholds")
+    results <- cbind(utilities, thresholds)[,c(-1,-3)]
+    thresh <- results[Thresholds < MidTierLowThresh & Thresholds > MidTierHighThresh][order(-Utilities)][1,2][[1]]
+    options(warn = 1)
+    return(list(thresh, results))
   } else {
     for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
       j <- j + 1
@@ -937,16 +946,16 @@ threshOptim <- function(data,
       utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
       store[[j]] <- c(i, utility)
     }
+    all <- rbindlist(list(store))
+    utilities <- melt(all[2,])
+    setnames(utilities, "value", "Utilities")
+    thresholds <- melt(all[1,])
+    setnames(thresholds, "value", "Thresholds")
+    results <- cbind(utilities, thresholds)[,c(-1,-3)]
+    thresh <- results[order(-Utilities)][1,2][[1]]
+    options(warn = 1)
+    return(list(thresh, results))
   }
-  all <- rbindlist(list(store))
-  utilities <- melt(all[2,])
-  setnames(utilities, "value", "Utilities")
-  thresholds <- melt(all[1,])
-  setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[,c(-1,-3)]
-  thresh <- results[order(-Utilities)][1,2][[1]]
-  options(warn = 1)
-  return(list(thresh, results))
 }
 
 #' nlsModelFit is a function for automatically building nls models
