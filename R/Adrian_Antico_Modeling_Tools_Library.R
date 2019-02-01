@@ -988,10 +988,10 @@ threshOptim <- function(data,
       fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i & !(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh), 1, 0))
       fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i & !(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh), 1, 0))
       none    <- sum(ifelse(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh, 1, 0))
-      tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn + none))
-      fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn + none))
+      tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
+      fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
       noneRate <- none / nrow(data)
-      utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr)) + noneRate * MidTierCost
+      utility <- popTrue * (tpProfit*tpr*(1-noneRate) + fnProfit*(1-tpr)*(1-noneRate)) + (1-popTrue) * (fpProfit * fpr*(1-noneRate) + tnProfit * (1-fpr)*(1-noneRate)) + noneRate * MidTierCost
       store[[j]] <- c(i, utility)
     }
     all <- rbindlist(list(store))
