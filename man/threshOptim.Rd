@@ -5,7 +5,9 @@
 \title{Utility maximizing thresholds for binary classification}
 \usage{
 threshOptim(data, actTar = 1, predTar = 2, tpProfit = 1,
-  tnProfit = 5, fpProfit = -1, fnProfit = -1)
+  tnProfit = 5, fpProfit = -1, fnProfit = -1,
+  MidTierDoNothing = FALSE, MidTierCost = -100,
+  MidTierLowThresh = 0.25, MidTierHighThresh = 0.75)
 }
 \arguments{
 \item{data}{data is the data table you are building the modeling on}
@@ -21,6 +23,14 @@ threshOptim(data, actTar = 1, predTar = 2, tpProfit = 1,
 \item{fpProfit}{This is the cost of generating a false positive prediction}
 
 \item{fnProfit}{This is the cost of generating a false negative prediction}
+
+\item{MidTierDoNothing}{Set to TRUE if there is a mid-range of predicted probabilities such that you do something else with those}
+
+\item{MidTierCost}{Set cost value for these outcomes}
+
+\item{MidTierLowThresh}{The lower bound probability for the do something else range}
+
+\item{MidTeirHighThresh}{The upper bound probability for the do something else range}
 }
 \value{
 Optimal threshold and corresponding utilities for the range of thresholds tested
@@ -36,10 +46,14 @@ data <- threshOptim(test,
                     tpProfit = 1,
                     tnProfit = 5,
                     fpProfit = -1,
-                    fnProfit = -1)
+                    fnProfit = -1,
+                    MidTierDoNothing = FALSE,
+                    MidTierCost = -100,
+                    MidTierLowThresh = 0.25,
+                    MidTierHighThresh = 0.75)
 optimalThreshold <- data[[1]]
 allResults       <- data[[2]]
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
