@@ -44,18 +44,18 @@ Model Evaluation, Interpretation, and Cost-Sensitive Functions:
 12. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 13. **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
 14. **threshOptim**: Great for situations with assymetric costs across confusion matrix. Generate a cost-sensitive optimized threshold for classification models
-
+15. **RedYellowGreen**: RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option
 Utilities and Misc. Functions:
-15. CountSingleDigits - From a project. Can probably delete.
-16. tokenizeH20 - Tokenize and H20 string column.
-17. tempDatesFun - Special case for character conversion to date when importing from Excel.
-18. RemixTheme - Fonts, colors, style for plots.
-19. ChartTheme - Fonts, colors, style for plots.
-20. SimpleCap - Apply proper case to text.
-21. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-22. multiplot - Useful for displaying multiple plots in a single pane.
-23. PrintObjectsSize - print out objects and their sizes that are in the envrionment
-24. NumWeekdays - counts up the number of weekdays between two dates, inclusive
-25. NumHolidays - counts up the number of holidays between two dates, inclusive
-26. H20MultinomialAUC - computes micro auc for a multinomial model
-27. DummifyDT - dichotomizes any number of columns in a data.table with the option to remove the original columns
+16. CountSingleDigits - From a project. Can probably delete.
+17. tokenizeH20 - Tokenize and H20 string column.
+18. tempDatesFun - Special case for character conversion to date when importing from Excel.
+19. RemixTheme - Fonts, colors, style for plots.
+20. ChartTheme - Fonts, colors, style for plots.
+21. SimpleCap - Apply proper case to text.
+22. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+23. multiplot - Useful for displaying multiple plots in a single pane.
+24. PrintObjectsSize - print out objects and their sizes that are in the envrionment
+25. NumWeekdays - counts up the number of weekdays between two dates, inclusive
+26. NumHolidays - counts up the number of holidays between two dates, inclusive
+27. H20MultinomialAUC - computes micro auc for a multinomial model
+28. DummifyDT - dichotomizes any number of columns in a data.table with the option to remove the original columns
