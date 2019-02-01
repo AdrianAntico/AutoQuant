@@ -12,9 +12,9 @@ threshOptim(data, actTar = 1, predTar = 2, tpProfit = 1,
 \arguments{
 \item{data}{data is the data table you are building the modeling on}
 
-\item{actTar}{The column number where the actual target variable is located (in binary form)}
+\item{actTar}{The column name where the actual target variable is located (in binary form)}
 
-\item{predTar}{The column number where the predicted values are located}
+\item{predTar}{The column name where the predicted values are located}
 
 \item{tpProfit}{This is the utility for generating a true positive prediction}
 
