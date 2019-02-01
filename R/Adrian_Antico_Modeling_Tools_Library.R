@@ -858,6 +858,74 @@ ModelDataPrep <- function(data,
   return(data)
 }
 
+#' RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option
+#'
+#' This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
+#'
+#' @author Adrian Antico
+#' @param data data is the data table with your predicted and actual values from a classification model
+#' @param PredictColNumber The column number where the actual target variable is located (in binary form)
+#' @param ActualColNumber The column number where the predicted values are located
+#' @param TruePositiveCost This is the utility for generating a true positive prediction
+#' @param TruePositiveCost This is the utility for generating a true negative prediction
+#' @param FalsePositiveCost This is the cost of generating a false positive prediction
+#' @param FalseNegativeCost This is the cost of generating a false negative prediction
+#' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
+#' @examples
+#' test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
+#' data <- RedYellowGreen(data,
+#'                        PredictColNumber  = 1,
+#'                        ActualColNumber   = 767,
+#'                        TruePositiveCost  = 0,
+#'                        TrueNegativeCost  = 0,
+#'                        FalsePositiveCost = -1,
+#'                        FalseNegativeCost = -10,
+#'                        MidTierCost       = -5)
+#' @return A data table with all evaluated strategies, parameters, and utilities
+#' @export
+RedYellowGreen <- function(data,
+                           PredictColNumber  = 1,
+                           ActualColNumber   = 767,
+                           TruePositiveCost  = 0,
+                           TrueNegativeCost  = 0,
+                           FalsePositiveCost = -1,
+                           FalseNegativeCost = -10,
+                           MidTierCost       = -5) {
+
+  # Set up evaluation table
+  analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
+                              TNP = rep(TrueNegativeCost,1),
+                              FPP = rep(FalsePositiveCost,1),
+                              FNP = rep(FalseNegativeCost,1),
+                              MTDN = rep(TRUE,1),
+                              MTC = rep(MidTierCost,1),
+                              Threshold = runif(1))
+
+  # Build strategies - cross join possible values and cbind to analysis table
+  temp <- CJ(MTLT = seq(0.01,0.99,0.01), MTHT = seq(0.01,0.99,0.01))[MTHT > MTLT]
+  new <- cbind(analysisTable, temp)[, Utility := runif(nrow(new))]
+
+  # Loop through all combinations of do nothing range
+  for (i in as.integer(1:nrow(new))) {
+    x <- threshOptim(data = data,
+                     actTar = names(data)[ActualColNumber],
+                     predTar = names(data)[PredictColNumber],
+                     tpProfit = TruePositiveCost,
+                     tnProfit = TrueNegativeCost,
+                     fpProfit = FalsePositiveCost,
+                     fnProfit = FalseNegativeCost,
+                     MidTierDoNothing = TRUE,
+                     MidTierCost = MidTierCost,
+                     MidTierLowThresh = new[i,8][[1]],
+                     MidTierHighThresh = new[i,9][[1]])
+    set(new, i = i, j = 7L, value = x[[1]])
+    temp <- x[[2]]
+    set(new, i = i, j = 10L, value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
+    print(i/nrow(new))
+  }
+  return(new)
+}
+
 #' Utility maximizing thresholds for binary classification
 #'
 #' This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
@@ -931,7 +999,7 @@ threshOptim <- function(data,
     thresholds <- melt(all[1,])
     setnames(thresholds, "value", "Thresholds")
     results <- cbind(utilities, thresholds)[,c(-1,-3)]
-    thresh <- results[Thresholds < MidTierLowThresh & Thresholds > MidTierHighThresh][order(-Utilities)][1,2][[1]]
+    thresh <- results[Thresholds < eval(MidTierLowThresh) & Thresholds > eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
     options(warn = 1)
     return(list(thresh, results))
   } else {
@@ -1277,7 +1345,7 @@ ParDepCalPlots <- function(data,
 
   # Prepare for both calibration and boxplot
   if (is.numeric(preds2[[IndepVar]]) || is.integer(preds2[[IndepVar]])) {
-    preds2[, rank := 100*(round(percRank(preds2[[IndepVar]])/bucket)*bucket)]
+    preds2[, rank := 100*(round(percRank(preds2[[IndepVar]])/bucket, 2)*bucket)]
   } else {
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
@@ -1412,7 +1480,7 @@ EvalPlot <- function(data,
   }
 
   # Add a column that ranks predicted values
-  data[, rank := 100*(round(percRank(data[[1]])/bucket)*bucket)]
+  data[, rank := 100*(round(percRank(data[[1]])/bucket, 2)*bucket)]
 
   # Plot
   if(type == "boxplot") {
@@ -1830,7 +1898,7 @@ GDL_Feature_Engineering <- function(data,
 #' quick_model <- DT_GDL_Feature_Engineering(quick_model,
 #'                                           lags           = c(seq(1,5,1)),
 #'                                           periods        = c(3,5,10,15,20,25),
-#'                                           statsNames     = c("min","max","mean","sd","q20","q80"),
+#'                                           statsNames     = c("MA"),
 #'                                           targets        = c("qty","price"),
 #'                                           groupingVars   = c("SKU","VENDOR_NAME"),
 #'                                           sortDateName   = "RECEIPT_DATE",
@@ -2020,6 +2088,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Done!!
+    print(CounterIndicator)
     return(data)
 
   } else {
