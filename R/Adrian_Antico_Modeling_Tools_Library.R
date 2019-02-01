@@ -903,7 +903,8 @@ RedYellowGreen <- function(data,
 
   # Build strategies - cross join possible values and cbind to analysis table
   temp <- CJ(MTLT = seq(0.00,1.0,0.01), MTHT = seq(0.00,1.0,0.01))[MTHT > MTLT]
-  new <- cbind(analysisTable, temp)[, Utility := runif(nrow(new))]
+  new <- cbind(analysisTable, temp)
+  new[, Utility := runif(nrow(new))]
 
   # Loop through all combinations of do nothing range
   for (i in as.integer(1:nrow(new))) {
