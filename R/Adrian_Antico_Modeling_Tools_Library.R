@@ -1000,7 +1000,7 @@ threshOptim <- function(data,
     thresholds <- melt(all[1,])
     setnames(thresholds, "value", "Thresholds")
     results <- cbind(utilities, thresholds)[,c(-1,-3)]
-    thresh <- results[Thresholds < eval(MidTierLowThresh) | Thresholds > eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
+    thresh <- results[Thresholds <= eval(MidTierLowThresh) | Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
     options(warn = 1)
     return(list(thresh, results))
   } else {
