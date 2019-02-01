@@ -870,6 +870,10 @@ ModelDataPrep <- function(data,
 #' @param tnProfit This is the utility for generating a true negative prediction
 #' @param fpProfit This is the cost of generating a false positive prediction
 #' @param fnProfit This is the cost of generating a false negative prediction
+#' @param MidTierDoNothing Set to TRUE if there is a mid-range of predicted probabilities such that you do something else with those
+#' @param MidTierCost Set cost value for these outcomes
+#' @param MidTierLowThresh The lower bound probability for the do something else range
+#' @param MidTeirHighThresh The upper bound probability for the do something else range
 #' @examples
 #' test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
 #' data <- threshOptim(test,
@@ -878,7 +882,11 @@ ModelDataPrep <- function(data,
 #'                     tpProfit = 1,
 #'                     tnProfit = 5,
 #'                     fpProfit = -1,
-#'                     fnProfit = -1)
+#'                     fnProfit = -1,
+#'                     MidTierDoNothing = FALSE,
+#'                     MidTierCost = -100,
+#'                     MidTierLowThresh = 0.25,
+#'                     MidTierHighThresh = 0.75)
 #' optimalThreshold <- data[[1]]
 #' allResults       <- data[[2]]
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
@@ -889,7 +897,11 @@ threshOptim <- function(data,
                         tpProfit = 1,
                         tnProfit = 5,
                         fpProfit = -1,
-                        fnProfit = -1) {
+                        fnProfit = -1,
+                        MidTierDoNothing = FALSE,
+                        MidTierCost = -100,
+                        MidTierLowThresh = 0.25,
+                        MidTierHighThresh = 0.75) {
 
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -899,16 +911,32 @@ threshOptim <- function(data,
   store   <- list()
   j <- 0
   options(warn = -1)
-  for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
-    j <- j + 1
-    tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
-    tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
-    fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
-    fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
-    tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
-    fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
-    utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
-    store[[j]] <- c(i, utility)
+  if(MidTierDoNothing) {
+    for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
+      j <- j + 1
+      tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i & data[[predTar]] > MidTierHighThresh, 1, 0))
+      tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i & data[[predTar]] < MidTierLowThresh, 1, 0))
+      fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i & !(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh), 1, 0))
+      fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i & !(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh), 1, 0))
+      none    <- sum(ifelse(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh, 1, 0))
+      tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
+      fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
+      noneRate <- none / nrow(data)
+      utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr)) + noneRate * MidTierCost
+      store[[j]] <- c(i, utility)
+    }
+  } else {
+    for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
+      j <- j + 1
+      tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+      tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+      fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+      fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+      tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
+      fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
+      utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
+      store[[j]] <- c(i, utility)
+    }
   }
   all <- rbindlist(list(store))
   utilities <- melt(all[2,])
