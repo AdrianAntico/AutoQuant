@@ -4,9 +4,9 @@
 \alias{RedYellowGreen}
 \title{RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option}
 \usage{
-RedYellowGreen(calibEval, PredictColNumber = 1, ActualColNumber = 767,
+RedYellowGreen(calibEval, PredictColNumber = 2, ActualColNumber = 1,
   TruePositiveCost = 0, TrueNegativeCost = 0,
-  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
+  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -6,
   Cores = 8)
 }
 \arguments{
