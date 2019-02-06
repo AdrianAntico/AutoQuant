@@ -882,16 +882,16 @@ ModelDataPrep <- function(data,
 #'                        FalsePositiveCost = -1,
 #'                        FalseNegativeCost = -10,
 #'                        MidTierCost       = -5)
-#' @return A data table with all evaluated strategies, parameters, and utilities
+#' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(calibEval,
-                           PredictColNumber  = 1,
-                           ActualColNumber   = 767,
+                           PredictColNumber  = 2,
+                           ActualColNumber   = 1,
                            TruePositiveCost  = 0,
                            TrueNegativeCost  = 0,
                            FalsePositiveCost = -10,
                            FalseNegativeCost = -50,
-                           MidTierCost       = -2,
+                           MidTierCost       = -6,
                            Cores             = 8) {
 
   # Set up evaluation table
@@ -1043,6 +1043,25 @@ RedYellowGreen <- function(calibEval,
 
   # Shut down cluster
   stopCluster(cl)
+
+  # 3D Scatterplot
+  library("scatterplot3d")
+  s3d <- scatterplot3d(x = data[["MTLT"]], y = data[["MTHT"]], z = data[["Utility"]],
+                       type = "h",
+                       color = "lightblue",
+                       angle=45,
+                       pch = 1,
+                       main = paste0("Utility Maximizer - Threshold at ", data[order(-Utility)][1,"MTHT"][[1]]),
+                       sub = paste0("Lower Bound = ", data[order(-Utility)][1,"MTLT"][[1]], " and Upper Bound = ", data[order(-Utility)][1,"MTHT"][[1]]),
+                       xlab = "Mid Tier Lower Threshold",
+                       ylab = "Mid Tier Higher Threshold",
+                       zlab = "Utility")
+  model <- lm(data[["Utility"]] ~ data[["MTLT"]] + data[["MTLT"]] + data[["MTHT"]])
+  s3d$plane3d(model)
+  s3d$points3d(x = data[order(-Utility)][1,"MTLT"][[1]],
+               y = data[order(-Utility)][1,"MTHT"][[1]],
+               z = data[order(-Utility)][1,"Utility"][[1]],
+               col = "navyblue", type = "h", pch = 12)
   return(results)
 }
 
