@@ -27,6 +27,10 @@ Imports: data.table,
     tsoutliers,
     chron,
     pROC,
-    stringr
+    stringr,
+    snow,
+    doParallel,
+    parallel,
+    scatterplot3d
 Suggests: data.table,
     plotly
