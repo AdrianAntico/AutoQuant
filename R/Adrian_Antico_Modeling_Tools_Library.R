@@ -863,7 +863,7 @@ ModelDataPrep <- function(data,
 #' This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
 #'
 #' @author Adrian Antico
-#' @param data data is the data table with your predicted and actual values from a classification model
+#' @param calibEval data is the data table with your predicted and actual values from a classification model
 #' @param PredictColNumber The column number where the actual target variable is located (in binary form)
 #' @param ActualColNumber The column number where the predicted values are located
 #' @param TruePositiveCost This is the utility for generating a true positive prediction
@@ -873,7 +873,7 @@ ModelDataPrep <- function(data,
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
 #' @examples
 #' test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
-#' data <- RedYellowGreen(data,
+#' data <- RedYellowGreen(calibEval,
 #'                        PredictColNumber  = 1,
 #'                        ActualColNumber   = 767,
 #'                        TruePositiveCost  = 0,
@@ -883,14 +883,14 @@ ModelDataPrep <- function(data,
 #'                        MidTierCost       = -5)
 #' @return A data table with all evaluated strategies, parameters, and utilities
 #' @export
-RedYellowGreen <- function(data,
+RedYellowGreen <- function(calibEval,
                            PredictColNumber  = 1,
                            ActualColNumber   = 767,
                            TruePositiveCost  = 0,
                            TrueNegativeCost  = 0,
-                           FalsePositiveCost = -1,
-                           FalseNegativeCost = -10,
-                           MidTierCost       = -5) {
+                           FalsePositiveCost = -10,
+                           FalseNegativeCost = -50,
+                           MidTierCost       = -2) {
 
   # Set up evaluation table
   analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
@@ -900,32 +900,145 @@ RedYellowGreen <- function(data,
                               MTDN = rep(TRUE,1),
                               MTC = rep(MidTierCost,1),
                               Threshold = runif(1))
-
-  # Build strategies - cross join possible values and cbind to analysis table
-  temp <- CJ(MTLT = seq(0.00,1.0,0.01), MTHT = seq(0.00,1.0,0.01))[MTHT > MTLT]
-  new <- cbind(analysisTable, temp)
+  temp     <- CJ(MTLT = seq(0.01,0.99,0.01), MTHT = seq(0.01,0.99,0.01))[MTHT > MTLT]
+  new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
 
-  # Loop through all combinations of do nothing range
-  for (i in as.integer(1:nrow(new))) {
-    x <- threshOptim(data = data,
-                     actTar = names(data)[ActualColNumber],
-                     predTar = names(data)[PredictColNumber],
-                     tpProfit = TruePositiveCost,
-                     tnProfit = TrueNegativeCost,
-                     fpProfit = FalsePositiveCost,
-                     fnProfit = FalseNegativeCost,
-                     MidTierDoNothing = TRUE,
-                     MidTierCost = MidTierCost,
-                     MidTierLowThresh = new[i,8][[1]],
-                     MidTierHighThresh = new[i,9][[1]])
-    set(new, i = i, j = 7L, value = x[[1]])
-    temp <- x[[2]]
-    set(new, i = i, j = 10L, value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
-    print(i/nrow(new))
+  # Parallel components
+  suppressMessages(library(parallel))
+  suppressMessages(library(snow))
+  suppressMessages(library(doParallel))
+  packages <- c("PVMLUTILS","data.table")
+  cores    <- 8
+  parts    <- floor(nrow(new) / 800)
+  cl       <- makePSOCKcluster(cores)
+  registerDoParallel(cl)
+
+  # Kick off run
+  results <- foreach(i            = itertools::isplitRows(new, chunks=parts),  # splits data and passes to each core
+                     .combine      = function(...) rbindlist(list(...)),        # only way to get rbindlist to work
+                     .multicombine = TRUE,                                      # required for rbindlist since list > 2 data sets
+                     .packages     = packages                                   # need to feed in packages used
+  ) %dopar% {
+    # Inner function for parallel version
+    RedYellowGreenParallel <- function(data,
+                                       PredictColNumber  = 1,
+                                       ActualColNumber   = 767,
+                                       TruePositiveCost  = 0,
+                                       TrueNegativeCost  = 0,
+                                       FalsePositiveCost = -1,
+                                       FalseNegativeCost = -10,
+                                       MidTierCost       = -5,
+                                       new = i) {
+
+      # Loop through all combos
+      for (k in as.integer(1:nrow(new))) {
+        x <- threshOptim(data = data,
+                         actTar = names(data)[ActualColNumber],
+                         predTar = names(data)[PredictColNumber],
+                         tpProfit = TruePositiveCost,
+                         tnProfit = TrueNegativeCost,
+                         fpProfit = FalsePositiveCost,
+                         fnProfit = FalseNegativeCost,
+                         MidTierDoNothing = TRUE,
+                         MidTierCost = MidTierCost,
+                         MidTierLowThresh = new[k,8][[1]],
+                         MidTierHighThresh = new[k,9][[1]])
+        set(new, i = k, j = 7L, value = x[[1]])
+        temp <- x[[2]]
+        set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
+        print(k/nrow(new))
+        #print(k)
+      }
+      return(new)
+    }
+
+    # Inner function for threshold optimizataion
+    threshOptim <- function(data,
+                            actTar   = 1,
+                            predTar  = 2,
+                            tpProfit = 1,
+                            tnProfit = 5,
+                            fpProfit = -1,
+                            fnProfit = -1,
+                            MidTierDoNothing = FALSE,
+                            MidTierCost = -100,
+                            MidTierLowThresh = 0.25,
+                            MidTierHighThresh = 0.75) {
+
+      # Convert factor target to numeric
+      data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
+
+      # Optimize each column's classification threshold ::
+      popTrue <- mean(data[[(actTar)]])
+      store   <- list()
+      j <- 0
+      options(warn = -1)
+      if(MidTierDoNothing) {
+        for (i in c(MidTierHighThresh)) {
+          j <- j + 1
+          tp      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+          tn      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+          fp      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+          fn      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+          none    <- sum(ifelse(data[[predTar]] <= MidTierHighThresh & data[[predTar]] >= MidTierLowThresh, 1, 0))
+          tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
+          fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
+          noneRate <- none / nrow(data)
+          utility <- (1-noneRate) * (popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))) + noneRate * MidTierCost
+          store[[j]] <- c(i, utility)
+        }
+        all <- rbindlist(list(store))
+        utilities <- melt(all[2,])
+        setnames(utilities, "value", "Utilities")
+        thresholds <- melt(all[1,])
+        setnames(thresholds, "value", "Thresholds")
+        results <- cbind(utilities, thresholds)[,c(-1,-3)]
+        thresh <- results[Thresholds <= eval(MidTierLowThresh) | Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
+        options(warn = 1)
+        return(list(thresh, results))
+      } else {
+        for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
+          j <- j + 1
+          tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+          tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+          fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+          fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+          tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
+          fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
+          utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
+          store[[j]] <- c(i, utility)
+        }
+        all <- rbindlist(list(store))
+        utilities <- melt(all[2,])
+        setnames(utilities, "value", "Utilities")
+        thresholds <- melt(all[1,])
+        setnames(thresholds, "value", "Thresholds")
+        results <- cbind(utilities, thresholds)[,c(-1,-3)]
+        thresh <- results[order(-Utilities)][1,2][[1]]
+        options(warn = 1)
+        return(list(thresh, results))
+      }
+    }
+
+    # Run core function
+    data <- RedYellowGreenParallel(calibEval,
+                                   PredictColNumber  = PredictColNumber, #1,
+                                   ActualColNumber   = ActualColNumber, #767,
+                                   TruePositiveCost  = TruePositiveCost, #0,
+                                   TrueNegativeCost  = TrueNegativeCost, #0,
+                                   FalsePositiveCost = FalsePositiveCost, #-1,
+                                   FalseNegativeCost = FalseNegativeCost, #-10,
+                                   MidTierCost       = MidTierCost, #-5,
+                                   new = i)
+
+    # Return table
+    data
   }
-  return(new)
+  stopCluster(cl)
+  return(results)
 }
+
 
 #' Utility maximizing thresholds for binary classification
 #'
