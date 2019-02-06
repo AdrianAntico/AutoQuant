@@ -1047,21 +1047,26 @@ RedYellowGreen <- function(calibEval,
   # 3D Scatterplot
   library("scatterplot3d")
   s3d <- scatterplot3d(x = results[["MTLT"]], y = results[["MTHT"]], z = results[["Utility"]], 
-                       type = "h", 
-                       color = "lightblue",
+                       type = "p", 
+                       color = "cyan2",
                        angle=45, 
-                       pch = 1,
+                       pch = 0.01,
                        main = paste0("Utility Maximizer - Threshold at ", results[order(-Utility)][1,"MTHT"][[1]]),
                        sub = paste0("Lower Bound = ", results[order(-Utility)][1,"MTLT"][[1]], " and Upper Bound = ", results[order(-Utility)][1,"MTHT"][[1]]), 
                        xlab = "Mid Tier Lower Threshold", 
                        ylab = "Mid Tier Higher Threshold",
                        zlab = "Utility")
-  model <- lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTLT"]] + results[["MTHT"]])
+  model <- lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
   s3d$plane3d(model)
+  N <- nrow(results)
+  s3d$points3d(x = results[order(-Utility)][1:(N/100),"MTLT"][[1]], 
+               y = results[order(-Utility)][1:(N/100),"MTHT"][[1]], 
+               z = results[order(-Utility)][1:(N/100),"Utility"][[1]],
+               col = "lawngreen", type = "h", pch = 1)
   s3d$points3d(x = results[order(-Utility)][1,"MTLT"][[1]], 
                y = results[order(-Utility)][1,"MTHT"][[1]], 
                z = results[order(-Utility)][1,"Utility"][[1]],
-               col = "navyblue", type = "h", pch = 12)
+               col = "mediumpurple4", type = "h", pch = 10)
   return(results)
 }
 
