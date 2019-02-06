@@ -4,12 +4,12 @@
 \alias{RedYellowGreen}
 \title{RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option}
 \usage{
-RedYellowGreen(data, PredictColNumber = 1, ActualColNumber = 767,
-  TruePositiveCost = 0, TrueNegativeCost = 0, FalsePositiveCost = -1,
-  FalseNegativeCost = -10, MidTierCost = -5)
+RedYellowGreen(calibEval, PredictColNumber = 1, ActualColNumber = 767,
+  TruePositiveCost = 0, TrueNegativeCost = 0,
+  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2)
 }
 \arguments{
-\item{data}{data is the data table with your predicted and actual values from a classification model}
+\item{calibEval}{data is the data table with your predicted and actual values from a classification model}
 
 \item{PredictColNumber}{The column number where the actual target variable is located (in binary form)}
 
@@ -33,7 +33,7 @@ This function will find the optimial thresholds for applying the main label and 
 }
 \examples{
 test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
-data <- RedYellowGreen(data,
+data <- RedYellowGreen(calibEval,
                        PredictColNumber  = 1,
                        ActualColNumber   = 767,
                        TruePositiveCost  = 0,
