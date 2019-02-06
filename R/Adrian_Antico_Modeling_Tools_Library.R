@@ -871,6 +871,7 @@ ModelDataPrep <- function(data,
 #' @param FalsePositiveCost This is the cost of generating a false positive prediction
 #' @param FalseNegativeCost This is the cost of generating a false negative prediction
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
+#' @param Cores Number of cores on your machine
 #' @examples
 #' test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
 #' data <- RedYellowGreen(calibEval,
@@ -890,7 +891,8 @@ RedYellowGreen <- function(calibEval,
                            TrueNegativeCost  = 0,
                            FalsePositiveCost = -10,
                            FalseNegativeCost = -50,
-                           MidTierCost       = -2) {
+                           MidTierCost       = -2,
+                           Cores             = 8) {
 
   # Set up evaluation table
   analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
@@ -900,6 +902,8 @@ RedYellowGreen <- function(calibEval,
                               MTDN = rep(TRUE,1),
                               MTC = rep(MidTierCost,1),
                               Threshold = runif(1))
+
+  # Do nothing possibilities
   temp     <- CJ(MTLT = seq(0.01,0.99,0.01), MTHT = seq(0.01,0.99,0.01))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
@@ -909,8 +913,9 @@ RedYellowGreen <- function(calibEval,
   suppressMessages(library(snow))
   suppressMessages(library(doParallel))
   packages <- c("data.table")
-  cores    <- 8
-  parts    <- floor(nrow(new) / 800)
+  cores    <- Cores
+  bat      <- ceiling(nrow(new)/cores)
+  parts    <- floor(nrow(new) / bat)
   cl       <- makePSOCKcluster(cores)
   registerDoParallel(cl)
 
@@ -1032,13 +1037,14 @@ RedYellowGreen <- function(calibEval,
                                    MidTierCost       = MidTierCost, #-5,
                                    new = i)
 
-    # Return table
+    # Return data table
     data
   }
+
+  # Shut down cluster
   stopCluster(cl)
   return(results)
 }
-
 
 #' Utility maximizing thresholds for binary classification
 #'
