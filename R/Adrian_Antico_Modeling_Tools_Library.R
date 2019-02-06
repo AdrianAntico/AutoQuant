@@ -908,7 +908,7 @@ RedYellowGreen <- function(calibEval,
   suppressMessages(library(parallel))
   suppressMessages(library(snow))
   suppressMessages(library(doParallel))
-  packages <- c("PVMLUTILS","data.table")
+  packages <- c("data.table")
   cores    <- 8
   parts    <- floor(nrow(new) / 800)
   cl       <- makePSOCKcluster(cores)
