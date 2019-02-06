@@ -6,7 +6,8 @@
 \usage{
 RedYellowGreen(calibEval, PredictColNumber = 1, ActualColNumber = 767,
   TruePositiveCost = 0, TrueNegativeCost = 0,
-  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2)
+  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
+  Cores = 8)
 }
 \arguments{
 \item{calibEval}{data is the data table with your predicted and actual values from a classification model}
@@ -22,6 +23,8 @@ RedYellowGreen(calibEval, PredictColNumber = 1, ActualColNumber = 767,
 \item{FalseNegativeCost}{This is the cost of generating a false negative prediction}
 
 \item{MidTierCost}{This is the cost of doing nothing (or whatever it means to not classify in your case)}
+
+\item{Cores}{Number of cores on your machine}
 
 \item{TruePositiveCost}{This is the utility for generating a true negative prediction}
 }
