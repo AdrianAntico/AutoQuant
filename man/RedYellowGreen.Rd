@@ -6,7 +6,7 @@
 \usage{
 RedYellowGreen(calibEval, PredictColNumber = 2, ActualColNumber = 1,
   TruePositiveCost = 0, TrueNegativeCost = 0,
-  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -6,
+  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
   Cores = 8)
 }
 \arguments{
@@ -29,7 +29,7 @@ RedYellowGreen(calibEval, PredictColNumber = 2, ActualColNumber = 1,
 \item{TruePositiveCost}{This is the utility for generating a true negative prediction}
 }
 \value{
-A data table with all evaluated strategies, parameters, and utilities
+A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 }
 \description{
 This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
