@@ -891,9 +891,9 @@ RedYellowGreen <- function(calibEval,
                            TrueNegativeCost  = 0,
                            FalsePositiveCost = -10,
                            FalseNegativeCost = -50,
-                           MidTierCost       = -6,
+                           MidTierCost       = -2,
                            Cores             = 8) {
-
+  
   # Set up evaluation table
   analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
                               TNP = rep(TrueNegativeCost,1),
@@ -902,12 +902,12 @@ RedYellowGreen <- function(calibEval,
                               MTDN = rep(TRUE,1),
                               MTC = rep(MidTierCost,1),
                               Threshold = runif(1))
-
+  
   # Do nothing possibilities
   temp     <- CJ(MTLT = seq(0.01,0.99,0.01), MTHT = seq(0.01,0.99,0.01))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
-
+  
   # Parallel components
   suppressMessages(library(parallel))
   suppressMessages(library(snow))
@@ -918,7 +918,7 @@ RedYellowGreen <- function(calibEval,
   parts    <- floor(nrow(new) / bat)
   cl       <- makePSOCKcluster(cores)
   registerDoParallel(cl)
-
+  
   # Kick off run
   results <- foreach(i            = itertools::isplitRows(new, chunks=parts),  # splits data and passes to each core
                      .combine      = function(...) rbindlist(list(...)),        # only way to get rbindlist to work
@@ -935,7 +935,7 @@ RedYellowGreen <- function(calibEval,
                                        FalseNegativeCost = -10,
                                        MidTierCost       = -5,
                                        new = i) {
-
+      
       # Loop through all combos
       for (k in as.integer(1:nrow(new))) {
         x <- threshOptim(data = data,
@@ -957,7 +957,7 @@ RedYellowGreen <- function(calibEval,
       }
       return(new)
     }
-
+    
     # Inner function for threshold optimizataion
     threshOptim <- function(data,
                             actTar   = 1,
@@ -970,10 +970,10 @@ RedYellowGreen <- function(calibEval,
                             MidTierCost = -100,
                             MidTierLowThresh = 0.25,
                             MidTierHighThresh = 0.75) {
-
+      
       # Convert factor target to numeric
       data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
-
+      
       # Optimize each column's classification threshold ::
       popTrue <- mean(data[[(actTar)]])
       store   <- list()
@@ -1025,7 +1025,7 @@ RedYellowGreen <- function(calibEval,
         return(list(thresh, results))
       }
     }
-
+    
     # Run core function
     data <- RedYellowGreenParallel(calibEval,
                                    PredictColNumber  = PredictColNumber, #1,
@@ -1036,31 +1036,31 @@ RedYellowGreen <- function(calibEval,
                                    FalseNegativeCost = FalseNegativeCost, #-10,
                                    MidTierCost       = MidTierCost, #-5,
                                    new = i)
-
+    
     # Return data table
     data
   }
-
+  
   # Shut down cluster
   stopCluster(cl)
-
+  
   # 3D Scatterplot
   library("scatterplot3d")
-  s3d <- scatterplot3d(x = data[["MTLT"]], y = data[["MTHT"]], z = data[["Utility"]],
-                       type = "h",
+  s3d <- scatterplot3d(x = results[["MTLT"]], y = results[["MTHT"]], z = results[["Utility"]], 
+                       type = "h", 
                        color = "lightblue",
-                       angle=45,
+                       angle=45, 
                        pch = 1,
-                       main = paste0("Utility Maximizer - Threshold at ", data[order(-Utility)][1,"MTHT"][[1]]),
-                       sub = paste0("Lower Bound = ", data[order(-Utility)][1,"MTLT"][[1]], " and Upper Bound = ", data[order(-Utility)][1,"MTHT"][[1]]),
-                       xlab = "Mid Tier Lower Threshold",
+                       main = paste0("Utility Maximizer - Threshold at ", results[order(-Utility)][1,"MTHT"][[1]]),
+                       sub = paste0("Lower Bound = ", results[order(-Utility)][1,"MTLT"][[1]], " and Upper Bound = ", results[order(-Utility)][1,"MTHT"][[1]]), 
+                       xlab = "Mid Tier Lower Threshold", 
                        ylab = "Mid Tier Higher Threshold",
                        zlab = "Utility")
-  model <- lm(data[["Utility"]] ~ data[["MTLT"]] + data[["MTLT"]] + data[["MTHT"]])
+  model <- lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTLT"]] + results[["MTHT"]])
   s3d$plane3d(model)
-  s3d$points3d(x = data[order(-Utility)][1,"MTLT"][[1]],
-               y = data[order(-Utility)][1,"MTHT"][[1]],
-               z = data[order(-Utility)][1,"Utility"][[1]],
+  s3d$points3d(x = results[order(-Utility)][1,"MTLT"][[1]], 
+               y = results[order(-Utility)][1,"MTHT"][[1]], 
+               z = results[order(-Utility)][1,"Utility"][[1]],
                col = "navyblue", type = "h", pch = 12)
   return(results)
 }
