@@ -106,6 +106,7 @@ CountSingleDigits <- function(data, col) {
 #'
 #' @author Adrian Antico
 #' @param data the source residuals data.table
+#' @param ValueCol the numeric column to run anomaly detection over
 #' @param GroupVar1 this is a group by variable
 #' @param GroupVar2 this is another group by variable
 #' @param DateVar this is a time variable for grouping
@@ -126,6 +127,7 @@ CountSingleDigits <- function(data, col) {
 #' @return The original data.table with the added columns merged in
 #' @export
 GenTSAnomVars <- function(data,
+                          ValueCol    = "Value",
                           GroupVar1   = "SKU",
                           GroupVar2   = NULL,
                           DateVar     = "DATE",
@@ -135,8 +137,8 @@ GenTSAnomVars <- function(data,
   if(is.null(GroupVar2)) {
     data <- data[order(get(GroupVar1), get(DateVar))]
     data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
-    data[, AnomHigh := as.numeric(ifelse(ScaledConsumption > High, 1, 0))]
-    data[, AnomLow := as.numeric(ifelse(ScaledConsumption < Low, 1, 0))]
+    data[, AnomHigh := as.numeric(ifelse(ValueCol > High, 1, 0))]
+    data[, AnomLow := as.numeric(ifelse(ValueCol < Low, 1, 0))]
     data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
     data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
     data[, AnomHighRate := CumAnomHigh / RowNumAsc]
@@ -152,8 +154,8 @@ GenTSAnomVars <- function(data,
   } else {
     data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
     data[, RowNumAsc := 1:.N, by = list(get(GroupVar1), get(GroupVar2))]
-    data[, AnomHigh := as.numeric(ifelse(ScaledConsumption > High, 1, 0))]
-    data[, AnomLow := as.numeric(ifelse(ScaledConsumption < Low, 1, 0))]
+    data[, AnomHigh := as.numeric(ifelse(ValueCol > High, 1, 0))]
+    data[, AnomLow := as.numeric(ifelse(ValueCol < Low, 1, 0))]
     data[, CumAnomHigh := cumsum(AnomHigh), by = list(get(GroupVar1), get(GroupVar2))]
     data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
     data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
