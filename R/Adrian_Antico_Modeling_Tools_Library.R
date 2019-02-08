@@ -874,6 +874,7 @@ ModelDataPrep <- function(data,
 #' @param FalseNegativeCost This is the cost of generating a false negative prediction
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
 #' @param Cores Number of cores on your machine
+#' @param Precision Set the decimal number to increment by between 0 and 1
 #' @examples
 #' test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
 #' data <- RedYellowGreen(calibEval,
@@ -894,7 +895,8 @@ RedYellowGreen <- function(calibEval,
                            FalsePositiveCost = -10,
                            FalseNegativeCost = -50,
                            MidTierCost       = -2,
-                           Cores             = 8) {
+                           Cores             = 8,
+                           Precision         = 0.01) {
 
   # Set up evaluation table
   analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
@@ -906,7 +908,7 @@ RedYellowGreen <- function(calibEval,
                               Threshold = runif(1))
 
   # Do nothing possibilities
-  temp     <- CJ(MTLT = seq(0.0,1.0,0.01), MTHT = seq(0.0,1.0,0.01))[MTHT > MTLT]
+  temp     <- CJ(MTLT = seq(0.0,1.0,Precision), MTHT = seq(0.0,1.0,Precision))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
 
