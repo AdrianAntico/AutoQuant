@@ -4,11 +4,14 @@
 \alias{GenTSAnomVars}
 \title{GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure}
 \usage{
-GenTSAnomVars(data, GroupVar1 = "SKU", GroupVar2 = NULL,
-  DateVar = "DATE", High = 1.96, Low = -1.96, KeepAllCols = FALSE)
+GenTSAnomVars(data, ValueCol = "Value", GroupVar1 = "SKU",
+  GroupVar2 = NULL, DateVar = "DATE", High = 1.96, Low = -1.96,
+  KeepAllCols = FALSE)
 }
 \arguments{
 \item{data}{the source residuals data.table}
+
+\item{ValueCol}{the numeric column to run anomaly detection over}
 
 \item{GroupVar1}{this is a group by variable}
 
@@ -41,5 +44,5 @@ stuff    <- GenTSAnomVars(data,
                           KeepAllCols = FALSE)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
