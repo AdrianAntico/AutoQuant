@@ -906,7 +906,7 @@ RedYellowGreen <- function(calibEval,
                               Threshold = runif(1))
 
   # Do nothing possibilities
-  temp     <- CJ(MTLT = seq(0.01,0.99,0.01), MTHT = seq(0.01,0.99,0.01))[MTHT > MTLT]
+  temp     <- CJ(MTLT = seq(0.0,1.0,0.01), MTHT = seq(0.0,1.0,0.01))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
 
