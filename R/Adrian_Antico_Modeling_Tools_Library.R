@@ -3157,6 +3157,9 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param ratios The percentage of train samples from source data (remainder goes to validation set)
 #' @param BL_Trees The number of trees to build in baseline GBM or RandomForest
 #' @param nthreads Set the number of threads to run function
+#' @param model_path Directory path for where you want your models saved
+#' @param MaxRuntimeSeconds Number of seconds of run time for grid tuning
+#' @param MaxModels Number of models you'd like to have returned
 #' @param Targets Names of target variables in source data
 #' @param Distribution Distribution family, e.g. bernoulli
 #' @param Loss Loss metric for model, e.g. AUC for binary classification
