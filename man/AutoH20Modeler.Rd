@@ -5,7 +5,7 @@
 \title{An Automated Machine Learning Framework using H20}
 \usage{
 AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
-  model_path)
+  model_path, MaxRuntimeSeconds = 3600, MaxModels = 30)
 }
 \arguments{
 \item{Construct}{Core instruction file for automation}
@@ -17,6 +17,12 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{BL_Trees}{The number of trees to build in baseline GBM or RandomForest}
 
 \item{nthreads}{Set the number of threads to run function}
+
+\item{model_path}{Directory path for where you want your models saved}
+
+\item{MaxRuntimeSeconds}{Number of seconds of run time for grid tuning}
+
+\item{MaxModels}{Number of models you'd like to have returned}
 
 \item{Targets}{Names of target variables in source data}
 
@@ -93,6 +99,7 @@ aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))
 aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 aa[, ':=' (x1 = NULL, x2 = NULL)]
 aa[, target := as.factor(ifelse(target > 0.5,1,0))]
+N = 1
 Construct <- data.table(Targets         = "target",
                        Distribution    = "bernoulli",
                        Loss            = "AUC",
@@ -124,5 +131,5 @@ AutoH20Modeler(Construct,
               model_path = getwd())
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
