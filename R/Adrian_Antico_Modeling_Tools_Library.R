@@ -1456,7 +1456,7 @@ ParDepCalPlots <- function(data,
 
   # Prepare for both calibration and boxplot
   if (is.numeric(preds2[[IndepVar]]) || is.integer(preds2[[IndepVar]])) {
-    preds2[, rank := 100*(round(percRank(preds2[[IndepVar]])/bucket, 2)*bucket)]
+    preds2[, rank := 100*(round(percRank(preds2[[IndepVar]])/bucket)*bucket)]
   } else {
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
@@ -1591,7 +1591,7 @@ EvalPlot <- function(data,
   }
 
   # Add a column that ranks predicted values
-  data[, rank := 100*(round(percRank(data[[1]])/bucket, 2)*bucket)]
+  data[, rank := 100*(round(percRank(data[[1]])/bucket)*bucket)]
 
   # Plot
   if(type == "boxplot") {
