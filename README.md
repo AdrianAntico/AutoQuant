@@ -39,24 +39,24 @@
 10. **DT_GDL_Feature_Engineering**: Lags + Moving Averages, all in data.table
 11. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring purposes.
 12. **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
+13. DummifyDT - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels)
 
 ##### Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
-12. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
-13. **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
-14. **threshOptim**: Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models
-15. **H20MultinomialAUC** - computes the micro auc for a multinomial model
-16. **RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
+14. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
+15. **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
+16. **threshOptim**: Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models
+17. **H20MultinomialAUC** - computes the micro auc for a multinomial model
+18. **RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-17. CountSingleDigits - From a project. Can probably delete.
-18. tokenizeH20 - Tokenize and H20 string column.
-19. tempDatesFun - Special case for character conversion to date when importing from Excel.
-20. RemixTheme - Fonts, colors, style for plots.
-21. ChartTheme - Fonts, colors, style for plots.
-22. SimpleCap - Apply proper case to text.
-23. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-24. multiplot - Useful for displaying multiple plots in a single pane.
-25. PrintObjectsSize - print out objects and their sizes that are in the envrionment
-26. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
-27. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
-28. DummifyDT - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels)
+19. CountSingleDigits - From a project. Can probably delete.
+20. tokenizeH20 - Tokenize and H20 string column.
+21. tempDatesFun - Special case for character conversion to date when importing from Excel.
+22. RemixTheme - Fonts, colors, style for plots.
+23. ChartTheme - Fonts, colors, style for plots.
+24. SimpleCap - Apply proper case to text.
+25. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+26. multiplot - Useful for displaying multiple plots in a single pane.
+27. PrintObjectsSize - print out objects and their sizes that are in the envrionment
+28. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
+29. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
