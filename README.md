@@ -39,7 +39,7 @@
 10. **DT_GDL_Feature_Engineering**: Lags + Moving Averages, all in data.table
 11. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring purposes.
 12. **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
-13. DummifyDT - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels)
+13. **DummifyDT** - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels)
 
 ##### Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 14. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
