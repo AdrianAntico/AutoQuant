@@ -3494,20 +3494,23 @@ AutoH20Modeler <- function(Construct,
         x     <- h2o.target_encode_create(data = train,
                                           x = list(col),
                                           y = Construct[i,"Targets"][[1]])
+        # Apply to training data
         train <- h2o.target_encode_apply(train,
                                          x = list(col),
                                          y = Construct[i,"Targets"][[1]],
                                          target_encode_map = x,
-                                         holdout_type = "None",
-                                         blended_avg = TRUE)
+                                         holdout_type = "LeaveOneOut",
+                                         blended_avg = TRUE,
+                                         noise_level = 0)
 
-        # Apply to validation
+        # Apply to validation data
         validate <- h2o.target_encode_apply(validate,
                                             x = list(col),
                                             y = Construct[i,"Targets"][[1]],
                                             target_encode_map = x,
-                                            holdout_type = "None",
-                                            blended_avg = TRUE)
+                                            holdout_type = "LeaveOneOut",
+                                            blended_avg = TRUE,
+                                            noise_level = 0)
 
         save(x, file = paste0(model_path, "/" , Construct[i, "Targets"][[1]], "_", col, ".Rdata"))
       }
