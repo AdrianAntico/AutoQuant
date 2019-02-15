@@ -69,6 +69,8 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{SaveModelType}{Set to standard for h2o file, mojo for mojo file}
 
 \item{PredsAllData}{Set to TRUE to export all data (train + validate) with predicted values}
+
+\item{TargetEncoding}{Put the column numbers in a vector for those you wish to run target encoding on}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
@@ -122,7 +124,8 @@ Construct <- data.table(Targets         = "target",
                        fnProfit        = rep(-5,N),
                        SaveModel       = rep("FALSE",N),
                        SaveModelType   = rep("Mojo",N),
-                       PredsAllData    = TRUE)
+                       PredsAllData    = rep(TRUE,N),
+                       TargetEncoding  = rep("c(3:9)",N))
 AutoH20Modeler(Construct,
               max_memory = "28G",
               ratios = 0.75,
