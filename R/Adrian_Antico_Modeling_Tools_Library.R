@@ -3499,7 +3499,7 @@ AutoH20Modeler <- function(Construct,
                                          x = list(col),
                                          y = Construct[i,"Targets"][[1]],
                                          target_encode_map = x,
-                                         holdout_type = "LeaveOneOut",
+                                         holdout_type = "None",
                                          blended_avg = TRUE,
                                          noise_level = 0)
 
@@ -3508,7 +3508,7 @@ AutoH20Modeler <- function(Construct,
                                             x = list(col),
                                             y = Construct[i,"Targets"][[1]],
                                             target_encode_map = x,
-                                            holdout_type = "LeaveOneOut",
+                                            holdout_type = "None",
                                             blended_avg = TRUE,
                                             noise_level = 0)
 
