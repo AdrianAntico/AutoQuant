@@ -3521,6 +3521,7 @@ AutoH20Modeler <- function(Construct,
       # Turn target columns back to factor
       train[, Construct[i,"Targets"][[1]]] <- as.factor(train[, Construct[i,"Targets"][[1]]])
       validate[, Construct[i,"Targets"][[1]]] <- as.factor(validate[, Construct[i,"Targets"][[1]]])
+      set(Construct, i = i, j = "PD_Data", value = "Validate")
     }
 
     ######################################
