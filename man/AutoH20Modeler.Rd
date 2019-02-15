@@ -70,7 +70,7 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 
 \item{PredsAllData}{Set to TRUE to export all data (train + validate) with predicted values}
 
-\item{TargetEncoding}{Put the column numbers in a vector for those you wish to run target encoding on}
+\item{TargetEncoding}{Supply either NULL or a vector of numeric column references in quotes "c(2:8)"}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
