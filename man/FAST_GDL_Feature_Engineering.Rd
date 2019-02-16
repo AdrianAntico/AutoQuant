@@ -15,9 +15,9 @@ FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
   AscRowByGroup = "BadgeRowNum", RecordsKeep = 1)
 }
 \arguments{
-\item{data}{Core instruction file for automation}
+\item{data}{The data source you want to run the function one}
 
-\item{lags}{The ceiling amount of memory H20 will utilize}
+\item{lags}{The list of specific lags you want to have generated}
 
 \item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
 
@@ -72,5 +72,5 @@ quick_model <- FAST_GDL_Feature_Engineering(quick_model,
                                             AscRowByGroup  = "BadgeRowNum")
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
