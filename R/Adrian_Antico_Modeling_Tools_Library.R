@@ -2742,7 +2742,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'
 #' For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
-#' @param data The data source you want to run the function one
+#' @param data The data source you want to run the function on
 #' @param lags The list of specific lags you want to have generated
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
