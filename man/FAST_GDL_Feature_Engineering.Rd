@@ -15,7 +15,7 @@ FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
   AscRowByGroup = "BadgeRowNum", RecordsKeep = 1)
 }
 \arguments{
-\item{data}{The data source you want to run the function one}
+\item{data}{The data source you want to run the function on}
 
 \item{lags}{The list of specific lags you want to have generated}
 
