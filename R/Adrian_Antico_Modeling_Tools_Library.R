@@ -1301,16 +1301,16 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param cols This is the number of columns in your multiplot
 #' @examples
 #' p1 <- ggplot(data1, aes(x = weeks, y = quantity)) + geom_line()
-#' p1 <- p1 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+#' p1 <- p1 + ChartTheme(Size = 12)
 #'
 #' p2 <- ggplot(data2, aes(x = weeks, y = quantity)) + geom_line()
-#' p2 <- p2 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+#' p2 <- p2 + ChartTheme(Size = 12)
 #'
 #' p3 <- ggplot(data3, aes(x = weeks, y = quantity)) + geom_line()
-#' p3 <- p3 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+#' p3 <- p3 + ChartTheme(Size = 12)
 #'
 #' p4 <- ggplot(data4, aes(x = weeks, y = quantity)) + geom_line()
-#' p4 <- p4 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+#' p4 <- p4 + ChartTheme(Size = 12)
 #'
 #' multiplot(plotlist=list(p1,p2,p3,p4), cols = 2)
 #' @return An object to pass along to ggplot objects following the "+" sign
@@ -1357,18 +1357,18 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #' @export
 ChartTheme <- function(Size = 12) {
   chart_theme <- theme(plot.background = element_rect(fill = "gray94"),
-                       panel.background = element_rect(fill = BackGround, colour = OtherColor, size = 0.25, color = OtherColor),
-                       panel.grid.major = element_line(colour = OtherColor, size=0.01, color = "white", linetype = 1),
-                       panel.grid.minor = element_line(colour = OtherColor, size=0.01, color= "white", linetype = 1),
+                       panel.background = element_rect(fill = "lightsteelblue1", colour = "darkblue", size = 0.25, color = "darkblue"),
+                       panel.grid.major = element_line(colour = "darkblue", size=0.01, color = "white", linetype = 1),
+                       panel.grid.minor = element_line(colour = "darkblue", size=0.01, color= "white", linetype = 1),
                        legend.position = "bottom",
-                       legend.title = element_text(color = OtherColor, size=Size, face = "bold"),
-                       legend.background = element_rect(fill = "gray95",size = 1, linetype = "solid", color = OtherColor),
-                       plot.title=element_text(color = OtherColor, size=Size, face = "bold"),
-                       axis.title=element_text(color = OtherColor, size=Size, face = "bold"),
-                       axis.text=element_text(colour=OtherColor, face = "bold", angle = 90),
+                       legend.title = element_text(color = "darkblue", size=Size, face = "bold"),
+                       legend.background = element_rect(fill = "gray95",size = 1, linetype = "solid", color = "darkblue"),
+                       plot.title=element_text(color = "darkblue", size=Size, face = "bold"),
+                       axis.title=element_text(color = "darkblue", size=Size, face = "bold"),
+                       axis.text=element_text(colour="darkblue", face = "bold", angle = 90),
                        axis.title.x = element_text(margin = margin(t = 20, r = 20, b = 20, l = 20)),
                        axis.title.y = element_text(margin = margin(t = 20, r = 20, b = 20, l = 20)),
-                       panel.border = element_rect(colour = OtherColor, fill = NA, size = 1.5))
+                       panel.border = element_rect(colour = "darkblue", fill = NA, size = 1.5))
   chart_theme
 }
 
