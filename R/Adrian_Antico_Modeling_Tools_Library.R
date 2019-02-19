@@ -1348,17 +1348,14 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #' This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 #'
 #' @author Adrian Antico
-#' @param Background This is the color of the background on the chart
-#' @param OtherColor This is the color for borders and text
+#' @param Size
 #' @examples
 #' p <- ggplot(data, aes(x = weeks, y = quantity)) + geom_line()
-#' p <- p + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+#' p <- p + ChartTheme(Size = 12)
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-ChartTheme <- function(BackGround = "lightsteelblue1",
-                       OtherColor = "navyblue",
-                       Size = 0.25) {
+ChartTheme <- function(Size = 12) {
   chart_theme <- theme(plot.background = element_rect(fill = "gray94"),
                        panel.background = element_rect(fill = BackGround, colour = OtherColor, size = 0.25, color = OtherColor),
                        panel.grid.major = element_line(colour = OtherColor, size=0.01, color = "white", linetype = 1),
