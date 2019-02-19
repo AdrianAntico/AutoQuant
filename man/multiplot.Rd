@@ -21,19 +21,19 @@ Sick of copying this one into your code? Well, not anymore.
 }
 \examples{
 p1 <- ggplot(data1, aes(x = weeks, y = quantity)) + geom_line()
-p1 <- p1 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+p1 <- p1 + ChartTheme(Size = 12)
 
 p2 <- ggplot(data2, aes(x = weeks, y = quantity)) + geom_line()
-p2 <- p2 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+p2 <- p2 + ChartTheme(Size = 12)
 
 p3 <- ggplot(data3, aes(x = weeks, y = quantity)) + geom_line()
-p3 <- p3 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+p3 <- p3 + ChartTheme(Size = 12)
 
 p4 <- ggplot(data4, aes(x = weeks, y = quantity)) + geom_line()
-p4 <- p4 + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+p4 <- p4 + ChartTheme(Size = 12)
 
 multiplot(plotlist=list(p1,p2,p3,p4), cols = 2)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
