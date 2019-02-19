@@ -5,12 +5,16 @@
 \title{H20MultinomialAUC computes the micro auc from a multinomial model}
 \usage{
 H20MultinomialAUC(validate, best_model, targetColNum = 1,
-  targetName = "bla")
+  targetName = "TargetVar")
 }
 \arguments{
 \item{validate}{the data set to run the micro auc on}
 
 \item{best_model}{the model object you wish to test}
+
+\item{targetColNum}{the column number of the target variable}
+
+\item{targetName}{the name, in quotes, of the target variable}
 }
 \value{
 Micro AUC
@@ -19,7 +23,7 @@ Micro AUC
 H20MultinomialAUC computes the micro auc from a multinomial model
 }
 \examples{
-auc_val <- H20MultinomialAUC(validate, best_model)
+auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 }
 \author{
 Adrian Antico
