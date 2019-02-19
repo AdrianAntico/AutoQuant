@@ -958,7 +958,7 @@ RedYellowGreen <- function(calibEval,
         set(new, i = k, j = 7L, value = x[[1]])
         temp <- x[[2]]
         set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
-        print(k/nrow(new))
+        #print(k/nrow(new))
         #print(k)
       }
       return(new)
@@ -1494,7 +1494,7 @@ ParDepCalPlots <- function(data,
       scale_colour_manual("",
                           breaks = c("Actuals", "Predicted"),
                           values = c("blue", "red")) +
-      ChartTheme(Background, Borders, Size = 15) + ggtitle("Partial Dependence Calibration Plot")
+      ChartTheme(Size = 15) + ggtitle("Partial Dependence Calibration Plot")
     #plot <- plotly_build(ggplotly(plot))
   } else if (type == "boxplot"){
     # Partial dependence boxplot
@@ -1518,7 +1518,7 @@ ParDepCalPlots <- function(data,
       geom_boxplot(aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
       ggtitle("Partial Dependence Calibration Boxplot") +
       xlab(eval(IndepVar)) +
-      ChartTheme(Background, Borders, Size= 15)
+      ChartTheme(Size= 15)
     #plot <- plotly_build(ggplotly(plot))
   } else if (type == "FactorVar") {
     keep <- c(IndepVar, ActColName)
@@ -1536,7 +1536,7 @@ ParDepCalPlots <- function(data,
       geom_bar(stat="identity", position="dodge", aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
       ggtitle("Partial Dependence Calibration Barplot") +
       xlab(eval(IndepVar)) +
-      ChartTheme(Background, Borders, Size= 15)
+      ChartTheme(Size= 15)
     #plot <- plotly_build(ggplotly(plot))
   }
   return(plot)
@@ -1613,7 +1613,7 @@ EvalPlot <- function(data,
       geom_boxplot(outlier.color = "red", color = "black") +
       ggtitle("Calibration Evaluation Boxplot") +
       xlab("Predicted Percentile") + ylab("Observed Values") +
-      ChartTheme(BackGround = "lightsteelblue1", OtherColor = "navyblue", Size= 15)
+      ChartTheme(Size= 15)
 
   } else {
     # Aggregate all columns by rank, utilizing mean as the aggregator statistic
@@ -1628,7 +1628,7 @@ EvalPlot <- function(data,
       theme(axis.text.x=element_text(angle=90, hjust=1)) +
       theme(legend.position="bottom") +
       ggtitle("Calibration Evaluation Plot") +
-      ChartTheme(BackGround = "lightsteelblue1", OtherColor = "navyblue", Size= 15)
+      ChartTheme(Size= 15)
   }
   return(plot)
 }
@@ -3180,7 +3180,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param SaveModel Set to TRUE to save model
 #' @param SaveModelType Set to standard for h2o file, mojo for mojo file
 #' @param PredsAllData Set to TRUE to export all data (train + validate) with predicted values
-#' @param TargetEncoding Put the column numbers in a vector for those you wish to run target encoding on
+#' @param TargetEncoding Supply either NA or a vector of numeric column references in quotes "c(2:8)"
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @examples
 #'Correl <- 0.85
@@ -3223,7 +3223,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                        SaveModel       = rep("FALSE",N),
 #'                        SaveModelType   = rep("Mojo",N),
 #'                        PredsAllData    = rep(TRUE,N),
-#'                        TargetEncoding  = rep("c(3:9)",N))
+#'                        TargetEncoding  = rep(NA,N))
 #'AutoH20Modeler(Construct,
 #'               max_memory = "28G",
 #'               ratios = 0.75,
@@ -3484,7 +3484,7 @@ AutoH20Modeler <- function(Construct,
     # Target Encoding
     ######################################
 
-    if(!is.null(Construct[i, "TargetEncoding"][[1]])) {
+    if(!is.na(Construct[i, "TargetEncoding"][[1]])) {
       TEncode <- eval(parse(text = Construct[i, "TargetEncoding"][[1]]))
       cols <- names(train)[TEncode]
       train[, Construct[i,"Targets"][[1]]] <- as.numeric(train[, Construct[i,"Targets"][[1]]])
@@ -3493,6 +3493,7 @@ AutoH20Modeler <- function(Construct,
         x     <- h2o.target_encode_create(data = train,
                                           x = list(col),
                                           y = Construct[i,"Targets"][[1]])
+
         # Apply to training data
         train <- h2o.target_encode_apply(train,
                                          x = list(col),
