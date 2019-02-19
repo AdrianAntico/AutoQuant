@@ -28,11 +28,13 @@ DummifyDT <- function(data, cols, KeepBaseCols = TRUE) {
 #' @author Adrian Antico
 #' @param validate the data set to run the micro auc on
 #' @param best_model the model object you wish to test
+#' @param targetColNum the column number of the target variable
+#' @param targetName the name, in quotes, of the target variable
 #' @examples
-#' auc_val <- H20MultinomialAUC(validate, best_model)
+#' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
 #' @export
-H20MultinomialAUC <- function(validate, best_model, targetColNum = 1, targetName = "bla") {
+H20MultinomialAUC <- function(validate, best_model, targetColNum = 1, targetName = "TargetVar") {
   xx <- as.data.table(h2o.cbind(validate[,targetColNum],h2o.predict(best_model, newdata = validate)))
   xx[, predict := as.character(predict)]
   xx[, vals := 0.5]
