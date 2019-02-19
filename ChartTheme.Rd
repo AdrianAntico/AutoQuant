@@ -4,8 +4,10 @@
 \alias{ChartTheme}
 \title{ChartTheme function is a ggplot theme generator for ggplots}
 \usage{
-ChartTheme(BackGround = "lightsteelblue1", OtherColor = "navyblue",
-  Size = 12)
+ChartTheme(Size = 12)
+}
+\arguments{
+\item{Size}{The size of the axis labels and title}
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign
