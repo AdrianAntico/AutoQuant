@@ -1348,7 +1348,7 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #' This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 #'
 #' @author Adrian Antico
-#' @param Size
+#' @param Size The size of the axis labels and title
 #' @examples
 #' p <- ggplot(data, aes(x = weeks, y = quantity)) + geom_line()
 #' p <- p + ChartTheme(Size = 12)
