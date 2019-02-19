@@ -4,13 +4,7 @@
 \alias{ChartTheme}
 \title{ChartTheme function is a ggplot theme generator for ggplots}
 \usage{
-ChartTheme(BackGround = "lightsteelblue1", OtherColor = "navyblue",
-  Size = 0.25)
-}
-\arguments{
-\item{OtherColor}{This is the color for borders and text}
-
-\item{Background}{This is the color of the background on the chart}
+ChartTheme(Size = 12)
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign
@@ -20,9 +14,9 @@ This function helps your ggplots look professional with the choice of the two ma
 }
 \examples{
 p <- ggplot(data, aes(x = weeks, y = quantity)) + geom_line()
-p <- p + ChartTheme(BackGround = "aquamarine", OtherColor = "purple4")
+p <- p + ChartTheme(Size = 12)
 p
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
