@@ -1638,8 +1638,8 @@ EvalPlot <- function(data,
 #'
 #' Builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
-#' @param data Core instruction file for automation
-#' @param lags The ceiling amount of memory H20 will utilize
+#' @param data The data source you want to run the function on
+#' @param lags The list of specific lags you want to have generated
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
 #' @param targets The column(s) in which you will build your lags and rolling stats
@@ -1991,8 +1991,8 @@ GDL_Feature_Engineering <- function(data,
 #'
 #' Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
 #' @author Adrian Antico
-#' @param data Core instruction file for automation
-#' @param lags The ceiling amount of memory H20 will utilize
+#' @param data The data source you want to run the function on
+#' @param lags The list of specific lags you want to have generated
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
 #' @param targets The column(s) in which you will build your lags and rolling stats
 #' @param groupingVars Categorical variables you will build your lags and rolling stats by
@@ -2364,8 +2364,8 @@ DT_GDL_Feature_Engineering <- function(data,
 #'
 #' For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
-#' @param data Core instruction file for automation
-#' @param lags The ceiling amount of memory H20 will utilize
+#' @param data The data source you want to run the function on
+#' @param lags The list of specific lags you want to have generated
 #' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
 #' @param targets The column(s) in which you will build your lags and rolling stats
