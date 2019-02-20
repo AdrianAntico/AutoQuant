@@ -37,7 +37,7 @@
 8. **GDL_Feature_Engineering**: Generate a wider set of features (similar in structure to FAST_GDL) using any aggregation statistic for the rolling stats.
 9. **Scoring_GDL_Feature_Engineering**: Generate the model features from FAST_GDL or GDL for scoring purposes when the scoring data is for forward looking predictions (not historical, which can be obtained from FAST_GDL or GDL).
 10. **DT_GDL_Feature_Engineering**: Lags + Moving Averages, all in data.table
-11. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring purposes.
+11. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
 12. **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
 13. **DummifyDT** - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels)
 
