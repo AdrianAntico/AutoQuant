@@ -35,6 +35,7 @@ for (i in as.integer(1:500)) {
 # To keep original values
 data1 <- copy(data)
 
+# Model data
 data2 <- merge(data1,
                nlsModelFit(data = data, y = "Target", x = "Variable", monotonic = FALSE),
                by = "Variable",
