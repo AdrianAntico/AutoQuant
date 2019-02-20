@@ -530,7 +530,7 @@ AutoTS <- function(data,
   # 1)
   print("NNet FITTING")
   k <- 0L
-  temp <- data.table(Lag = rep(1L, 50), Slag = rep(1L, 50), meanResid = rnorm(50), sdResid = rnorm(50))
+  temp <- data.table(Lag = rep(1L, Lags*Slags), Slag = rep(1L, Lags*Slags), meanResid = rnorm(Lags*Slags), sdResid = rnorm(Lags*Slags))
   for (lags in 1:Lags) {
     for (slags in 1:SLags) {
       k <- k + 1L
@@ -725,7 +725,7 @@ AutoTS <- function(data,
       }
     }
   } else {
-    if(Modelname == "PROPHET") {
+    if(BestModel == "PROPHET") {
       PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
       FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
     } else {
