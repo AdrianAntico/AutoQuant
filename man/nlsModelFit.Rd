@@ -22,8 +22,24 @@ A data table with your original column replaced by the nls model predictions
 This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 }
 \examples{
-data <- data[, value := nlsModelFit(y = "Target", x = "Variable")]
+data <- data.table(Variable = seq(1,500,1), Target = rep(1, 500))
+for (i in as.integer(1:500)) {
+  if(i == 1) {
+    var <- data[i, "Variable"][[1]]
+    set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+  } else {
+    var = data[i-1, "Target"][[1]]
+    set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+  }
+}
+# To keep original values
+data1 <- copy(data)
+
+data2 <- merge(data1,
+               nlsModelFit(data = data, y = "Target", x = "Variable", monotonic = FALSE),
+               by = "Variable",
+               all = TRUE)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }

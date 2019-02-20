@@ -17,9 +17,9 @@ GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
   "Lead"), Timer = TRUE, SkipCols = NULL, SimpleImpute = TRUE)
 }
 \arguments{
-\item{data}{Core instruction file for automation}
+\item{data}{The data source you want to run the function on}
 
-\item{lags}{The ceiling amount of memory H20 will utilize}
+\item{lags}{The list of specific lags you want to have generated}
 
 \item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
 
@@ -74,5 +74,5 @@ quick_model <- GDL_Feature_Engineering(quick_model,
                                        SimpleImpute   = TRUE)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
