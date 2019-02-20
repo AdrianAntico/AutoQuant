@@ -665,8 +665,27 @@ AutoTS <- function(data,
   setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
   
   # 1)
-  PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                            error = function(x) "empty")
+  # Define TS Frequency
+  if(tolower(TimeUnit) == "hour") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                              error = function(x) "empty")
+  } else if (tolower(TimeUnit) == "day") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
+                              error = function(x) "empty")
+  } else if (tolower(TimeUnit) == "week") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+                              error = function(x) "empty")
+  } else if (tolower(TimeUnit) == "month") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                              error = function(x) "empty")
+  } else if (tolower(TimeUnit) == "quarter") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                              error = function(x) "empty")
+  } else if (tolower(TimeUnit) == "year") {
+    PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
+                              error = function(x) "empty")
+  }
+  
   
   if(tolower(class(PROPHET_model)[1]) == "prophet") {
     i <- i + 1
