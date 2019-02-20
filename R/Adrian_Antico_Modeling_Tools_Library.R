@@ -372,28 +372,28 @@ AutoTS <- function(data,
                    Lags           = 25,
                    SLags          = 2,
                    Ensemble       = FALSE) {
-
+  
   # Initialize collection variables
   i <- 0
   EvalList <- list()
   ModelList <- list()
-
+  
   # Convert to data.table if not already
   if (!is.data.table(data)) data <- as.data.table(data)
-
+  
   # Convert to as_date()
   data[, eval(DateName) := as_date(get(DateName))]
-
+  
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
-
+  
   # Create Test data
   data_test <- data[(nrow(data)-HoldOutPeriods+1):nrow(data)]
-
+  
   # Check for different time aggregations
   MaxDate <- data_train[, max(get(DateName))]
   FC_Data <- data.table(Date = seq(1:(HoldOutPeriods + FCPeriods)))
-
+  
   # Define TS Frequency
   if(tolower(TimeUnit) == "hour") {
     freq = 24
@@ -414,18 +414,18 @@ AutoTS <- function(data,
     freq = 1
     FC_Data[, Date := MaxDate + years(Date)]
   }
-
+  
   # Convert data.tables to ts objects
   dataTSTrain <- copy(data_train)
   dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
-
+  
   if(Ensemble) {
     MaxTDate <- data_train[, max(get(DateName))]
     FC_TRAIN_Data <- copy(data_train)
     FC_TRAIN_Data <- FC_TRAIN_Data[(nrow(FC_TRAIN_Data)-HoldOutPeriods + 1):nrow(FC_TRAIN_Data),]
     FC_TRAIN_Data[, Date := MaxTDate + Date]
   }
-
+  
   # ARFIMA-------------
   # 1)
   print("ARFIMA FITTING")
@@ -433,7 +433,7 @@ AutoTS <- function(data,
                                              lambda = TRUE,
                                              biasadj = TRUE)},
                            error = function(x) "empty")
-
+  
   # Collect Test Data for Model Comparison
   # 2)
   if(tolower(class(ARFIMA_model)) == "fracdiff") {
@@ -442,18 +442,18 @@ AutoTS <- function(data,
     data_test_ARF[, ':=' (Target = as.numeric(Target),
                           ModelName = rep("ARFIMA",HoldOutPeriods),
                           FC_Eval = as.numeric(forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_ARF[, ':=' (Resid = get(TargetName) - FC_Eval,
                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_ARF
     ModelList[[i]] <- ARFIMA_model
   }
-
+  
   # ARIMA-------------
   # 1)
   print("ARIMA FITTING")
@@ -468,7 +468,7 @@ AutoTS <- function(data,
                                                 lambda = TRUE,
                                                 biasadj = TRUE)},
                           error = function(x) "empty")
-
+  
   # Collect Test Data for Model Comparison
   # 2)
   if(tolower(class(ARIMA_model)[1]) == "arima") {
@@ -477,18 +477,18 @@ AutoTS <- function(data,
     data_test_ARI[, ':=' (Target = as.numeric(Target),
                           ModelName = rep("ARIMA",HoldOutPeriods),
                           FC_Eval = as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_ARI[, ':=' (Resid = get(TargetName) - FC_Eval,
                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_ARI
     ModelList[[i]] <- ARIMA_model
   }
-
+  
   # EXPONENTIAL SMOOTHING-------------
   # 1)
   print("ETS FITTING")
@@ -514,23 +514,23 @@ AutoTS <- function(data,
     data_test_ETS[, ':=' (Target = as.numeric(Target),
                           ModelName = rep("ETS",HoldOutPeriods),
                           FC_Eval = as.numeric(forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_ETS[, ':=' (Resid = get(TargetName) - FC_Eval,
                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_ETS
     ModelList[[i]] <- EXPSMOOTH_model
   }
-
+  
   # Neural Network-------------
   # 1)
   print("NNet FITTING")
   k <- 0L
-  temp <- data.table(Lag = rep(1L, Lags*Slags), Slag = rep(1L, Lags*Slags), meanResid = rnorm(Lags*Slags), sdResid = rnorm(Lags*Slags))
+  temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
   for (lags in 1:Lags) {
     for (slags in 1:SLags) {
       k <- k + 1L
@@ -542,13 +542,13 @@ AutoTS <- function(data,
       set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
     }
   }
-
+  
   # Identify best model and retrain it
   LagNN <- temp[order(meanResid)][1,][,1][[1]]
   SLagNN <- temp[order(meanResid)][1,][,2][[1]]
   NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], p = LagNN, P = SLagNN)},
                            error = function(x) "empty")
-
+  
   # Collect Test Data for Model Comparison
   # 2)
   if(tolower(class(NNETAR_model)) == "nnetar") {
@@ -557,24 +557,24 @@ AutoTS <- function(data,
     data_test_NN[, ':=' (Target = as.numeric(Target),
                          ModelName = rep("NN",HoldOutPeriods),
                          FC_Eval = as.numeric(forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_NN[, ':=' (Resid = get(TargetName) - FC_Eval,
                          PercentError = get(TargetName) / (FC_Eval+1) - 1,
                          AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_NN
     ModelList[[i]] <- NNETAR_model
   }
-
+  
   # CUBIC SMOOTHING SPLINE-------------
   # 1)
   print("SPLINE FITTING")
   splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)},
                             error = function(x) "empty")
-
+  
   if(tolower(class(splinef_model)) == "forecast") {
     i <- i + 1
     # Collect Test Data for Model Comparison
@@ -583,18 +583,18 @@ AutoTS <- function(data,
     data_test_CS[, ':=' (Target = as.numeric(Target),
                          ModelName = rep("CS",HoldOutPeriods),
                          FC_Eval = as.numeric(forecast::forecast(splinef_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_CS[, ':=' (Resid = get(TargetName) - FC_Eval,
                          PercentError = get(TargetName) / (FC_Eval+1) - 1,
                          AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_CS
     ModelList[[i]] <- splinef_model
   }
-
+  
   # TBATS-------------
   # 1)
   print("TBATS FITTING")
@@ -603,7 +603,7 @@ AutoTS <- function(data,
                                            lambda = TRUE,
                                            biasadj = TRUE)},
                           error = function(x) "empty")
-
+  
   if(class(TBATS_model)[1] == "tbats" | class(TBATS_model)[1] == "bats") {
     i <- i + 1
     # Collect Test Data for Model Comparison
@@ -612,18 +612,18 @@ AutoTS <- function(data,
     data_test_TBATS[, ':=' (Target = as.numeric(Target),
                             ModelName = rep("TBATS",HoldOutPeriods),
                             FC_Eval = as.numeric(forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_TBATS[, ':=' (Resid = get(TargetName) - FC_Eval,
                             PercentError = get(TargetName) / (FC_Eval+1) - 1,
                             AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_TBATS
     ModelList[[i]] <- TBATS_model
   }
-
+  
   # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
   # 1)
   print("TSLM FITTING")
@@ -631,7 +631,7 @@ AutoTS <- function(data,
                                          lambda = TRUE,
                                          biasadj = TRUE)},
                          error = function(x) "empty")
-
+  
   if(tolower(class(TSLM_model)[1]) == "tslm") {
     i <- i + 1
     # Collect Test Data for Model Comparison
@@ -640,18 +640,18 @@ AutoTS <- function(data,
     data_test_TSLM[, ':=' (Target = as.numeric(Target),
                            ModelName = rep("TSLM",HoldOutPeriods),
                            FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
-
+    
     # Add Evaluation Columns
     # 3)
     data_test_TSLM[, ':=' (Resid = get(TargetName) - FC_Eval,
                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_TSLM
     ModelList[[i]] <- TSLM_model
   }
-
+  
   # Prophet Model-------------
   print("PROPHET FITTING")
   if(TimeUnit == "hour") {
@@ -659,19 +659,19 @@ AutoTS <- function(data,
   } else {
     ProphetTimeUnit <- TimeUnit
   }
-
+  
   max_date <- data_train[, max(DateTime)]
   dataProphet <- copy(data_train)
   setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
-
+  
   # 1)
   PROPHET_model <- tryCatch({prophet(df = dataProphet)},
                             error = function(x) "empty")
-
+  
   if(tolower(class(PROPHET_model)[1]) == "prophet") {
     i <- i + 1
     PROPHET_future <- as.data.table(prophet::make_future_dataframe(PROPHET_model, periods = HoldOutPeriods, freq = ProphetTimeUnit))[ds > max_date]
-
+    
     # Collect Test Data for Model Comparison
     # 2)
     data_test_PROPHET <- copy(data_test)
@@ -683,30 +683,30 @@ AutoTS <- function(data,
     data_test_PROPHET[, ':=' (Resid = get(TargetName) - FC_Eval,
                               PercentError = get(TargetName) / (FC_Eval+1) - 1,
                               AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
-
+    
     # Collect model filename
     EvalList[[i]] <- data_test_PROPHET
     ModelList[[i]] <- PROPHET_model
   }
-
+  
   # Model Collection-------------
   print("FIND WINNER")
   dataEval <- rbindlist(EvalList)
-
+  
   # Model Evaluation
   Eval <- dataEval[, .(MeanResid = mean(Resid, na.rm = TRUE),
                        MeanPercError = mean(PercentError, na.rm = TRUE),
                        MAPE = mean(AbsolutePercentError, na.rm = TRUE)),
                    by = ModelName][, ID := 1:.N]
-
+  
   # Get model name vector
   modList <- Eval[["ModelName"]]
-
+  
   # Grab Winning Model
   BestModelEval <- Eval[order(MAPE)]
   BestModel <- BestModelEval[1,"ModelName"][[1]]
   BestModelRef <- BestModelEval[1, "ID"][[1]]
-
+  
   # Generate Forecasts
   print("GENERATE FORECASTS")
   if(Ensemble) {
