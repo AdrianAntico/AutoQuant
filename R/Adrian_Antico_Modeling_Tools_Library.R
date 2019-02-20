@@ -1168,7 +1168,24 @@ threshOptim <- function(data,
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @examples
-#' data <- data[, value := nlsModelFit(y = "Target", x = "Variable")]
+#' data <- data.table(Variable = seq(1,500,1), Target = rep(1, 500))
+#' for (i in as.integer(1:500)) {
+#'   if(i == 1) {
+#'     var <- data[i, "Variable"][[1]]
+#'     set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+#'   } else {
+#'     var = data[i-1, "Target"][[1]]
+#'     set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+#'   }
+#' }
+#' # To keep original values
+#' data1 <- copy(data)
+#'
+# Model data
+#' data2 <- merge(data1,
+#'                nlsModelFit(data = data, y = "Target", x = "Variable", monotonic = FALSE),
+#'                by = "Variable",
+#'                all = TRUE)
 #' @return A data table with your original column replaced by the nls model predictions
 #' @export
 nlsModelFit <- function(data, y, x, monotonic = TRUE) {
@@ -1199,7 +1216,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
         preds    <- baseline$fitted.values
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
-        set(nls_collection, 1, 2, value = val0)
+        set(nls_collection, 1L, 2L, value = val0)
       },error=function(x) {return("skip")})
     }
   },error=function(x) {return("skip")})
@@ -1208,7 +1225,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds1 <- fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
     val    <- mean(abs(zz - preds1))
-    set(nls_collection, 2, 2, value = val1)
+    set(nls_collection, 2L, 2L, value = val1)
   },error=function(x) {return("skip")})
 
   # Asymp offset model
@@ -1217,7 +1234,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds2 <- fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
     va2    <- mean(abs(zz - preds2))
-    set(nls_collection, 3, 2, value = val2)
+    set(nls_collection, 3L, 2L, value = val2)
   },error=function(x) {return("skip")})
 
   # Asymp origin model
@@ -1226,7 +1243,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds3 <- fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
     va3    <- mean(abs(zz - preds3))
-    set(nls_collection, 4, 2, value = val3)
+    set(nls_collection, 4L, 2L, value = val3)
   },error=function(x) {return("skip")})
 
   # Biexp model
@@ -1235,7 +1252,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds4 <- fitted(model4, DATA)
     preds4[preds4 < 0] <- 0
     val4   <- mean(abs(zz - preds4))
-    set(nls_collection, 5, 2, value = val4)
+    set(nls_collection, 5L, 2L, value = val4)
   },error=function(x) {return("skip")})
 
   # Four parameter logistic model
@@ -1244,7 +1261,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds5 <- fitted(model5, DATA)
     preds5[preds5 < 0] <- 0
     val5   <- mean(abs(zz - preds5))
-    set(nls_collection, 6, 2, value = val5)
+    set(nls_collection, 6L, 2L, value = val5)
   },error=function(x) {return("skip")})
 
   # Gompertz model
@@ -1253,7 +1270,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds6 <- fitted(model6, DATA)
     preds6[preds6 < 0] <- 0
     val6   <- mean(abs(zz - preds6))
-    set(nls_collection, 7, 2, value = val6)
+    set(nls_collection, 7L, 2L, value = val6)
   },error=function(x) {return("skip")})
 
   # Logistic model
@@ -1262,7 +1279,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds7 <- fitted(model7, DATA)
     preds7[preds7 < 0] <- 0
     val7   <- mean(abs(zz - preds7))
-    set(nls_collection, 8, 2, value = val7)
+    set(nls_collection, 8L, 2L, value = val7)
   },error=function(x) {return("skip")})
 
   # Michaelis-Menton model
@@ -1271,7 +1288,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds8 <- fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
     val8   <- mean(abs(zz - preds8))
-    set(nls_collection, 9, 2, value = val8)
+    set(nls_collection, 9L, 2L, value = val8)
   },error=function(x) {return("skip")})
 
   # Weibull Growth model
@@ -1280,7 +1297,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     preds9 <- fitted(model9, DATA)
     preds9[preds9 < 0] <- 0
     val9   <- mean(abs(zz - preds9))
-    set(nls_collection, 10, 2, value = val9)
+    set(nls_collection, 10L, 2L, value = val9)
   },error=function(x) {return("skip")})
 
   # Store best model name
@@ -1288,25 +1305,35 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 
   # Create column using best model
   if(name == nls_collection[10,1][[1]]) {
-    return(DATA[, eval(y) := preds9])
+    DATA[, eval(y) := preds9]
+    return(DATA)
   } else if (name == nls_collection[2,1][[1]]) {
-    return(DATA[, eval(y) := preds1])
+    DATA[, eval(y) := preds1]
+    return(DATA)
   } else if (name == nls_collection[3,1][[1]]) {
-    return(DATA[, eval(y) := preds2])
+    DATA[, eval(y) := preds2]
+    return(DATA)
   } else if (name == nls_collection[4,1][[1]]) {
-    return(DATA[, eval(y) := preds3])
+    DATA[, eval(y) := preds3]
+    return(DATA)
   } else if (name == nls_collection[5,1][[1]]) {
-    return(DATA[, eval(y) := preds4])
+    DATA[, eval(y) := preds4]
+    return(DATA)
   } else if (name == nls_collection[6,1][[1]]) {
-    return(DATA[, eval(y) := preds5])
+    DATA[, eval(y) := preds5]
+    return(DATA)
   } else if (name == nls_collection[7,1][[1]]) {
-    return(DATA[, eval(y) := preds6])
+    DATA[, eval(y) := preds6]
+    return(DATA)
   } else if (name == nls_collection[8,1][[1]]) {
-    return(DATA[, eval(y) := preds7])
+    DATA[, eval(y) := preds7]
+    return(DATA)
   } else if (name == nls_collection[9,1][[1]]) {
-    return(DATA[, eval(y) := preds8])
+    DATA[, eval(y) := preds8]
+    return(DATA)
   } else {
-    return(DATA[, eval(y) := preds])
+    DATA[, eval(y) := preds]
+    return(DATA)
   }
 }
 
