@@ -1748,12 +1748,27 @@ GDL_Feature_Engineering <- function(data,
         # Difference the lag dates
         if(WindowingLag != 0) {
           for(l in seq_along(lags)) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) || l == 1) {
-              data[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(
-                  get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                  get(paste0(groupingVars[i],"TEMP",lags[l])),
-                  units = eval(timeAgg))), by = get(groupingVars[i])]
+            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
+              data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
+                difftime(get(sortDateName),
+                         get(paste0(groupingVars[i],"TEMP",lags[l])),
+                         units = eval(timeAgg))), by = get(groupingVars[i])]
+              CounterIndicator = CounterIndicator + 1
+              if(Timer) {
+                print(CounterIndicator / runs)
+              }
+            } else {
+              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
+                  difftime(
+                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
+                    get(paste0(groupingVars[i],"TEMP",lags[l])),
+                    units = eval(timeAgg))), by = get(groupingVars[i])]
+                CounterIndicator = CounterIndicator + 1
+                if(Timer) {
+                  print(CounterIndicator / runs)
+                }
+              }
             }
           }
         } else {
