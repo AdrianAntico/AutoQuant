@@ -27,10 +27,6 @@ GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, nthreads = 4,
 
 \item{Loss}{set to one of "Quadratic", "Absolute", "Huber", "Poisson", "Hinge", "Logistic", "Periodic"}
 
-\item{Gamma_x}{regularization weight on X matrix}
-
-\item{Gamma_y}{regularization weight on y matrix}
-
 \item{glrmMaxIters}{max number of iterations}
 
 \item{SVDMethod}{choose from "Randomized","GramSVD","Power"}
@@ -46,5 +42,5 @@ Original data.table with added column with cluster number identifier
 GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
