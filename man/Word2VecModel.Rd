@@ -7,13 +7,13 @@
 Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
   "Q69_Ans", "Q70_Ans", "Q71_Ans", "Q72_Ans", "Q73_Ans", "Q74_Ans",
   "Q75_Ans", "Q76_Ans", "Q77_Ans", "Q78_Ans", "Q79_Ans", "Q80_Ans",
-  "Q81_Ans", "Q82_Ans", "Q83_Ans", "Q84_Ans"), KeepStringCol = FALSE,
+  "Q81_Ans", "Q82_Ans", "Q83_Ans"), KeepStringCol = FALSE,
   model_path = getwd(), ModelID = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
   "Q69_Ans", "Q70_Ans", "Q71_Ans", "Q72_Ans", "Q73_Ans", "Q74_Ans",
   "Q75_Ans", "Q76_Ans", "Q77_Ans", "Q78_Ans", "Q79_Ans", "Q80_Ans",
-  "Q81_Ans", "Q82_Ans", "Q83_Ans", "Q84_Ans"), vects = 5,
-  SaveStopWords = FALSE, MinWords = 1, WindowSize = 1, Epochs = 25,
-  StopWords = NULL)
+  "Q81_Ans", "Q82_Ans", "Q83_Ans"), vects = 5, SaveStopWords = FALSE,
+  MinWords = 1, WindowSize = 1, Epochs = 25, StopWords = NULL,
+  SaveModel = "standard")
 }
 \arguments{
 \item{stringCol}{A string name for the column to convert via word2vec}
@@ -35,6 +35,8 @@ Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
 \item{Epochs}{For H20 word2vec model}
 
 \item{StopWords}{For H20 word2vec model}
+
+\item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo}
 
 \item{data}{Source data table to merge vects onto}
 }
