@@ -6,7 +6,7 @@
 \usage{
 GenTSAnomVars(data, ValueCol = "Value", GroupVar1 = "SKU",
   GroupVar2 = NULL, DateVar = "DATE", High = 1.96, Low = -1.96,
-  KeepAllCols = FALSE)
+  KeepAllCols = FALSE, DataScaled = TRUE)
 }
 \arguments{
 \item{data}{the source residuals data.table}
@@ -24,6 +24,8 @@ GenTSAnomVars(data, ValueCol = "Value", GroupVar1 = "SKU",
 \item{Low}{this is the threshold on the low end}
 
 \item{KeepAllCols}{set to TRUE to remove the intermediate features}
+
+\item{DataScaled}{set to TRUE if you already scaled your data}
 }
 \value{
 The original data.table with the added columns merged in
@@ -32,16 +34,21 @@ The original data.table with the added columns merged in
 GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them.
 }
 \examples{
-data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
-data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
-data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
+# Create data
+data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(10000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data[order(DateTime)]
+x <- as.data.table(sde::GBM(N=10000)*1000)
+data[, predicted := x[-1,]]
 stuff    <- GenTSAnomVars(data,
-                          GroupVar1   = "a",
+                          ValueCol    = "Target",
+                          GroupVar1   = NULL,
                           GroupVar2   = NULL,
-                          DateVar     = NULL,
+                          DateVar     = "DateTime",
                           High        = 1.96,
                           Low         = -1.96,
-                          KeepAllCols = FALSE)
+                          KeepAllCols = TRUE,
+                          DataScaled  = FALSE)
 }
 \author{
 Adrian Antico
