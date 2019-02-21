@@ -135,42 +135,68 @@ GenTSAnomVars <- function(data,
                           DateVar     = "DATE",
                           High        = 1.96,
                           Low         = -1.96,
-                          KeepAllCols = FALSE) {
-  if(is.null(GroupVar2)) {
-    data <- data[order(get(GroupVar1), get(DateVar))]
-    data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
-    data[, AnomHigh := as.numeric(ifelse(ValueCol > High, 1, 0))]
-    data[, AnomLow := as.numeric(ifelse(ValueCol < Low, 1, 0))]
-    data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
-    data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
-    data[, AnomHighRate := CumAnomHigh / RowNumAsc]
-    data[, AnomLowRate := CumAnomLow / RowNumAsc]
-    if(!KeepAllCols) {
-      data[, ':=' (AnomHigh = NULL,
-                   AnomLow = NULL,
-                   CumAnomHigh = NULL,
-                   CumAnomLow = NULL,
-                   RowNumAsc = NULL)]
-    }
-    return(data)
-  } else {
-    data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
-    data[, RowNumAsc := 1:.N, by = list(get(GroupVar1), get(GroupVar2))]
-    data[, AnomHigh := as.numeric(ifelse(ValueCol > High, 1, 0))]
-    data[, AnomLow := as.numeric(ifelse(ValueCol < Low, 1, 0))]
-    data[, CumAnomHigh := cumsum(AnomHigh), by = list(get(GroupVar1), get(GroupVar2))]
-    data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
-    data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
-    data[, paste0(GroupVar2, "AnomLowRate") := CumAnomLow / RowNumAsc]
-    if(!KeepAllCols) {
-      data[, ':=' (AnomHigh = NULL,
-                   AnomLow = NULL,
-                   CumAnomHigh = NULL,
-                   CumAnomLow = NULL,
-                   RowNumAsc = NULL)]
+                          KeepAllCols = FALSE,
+                          DataScaled  = TRUE) {
+  
+  if(!DataScaled) {
+    data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]    
+  }
+
+  
+  # Global check for date
+  if(!is.null(DateVar)) {
+    if(is.null(GroupVar1) & is.null(GroupVar2)) {
+      data <- data[order(get(DateVar))]
+      data[, RowNumAsc := 1:.N]
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
+      data[, CumAnomHigh := cumsum(AnomHigh)]
+      data[, CumAnomLow := cumsum(AnomLow)]
+      data[, AnomHighRate := CumAnomHigh / RowNumAsc]
+      data[, AnomLowRate := CumAnomLow / RowNumAsc]
+      if(!KeepAllCols) {
+        data[, ':=' (AnomHigh = NULL,
+                     AnomLow = NULL,
+                     CumAnomHigh = NULL,
+                     CumAnomLow = NULL,
+                     RowNumAsc = NULL)]
+      }
+    } else if(is.null(GroupVar2) & !is.null(GroupVar1)) {
+      data <- data[order(get(GroupVar1), get(DateVar))]
+      data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
+      data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
+      data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
+      data[, AnomHighRate := CumAnomHigh / RowNumAsc]
+      data[, AnomLowRate := CumAnomLow / RowNumAsc]
+      if(!KeepAllCols) {
+        data[, ':=' (AnomHigh = NULL,
+                     AnomLow = NULL,
+                     CumAnomHigh = NULL,
+                     CumAnomLow = NULL,
+                     RowNumAsc = NULL)]
+      }
+    } else if (!is.null(GroupVar1) & !is.null(GroupVar2)) {
+      data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
+      data[, RowNumAsc := 1:.N, by = list(get(GroupVar1), get(GroupVar2))]
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
+      data[, CumAnomHigh := cumsum(AnomHigh), by = list(get(GroupVar1), get(GroupVar2))]
+      data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
+      data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
+      data[, paste0(GroupVar2, "AnomLowRate") := CumAnomLow / RowNumAsc]
+      if(!KeepAllCols) {
+        data[, ':=' (AnomHigh = NULL,
+                     AnomLow = NULL,
+                     CumAnomHigh = NULL,
+                     CumAnomLow = NULL,
+                     RowNumAsc = NULL)]
+      }
     }
     return(data)
   }
+  return(NULL)
 }
 
 #' ResidualOutliers is an automated time series outlier detection function
