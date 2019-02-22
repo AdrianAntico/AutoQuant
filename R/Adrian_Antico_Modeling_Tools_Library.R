@@ -282,10 +282,8 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' library(datasets)
 #' library(AdrianModelingTools)
 #' library(h2o)
-#'
 #' # Import data
 #' data <- as.data.table(iris)
-#'
 #' # Run algo, excluding Species column
 #' data <- GLRM_KMeans_Col(data,
 #'                         GridTuneGLRM = TRUE,
@@ -299,23 +297,19 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #'                         SVDMethod = "Randomized",
 #'                         MaxRunTimeSecs = 3600,
 #'                         KMeansK = 5)
-#'
 #' # View unique levels
 #' unique(data[["Species"]])
 #' unique(data[["ClusterID"]])
-#'
 #' # Store ClusterID associated with Species Level
 #' temp <- data[, mean(ClusterID), by = "Species"]
 #' Setosa <- round(temp[Species == "setosa", V1][[1]],0)
 #' Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
 #' Virginica <- round(temp[Species == "virginica", V1][[1]],0)
-#'
 #' # Line up ClusterID with Species Type
 #' data[, Check := "a"]
 #' data[ClusterID == eval(Setosa), Check := "setosa"]
 #' data[ClusterID == eval(Virginica), Check := "virginica"]
 #' data[ClusterID == eval(Versicolor), Check := "versicolor"]
-#'
 #' # Collect accuracy measures
 #' data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
 #' data[, mean(Acc)][[1]]
