@@ -2,7 +2,7 @@
 
 ##### Supervised Learning Functions: 
 1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, evolutionary grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
- * RandomForest (DRF)
+  * RandomForest (DRF)
 * GBM
 * Deeplearning
 * XGBoost (for Linux)
