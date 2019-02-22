@@ -4622,8 +4622,6 @@ AutoH20Modeler <- function(Construct,
                                    IndepVar    = col,
                                    type        = "calibration",
                                    bucket      = 0.05,
-                                   Background  = "lightsteelblue1",
-                                   Borders     = "navyblue",
                                    FactLevels  = 10,
                                    Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))
           } else {
@@ -4633,8 +4631,6 @@ AutoH20Modeler <- function(Construct,
                                    IndepVar    = col,
                                    type        = "calibration",
                                    bucket      = 0.05,
-                                   Background  = "lightsteelblue1",
-                                   Borders     = "navyblue",
                                    FactLevels  = 10,
                                    Function    = function(x) mean(x, na.rm = TRUE))
           }
@@ -4657,8 +4653,6 @@ AutoH20Modeler <- function(Construct,
                                             IndepVar    = col,
                                             type        = "boxplot",
                                             bucket      = 0.05,
-                                            Background  = "lightsteelblue1",
-                                            Borders     = "navyblue",
                                             FactLevels  = 10)
           }
         }
