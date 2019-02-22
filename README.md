@@ -45,18 +45,17 @@
 14. **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 15. **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
 16. **threshOptim**: Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models
-17. **H20MultinomialAUC** - computes the micro auc for a multinomial model
-18. **RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
+17. **RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-19. CountSingleDigits - From a project. Can probably delete.
-20. tokenizeH20 - Tokenize and H20 string column.
-21. tempDatesFun - Special case for character conversion to date when importing from Excel.
-22. RemixTheme - Fonts, colors, style for plots.
-23. ChartTheme - Fonts, colors, style for plots.
-24. SimpleCap - Apply proper case to text.
-25. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-26. multiplot - Useful for displaying multiple plots in a single pane.
-27. PrintObjectsSize - print out objects and their sizes that are in the envrionment
-28. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
-29. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
+18. CountSingleDigits - From a project. Can probably delete.
+19. tokenizeH20 - Tokenize and H20 string column.
+20. tempDatesFun - Special case for character conversion to date when importing from Excel.
+21. RemixTheme - Fonts, colors, style for plots.
+22. ChartTheme - Fonts, colors, style for plots.
+23. SimpleCap - Apply proper case to text.
+24. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+25. multiplot - Useful for displaying multiple plots in a single pane.
+26. PrintObjectsSize - print out objects and their sizes that are in the envrionment
+27. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
+28. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
