@@ -6,9 +6,8 @@
 \usage{
 GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, nthreads = 4,
   MaxMem = "14G", glrmCols = 1:ncol(data), IgnoreConstCols = TRUE,
-  glrmFactors = 5, Loss = "Quadratic", Gamma_x = 0.5, Gamma_y = 0,
-  glrmMaxIters = 1000, SVDMethod = "Randomized",
-  MaxRunTimeSecs = 3600, KMeansK = 50)
+  glrmFactors = 5, Loss = "Quadratic", glrmMaxIters = 1000,
+  SVDMethod = "Randomized", MaxRunTimeSecs = 3600, KMeansK = 50)
 }
 \arguments{
 \item{data}{is the source time series data.table}
