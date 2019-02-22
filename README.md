@@ -10,25 +10,27 @@
   * lightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
 2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics.
-* ARIFIMA: Auto Regressive Fractional Integrated Moving Average
-* ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-* ESM: Additive and Multiplicitive Exponential Smoothing and Holt Winters
-* ARNN: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
-* TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
-* TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-* CSS: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
-* Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
-3. **nlsModelFit**: Great at extrapolating from out of range from an independent variable. Automatically finds the best model fit from the suite of models below and merges predictions to source data file
-    4. Asymptotic
-    5. Asymptotic through origin
-    6. Asymptotic with offset
-    7. Bi-exponential
-    8. Four parameter logistic
-    9. Three parameter logistic
-    10. Gompertz
-    11. Michal Menton
-    12. Weibull
-    13. Polynomial regression or monotonic regression
+* Models include:
+  * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+  * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
+  * ESM: Additive and Multiplicitive Exponential Smoothing and Holt Winters
+  * ARNN: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
+  * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
+  * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
+  * CSS: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
+  * Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
+3. **nlsModelFit**: Great at extrapolating from out of range from an independent variable. Automatically finds the best model fit from the suite of models below and merges predictions to source data file.
+* Models included:
+  * Asymptotic
+  * Asymptotic through origin
+  * Asymptotic with offset
+  * Bi-exponential
+  * Four parameter logistic
+  * Three parameter logistic
+  * Gompertz
+  * Michal Menton
+  * Weibull
+  * Polynomial regression or monotonic regression
 
 ##### Unsupervised Learning Functions: 
 4. **GenTSAnomVars**: NEED TO MODIFY TO ENABLE ROLLING STATS VERSUS CUMULATIVE FROM TIME INCEPTION (or offer both) - (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
