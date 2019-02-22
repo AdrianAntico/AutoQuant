@@ -5,6 +5,8 @@
     2. RandomForest (DRF)
     3. GBM
     4. Deeplearning
+    5. XGBoost (for Linux)
+    6. lightGBM (for Linux)
     5. AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
 2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics. 
     3. ARIFIMA: Auto Regressive Fractional Integrated Moving Average
