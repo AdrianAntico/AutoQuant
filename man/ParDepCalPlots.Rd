@@ -6,9 +6,8 @@
 \usage{
 ParDepCalPlots(data, PredColName = "PredictedValues",
   ActColName = "ActualValues", IndepVar = "Independent_Variable_Name",
-  type = "calibration", bucket = 0.05,
-  Background = "lightsteelblue1", Borders = "navyblue",
-  FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+  type = "calibration", bucket = 0.05, FactLevels = 10,
+  Function = function(x) mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -51,11 +50,9 @@ output <- ParDepCalPlots(preds2,
                          IndepVar    = "Independent_Variable",
                          type        = "calibration", # c("calibration","boxplot"),
                          bucket      = 0.05,
-                         Background  = "lightsteelblue1",
-                         Borders     = "navyblue",
                          FactLevels  = 10,
                          Function    = function(x) mean(x, na.rm = TRUE))
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
