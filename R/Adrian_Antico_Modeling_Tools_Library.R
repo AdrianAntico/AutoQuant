@@ -1533,8 +1533,6 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #'                          IndepVar    = "Independent_Variable",
 #'                          type        = "calibration", # c("calibration","boxplot"),
 #'                          bucket      = 0.05,
-#'                          Background  = "lightsteelblue1",
-#'                          Borders     = "navyblue",
 #'                          FactLevels  = 10,
 #'                          Function    = function(x) mean(x, na.rm = TRUE))
 #' @export
@@ -1544,8 +1542,6 @@ ParDepCalPlots <- function(data,
                            IndepVar    = "Independent_Variable_Name",
                            type        = "calibration",
                            bucket      = 0.05,
-                           Background  = "lightsteelblue1",
-                           Borders     = "navyblue",
                            FactLevels  = 10,
                            Function    = function(x) mean(x, na.rm = TRUE)) {
 
