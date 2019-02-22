@@ -4,10 +4,8 @@
 \alias{threshOptim}
 \title{Utility maximizing thresholds for binary classification}
 \usage{
-threshOptim(data, actTar = 1, predTar = 2, tpProfit = 1,
-  tnProfit = 5, fpProfit = -1, fnProfit = -1,
-  MidTierDoNothing = FALSE, MidTierCost = -100,
-  MidTierLowThresh = 0.25, MidTierHighThresh = 0.75)
+threshOptim(data, actTar = "target", predTar = "p1", tpProfit = 0,
+  tnProfit = 0, fpProfit = -1, fnProfit = -2)
 }
 \arguments{
 \item{data}{data is the data table you are building the modeling on}
@@ -23,14 +21,6 @@ threshOptim(data, actTar = 1, predTar = 2, tpProfit = 1,
 \item{fpProfit}{This is the cost of generating a false positive prediction}
 
 \item{fnProfit}{This is the cost of generating a false negative prediction}
-
-\item{MidTierDoNothing}{Set to TRUE if there is a mid-range of predicted probabilities such that you do something else with those}
-
-\item{MidTierCost}{Set cost value for these outcomes}
-
-\item{MidTierLowThresh}{The lower bound probability for the do something else range}
-
-\item{MidTeirHighThresh}{The upper bound probability for the do something else range}
 }
 \value{
 Optimal threshold and corresponding utilities for the range of thresholds tested
@@ -39,20 +29,73 @@ Optimal threshold and corresponding utilities for the range of thresholds tested
 This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
-test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
-data <- threshOptim(test,
-                    actTar   = 1,
-                    predTar  = 2,
-                    tpProfit = 1,
-                    tnProfit = 5,
+library(h2o)
+library(AdrianModelingTools)
+library(data.table)
+library(ggplot2)
+Correl <- 0.85
+aa <- data.table(target = runif(10000))
+aa[, x1 := qnorm(target)]
+aa[, x2 := runif(10000)]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
+aa[, ':=' (x1 = NULL, x2 = NULL)]
+aa[, target := as.factor(ifelse(target < 0.3333, 0,1))]
+N = 1
+Construct <- data.table(Targets         = "target",
+                        Distribution    = "bernoulli",
+                        Loss            = "auc",
+                        Quantile        = 0.01,
+                        ModelName       = "bla",
+                        Algorithm       = "gbm",
+                        dataName        = "aa",
+                        TargetCol       = c("1"),
+                        FeatureCols     = c("2:10"),
+                        CreateDate      = Sys.time(),
+                        GridTune        = FALSE,
+                        ExportValidData = TRUE,
+                        ParDep          = 10,
+                        PD_Data         = "validate",
+                        ThreshType      = "f1",
+                        FSC             = 0.001,
+                        tpProfit        = rep(0,N),
+                        tnProfit        = rep(0,N),
+                        fpProfit        = rep(-1,N),
+                        fnProfit        = rep(-5,N),
+                        SaveModel       = rep("FALSE",N),
+                        SaveModelType   = rep("Mojo",N),
+                        PredsAllData    = rep(TRUE,N),
+                        TargetEncoding  = rep(NA,N))
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30)
+load(paste0(getwd(), "/bla.Rdata"))
+data <- threshOptim(data     = calibEval,
+                    actTar   = "target",
+                    predTar  = "p1",
+                    tpProfit = 0,
+                    tnProfit = 0,
                     fpProfit = -1,
-                    fnProfit = -1,
-                    MidTierDoNothing = FALSE,
-                    MidTierCost = -100,
-                    MidTierLowThresh = 0.25,
-                    MidTierHighThresh = 0.75)
+                    fnProfit = -2)
 optimalThreshold <- data[[1]]
 allResults       <- data[[2]]
+ggplot(allResults, aes(x = Thresholds)) +
+  geom_line(aes(y = allResults[["Utilities"]], color = "red")) +
+  ChartTheme(Size = 12) +
+  ylab("Utility") + geom_vline(xintercept = optimalThreshold)
 }
 \author{
 Adrian Antico
