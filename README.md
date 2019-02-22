@@ -2,12 +2,13 @@
 
 ##### Supervised Learning Functions: 
 1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, evolutionary grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
+* Models include:
   * RandomForest (DRF)
-* GBM
-* Deeplearning
-* XGBoost (for Linux)
-* lightGBM (for Linux)
-* AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
+  * GBM
+  * Deeplearning
+  * XGBoost (for Linux)
+  * lightGBM (for Linux)
+  * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
 2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics.
 * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
 * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
