@@ -33,7 +33,7 @@
   * Polynomial regression or monotonic regression
 
 ##### Unsupervised Learning Functions: 
-4. **GenTSAnomVars**: NEED TO MODIFY TO ENABLE ROLLING STATS VERSUS CUMULATIVE FROM TIME INCEPTION (or offer both) - (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
+4. **GenTSAnomVars**: - (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 5. **ResidualOutliers**: (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 6. **GLRM_KMeans_Col**: (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a K-Optimal searching K-Means algorithm
 
