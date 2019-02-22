@@ -3349,7 +3349,7 @@ AutoH20Modeler <- function(Construct,
   j = 0
   for (i in 1:nrow(Construct)) {
     # Algorithm specific
-    if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest","automl","xgboost")) {
+    if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest","automl","xgboost","lightgbm")) {
       
       # GBM and RF loss functions existence
       if (!(tolower(Construct[i,3][[1]]) %in% c("auto","deviance","mse", "rmse", "mae", "rmsle", "auc", "lift_top_group","misclassification", "mean_per_class_error","logloss"))) {
@@ -3480,7 +3480,7 @@ AutoH20Modeler <- function(Construct,
     } else {
       j = j + 1
       set(ErrorCollection, i = j, j = 1L, value = i)
-      set(ErrorCollection, i = j, j = 2L, value = c(paste0("Models supported are: GBM, randomForest, deeplearning, automl, and xgboost, while ",Construct[i,6][[1]]," is not")))
+      set(ErrorCollection, i = j, j = 2L, value = c(paste0("Models supported are: GBM, randomForest, and deeplearning, while ",Construct[i,6][[1]]," is not")))
     }
   }
   
@@ -3620,8 +3620,8 @@ AutoH20Modeler <- function(Construct,
         if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
           hyper_params <- list(max_depth                        = seq(5,8,1),
                                balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,1000,2500),
-                               sample_rate                      = seq(0.2,1,0.01),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
                                col_sample_rate                  = seq(0.2,1,0.01),
                                col_sample_rate_per_tree         = seq(0.2,1,0.01),
                                col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
@@ -3632,8 +3632,8 @@ AutoH20Modeler <- function(Construct,
                                histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
         } else {
           hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(100,200,300),
-                               sample_rate                      = seq(0.2,1,0.01),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
                                col_sample_rate                  = seq(0.2,1,0.01),
                                col_sample_rate_per_tree         = seq(0.2,1,0.01),
                                col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
@@ -3683,7 +3683,7 @@ AutoH20Modeler <- function(Construct,
         if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
           hyper_params <- list(max_depth                        = seq(5,8,1),
                                balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(250,500,1000,2000),
+                               ntrees                           = c(500,750,1000),
                                mtries                           = -1,
                                sample_rate                      = seq(0.2,1,0.05),
                                col_sample_rate_per_tree         = seq(0.2,1,0.05),
@@ -3695,7 +3695,7 @@ AutoH20Modeler <- function(Construct,
                                histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
         } else {
           hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(250,500,1000,2000),
+                               ntrees                           = c(500,750,1000),
                                mtries                           = -1,
                                sample_rate                      = seq(0.2,1,0.05),
                                col_sample_rate_per_tree         = seq(0.2,1,0.05),
@@ -3711,29 +3711,48 @@ AutoH20Modeler <- function(Construct,
       } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
         if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
           hyper_params <- list(max_depth                        = seq(5,8,1),
+                               tree_method                      = c("hist", "AUTO"),
+                               grow_policy                      = c("lossguide", "depthwise"),
                                balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,1000,2500),
-                               sample_rate                      = seq(0.2,1,0.01),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
                                col_sample_rate                  = seq(0.2,1,0.01),
                                col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
+                               reg_lambda                       = c(0.001, 0.01,0.05),
                                min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
         } else {
           hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(100,200,300),
-                               sample_rate                      = seq(0.2,1,0.01),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
                                col_sample_rate                  = seq(0.2,1,0.01),
                                col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
+                               reg_lambda                       = c(0.001, 0.01,0.05),
                                min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+        }
+      } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
+        if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
+          hyper_params <- list(max_depth                        = seq(5,8,1),
+                               tree_method                      = c("hist"),
+                               grow_policy                      = c("lossguide"),
+                               balance_classes                  = c(TRUE,FALSE),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
+                               col_sample_rate                  = seq(0.2,1,0.01),
+                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
+                               reg_lambda                       = c(0.001, 0.01,0.05),
+                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
+                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+        } else {
+          hyper_params <- list(max_depth                        = seq(5,8,1),
+                               ntrees                           = c(500,750,1000),
+                               sample_rate                      = seq(0.5,1,0.01),
+                               col_sample_rate                  = seq(0.2,1,0.01),
+                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
+                               reg_lambda                       = c(0.001, 0.01,0.05),
+                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
+                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
         }
       } 
     }
@@ -3839,6 +3858,40 @@ AutoH20Modeler <- function(Construct,
                             project_name       = "TestAML",
                             exclude_algos      = ModelExclude,
                             sort_metric        = StoppingMetric)
+        } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
+          grid <- h2o.grid(hyper_params         = hyper_params,
+                           search_criteria      = search_criteria,
+                           algorithm            = Construct[i,6][[1]],
+                           grid_id              = Construct[i,5][[1]],
+                           x                    = features,
+                           y                    = target,
+                           training_frame       = train,
+                           validation_frame     = validate,
+                           distribution         = Construct[i,2][[1]],
+                           learn_rate           = 0.05,
+                           max_runtime_secs     = MaxRuntimeSeconds,
+                           stopping_rounds      = 5,
+                           stopping_tolerance   = 1e-4,
+                           stopping_metric      = StoppingMetric,
+                           score_tree_interval  = 10,
+                           seed                 = 1234)
+        } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
+          grid <- h2o.grid(hyper_params         = hyper_params,
+                           search_criteria      = search_criteria,
+                           algorithm            = Construct[i,6][[1]],
+                           grid_id              = Construct[i,5][[1]],
+                           x                    = features,
+                           y                    = target,
+                           training_frame       = train,
+                           validation_frame     = validate,
+                           distribution         = Construct[i,2][[1]],
+                           learn_rate           = 0.05,
+                           max_runtime_secs     = MaxRuntimeSeconds,
+                           stopping_rounds      = 5,
+                           stopping_tolerance   = 1e-4,
+                           stopping_metric      = StoppingMetric,
+                           score_tree_interval  = 10,
+                           seed                 = 1234)
         }
       }
       
@@ -3918,7 +3971,6 @@ AutoH20Modeler <- function(Construct,
                                      y                = target,
                                      training_frame   = train,
                                      validation_frame = validate,
-                                     #distribution     = Construct[i,2][[1]],
                                      model_id         = paste0("BL_RF_",Construct[i,5][[1]]),
                                      ntrees           = BL_Trees)
       } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
@@ -3927,7 +3979,17 @@ AutoH20Modeler <- function(Construct,
                                 training_frame   = train,
                                 validation_frame = validate,
                                 distribution     = Construct[i,2][[1]],
-                                model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
+                                model_id         = paste0("BL_XG_",Construct[i,5][[1]]),
+                                ntrees           = BL_Trees)
+      } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
+        bl_model <- h2o.xgboost(x                = features,
+                                y                = target,
+                                training_frame   = train,
+                                validation_frame = validate,
+                                distribution     = Construct[i,2][[1]],
+                                tree_method      = "hist",
+                                grow_policy      = "lossguide", 
+                                model_id         = paste0("BL_lgbm_",Construct[i,5][[1]]),
                                 ntrees           = BL_Trees)
       }
       
