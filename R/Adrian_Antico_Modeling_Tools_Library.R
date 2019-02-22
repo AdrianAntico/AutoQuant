@@ -5,19 +5,33 @@
 #' @param cols a vector with the names of the columns you wish to dichotomize
 #' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
 #' @examples
-#' cols <- c("ColumnA")
-#' data <- DummifyDT(data, cols)
+#' library(data.table)
+#' library(AdrianModelingTools)
+#' test <- data.table(Value = runif(100000),
+#'                    FactorCol = sample(x = c(letters,
+#'                                             LETTERS,
+#'                                             paste0(letters,letters),
+#'                                             paste0(LETTERS,LETTERS),
+#'                                             paste0(letters,LETTERS),
+#'                                             paste0(LETTERS,letters)),
+#'                                       size = 100000,
+#'                                       replace = TRUE))
+#' test <- DummifyDT(data = test,
+#'                   cols = "FactorCol",
+#'                   KeepBaseCols = FALSE)
+#' ncol(test)
+#' test[, sum(FactorCol_gg)]
 #' @return data table with new dummy variables columns and optionally removes base columns
 #' @export
 # Dummify meters
-DummifyDT <- function(data, cols, KeepBaseCols = TRUE) {
+DummifyDT <- function(data, cols, KeepBaseCols = FALSE) {
   for (col in cols) {
     setorderv(data, col, order = 1)
     inds <- unique(data[[eval(col)]])
     for (ind in inds) {
-      data[, (paste0(col,"_",ind)) := ifelse(get(col) == ind, 1, 0)]
+      data[, (paste0(eval(col),"_",eval(ind))) := ifelse(get(col) == eval(ind), 1, 0)]
     }
-    data[, paste0(col,"_Base") := 0]
+    data[, paste0(eval(col),"_Base") := 0]
     if(!KeepBaseCols) data[, eval(col) := NULL]
   }
   return(data)
