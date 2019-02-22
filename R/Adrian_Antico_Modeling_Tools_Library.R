@@ -1741,7 +1741,7 @@ EvalPlot <- function(data,
   if(!is.data.table(data)) data <- as.data.table(data)
 
   # Structure data
-  cols <- c(PredColName, ActColName)
+  cols <- c(eval(PredColName), eval(ActColName))
   data <- data[, ..cols]
   setcolorder(data, c(PredColName, ActColName))
   setnames(data, c(PredColName,ActColName), c("preds","acts"))
