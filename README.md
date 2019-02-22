@@ -1,5 +1,5 @@
 # R_Modeling_Tools
-> This is a collection of functions that I have made to speed up machine learning. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com
+> This is a collection of functions that I have made to speed up machine learning. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via LinkedIn https://www.linkedin.com/in/adrian-antico/
 ##### Supervised Learning Functions: 
 1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, evolutionary grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
 * Models include:
