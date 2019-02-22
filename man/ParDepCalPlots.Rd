@@ -33,25 +33,75 @@ Partial dependence calibration plot or boxplot
 This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
+library(h2o)
+library(AdrianModelingTools)
+library(data.table)
+library(ggplot2)
+Correl <- 0.85
 aa <- data.table(target = runif(10000))
 aa[, x1 := qnorm(target)]
 aa[, x2 := runif(10000)]
-aa[, Independent_Variable := log(pnorm(0.75 * x1 + sqrt(1-0.75^2) * qnorm(x2)))]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 aa[, ':=' (x1 = NULL, x2 = NULL)]
-h2o.init()
-data <- as.h2o(aa)
-model <- h2o.gbm(x = 2, y = 1, training_frame = data)
-preds1 <- as.data.table(h2o.predict(model, data))
-preds2 <- cbind(preds1, aa)
-data <- preds2
-output <- ParDepCalPlots(preds2,
-                         PredColName = "predict",
-                         ActColName  = "target",
-                         IndepVar    = "Independent_Variable",
-                         type        = "calibration", # c("calibration","boxplot"),
-                         bucket      = 0.05,
-                         FactLevels  = 10,
-                         Function    = function(x) mean(x, na.rm = TRUE))
+N = 1
+Construct <- data.table(Targets         = "target",
+                        Distribution    = "gaussian",
+                        Loss            = "MSE",
+                        Quantile        = 0.01,
+                        ModelName       = "bla",
+                        Algorithm       = "gbm",
+                        dataName        = "aa",
+                        TargetCol       = c("1"),
+                        FeatureCols     = c("2:10"),
+                        CreateDate      = Sys.time(),
+                        GridTune        = FALSE,
+                        ExportValidData = TRUE,
+                        ParDep          = 10,
+                        PD_Data         = "validate",
+                        ThreshType      = "f1",
+                        FSC             = 0.001,
+                        tpProfit        = rep(0,N),
+                        tnProfit        = rep(0,N),
+                        fpProfit        = rep(-1,N),
+                        fnProfit        = rep(-5,N),
+                        SaveModel       = rep("FALSE",N),
+                        SaveModelType   = rep("Mojo",N),
+                        PredsAllData    = rep(TRUE,N),
+                        TargetEncoding  = rep(NA,N))
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30)
+load(paste0(getwd(), "/bla.Rdata"))
+ParDepCalPlots(data  = calibEval,
+               PredColName = "predict",
+               ActColName  = "target",
+               IndepVar    = "Independent_Variable9",
+               type        = "calibration",
+               bucket      = 0.05,
+               FactLevels  = 10,
+               Function    = function(x) mean(x, na.rm = TRUE))
+ParDepCalPlots(data  = calibEval,
+               PredColName = "predict",
+               ActColName  = "target",
+               IndepVar    = "Independent_Variable9",
+               type        = "boxplot",
+               bucket      = 0.05,
+               FactLevels  = 10,
+               Function    = function(x) mean(x, na.rm = TRUE))
 }
 \author{
 Adrian Antico
