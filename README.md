@@ -2,21 +2,21 @@
 
 ##### Supervised Learning Functions: 
 1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, evolutionary grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
-    2. RandomForest (DRF)
-    3. GBM
-    4. Deeplearning
-    5. XGBoost (for Linux)
-    6. lightGBM (for Linux)
-    5. AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics. 
-    3. ARIFIMA: Auto Regressive Fractional Integrated Moving Average
-    4. ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-    5. ESM: Additive and Multiplicitive Exponential Smoothing and Holt Winters
-    6. ARNN: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
-    7. TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
-    8. TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-    9. CSS: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
-    10. Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
+* RandomForest (DRF)
+* GBM
+* Deeplearning
+* XGBoost (for Linux)
+* lightGBM (for Linux)
+* AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
+2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics.
+* ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+* ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
+* ESM: Additive and Multiplicitive Exponential Smoothing and Holt Winters
+* ARNN: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
+* TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
+* TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
+* CSS: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
+* Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
 3. **nlsModelFit**: Great at extrapolating from out of range from an independent variable. Automatically finds the best model fit from the suite of models below and merges predictions to source data file
     4. Asymptotic
     5. Asymptotic through origin
