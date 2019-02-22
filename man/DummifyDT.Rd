@@ -4,7 +4,7 @@
 \alias{DummifyDT}
 \title{DummifyDT creates dummy variables for the selected columns}
 \usage{
-DummifyDT(data, cols, KeepBaseCols = TRUE)
+DummifyDT(data, cols, KeepBaseCols = FALSE)
 }
 \arguments{
 \item{data}{the data set to run the micro auc on}
@@ -20,8 +20,22 @@ data table with new dummy variables columns and optionally removes base columns
 DummifyDT creates dummy variables for the selected columns
 }
 \examples{
-cols <- c("ColumnA")
-data <- DummifyDT(data, cols)
+library(data.table)
+library(AdrianModelingTools)
+test <- data.table(Value = runif(100000),
+                   FactorCol = sample(x = c(letters,
+                                            LETTERS,
+                                            paste0(letters,letters),
+                                            paste0(LETTERS,LETTERS),
+                                            paste0(letters,LETTERS),
+                                            paste0(LETTERS,letters)),
+                                      size = 100000,
+                                      replace = TRUE))
+test <- DummifyDT(data = test,
+                  cols = "FactorCol",
+                  KeepBaseCols = FALSE)
+ncol(test)
+test[, sum(FactorCol_gg)]
 }
 \author{
 Adrian Antico
