@@ -274,8 +274,6 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param IgnoreConstCols tell H20 to ignore any columns that have zero variance
 #' @param glrmFactors similar to the number of factors to return from PCA
 #' @param Loss set to one of "Quadratic", "Absolute", "Huber", "Poisson", "Hinge", "Logistic", "Periodic"
-#' @param Gamma_x regularization weight on X matrix
-#' @param Gamma_y regularization weight on y matrix
 #' @param glrmMaxIters max number of iterations
 #' @param SVDMethod choose from "Randomized","GramSVD","Power"
 #' @param MaxRunTimeSecs set the timeout for max run time
@@ -290,8 +288,6 @@ GLRM_KMeans_Col <- function(data,
                             IgnoreConstCols = TRUE,
                             glrmFactors     = 5,
                             Loss            = "Quadratic",
-                            Gamma_x         = 0.5,
-                            Gamma_y         = 0,
                             glrmMaxIters    = 1000,
                             SVDMethod       = "Randomized",
                             MaxRunTimeSecs  = 3600,
@@ -308,7 +304,7 @@ GLRM_KMeans_Col <- function(data,
                              max_models           = 30,
                              seed                 = 1234,
                              stopping_rounds      = 10,
-                             stopping_metric      = "mse",
+                             stopping_metric      = "MSE",
                              stopping_tolerance   = 1e-3)
 
     # Define hyperparameters
@@ -330,7 +326,7 @@ GLRM_KMeans_Col <- function(data,
                      hyper_params      = HyperParams)
 
     # Get best performer
-    Grid_Out <- h2o.getGrid(grid_id = "Temp", sort_by = stopping_metric, decreasing = FALSE)
+    Grid_Out <- h2o.getGrid(grid_id = "Temp", sort_by = search_criteria$stopping_metric, decreasing = FALSE)
     model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
 
   } else {
@@ -339,8 +335,6 @@ GLRM_KMeans_Col <- function(data,
                       ignore_const_cols = IgnoreConstCols,
                       k                 = glrmFactors,
                       loss              = Loss,
-                      gamma_x           = Gamma_x,
-                      gamma_y           = Gamma_y,
                       max_iterations    = glrmMaxIters,
                       svd_method        = SVDMethod,
                       max_runtime_secs  = MaxRunTimeSecs)
@@ -357,7 +351,9 @@ GLRM_KMeans_Col <- function(data,
   # Combine outputs
   preds <- as.data.table(h2o.predict(k, x_raw))
   h2o.shutdown(prompt = FALSE)
-  return(as.data.table(cbind(preds, data)))
+  data <- as.data.table(cbind(preds, data))
+  setnames(data, "predict", "ClusterID")
+  return(data)
 }
 
 #' AutoTS is an automated time series modeling function
