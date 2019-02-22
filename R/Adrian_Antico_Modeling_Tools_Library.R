@@ -4731,16 +4731,16 @@ AutoH20Modeler <- function(Construct,
 
     # Clear R environment between runs
     if (Construct[i,11][[1]]) {
-      if (Construct[i,2] != "multinomial") {
+      if (Construct[i,2][[1]] != "multinomial" & Construct[i,21][[1]] == TRUE) {
         rm(grid, Grid_Out, cc, dd, VIMP, calibration, calib, out2, out1, features, target, save_model)
       } else {
-        rm(grid, Grid_Out, cc, dd, VIMP, features, target, save_model, predsMulti)
+        rm(grid, Grid_Out, cc, dd, VIMP, features, target, predsMulti)
       }
     } else {
-      if (Construct[i,2] != "multinomial") {
+      if (Construct[i,2][[1]] != "multinomial") {
         rm(dd, VIMP, calibration, calib, out2, out1, features, target, save_model)
       } else {
-        rm(dd, VIMP, features, target, save_model)
+        rm(dd, VIMP, features, target)
       }
     }
 
