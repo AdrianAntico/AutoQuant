@@ -129,17 +129,23 @@ CountSingleDigits <- function(data, col) {
 #' @param High this is the threshold on the high end
 #' @param Low this is the threshold on the low end
 #' @param KeepAllCols set to TRUE to remove the intermediate features
+#' @param DataScaled set to TRUE if you already scaled your data
 #' @examples
-#' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
-#' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
-#' data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
+#' # Create data
+#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(10000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data <- data[order(DateTime)]
+#' x <- as.data.table(sde::GBM(N=10000)*1000)
+#' data[, predicted := x[-1,]]
 #' stuff    <- GenTSAnomVars(data,
-#'                           GroupVar1   = "a",
+#'                           ValueCol    = "Target",
+#'                           GroupVar1   = NULL,
 #'                           GroupVar2   = NULL,
-#'                           DateVar     = NULL,
+#'                           DateVar     = "DateTime",
 #'                           High        = 1.96,
 #'                           Low         = -1.96,
-#'                           KeepAllCols = FALSE)
+#'                           KeepAllCols = TRUE,
+#'                           DataScaled  = FALSE)
 #' @return The original data.table with the added columns merged in
 #' @export
 GenTSAnomVars <- function(data,
@@ -151,12 +157,12 @@ GenTSAnomVars <- function(data,
                           Low         = -1.96,
                           KeepAllCols = FALSE,
                           DataScaled  = TRUE) {
-  
+
   if(!DataScaled) {
-    data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]    
+    data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]
   }
 
-  
+
   # Global check for date
   if(!is.null(DateVar)) {
     if(is.null(GroupVar1) & is.null(GroupVar2)) {
