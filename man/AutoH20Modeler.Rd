@@ -141,7 +141,9 @@ AutoH20Modeler(Construct,
               nthreads = 5,
               model_path = getwd(),
               MaxRuntimeSeconds = 3600,
-              MaxModels = 30)
+              MaxModels = 30,
+              TrainData = data,
+              TestData  = test)
 }
 \author{
 Adrian Antico
