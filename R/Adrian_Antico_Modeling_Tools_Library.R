@@ -3545,6 +3545,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param model_path Directory path for where you want your models saved
 #' @param MaxRuntimeSeconds Number of seconds of run time for grid tuning
 #' @param MaxModels Number of models you'd like to have returned
+#' @param TrainData Set to NULL or supply a data.table for training data
+#' @param TestData Set to NULL or supply  a data.table for validation data
 #' @param Targets Names of target variables in source data
 #' @param Distribution Distribution family, e.g. bernoulli
 #' @param Loss Loss metric for model, e.g. AUC for binary classification
@@ -3569,6 +3571,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param SaveModelType Set to standard for h2o file, mojo for mojo file
 #' @param PredsAllData Set to TRUE to export all data (train + validate) with predicted values
 #' @param TargetEncoding Supply either NA or a vector of numeric column references in quotes "c(2:8)"
+#' @param SupplyData Set to TRUE if you are supplying your own training and validation data
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @examples
 #'Correl <- 0.85
@@ -3611,13 +3614,16 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                        SaveModel       = rep("FALSE",N),
 #'                        SaveModelType   = rep("Mojo",N),
 #'                        PredsAllData    = rep(TRUE,N),
-#'                        TargetEncoding  = rep(NA,N))
+#'                        TargetEncoding  = rep(NA,N),
+#'                        SupplyData      = rep(TRUE,N))
 #'AutoH20Modeler(Construct,
 #'               max_memory = "28G",
 #'               ratios = 0.75,
 #'               BL_Trees = 500,
 #'               nthreads = 5,
-#'               model_path = getwd())
+#'               model_path = getwd(),
+#'               MaxRuntimeSeconds = 3600,
+#'               MaxModels = 30)
 #' @export
 AutoH20Modeler <- function(Construct,
                            max_memory,
@@ -3626,7 +3632,9 @@ AutoH20Modeler <- function(Construct,
                            nthreads,
                            model_path,
                            MaxRuntimeSeconds = 3600,
-                           MaxModels = 30) {
+                           MaxModels = 30,
+                           TrainData = data,
+                           TestData  = test) {
 
   ######################################
   # Error handling
@@ -3839,12 +3847,19 @@ AutoH20Modeler <- function(Construct,
     # Set up H20 environment instance
     Sys.sleep(10)
     h2o.init(nthreads = nthreads, max_mem_size = max_memory, enable_assertions = FALSE)
-    data_h2o       <- eval(parse(text = paste0("as.h2o(",Construct[i,7][[1]],")")))
 
     # Keep setting
-    data_train     <- h2o.splitFrame(data_h2o, ratios = ratios)
-    train          <- data_train[[1]]
-    validate       <- data_train[[2]]
+    if(Construct[i,"SupplyData"][[1]] == TRUE) {
+      data_train   <- as.h2o(TrainData)
+      validate     <- as.h2o(TestData)
+    } else {
+      data_h2o     <- eval(parse(text = paste0("as.h2o(",Construct[i,7][[1]],")")))
+      data_train   <- h2o.splitFrame(data_h2o, ratios = ratios)
+      train        <- data_train[[1]]
+      validate     <- data_train[[2]]
+    }
+
+    # Define targets
     target         <- eval(parse(text = paste0(Construct[i,8][[1]])))
     features       <- eval(parse(text = paste0(Construct[i,9][[1]])))
     XGB            <- h2o.xgboost.available()
@@ -4811,6 +4826,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Multinomial AUC function here::
+      #val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 
     }
 
