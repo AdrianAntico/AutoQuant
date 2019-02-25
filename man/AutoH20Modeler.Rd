@@ -5,7 +5,8 @@
 \title{An Automated Machine Learning Framework using H20}
 \usage{
 AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
-  model_path, MaxRuntimeSeconds = 3600, MaxModels = 30)
+  model_path, MaxRuntimeSeconds = 3600, MaxModels = 30,
+  TrainData = data, TestData = test)
 }
 \arguments{
 \item{Construct}{Core instruction file for automation}
@@ -23,6 +24,10 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{MaxRuntimeSeconds}{Number of seconds of run time for grid tuning}
 
 \item{MaxModels}{Number of models you'd like to have returned}
+
+\item{TrainData}{Set to NULL or supply a data.table for training data}
+
+\item{TestData}{Set to NULL or supply  a data.table for validation data}
 
 \item{Targets}{Names of target variables in source data}
 
@@ -71,6 +76,8 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{PredsAllData}{Set to TRUE to export all data (train + validate) with predicted values}
 
 \item{TargetEncoding}{Supply either NA or a vector of numeric column references in quotes "c(2:8)"}
+
+\item{SupplyData}{Set to TRUE if you are supplying your own training and validation data}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
@@ -125,7 +132,8 @@ Construct <- data.table(Targets         = "target",
                        SaveModel       = rep("FALSE",N),
                        SaveModelType   = rep("Mojo",N),
                        PredsAllData    = rep(TRUE,N),
-                       TargetEncoding  = rep(NA,N))
+                       TargetEncoding  = rep(NA,N),
+                       SupplyData      = rep(TRUE,N))
 AutoH20Modeler(Construct,
               max_memory = "28G",
               ratios = 0.75,
