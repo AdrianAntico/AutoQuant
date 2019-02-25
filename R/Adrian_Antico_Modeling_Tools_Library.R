@@ -3851,7 +3851,7 @@ AutoH20Modeler <- function(Construct,
     h2o.init(nthreads = nthreads, max_mem_size = max_memory, enable_assertions = FALSE)
 
     # Keep setting
-    if(Construct[i,"SupplyData"][[1]] == TRUE) {
+    if(Construct[i,"SupplyData"][[1]]) {
       data_train   <- as.h2o(TrainData)
       validate     <- as.h2o(TestData)
     } else {
