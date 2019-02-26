@@ -3826,7 +3826,7 @@ AutoH20Modeler <- function(Construct,
 
   for(i in 1:nrow(Construct)) {
 
-    # No crossentropy stopping metric
+    # No deeplearning loss functions as stopping metrics
     if(tolower(Construct[i,3][[1]]) == "crossentropy") {
       if(tolower(Construct[i,2][[1]]) == "multinomial") {
         StoppingMetric = "logloss"
@@ -3834,6 +3834,11 @@ AutoH20Modeler <- function(Construct,
         StoppingMetric = "AUC"
       }
     } else {
+      if(tolower(Construct[][[1]]) %in% c("quadratic", "huber")) {
+        StoppingMetric = "MSE"
+      } else if (tolower(Construct[][[1]]) %in% c("absolute", "quantile")) {
+        StoppingMetric = "MAE"
+      }
       StoppingMetric = Construct[i,3][[1]]
     }
 
