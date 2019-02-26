@@ -3831,13 +3831,13 @@ AutoH20Modeler <- function(Construct,
       if(tolower(Construct[i,2][[1]]) == "multinomial") {
         StoppingMetric = "logloss"
       } else {
-        StoppingMetric = "AUC"
+        StoppingMetric = "auc"
       }
     } else {
       if(tolower(Construct[][[1]]) %in% c("quadratic", "huber")) {
-        StoppingMetric = "MSE"
+        StoppingMetric = "mse"
       } else if (tolower(Construct[][[1]]) %in% c("absolute", "quantile")) {
-        StoppingMetric = "MAE"
+        StoppingMetric = "mae"
       }
       StoppingMetric = Construct[i,3][[1]]
     }
