@@ -4869,7 +4869,7 @@ AutoH20Modeler <- function(Construct,
                                    bucket      = 0.05,
                                    FactLevels  = 10,
                                    Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))},
-                             error = function() "skip")
+                             error = function(x) "skip")
           } else {
             out1 <- tryCatch({ParDepCalPlots(calib,
                                    PredColName = predName,
@@ -4879,7 +4879,7 @@ AutoH20Modeler <- function(Construct,
                                    bucket      = 0.05,
                                    FactLevels  = 10,
                                    Function    = function(x) mean(x, na.rm = TRUE))},
-                             error = function() "skip")
+                             error = function(x) "skip")
           }
 
           # Add threshold line to charts
@@ -4901,7 +4901,7 @@ AutoH20Modeler <- function(Construct,
                                             type        = "boxplot",
                                             bucket      = 0.05,
                                             FactLevels  = 10)},
-                                      error = function() "skip")
+                                      error = function(x) "skip")
           }
         }
 
