@@ -4850,7 +4850,10 @@ AutoH20Modeler <- function(Construct,
 
     }
 
+    #######################################
     # Partial dependence calibration plots
+    #######################################
+                         
     if(Construct[i,13][[1]] >= 1) {
       VIMP <- VIMP[!is.na(VIMP[,2][[1]])]
       rows <- nrow(VIMP)
