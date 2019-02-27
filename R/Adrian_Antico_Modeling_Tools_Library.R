@@ -4244,9 +4244,17 @@ AutoH20Modeler <- function(Construct,
 
       # Collect accuracy metric on validation data
       if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-        cc <- h2o.auc(h2o.performance(best_model, valid = TRUE))
+        if(tolower(Construct[i,2][[1]]) == "multinomial") {
+          cc <- h2o.logloss(h2o.performance(best_model, valid = TRUE))
+        } else {
+          cc <- h2o.auc(h2o.performance(best_model, valid = TRUE))
+        }
+      } else if(tolower(Construct[i,3][[1]]) == "absolute") {
+        cc <- h2o.mae(h2o.performance(best_model, valid = TRUE))
+      } else if(tolower(Construct[i,3][[1]]) %in% c("quadratic","huber")) {
+        cc <- h2o.mse(h2o.performance(best_model, valid = TRUE))
       } else {
-        cc <- eval(parse(text = paste0("h2o.",tolower(StoppingMetric),"(h2o.performance(best_model, valid = TRUE))")))
+        cc <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(best_model, valid = TRUE))")))
       }
       # Store results in metadata file
       set(grid_tuned_paths, i = i, j = 3L, value = cc)
@@ -4331,6 +4339,10 @@ AutoH20Modeler <- function(Construct,
         } else {
           dd <- h2o.auc(h2o.performance(bl_model, valid = TRUE))
         }
+      } else if(tolower(Construct[i,3][[1]]) == "absolute") {
+          dd <- h2o.mae(h2o.performance(bl_model, valid = TRUE))
+      } else if(tolower(Construct[i,3][[1]]) %in% c("quadratic","huber")) {
+          dd <- h2o.mse(h2o.performance(bl_model, valid = TRUE))
       } else {
         dd <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(bl_model, valid = TRUE))")))
       }
