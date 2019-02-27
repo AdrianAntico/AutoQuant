@@ -4861,23 +4861,25 @@ AutoH20Modeler <- function(Construct,
         for (col in cols) {
           j <- j + 1
           if(tolower(Construct[i,2][[1]]) == "quantile") {
-            out1 <- ParDepCalPlots(calib,
+            out1 <- tryCatch({ParDepCalPlots(calib,
                                    PredColName = predName,
                                    ActColName  = Construct[i,1][[1]],
                                    IndepVar    = col,
                                    type        = "calibration",
                                    bucket      = 0.05,
                                    FactLevels  = 10,
-                                   Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))
+                                   Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))},
+                             error = function() "skip")
           } else {
-            out1 <- ParDepCalPlots(calib,
+            out1 <- tryCatch({ParDepCalPlots(calib,
                                    PredColName = predName,
                                    ActColName  = Construct[i,1][[1]],
                                    IndepVar    = col,
                                    type        = "calibration",
                                    bucket      = 0.05,
                                    FactLevels  = 10,
-                                   Function    = function(x) mean(x, na.rm = TRUE))
+                                   Function    = function(x) mean(x, na.rm = TRUE))},
+                             error = function() "skip")
           }
 
           # Add threshold line to charts
@@ -4892,13 +4894,14 @@ AutoH20Modeler <- function(Construct,
 
           # Expected value regression
           if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
-            boxplotr[[j]] <- ParDepCalPlots(calib,
+            boxplotr[[j]] <- tryCatch({ParDepCalPlots(calib,
                                             PredColName = predName,
                                             ActColName  = Construct[i,1][[1]],
                                             IndepVar    = col,
                                             type        = "boxplot",
                                             bucket      = 0.05,
-                                            FactLevels  = 10)
+                                            FactLevels  = 10)},
+                                      error = function() "skip")
           }
         }
 
