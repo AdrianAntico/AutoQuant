@@ -3838,8 +3838,9 @@ AutoH20Modeler <- function(Construct,
         StoppingMetric = "mse"
       } else if (tolower(Construct[i,3][[1]]) %in% c("absolute", "quantile")) {
         StoppingMetric = "mae"
+      } else {
+        StoppingMetric = Construct[i,3][[1]]
       }
-      StoppingMetric = Construct[i,3][[1]]
     }
 
     # Define grid tune search scheme in a named list
