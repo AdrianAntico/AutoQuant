@@ -3834,9 +3834,9 @@ AutoH20Modeler <- function(Construct,
         StoppingMetric = "auc"
       }
     } else {
-      if(tolower(Construct[][[1]]) %in% c("quadratic", "huber")) {
+      if(tolower(Construct[i,3][[1]]) %in% c("quadratic", "huber")) {
         StoppingMetric = "mse"
-      } else if (tolower(Construct[][[1]]) %in% c("absolute", "quantile")) {
+      } else if (tolower(Construct[i,3][[1]]) %in% c("absolute", "quantile")) {
         StoppingMetric = "mae"
       }
       StoppingMetric = Construct[i,3][[1]]
