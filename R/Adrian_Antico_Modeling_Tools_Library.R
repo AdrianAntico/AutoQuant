@@ -5099,8 +5099,8 @@ Word2VecModel <- function(datax,
                           Epochs        = 25,
                           StopWords     = NULL,
                           SaveModel     = "standard",
-                          Threads       = 4,
-                          MaxMemory     = "14G") {
+                          Threads       = 8,
+                          MaxMemory     = "28G") {
 
   # Ensure data is a data.table
   data <- as.data.table(datax)
