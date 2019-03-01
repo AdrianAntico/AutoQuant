@@ -4,15 +4,18 @@
 \alias{GLRM_KMeans_Col}
 \title{GLRM_KMeans_Col Automated row clustering for mixed column types}
 \usage{
-GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, nthreads = 4,
-  MaxMem = "14G", glrmCols = 1:ncol(data), IgnoreConstCols = TRUE,
-  glrmFactors = 5, Loss = "Quadratic", glrmMaxIters = 1000,
-  SVDMethod = "Randomized", MaxRunTimeSecs = 3600, KMeansK = 50)
+GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
+  nthreads = 4, MaxMem = "14G", glrmCols = 3:ncol(data),
+  IgnoreConstCols = TRUE, glrmFactors = 5, Loss = "Quadratic",
+  glrmMaxIters = 1000, SVDMethod = "Randomized",
+  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
 }
 \arguments{
 \item{data}{is the source time series data.table}
 
-\item{GridTuneGLRM}{If you want to grid tune the glrm model}
+\item{GridTuneGLRM}{If you want to grid tune the glrm model, set to TRUE, FALSE otherwise}
+
+\item{GridTuneKMeans}{If you want to grid tuen the KMeans model, set to TRUE, FALSE otherwise}
 
 \item{nthreads}{set based on number of threads your machine has available}
 
@@ -33,6 +36,8 @@ GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, nthreads = 4,
 \item{MaxRunTimeSecs}{set the timeout for max run time}
 
 \item{KMeansK}{number of factors to test out in k-means to find the optimal number}
+
+\item{KMeansMetric}{pick the metric to identify top model in grid tune c("totss","betweenss","withinss")}
 }
 \value{
 Original data.table with added column with cluster number identifier
