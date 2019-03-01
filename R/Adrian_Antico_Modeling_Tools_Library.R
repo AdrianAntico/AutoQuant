@@ -253,7 +253,7 @@ GLRM_KMeans_Col <- function(data,
   }
 
   # Combine outputs
-  preds <- as.data.table(h2o.predict(k, x_raw))
+  preds <- as.data.table(h2o.predict(model, x_raw))
   h2o.shutdown(prompt = FALSE)
   data <- as.data.table(cbind(preds, data))
   setnames(data, "predict", "ClusterID")
