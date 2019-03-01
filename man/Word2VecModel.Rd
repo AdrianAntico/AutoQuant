@@ -13,7 +13,7 @@ Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
   "Q75_Ans", "Q76_Ans", "Q77_Ans", "Q78_Ans", "Q79_Ans", "Q80_Ans",
   "Q81_Ans", "Q82_Ans", "Q83_Ans"), vects = 5, SaveStopWords = FALSE,
   MinWords = 1, WindowSize = 1, Epochs = 25, StopWords = NULL,
-  SaveModel = "standard")
+  SaveModel = "standard", Threads = 4, MaxMemory = "14G")
 }
 \arguments{
 \item{stringCol}{A string name for the column to convert via word2vec}
@@ -37,6 +37,10 @@ Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
 \item{StopWords}{For H20 word2vec model}
 
 \item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo}
+
+\item{Threads}{Number of available threads you want to dedicate to model building}
+
+\item{MaxMemory}{Amount of memory you want to dedicate to model building}
 
 \item{data}{Source data table to merge vects onto}
 }
