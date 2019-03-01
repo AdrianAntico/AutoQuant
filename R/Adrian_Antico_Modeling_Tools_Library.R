@@ -148,75 +148,116 @@ CountSingleDigits <- function(data, col) {
 #'                           DataScaled  = FALSE)
 #' @return The original data.table with the added columns merged in
 #' @export
-GenTSAnomVars <- function(data,
-                          ValueCol    = "Value",
-                          GroupVar1   = "SKU",
-                          GroupVar2   = NULL,
-                          DateVar     = "DATE",
-                          High        = 1.96,
-                          Low         = -1.96,
-                          KeepAllCols = FALSE,
-                          DataScaled  = TRUE) {
+GLRM_KMeans_Col <- function(data,
+                            GridTuneGLRM    = TRUE,
+                            GridTuneKMeans  = TRUE,
+                            nthreads        = 4,
+                            MaxMem          = "14G",
+                            glrmCols        = 3:ncol(data),
+                            IgnoreConstCols = TRUE,
+                            glrmFactors     = 5,
+                            Loss            = "Quadratic",
+                            glrmMaxIters    = 1000,
+                            SVDMethod       = "Randomized",
+                            MaxRunTimeSecs  = 3600,
+                            KMeansK         = 50,
+                            KMeansMetric    = "totss") {
 
-  if(!DataScaled) {
-    data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]
+  # Build glmr model
+  h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
+  datax <- as.h2o(data)
+  if(GridTuneGLRM) {
+
+    # Define grid tune search scheme in a named list
+    search_criteria  <- list(strategy             = "RandomDiscrete",
+                             max_runtime_secs     = 3600,
+                             max_models           = 30,
+                             seed                 = 1234,
+                             stopping_rounds      = 10,
+                             stopping_metric      = "MSE",
+                             stopping_tolerance   = 1e-3)
+
+    # Define hyperparameters
+    HyperParams <- list(transform        = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
+                        k                = 1:5,
+                        regularization_x = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
+                        regularization_y = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
+                        gamma_x          = seq(0.01,0.10,0.01),
+                        gamma_y          = seq(0.01,0.10,0.01),
+                        svd_method       = c("Randomized","GramSVD","Power"))
+
+    # Run grid tune
+    grid <- h2o.grid("glrm",
+                     search_criteria   = search_criteria,
+                     training_frame    = datax,
+                     grid_id           = "Temp",
+                     ignore_const_cols = IgnoreConstCols,
+                     loss              = Loss,
+                     hyper_params      = HyperParams)
+
+    # Get best performer
+    Grid_Out <- h2o.getGrid(grid_id = "Temp", sort_by = search_criteria$stopping_metric, decreasing = FALSE)
+    model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+
+  } else {
+    model <- h2o.glrm(training_frame    = datax,
+                      cols              = glrmCols,
+                      ignore_const_cols = IgnoreConstCols,
+                      k                 = glrmFactors,
+                      loss              = Loss,
+                      max_iterations    = glrmMaxIters,
+                      svd_method        = SVDMethod,
+                      max_runtime_secs  = MaxRunTimeSecs)
   }
 
+  # Run k-means
+  if(GridTuneKMeans) {
 
-  # Global check for date
-  if(!is.null(DateVar)) {
-    if(is.null(GroupVar1) & is.null(GroupVar2)) {
-      data <- data[order(get(DateVar))]
-      data[, RowNumAsc := 1:.N]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
-      data[, CumAnomHigh := cumsum(AnomHigh)]
-      data[, CumAnomLow := cumsum(AnomLow)]
-      data[, AnomHighRate := CumAnomHigh / RowNumAsc]
-      data[, AnomLowRate := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
-      }
-    } else if(is.null(GroupVar2) & !is.null(GroupVar1)) {
-      data <- data[order(get(GroupVar1), get(DateVar))]
-      data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
-      data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
-      data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
-      data[, AnomHighRate := CumAnomHigh / RowNumAsc]
-      data[, AnomLowRate := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
-      }
-    } else if (!is.null(GroupVar1) & !is.null(GroupVar2)) {
-      data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
-      data[, RowNumAsc := 1:.N, by = list(get(GroupVar1), get(GroupVar2))]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low, 1, 0))]
-      data[, CumAnomHigh := cumsum(AnomHigh), by = list(get(GroupVar1), get(GroupVar2))]
-      data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
-      data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
-      data[, paste0(GroupVar2, "AnomLowRate") := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
-      }
-    }
-    return(data)
+    # GLRM output
+    x_raw <- h2o.getFrame(model@model$representation_name)
+    Nam <- colnames(x_raw)
+
+    # Define grid tune search scheme in a named list
+    search_criteria  <- list(strategy             = "RandomDiscrete",
+                             max_runtime_secs     = 3600,
+                             max_models           = 30,
+                             seed                 = 1234,
+                             stopping_rounds      = 10)
+
+    # Define hyperparameters
+    HyperParams <- list(max_iterations   = c(10,20,50,100),
+                        init             = c("Random","PlusPlus","Furthest"))
+
+    # Run grid tune
+    grid <- h2o.grid("kmeans",
+                     search_criteria   = search_criteria,
+                     training_frame    = x_raw,
+                     x                 = Nam,
+                     k                 = KMeansK,
+                     grid_id           = "grid",
+                     estimate_k        = TRUE,
+                     hyper_params      = HyperParams)
+
+    # Get best performer
+    Grid_Out <- h2o.getGrid(grid_id = "grid", sort_by = KMeansMetric, decreasing = FALSE)
+    model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+
+
+  } else {
+    x_raw <- h2o.getFrame(model@model$representation_name)
+    Nam <- colnames(x_raw)
+    model <- h2o.kmeans(training_frame = x_raw,
+                        x              = Nam,
+                        k              = KMeansK,
+                        estimate_k     = TRUE)
   }
-  return(NULL)
+
+  # Combine outputs
+  preds <- as.data.table(h2o.predict(k, x_raw))
+  h2o.shutdown(prompt = FALSE)
+  data <- as.data.table(cbind(preds, data))
+  setnames(data, "predict", "ClusterID")
+  return(data)
 }
 
 #' ResidualOutliers is an automated time series outlier detection function
