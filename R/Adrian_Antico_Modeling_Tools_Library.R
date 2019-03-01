@@ -287,7 +287,8 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #'
 #' @author Adrian Antico
 #' @param data is the source time series data.table
-#' @param GridTuneGLRM If you want to grid tune the glrm model
+#' @param GridTuneGLRM If you want to grid tune the glrm model, set to TRUE, FALSE otherwise
+#' @param GridTuneKMeans If you want to grid tuen the KMeans model, set to TRUE, FALSE otherwise
 #' @param nthreads set based on number of threads your machine has available
 #' @param MaxMem set based on the amount of memory your machine has available
 #' @param glrmCols the column numbers for the glrm
@@ -298,6 +299,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param SVDMethod choose from "Randomized","GramSVD","Power"
 #' @param MaxRunTimeSecs set the timeout for max run time
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
+#' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @examples
 #' library(datasets)
 #' library(AdrianModelingTools)
@@ -337,16 +339,18 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @export
 GLRM_KMeans_Col <- function(data,
                             GridTuneGLRM    = TRUE,
+                            GridTuneKMeans  = TRUE,
                             nthreads        = 4,
                             MaxMem          = "14G",
-                            glrmCols        = 1:ncol(data),
+                            glrmCols        = 3:ncol(data),
                             IgnoreConstCols = TRUE,
                             glrmFactors     = 5,
                             Loss            = "Quadratic",
                             glrmMaxIters    = 1000,
                             SVDMethod       = "Randomized",
                             MaxRunTimeSecs  = 3600,
-                            KMeansK         = 50) {
+                            KMeansK         = 50,
+                            KMeansMetric    = "totss") {
 
   # Build glmr model
   h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
@@ -396,12 +400,46 @@ GLRM_KMeans_Col <- function(data,
   }
 
   # Run k-means
-  x_raw <- h2o.getFrame(model@model$representation_name)
-  Nam <- colnames(x_raw)
-  k <- h2o.kmeans(training_frame = x_raw,
-                  x              = Nam,
-                  k              = KMeansK,
-                  estimate_k     = TRUE)
+  if(GridTuneKMeans) {
+
+    # GLRM output
+    x_raw <- h2o.getFrame(model@model$representation_name)
+    Nam <- colnames(x_raw)
+
+    # Define grid tune search scheme in a named list
+    search_criteria  <- list(strategy             = "RandomDiscrete",
+                             max_runtime_secs     = 3600,
+                             max_models           = 30,
+                             seed                 = 1234,
+                             stopping_rounds      = 10)
+
+    # Define hyperparameters
+    HyperParams <- list(max_iterations   = c(10,20,50,100),
+                        init             = c("Random","PlusPlus","Furthest"))
+
+    # Run grid tune
+    grid <- h2o.grid("kmeans",
+                     search_criteria   = search_criteria,
+                     training_frame    = x_raw,
+                     x                 = Nam,
+                     k                 = KMeansK,
+                     grid_id           = "grid",
+                     estimate_k        = TRUE,
+                     hyper_params      = HyperParams)
+
+    # Get best performer
+    Grid_Out <- h2o.getGrid(grid_id = "grid", sort_by = KMeansMetric, decreasing = FALSE)
+    model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+
+
+  } else {
+    x_raw <- h2o.getFrame(model@model$representation_name)
+    Nam <- colnames(x_raw)
+    k <- h2o.kmeans(training_frame = x_raw,
+                    x              = Nam,
+                    k              = KMeansK,
+                    estimate_k     = TRUE)
+  }
 
   # Combine outputs
   preds <- as.data.table(h2o.predict(k, x_raw))
