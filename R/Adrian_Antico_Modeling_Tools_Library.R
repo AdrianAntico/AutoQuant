@@ -5068,6 +5068,8 @@ tokenizeH20 <- function(data3) {
 #' @param Epochs For H20 word2vec model
 #' @param StopWords For H20 word2vec model
 #' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo
+#' @param Threads Number of available threads you want to dedicate to model building
+#' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @examples
 #'Word2VecModel(data,
 #'              stringCol     = "Comment",
@@ -5096,7 +5098,9 @@ Word2VecModel <- function(datax,
                           WindowSize    = 1,
                           Epochs        = 25,
                           StopWords     = NULL,
-                          SaveModel     = "standard") {
+                          SaveModel     = "standard",
+                          Threads       = 4,
+                          MaxMemory     = "14G") {
 
   # Ensure data is a data.table
   data <- as.data.table(datax)
@@ -5111,7 +5115,7 @@ Word2VecModel <- function(datax,
     i <- i + 1
     Sys.sleep(10)
     data[, eval(string) := as.character(get(string))]
-    h2o.init(nthreads = 4, max_mem_size = "14G")
+    h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
     data[,':=' (TEMP=gsub("  ", " ", data[[string]]))]
