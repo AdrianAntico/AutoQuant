@@ -859,11 +859,181 @@ AutoTS <- function(data,
       }
     }
   } else {
+
+    # Create Training data
+    data_train <- data[1:nrow(data)]
+
+    # Check for different time aggregations
+    MaxDate <- data_train[, max(get(DateName))]
+    FC_Data <- data.table(Date = seq(1:(FCPeriods)))
+
+    # Define TS Frequency
+    if(tolower(TimeUnit) == "hour") {
+      freq = 24
+      FC_Data[, Date := MaxDate + hours(Date)]
+    } else if (tolower(TimeUnit) == "day") {
+      freq = 365
+      FC_Data[, Date := MaxDate + days(Date)]
+    } else if (tolower(TimeUnit) == "week") {
+      freq = 52
+      FC_Data[, Date := MaxDate + weeks(Date)]
+    } else if (tolower(TimeUnit) == "month") {
+      freq = 12
+      FC_Data[, Date := MaxDate + months(Date)]
+    } else if (tolower(TimeUnit) == "quarter") {
+      freq = 4
+      FC_Data[, Date := MaxDate + months(4*Date)]
+    } else if (tolower(TimeUnit) == "year") {
+      freq = 1
+      FC_Data[, Date := MaxDate + years(Date)]
+    }
+
+    # Convert data.tables to ts objects
+    dataTSTrain <- copy(data_train)
+    dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
+
+    # Rebuild Best Model on Full Data
     if(BestModel == "PROPHET") {
-      PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
+
+      # Rebuild model on full data
+      print("PROPHET FITTING")
+      if(TimeUnit == "hour") {
+        ProphetTimeUnit <- 3600
+      } else {
+        ProphetTimeUnit <- TimeUnit
+      }
+
+      max_date <- data_train[, max(DateTime)]
+      dataProphet <- copy(data_train)
+      setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
+
+      # 1)
+      # Define TS Frequency
+      if(tolower(TimeUnit) == "hour") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                  error = function(x) "empty")
+      } else if (tolower(TimeUnit) == "day") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
+                                  error = function(x) "empty")
+      } else if (tolower(TimeUnit) == "week") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+                                  error = function(x) "empty")
+      } else if (tolower(TimeUnit) == "month") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                  error = function(x) "empty")
+      } else if (tolower(TimeUnit) == "quarter") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                  error = function(x) "empty")
+      } else if (tolower(TimeUnit) == "year") {
+        PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
+                                  error = function(x) "empty")
+      }
+
+      # Forecast with new model
+      PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
       FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
-    } else {
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ModelList[[BestModelRef]], h = FCPeriods)$mean)]
+
+    } else if(BestModel == "TSLM") {
+
+      # Rebuild model on full data
+      TSLM_model <- forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                                   lambda = TRUE,
+                                   biasadj = TRUE)
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(TSLM_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "TBATS") {
+
+      # Rebuild model on full data
+      TBATS_model <- forecast::tbats(y = dataTSTrain[, TargetName],
+                                     use.arma.errors = TRUE,
+                                     lambda = TRUE,
+                                     biasadj = TRUE)
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(TBATS_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "CS") {
+
+      # Rebuild model on full data
+      splinef_model <- forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(splinef_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "NN") {
+
+      # Rebuild model on full data
+      k <- 0L
+      temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
+      for (lags in 1:Lags) {
+        for (slags in 1:SLags) {
+          k <- k + 1L
+          print(k)
+          NNETAR_model_temp <- forecast::nnetar(y = dataTSTrain[, TargetName], p = lags, P = slags)
+          set(temp, i = k, j = 1L, value = lags)
+          set(temp, i = k, j = 2L, value = slags)
+          set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
+          set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
+        }
+      }
+
+      # Identify best model and retrain it
+      LagNN <- temp[order(meanResid)][1,][,1][[1]]
+      SLagNN <- temp[order(meanResid)][1,][,2][[1]]
+      NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], p = LagNN, P = SLagNN)},
+                               error = function(x) "empty")
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(NNETAR_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "ETS") {
+
+      # Rebuild model on full data
+      if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
+        EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
+                                         model                      = "ZZN",
+                                         allow.multiplicative.trend = TRUE,
+                                         restrict                   = TRUE)
+      } else {
+        EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
+                                         model                      = "ZZZ",
+                                         allow.multiplicative.trend = TRUE,
+                                         restrict                   = TRUE,
+                                         lambda                     = TRUE,
+                                         biasadj                    = TRUE)
+      }
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "ARIMA") {
+
+      # Rebuild model on full data
+      ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
+                                          max.p = Lags,
+                                          max.q = Lags,
+                                          max.P = SLags,
+                                          max.Q = SLags,
+                                          max.d = 1,
+                                          max.D = 1,
+                                          ic = "bic",
+                                          lambda = TRUE,
+                                          biasadj = TRUE)
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ARIMA_model, h = FCPeriods)$mean)]
+
+    } else if(BestModel == "ARFIMA") {
+
+      # Rebuild model on full data
+      ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
+                                       lambda = TRUE,
+                                       biasadj = TRUE)
+
+      # Forecast with new model
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast(ARFIMA_model, h = FCPeriods)$mean)]
     }
   }
   if(Ensemble) {
