@@ -25,6 +25,8 @@
 #' @export
 # Dummify meters
 DummifyDT <- function(data, cols, KeepBaseCols = FALSE) {
+  library(data.table)
+  if(!is.data.table(data)) data <- as.data.table(data)
   for (col in cols) {
     setorderv(data, col, order = 1)
     inds <- unique(data[[eval(col)]])
@@ -156,11 +158,15 @@ GenTSAnomVars <- function(data,
                           Low         = -1.96,
                           KeepAllCols = FALSE,
                           DataScaled  = TRUE) {
+  
+  # Load data.table
+  library(data.table)
+  if(!is.data.table(data)) data <- as.data.table(data)
 
+  # Scale data if not already
   if(!DataScaled) {
     data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]
   }
-
 
   # Global check for date
   if(!is.null(DateVar)) {
@@ -239,6 +245,11 @@ GenTSAnomVars <- function(data,
 #' @export
 ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
+  # Load libraries
+  library(data.table)
+  library(forecast)
+  library(tsoutliers)
+  
   # Convert to time series object
   tsData <- ts(data, frequency = 1, start = 1, end = nrow(data))
 
@@ -352,6 +363,11 @@ GLRM_KMeans_Col <- function(data,
                             KMeansK         = 50,
                             KMeansMetric    = "totss") {
 
+  # Load libraries
+  library(data.table)
+  library(h2o)
+  if(!is.data.table(data)) data <- as.data.table(data)
+  
   # Build glmr model
   h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- as.h2o(data)
@@ -488,10 +504,12 @@ AutoTS <- function(data,
                    SLags          = 2,
                    Ensemble       = FALSE) {
   
+  # Load libraries
   library(prophet)
   library(forecast)
   library(data.table)
   library(lubridate)
+  if(!is.data.table(data)) data <- as.data.table(data)
   
   # Initialize collection variables
   i <- 0
@@ -1141,7 +1159,8 @@ ModelDataPrep <- function(data,
                           MissFactor = "0",
                           MissNum    = -1) {
 
-  # Convert to data.table if not already
+  # Load libraries
+  library(data.table)
   if(!is.data.table(data)) data <- as.data.table(data)
 
   # Replace any inf values with NA
@@ -1261,6 +1280,10 @@ RedYellowGreen <- function(calibEval,
                            MidTierCost       = -2,
                            Cores             = 8,
                            Precision         = 0.01) {
+  
+  # Load libraries
+  library(data.table)
+  if(!is.data.table(calibEval)) data <- as.data.table(calibEval)
 
   # Set up evaluation table
   analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
@@ -1527,6 +1550,10 @@ threshOptim <- function(data,
                         tnProfit = 0,
                         fpProfit = -1,
                         fnProfit = -2) {
+  
+  # Load libraries
+  library(data.table)
+  if(!is.data.table(data)) data <- as.data.table(data)
 
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -1602,11 +1629,16 @@ threshOptim <- function(data,
 #' @return A data table with your original column replaced by the nls model predictions
 #' @export
 nlsModelFit <- function(data, y, x, monotonic = TRUE) {
+  
+  # Load libraries
+  library(data.table)
+  
   DATA <- data
   nls_collection <- data.table(ModelName = c("Poly", "Asymp", "AsympOff", "AsympOrig",
                                              "Biexp", "FourParmLog","Gompertz", "Logistic",
                                              "Michal_Menton", "Weilbull"),
                                Accuracy = rep(999,10))
+  
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -1983,6 +2015,10 @@ ParDepCalPlots <- function(data,
                            bucket      = 0.05,
                            FactLevels  = 10,
                            Function    = function(x) mean(x, na.rm = TRUE)) {
+                             
+  # Load libraries
+  library(data.table)
+  library(ggplot2)
 
   # Turn off ggplot2 warnings
   options(warn = -1)
@@ -2173,6 +2209,10 @@ EvalPlot <- function(data,
                      bucket      = 0.05,
                      aggrfun     = function(x) mean(x, na.rm = TRUE)) {
 
+  # Load libraries
+  library(data.table)
+  library(ggplot2)
+
   # Turn data into data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -2294,6 +2334,10 @@ GDL_Feature_Engineering <- function(data,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
 
+  # Load library
+  library(data.table)
+  library(zoo)
+                                      
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -2634,6 +2678,9 @@ DT_GDL_Feature_Engineering <- function(data,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
 
+  # Load libraries
+  library(data.table)
+  
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -3019,6 +3066,9 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             AscRowByGroup  = "BadgeRowNum",
                                             RecordsKeep    = 1) {
 
+  # Load libraries
+  library(data.table)
+
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -3393,6 +3443,10 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          AscRowByGroup  = "BadgeRowNum",
                                          RecordsKeep    = 1) {
 
+  # Load libraries
+  library(data.table)
+  library(caTools)
+  
   # Convert to data.table if not already
   if(!is.data.table(data)) data <- as.data.table(data)
 
@@ -3849,6 +3903,9 @@ AutoH20Modeler <- function(Construct,
                            TrainData = data,
                            TestData  = test) {
 
+  library(data.table)
+  library(h2o)
+  
   ######################################
   # Error handling
   ######################################
@@ -5177,6 +5234,7 @@ AutoH20Modeler <- function(Construct,
 #' @param stop.words A string name for the column to convert via word2vec
 #' @export
 tokenizeH20 <- function(data3) {
+  library(h2o)
   data3 <- as.h2o(data3, col.types=c("String"))
   tokenized <- h2o.tokenize(data3, "\\\\W+")
   tokenized.lower <- h2o.tolower(tokenized)
@@ -5234,6 +5292,10 @@ Word2VecModel <- function(datax,
                           Threads       = 4,
                           MaxMemory     = "14G") {
 
+  # Load libraries
+  library(h2o)
+  library(data.table)
+  
   # Ensure data is a data.table
   data <- as.data.table(datax)
 
