@@ -478,7 +478,6 @@ GLRM_KMeans_Col <- function(data,
 #' @param TimeUnit is the level of aggregation your dataset comes in
 #' @param Lags is the number of lags you wish to test in various models (same with moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
-#' @param Ensemble set to TRUE if you want to utilize this functionality
 #' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @examples
@@ -493,7 +492,6 @@ GLRM_KMeans_Col <- function(data,
 #'                    TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
 #'                    Lags           = 25,
 #'                    SLags          = 2,
-#'                    Ensemble       = FALSE,
 #'                    NumCores       = 4,
 #'                    SkipModels     = NULL,
 #'                    StepWise       = TRUE)
@@ -507,7 +505,6 @@ AutoTS <- function(data,
                    TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
-                   Ensemble       = FALSE,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE) {
@@ -565,14 +562,7 @@ AutoTS <- function(data,
   dataTSTrain <- copy(data_train)
   dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
 
-  if(Ensemble) {
-    MaxTDate <- data_train[, max(get(DateName))]
-    FC_TRAIN_Data <- copy(data_train)
-    FC_TRAIN_Data <- FC_TRAIN_Data[(nrow(FC_TRAIN_Data)-HoldOutPeriods + 1):nrow(FC_TRAIN_Data),]
-    FC_TRAIN_Data[, Date := MaxTDate + Date]
-  }
-
-
+  # Begin model building
   if(!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
@@ -941,250 +931,231 @@ AutoTS <- function(data,
 
   # Generate Forecasts
   print("GENERATE FORECASTS")
-  if(Ensemble) {
-    z <- 0
-    for (Modelname in modList) {
-      if(Modelname == "PROPHET") {
-        z <- z + 1
-        PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[z]], periods = HoldOutPeriods + FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
-        FC_Data[, paste0("Forecast_", modList[z]) := as.data.table(predict(ModelList[[z]], PROPHET_FC))[["yhat"]]]
-        PROPHET_TRAIN_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[z]], periods = HoldOutPeriods, freq = ProphetTimeUnit))[ds > MaxTDate]
-        FC_TRAIN_Data[, paste0("Forecast_", modList[z]) := as.data.table(predict(ModelList[[z]], PROPHET_TRAIN_FC))[["yhat"]]]
-      } else {
-        z <- z + 1
-        FC_TRAIN_Data[, paste0("Forecast_", modList[z]) := as.numeric(forecast(ModelList[[z]], h = HoldOutPeriods)$mean)]
-        FC_Data[, paste0("Forecast_", modList[z]) := as.numeric(forecast(ModelList[[z]], h = HoldOutPeriods + FCPeriods)$mean)]
-      }
+
+  # Create Training data
+  data_train <- data[1:nrow(data)]
+
+  # Check for different time aggregations
+  MaxDate <- data_train[, max(get(DateName))]
+  FC_Data <- data.table(Date = seq(1:(FCPeriods)))
+
+  # Define TS Frequency
+  if(tolower(TimeUnit) == "hour") {
+    freq = 24
+    FC_Data[, Date := MaxDate + lubridate::hours(Date)]
+  } else if (tolower(TimeUnit) == "day") {
+    freq = 365
+    FC_Data[, Date := MaxDate + lubridate::days(Date)]
+  } else if (tolower(TimeUnit) == "week") {
+    freq = 52
+    FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
+  } else if (tolower(TimeUnit) == "month") {
+    freq = 12
+    FC_Data[, Date := MaxDate + lubridate::months(Date)]
+  } else if (tolower(TimeUnit) == "quarter") {
+    freq = 4
+    FC_Data[, Date := MaxDate + lubridate::months(4*Date)]
+  } else if (tolower(TimeUnit) == "year") {
+    freq = 1
+    FC_Data[, Date := MaxDate + lubridate::years(Date)]
+  }
+
+  # Convert data.tables to ts objects
+  dataTSTrain <- copy(data_train)
+  dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
+
+  # Rebuild Best Model on Full Data
+  if(BestModel == "PROPHET") {
+
+    # Rebuild model on full data
+    print("PROPHET FITTING")
+    if(TimeUnit == "hour") {
+      ProphetTimeUnit <- 3600
+    } else {
+      ProphetTimeUnit <- TimeUnit
     }
-  } else {
 
-    # Create Training data
-    data_train <- data[1:nrow(data)]
+    max_date <- data_train[, max(DateTime)]
+    dataProphet <- copy(data_train)
+    setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
 
-    # Check for different time aggregations
-    MaxDate <- data_train[, max(get(DateName))]
-    FC_Data <- data.table(Date = seq(1:(FCPeriods)))
-
+    # 1)
     # Define TS Frequency
     if(tolower(TimeUnit) == "hour") {
-      freq = 24
-      FC_Data[, Date := MaxDate + lubridate::hours(Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                error = function(x) "empty")
     } else if (tolower(TimeUnit) == "day") {
-      freq = 365
-      FC_Data[, Date := MaxDate + lubridate::days(Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
+                                error = function(x) "empty")
     } else if (tolower(TimeUnit) == "week") {
-      freq = 52
-      FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+                                error = function(x) "empty")
     } else if (tolower(TimeUnit) == "month") {
-      freq = 12
-      FC_Data[, Date := MaxDate + lubridate::months(Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                error = function(x) "empty")
     } else if (tolower(TimeUnit) == "quarter") {
-      freq = 4
-      FC_Data[, Date := MaxDate + lubridate::months(4*Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                error = function(x) "empty")
     } else if (tolower(TimeUnit) == "year") {
-      freq = 1
-      FC_Data[, Date := MaxDate + lubridate::years(Date)]
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
+                                error = function(x) "empty")
     }
 
-    # Convert data.tables to ts objects
-    dataTSTrain <- copy(data_train)
-    dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
+    # Forecast with new model
+    PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
+    FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
 
-    # Rebuild Best Model on Full Data
-    if(BestModel == "PROPHET") {
+  } else if(BestModel == "TSLM") {
 
-      # Rebuild model on full data
-      print("PROPHET FITTING")
-      if(TimeUnit == "hour") {
-        ProphetTimeUnit <- 3600
-      } else {
-        ProphetTimeUnit <- TimeUnit
-      }
+    # Rebuild model on full data
+    TSLM_model <- forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                                 lambda = TRUE,
+                                 biasadj = TRUE)
 
-      max_date <- data_train[, max(DateTime)]
-      dataProphet <- copy(data_train)
-      setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
 
-      # 1)
-      # Define TS Frequency
-      if(tolower(TimeUnit) == "hour") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                                  error = function(x) "empty")
-      } else if (tolower(TimeUnit) == "day") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
-                                  error = function(x) "empty")
-      } else if (tolower(TimeUnit) == "week") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
-                                  error = function(x) "empty")
-      } else if (tolower(TimeUnit) == "month") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                                  error = function(x) "empty")
-      } else if (tolower(TimeUnit) == "quarter") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                                  error = function(x) "empty")
-      } else if (tolower(TimeUnit) == "year") {
-        PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
-                                  error = function(x) "empty")
-      }
+  } else if(BestModel == "TBATS") {
 
-      # Forecast with new model
-      PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
-      FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
-
-    } else if(BestModel == "TSLM") {
-
-      # Rebuild model on full data
-      TSLM_model <- forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+    # Rebuild model on full data
+    TBATS_model <- forecast::tbats(y = dataTSTrain[, TargetName],
+                                   use.arma.errors = TRUE,
                                    lambda = TRUE,
-                                   biasadj = TRUE)
+                                   biasadj = TRUE,
+                                   max.p = Lags,
+                                   max.q = Lags,
+                                   max.P = SLags,
+                                   max.Q = SLags,
+                                   max.d = 1,
+                                   max.D = 1,
+                                   num.cores = NumCores)
 
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$mean)]
 
-    } else if(BestModel == "TBATS") {
+  } else if(BestModel == "CS") {
 
-      # Rebuild model on full data
-      TBATS_model <- forecast::tbats(y = dataTSTrain[, TargetName],
-                                     use.arma.errors = TRUE,
-                                     lambda = TRUE,
-                                     biasadj = TRUE,
-                                     max.p = Lags,
-                                     max.q = Lags,
-                                     max.P = SLags,
-                                     max.Q = SLags,
-                                     max.d = 1,
-                                     max.D = 1,
-                                     num.cores = NumCores)
+    # Rebuild model on full data
+    splinef_model <- forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)
 
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$mean)]
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(splinef_model, h = FCPeriods)$mean)]
 
-    } else if(BestModel == "CS") {
+  } else if(BestModel == "NN") {
 
-      # Rebuild model on full data
-      splinef_model <- forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)
-
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(splinef_model, h = FCPeriods)$mean)]
-
-    } else if(BestModel == "NN") {
-
-      # Rebuild model on full data
-      k <- 0L
-      temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
-      for (lags in 1:Lags) {
-        for (slags in 1:SLags) {
-          k <- k + 1L
-          print(k)
-          NNETAR_model_temp <- forecast::nnetar(y = dataTSTrain[, TargetName], p = lags, P = slags)
-          set(temp, i = k, j = 1L, value = lags)
-          set(temp, i = k, j = 2L, value = slags)
-          set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
-          set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
-        }
+    # Rebuild model on full data
+    k <- 0L
+    temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
+    for (lags in 1:Lags) {
+      for (slags in 1:SLags) {
+        k <- k + 1L
+        print(k)
+        NNETAR_model_temp <- forecast::nnetar(y = dataTSTrain[, TargetName], p = lags, P = slags)
+        set(temp, i = k, j = 1L, value = lags)
+        set(temp, i = k, j = 2L, value = slags)
+        set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
+        set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
       }
-
-      # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1,][,1][[1]]
-      SLagNN <- temp[order(meanResid)][1,][,2][[1]]
-      NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], p = LagNN, P = SLagNN)},
-                               error = function(x) "empty")
-
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
-
-    } else if(BestModel == "ETS") {
-
-      # Rebuild model on full data
-      if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
-        EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
-                                         model                      = "ZZN",
-                                         allow.multiplicative.trend = TRUE,
-                                         restrict                   = TRUE)
-      } else {
-        EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
-                                         model                      = "ZZZ",
-                                         allow.multiplicative.trend = TRUE,
-                                         restrict                   = TRUE,
-                                         lambda                     = TRUE,
-                                         biasadj                    = TRUE)
-      }
-
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
-
-    } else if(BestModel == "ARIMA") {
-
-      # Rebuild model on full data
-      if(StepWise) {
-        ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
-                                            max.p = Lags,
-                                            max.q = Lags,
-                                            max.P = SLags,
-                                            max.Q = SLags,
-                                            max.d = 1,
-                                            max.D = 1,
-                                            ic = "bic",
-                                            lambda = TRUE,
-                                            biasadj = TRUE,
-                                            stepwise = StepWise,
-                                            num.cores = NumCores)
-      } else {
-        ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
-                                            max.p = Lags,
-                                            max.q = Lags,
-                                            max.P = SLags,
-                                            max.Q = SLags,
-                                            max.d = 1,
-                                            max.D = 1,
-                                            ic = "bic",
-                                            lambda = TRUE,
-                                            biasadj = TRUE,
-                                            stepwise = StepWise,
-                                            parallel = TRUE,
-                                            num.cores = NumCores)
-      }
-
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
-
-    } else if(BestModel == "ARFIMA") {
-
-      # Rebuild model on full data
-      if(StepWise) {
-        ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
-                                         lambda = TRUE,
-                                         biasadj = TRUE,
-                                         max.p = Lags,
-                                         max.q = Lags,
-                                         max.d = 1,
-                                         max.D = 1,
-                                         ic = "bic",
-                                         stepwise = StepWise,
-                                         num.cores = NumCores)
-      } else {
-        ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
-                                         lambda = TRUE,
-                                         biasadj = TRUE,
-                                         max.p = Lags,
-                                         max.q = Lags,
-                                         max.d = 1,
-                                         max.D = 1,
-                                         ic = "bic",
-                                         stepwise = StepWise,
-                                         parallel = TRUE,
-                                         num.cores = NumCores)
-      }
-
-      # Forecast with new model
-      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$mean)]
     }
+
+    # Identify best model and retrain it
+    LagNN <- temp[order(meanResid)][1,][,1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][,2][[1]]
+    NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], p = LagNN, P = SLagNN)},
+                             error = function(x) "empty")
+
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
+
+  } else if(BestModel == "ETS") {
+
+    # Rebuild model on full data
+    if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
+      EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
+                                       model                      = "ZZN",
+                                       allow.multiplicative.trend = TRUE,
+                                       restrict                   = TRUE)
+    } else {
+      EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
+                                       model                      = "ZZZ",
+                                       allow.multiplicative.trend = TRUE,
+                                       restrict                   = TRUE,
+                                       lambda                     = TRUE,
+                                       biasadj                    = TRUE)
+    }
+
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
+
+  } else if(BestModel == "ARIMA") {
+
+    # Rebuild model on full data
+    if(StepWise) {
+      ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
+                                          max.p = Lags,
+                                          max.q = Lags,
+                                          max.P = SLags,
+                                          max.Q = SLags,
+                                          max.d = 1,
+                                          max.D = 1,
+                                          ic = "bic",
+                                          lambda = TRUE,
+                                          biasadj = TRUE,
+                                          stepwise = StepWise,
+                                          num.cores = NumCores)
+    } else {
+      ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
+                                          max.p = Lags,
+                                          max.q = Lags,
+                                          max.P = SLags,
+                                          max.Q = SLags,
+                                          max.d = 1,
+                                          max.D = 1,
+                                          ic = "bic",
+                                          lambda = TRUE,
+                                          biasadj = TRUE,
+                                          stepwise = StepWise,
+                                          parallel = TRUE,
+                                          num.cores = NumCores)
+    }
+
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
+
+  } else if(BestModel == "ARFIMA") {
+
+    # Rebuild model on full data
+    if(StepWise) {
+      ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
+                                       lambda = TRUE,
+                                       biasadj = TRUE,
+                                       max.p = Lags,
+                                       max.q = Lags,
+                                       max.d = 1,
+                                       max.D = 1,
+                                       ic = "bic",
+                                       stepwise = StepWise,
+                                       num.cores = NumCores)
+    } else {
+      ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
+                                       lambda = TRUE,
+                                       biasadj = TRUE,
+                                       max.p = Lags,
+                                       max.q = Lags,
+                                       max.d = 1,
+                                       max.D = 1,
+                                       ic = "bic",
+                                       stepwise = StepWise,
+                                       parallel = TRUE,
+                                       num.cores = NumCores)
+    }
+
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$mean)]
   }
-  if(Ensemble) {
-    return(list(FC_Data,Eval,FC_TRAIN_Data))
-  } else {
-    return(list(FC_Data,Eval))
-  }
+
+  # Return values
+  return(list(FC_Data,Eval))
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
