@@ -6,8 +6,7 @@
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
-  SLags = 2, Ensemble = FALSE, NumCores = 4, SkipModels = NULL,
-  StepWise = TRUE)
+  SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE)
 }
 \arguments{
 \item{data}{is the source time series data.table}
@@ -25,8 +24,6 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{Lags}{is the number of lags you wish to test in various models (same with moving averages)}
 
 \item{SLags}{is the number of seasonal lags you wish to test in various models (same with moving averages)}
-
-\item{Ensemble}{set to TRUE if you want to utilize this functionality}
 
 \item{SkipModels}{Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")}
 
@@ -50,7 +47,6 @@ output <-   AutoTS(data,
                    TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
-                   Ensemble       = FALSE,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE)
