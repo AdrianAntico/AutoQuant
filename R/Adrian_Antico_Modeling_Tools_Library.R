@@ -679,7 +679,9 @@ AutoTS <- function(data,
       EXPSMOOTH_model <- forecast::ets(y = dataTSTrain[, TargetName],
                                        model = "ZZN",
                                        allow.multiplicative.trend = TRUE,
-                                       restrict = TRUE)
+                                       restrict = TRUE,
+                                       lambda = TRUE,
+                                       biasadj = TRUE)
     } else {
       EXPSMOOTH_model <- tryCatch({forecast::ets(y = dataTSTrain[, TargetName],
                                                  model = "ZZZ",
@@ -1074,7 +1076,9 @@ AutoTS <- function(data,
       EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
                                        model                      = "ZZN",
                                        allow.multiplicative.trend = TRUE,
-                                       restrict                   = TRUE)
+                                       restrict                   = TRUE,
+                                       lambda                     = TRUE,
+                                       biasadj                    = TRUE)
     } else {
       EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
                                        model                      = "ZZZ",
