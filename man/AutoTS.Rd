@@ -50,7 +50,10 @@ output <-   AutoTS(data,
                    TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
-                   Ensemble       = FALSE)
+                   Ensemble       = FALSE,
+                   NumCores       = 4,
+                   SkipModels     = NULL,
+                   StepWise       = TRUE)
 }
 \author{
 Adrian Antico
