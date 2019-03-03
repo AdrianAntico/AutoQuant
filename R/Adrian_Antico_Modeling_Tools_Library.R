@@ -572,8 +572,6 @@ AutoTS <- function(data,
                                              biasadj = TRUE,
                                              max.p = Lags,
                                              max.q = Lags,
-                                             max.P = SLags,
-                                             max.Q = SLags,
                                              max.d = 1,
                                              max.D = 1,
                                              ic = "bic")},
@@ -717,7 +715,9 @@ AutoTS <- function(data,
   # CUBIC SMOOTHING SPLINE-------------
   # 1)
   print("SPLINE FITTING")
-  splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)},
+  splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName], 
+                                               lambda = TRUE, 
+                                               biasadj = TRUE)},
                             error = function(x) "empty")
   
   if(tolower(class(splinef_model)) == "forecast") {
@@ -1075,8 +1075,6 @@ AutoTS <- function(data,
                                        biasadj = TRUE,
                                        max.p = Lags,
                                        max.q = Lags,
-                                       max.P = SLags,
-                                       max.Q = SLags,
                                        max.d = 1,
                                        max.D = 1,
                                        ic = "bic")
