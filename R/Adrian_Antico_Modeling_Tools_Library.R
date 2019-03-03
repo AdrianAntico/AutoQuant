@@ -493,7 +493,10 @@ GLRM_KMeans_Col <- function(data,
 #'                    TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
 #'                    Lags           = 25,
 #'                    SLags          = 2,
-#'                    Ensemble       = FALSE)
+#'                    Ensemble       = FALSE,
+#'                    NumCores       = 4,
+#'                    SkipModels     = NULL,
+#'                    StepWise       = TRUE)
 #' @return If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
 #' @export
 AutoTS <- function(data,
