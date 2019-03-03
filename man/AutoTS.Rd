@@ -6,7 +6,7 @@
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
-  SLags = 2, Ensemble = FALSE)
+  SLags = 2, Ensemble = FALSE, NumCores = 4, SkipModels = NULL)
 }
 \arguments{
 \item{data}{is the source time series data.table}
@@ -26,6 +26,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{SLags}{is the number of seasonal lags you wish to test in various models (same with moving averages)}
 
 \item{Ensemble}{set to TRUE if you want to utilize this functionality}
+
+\item{SkipModels}{Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")}
 }
 \value{
 If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
@@ -48,5 +50,5 @@ output <-   AutoTS(data,
                    Ensemble       = FALSE)
 }
 \author{
-Adrian Antico and DougVegas at RemixInstitute.com
+Adrian Antico
 }
