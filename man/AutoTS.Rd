@@ -6,7 +6,8 @@
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
-  SLags = 2, Ensemble = FALSE, NumCores = 4, SkipModels = NULL)
+  SLags = 2, Ensemble = FALSE, NumCores = 4, SkipModels = NULL,
+  StepWise = TRUE)
 }
 \arguments{
 \item{data}{is the source time series data.table}
@@ -28,6 +29,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{Ensemble}{set to TRUE if you want to utilize this functionality}
 
 \item{SkipModels}{Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")}
+
+\item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 }
 \value{
 If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
