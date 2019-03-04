@@ -13,11 +13,11 @@
 * Models include:
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
   * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-  * ESM: Additive and Multiplicitive Exponential Smoothing and Holt Winters
-  * ARNN: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
+  * ETS: Additive and Multiplicitive Exponential Smoothing and Holt Winters
+  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-  * CSS: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
+  * SPLINE: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
   * Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
 3. **nlsModelFit**: Great at extrapolating from out of range from an independent variable. Automatically finds the best model fit from the suite of models below and merges predictions to source data file.
 * Models included:
