@@ -531,6 +531,9 @@ AutoTS <- function(data,
     SkipModels <- c(SkipModels,"PROPHET")
     if(length(SkipModels == 8)) return("Prophet doesn't run on hourly data. Choose other models.")
   }
+  
+  # Ensure data is sorted
+  data <- data[order(get(DateName))]
 
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
