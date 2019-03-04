@@ -876,8 +876,19 @@ AutoTS <- function(data,
 
     # 1)
     # Define TS Frequency
-    PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                              error = function(x) "empty")
+    if(TimeUnit == "day") {
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
+                                error = function(x) "empty")
+    } else if(TimeUnit == "week") {
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+                                error = function(x) "empty")
+    } else if(TimeUnit == "year") {
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+                                error = function(x) "empty")
+    } else {
+      PROPHET_model <- tryCatch({prophet(df = dataProphet)},
+                                error = function(x) "empty")
+    }
 
     if(tolower(class(PROPHET_model)[1]) == "prophet") {
       i <- i + 1
@@ -971,8 +982,16 @@ AutoTS <- function(data,
 
     # 1)
     # Define TS Frequency
-    PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                              error = function(x) "empty")
+    if(TimeUnit == "day") {
+      PROPHET_model <- prophet(df = dataProphet, daily.seasonality = TRUE)
+
+    } else if(TimeUnit == "week") {
+      PROPHET_model <- prophet(df = dataProphet, weekly.seasonality = TRUE)
+    } else if(TimeUnit == "year") {
+      PROPHET_model <- prophet(df = dataProphet, weekly.seasonality = TRUE)
+    } else {
+      PROPHET_model <- prophet(df = dataProphet)
+    }
 
     # Forecast with new model
     PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
