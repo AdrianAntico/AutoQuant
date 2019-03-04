@@ -514,8 +514,7 @@ AutoTS <- function(data,
   library(forecast)
   library(data.table)
   library(lubridate)
-  if(!is.data.table(data)) data <- as.data.table(data)
-
+  
   # Initialize collection variables
   i <- 0
   EvalList <- list()
