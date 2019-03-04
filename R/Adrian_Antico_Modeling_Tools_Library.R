@@ -897,7 +897,7 @@ AutoTS <- function(data,
       PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
                                 error = function(x) "empty")
     } else if(TimeUnit == "year") {
-      PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
+      PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
                                 error = function(x) "empty")
     } else {
       PROPHET_model <- tryCatch({prophet(df = dataProphet)},
@@ -973,7 +973,7 @@ AutoTS <- function(data,
     } else if(TimeUnit == "week") {
       PROPHET_model <- prophet(df = dataProphet, weekly.seasonality = TRUE)
     } else if(TimeUnit == "year") {
-      PROPHET_model <- prophet(df = dataProphet, weekly.seasonality = TRUE)
+      PROPHET_model <- prophet(df = dataProphet, yearly.seasonality = TRUE)
     } else {
       PROPHET_model <- prophet(df = dataProphet)
     }
