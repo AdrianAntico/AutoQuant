@@ -523,8 +523,12 @@ AutoTS <- function(data,
   # Convert to data.table if not already
   if (!is.data.table(data)) data <- as.data.table(data)
 
-  # Convert to lubridate as_date()
-  data[, eval(DateName) := as_date(get(DateName))]
+  # Convert to lubridate as_date() or POSIXct
+  if(tolower(TimeUnit) != "hour") {
+    data[, eval(DateName) := as_date(get(DateName))]
+  } else {
+    data[, eval(DateName) := as.POSIXct(get(DateName))]
+  }
 
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
