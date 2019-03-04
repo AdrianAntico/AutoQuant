@@ -528,6 +528,8 @@ AutoTS <- function(data,
     data[, eval(DateName) := as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
+    SkipModels <- c(SkipModels,"PROPHET")
+    if(length(SkipModels == 8)) return("Prophet doesn't run on hourly data. Choose other models.")
   }
 
   # Create Training data
