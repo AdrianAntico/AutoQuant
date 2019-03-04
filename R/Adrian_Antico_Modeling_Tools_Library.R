@@ -537,6 +537,7 @@ AutoTS <- function(data,
   
   # Change Target Name
   setnames(data, paste0(eval(TargetName)), "Target")
+  TargetName <- "Target"
   
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
