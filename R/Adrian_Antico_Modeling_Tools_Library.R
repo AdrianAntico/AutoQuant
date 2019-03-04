@@ -944,7 +944,6 @@ AutoTS <- function(data,
   data_train <- data[1:nrow(data)]
 
   # Convert data.tables to ts objects
-  dataTSTrain <- copy(data_train)
   dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
 
   # Retrain best model
