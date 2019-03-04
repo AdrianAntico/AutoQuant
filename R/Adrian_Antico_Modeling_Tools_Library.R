@@ -926,9 +926,6 @@ AutoTS <- function(data,
                        MAPE = mean(AbsolutePercentError, na.rm = TRUE)),
                    by = ModelName][order(MAPE)][, ID := 1:.N]
   
-  # Get model name vector
-  modList <- Eval[["ModelName"]]
-  
   # Grab Winning Model
   BestModelEval <- Eval[order(MAPE)]
   BestModel <- BestModelEval[1,"ModelName"][[1]]
