@@ -593,7 +593,7 @@ AutoTS <- function(data,
                                                  num.cores = NumCores)},
                                error = function(x) "empty")
     }
-    
+
     # Collect Test Data for Model Comparison
     # 2)
     if(tolower(class(ARFIMA_model)) == "fracdiff") {
@@ -649,7 +649,7 @@ AutoTS <- function(data,
                                                     num.cores = NumCores)},
                               error = function(x) "empty")
     }
-    
+
     # Collect Test Data for Model Comparison
     # 2)
     if(tolower(class(ARIMA_model)[1]) == "arima") {
@@ -724,7 +724,8 @@ AutoTS <- function(data,
         print(k)
         NNETAR_model_temp <- forecast::nnetar(y = dataTSTrain[, TargetName], 
                                               p = lags, 
-                                              P = slags)
+                                              P = slags,
+                                              lambda = "auto")
         set(temp, i = k, j = 1L, value = lags)
         set(temp, i = k, j = 2L, value = slags)
         set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
@@ -735,7 +736,10 @@ AutoTS <- function(data,
     # Identify best model and retrain it
     LagNN <- temp[order(meanResid)][1,][,1][[1]]
     SLagNN <- temp[order(meanResid)][1,][,2][[1]]
-    NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], p = LagNN, P = SLagNN)},
+    NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName], 
+                                               p = LagNN, 
+                                               P = SLagNN,
+                                               lambda = "auto")},
                              error = function(x) "empty")
     
     # Collect Test Data for Model Comparison
@@ -935,7 +939,7 @@ AutoTS <- function(data,
   
   # Generate Forecasts
   print("GENERATE FORECASTS")
-  
+
   # Create Training data
   data_train <- data[1:nrow(data)]
   
