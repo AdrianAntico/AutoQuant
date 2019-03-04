@@ -935,8 +935,7 @@ AutoTS <- function(data,
                    by = ModelName][order(MAPE)]
   
   # Grab Winning Model
-  BestModelEval <- Eval[order(MAPE)]
-  BestModel <- BestModelEval[1,"ModelName"][[1]]
+  BestModel <- Eval[1,"ModelName"][[1]]
   
   # Generate Forecasts
   print("GENERATE FORECASTS")
