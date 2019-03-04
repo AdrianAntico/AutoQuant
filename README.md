@@ -14,7 +14,7 @@
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
   * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
   * ETS: Additive and Multiplicitive Exponential Smoothing and Holt Winters
-  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to 50 lags and 50 seasonal lags
+  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
   * SPLINE: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
