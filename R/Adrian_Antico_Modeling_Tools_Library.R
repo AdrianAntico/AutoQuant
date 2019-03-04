@@ -535,6 +535,9 @@ AutoTS <- function(data,
   # Ensure data is sorted
   data <- data[order(get(DateName))]
   
+  # Change Target Name
+  setnames(data, paste0(eval(TargetName)), "Target")
+  
   # Create Training data
   data_train <- data[1:(nrow(data)-HoldOutPeriods)]
   
