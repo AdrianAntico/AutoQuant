@@ -498,7 +498,7 @@ GLRM_KMeans_Col <- function(data,
 #' @return If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
 #' @export
 AutoTS <- function(data,
-                   TargetName     = "Target",
+                   TargetName     = "Targets",
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
@@ -617,13 +617,12 @@ AutoTS <- function(data,
       
       # Add Evaluation Columns
       # 3)
-      data_test_ARF[, ':=' (Resid = get(TargetName) - FC_Eval,
+      data_test_ARF[, ':=' (Resid = Target - FC_Eval,
                             PercentError = get(TargetName) / (FC_Eval+1) - 1,
                             AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
       
       # Collect model filename
       EvalList[[i]] <- data_test_ARF
-      ModelList[[i]] <- ARFIMA_model
     }
   }
   
@@ -679,7 +678,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_ARI
-      ModelList[[i]] <- ARIMA_model
     }
   }
   
@@ -720,7 +718,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_ETS
-      ModelList[[i]] <- EXPSMOOTH_model
     }
   }
   
@@ -771,7 +768,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_NN
-      ModelList[[i]] <- NNETAR_model
     }
   }
   
@@ -801,7 +797,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_CS
-      ModelList[[i]] <- splinef_model
     }
   }
   
@@ -839,7 +834,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_TBATS
-      ModelList[[i]] <- TBATS_model
     }
   }
   
@@ -869,7 +863,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_TSLM
-      ModelList[[i]] <- TSLM_model
     }
   }
   
@@ -920,7 +913,6 @@ AutoTS <- function(data,
       
       # Collect model filename
       EvalList[[i]] <- data_test_PROPHET
-      ModelList[[i]] <- PROPHET_model
     }
   }
   
@@ -981,8 +973,8 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    PROPHET_FC <- as.data.table(prophet::make_future_dataframe(ModelList[[BestModelRef]], periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
-    FC_Data[, Forecast_PROPHET := as.data.table(predict(ModelList[[BestModelRef]], PROPHET_FC))[["yhat"]]]
+    PROPHET_FC <- as.data.table(prophet::make_future_dataframe(PROPHET_model, periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
+    FC_Data[, Forecast_PROPHET := as.data.table(predict(PROPHET_model, PROPHET_FC))[["yhat"]]]
     
   } else if(BestModel == "TSLM") {
     
