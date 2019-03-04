@@ -932,7 +932,7 @@ AutoTS <- function(data,
   Eval <- dataEval[, .(MeanResid = mean(Resid, na.rm = TRUE),
                        MeanPercError = mean(PercentError, na.rm = TRUE),
                        MAPE = mean(AbsolutePercentError, na.rm = TRUE)),
-                   by = ModelName][order(MAPE)][, ID := 1:.N]
+                   by = ModelName][order(MAPE)]
   
   # Grab Winning Model
   BestModelEval <- Eval[order(MAPE)]
