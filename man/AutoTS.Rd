@@ -4,7 +4,7 @@
 \alias{AutoTS}
 \title{AutoTS is an automated time series modeling function}
 \usage{
-AutoTS(data, TargetName = "Target", DateName = "DateTime",
+AutoTS(data, TargetName = "Targets", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
   SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE)
 }
