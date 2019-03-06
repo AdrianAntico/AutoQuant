@@ -5456,3 +5456,89 @@ Word2VecModel <- function(datax,
   }
   return(data)
 }
+
+                                      #' Automated Word Frequency and Word Cloud Creation
+#'
+#' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
+#' @author Adrian Antico
+#' @param data Source data table
+#' @param TextColName A string name for the column
+#' @param ClusterCol Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
+#' @param ClusterID Must be set if ClusterCol is defined. Set to cluster ID (or factor level)
+#' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
+#' @param StopWords Add your own stopwords, in vector format
+#' @examples
+#'Word2VecModel(data,
+#'              stringCol     = "Comment",
+#'              KeepStringCol = FALSE,
+#'              model_path    = getwd(),
+#'              ModelID       = "bla",
+#'              vects         = 50,
+#'              SaveStopWords = FALSE,
+#'              MinWords      = 1,
+#'              WindowSize    = 1,
+#'              Epochs        = 25,
+#'              StopWords     = NULL)
+#' @export
+WordFreq <- function(data,
+                     TextColName = "DESCR",
+                     ClusterCol = "ClusterAllNoTarget",
+                     ClusterID = 0,
+                     RemoveEnglishStopwords = TRUE,
+                     StopWords = c("blabla1", "blabla2")) {
+
+  # Load libraries
+  library("tm")
+  library("SnowballC")
+  library("wordcloud")
+  library("RColorBrewer")
+
+  # Prepare data
+  if(is.null(ClusterCol)) {
+    desc <- Corpus(VectorSource(data[[eval(TextColName)]]))
+  } else {
+    desc <- Corpus(VectorSource(data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]]))
+  }
+
+  # Clean text
+  toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+  text <- tm_map(text, toSpace, "/")
+  text <- tm_map(text, toSpace, "@")
+  text <- tm_map(text, toSpace, "\\|")
+
+  # Convert the text to lower case
+  text <- tm_map(text, content_transformer(tolower))
+
+  # Remove numbers
+  text <- tm_map(text, removeNumbers)
+
+  # Remove english common stopwords
+  if(RemoveEnglishStopwords) text <- tm_map(text, removeWords, stopwords("english"))
+
+  # specify your stopwords as a character vector
+  text <- tm_map(text, removeWords, StopWords)
+
+  # Remove punctuations
+  text <- tm_map(text, removePunctuation)
+
+  # Eliminate extra white spaces
+  text <- tm_map(text, stripWhitespace)
+
+  # Text stemming
+  text <- tm_map(text, stemDocument)
+
+  # Finalize
+  dtm <- TermDocumentMatrix(text)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m),decreasing=TRUE)
+  d <- data.table(word = names(v), freq=v)
+  print(head(d, 10))
+
+  # Word Cloud
+  wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+            max.words=200, random.order=FALSE, rot.per=0.35,
+            colors=brewer.pal(8, "Dark2"))
+
+  # Return
+  return(d)
+}
