@@ -64,3 +64,4 @@
 26. PrintObjectsSize - print out objects and their sizes that are in the envrionment
 27. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
 28. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
+29. WordFreq - creates a word frequency data.table and a word cloud
