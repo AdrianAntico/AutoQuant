@@ -5535,9 +5535,10 @@ WordFreq <- function(data,
   print(head(d, 10))
 
   # Word Cloud
-  wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-            max.words=200, random.order=FALSE, rot.per=0.35,
-            colors=brewer.pal(8, "Dark2"))
+  # Word Cloud
+  print(wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+                  max.words=200, random.order=FALSE, rot.per=0.35,
+                  colors=brewer.pal(8, "Dark2")))
 
   # Return
   return(d)
