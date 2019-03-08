@@ -28,17 +28,13 @@ WordFreq(data, TextColName = "DESCR",
 This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 }
 \examples{
-Word2VecModel(data,
-             stringCol     = "Comment",
-             KeepStringCol = FALSE,
-             model_path    = getwd(),
-             ModelID       = "bla",
-             vects         = 50,
-             SaveStopWords = FALSE,
-             MinWords      = 1,
-             WindowSize    = 1,
-             Epochs        = 25,
-             StopWords     = NULL)
+WordFreq(data,
+        TextColName = "DESCR",
+        ClusterCol = "ClusterAllNoTarget",
+        ClusterID = 0,
+        RemoveEnglishStopwords = TRUE,
+        Stemming = TRUE,
+        StopWords = c("blabla1", "blabla2")
 }
 \author{
 Adrian Antico
