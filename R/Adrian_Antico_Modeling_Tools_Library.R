@@ -5597,27 +5597,23 @@ tokenizeH20 <- function(data3) {
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @examples
-#'Word2VecModel(data,
-#'              stringCol     = "Comment",
-#'              KeepStringCol = FALSE,
-#'              model_path    = getwd(),
-#'              ModelID       = "bla",
-#'              vects         = 50,
-#'              SaveStopWords = FALSE,
-#'              MinWords      = 1,
-#'              WindowSize    = 1,
-#'              Epochs        = 25,
-#'              StopWords     = NULL)
+#'data <- Word2VecModel(data,
+#'                      stringCol     = c("Text_Col1", "Text_Col2"),
+#'                      KeepStringCol = FALSE,
+#'                      model_path    = getwd(),
+#'                      ModelID       = c("Text_Col1", "Text_Col2"),
+#'                      vects         = 50,
+#'                      SaveStopWords = FALSE,
+#'                      MinWords      = 1,
+#'                      WindowSize    = 1,
+#'                      Epochs        = 25,
+#'                      StopWords     = NULL)
 #' @export
 Word2VecModel <- function(datax,
-                          stringCol     = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
-                                            "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
-                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans"),
+                          stringCol     = c("Text_Col1", "Text_Col2"),
                           KeepStringCol = FALSE,
                           model_path    = getwd(),
-                          ModelID       = c("Q65_Ans","Q66_Ans","Q67_Ans","Q69_Ans","Q70_Ans","Q71_Ans",
-                                            "Q72_Ans","Q73_Ans","Q74_Ans","Q75_Ans","Q76_Ans","Q77_Ans",
-                                            "Q78_Ans","Q79_Ans","Q80_Ans","Q81_Ans","Q82_Ans","Q83_Ans"),
+                          ModelID       = c("Text_Col1", "Text_Col2"),
                           vects         = 5,
                           SaveStopWords = FALSE,
                           MinWords      = 1,
@@ -5726,13 +5722,13 @@ Word2VecModel <- function(datax,
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
-#'WordFreq(data,
-#'         TextColName = "DESCR",
-#'         ClusterCol = "ClusterAllNoTarget",
-#'         ClusterID = 0,
-#'         RemoveEnglishStopwords = TRUE,
-#'         Stemming = TRUE,
-#'         StopWords = c("blabla1", "blabla2")
+#'data <- WordFreq(data,
+#'                 TextColName = "DESCR",
+#'                 ClusterCol = "ClusterAllNoTarget",
+#'                 ClusterID = 0,
+#'                 RemoveEnglishStopwords = TRUE,
+#'                 Stemming = TRUE,
+#'                 StopWords = c("blabla1", "blabla2")
 #' @export
 WordFreq <- function(data,
                      TextColName = "DESCR",
