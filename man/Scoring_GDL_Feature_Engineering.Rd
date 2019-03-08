@@ -7,13 +7,11 @@
 Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
   24)), periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
   statsFUNs = c(function(x) mean(x, na.rm = TRUE), function(x) sd(x,
-  na.rm = TRUE), function(x) quantile(x, probs = 0.85, na.rm = TRUE)),
-  statsNames = c("mean", "sd", "q85"),
-  targets = c("ScaledConsumption"), groupingVars = c("BADGE_NBR"),
-  sortDateName = "DAY_DATE", timeDiffTarget = NULL,
-  timeAgg = "hours", WindowingLag = 1, Type = "Lag", Timer = FALSE,
-  SkipCols = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = "BadgeRowNum", RecordsKeep = 1)
+  na.rm = TRUE)), statsNames = c("mean", "sd"), targets = c("Target"),
+  groupingVars = c("GroupVariable"), sortDateName = c("DateTime"),
+  timeDiffTarget = c("Time_Gap"), timeAgg = "days", WindowingLag = 1,
+  Type = "Lag", Timer = FALSE, SkipCols = FALSE,
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}
@@ -55,24 +53,69 @@ data.table of original data plus newly created features
 For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 }
 \examples{
-quick_model <- Scoring_GDL_Feature_Engineering(quick_model,
-                                               lags           = c(1:6,12,seq(24,168,24)),
-                                               periods        = c(6,12,24,72,168,720,4320,8640),
-                                               statsFUNs      = c(function(x) mean(x, na.rm = TRUE),
-                                                                  function(x) sd(x, na.rm = TRUE),
-                                                                  function(x) quantile(x, probs = 0.85, na.rm = TRUE)),
-                                               statsNames     = c("mean","sd","q85"),
-                                               targets        = c("ScaledConsumption"),
-                                               groupingVars   = c("BADGE_NBR"),
-                                               sortDateName   = "DAY_DATE",
-                                               timeDiffTarget = NULL,
-                                               timeAgg        = "hours",
-                                               WindowingLag   = 1,
-                                               Type           = "Lag",
-                                               Timer          = FALSE,
-                                               SkipCols       = FALSE,
-                                               SimpleImpute   = TRUE,
-                                               AscRowByGroup  = "BadgeRowNum")
+# Grouping Case
+N = 25116
+data <- data.table(GroupVariable = sample(x = c(letters,
+                                                LETTERS,
+                                                paste0(letters,letters),
+                                                paste0(LETTERS,LETTERS),
+                                                paste0(letters,LETTERS),
+                                                paste0(LETTERS,letters))),
+                   DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,
+                                                mean = 50,
+                                                sd = 20),
+                                          filter=rep(1,10),
+                                          circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+data <- data[order(DateTime)]
+data <- Scoring_GDL_Feature_Engineering(data,
+                                        lags           = c(1:6,12,seq(24,168,24)),
+                                        periods        = c(6,12,24,72,168,720,4320,8640),
+                                        statsFUNs      = c(function(x) mean(x,na.rm = TRUE),
+                                                           function(x) sd(x,na.rm = TRUE)),
+                                        statsNames     = c("mean","sd"),
+                                        targets        = c("Target"),
+                                        groupingVars   = c("GroupVariable"),
+                                        sortDateName   = c("DateTime"),
+                                        timeDiffTarget = c("Time_Gap"),
+                                        timeAgg        = "days",
+                                        WindowingLag   = 1,
+                                        Type           = "Lag",
+                                        Timer          = FALSE,
+                                        SkipCols       = FALSE,
+                                        SimpleImpute   = TRUE,
+                                        AscRowByGroup  = "temp",
+                                        RecordsKeep    = 1)
+
+# Non Grouping Case
+N = 25116
+data <- data.table(DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,
+                                                mean = 50,
+                                                sd = 20),
+                                          filter=rep(1,10),
+                                          circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+data <- data[order(DateTime)]
+data <- Scoring_GDL_Feature_Engineering(data,
+                                        lags           = c(1:6,12,seq(24,168,24)),
+                                        periods        = c(6,12,24,72,168,720,4320,8640),
+                                        statsFUNs      = c(function(x) mean(x,na.rm = TRUE),
+                                                           function(x) sd(x,na.rm = TRUE)),
+                                        statsNames     = c("mean","sd"),
+                                        targets        = c("Target"),
+                                        groupingVars   = NULL,
+                                        sortDateName   = c("DateTime"),
+                                        timeDiffTarget = c("Time_Gap"),
+                                        timeAgg        = "days",
+                                        WindowingLag   = 1,
+                                        Type           = "Lag",
+                                        Timer          = FALSE,
+                                        SkipCols       = FALSE,
+                                        SimpleImpute   = TRUE,
+                                        AscRowByGroup  = "temp",
+                                        RecordsKeep    = 1)
 }
 \author{
 Adrian Antico
