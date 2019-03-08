@@ -6,7 +6,8 @@
 \usage{
 WordFreq(data, TextColName = "DESCR",
   ClusterCol = "ClusterAllNoTarget", ClusterID = 0,
-  RemoveEnglishStopwords = TRUE, StopWords = c("blabla1", "blabla2"))
+  RemoveEnglishStopwords = TRUE, Stemming = TRUE,
+  StopWords = c("blabla1", "blabla2"))
 }
 \arguments{
 \item{data}{Source data table}
@@ -18,6 +19,8 @@ WordFreq(data, TextColName = "DESCR",
 \item{ClusterID}{Must be set if ClusterCol is defined. Set to cluster ID (or factor level)}
 
 \item{RemoveEnglishStopwords}{Set to TRUE to remove English stop words, FALSE to ignore}
+
+\item{Stemming}{Set to TRUE to run stemming on your text data}
 
 \item{StopWords}{Add your own stopwords, in vector format}
 }
