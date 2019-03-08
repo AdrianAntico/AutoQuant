@@ -52,26 +52,45 @@ data.table of original data plus newly created features
 Builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 }
 \examples{
-quick_model <- GDL_Feature_Engineering(quick_model,
-                                       lags           = c(seq(1,5,1)),
-                                       periods        = c(3,5,10,15,20,25),
-                                       statsFUNs      = c(function(x) quantile(x, probs = 0.0, na.rm = TRUE),
-                                                          function(x) quantile(x, probs = 1.0, na.rm = TRUE),
-                                                          function(x) mean(x, na.rm = TRUE),
-                                                          function(x) sd(x, na.rm = TRUE),
-                                                          function(x) quantile(x, probs = 0.2, na.rm = TRUE),
-                                                          function(x) quantile(x, probs = 0.8, na.rm = TRUE)),
-                                       statsNames     = c("min","max","mean","sd","q20","q80"),
-                                       targets        = c("qty","price"),
-                                       groupingVars   = c("SKU","VENDOR_NAME"),
-                                       sortDateName   = "RECEIPT_DATE",
-                                       timeDiffTarget = c("ISSUE_GAP"),
-                                       timeAgg        = c("auto","secs","mins","hours","days","weeks"),
-                                       WindowingLag   = 0,
-                                       Type           = "Lag",
-                                       Timer          = TRUE,
-                                       SkipCols       = FALSE,
-                                       SimpleImpute   = TRUE)
+# Grouping Case
+N = 25116
+data <- data.table(GroupVariable = sample(x = c(letters,
+                                                LETTERS,
+                                                paste0(letters,letters),
+                                                paste0(LETTERS,LETTERS),
+                                                paste0(letters,LETTERS),
+                                                paste0(LETTERS,letters))),
+                   DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data[order(DateTime)]
+
+# Non Grouping Case
+N = 25116
+data <- data.table(DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data[order(DateTime)]
+data <- GDL_Feature_Engineering(data,
+                                lags           = c(seq(1,5,1)),
+                                periods        = c(3,5,10,15,20,25),
+                                statsFUNs      = c(function(x) quantile(x, probs = 0.20, na.rm = TRUE),
+                                                   function(x) quantile(x, probs = 0.80, na.rm = TRUE),
+                                                   function(x) mean(x, na.rm = TRUE),
+                                                   function(x) sd(x, na.rm = TRUE),
+                                                   function(x) quantile(x, probs = 0.10, na.rm = TRUE),
+                                                   function(x) quantile(x, probs = 0.90, na.rm = TRUE)),
+                                statsNames     = c("min","max","mean","sd","q20","q80"),
+                                targets        = c("Target"),
+                                groupingVars   = NULL,
+                                sortDateName   = "DateTime",
+                                timeDiffTarget = c("Time_Gap"),
+                                timeAgg        = "days",
+                                WindowingLag   = 1,
+                                Type           = "Lag",
+                                Timer          = TRUE,
+                                SkipCols       = FALSE,
+                                SimpleImpute   = TRUE)
 }
 \author{
 Adrian Antico
