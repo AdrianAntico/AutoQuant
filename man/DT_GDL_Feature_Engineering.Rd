@@ -46,20 +46,39 @@ data.table of original data plus newly created features
 Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
 }
 \examples{
-quick_model <- DT_GDL_Feature_Engineering(quick_model,
-                                          lags           = c(seq(1,5,1)),
-                                          periods        = c(3,5,10,15,20,25),
-                                          statsNames     = c("MA"),
-                                          targets        = c("qty","price"),
-                                          groupingVars   = c("SKU","VENDOR_NAME"),
-                                          sortDateName   = "RECEIPT_DATE",
-                                          timeDiffTarget = c("ISSUE_GAP"),
-                                          timeAgg        = c("auto","secs","mins","hours","days","weeks"),
-                                          WindowingLag   = 0,
-                                          Type           = "Lag",
-                                          Timer          = TRUE,
-                                          SkipCols       = FALSE,
-                                          SimpleImpute   = TRUE)
+# Grouping Case
+N = 25116
+data <- data.table(GroupVariable = sample(x = c(letters,
+                                                LETTERS,
+                                                paste0(letters,letters),
+                                                paste0(LETTERS,LETTERS),
+                                                paste0(letters,LETTERS),
+                                                paste0(LETTERS,letters))),
+                   DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data[order(DateTime)]
+
+# Non Grouping Case
+N = 25116
+data <- data.table(DateTime = as.Date(Sys.time()),
+                   Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data[order(DateTime)]
+data <- DT_GDL_Feature_Engineering(data,
+                                   lags           = c(seq(1,5,1)),
+                                   periods        = c(3,5,10,15,20,25),
+                                   statsNames     = c("MA"),
+                                   targets        = c("Target"),
+                                   groupingVars   = NULL,
+                                   sortDateName   = "DateTime",
+                                   timeDiffTarget = c("Time_Gap"),
+                                   timeAgg        = c("days"),
+                                   WindowingLag   = 1,
+                                   Type           = "Lag",
+                                   Timer          = TRUE,
+                                   SkipCols       = FALSE,
+                                   SimpleImpute   = TRUE)
 }
 \author{
 Adrian Antico
