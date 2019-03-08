@@ -4,16 +4,12 @@
 \alias{Word2VecModel}
 \title{Automated word2vec data generation via H20}
 \usage{
-Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
-  "Q69_Ans", "Q70_Ans", "Q71_Ans", "Q72_Ans", "Q73_Ans", "Q74_Ans",
-  "Q75_Ans", "Q76_Ans", "Q77_Ans", "Q78_Ans", "Q79_Ans", "Q80_Ans",
-  "Q81_Ans", "Q82_Ans", "Q83_Ans"), KeepStringCol = FALSE,
-  model_path = getwd(), ModelID = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
-  "Q69_Ans", "Q70_Ans", "Q71_Ans", "Q72_Ans", "Q73_Ans", "Q74_Ans",
-  "Q75_Ans", "Q76_Ans", "Q77_Ans", "Q78_Ans", "Q79_Ans", "Q80_Ans",
-  "Q81_Ans", "Q82_Ans", "Q83_Ans"), vects = 5, SaveStopWords = FALSE,
-  MinWords = 1, WindowSize = 1, Epochs = 25, StopWords = NULL,
-  SaveModel = "standard", Threads = 4, MaxMemory = "14G")
+Word2VecModel(datax, stringCol = c("Text_Col1", "Text_Col2"),
+  KeepStringCol = FALSE, model_path = getwd(),
+  ModelID = c("Text_Col1", "Text_Col2"), vects = 5,
+  SaveStopWords = FALSE, MinWords = 1, WindowSize = 1, Epochs = 25,
+  StopWords = NULL, SaveModel = "standard", Threads = 4,
+  MaxMemory = "14G")
 }
 \arguments{
 \item{stringCol}{A string name for the column to convert via word2vec}
@@ -48,17 +44,17 @@ Word2VecModel(datax, stringCol = c("Q65_Ans", "Q66_Ans", "Q67_Ans",
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
-Word2VecModel(data,
-             stringCol     = "Comment",
-             KeepStringCol = FALSE,
-             model_path    = getwd(),
-             ModelID       = "bla",
-             vects         = 50,
-             SaveStopWords = FALSE,
-             MinWords      = 1,
-             WindowSize    = 1,
-             Epochs        = 25,
-             StopWords     = NULL)
+data <- Word2VecModel(data,
+                     stringCol     = c("Text_Col1", "Text_Col2"),
+                     KeepStringCol = FALSE,
+                     model_path    = getwd(),
+                     ModelID       = c("Text_Col1", "Text_Col2"),
+                     vects         = 50,
+                     SaveStopWords = FALSE,
+                     MinWords      = 1,
+                     WindowSize    = 1,
+                     Epochs        = 25,
+                     StopWords     = NULL)
 }
 \author{
 Adrian Antico
