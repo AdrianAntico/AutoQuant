@@ -31,6 +31,9 @@ Imports: data.table,
     snow,
     doParallel,
     parallel,
-    scatterplot3d
+    scatterplot3d,
+    SnowballC,
+    tm,
+    wordcloud
 Suggests: data.table,
     plotly
