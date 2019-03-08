@@ -5722,13 +5722,13 @@ Word2VecModel <- function(datax,
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
-#'data <- WordFreq(data,
-#'                 TextColName = "DESCR",
-#'                 ClusterCol = "ClusterAllNoTarget",
-#'                 ClusterID = 0,
-#'                 RemoveEnglishStopwords = TRUE,
-#'                 Stemming = TRUE,
-#'                 StopWords = c("blabla1", "blabla2")
+#' data <- WordFreq(data,
+#'                  TextColName = "DESCR",
+#'                  ClusterCol = "ClusterAllNoTarget",
+#'                  ClusterID = 0,
+#'                  RemoveEnglishStopwords = TRUE,
+#'                  Stemming = TRUE,
+#'                  StopWords = c("blabla1", "blabla2")
 #' @export
 WordFreq <- function(data,
                      TextColName = "DESCR",
