@@ -5480,17 +5480,13 @@ Word2VecModel <- function(datax,
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
-#'Word2VecModel(data,
-#'              stringCol     = "Comment",
-#'              KeepStringCol = FALSE,
-#'              model_path    = getwd(),
-#'              ModelID       = "bla",
-#'              vects         = 50,
-#'              SaveStopWords = FALSE,
-#'              MinWords      = 1,
-#'              WindowSize    = 1,
-#'              Epochs        = 25,
-#'              StopWords     = NULL)
+#'WordFreq(data,
+#'         TextColName = "DESCR",
+#'         ClusterCol = "ClusterAllNoTarget",
+#'         ClusterID = 0,
+#'         RemoveEnglishStopwords = TRUE,
+#'         Stemming = TRUE,
+#'         StopWords = c("blabla1", "blabla2")
 #' @export
 WordFreq <- function(data,
                      TextColName = "DESCR",
@@ -5538,7 +5534,7 @@ WordFreq <- function(data,
   text <- tm_map(text, stripWhitespace)
 
   # Text stemming
-  text <- tm_map(text, stemDocument)
+  if(Stemming) text <- tm_map(text, stemDocument)
 
   # Finalize
   dtm <- TermDocumentMatrix(text)
