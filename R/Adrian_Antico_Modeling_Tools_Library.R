@@ -2838,6 +2838,63 @@ DT_GDL_Feature_Engineering <- function(data,
 
   # Ensure target is numeric
   data[, eval(targets) := as.numeric(get(targets))]
+#' # Grouping Case
+#' N = 25116
+#' data <- data.table(GroupVariable = sample(x = c(letters,
+#'                                                 LETTERS,
+#'                                                 paste0(letters,letters),
+#'                                                 paste0(LETTERS,LETTERS),
+#'                                                 paste0(letters,LETTERS),
+#'                                                 paste0(LETTERS,letters))),
+#'                    DateTime = as.Date(Sys.time()),
+#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+#' data <- data[order(DateTime)]
+#'
+#' # Non Grouping Case
+#' N = 25116
+#' data <- data.table(DateTime = as.Date(Sys.time()),
+#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+#' data <- data[order(DateTime)]
+#' data <- DT_GDL_Feature_Engineering(data,
+#'                                    lags           = c(seq(1,5,1)),
+#'                                    periods        = c(3,5,10,15,20,25),
+#'                                    statsNames     = c("MA"),
+#'                                    targets        = c("Target"),
+#'                                    groupingVars   = NULL,
+#'                                    sortDateName   = "DateTime",
+#'                                    timeDiffTarget = c("Time_Gap"),
+#'                                    timeAgg        = c("days"),
+#'                                    WindowingLag   = 1,
+#'                                    Type           = "Lag",
+#'                                    Timer          = TRUE,
+#'                                    SkipCols       = FALSE,
+#'                                    SimpleImpute   = TRUE)
+#' @export
+DT_GDL_Feature_Engineering <- function(data,
+                                       lags           = c(seq(1,50,1)),
+                                       periods        = c(seq(5,95,5)),
+                                       statsNames     = c("MA"),
+                                       targets        = c("qty"),
+                                       groupingVars   = c("Group1","Group2"),
+                                       sortDateName   = "date",
+                                       timeDiffTarget = c("TimeDiffName"),
+                                       timeAgg        = c("auto","secs","mins","hours","days","weeks"),
+                                       WindowingLag   = 0,
+                                       Type           = c("Lag","Lead"),
+                                       Timer          = TRUE,
+                                       SkipCols       = NULL,
+                                       SimpleImpute   = TRUE) {
+
+  # Load libraries
+  library(data.table)
+
+  # Convert to data.table if not already
+  if(!is.data.table(data)) data <- as.data.table(data)
+
+  # Ensure target is numeric
+  data[, eval(targets) := as.numeric(get(targets))]
 
   # Set up counter for countdown
   CounterIndicator = 0
@@ -3022,6 +3079,7 @@ DT_GDL_Feature_Engineering <- function(data,
       colVar <- c(sortDateName[1])
       setorderv(data, colVar, order = -1)
     }
+    Targets <- targets
 
     # Lags
     for(l in seq_along(lags)) {
@@ -3049,10 +3107,20 @@ DT_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if(WindowingLag != 0) {
         for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
+          if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols) & l == 1) {
             data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
               difftime(
-                get(paste0("TEMP",(lags[l]-1))),
+                get(sortDateName),
+                get(paste0("TEMP",lags[l])),
+                units = eval(timeAgg)))]
+            CounterIndicator = CounterIndicator + 1
+            if(Timer) {
+              print(CounterIndicator / runs)
+            }
+          } else {
+            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
+              difftime(
+                get(paste0("TEMP",lags[l]-1)),
                 get(paste0("TEMP",lags[l])),
                 units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
@@ -3102,9 +3170,9 @@ DT_GDL_Feature_Engineering <- function(data,
     # Define targets
     if(WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets), timeTarget)
+        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets), timeTarget)
       } else {
-        Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets))
+        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
