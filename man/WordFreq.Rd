@@ -29,12 +29,12 @@ This function builds a word frequency table and a word cloud. It prepares data, 
 }
 \examples{
 data <- WordFreq(data,
-                TextColName = "DESCR",
-                ClusterCol = "ClusterAllNoTarget",
-                ClusterID = 0,
-                RemoveEnglishStopwords = TRUE,
-                Stemming = TRUE,
-                StopWords = c("blabla1", "blabla2")
+                 TextColName = "DESCR",
+                 ClusterCol = "ClusterAllNoTarget",
+                 ClusterID = 0,
+                 RemoveEnglishStopwords = TRUE,
+                 Stemming = TRUE,
+                 StopWords = c("blabla1", "blabla2")
 }
 \author{
 Adrian Antico
