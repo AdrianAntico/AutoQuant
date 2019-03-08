@@ -4,6 +4,7 @@
 #' @param data the data set to run the micro auc on
 #' @param cols a vector with the names of the columns you wish to dichotomize
 #' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
+#' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @examples
 #' library(data.table)
 #' library(AdrianModelingTools)
@@ -24,16 +25,26 @@
 #' @return data table with new dummy variables columns and optionally removes base columns
 #' @export
 # Dummify meters
-DummifyDT <- function(data, cols, KeepBaseCols = FALSE) {
+DummifyDT <- function(data,
+                      cols,
+                      KeepBaseCols = TRUE,
+                      OneHot = TRUE) {
   library(data.table)
   if(!is.data.table(data)) data <- as.data.table(data)
   for (col in cols) {
-    setorderv(data, col, order = 1)
     inds <- unique(data[[eval(col)]])
+    alloc.col(data, ncol(data) + length(inds))
+    set(data, j = paste0(col,"_",inds), value = 0L)
+    data[, eval(col) := as.character(get(col))]
     for (ind in inds) {
-      data[, (paste0(eval(col),"_",eval(ind))) := ifelse(get(col) == eval(ind), 1, 0)]
+      data.table::set(data,
+                      i = which(data.table::chmatch(data[[col]],ind) == 1L),
+                      j = paste0(col, "_",ind),
+                      value = 1L)
     }
-    data[, paste0(eval(col),"_Base") := 0]
+    if(OneHot) {
+      data[, paste0(col,"_Base") := 0]
+    }
     if(!KeepBaseCols) data[, eval(col) := NULL]
   }
   return(data)
@@ -5457,7 +5468,7 @@ Word2VecModel <- function(datax,
   return(data)
 }
 
-                                      #' Automated Word Frequency and Word Cloud Creation
+#' Automated Word Frequency and Word Cloud Creation
 #'
 #' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 #' @author Adrian Antico
@@ -5466,6 +5477,7 @@ Word2VecModel <- function(datax,
 #' @param ClusterCol Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
 #' @param ClusterID Must be set if ClusterCol is defined. Set to cluster ID (or factor level)
 #' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
+#' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
 #'Word2VecModel(data,
@@ -5485,6 +5497,7 @@ WordFreq <- function(data,
                      ClusterCol = "ClusterAllNoTarget",
                      ClusterID = 0,
                      RemoveEnglishStopwords = TRUE,
+                     Stemming = TRUE,
                      StopWords = c("blabla1", "blabla2")) {
 
   # Load libraries
