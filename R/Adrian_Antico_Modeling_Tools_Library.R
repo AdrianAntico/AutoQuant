@@ -7,7 +7,7 @@
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @examples
 #' library(data.table)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' test <- data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
 #'                                             LETTERS,
@@ -324,7 +324,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @examples
 #' library(datasets)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(h2o)
 #' # Import data
 #' data <- as.data.table(iris)
@@ -1298,7 +1298,7 @@ ModelDataPrep <- function(data,
 #' @param Precision Set the decimal number to increment by between 0 and 1
 #' @examples
 #' library(h2o)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(data.table)
 #' library(ggplot2)
 #' Correl <- 0.85
@@ -1566,7 +1566,7 @@ RedYellowGreen <- function(calibEval,
 #' @param fnProfit This is the cost of generating a false negative prediction
 #' @examples
 #' library(h2o)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(data.table)
 #' library(ggplot2)
 #' Correl <- 0.85
@@ -1688,7 +1688,7 @@ threshOptim <- function(data,
 #' @examples
 #' # Create Fake Annual Returns Data
 #' library(data.table)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(monreg)
 #' library(ggplot2)
 #' data <- data.table(Variable = seq(1,500,1), Target = rep(1, 500))
@@ -1883,7 +1883,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param cols This is the number of columns in your multiplot
 #' @examples
 #' library(h2o)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(data.table)
 #' library(ggplot2)
 #' library(grid)
@@ -2029,7 +2029,7 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
 #' library(h2o)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(data.table)
 #' library(ggplot2)
 #' Correl <- 0.85
@@ -2234,7 +2234,7 @@ ParDepCalPlots <- function(data,
 #' @return Calibration plot or boxplot
 #' @examples
 #' library(h2o)
-#' library(AdrianModelingTools)
+#' library(RemixAML)
 #' library(data.table)
 #' library(ggplot2)
 #' Correl <- 0.85
