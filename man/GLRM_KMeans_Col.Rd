@@ -47,7 +47,7 @@ GLRM_KMeans_Col adds a column to your original data with a cluster number identi
 }
 \examples{
 library(datasets)
-library(AdrianModelingTools)
+library(RemixAML)
 library(h2o)
 # Import data
 data <- as.data.table(iris)

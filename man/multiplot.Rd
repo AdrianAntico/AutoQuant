@@ -21,7 +21,7 @@ Sick of copying this one into your code? Well, not anymore.
 }
 \examples{
 library(h2o)
-library(AdrianModelingTools)
+library(RemixAML)
 library(data.table)
 library(ggplot2)
 library(grid)

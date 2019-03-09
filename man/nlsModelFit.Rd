@@ -24,7 +24,7 @@ This function will build models for 9 different nls models, along with a non-par
 \examples{
 # Create Fake Annual Returns Data
 library(data.table)
-library(AdrianModelingTools)
+library(RemixAML)
 library(monreg)
 library(ggplot2)
 data <- data.table(Variable = seq(1,500,1), Target = rep(1, 500))

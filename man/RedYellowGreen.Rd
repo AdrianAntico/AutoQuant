@@ -37,15 +37,68 @@ A data table with all evaluated strategies, parameters, and utilities, along wit
 This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
 }
 \examples{
-test <- data.table(actual = ifelse(runif(1000) > 0.5,1,0),target = runif(1000))
+library(h2o)
+library(RemixAML)
+library(data.table)
+library(ggplot2)
+Correl <- 0.85
+aa <- data.table(target = runif(10000))
+aa[, x1 := qnorm(target)]
+aa[, x2 := runif(10000)]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
+aa[, ':=' (x1 = NULL, x2 = NULL)]
+aa[, target := as.factor(ifelse(target < 0.3333, 0,1))]
+N = 1
+Construct <- data.table(Targets         = "target",
+                        Distribution    = "bernoulli",
+                        Loss            = "auc",
+                        Quantile        = 0.01,
+                        ModelName       = "bla",
+                        Algorithm       = "gbm",
+                        dataName        = "aa",
+                        TargetCol       = c("1"),
+                        FeatureCols     = c("2:10"),
+                        CreateDate      = Sys.time(),
+                        GridTune        = FALSE,
+                        ExportValidData = TRUE,
+                        ParDep          = 10,
+                        PD_Data         = "validate",
+                        ThreshType      = "f1",
+                        FSC             = 0.001,
+                        tpProfit        = rep(0,N),
+                        tnProfit        = rep(0,N),
+                        fpProfit        = rep(-1,N),
+                        fnProfit        = rep(-5,N),
+                        SaveModel       = rep("FALSE",N),
+                        SaveModelType   = rep("Mojo",N),
+                        PredsAllData    = rep(TRUE,N),
+                        TargetEncoding  = rep(NA,N))
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+              model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30)
+load(paste0(getwd(), "/bla.Rdata"))
 data <- RedYellowGreen(calibEval,
                        PredictColNumber  = 1,
-                       ActualColNumber   = 767,
+                       ActualColNumber   = 2,
                        TruePositiveCost  = 0,
                        TrueNegativeCost  = 0,
                        FalsePositiveCost = -1,
-                       FalseNegativeCost = -10,
-                       MidTierCost       = -5)
+                       FalseNegativeCost = -2,
+                       MidTierCost       = -0.5)
 }
 \author{
 Adrian Antico

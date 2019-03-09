@@ -30,7 +30,7 @@ This function will return the utility maximizing threshold for future prediction
 }
 \examples{
 library(h2o)
-library(AdrianModelingTools)
+library(RemixAML)
 library(data.table)
 library(ggplot2)
 Correl <- 0.85

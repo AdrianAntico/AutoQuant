@@ -29,7 +29,7 @@ This function automatically builds calibration plots and calibration boxplots fo
 }
 \examples{
 library(h2o)
-library(AdrianModelingTools)
+library(RemixAML)
 library(data.table)
 library(ggplot2)
 Correl <- 0.85

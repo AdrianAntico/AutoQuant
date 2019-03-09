@@ -23,7 +23,7 @@ DummifyDT creates dummy variables for the selected columns
 }
 \examples{
 library(data.table)
-library(AdrianModelingTools)
+library(RemixAML)
 test <- data.table(Value = runif(100000),
                    FactorCol = sample(x = c(letters,
                                             LETTERS,

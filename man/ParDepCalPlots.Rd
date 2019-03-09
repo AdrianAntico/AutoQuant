@@ -34,7 +34,7 @@ This function automatically builds partial dependence calibration plots and part
 }
 \examples{
 library(h2o)
-library(AdrianModelingTools)
+library(RemixAML)
 library(data.table)
 library(ggplot2)
 Correl <- 0.85
