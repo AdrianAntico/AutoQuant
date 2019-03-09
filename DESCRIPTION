@@ -7,8 +7,6 @@ Depends: R (>= 3.5.1),
     data.table,
     zoo,
     ggplot2,
-    plotly,
-    RcppRoll,
     chron
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -19,8 +17,6 @@ Imports: data.table,
     h2o,
     lubridate,
     ggplot2,
-    plotly,
-    RcppRoll,
     caTools,
     forecast,
     prophet,
@@ -35,5 +31,4 @@ Imports: data.table,
     SnowballC,
     tm,
     wordcloud
-Suggests: data.table,
-    plotly
+Suggests: data.table
