@@ -10,7 +10,7 @@ Depends: R (>= 3.5.1),
     plotly,
     RcppRoll,
     chron
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
