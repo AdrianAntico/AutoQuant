@@ -35,10 +35,10 @@ DummifyDT <- function(data,
     inds <- unique(data[[eval(col)]])
     alloc.col(data, ncol(data) + length(inds))
     set(data, j = paste0(col,"_",inds), value = 0L)
-    data[, eval(col) := as.character(get(col))]
+    if(is.factor(data[[eval(col)]])) data[, eval(col) := as.character(get(col))]
     for (ind in inds) {
       data.table::set(data,
-                      i = which(data.table::chmatch(data[[col]],ind) == 1L),
+                      i = which(data[[col]] %chin% ind),
                       j = paste0(col, "_",ind),
                       value = 1L)
     }
@@ -1272,7 +1272,7 @@ ModelDataPrep <- function(data,
   if(Impute) {
     for (j in seq_along(data)) {
       if(is.factor(data[[j]])) {
-        set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,MissFactor)
+        set(data,which(!(data[[j]] %chin% levels(data[[j]]))),j,MissFactor)
       } else {
         set(data,which(is.na(data[[j]])),j,MissNum)
       }
