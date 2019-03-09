@@ -1,8 +1,8 @@
-Package: AdrianModelingTools
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Package: RemixAML
+Title: Automated Machine Learning
+Version: 0.9
+Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com", role = c("aut", "cre"))
+Description: This package contains functions to help automate many of your machine learning and data science tasks. They are high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5.1),
     data.table,
     zoo,
