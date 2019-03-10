@@ -31,4 +31,4 @@ Imports: data.table,
     SnowballC,
     tm,
     wordcloud
-Suggests: data.table
+Suggests: testthat
