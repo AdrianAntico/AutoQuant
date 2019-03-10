@@ -90,21 +90,6 @@ NumWeekdays <- Vectorize(function(a, b) {
   sum(!weekdays(seq(a, b, "days")) %in% c("Saturday", "Sunday"))
 })
 
-#' HolidayCounts is a vectorized function to count up the number of holidays in a range of dates
-#'
-#' @author Adrian Antico
-#' @param a The start date
-#' @param b The end date
-#' @import data.table
-#' @examples
-#' data[, holidays := HolidayCounts(Date1, Date2)]
-#' @return The counts either as a scalar or a column in your table
-#' @export
-HolidayCounts <- Vectorize(function(a,b) {
-  d <- seq(a, b, 1)
-  sum(chron::is.holiday(d))
-})
-
 #' PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 #'
 #' @author Adrian Antico
@@ -116,22 +101,6 @@ HolidayCounts <- Vectorize(function(a,b) {
 #' @export
 PrintObjectsSize <- function(N = 10) {
   print(sort(-sapply(ls(),function(x){object.size(get(x))}))[1:N]/1024/1024)
-}
-
-#' CountSingleDigits counts the number of digits in a string
-#'
-#' @author Adrian Antico at RemixInstitute.com
-#' @param data the source data.table
-#' @param col the column number with the string to evaluate
-#' @import data.table
-#' @examples
-#' VIMP[, variable2 := ifelse(CountSingleDigits(VIMP,1) == 2, substr(variable, 1,7), substr(variable, 1,6))]
-#' @return The original data.table with the added columns merged in
-#' @export
-CountSingleDigits <- function(data, col) {
-  unlist(lapply(substr(data[[col]],1,3), function(x) {
-    nchar(gsub("[^0-9]+", "", x))
-  }))
 }
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
