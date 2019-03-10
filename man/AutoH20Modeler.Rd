@@ -133,7 +133,7 @@ Construct <- data.table(Targets         = "target",
                        SaveModelType   = rep("Mojo",N),
                        PredsAllData    = rep(TRUE,N),
                        TargetEncoding  = rep(NA,N),
-                       SupplyData      = rep(TRUE,N))
+                       SupplyData      = rep(FALSE,N))
 AutoH20Modeler(Construct,
               max_memory = "28G",
               ratios = 0.75,
