@@ -5,6 +5,7 @@
 #' @param cols a vector with the names of the columns you wish to dichotomize
 #' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
+#' @import data.table
 #' @examples
 #' library(data.table)
 #' library(RemixAML)
@@ -57,6 +58,7 @@ DummifyDT <- function(data,
 #' @param best_model the model object you wish to test
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
+#' @import data.table
 #' @examples
 #' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
@@ -79,6 +81,7 @@ H20MultinomialAUC <- function(validate, best_model, targetColNum = 1, targetName
 #' @author Adrian Antico
 #' @param a The start date
 #' @param b The end date
+#' @import data.table
 #' @examples
 #' data[, Weekdaycounts := NumWeekdays(Date1, Date2)]
 #' @return The counts either as a scalar or a column in your table
@@ -92,6 +95,7 @@ NumWeekdays <- Vectorize(function(a, b) {
 #' @author Adrian Antico
 #' @param a The start date
 #' @param b The end date
+#' @import data.table
 #' @examples
 #' data[, holidays := HolidayCounts(Date1, Date2)]
 #' @return The counts either as a scalar or a column in your table
@@ -105,6 +109,7 @@ HolidayCounts <- Vectorize(function(a,b) {
 #'
 #' @author Adrian Antico
 #' @param N The number of objects to display
+#' @import data.table
 #' @examples
 #' PrintObjectsSize(N = 10)
 #' @return The objects in your environment and their sizes
@@ -118,6 +123,7 @@ PrintObjectsSize <- function(N = 10) {
 #' @author Adrian Antico at RemixInstitute.com
 #' @param data the source data.table
 #' @param col the column number with the string to evaluate
+#' @import data.table
 #' @examples
 #' VIMP[, variable2 := ifelse(CountSingleDigits(VIMP,1) == 2, substr(variable, 1,7), substr(variable, 1,6))]
 #' @return The original data.table with the added columns merged in
@@ -142,6 +148,7 @@ CountSingleDigits <- function(data, col) {
 #' @param Low this is the threshold on the low end
 #' @param KeepAllCols set to TRUE to remove the intermediate features
 #' @param DataScaled set to TRUE if you already scaled your data
+#' @import data.table
 #' @examples
 #' # Create data
 #' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(10000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
@@ -243,6 +250,7 @@ GenTSAnomVars <- function(data,
 #' @param data the source residuals data.table
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
+#' @import data.table
 #' @examples
 #' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
 #' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
@@ -322,6 +330,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param MaxRunTimeSecs set the timeout for max run time
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
+#' @import data.table
 #' @examples
 #' library(datasets)
 #' library(RemixAML)
@@ -491,6 +500,7 @@ GLRM_KMeans_Col <- function(data,
 #' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
 #' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
+#' @import data.table
 #' @examples
 #' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
 #' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
@@ -1165,6 +1175,7 @@ AutoTS <- function(data,
 #' @examples
 #' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 #' Cdata[, DAY_DATE := as.Date(DAY_DATE, "%m/%d/%Y")]
+#' @import data.table
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- Vectorize(function(x) {
@@ -1176,6 +1187,7 @@ tempDatesFun <- Vectorize(function(x) {
 #' SimpleCap function is for capitalizing the first letter of words (need I say more?)
 #'
 #' @author Adrian Antico
+#' @import data.table
 #' @examples
 #' x <- adrian
 #' x <- SimpleCap(x)
@@ -1192,6 +1204,7 @@ SimpleCap <- function(x) {
 #' This function adds the Remix Theme to ggplots
 #'
 #' @author DougVegas at RemixInstitute.com
+#' @import data.table
 #' @examples
 #' p <- ggplot(data, aes(x = weeks, y = quantity)) + geom_line()
 #' p <- p + RemixTheme()
@@ -1236,6 +1249,7 @@ RemixTheme <- function(){
 #' @param data This is your source data you'd like to modify
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
+#' @import data.table
 #' @examples
 #' data <- ModelDataPrep(data,
 #'                       Impute = TRUE,
@@ -1296,6 +1310,7 @@ ModelDataPrep <- function(data,
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
 #' @param Cores Number of cores on your machine
 #' @param Precision Set the decimal number to increment by between 0 and 1
+#' @import data.table
 #' @examples
 #' library(h2o)
 #' library(RemixAML)
@@ -1564,6 +1579,7 @@ RedYellowGreen <- function(calibEval,
 #' @param tnProfit This is the utility for generating a true negative prediction
 #' @param fpProfit This is the cost of generating a false positive prediction
 #' @param fnProfit This is the cost of generating a false negative prediction
+#' @import data.table
 #' @examples
 #' library(h2o)
 #' library(RemixAML)
@@ -1685,6 +1701,7 @@ threshOptim <- function(data,
 #' @param y Y is the target variable name in quotes
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
+#' @import data.table
 #' @examples
 #' # Create Fake Annual Returns Data
 #' library(data.table)
@@ -1881,6 +1898,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param plotlist This is the list of your charts
 #' @param rows This is the number of rows in your multiplot
 #' @param cols This is the number of columns in your multiplot
+#' @import data.table
 #' @examples
 #' library(h2o)
 #' library(RemixAML)
@@ -1978,6 +1996,7 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #'
 #' @author Adrian Antico
 #' @param Size The size of the axis labels and title
+#' @import data.table
 #' @examples
 #' p <- ggplot(data, aes(x = weeks, y = quantity)) + geom_line()
 #' p <- p + ChartTheme(Size = 12)
@@ -2007,6 +2026,7 @@ ChartTheme <- function(Size = 12) {
 #'
 #' @author Adrian Antico
 #' @param x X is your variable of interest
+#' @import data.table
 #' @examples
 #' percRank(x)
 #' @return vector of percentile ranks
@@ -2026,6 +2046,7 @@ percRank <- function(x) trunc(rank(x))/length(x)
 #' @param bucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
 #' @param Function Supply the function you wish to use for aggregation.
+#' @import data.table
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
 #' library(h2o)
@@ -2231,6 +2252,7 @@ ParDepCalPlots <- function(data,
 #' @param type Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
 #' @param bucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param aggrfun The statistics function used in aggregation, listed as a function
+#' @import data.table
 #' @return Calibration plot or boxplot
 #' @examples
 #' library(h2o)
@@ -2381,6 +2403,7 @@ EvalPlot <- function(data,
 #' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
 #' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @import data.table
 #' @return data.table of original data plus newly created features
 #' @examples
 #' # Grouping Case
@@ -2799,6 +2822,7 @@ GDL_Feature_Engineering <- function(data,
 #' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
 #' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @import data.table
 #' @return data.table of original data plus newly created features
 #' @examples
 #' # Grouping Case
@@ -3208,6 +3232,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
+#' @import data.table
 #' @return data.table of original data plus newly created features
 #' @examples
 #' # Grouping Case
@@ -3665,6 +3690,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
+#' @import data.table
 #' @return data.table of original data plus newly created features
 #' @examples
 #' # Grouping Case
@@ -4173,6 +4199,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param PredsAllData Set to TRUE to export all data (train + validate) with predicted values
 #' @param TargetEncoding Supply either NA or a vector of numeric column references in quotes "c(2:8)"
 #' @param SupplyData Set to TRUE if you are supplying your own training and validation data
+#' @import data.table
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @examples
 #'Correl <- 0.85
@@ -5568,6 +5595,7 @@ AutoH20Modeler <- function(Construct,
 #' @author Adrian Antico at RemixInstitute.com
 #' @param sentences Source data table to merge vects onto
 #' @param stop.words A string name for the column to convert via word2vec
+#' @import data.table
 #' @export
 tokenizeH20 <- function(data3) {
   library(h2o)
@@ -5596,6 +5624,7 @@ tokenizeH20 <- function(data3) {
 #' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
+#' @import data.table
 #' @examples
 #'data <- Word2VecModel(data,
 #'                      stringCol     = c("Text_Col1", "Text_Col2"),
@@ -5721,6 +5750,7 @@ Word2VecModel <- function(datax,
 #' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
+#' @import data.table
 #' @examples
 #' data <- WordFreq(data,
 #'                  TextColName = "DESCR",
