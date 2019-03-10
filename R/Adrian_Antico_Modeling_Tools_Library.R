@@ -1158,7 +1158,7 @@ tempDatesFun <- Vectorize(function(x) {
 #' @author Adrian Antico
 #' @import data.table
 #' @examples
-#' x <- adrian
+#' x <- "adrian"
 #' x <- SimpleCap(x)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
@@ -1255,7 +1255,7 @@ ModelDataPrep <- function(data,
   if(Impute) {
     for (j in seq_along(data)) {
       if(is.factor(data[[j]])) {
-        set(data,which(!(data[[j]] %chin% levels(data[[j]]))),j,MissFactor)
+        set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,MissFactor)
       } else {
         set(data,which(is.na(data[[j]])),j,MissNum)
       }
