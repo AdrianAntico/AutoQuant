@@ -33,15 +33,15 @@
   * Polynomial regression or monotonic regression
 
 ##### Unsupervised Learning Functions: 
-4. **GenTSAnomVars**: - (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
-5. **ResidualOutliers**: (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
-6. **GLRM_KMeans_Col**: (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a K-Optimal searching K-Means algorithm
+4. **GenTSAnomVars**: - Generate time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
+5. **ResidualOutliers**: Residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
+6. **GLRM_KMeans_Col**: Generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
 ##### Feature Engineering Functions: 
-7. **FAST_GDL_Feature_Engineering**: Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set.
-8. **GDL_Feature_Engineering**: Generate a wider set of features (similar in structure to FAST_GDL) using any aggregation statistic for the rolling stats.
-9. **Scoring_GDL_Feature_Engineering**: Generate the model features from FAST_GDL or GDL for scoring purposes when the scoring data is for forward looking predictions (not historical, which can be obtained from FAST_GDL or GDL).
-10. **DT_GDL_Feature_Engineering**: Lags + Moving Averages, all in data.table
+7. **FAST_GDL_Feature_Engineering**: Fast generalized distributed lag feature engineering. Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set. 100% data.table except for rolling statistics.
+8. **GDL_Feature_Engineering**: Generate a wider set of features (similar in structure to FAST_GDL) using any aggregation statistic for the rolling stats. 100% data.table except for rolling statistics.
+9. **Scoring_GDL_Feature_Engineering**: Generate the model features from FAST_GDL or GDL for scoring purposes when the scoring data is for forward looking predictions (not historical, which can be obtained from FAST_GDL or GDL). 100% data.table.
+10. **DT_GDL_Feature_Engineering**: Lags + Moving Averages, 100% data.table
 11. **Word2VecModel**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
 12. **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
 13. **DummifyDT** - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
