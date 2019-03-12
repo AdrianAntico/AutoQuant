@@ -53,15 +53,13 @@
 17. **RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-18. CountSingleDigits - From a project. Can probably delete.
-19. tokenizeH20 - Tokenize and H20 string column.
-20. tempDatesFun - Special case for character conversion to date when importing from Excel.
-21. RemixTheme - Fonts, colors, style for plots.
-22. ChartTheme - Fonts, colors, style for plots.
-23. SimpleCap - Apply proper case to text.
-24. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-25. multiplot - Useful for displaying multiple plots in a single pane.
-26. PrintObjectsSize - print out objects and their sizes that are in the envrionment
-27. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
-28. HolidayCounts - vectorized function to count up the number of holidays in a range of dates
-29. WordFreq - creates a word frequency data.table and a word cloud
+18. tokenizeH20 - Tokenize and H20 string column.
+19 tempDatesFun - Special case for character conversion to date when importing from Excel.
+20. RemixTheme - Fonts, colors, style for plots.
+21. ChartTheme - Fonts, colors, style for plots.
+22. SimpleCap - Apply proper case to text.
+23. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+24. multiplot - Useful for displaying multiple plots in a single pane.
+25. PrintObjectsSize - print out objects and their sizes that are in the envrionment
+26. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
+27. WordFreq - creates a word frequency data.table and a word cloud
