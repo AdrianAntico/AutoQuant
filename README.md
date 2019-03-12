@@ -1,7 +1,7 @@
 # RemixAML
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling work is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/
 ##### Supervised Learning Functions: 
-1. **AutoH20Modeler**: Great at structured data accuracy optimization. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
+1. **AutoH20Modeler**: Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
 * Models include:
   * RandomForest (DRF)
   * GBM
@@ -9,7 +9,7 @@
   * XGBoost (for Linux)
   * lightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-2. **AutoTS**: Great at extrapolating out of time. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), generates forecasts and evaluation metrics.
+2. **AutoTS**: Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), along with generating forecasts and evaluation metrics.
 * Models include:
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
   * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
@@ -19,7 +19,7 @@
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
   * SPLINE: Cubic Smoothing Spline regression on an ARIMA(0,2,2) model structure
   * Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
-3. **nlsModelFit**: Great at extrapolating from out of range from an independent variable. Automatically finds the best model fit from the suite of models below and merges predictions to source data file.
+3. **nlsModelFit**: Automated nonlinear regression modeling. Automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
 * Models included:
   * Asymptotic
   * Asymptotic through origin
