@@ -83,6 +83,9 @@ DummifyDT <- function(data,
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
 #' @import data.table
+#' @import h2o
+#' @import pROC
+#' @import stringr
 #' @examples
 #' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
@@ -253,6 +256,8 @@ GenTSAnomVars <- function(data,
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
 #' @import data.table
+#' @import tsoutliers
+#' @import forecast
 #' @examples
 #' data <- data.table::data.table(a = seq(0,10000,1),
 #'                    predicted = sde::GBM(N=10000)*1000)[-1,]
@@ -350,6 +355,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @import data.table
+#' @import h2o
 #' @examples
 #' library(datasets)
 #' library(RemixAML)
@@ -530,7 +536,7 @@ GLRM_KMeans_Col <- function(data,
 
   } else {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
-    Nam <- colnames(x_raw)
+    Nam <- h2o.colnames(x_raw)
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
       x              = Nam,
@@ -564,6 +570,9 @@ GLRM_KMeans_Col <- function(data,
 #' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @import data.table
+#' @import forecast
+#' @import prophet
+#' @import lubridate
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(1000,
@@ -1503,7 +1512,7 @@ AutoTS <- function(data,
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- Vectorize(function(x) {
-  strsplit(x, " ")[[1]][1]
+  data.table::strsplit(x, " ")[[1]][1]
 })
 
 #' SimpleCap function is for capitalizing the first letter of words
@@ -1541,7 +1550,7 @@ SimpleCap <- function(x) {
 #'                                                       circular=TRUE))
 #' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
-#' p <- ggplot(data, aes(x = DateTime, y = Target)) + geom_line()
+#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + geom_line()
 #' p <- p + RemixTheme()
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
@@ -2094,10 +2103,10 @@ RedYellowGreen <- function(calibEval,
 #'                     fnProfit = -2)
 #' optimalThreshold <- data[[1]]
 #' allResults       <- data[[2]]
-#' ggplot(allResults, aes(x = Thresholds)) +
-#'   geom_line(aes(y = allResults[["Utilities"]], color = "red")) +
+#' ggplot2::ggplot(allResults, ggplot2::aes(x = Thresholds)) +
+#'   ggplot2::geom_line(ggplot2::aes(y = allResults[["Utilities"]], color = "red")) +
 #'   ChartTheme(Size = 12) +
-#'   ylab("Utility") + geom_vline(xintercept = optimalThreshold)
+#'   ggplot2::ylab("Utility") + ggplot2::geom_vline(xintercept = optimalThreshold)
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,
@@ -2185,11 +2194,11 @@ threshOptim <- function(data,
 #'                all = TRUE)
 #'
 #' # Plot graphs of predicted vs actual
-#' ggplot(data2, aes(x = Variable)) +
-#'   geom_line(aes(y = data2[["Target.x"]], color = "blue")) +
-#'   geom_line(aes(y = data2[["Target.y"]], color = "red")) +
-#'   ChartTheme(Size = 12) + ggtitle("Growth Models") +
-#'   ylab("Target Variable") + xlab("Independent Variable")
+#' ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "blue")) +
+#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "red")) +
+#'   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
+#'   ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
 #' @return A data table with your original column replaced by the nls model predictions
 #' @export
 nlsModelFit <- function(data, y, x, monotonic = TRUE) {
@@ -2225,7 +2234,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   tryCatch({
     if (monotonic == TRUE) {
       tryCatch({
-        baseline <- monreg(z, zz, hr = 0.5, hd = 0.5)
+        baseline <- monreg::monreg(z, zz, hr = 0.5, hd = 0.5)
         preds    <- baseline$estimation
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
@@ -2541,66 +2550,66 @@ multiplot <-
 #' @export
 ChartTheme <- function(Size = 12) {
   chart_theme <-
-    theme(
-      plot.background = element_rect(fill = "gray94"),
-      panel.background = element_rect(
+    ggplot2::theme(
+      plot.background = ggplot2::element_rect(fill = "gray94"),
+      panel.background = ggplot2::element_rect(
         fill = "lightsteelblue1",
         colour = "darkblue",
         size = 0.25,
         color = "darkblue"
       ),
-      panel.grid.major = element_line(
+      panel.grid.major = ggplot2::element_line(
         colour = "darkblue",
         size = 0.01,
         color = "white",
         linetype = 1
       ),
-      panel.grid.minor = element_line(
+      panel.grid.minor = ggplot2::element_line(
         colour = "darkblue",
         size = 0.01,
         color = "white",
         linetype = 1
       ),
       legend.position = "bottom",
-      legend.title = element_text(
+      legend.title = ggplot2::element_text(
         color = "darkblue",
         size = Size,
         face = "bold"
       ),
-      legend.background = element_rect(
+      legend.background = ggplot2::element_rect(
         fill = "gray95",
         size = 1,
         linetype = "solid",
         color = "darkblue"
       ),
-      plot.title = element_text(
+      plot.title = ggplot2::element_text(
         color = "darkblue",
         size = Size,
         face = "bold"
       ),
-      axis.title = element_text(
+      axis.title = ggplot2::element_text(
         color = "darkblue",
         size = Size,
         face = "bold"
       ),
-      axis.text = element_text(
+      axis.text = ggplot2::element_text(
         colour = "darkblue",
         face = "bold",
         angle = 90
       ),
-      axis.title.x = element_text(margin = margin(
+      axis.title.x = ggplot2::element_text(margin = ggplot2::margin(
         t = 20,
         r = 20,
         b = 20,
         l = 20
       )),
-      axis.title.y = element_text(margin = margin(
+      axis.title.y = ggplot2::element_text(margin = ggplot2::margin(
         t = 20,
         r = 20,
         b = 20,
         l = 20
       )),
-      panel.border = element_rect(
+      panel.border = ggplot2::element_rect(
         colour = "darkblue",
         fill = NA,
         size = 1.5
@@ -2785,17 +2794,16 @@ ParDepCalPlots <- function(data,
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot
-    plot <- ggplot(preds3, aes(x = preds3[[IndepVar]])) +
-      geom_line(aes(y = preds3[[PredColName]], color = "Predicted")) +
-      geom_line(aes(y = preds3[[ActColName]], color = "Actuals")) +
-      ylab("Actual / Predicted") + xlab(IndepVar) +
-      scale_colour_manual(
+    plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
+      ggplot2::geom_line(ggplot2::aes(y = preds3[[PredColName]], color = "Predicted")) +
+      ggplot2::geom_line(ggplot2::aes(y = preds3[[ActColName]], color = "Actuals")) +
+      ggplot2::ylab("Actual / Predicted") + ggplot2::xlab(IndepVar) +
+      ggplot2::scale_colour_manual(
         "",
         breaks = c("Actuals", "Predicted"),
         values = c("blue", "red")
       ) +
-      ChartTheme(Size = 15) + ggtitle("Partial Dependence Calibration Plot")
-    #plot <- plotly_build(ggplotly(plot))
+      ChartTheme(Size = 15) + ggplot2::ggtitle("Partial Dependence Calibration Plot")
   } else if (type == "boxplot") {
     # Partial dependence boxplot
     keep <- c("rank", ActColName, IndepVar)
@@ -2815,12 +2823,11 @@ ParDepCalPlots <- function(data,
       data[, eval(IndepVar) := round(Function(get(IndepVar)), 3), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
-    plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
-      geom_boxplot(aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
-      ggtitle("Partial Dependence Calibration Boxplot") +
-      xlab(eval(IndepVar)) +
+    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+      ggplot2::geom_boxplot(aes(fill = Type)) + ggplot2::scale_fill_manual(values = c("red", "blue")) +
+      ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
+      ggplot2::xlab(eval(IndepVar)) +
       ChartTheme(Size = 15)
-    #plot <- plotly_build(ggplotly(plot))
   } else if (type == "FactorVar") {
     keep <- c(IndepVar, ActColName)
     actual <- preds3[, ..keep]
@@ -2833,12 +2840,11 @@ ParDepCalPlots <- function(data,
     data.table::setnames(predicted, PredColName, "Output")
     data <- rbindlist(list(actual, predicted))[order(-Output)]
 
-    plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
-      geom_bar(stat = "identity", position = "dodge", aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
-      ggtitle("Partial Dependence Calibration Barplot") +
-      xlab(eval(IndepVar)) +
+    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+      ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
+      ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
+      ggplot2::xlab(eval(IndepVar)) +
       ChartTheme(Size = 15)
-    #plot <- plotly_build(ggplotly(plot))
   }
   return(plot)
 }
@@ -2964,10 +2970,10 @@ EvalPlot <- function(data,
 
     data <- rbindlist(list(zz1, zz2))
 
-    plot <- ggplot(data, aes(x = rank, y = output, fill = Type)) +
-      geom_boxplot(outlier.color = "red", color = "black") +
-      ggtitle("Calibration Evaluation Boxplot") +
-      xlab("Predicted Percentile") + ylab("Observed Values") +
+    plot <- ggplot2::ggplot(data, ggplot2::aes(x = rank, y = output, fill = Type)) +
+      ggplot2::geom_boxplot(outlier.color = "red", color = "black") +
+      ggplot2::ggtitle("Calibration Evaluation Boxplot") +
+      ggplot2::xlab("Predicted Percentile") + ggplot2::ylab("Observed Values") +
       ChartTheme(Size = 15)
 
   } else {
@@ -2975,14 +2981,14 @@ EvalPlot <- function(data,
     data <- data[, lapply(.SD, noquote(aggrfun)), by = rank]
 
     # Build calibration plot
-    plot  <- ggplot(data, aes(x = rank))  +
-      geom_line(aes(y = data[[3]], colour = "Actual")) +
-      geom_line(aes(y = data[[2]], colour = "Predicted")) +
-      xlab("Predicted Percentile") + ylab("Observed Values") +
-      scale_color_manual(values = c("red", "blue")) +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      theme(legend.position = "bottom") +
-      ggtitle("Calibration Evaluation Plot") +
+    plot  <- ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
+      ggplot2::geom_line(ggplot2::aes(y = data[[3]], colour = "Actual")) +
+      ggplot2::geom_line(ggplot2::aes(y = data[[2]], colour = "Predicted")) +
+      ggplot2::xlab("Predicted Percentile") + ggplot2::ylab("Observed Values") +
+      ggplot2::scale_color_manual(values = c("red", "blue")) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::ggtitle("Calibration Evaluation Plot") +
       ChartTheme(Size = 15)
   }
   return(plot)
