@@ -16,15 +16,15 @@ An object to pass along to ggplot objects following the "+" sign
 This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 }
 \examples{
-data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
-                               Target = stats::filter(rnorm(1000,
-                                                           mean = 50,
-                                                            sd = 20),
-                                                      filter=rep(1,10),
-                                                      circular=TRUE))
+data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+  Target = stats::filter(rnorm(1000,
+                               mean = 50,
+                               sd = 20),
+                         filter=rep(1,10),
+                         circular=TRUE))
 data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
-p <- ggplot(data, aes(x = DateTime, y = Target)) + geom_line()
+p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + geom_line()
 p <- p + ChartTheme(Size = 12)
 p
 }
