@@ -20,14 +20,14 @@ A data.table with outliers, the arima model, and residuals from the arima fit
 ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima.
 }
 \examples{
-data <- data.table(a = seq(0,10000,1),
+data <- data.table::data.table(a = seq(0,10000,1),
                    predicted = sde::GBM(N=10000)*1000)[-1,]
-data <- data.table(a = seq(1,10000,1),
+data <- data.table::data.table(a = seq(1,10000,1),
                    predicted = sde::rcCIR(n=10000,
                                           Dt=0.1,
                                           x0=1,
                                           theta=c(6,2,2)))
-data <- data.table(a = seq(1,10000,1),
+data <- data.table::data.table(a = seq(1,10000,1),
                    predicted = sde::rsOU(n=10000,
                                          theta=c(0,2,1)))
 stuff    <- ResidualOutliers(data = data, maxN = 5, cvar = 4)

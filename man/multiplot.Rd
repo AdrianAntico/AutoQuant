@@ -28,7 +28,7 @@ library(data.table)
 library(ggplot2)
 library(grid)
 Correl <- 0.85
-aa <- data.table(target = runif(10000))
+aa <- data.table::data.table(target = runif(10000))
 aa[, x1 := qnorm(target)]
 aa[, x2 := runif(10000)]
 aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]

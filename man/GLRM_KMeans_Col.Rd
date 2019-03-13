@@ -50,7 +50,7 @@ library(datasets)
 library(RemixAML)
 library(h2o)
 # Import data
-data <- as.data.table(iris)
+data <- data.table::as.data.table(iris)
 # Run algo, excluding Species column
 data <- GLRM_KMeans_Col(data,
                         GridTuneGLRM = TRUE,

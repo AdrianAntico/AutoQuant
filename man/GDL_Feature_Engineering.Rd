@@ -56,7 +56,7 @@ Builds autoregressive and rolling stats from target columns and distributed lags
 \examples{
 # Grouping Case
 N = 25116
-data <- data.table(GroupVariable = sample(x = c(letters,
+data <- data.table::data.table(GroupVariable = sample(x = c(letters,
                                                 LETTERS,
                                                 paste0(letters,letters),
                                                 paste0(LETTERS,LETTERS),
@@ -73,7 +73,7 @@ data <- data[order(DateTime)]
 
 # Non Grouping Case
 N = 25116
-data <- data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),

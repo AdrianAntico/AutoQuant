@@ -28,56 +28,6 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{TrainData}{Set to NULL or supply a data.table for training data}
 
 \item{TestData}{Set to NULL or supply  a data.table for validation data}
-
-\item{Targets}{Names of target variables in source data}
-
-\item{Distribution}{Distribution family, e.g. bernoulli}
-
-\item{Loss}{Loss metric for model, e.g. AUC for binary classification}
-
-\item{Quantile}{The numeric decimal representing the quantile you wish to model}
-
-\item{ModelName}{The name for your model}
-
-\item{Algorithm}{Name of algo, i.e. gbm, randomForest, deeplearning}
-
-\item{dataName}{The name of the data used to build model}
-
-\item{TargetCol}{The reference to the target variable}
-
-\item{FeatureCols}{The reference to the feature variables}
-
-\item{CreateDate}{Set the date of when this file was created}
-
-\item{GridTune}{Set to TRUE / FALSE}
-
-\item{ExportValidData}{Set to TRUE / FALSE to export the validation data with predictions}
-
-\item{ParDep}{Set a number N to return the partial dependence plots for the top N features from variable importance}
-
-\item{PD_Data}{Specify to use all, train, or validation data to build partial dependence plots}
-
-\item{ThreshType}{For binary classification, choose from "f1", "f2", "f0point5", or "CS" (Cost Sensitive)}
-
-\item{FSC}{Feature selection criteria: choose the variable importance percentage cutoff}
-
-\item{tpProfit}{True Positive Profit amount}
-
-\item{tnProfit}{True Negative Profit amount}
-
-\item{fpProfit}{False Positive Profit amount}
-
-\item{fnProfit}{False Negative Profit amount}
-
-\item{SaveModel}{Set to TRUE to save model}
-
-\item{SaveModelType}{Set to standard for h2o file, mojo for mojo file}
-
-\item{PredsAllData}{Set to TRUE to export all data (train + validate) with predicted values}
-
-\item{TargetEncoding}{Supply either NA or a vector of numeric column references in quotes "c(2:8)"}
-
-\item{SupplyData}{Set to TRUE if you are supplying your own training and validation data}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
@@ -93,7 +43,7 @@ Returns saved models, corrected Construct file, variable importance tables, eval
 }
 \examples{
 Correl <- 0.85
-aa <- data.table(target = runif(10000))
+aa <- data.table::data.table(target = runif(10000))
 aa[, x1 := qnorm(target)]
 aa[, x2 := runif(10000)]
 aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
@@ -109,7 +59,7 @@ aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)
 aa[, ':=' (x1 = NULL, x2 = NULL)]
 aa[, target := as.factor(ifelse(target > 0.5,1,0))]
 N = 1
-Construct <- data.table(Targets         = "target",
+Construct <- data.table::data.table(Targets         = "target",
                        Distribution    = "bernoulli",
                        Loss            = "AUC",
                        Quantile        = 0.01,

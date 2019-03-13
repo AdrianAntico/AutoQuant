@@ -25,6 +25,15 @@ Returns the original data table with corrected values
 This function replaces inf values with NA, converts characters to factors, and imputes with constants
 }
 \examples{
+data <- data.table::data.table(Value = runif(100000),
+                               FactorCol = as.character(sample(x = c(letters,
+                                                                     LETTERS,
+                                                                     paste0(letters,letters),
+                                                                     paste0(LETTERS,LETTERS),
+                                                                     paste0(letters,LETTERS),
+                                                                     paste0(LETTERS,letters)),
+                                                               size = 100000,
+                                                               replace = TRUE)))
 data <- ModelDataPrep(data,
                       Impute = TRUE,
                       CharToFactor = TRUE,
@@ -32,5 +41,5 @@ data <- ModelDataPrep(data,
                       MissNum    = -1)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }

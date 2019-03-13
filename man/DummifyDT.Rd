@@ -24,7 +24,7 @@ DummifyDT creates dummy variables for the selected columns
 \examples{
 library(data.table)
 library(RemixAML)
-test <- data.table(Value = runif(100000),
+test <- data.table::data.table(Value = runif(100000),
                    FactorCol = sample(x = c(letters,
                                             LETTERS,
                                             paste0(letters,letters),
