@@ -17,6 +17,8 @@ DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
 
 \item{lags}{The list of specific lags you want to have generated}
 
+\item{periods}{The number of periods for the rolling stats}
+
 \item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
 
 \item{targets}{The column(s) in which you will build your lags and rolling stats}

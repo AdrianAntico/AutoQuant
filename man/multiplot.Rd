@@ -7,11 +7,11 @@
 multiplot(..., plotlist = NULL, file, cols = 1, layout = NULL)
 }
 \arguments{
+\item{...}{Passthrough arguments}
+
 \item{plotlist}{This is the list of your charts}
 
 \item{cols}{This is the number of columns in your multiplot}
-
-\item{rows}{This is the number of rows in your multiplot}
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign

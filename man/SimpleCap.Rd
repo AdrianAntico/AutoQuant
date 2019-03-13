@@ -6,6 +6,9 @@
 \usage{
 SimpleCap(x)
 }
+\arguments{
+\item{x}{Column of interest}
+}
 \value{
 An object to pass along to ggplot objects following the "+" sign
 }

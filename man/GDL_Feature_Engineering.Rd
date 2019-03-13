@@ -21,6 +21,10 @@ GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
 
 \item{lags}{The list of specific lags you want to have generated}
 
+\item{periods}{The number of periods to use for rolling stats}
+
+\item{statsFUNs}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
+
 \item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
 
 \item{targets}{The column(s) in which you will build your lags and rolling stats}
@@ -42,8 +46,6 @@ GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
 \item{SkipCols}{Defaults to NULL; otherwise name the vector containing the names of columns to skip}
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
-
-\item{statsFuns}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
 }
 \value{
 data.table of original data plus newly created features

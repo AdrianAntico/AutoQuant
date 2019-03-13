@@ -18,6 +18,8 @@ RedYellowGreen(calibEval, PredictColNumber = 2, ActualColNumber = 1,
 
 \item{TruePositiveCost}{This is the utility for generating a true positive prediction}
 
+\item{TrueNegativeCost}{This is the utility for generating a true negative prediction}
+
 \item{FalsePositiveCost}{This is the cost of generating a false positive prediction}
 
 \item{FalseNegativeCost}{This is the cost of generating a false negative prediction}
@@ -27,8 +29,6 @@ RedYellowGreen(calibEval, PredictColNumber = 2, ActualColNumber = 1,
 \item{Cores}{Number of cores on your machine}
 
 \item{Precision}{Set the decimal number to increment by between 0 and 1}
-
-\item{TruePositiveCost}{This is the utility for generating a true negative prediction}
 }
 \value{
 A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results

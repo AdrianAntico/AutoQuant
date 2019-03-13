@@ -18,6 +18,10 @@ Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
 
 \item{lags}{The list of specific lags you want to have generated}
 
+\item{periods}{The number of periods in the rolling statistics}
+
+\item{statsFUNs}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
+
 \item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
 
 \item{targets}{The column(s) in which you will build your lags and rolling stats}
@@ -43,8 +47,6 @@ Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
 
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
-
-\item{statsFuns}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
 }
 \value{
 data.table of original data plus newly created features

@@ -6,6 +6,9 @@
 \usage{
 tempDatesFun(x)
 }
+\arguments{
+\item{x}{The column of interest}
+}
 \value{
 An object to pass along to ggplot objects following the "+" sign
 }
@@ -17,5 +20,5 @@ Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 Cdata[, DAY_DATE := as.Date(DAY_DATE, "\%m/\%d/\%Y")]
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }
