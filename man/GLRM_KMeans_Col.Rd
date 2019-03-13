@@ -49,7 +49,6 @@ GLRM_KMeans_Col adds a column to your original data with a cluster number identi
 library(datasets)
 library(RemixAML)
 library(h2o)
-# Import data
 data <- data.table::as.data.table(iris)
 # Run algo, excluding Species column
 data <- GLRM_KMeans_Col(data,
