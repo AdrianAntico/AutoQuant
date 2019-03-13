@@ -1,4 +1,11 @@
-utils::globalVariables(names = c("test", "act", "LCVals", "Row", "ErrorCollectionLog"))
+utils::globalVariables(names = c("test", "act", "LCVals", "Row", "ErrorCollectionLog",
+                                 "prophet", "pushViewport", "quantile", "registerDoParallel",
+                                 "removeNumbers","removePunctuation", "removeWords",
+                                 "residuals", "rnorm", "runif","scale_color_manual",
+                                 "scale_colour_manual", "scale_fill_manual","scatterplot3d",
+                                 "sd", "stemDocument", "stopCluster", "stopwords", "stripWhitespace",
+                                 "theme", "tm_map", "ts", "val1", "val2", "val3", "vals", "viewport",
+                                 "wordcloud", "xlab", "years","ylab"))
 
 #' DummifyDT creates dummy variables for the selected columns
 #'
