@@ -1512,7 +1512,7 @@ AutoTS <- function(data,
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- Vectorize(function(x) {
-  data.table::strsplit(x, " ")[[1]][1]
+  data.table::tstrsplit(x, " ")[[1]][1]
 })
 
 #' SimpleCap function is for capitalizing the first letter of words
@@ -1528,7 +1528,7 @@ tempDatesFun <- Vectorize(function(x) {
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 SimpleCap <- function(x) {
-  s <- strsplit(x, " ")[[1]]
+  s <- data.table::tstrsplit(x, " ")[[1]]
   paste(toupper(substring(s, 1, 1)),
         substring(s, 2),
         sep = "",
@@ -1539,8 +1539,8 @@ SimpleCap <- function(x) {
 #'
 #' This function adds the Remix Theme to ggplots
 #'
-#' @author DougVegas at RemixInstitute.com
-#' @import data.table
+#' @author DougVegas
+#' @import ggplot2
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(1000,
@@ -1680,6 +1680,12 @@ ModelDataPrep <- function(data,
 #' @param Cores Number of cores on your machine
 #' @param Precision Set the decimal number to increment by between 0 and 1
 #' @import data.table
+#' @import parallel
+#' @import snow
+#' @import doParallel
+#' @import foreach
+#' @import scatterplot3d
+#' @import RColorBrewer
 #' @examples
 #' library(h2o)
 #' library(RemixAML)
@@ -1916,9 +1922,9 @@ RedYellowGreen <- function(calibEval,
             store[[j]] <- c(i, utility)
           }
           all <- rbindlist(list(store))
-          utilities <- melt(all[2, ])
+          utilities <- data.table::melt(all[2, ])
           data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- melt(all[1, ])
+          thresholds <- data.table::melt(all[1, ])
           data.table::setnames(thresholds, "value", "Thresholds")
           results <- cbind(utilities, thresholds)[, c(-1, -3)]
           thresh <-
@@ -1947,9 +1953,9 @@ RedYellowGreen <- function(calibEval,
             store[[j]] <- c(i, utility)
           }
           all <- rbindlist(list(store))
-          utilities <- melt(all[2, ])
+          utilities <- data.table::melt(all[2, ])
           data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- melt(all[1, ])
+          thresholds <- data.table::melt(all[1, ])
           data.table::setnames(thresholds, "value", "Thresholds")
           results <- cbind(utilities, thresholds)[, c(-1, -3)]
           thresh <- results[order(-Utilities)][1, 2][[1]]
@@ -2147,9 +2153,9 @@ threshOptim <- function(data,
     store[[j]] <- c(i, utility)
   }
   all <- rbindlist(list(store))
-  utilities <- melt(all[2, ])
+  utilities <- data.table::melt(all[2, ])
   data.table::setnames(utilities, "value", "Utilities")
-  thresholds <- melt(all[1, ])
+  thresholds <- data.table::melt(all[1, ])
   data.table::setnames(thresholds, "value", "Thresholds")
   results <- cbind(utilities, thresholds)[, c(-1, -3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
@@ -2167,6 +2173,8 @@ threshOptim <- function(data,
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @import data.table
+#' @import monreg
+#' @import stats
 #' @examples
 #' # Create Fake Annual Returns Data
 #' library(data.table)
@@ -2245,7 +2253,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
     } else {
       tryCatch({
         baseline <-
-          lm(as.formula(paste(y, " ~ poly(", x, ",5)", sep = "")), data = DATA)
+          stats::lm(as.formula(paste(y, " ~ poly(", x, ",5)", sep = "")), data = DATA)
         preds    <- baseline$fitted.values
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
@@ -2259,7 +2267,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   })
   tryCatch({
     model1 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSasymp(", x, ", Asym, R0, lrc)", sep = ""
       )), data = DATA)
     preds1 <- fitted(model1, DATA)
@@ -2273,7 +2281,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Asymp offset model
   tryCatch({
     model2 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSasympOff(", x, ", Asym, lrc, c0)", sep = ""
       )), data = DATA)
     preds2 <- fitted(model2, DATA)
@@ -2287,7 +2295,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Asymp origin model
   tryCatch({
     model3 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSasympOrig(", x, ", Asym, lrc)", sep = ""
       )), data = DATA)
     preds3 <- fitted(model3, DATA)
@@ -2301,7 +2309,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Biexp model
   tryCatch({
     model4 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSbiexp(", x, ", A1, lrc1, A2, lrc2)", sep = ""
       )), data = DATA)
     preds4 <- fitted(model4, DATA)
@@ -2315,7 +2323,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Four parameter logistic model
   tryCatch({
     model5 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSfpl(", x, ", A, B, xmid, scal)", sep = ""
       )), data = DATA)
     preds5 <- fitted(model5, DATA)
@@ -2329,7 +2337,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Gompertz model
   tryCatch({
     model6 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSgompertz(", x, ", Asym, b2, b3)", sep = ""
       )), data = DATA)
     preds6 <- fitted(model6, DATA)
@@ -2343,7 +2351,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Logistic model
   tryCatch({
     model7 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSlogis(", x, ", Asym, xmid, scal)", sep = ""
       )), data = DATA)
     preds7 <- fitted(model7, DATA)
@@ -2357,7 +2365,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Michaelis-Menton model
   tryCatch({
     model8 <-
-      nls(as.formula(paste(y, " ~ SSmicmen(", x, ", Vm, K)", sep = "")), data = DATA)
+      stats::nls(as.formula(paste(y, " ~ SSmicmen(", x, ", Vm, K)", sep = "")), data = DATA)
     preds8 <- fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
     val8   <- mean(abs(zz - preds8))
@@ -2369,7 +2377,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Weibull Growth model
   tryCatch({
     model9 <-
-      nls(as.formula(paste(
+      stats::nls(as.formula(paste(
         y, " ~ SSweibull(", x, ", Asym, Drop, lrc, pwr)", sep = ""
       )), data = DATA)
     preds9 <- fitted(model9, DATA)
