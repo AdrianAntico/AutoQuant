@@ -1,4 +1,4 @@
-utils::globalVariables(names = c("test","act","LCVals","Row","ErrorCollectionLog"))
+utils::globalVariables(names = c("test", "act", "LCVals", "Row", "ErrorCollectionLog"))
 
 #' DummifyDT creates dummy variables for the selected columns
 #'
@@ -33,22 +33,27 @@ DummifyDT <- function(data,
                       KeepBaseCols = TRUE,
                       OneHot = TRUE) {
   library(data.table)
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
   for (col in cols) {
     inds <- unique(data[[eval(col)]])
     data.table::alloc.col(data, ncol(data) + length(inds))
-    data.table::set(data, j = paste0(col,"_",inds), value = 0L)
-    if(is.factor(data[[eval(col)]])) data[, eval(col) := as.character(get(col))]
+    data.table::set(data, j = paste0(col, "_", inds), value = 0L)
+    if (is.factor(data[[eval(col)]]))
+      data[, eval(col) := as.character(get(col))]
     for (ind in inds) {
-      data.table::set(data,
-                      i = which(data[[col]] %chin% ind),
-                      j = paste0(col, "_",ind),
-                      value = 1L)
+      data.table::set(
+        data,
+        i = which(data[[col]] %chin% ind),
+        j = paste0(col, "_", ind),
+        value = 1L
+      )
     }
-    if(OneHot) {
-      data[, paste0(col,"_Base") := 0]
+    if (OneHot) {
+      data[, paste0(col, "_Base") := 0]
     }
-    if(!KeepBaseCols) data[, eval(col) := NULL]
+    if (!KeepBaseCols)
+      data[, eval(col) := NULL]
   }
   return(data)
 }
@@ -64,33 +69,29 @@ DummifyDT <- function(data,
 #' @examples
 #' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
-H20MultinomialAUC <- function(validate, best_model, targetColNum = 1, targetName = "TargetVar") {
-  xx <- as.data.table(h2o.cbind(validate[,targetColNum],h2o.predict(best_model, newdata = validate)))
-  xx[, predict := as.character(predict)]
-  xx[, vals := 0.5]
-  z <- ncol(xx)
-  col <- targetName
-  for (l in 1:nrow(xx)) {
-    cols <- xx[l, get(col)][[1]]
-    valss <- xx[l, ..cols][[1]]
-    set(xx, l, j = z, value = valss)
+H20MultinomialAUC <-
+  function(validate,
+           best_model,
+           targetColNum = 1,
+           targetName = "TargetVar") {
+    xx <-
+      as.data.table(h2o.cbind(validate[, targetColNum], h2o.predict(best_model, newdata = validate)))
+    xx[, predict := as.character(predict)]
+    xx[, vals := 0.5]
+    z <- ncol(xx)
+    col <- targetName
+    for (l in 1:nrow(xx)) {
+      cols <- xx[l, get(col)][[1]]
+      valss <- xx[l, ..cols][[1]]
+      set(xx, l, j = z, value = valss)
+    }
+    return(round(as.numeric(noquote(
+      stringr::str_extract(
+        pROC::multiclass.roc(xx$target, xx$vals)$auc,
+        "\\d+\\.*\\d*"
+      )
+    )), 4))
   }
-  return(round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(xx$target, xx$vals)$auc, "\\d+\\.*\\d*"))),4))
-}
-
-#' NumWeekdays is a vectorized function to count up the number of weekdays in a range of dates
-#'
-#' @author Adrian Antico
-#' @param a The start date
-#' @param b The end date
-#' @import data.table
-#' @examples
-#' data[, Weekdaycounts := NumWeekdays(Date1, Date2)]
-#' @return The counts either as a scalar or a column in your table
-#' @export
-NumWeekdays <- Vectorize(function(a, b) {
-  sum(!weekdays(seq(a, b, "days")) %in% c("Saturday", "Sunday"))
-})
 
 #' PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 #'
@@ -102,7 +103,9 @@ NumWeekdays <- Vectorize(function(a, b) {
 #' @return The objects in your environment and their sizes
 #' @export
 PrintObjectsSize <- function(N = 10) {
-  print(sort(-sapply(ls(),function(x){object.size(get(x))}))[1:N]/1024/1024)
+  print(sort(-sapply(ls(), function(x) {
+    object.size(get(x))
+  }))[1:N] / 1024 / 1024)
 }
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
@@ -122,7 +125,12 @@ PrintObjectsSize <- function(N = 10) {
 #' @import data.table
 #' @examples
 #' # Create data
-#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(10000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data <- data.table(DateTime = as.Date(Sys.time()),
+#'                    Target = stats::filter(rnorm(10000,
+#'                                                 mean = 50,
+#'                                                 sd = 20),
+#'                                           filter=rep(1,10),
+#'                                           circular=TRUE))
 #' data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' x <- as.data.table(sde::GBM(N=10000)*1000)
@@ -147,19 +155,19 @@ GenTSAnomVars <- function(data,
                           Low         = -1.96,
                           KeepAllCols = FALSE,
                           DataScaled  = TRUE) {
-
   # Load data.table
   library(data.table)
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Scale data if not already
-  if(!DataScaled) {
+  if (!DataScaled) {
     data[, eval(ValueCol) := scale(get(ValueCol), center = TRUE, scale = TRUE)]
   }
 
   # Global check for date
-  if(!is.null(DateVar)) {
-    if(is.null(GroupVar1) & is.null(GroupVar2)) {
+  if (!is.null(DateVar)) {
+    if (is.null(GroupVar1) & is.null(GroupVar2)) {
       data <- data[order(get(DateVar))]
       data[, RowNumAsc := 1:.N]
       data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
@@ -168,14 +176,16 @@ GenTSAnomVars <- function(data,
       data[, CumAnomLow := cumsum(AnomLow)]
       data[, AnomHighRate := CumAnomHigh / RowNumAsc]
       data[, AnomLowRate := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
+      if (!KeepAllCols) {
+        data[, ':=' (
+          AnomHigh = NULL,
+          AnomLow = NULL,
+          CumAnomHigh = NULL,
+          CumAnomLow = NULL,
+          RowNumAsc = NULL
+        )]
       }
-    } else if(is.null(GroupVar2) & !is.null(GroupVar1)) {
+    } else if (is.null(GroupVar2) & !is.null(GroupVar1)) {
       data <- data[order(get(GroupVar1), get(DateVar))]
       data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
       data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High, 1, 0))]
@@ -184,12 +194,14 @@ GenTSAnomVars <- function(data,
       data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
       data[, AnomHighRate := CumAnomHigh / RowNumAsc]
       data[, AnomLowRate := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
+      if (!KeepAllCols) {
+        data[, ':=' (
+          AnomHigh = NULL,
+          AnomLow = NULL,
+          CumAnomHigh = NULL,
+          CumAnomLow = NULL,
+          RowNumAsc = NULL
+        )]
       }
     } else if (!is.null(GroupVar1) & !is.null(GroupVar2)) {
       data <- data[order(get(GroupVar1), get(GroupVar2), get(DateVar))]
@@ -200,12 +212,14 @@ GenTSAnomVars <- function(data,
       data[, CumAnomLow := cumsum(AnomLow), by = list(get(GroupVar1), get(GroupVar2))]
       data[, paste0(GroupVar2, "AnomHighRate") := CumAnomHigh / RowNumAsc]
       data[, paste0(GroupVar2, "AnomLowRate") := CumAnomLow / RowNumAsc]
-      if(!KeepAllCols) {
-        data[, ':=' (AnomHigh = NULL,
-                     AnomLow = NULL,
-                     CumAnomHigh = NULL,
-                     CumAnomLow = NULL,
-                     RowNumAsc = NULL)]
+      if (!KeepAllCols) {
+        data[, ':=' (
+          AnomHigh = NULL,
+          AnomLow = NULL,
+          CumAnomHigh = NULL,
+          CumAnomLow = NULL,
+          RowNumAsc = NULL
+        )]
       }
     }
     return(data)
@@ -223,9 +237,16 @@ GenTSAnomVars <- function(data,
 #' @param cvar the t-stat value for tsoutliers
 #' @import data.table
 #' @examples
-#' data <- data.table(a = seq(0,10000,1), predicted = sde::GBM(N=10000)*1000)[-1,]
-#' data <- data.table(a = seq(1,10000,1), predicted = sde::rcCIR(n=10000, Dt=0.1, x0=1, theta=c(6,2,2)))
-#' data <- data.table(a = seq(1,10000,1), predicted = sde::rsOU(n=10000, theta=c(0,2,1)))
+#' data <- data.table(a = seq(0,10000,1),
+#'                    predicted = sde::GBM(N=10000)*1000)[-1,]
+#' data <- data.table(a = seq(1,10000,1),
+#'                    predicted = sde::rcCIR(n=10000,
+#'                                           Dt=0.1,
+#'                                           x0=1,
+#'                                           theta=c(6,2,2)))
+#' data <- data.table(a = seq(1,10000,1),
+#'                    predicted = sde::rsOU(n=10000,
+#'                                          theta=c(0,2,1)))
 #' stuff    <- ResidualOutliers(data = data, maxN = 5, cvar = 4)
 #' data     <- stuff[[1]]
 #' model    <- stuff[[2]]
@@ -234,18 +255,20 @@ GenTSAnomVars <- function(data,
 #' @return A data.table with outliers, the arima model, and residuals from the arima fit
 #' @export
 ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
-
   # Load libraries
   library(data.table)
   library(forecast)
   library(tsoutliers)
 
   # Convert to time series object
-  tsData <- ts(data, frequency = 1, start = 1, end = nrow(data))
+  tsData <- ts(data,
+               frequency = 1,
+               start = 1,
+               end = nrow(data))
 
   # Build the auto arimia
   fit <- forecast::auto.arima(
-    tsData[,2],
+    tsData[, 2],
     max.p   = maxN,
     max.q   = maxN,
     max.P   = maxN,
@@ -253,33 +276,41 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
     start.p = maxN,
     start.q = maxN,
     start.P = maxN,
-    start.Q = maxN)
+    start.Q = maxN
+  )
 
   # Store the arima parameters
   pars  <- tsoutliers::coefs2poly(fit)
 
   # Store the arima residuals
-  resid <- cbind(tsData,residuals(fit))
+  resid <- cbind(tsData, residuals(fit))
 
   # Find the outliers
-  x <- as.data.table(
-    tsoutliers::locate.outliers(
-      resid=resid[,3],
-      pars=pars,
-      cval=cvar,
-      types= c("AO","TC","LS","IO","SLS")))
+  x <- as.data.table(tsoutliers::locate.outliers(
+    resid = resid[, 3],
+    pars = pars,
+    cval = cvar,
+    types = c("AO", "TC", "LS", "IO", "SLS")
+  ))
 
   # Merge back to source data
   residDT <- as.data.table(resid)
-  z <- merge(residDT, x, by.x = "tsData.a", by.y = "ind", all.x = TRUE)
-  setnames(z,
-           c("tsData.a", "tsData.predicted", "residuals(fit)"),
-           c("ObsNum", "Preds", "Residuals"))
+  z <-
+    merge(residDT,
+          x,
+          by.x = "tsData.a",
+          by.y = "ind",
+          all.x = TRUE)
+  setnames(
+    z,
+    c("tsData.a", "tsData.predicted", "residuals(fit)"),
+    c("ObsNum", "Preds", "Residuals")
+  )
 
   # Reorder data, remove the coefhat column to send to database or stakeholder
   z[, coefhat := NULL]
   remove(tsData)
-  return(list(z,fit,resid))
+  return(list(z, fit, resid))
 }
 
 #' GLRM_KMeans_Col Automated row clustering for mixed column types
@@ -353,99 +384,142 @@ GLRM_KMeans_Col <- function(data,
                             MaxRunTimeSecs  = 3600,
                             KMeansK         = 50,
                             KMeansMetric    = "totss") {
-
   # Load libraries
   library(data.table)
   library(h2o)
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Build glmr model
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- h2o::as.h2o(data)
-  if(GridTuneGLRM) {
-
+  if (GridTuneGLRM) {
     # Define grid tune search scheme in a named list
-    search_criteria  <- list(strategy             = "RandomDiscrete",
-                             max_runtime_secs     = 3600,
-                             max_models           = 30,
-                             seed                 = 1234,
-                             stopping_rounds      = 10,
-                             stopping_metric      = "MSE",
-                             stopping_tolerance   = 1e-3)
+    search_criteria  <-
+      list(
+        strategy             = "RandomDiscrete",
+        max_runtime_secs     = 3600,
+        max_models           = 30,
+        seed                 = 1234,
+        stopping_rounds      = 10,
+        stopping_metric      = "MSE",
+        stopping_tolerance   = 1e-3
+      )
 
     # Define hyperparameters
-    HyperParams <- list(transform        = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
-                        k                = 1:5,
-                        regularization_x = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
-                        regularization_y = c("None","Quadratic","L2","L1","NonNegative", "OneSparse", "UnitOneSparse", "Simplex"),
-                        gamma_x          = seq(0.01,0.10,0.01),
-                        gamma_y          = seq(0.01,0.10,0.01),
-                        svd_method       = c("Randomized","GramSVD","Power"))
+    HyperParams <-
+      list(
+        transform        = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
+        k                = 1:5,
+        regularization_x = c(
+          "None",
+          "Quadratic",
+          "L2",
+          "L1",
+          "NonNegative",
+          "OneSparse",
+          "UnitOneSparse",
+          "Simplex"
+        ),
+        regularization_y = c(
+          "None",
+          "Quadratic",
+          "L2",
+          "L1",
+          "NonNegative",
+          "OneSparse",
+          "UnitOneSparse",
+          "Simplex"
+        ),
+        gamma_x          = seq(0.01, 0.10, 0.01),
+        gamma_y          = seq(0.01, 0.10, 0.01),
+        svd_method       = c("Randomized", "GramSVD", "Power")
+      )
 
     # Run grid tune
-    grid <- h2o::h2o.grid("glrm",
-                     search_criteria   = search_criteria,
-                     training_frame    = datax,
-                     grid_id           = "Temp",
-                     ignore_const_cols = IgnoreConstCols,
-                     loss              = Loss,
-                     hyper_params      = HyperParams)
+    grid <- h2o::h2o.grid(
+      "glrm",
+      search_criteria   = search_criteria,
+      training_frame    = datax,
+      grid_id           = "Temp",
+      ignore_const_cols = IgnoreConstCols,
+      loss              = Loss,
+      hyper_params      = HyperParams
+    )
 
     # Get best performer
-    Grid_Out <- h2o::h2o.getGrid(grid_id = "Temp", sort_by = search_criteria$stopping_metric, decreasing = FALSE)
+    Grid_Out <-
+      h2o::h2o.getGrid(
+        grid_id = "Temp",
+        sort_by = search_criteria$stopping_metric,
+        decreasing = FALSE
+      )
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
 
   } else {
-    model <- h2o::h2o.glrm(training_frame    = datax,
-                      cols              = glrmCols,
-                      ignore_const_cols = IgnoreConstCols,
-                      k                 = glrmFactors,
-                      loss              = Loss,
-                      max_iterations    = glrmMaxIters,
-                      svd_method        = SVDMethod,
-                      max_runtime_secs  = MaxRunTimeSecs)
+    model <- h2o::h2o.glrm(
+      training_frame    = datax,
+      cols              = glrmCols,
+      ignore_const_cols = IgnoreConstCols,
+      k                 = glrmFactors,
+      loss              = Loss,
+      max_iterations    = glrmMaxIters,
+      svd_method        = SVDMethod,
+      max_runtime_secs  = MaxRunTimeSecs
+    )
   }
 
   # Run k-means
-  if(GridTuneKMeans) {
-
+  if (GridTuneKMeans) {
     # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Nam <- colnames(x_raw)
 
     # Define grid tune search scheme in a named list
-    search_criteria  <- list(strategy             = "RandomDiscrete",
-                             max_runtime_secs     = 3600,
-                             max_models           = 30,
-                             seed                 = 1234,
-                             stopping_rounds      = 10)
+    search_criteria  <-
+      list(
+        strategy             = "RandomDiscrete",
+        max_runtime_secs     = 3600,
+        max_models           = 30,
+        seed                 = 1234,
+        stopping_rounds      = 10
+      )
 
     # Define hyperparameters
-    HyperParams <- list(max_iterations   = c(10,20,50,100),
-                        init             = c("Random","PlusPlus","Furthest"))
+    HyperParams <- list(
+      max_iterations   = c(10, 20, 50, 100),
+      init             = c("Random", "PlusPlus", "Furthest")
+    )
 
     # Run grid tune
-    grid <- h2o::h2o.grid("kmeans",
-                     search_criteria   = search_criteria,
-                     training_frame    = x_raw,
-                     x                 = Nam,
-                     k                 = KMeansK,
-                     grid_id           = "grid",
-                     estimate_k        = TRUE,
-                     hyper_params      = HyperParams)
+    grid <- h2o::h2o.grid(
+      "kmeans",
+      search_criteria   = search_criteria,
+      training_frame    = x_raw,
+      x                 = Nam,
+      k                 = KMeansK,
+      grid_id           = "grid",
+      estimate_k        = TRUE,
+      hyper_params      = HyperParams
+    )
 
     # Get best performer
-    Grid_Out <- h2o::h2o.getGrid(grid_id = "grid", sort_by = KMeansMetric, decreasing = FALSE)
+    Grid_Out <-
+      h2o::h2o.getGrid(grid_id = "grid",
+                       sort_by = KMeansMetric,
+                       decreasing = FALSE)
     model <- h2o.getModel(model_id = Grid_Out@model_ids[[1]])
 
 
   } else {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Nam <- colnames(x_raw)
-    model <- h2o::h2o.kmeans(training_frame = x_raw,
-                        x              = Nam,
-                        k              = KMeansK,
-                        estimate_k     = TRUE)
+    model <- h2o::h2o.kmeans(
+      training_frame = x_raw,
+      x              = Nam,
+      k              = KMeansK,
+      estimate_k     = TRUE
+    )
   }
 
   # Combine outputs
@@ -474,7 +548,11 @@ GLRM_KMeans_Col <- function(data,
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @import data.table
 #' @examples
-#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(1000,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#' data <- data.table(DateTime = as.Date(Sys.time()), Target = stats::filter(rnorm(1000,
+#'                                                                                 mean = 50,
+#'                                                                                 sd = 20),
+#'                                                                           filter=rep(1,10),
+#'                                                                           circular=TRUE))
 #' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
@@ -495,13 +573,13 @@ AutoTS <- function(data,
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
-                   TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
+                   TimeUnit       = "day",
+                   # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE) {
-
   # Load libraries
   library(prophet)
   library(forecast)
@@ -513,15 +591,17 @@ AutoTS <- function(data,
   EvalList <- list()
 
   # Convert to data.table if not already
-  if (!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Convert to lubridate as_date() or POSIXct
-  if(tolower(TimeUnit) != "hour") {
+  if (tolower(TimeUnit) != "hour") {
     data[, eval(DateName) := as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
-    SkipModels <- c(SkipModels,"PROPHET")
-    if(length(SkipModels) == 8) return("Prophet doesn't run on hourly data. Choose other models.")
+    SkipModels <- c(SkipModels, "PROPHET")
+    if (length(SkipModels) == 8)
+      return("Prophet doesn't run on hourly data. Choose other models.")
   }
 
   # Ensure data is sorted
@@ -532,17 +612,17 @@ AutoTS <- function(data,
   TargetName <- "Target"
 
   # Create Training data
-  data_train <- data[1:(nrow(data)-HoldOutPeriods)]
+  data_train <- data[1:(nrow(data) - HoldOutPeriods)]
 
   # Create Test data
-  data_test <- data[(nrow(data)-HoldOutPeriods+1):nrow(data)]
+  data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
 
   # Check for different time aggregations
   MaxDate <- data_train[, max(get(DateName))]
   FC_Data <- data.table(Date = seq(1:FCPeriods))
 
   # Define TS Frequency
-  if(tolower(TimeUnit) == "hour") {
+  if (tolower(TimeUnit) == "hour") {
     freq = 24
     FC_Data[, Date := MaxDate + lubridate::hours(Date)]
   } else if (tolower(TimeUnit) == "day") {
@@ -553,10 +633,10 @@ AutoTS <- function(data,
     FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
   } else if (tolower(TimeUnit) == "month") {
     freq = 12
-    FC_Data[, Date := MaxDate + lubridate::months(Date)]
+    FC_Data[, Date := MaxDate + lubridate::month(Date)]
   } else if (tolower(TimeUnit) == "quarter") {
     freq = 4
-    FC_Data[, Date := MaxDate + lubridate::months(4*Date)]
+    FC_Data[, Date := MaxDate + lubridate::month(4 * Date)]
   } else if (tolower(TimeUnit) == "year") {
     freq = 1
     FC_Data[, Date := MaxDate + years(Date)]
@@ -564,313 +644,466 @@ AutoTS <- function(data,
 
   # Convert data.tables to ts objects
   #dataTSTrain <- copy(data_train)
-  dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
+  dataTSTrain <-
+    ts(data = data_train,
+       start = data_train[, min(get(DateName))][[1]],
+       frequency = freq)
 
   # Begin model building
-  if(!("ARFIMA" %in% toupper(SkipModels))) {
+  if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
     print("ARFIMA FITTING")
-    if(StepWise) {
-      ARFIMA_model <- tryCatch({forecast::arfima(y = dataTSTrain[, TargetName],
-                                                 lambda = TRUE,
-                                                 biasadj = TRUE,
-                                                 max.p = Lags,
-                                                 max.q = Lags,
-                                                 max.d = 1,
-                                                 max.D = 1,
-                                                 ic = "bic",
-                                                 stepwise = StepWise,
-                                                 num.cores = NumCores)},
-                               error = function(x) "empty")
+    if (StepWise) {
+      ARFIMA_model <-
+        tryCatch({
+          forecast::arfima(
+            y = dataTSTrain[, TargetName],
+            lambda = TRUE,
+            biasadj = TRUE,
+            max.p = Lags,
+            max.q = Lags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            stepwise = StepWise,
+            num.cores = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
     } else {
-      ARFIMA_model <- tryCatch({forecast::arfima(y = dataTSTrain[, TargetName],
-                                                 lambda = TRUE,
-                                                 biasadj = TRUE,
-                                                 max.p = Lags,
-                                                 max.q = Lags,
-                                                 max.d = 1,
-                                                 max.D = 1,
-                                                 ic = "bic",
-                                                 stepwise = StepWise,
-                                                 parallel = TRUE,
-                                                 num.cores = NumCores)},
-                               error = function(x) "empty")
+      ARFIMA_model <-
+        tryCatch({
+          forecast::arfima(
+            y = dataTSTrain[, TargetName],
+            lambda = TRUE,
+            biasadj = TRUE,
+            max.p = Lags,
+            max.q = Lags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            stepwise = StepWise,
+            parallel = TRUE,
+            num.cores = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
     }
 
     # Collect Test Data for Model Comparison
     # 2)
-    if(tolower(class(ARFIMA_model)) == "fracdiff") {
+    if (tolower(class(ARFIMA_model)) == "fracdiff") {
       i <- i + 1
       data_test_ARF <- copy(data_test)
-      data_test_ARF[, ':=' (Target = as.numeric(Target),
-                            ModelName = rep("ARFIMA",HoldOutPeriods),
-                            FC_Eval = as.numeric(forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean))]
+      data_test_ARF[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("ARFIMA", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_ARF[, ':=' (Resid = Target - FC_Eval,
-                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_ARF[, ':=' (
+        Resid = Target - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_ARF
     }
   }
 
-  if(!("ARIMA" %in% toupper(SkipModels))) {
+  if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
     print("ARIMA FITTING")
-    if(StepWise) {
-      ARIMA_model <- tryCatch({forecast::auto.arima(y = dataTSTrain[, TargetName],
-                                                    max.p = Lags,
-                                                    max.q = Lags,
-                                                    max.P = SLags,
-                                                    max.Q = SLags,
-                                                    max.d = 1,
-                                                    max.D = 1,
-                                                    ic = "bic",
-                                                    lambda = TRUE,
-                                                    biasadj = TRUE,
-                                                    stepwise = StepWise,
-                                                    num.cores = NumCores)},
-                              error = function(x) "empty")
+    if (StepWise) {
+      ARIMA_model <-
+        tryCatch({
+          forecast::auto.arima(
+            y = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = TRUE,
+            biasadj = TRUE,
+            stepwise = StepWise,
+            num.cores = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
     } else {
-      ARIMA_model <- tryCatch({forecast::auto.arima(y = dataTSTrain[, TargetName],
-                                                    max.p = Lags,
-                                                    max.q = Lags,
-                                                    max.P = SLags,
-                                                    max.Q = SLags,
-                                                    max.d = 1,
-                                                    max.D = 1,
-                                                    ic = "bic",
-                                                    lambda = TRUE,
-                                                    biasadj = TRUE,
-                                                    stepwise = StepWise,
-                                                    parallel = TRUE,
-                                                    num.cores = NumCores)},
-                              error = function(x) "empty")
+      ARIMA_model <-
+        tryCatch({
+          forecast::auto.arima(
+            y = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = TRUE,
+            biasadj = TRUE,
+            stepwise = StepWise,
+            parallel = TRUE,
+            num.cores = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
     }
 
     # Collect Test Data for Model Comparison
     # 2)
-    if(tolower(class(ARIMA_model)[1]) == "arima") {
+    if (tolower(class(ARIMA_model)[1]) == "arima") {
       i <- i + 1
       data_test_ARI <- copy(data_test)
-      data_test_ARI[, ':=' (Target = as.numeric(Target),
-                            ModelName = rep("ARIMA",HoldOutPeriods),
-                            FC_Eval = as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean))]
+      data_test_ARI[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("ARIMA", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_ARI[, ':=' (Resid = get(TargetName) - FC_Eval,
-                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_ARI[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_ARI
     }
   }
 
-  if(!("ETS" %in% toupper(SkipModels))) {
+  if (!("ETS" %in% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
     print("ETS FITTING")
-    if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
-      EXPSMOOTH_model <- forecast::ets(y = dataTSTrain[, TargetName],
-                                       model = "ZZN",
-                                       allow.multiplicative.trend = TRUE,
-                                       restrict = TRUE,
-                                       lambda = TRUE,
-                                       biasadj = TRUE)
+    if (freq > 24) {
+      # when > 24, model's third letter has to be N for none
+      EXPSMOOTH_model <-
+        forecast::ets(
+          y = dataTSTrain[, TargetName],
+          model = "ZZN",
+          allow.multiplicative.trend = TRUE,
+          restrict = TRUE,
+          lambda = TRUE,
+          biasadj = TRUE
+        )
     } else {
-      EXPSMOOTH_model <- tryCatch({forecast::ets(y = dataTSTrain[, TargetName],
-                                                 model = "ZZZ",
-                                                 allow.multiplicative.trend = TRUE,
-                                                 restrict = TRUE,
-                                                 lambda = TRUE,
-                                                 biasadj = TRUE)},
-                                  error = function(x) "empty")
+      EXPSMOOTH_model <-
+        tryCatch({
+          forecast::ets(
+            y = dataTSTrain[, TargetName],
+            model = "ZZZ",
+            allow.multiplicative.trend = TRUE,
+            restrict = TRUE,
+            lambda = TRUE,
+            biasadj = TRUE
+          )
+        },
+        error = function(x)
+          "empty")
     }
     # Collect Test Data for Model Comparison
     # 2)
-    if(tolower(class(EXPSMOOTH_model)) == "ets") {
+    if (tolower(class(EXPSMOOTH_model)) == "ets") {
       i <- i + 1
       data_test_ETS <- copy(data_test)
-      data_test_ETS[, ':=' (Target = as.numeric(Target),
-                            ModelName = rep("ETS",HoldOutPeriods),
-                            FC_Eval = as.numeric(forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean))]
+      data_test_ETS[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("ETS", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_ETS[, ':=' (Resid = get(TargetName) - FC_Eval,
-                            PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                            AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_ETS[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_ETS
     }
   }
 
-  if(!("SPLINE" %in% toupper(SkipModels))) {
+  if (!("SPLINE" %in% toupper(SkipModels))) {
     # CUBIC SMOOTHING SPLINE-------------
     # 1)
     print("SPLINE FITTING")
-    splinef_model <- tryCatch({forecast::splinef(y = dataTSTrain[, TargetName],
-                                                 lambda = TRUE,
-                                                 biasadj = TRUE)},
-                              error = function(x) "empty")
+    splinef_model <-
+      tryCatch({
+        forecast::splinef(y = dataTSTrain[, TargetName],
+                          lambda = TRUE,
+                          biasadj = TRUE)
+      },
+      error = function(x)
+        "empty")
 
-    if(tolower(class(splinef_model)) == "forecast") {
+    if (tolower(class(splinef_model)) == "forecast") {
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
       data_test_CS <- copy(data_test)
-      data_test_CS[, ':=' (Target = as.numeric(Target),
-                           ModelName = rep("CS",HoldOutPeriods),
-                           FC_Eval = as.numeric(forecast::forecast(splinef_model, h = HoldOutPeriods)$mean))]
+      data_test_CS[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("CS", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(splinef_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_CS[, ':=' (Resid = get(TargetName) - FC_Eval,
-                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_CS[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_CS
     }
   }
 
-  if(!("TBATS" %in% toupper(SkipModels))) {
+  if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
     print("TBATS FITTING")
-    TBATS_model <- tryCatch({forecast::tbats(y               = dataTSTrain[, TargetName],
-                                             use.arma.errors = TRUE,
-                                             lambda          = TRUE,
-                                             biasadj         = TRUE,
-                                             max.p           = Lags,
-                                             max.q           = Lags,
-                                             max.P           = SLags,
-                                             max.Q           = SLags,
-                                             max.d           = 1,
-                                             max.D           = 1,
-                                             num.cores       = NumCores)},
-                            error = function(x) "empty")
+    TBATS_model <-
+      tryCatch({
+        forecast::tbats(
+          y               = dataTSTrain[, TargetName],
+          use.arma.errors = TRUE,
+          lambda          = TRUE,
+          biasadj         = TRUE,
+          max.p           = Lags,
+          max.q           = Lags,
+          max.P           = SLags,
+          max.Q           = SLags,
+          max.d           = 1,
+          max.D           = 1,
+          num.cores       = NumCores
+        )
+      },
+      error = function(x)
+        "empty")
 
-    if(class(TBATS_model)[1] == "tbats" | class(TBATS_model)[1] == "bats") {
+    if (class(TBATS_model)[1] == "tbats" |
+        class(TBATS_model)[1] == "bats") {
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
       data_test_TBATS <- copy(data_test)
-      data_test_TBATS[, ':=' (Target = as.numeric(Target),
-                              ModelName = rep("TBATS",HoldOutPeriods),
-                              FC_Eval = as.numeric(forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean))]
+      data_test_TBATS[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("TBATS", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_TBATS[, ':=' (Resid = get(TargetName) - FC_Eval,
-                              PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                              AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_TBATS[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_TBATS
     }
   }
 
-  if(!("TSLM" %in% toupper(SkipModels))) {
+  if (!("TSLM" %in% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
     print("TSLM FITTING")
-    TSLM_model <- tryCatch({forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                                           lambda = TRUE,
-                                           biasadj = TRUE)},
-                           error = function(x) "empty")
+    TSLM_model <-
+      tryCatch({
+        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                       lambda = TRUE,
+                       biasadj = TRUE)
+      },
+      error = function(x)
+        "empty")
 
-    if(tolower(class(TSLM_model)[1]) == "tslm") {
+    if (tolower(class(TSLM_model)[1]) == "tslm") {
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
       data_test_TSLM <- copy(data_test)
-      data_test_TSLM[, ':=' (Target = as.numeric(Target),
-                             ModelName = rep("TSLM",HoldOutPeriods),
-                             FC_Eval = as.numeric(forecast::forecast(TSLM_model, h = HoldOutPeriods)$mean))]
+      data_test_TSLM[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("TSLM", HoldOutPeriods),
+        FC_Eval = as.numeric(forecast::forecast(TSLM_model,
+                                                h = HoldOutPeriods)$mean)
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_TSLM[, ':=' (Resid = get(TargetName) - FC_Eval,
-                             PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                             AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_TSLM[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_TSLM
     }
   }
 
-  if(!("NNET" %in% toupper(SkipModels))) {
+  if (!("NNET" %in% toupper(SkipModels))) {
     # Neural Network-------------
     # 1)
     print("NNet FITTING")
     k <- 0L
-    temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
+    temp <-
+      data.table(
+        Lag = rep(1L, Lags * SLags),
+        Slag = rep(1L, Lags * SLags),
+        meanResid = rnorm(Lags * SLags),
+        sdResid = rnorm(Lags * SLags)
+      )
     for (lags in 1:Lags) {
       for (slags in 1:SLags) {
         k <- k + 1L
         print(k)
-        NNETAR_model_temp <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName],
-                                                        p = lags,
-                                                        P = slags,
-                                                        lambda = "auto")}, error = function(x) "error")
+        NNETAR_model_temp <-
+          tryCatch({
+            forecast::nnetar(
+              y = dataTSTrain[, TargetName],
+              p = lags,
+              P = slags,
+              lambda = "auto"
+            )
+          }, error = function(x)
+            "error")
 
-        if(length(NNETAR_model_temp) == 1) {
-          set(temp, i = k, j = 1L, value = lags)
-          set(temp, i = k, j = 2L, value = slags)
-          set(temp, i = k, j = 3L, value = 999999999)
-          set(temp, i = k, j = 4L, value = 999999999)
+        if (length(NNETAR_model_temp) == 1) {
+          set(temp,
+              i = k,
+              j = 1L,
+              value = lags)
+          set(temp,
+              i = k,
+              j = 2L,
+              value = slags)
+          set(temp,
+              i = k,
+              j = 3L,
+              value = 999999999)
+          set(temp,
+              i = k,
+              j = 4L,
+              value = 999999999)
 
         } else {
-          set(temp, i = k, j = 1L, value = lags)
-          set(temp, i = k, j = 2L, value = slags)
-          set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
-          set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
+          set(temp,
+              i = k,
+              j = 1L,
+              value = lags)
+          set(temp,
+              i = k,
+              j = 2L,
+              value = slags)
+          set(
+            temp,
+            i = k,
+            j = 3L,
+            value = mean(abs(NNETAR_model_temp$residuals),
+                         na.rm = TRUE)
+          )
+          set(
+            temp,
+            i = k,
+            j = 4L,
+            value = sd(NNETAR_model_temp$residuals,
+                       na.rm = TRUE)
+          )
         }
       }
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][,1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][,2][[1]]
-    NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName],
-                                               p = LagNN,
-                                               P = SLagNN,
-                                               lambda = "auto")},
-                             error = function(x) "empty")
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    NNETAR_model <-
+      tryCatch({
+        forecast::nnetar(
+          y = dataTSTrain[, TargetName],
+          p = LagNN,
+          P = SLagNN,
+          lambda = "auto"
+        )
+      },
+      error = function(x)
+        "empty")
 
     # Collect Test Data for Model Comparison
     # 2)
-    if(tolower(class(NNETAR_model)) == "nnetar") {
+    if (tolower(class(NNETAR_model)) == "nnetar") {
       i <- i + 1
       data_test_NN <- copy(data_test)
-      data_test_NN[, ':=' (Target = as.numeric(Target),
-                           ModelName = rep("NN",HoldOutPeriods),
-                           FC_Eval = as.numeric(forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean))]
+      data_test_NN[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("NN", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
+        )
+      )]
 
       # Add Evaluation Columns
       # 3)
-      data_test_NN[, ':=' (Resid = get(TargetName) - FC_Eval,
-                           PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                           AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_NN[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_NN
     }
   }
 
-  if(!("PROPHET" %in% toupper(SkipModels))) {
+  if (!("PROPHET" %in% toupper(SkipModels))) {
     # Prophet Model-------------
     print("PROPHET FITTING")
-    if(TimeUnit == "hour") {
+    if (TimeUnit == "hour") {
       ProphetTimeUnit <- 3600
     } else {
       ProphetTimeUnit <- TimeUnit
@@ -882,35 +1115,62 @@ AutoTS <- function(data,
 
     # 1)
     # Define TS Frequency
-    if(TimeUnit == "day") {
-      PROPHET_model <- tryCatch({prophet(df = dataProphet, daily.seasonality = TRUE)},
-                                error = function(x) "empty")
-    } else if(TimeUnit == "week") {
-      PROPHET_model <- tryCatch({prophet(df = dataProphet, weekly.seasonality = TRUE)},
-                                error = function(x) "empty")
-    } else if(TimeUnit == "year") {
-      PROPHET_model <- tryCatch({prophet(df = dataProphet, yearly.seasonality = TRUE)},
-                                error = function(x) "empty")
+    if (TimeUnit == "day") {
+      PROPHET_model <-
+        tryCatch({
+          prophet(df = dataProphet, daily.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else if (TimeUnit == "week") {
+      PROPHET_model <-
+        tryCatch({
+          prophet(df = dataProphet, weekly.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else if (TimeUnit == "year") {
+      PROPHET_model <-
+        tryCatch({
+          prophet(df = dataProphet, yearly.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
     } else {
-      PROPHET_model <- tryCatch({prophet(df = dataProphet)},
-                                error = function(x) "empty")
+      PROPHET_model <- tryCatch({
+        prophet(df = dataProphet)
+      },
+      error = function(x)
+        "empty")
     }
 
-    if(tolower(class(PROPHET_model)[1]) == "prophet") {
+    if (tolower(class(PROPHET_model)[1]) == "prophet") {
       i <- i + 1
-      PROPHET_future <- as.data.table(prophet::make_future_dataframe(PROPHET_model, periods = HoldOutPeriods, freq = ProphetTimeUnit))[ds > max_date]
+      PROPHET_future <-
+        as.data.table(
+          prophet::make_future_dataframe(PROPHET_model,
+                                         periods = HoldOutPeriods,
+                                         freq = ProphetTimeUnit)
+        )[ds > max_date]
 
       # Collect Test Data for Model Comparison
       # 2)
       data_test_PROPHET <- copy(data_test)
-      data_test_PROPHET[, ':=' (Target = as.numeric(Target),
-                                ModelName = rep("PROPHET",HoldOutPeriods),
-                                FC_Eval = as.data.table(predict(PROPHET_model, PROPHET_future))[["yhat"]])]
+      data_test_PROPHET[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("PROPHET", HoldOutPeriods),
+        FC_Eval = as.data.table(predict(PROPHET_model,
+                                        PROPHET_future))[["yhat"]]
+      )]
       # Add Evaluation Columns
       # 3)
-      data_test_PROPHET[, ':=' (Resid = get(TargetName) - FC_Eval,
-                                PercentError = get(TargetName) / (FC_Eval+1) - 1,
-                                AbsolutePercentError = abs(get(TargetName) / (FC_Eval+1) - 1))]
+      data_test_PROPHET[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
 
       # Collect model filename
       EvalList[[i]] <- data_test_PROPHET
@@ -922,13 +1182,15 @@ AutoTS <- function(data,
   dataEval <- rbindlist(EvalList)
 
   # Model Evaluation
-  Eval <- dataEval[, .(MeanResid = mean(Resid, na.rm = TRUE),
-                       MeanPercError = mean(PercentError, na.rm = TRUE),
-                       MAPE = mean(AbsolutePercentError, na.rm = TRUE)),
-                   by = ModelName][order(MAPE)][, ID := 1:.N]
+  Eval <- dataEval[, .(
+    MeanResid = mean(Resid, na.rm = TRUE),
+    MeanPercError = mean(PercentError, na.rm = TRUE),
+    MAPE = mean(AbsolutePercentError, na.rm = TRUE)
+  ),
+  by = ModelName][order(MAPE)][, ID := 1:.N]
 
   # Grab Winning Model
-  BestModel <- Eval[1,"ModelName"][[1]]
+  BestModel <- Eval[1, "ModelName"][[1]]
 
   # Generate Forecasts----
   print("GENERATE FORECASTS")
@@ -937,178 +1199,246 @@ AutoTS <- function(data,
   data_train <- data[1:nrow(data)]
 
   # Convert data.tables to ts objects
-  dataTSTrain <- ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = freq)
+  dataTSTrain <-
+    ts(data = data_train,
+       start = data_train[, min(get(DateName))][[1]],
+       frequency = freq)
 
   # Retrain best model
-  if(BestModel == "ARFIMA") {
-
+  if (BestModel == "ARFIMA") {
     # Rebuild model on full data
-    if(StepWise) {
-      ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
-                                       lambda = TRUE,
-                                       biasadj = TRUE,
-                                       max.p = Lags,
-                                       max.q = Lags,
-                                       max.d = 1,
-                                       max.D = 1,
-                                       ic = "bic",
-                                       stepwise = StepWise,
-                                       num.cores = NumCores)
+    if (StepWise) {
+      ARFIMA_model <- forecast::arfima(
+        y = dataTSTrain[, TargetName],
+        lambda = TRUE,
+        biasadj = TRUE,
+        max.p = Lags,
+        max.q = Lags,
+        max.d = 1,
+        max.D = 1,
+        ic = "bic",
+        stepwise = StepWise,
+        num.cores = NumCores
+      )
     } else {
-      ARFIMA_model <- forecast::arfima(y = dataTSTrain[, TargetName],
-                                       lambda = TRUE,
-                                       biasadj = TRUE,
-                                       max.p = Lags,
-                                       max.q = Lags,
-                                       max.d = 1,
-                                       max.D = 1,
-                                       ic = "bic",
-                                       stepwise = StepWise,
-                                       parallel = TRUE,
-                                       num.cores = NumCores)
+      ARFIMA_model <- forecast::arfima(
+        y = dataTSTrain[, TargetName],
+        lambda = TRUE,
+        biasadj = TRUE,
+        max.p = Lags,
+        max.q = Lags,
+        max.d = 1,
+        max.D = 1,
+        ic = "bic",
+        stepwise = StepWise,
+        parallel = TRUE,
+        num.cores = NumCores
+      )
     }
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARFIMA_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "ARIMA") {
-
+  } else if (BestModel == "ARIMA") {
     # Rebuild model on full data
-    if(StepWise) {
-      ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
-                                          max.p = Lags,
-                                          max.q = Lags,
-                                          max.P = SLags,
-                                          max.Q = SLags,
-                                          max.d = 1,
-                                          max.D = 1,
-                                          ic = "bic",
-                                          lambda = TRUE,
-                                          biasadj = TRUE,
-                                          stepwise = StepWise,
-                                          num.cores = NumCores)
+    if (StepWise) {
+      ARIMA_model <-
+        forecast::auto.arima(
+          y     = dataTSTrain[, TargetName],
+          max.p = Lags,
+          max.q = Lags,
+          max.P = SLags,
+          max.Q = SLags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          lambda = TRUE,
+          biasadj = TRUE,
+          stepwise = StepWise,
+          num.cores = NumCores
+        )
     } else {
-      ARIMA_model <- forecast::auto.arima(y     = dataTSTrain[, TargetName],
-                                          max.p = Lags,
-                                          max.q = Lags,
-                                          max.P = SLags,
-                                          max.Q = SLags,
-                                          max.d = 1,
-                                          max.D = 1,
-                                          ic = "bic",
-                                          lambda = TRUE,
-                                          biasadj = TRUE,
-                                          stepwise = StepWise,
-                                          parallel = TRUE,
-                                          num.cores = NumCores)
+      ARIMA_model <-
+        forecast::auto.arima(
+          y     = dataTSTrain[, TargetName],
+          max.p = Lags,
+          max.q = Lags,
+          max.P = SLags,
+          max.Q = SLags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          lambda = TRUE,
+          biasadj = TRUE,
+          stepwise = StepWise,
+          parallel = TRUE,
+          num.cores = NumCores
+        )
     }
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARIMA_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "ETS") {
-
+  } else if (BestModel == "ETS") {
     # Rebuild model on full data
-    if (freq > 24) { # when > 24, model's third letter has to be N for none (no seasonal estimation)
-      EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
-                                       model                      = "ZZN",
-                                       allow.multiplicative.trend = TRUE,
-                                       restrict                   = TRUE,
-                                       lambda                     = TRUE,
-                                       biasadj                    = TRUE)
+    if (freq > 24) {
+      # when > 24, model's third letter has to be N for none (no seasonal estimation)
+      EXPSMOOTH_model <-
+        forecast::ets(
+          y                          = dataTSTrain[, TargetName],
+          model                      = "ZZN",
+          allow.multiplicative.trend = TRUE,
+          restrict                   = TRUE,
+          lambda                     = TRUE,
+          biasadj                    = TRUE
+        )
     } else {
-      EXPSMOOTH_model <- forecast::ets(y                          = dataTSTrain[, TargetName],
-                                       model                      = "ZZZ",
-                                       allow.multiplicative.trend = TRUE,
-                                       restrict                   = TRUE,
-                                       lambda                     = TRUE,
-                                       biasadj                    = TRUE)
+      EXPSMOOTH_model <-
+        forecast::ets(
+          y                          = dataTSTrain[, TargetName],
+          model                      = "ZZZ",
+          allow.multiplicative.trend = TRUE,
+          restrict                   = TRUE,
+          lambda                     = TRUE,
+          biasadj                    = TRUE
+        )
     }
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "CS") {
-
+  } else if (BestModel == "CS") {
     # Rebuild model on full data
-    splinef_model <- forecast::splinef(y = dataTSTrain[, TargetName], lambda = TRUE, biasadj = TRUE)
+    splinef_model <-
+      forecast::splinef(y = dataTSTrain[, TargetName],
+                        lambda = TRUE,
+                        biasadj = TRUE)
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(splinef_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(splinef_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "TBATS") {
-
+  } else if (BestModel == "TBATS") {
     # Rebuild model on full data
-    TBATS_model <- forecast::tbats(y = dataTSTrain[, TargetName],
-                                   use.arma.errors = TRUE,
-                                   lambda = TRUE,
-                                   biasadj = TRUE,
-                                   max.p = Lags,
-                                   max.q = Lags,
-                                   max.P = SLags,
-                                   max.Q = SLags,
-                                   max.d = 1,
-                                   max.D = 1,
-                                   num.cores = NumCores)
+    TBATS_model <- forecast::tbats(
+      y = dataTSTrain[, TargetName],
+      use.arma.errors = TRUE,
+      lambda = TRUE,
+      biasadj = TRUE,
+      max.p = Lags,
+      max.q = Lags,
+      max.P = SLags,
+      max.Q = SLags,
+      max.d = 1,
+      max.D = 1,
+      num.cores = NumCores
+    )
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TBATS_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "TSLM") {
-
+  } else if (BestModel == "TSLM") {
     # Rebuild model on full data
-    TSLM_model <- forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                                 lambda = TRUE,
-                                 biasadj = TRUE)
+    TSLM_model <-
+      forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                     lambda = TRUE,
+                     biasadj = TRUE)
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TSLM_model,
+                                                                              h = FCPeriods)$mean)]
 
-  } else if(BestModel == "NN") {
-
+  } else if (BestModel == "NN") {
     # Rebuild model on full data
     k <- 0L
-    temp <- data.table(Lag = rep(1L, Lags*SLags), Slag = rep(1L, Lags*SLags), meanResid = rnorm(Lags*SLags), sdResid = rnorm(Lags*SLags))
+    temp <-
+      data.table(
+        Lag = rep(1L, Lags * SLags),
+        Slag = rep(1L, Lags * SLags),
+        meanResid = rnorm(Lags * SLags),
+        sdResid = rnorm(Lags * SLags)
+      )
     for (lags in 1:Lags) {
       for (slags in 1:SLags) {
         k <- k + 1L
         print(k)
-        NNETAR_model_temp <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName],
-                                                        p = lags,
-                                                        P = slags,
-                                                        lambda = "auto")}, error = function(x) "error")
+        NNETAR_model_temp <-
+          tryCatch({
+            forecast::nnetar(
+              y = dataTSTrain[, TargetName],
+              p = lags,
+              P = slags,
+              lambda = "auto"
+            )
+          }, error = function(x)
+            "error")
 
-        if(length(NNETAR_model_temp) == 1) {
-          set(temp, i = k, j = 1L, value = lags)
-          set(temp, i = k, j = 2L, value = slags)
-          set(temp, i = k, j = 3L, value = 999999999)
-          set(temp, i = k, j = 4L, value = 999999999)
+        if (length(NNETAR_model_temp) == 1) {
+          set(temp,
+              i = k,
+              j = 1L,
+              value = lags)
+          set(temp,
+              i = k,
+              j = 2L,
+              value = slags)
+          set(temp,
+              i = k,
+              j = 3L,
+              value = 999999999)
+          set(temp,
+              i = k,
+              j = 4L,
+              value = 999999999)
 
         } else {
-          set(temp, i = k, j = 1L, value = lags)
-          set(temp, i = k, j = 2L, value = slags)
-          set(temp, i = k, j = 3L, value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE))
-          set(temp, i = k, j = 4L, value = sd(NNETAR_model_temp$residuals, na.rm = TRUE))
+          set(temp,
+              i = k,
+              j = 1L,
+              value = lags)
+          set(temp,
+              i = k,
+              j = 2L,
+              value = slags)
+          set(
+            temp,
+            i = k,
+            j = 3L,
+            value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE)
+          )
+          set(
+            temp,
+            i = k,
+            j = 4L,
+            value = sd(NNETAR_model_temp$residuals, na.rm = TRUE)
+          )
         }
       }
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][,1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][,2][[1]]
-    NNETAR_model <- tryCatch({forecast::nnetar(y = dataTSTrain[, TargetName],
-                                               p = LagNN,
-                                               P = SLagNN)},
-                             error = function(x) "empty")
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    NNETAR_model <-
+      tryCatch({
+        forecast::nnetar(y = dataTSTrain[, TargetName],
+                         p = LagNN,
+                         P = SLagNN)
+      },
+      error = function(x)
+        "empty")
 
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
 
-  } else if(BestModel == "PROPHET") {
-
+  } else if (BestModel == "PROPHET") {
     # Rebuild model on full data
     print("PROPHET FITTING")
-    if(TimeUnit == "hour") {
+    if (TimeUnit == "hour") {
       ProphetTimeUnit <- 3600
     } else {
       ProphetTimeUnit <- TimeUnit
@@ -1120,23 +1450,28 @@ AutoTS <- function(data,
 
     # 1)
     # Define TS Frequency
-    if(TimeUnit == "day") {
+    if (TimeUnit == "day") {
       PROPHET_model <- prophet(df = dataProphet, daily.seasonality = TRUE)
-    } else if(TimeUnit == "week") {
-      PROPHET_model <- prophet(df = dataProphet, weekly.seasonality = TRUE)
-    } else if(TimeUnit == "year") {
-      PROPHET_model <- prophet(df = dataProphet, yearly.seasonality = TRUE)
+    } else if (TimeUnit == "week") {
+      PROPHET_model <-
+        prophet(df = dataProphet, weekly.seasonality = TRUE)
+    } else if (TimeUnit == "year") {
+      PROPHET_model <-
+        prophet(df = dataProphet, yearly.seasonality = TRUE)
     } else {
       PROPHET_model <- prophet(df = dataProphet)
     }
 
     # Forecast with new model
-    PROPHET_FC <- as.data.table(prophet::make_future_dataframe(PROPHET_model, periods = FCPeriods, freq = ProphetTimeUnit))[ds > MaxDate]
+    PROPHET_FC <-
+      as.data.table(
+        prophet::make_future_dataframe(PROPHET_model, periods = FCPeriods, freq = ProphetTimeUnit)
+      )[ds > MaxDate]
     FC_Data[, Forecast_PROPHET := as.data.table(predict(PROPHET_model, PROPHET_FC))[["yhat"]]]
   }
 
   # Return values
-  return(list(FC_Data,Eval))
+  return(list(FC_Data, Eval))
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
@@ -1169,8 +1504,10 @@ tempDatesFun <- Vectorize(function(x) {
 #' @export
 SimpleCap <- function(x) {
   s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1,1)), substring(s, 2),
-        sep="", collapse=" ")
+  paste(toupper(substring(s, 1, 1)),
+        substring(s, 2),
+        sep = "",
+        collapse = " ")
 }
 
 #' RemixTheme function is a ggplot theme generator for ggplots
@@ -1185,31 +1522,45 @@ SimpleCap <- function(x) {
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-RemixTheme <- function(){
-
+RemixTheme <- function() {
   theme(
     axis.title = element_blank(),
     axis.text = element_text(family = "A",
                              size = 11),
     legend.background = element_blank(),
     legend.key = element_blank(),
-    legend.text = element_text(family = "A",
-                               color = "#1c1c1c", size = 11),
+    legend.text = element_text(
+      family = "A",
+      color = "#1c1c1c",
+      size = 11
+    ),
     legend.title = element_blank(),
     legend.justification = 0,
     legend.position = "top",
     plot.background = element_rect(fill = "#E7E7E7"),
-    panel.background = element_rect(fill= "#E7E7E7"),
+    panel.background = element_rect(fill = "#E7E7E7"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "white"),
     panel.grid.minor.y = element_line(color = "white"),
-    plot.title = element_text(family = "A",
-                              color = "#1c1c1c", size = 20, hjust = 0),
-    plot.subtitle = element_text(family = "C",
-                                 color = "#1c1c1c", size = 12, hjust = 0),
-    plot.caption = element_text(family = "B",
-                                size = 9, hjust = 0, face = "italic")
+    plot.title = element_text(
+      family = "A",
+      color = "#1c1c1c",
+      size = 20,
+      hjust = 0
+    ),
+    plot.subtitle = element_text(
+      family = "C",
+      color = "#1c1c1c",
+      size = 12,
+      hjust = 0
+    ),
+    plot.caption = element_text(
+      family = "B",
+      size = 9,
+      hjust = 0,
+      face = "italic"
+    )
   )
 }
 
@@ -1237,32 +1588,34 @@ ModelDataPrep <- function(data,
                           CharToFactor = TRUE,
                           MissFactor = "0",
                           MissNum    = -1) {
-
   # Load libraries
   library(data.table)
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Replace any inf values with NA
   for (col in seq_along(data)) {
-    set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+    set(data,
+        j = col,
+        value = replace(data[[col]], is.infinite(data[[col]]), NA))
   }
 
   # Turn character columns into factors
-  if(CharToFactor) {
+  if (CharToFactor) {
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
   }
 
   # Impute missing values
-  if(Impute) {
+  if (Impute) {
     for (j in seq_along(data)) {
-      if(is.factor(data[[j]])) {
-        set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,MissFactor)
+      if (is.factor(data[[j]])) {
+        set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, MissFactor)
       } else {
-        set(data,which(is.na(data[[j]])),j,MissNum)
+        set(data, which(is.na(data[[j]])), j, MissNum)
       }
     }
   }
@@ -1361,22 +1714,26 @@ RedYellowGreen <- function(calibEval,
                            MidTierCost       = -2,
                            Cores             = 8,
                            Precision         = 0.01) {
-
   # Load libraries
   library(data.table)
-  if(!is.data.table(calibEval)) data <- as.data.table(calibEval)
+  if (!is.data.table(calibEval))
+    data <- as.data.table(calibEval)
 
   # Set up evaluation table
-  analysisTable <- data.table(TPP = rep(TruePositiveCost,1),
-                              TNP = rep(TrueNegativeCost,1),
-                              FPP = rep(FalsePositiveCost,1),
-                              FNP = rep(FalseNegativeCost,1),
-                              MTDN = rep(TRUE,1),
-                              MTC = rep(MidTierCost,1),
-                              Threshold = runif(1))
+  analysisTable <- data.table(
+    TPP = rep(TruePositiveCost, 1),
+    TNP = rep(TrueNegativeCost, 1),
+    FPP = rep(FalsePositiveCost, 1),
+    FNP = rep(FalseNegativeCost, 1),
+    MTDN = rep(TRUE, 1),
+    MTC = rep(MidTierCost, 1),
+    Threshold = runif(1)
+  )
 
   # Do nothing possibilities
-  temp     <- CJ(MTLT = seq(0.0,1.0,Precision), MTHT = seq(0.0,1.0,Precision))[MTHT > MTLT]
+  temp     <-
+    CJ(MTLT = seq(0.0, 1.0, Precision),
+       MTHT = seq(0.0, 1.0, Precision))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := runif(nrow(new))]
 
@@ -1386,159 +1743,242 @@ RedYellowGreen <- function(calibEval,
   suppressMessages(library(doParallel))
   packages <- c("data.table")
   cores    <- Cores
-  bat      <- ceiling(nrow(new)/cores)
+  bat      <- ceiling(nrow(new) / cores)
   parts    <- floor(nrow(new) / bat)
   cl       <- makePSOCKcluster(cores)
   registerDoParallel(cl)
 
   # Kick off run
-  results <- foreach(i            = itertools::isplitRows(new, chunks=parts),  # splits data and passes to each core
-                     .combine      = function(...) rbindlist(list(...)),        # only way to get rbindlist to work
-                     .multicombine = TRUE,                                      # required for rbindlist since list > 2 data sets
-                     .packages     = packages                                   # need to feed in packages used
-  ) %dopar% {
-    # Inner function for parallel version
-    RedYellowGreenParallel <- function(data,
-                                       PredictColNumber  = 1,
-                                       ActualColNumber   = 767,
-                                       TruePositiveCost  = 0,
-                                       TrueNegativeCost  = 0,
-                                       FalsePositiveCost = -1,
-                                       FalseNegativeCost = -10,
-                                       MidTierCost       = -5,
-                                       new = i) {
-
-      # Loop through all combos
-      for (k in as.integer(1:nrow(new))) {
-        x <- threshOptim(data = data,
-                         actTar = names(data)[ActualColNumber],
-                         predTar = names(data)[PredictColNumber],
-                         tpProfit = TruePositiveCost,
-                         tnProfit = TrueNegativeCost,
-                         fpProfit = FalsePositiveCost,
-                         fnProfit = FalseNegativeCost,
-                         MidTierDoNothing = TRUE,
-                         MidTierCost = MidTierCost,
-                         MidTierLowThresh = new[k,8][[1]],
-                         MidTierHighThresh = new[k,9][[1]])
-        set(new, i = k, j = 7L, value = x[[1]])
-        temp <- x[[2]]
-        set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
-        #print(k/nrow(new))
-        #print(k)
-      }
-      return(new)
-    }
-
-    # Inner function for threshold optimizataion
-    threshOptim <- function(data,
-                            actTar   = 1,
-                            predTar  = 2,
-                            tpProfit = 1,
-                            tnProfit = 5,
-                            fpProfit = -1,
-                            fnProfit = -1,
-                            MidTierDoNothing = FALSE,
-                            MidTierCost = -100,
-                            MidTierLowThresh = 0.25,
-                            MidTierHighThresh = 0.75) {
-
-      # Convert factor target to numeric
-      data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
-
-      # Optimize each column's classification threshold ::
-      popTrue <- mean(data[[(actTar)]])
-      store   <- list()
-      j <- 0
-      options(warn = -1)
-      if(MidTierDoNothing) {
-        for (i in c(MidTierHighThresh)) {
-          j <- j + 1
-          tp      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
-          tn      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
-          fp      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
-          fn      <- sum(ifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
-          none    <- sum(ifelse(data[[predTar]] <= MidTierHighThresh & data[[predTar]] >= MidTierLowThresh, 1, 0))
-          tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
-          fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
-          noneRate <- none / nrow(data)
-          utility <- (1-noneRate) * (popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))) + noneRate * MidTierCost
-          store[[j]] <- c(i, utility)
+  results <-
+    foreach(
+      i            = itertools::isplitRows(new, chunks = parts),
+      # splits data and passes to each core
+      .combine      = function(...)
+        rbindlist(list(...)),
+      # only way to get rbindlist to work
+      .multicombine = TRUE,
+      # required for rbindlist since list > 2 data sets
+      .packages     = packages                                   # need to feed in packages used
+    ) %dopar% {
+      # Inner function for parallel version
+      RedYellowGreenParallel <- function(data,
+                                         PredictColNumber  = 1,
+                                         ActualColNumber   = 767,
+                                         TruePositiveCost  = 0,
+                                         TrueNegativeCost  = 0,
+                                         FalsePositiveCost = -1,
+                                         FalseNegativeCost = -10,
+                                         MidTierCost       = -5,
+                                         new = i) {
+        # Loop through all combos
+        for (k in as.integer(1:nrow(new))) {
+          x <- threshOptim(
+            data = data,
+            actTar = names(data)[ActualColNumber],
+            predTar = names(data)[PredictColNumber],
+            tpProfit = TruePositiveCost,
+            tnProfit = TrueNegativeCost,
+            fpProfit = FalsePositiveCost,
+            fnProfit = FalseNegativeCost,
+            MidTierDoNothing = TRUE,
+            MidTierCost = MidTierCost,
+            MidTierLowThresh = new[k, 8][[1]],
+            MidTierHighThresh = new[k, 9][[1]]
+          )
+          set(new,
+              i = k,
+              j = 7L,
+              value = x[[1]])
+          temp <- x[[2]]
+          set(new,
+              i = k,
+              j = 10L,
+              value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
+          #print(k/nrow(new))
+          #print(k)
         }
-        all <- rbindlist(list(store))
-        utilities <- melt(all[2,])
-        setnames(utilities, "value", "Utilities")
-        thresholds <- melt(all[1,])
-        setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[,c(-1,-3)]
-        thresh <- results[Thresholds <= eval(MidTierLowThresh) | Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
-        options(warn = 1)
-        return(list(thresh, results))
-      } else {
-        for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
-          j <- j + 1
-          tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
-          tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
-          fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
-          fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
-          tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
-          fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
-          utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
-          store[[j]] <- c(i, utility)
-        }
-        all <- rbindlist(list(store))
-        utilities <- melt(all[2,])
-        setnames(utilities, "value", "Utilities")
-        thresholds <- melt(all[1,])
-        setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[,c(-1,-3)]
-        thresh <- results[order(-Utilities)][1,2][[1]]
-        options(warn = 1)
-        return(list(thresh, results))
+        return(new)
       }
+
+      # Inner function for threshold optimizataion
+      threshOptim <- function(data,
+                              actTar   = 1,
+                              predTar  = 2,
+                              tpProfit = 1,
+                              tnProfit = 5,
+                              fpProfit = -1,
+                              fnProfit = -1,
+                              MidTierDoNothing = FALSE,
+                              MidTierCost = -100,
+                              MidTierLowThresh = 0.25,
+                              MidTierHighThresh = 0.75) {
+        # Convert factor target to numeric
+        data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
+
+        # Optimize each column's classification threshold ::
+        popTrue <- mean(data[[(actTar)]])
+        store   <- list()
+        j <- 0
+        options(warn = -1)
+        if (MidTierDoNothing) {
+          for (i in c(MidTierHighThresh)) {
+            j <- j + 1
+            tp      <-
+              sum(ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 1 & data[[predTar]] >= i,
+                1,
+                0
+              ))
+            tn      <-
+              sum(ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 0 & data[[predTar]] <  i,
+                1,
+                0
+              ))
+            fp      <-
+              sum(ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 0 & data[[predTar]] >= i,
+                1,
+                0
+              ))
+            fn      <-
+              sum(ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 1 & data[[predTar]] <  i,
+                1,
+                0
+              ))
+            none    <-
+              sum(ifelse(
+                data[[predTar]] <= MidTierHighThresh &
+                  data[[predTar]] >= MidTierLowThresh,
+                1,
+                0
+              ))
+            tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+            fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+            noneRate <- none / nrow(data)
+            utility <-
+              (1 - noneRate) * (
+                popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -
+                                                                                                                    fpr))
+              ) + noneRate * MidTierCost
+            store[[j]] <- c(i, utility)
+          }
+          all <- rbindlist(list(store))
+          utilities <- melt(all[2, ])
+          setnames(utilities, "value", "Utilities")
+          thresholds <- melt(all[1, ])
+          setnames(thresholds, "value", "Thresholds")
+          results <- cbind(utilities, thresholds)[, c(-1, -3)]
+          thresh <-
+            results[Thresholds <= eval(MidTierLowThresh) |
+                      Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1, 2][[1]]
+          options(warn = 1)
+          return(list(thresh, results))
+        } else {
+          for (i in seq(from = 0.01,
+                        to = 0.99,
+                        by = 0.01)) {
+            j <- j + 1
+            tp      <-
+              sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+            tn      <-
+              sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+            fp      <-
+              sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+            fn      <-
+              sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+            tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+            fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+            utility <-
+              popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -
+                                                                                                                  fpr))
+            store[[j]] <- c(i, utility)
+          }
+          all <- rbindlist(list(store))
+          utilities <- melt(all[2, ])
+          setnames(utilities, "value", "Utilities")
+          thresholds <- melt(all[1, ])
+          setnames(thresholds, "value", "Thresholds")
+          results <- cbind(utilities, thresholds)[, c(-1, -3)]
+          thresh <- results[order(-Utilities)][1, 2][[1]]
+          options(warn = 1)
+          return(list(thresh, results))
+        }
+      }
+
+      # Run core function
+      data <- RedYellowGreenParallel(
+        calibEval,
+        PredictColNumber  = PredictColNumber,
+        #1,
+        ActualColNumber   = ActualColNumber,
+        #767,
+        TruePositiveCost  = TruePositiveCost,
+        #0,
+        TrueNegativeCost  = TrueNegativeCost,
+        #0,
+        FalsePositiveCost = FalsePositiveCost,
+        #-1,
+        FalseNegativeCost = FalseNegativeCost,
+        #-10,
+        MidTierCost       = MidTierCost,
+        #-5,
+        new = i
+      )
+
+      # Return data table
+      data
     }
-
-    # Run core function
-    data <- RedYellowGreenParallel(calibEval,
-                                   PredictColNumber  = PredictColNumber, #1,
-                                   ActualColNumber   = ActualColNumber, #767,
-                                   TruePositiveCost  = TruePositiveCost, #0,
-                                   TrueNegativeCost  = TrueNegativeCost, #0,
-                                   FalsePositiveCost = FalsePositiveCost, #-1,
-                                   FalseNegativeCost = FalseNegativeCost, #-10,
-                                   MidTierCost       = MidTierCost, #-5,
-                                   new = i)
-
-    # Return data table
-    data
-  }
 
   # Shut down cluster
   stopCluster(cl)
 
   # 3D Scatterplot
   library("scatterplot3d")
-  s3d <- scatterplot3d(x = results[["MTLT"]], y = results[["MTHT"]], z = results[["Utility"]],
-                       type = "p",
-                       color = "#401a50",
-                       angle=45,
-                       pch = 16,
-                       main = paste0("Utility Maximizer - Main Threshold at ", results[order(-Utility)][1,"MTHT"][[1]]),
-                       sub = paste0("Lower Thresh = ", results[order(-Utility)][1,"MTLT"][[1]], " and Upper Thresh = ", results[order(-Utility)][1,"MTHT"][[1]]),
-                       xlab = "Mid Tier Lower Threshold",
-                       ylab = "Mid Tier Higher Threshold",
-                       zlab = "Utility")
-  model <- lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
+  s3d <-
+    scatterplot3d(
+      x = results[["MTLT"]],
+      y = results[["MTHT"]],
+      z = results[["Utility"]],
+      type = "p",
+      color = "#401a50",
+      angle = 45,
+      pch = 16,
+      main = paste0("Utility Maximizer - Main Threshold at ", results[order(-Utility)][1, "MTHT"][[1]]),
+      sub = paste0("Lower Thresh = ", results[order(-Utility)][1, "MTLT"][[1]], " and Upper Thresh = ", results[order(-Utility)][1, "MTHT"][[1]]),
+      xlab = "Mid Tier Lower Threshold",
+      ylab = "Mid Tier Higher Threshold",
+      zlab = "Utility"
+    )
+  model <-
+    lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
   s3d$plane3d(model)
   N <- nrow(results)
-  s3d$points3d(x = results[order(-Utility)][1:(N/100),"MTLT"][[1]],
-               y = results[order(-Utility)][1:(N/100),"MTHT"][[1]],
-               z = results[order(-Utility)][1:(N/100),"Utility"][[1]],
-               col = "#00aa9d", type = "h", pch = 1)
-  s3d$points3d(x = results[order(-Utility)][1,"MTLT"][[1]],
-               y = results[order(-Utility)][1,"MTHT"][[1]],
-               z = results[order(-Utility)][1,"Utility"][[1]],
-               col = "black", type = "h", pch = 10)
+  s3d$points3d(
+    x = results[order(-Utility)][1:(N / 100), "MTLT"][[1]],
+    y = results[order(-Utility)][1:(N / 100), "MTHT"][[1]],
+    z = results[order(-Utility)][1:(N / 100), "Utility"][[1]],
+    col = "#00aa9d",
+    type = "h",
+    pch = 1
+  )
+  s3d$points3d(
+    x = results[order(-Utility)][1, "MTLT"][[1]],
+    y = results[order(-Utility)][1, "MTHT"][[1]],
+    z = results[order(-Utility)][1, "Utility"][[1]],
+    col = "black",
+    type = "h",
+    pch = 10
+  )
   return(results)
 }
 
@@ -1633,10 +2073,10 @@ threshOptim <- function(data,
                         tnProfit = 0,
                         fpProfit = -1,
                         fnProfit = -2) {
-
   # Load libraries
   library(data.table)
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -1648,22 +2088,28 @@ threshOptim <- function(data,
   options(warn = -1)
   for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
     j <- j + 1
-    tp      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
-    tn      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
-    fp      <- sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
-    fn      <- sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
-    tpr     <- ifelse((tp+fn) == 0, 0, tp / (tp + fn))
-    fpr     <- ifelse((fp+tn) == 0, 0, fp / (fp + tn))
-    utility <- popTrue * (tpProfit*tpr + fnProfit*(1-tpr)) + (1-popTrue) * (fpProfit * fpr + tnProfit * (1-fpr))
+    tp      <-
+      sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+    tn      <-
+      sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+    fp      <-
+      sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+    fn      <-
+      sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+    tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+    fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+    utility <-
+      popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -
+                                                                                                          fpr))
     store[[j]] <- c(i, utility)
   }
   all <- rbindlist(list(store))
-  utilities <- melt(all[2,])
+  utilities <- melt(all[2, ])
   setnames(utilities, "value", "Utilities")
-  thresholds <- melt(all[1,])
+  thresholds <- melt(all[1, ])
   setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[,c(-1,-3)]
-  thresh <- results[order(-Utilities)][1,2][[1]]
+  results <- cbind(utilities, thresholds)[, c(-1, -3)]
+  thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
   return(list(thresh, results))
 }
@@ -1713,18 +2159,30 @@ threshOptim <- function(data,
 #' @return A data table with your original column replaced by the nls model predictions
 #' @export
 nlsModelFit <- function(data, y, x, monotonic = TRUE) {
-
   # Load libraries
   library(data.table)
 
   DATA <- data
-  nls_collection <- data.table(ModelName = c("Poly", "Asymp", "AsympOff", "AsympOrig",
-                                             "Biexp", "FourParmLog","Gompertz", "Logistic",
-                                             "Michal_Menton", "Weilbull"),
-                               Accuracy = rep(999,10))
+  nls_collection <-
+    data.table(
+      ModelName = c(
+        "Poly",
+        "Asymp",
+        "AsympOff",
+        "AsympOrig",
+        "Biexp",
+        "FourParmLog",
+        "Gompertz",
+        "Logistic",
+        "Michal_Menton",
+        "Weilbull"
+      ),
+      Accuracy = rep(999, 10)
+    )
 
   # Convert to data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   xx <- x
   yy <- y
@@ -1733,131 +2191,181 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   tryCatch({
     if (monotonic == TRUE) {
       tryCatch({
-        baseline <- monreg(z,zz,hr = 0.5, hd = 0.5)
+        baseline <- monreg(z, zz, hr = 0.5, hd = 0.5)
         preds    <- baseline$estimation
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
         set(nls_collection, 1, 2, value = val0)
-      },error=function(x) {return("skip")})
+      }, error = function(x) {
+        return("skip")
+      })
     } else {
       tryCatch({
-        baseline <- lm(as.formula(paste(y," ~ poly(",x,",5)", sep="")), data=DATA)
+        baseline <-
+          lm(as.formula(paste(y, " ~ poly(", x, ",5)", sep = "")), data = DATA)
         preds    <- baseline$fitted.values
         preds[preds < 0] <- 0
         val0     <- mean(abs(zz - preds))
         set(nls_collection, 1L, 2L, value = val0)
-      },error=function(x) {return("skip")})
+      }, error = function(x) {
+        return("skip")
+      })
     }
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
   tryCatch({
-    model1 <- nls(as.formula(paste(y," ~ SSasymp(",x,", Asym, R0, lrc)", sep="")), data = DATA)
+    model1 <-
+      nls(as.formula(paste(
+        y, " ~ SSasymp(", x, ", Asym, R0, lrc)", sep = ""
+      )), data = DATA)
     preds1 <- fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
     val    <- mean(abs(zz - preds1))
     set(nls_collection, 2L, 2L, value = val1)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Asymp offset model
   tryCatch({
-    model2 <- nls(as.formula(paste(y," ~ SSasympOff(",x,", Asym, lrc, c0)", sep="")), data = DATA)
+    model2 <-
+      nls(as.formula(paste(
+        y, " ~ SSasympOff(", x, ", Asym, lrc, c0)", sep = ""
+      )), data = DATA)
     preds2 <- fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
     va2    <- mean(abs(zz - preds2))
     set(nls_collection, 3L, 2L, value = val2)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Asymp origin model
   tryCatch({
-    model3 <- nls(as.formula(paste(y," ~ SSasympOrig(",x,", Asym, lrc)", sep="")), data = DATA)
+    model3 <-
+      nls(as.formula(paste(
+        y, " ~ SSasympOrig(", x, ", Asym, lrc)", sep = ""
+      )), data = DATA)
     preds3 <- fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
     va3    <- mean(abs(zz - preds3))
     set(nls_collection, 4L, 2L, value = val3)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Biexp model
   tryCatch({
-    model4 <- nls(as.formula(paste(y," ~ SSbiexp(",x,", A1, lrc1, A2, lrc2)", sep="")), data = DATA)
+    model4 <-
+      nls(as.formula(paste(
+        y, " ~ SSbiexp(", x, ", A1, lrc1, A2, lrc2)", sep = ""
+      )), data = DATA)
     preds4 <- fitted(model4, DATA)
     preds4[preds4 < 0] <- 0
     val4   <- mean(abs(zz - preds4))
     set(nls_collection, 5L, 2L, value = val4)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Four parameter logistic model
   tryCatch({
-    model5 <- nls(as.formula(paste(y," ~ SSfpl(",x,", A, B, xmid, scal)", sep="")), data = DATA)
+    model5 <-
+      nls(as.formula(paste(
+        y, " ~ SSfpl(", x, ", A, B, xmid, scal)", sep = ""
+      )), data = DATA)
     preds5 <- fitted(model5, DATA)
     preds5[preds5 < 0] <- 0
     val5   <- mean(abs(zz - preds5))
     set(nls_collection, 6L, 2L, value = val5)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Gompertz model
   tryCatch({
-    model6 <- nls(as.formula(paste(y," ~ SSgompertz(",x,", Asym, b2, b3)", sep="")), data = DATA)
+    model6 <-
+      nls(as.formula(paste(
+        y, " ~ SSgompertz(", x, ", Asym, b2, b3)", sep = ""
+      )), data = DATA)
     preds6 <- fitted(model6, DATA)
     preds6[preds6 < 0] <- 0
     val6   <- mean(abs(zz - preds6))
     set(nls_collection, 7L, 2L, value = val6)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Logistic model
   tryCatch({
-    model7 <- nls(as.formula(paste(y," ~ SSlogis(",x,", Asym, xmid, scal)", sep="")), data = DATA)
+    model7 <-
+      nls(as.formula(paste(
+        y, " ~ SSlogis(", x, ", Asym, xmid, scal)", sep = ""
+      )), data = DATA)
     preds7 <- fitted(model7, DATA)
     preds7[preds7 < 0] <- 0
     val7   <- mean(abs(zz - preds7))
     set(nls_collection, 8L, 2L, value = val7)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Michaelis-Menton model
   tryCatch({
-    model8 <- nls(as.formula(paste(y," ~ SSmicmen(",x,", Vm, K)", sep="")), data = DATA)
+    model8 <-
+      nls(as.formula(paste(y, " ~ SSmicmen(", x, ", Vm, K)", sep = "")), data = DATA)
     preds8 <- fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
     val8   <- mean(abs(zz - preds8))
     set(nls_collection, 9L, 2L, value = val8)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Weibull Growth model
   tryCatch({
-    model9 <- nls(as.formula(paste(y," ~ SSweibull(",x,", Asym, Drop, lrc, pwr)", sep="")), data = DATA)
+    model9 <-
+      nls(as.formula(paste(
+        y, " ~ SSweibull(", x, ", Asym, Drop, lrc, pwr)", sep = ""
+      )), data = DATA)
     preds9 <- fitted(model9, DATA)
     preds9[preds9 < 0] <- 0
     val9   <- mean(abs(zz - preds9))
     set(nls_collection, 10L, 2L, value = val9)
-  },error=function(x) {return("skip")})
+  }, error = function(x) {
+    return("skip")
+  })
 
   # Store best model name
-  name <- nls_collection[Accuracy != 999][order(Accuracy)][1,1][[1]]
+  name <- nls_collection[Accuracy != 999][order(Accuracy)][1, 1][[1]]
 
   # Create column using best model
-  if(name == nls_collection[10,1][[1]]) {
+  if (name == nls_collection[10, 1][[1]]) {
     DATA[, eval(y) := preds9]
     return(DATA)
-  } else if (name == nls_collection[2,1][[1]]) {
+  } else if (name == nls_collection[2, 1][[1]]) {
     DATA[, eval(y) := preds1]
     return(DATA)
-  } else if (name == nls_collection[3,1][[1]]) {
+  } else if (name == nls_collection[3, 1][[1]]) {
     DATA[, eval(y) := preds2]
     return(DATA)
-  } else if (name == nls_collection[4,1][[1]]) {
+  } else if (name == nls_collection[4, 1][[1]]) {
     DATA[, eval(y) := preds3]
     return(DATA)
-  } else if (name == nls_collection[5,1][[1]]) {
+  } else if (name == nls_collection[5, 1][[1]]) {
     DATA[, eval(y) := preds4]
     return(DATA)
-  } else if (name == nls_collection[6,1][[1]]) {
+  } else if (name == nls_collection[6, 1][[1]]) {
     DATA[, eval(y) := preds5]
     return(DATA)
-  } else if (name == nls_collection[7,1][[1]]) {
+  } else if (name == nls_collection[7, 1][[1]]) {
     DATA[, eval(y) := preds6]
     return(DATA)
-  } else if (name == nls_collection[8,1][[1]]) {
+  } else if (name == nls_collection[8, 1][[1]]) {
     DATA[, eval(y) := preds7]
     return(DATA)
-  } else if (name == nls_collection[9,1][[1]]) {
+  } else if (name == nls_collection[9, 1][[1]]) {
     DATA[, eval(y) := preds8]
     return(DATA)
   } else {
@@ -1873,6 +2381,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @author Adrian Antico
 #' @param plotlist This is the list of your charts
 #' @param cols This is the number of columns in your multiplot
+#' @param layout Leave NULL
 #' @param ... Passthrough arguments
 #' @import data.table
 #' @examples
@@ -1939,33 +2448,41 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
-  require(grid)
+multiplot <-
+  function(...,
+           plotlist = NULL,
+           cols = 1,
+           layout = NULL) {
+    require(grid)
 
-  plots <- c(list(...), plotlist)
+    plots <- c(list(...), plotlist)
 
-  numPlots = length(plots)
+    numPlots = length(plots)
 
-  if (is.null(layout)) {
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
+    if (is.null(layout)) {
+      layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
+                       ncol = cols,
+                       nrow = ceiling(numPlots / cols))
+    }
 
-  if (numPlots == 1) {
-    print(plots[[1]])
+    if (numPlots == 1) {
+      print(plots[[1]])
 
-  } else {
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    } else {
+      grid.newpage()
+      pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
 
-    for (i in 1:numPlots) {
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      for (i in 1:numPlots) {
+        matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
+        print(plots[[i]],
+              vp = viewport(
+                layout.pos.row = matchidx$row,
+                layout.pos.col = matchidx$col
+              ))
+      }
     }
   }
-}
 
 #' ChartTheme function is a ggplot theme generator for ggplots
 #'
@@ -1981,19 +2498,72 @@ multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 ChartTheme <- function(Size = 12) {
-  chart_theme <- theme(plot.background = element_rect(fill = "gray94"),
-                       panel.background = element_rect(fill = "lightsteelblue1", colour = "darkblue", size = 0.25, color = "darkblue"),
-                       panel.grid.major = element_line(colour = "darkblue", size=0.01, color = "white", linetype = 1),
-                       panel.grid.minor = element_line(colour = "darkblue", size=0.01, color= "white", linetype = 1),
-                       legend.position = "bottom",
-                       legend.title = element_text(color = "darkblue", size=Size, face = "bold"),
-                       legend.background = element_rect(fill = "gray95",size = 1, linetype = "solid", color = "darkblue"),
-                       plot.title=element_text(color = "darkblue", size=Size, face = "bold"),
-                       axis.title=element_text(color = "darkblue", size=Size, face = "bold"),
-                       axis.text=element_text(colour="darkblue", face = "bold", angle = 90),
-                       axis.title.x = element_text(margin = margin(t = 20, r = 20, b = 20, l = 20)),
-                       axis.title.y = element_text(margin = margin(t = 20, r = 20, b = 20, l = 20)),
-                       panel.border = element_rect(colour = "darkblue", fill = NA, size = 1.5))
+  chart_theme <-
+    theme(
+      plot.background = element_rect(fill = "gray94"),
+      panel.background = element_rect(
+        fill = "lightsteelblue1",
+        colour = "darkblue",
+        size = 0.25,
+        color = "darkblue"
+      ),
+      panel.grid.major = element_line(
+        colour = "darkblue",
+        size = 0.01,
+        color = "white",
+        linetype = 1
+      ),
+      panel.grid.minor = element_line(
+        colour = "darkblue",
+        size = 0.01,
+        color = "white",
+        linetype = 1
+      ),
+      legend.position = "bottom",
+      legend.title = element_text(
+        color = "darkblue",
+        size = Size,
+        face = "bold"
+      ),
+      legend.background = element_rect(
+        fill = "gray95",
+        size = 1,
+        linetype = "solid",
+        color = "darkblue"
+      ),
+      plot.title = element_text(
+        color = "darkblue",
+        size = Size,
+        face = "bold"
+      ),
+      axis.title = element_text(
+        color = "darkblue",
+        size = Size,
+        face = "bold"
+      ),
+      axis.text = element_text(
+        colour = "darkblue",
+        face = "bold",
+        angle = 90
+      ),
+      axis.title.x = element_text(margin = margin(
+        t = 20,
+        r = 20,
+        b = 20,
+        l = 20
+      )),
+      axis.title.y = element_text(margin = margin(
+        t = 20,
+        r = 20,
+        b = 20,
+        l = 20
+      )),
+      panel.border = element_rect(
+        colour = "darkblue",
+        fill = NA,
+        size = 1.5
+      )
+    )
   chart_theme
 }
 
@@ -2008,7 +2578,8 @@ ChartTheme <- function(Size = 12) {
 #' percRank(x)
 #' @return vector of percentile ranks
 #' @export
-percRank <- function(x) trunc(rank(x))/length(x)
+percRank <- function(x)
+  trunc(rank(x)) / length(x)
 
 #' Function automatically builds partial dependence calibration plots for model evaluation
 #'
@@ -2104,8 +2675,8 @@ ParDepCalPlots <- function(data,
                            type        = "calibration",
                            bucket      = 0.05,
                            FactLevels  = 10,
-                           Function    = function(x) mean(x, na.rm = TRUE)) {
-
+                           Function    = function(x)
+                             mean(x, na.rm = TRUE)) {
   # Load libraries
   library(data.table)
   library(ggplot2)
@@ -2126,42 +2697,49 @@ ParDepCalPlots <- function(data,
   setcolorder(data, c(PredColName, ActColName, IndepVar))
 
   # If actual is in factor form, convert to numeric and coerce type to calibration
-  if(!is.numeric(preds2[[ActColName]])) {
+  if (!is.numeric(preds2[[ActColName]])) {
     preds2[, eval(ActColName) := as.numeric(as.character(get(ActColName)))]
     type <- "calibration"
   }
 
   # Prepare for both calibration and boxplot
-  if (is.numeric(preds2[[IndepVar]]) || is.integer(preds2[[IndepVar]])) {
-    preds2[, rank := 100*(round(percRank(preds2[[IndepVar]])/bucket)*bucket)]
+  if (is.numeric(preds2[[IndepVar]]) ||
+      is.integer(preds2[[IndepVar]])) {
+    preds2[, rank := 100 * (round(percRank(preds2[[IndepVar]]) / bucket) * bucket)]
   } else {
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
     #preds2 <- preds2[, ]
-    preds2 <- preds2[, .(Function(get(ActColName)), Function(get(PredColName)), max(id)), by = get(IndepVar)][order(-V3)]
-    if(nrow(preds2) > FactLevels) {
+    preds2 <-
+      preds2[, .(Function(get(ActColName)), Function(get(PredColName)), max(id)), by = get(IndepVar)][order(-V3)]
+    if (nrow(preds2) > FactLevels) {
       temp1 <- preds2[1:FactLevels][, V3 := NULL]
-      temp2 <- preds2[(FactLevels+1):nrow(preds2)]
+      temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
       temp2[, ':=' (V1 = V1 * V3 / sum(V3),
                     V2 = V2 * V3 / sum(V3))]
       temp3 <- temp2[, .(sum(V1), sum(V2))]
       temp3[, get := "Other"]
-      setcolorder(temp3, c(3,1,2))
+      setcolorder(temp3, c(3, 1, 2))
     }
     preds2[, V3 := NULL]
-    if(nrow(preds2) > FactLevels) {
+    if (nrow(preds2) > FactLevels) {
       preds3 <- rbindlist(list(temp1, temp3))
     } else {
       preds3 <- preds2
     }
-    setnames(preds3, old = c("get","V1","V2"), new = c(IndepVar, ActColName, PredColName))
+    setnames(
+      preds3,
+      old = c("get", "V1", "V2"),
+      new = c(IndepVar, ActColName, PredColName)
+    )
     preds3 <- preds3[order(-get(PredColName))]
   }
 
   # Build plots
   if (type == "calibration") {
     # Aggregate by rank for calibration
-    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
+    preds3 <-
+      preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot
@@ -2169,12 +2747,14 @@ ParDepCalPlots <- function(data,
       geom_line(aes(y = preds3[[PredColName]], color = "Predicted")) +
       geom_line(aes(y = preds3[[ActColName]], color = "Actuals")) +
       ylab("Actual / Predicted") + xlab(IndepVar) +
-      scale_colour_manual("",
-                          breaks = c("Actuals", "Predicted"),
-                          values = c("blue", "red")) +
+      scale_colour_manual(
+        "",
+        breaks = c("Actuals", "Predicted"),
+        values = c("blue", "red")
+      ) +
       ChartTheme(Size = 15) + ggtitle("Partial Dependence Calibration Plot")
     #plot <- plotly_build(ggplotly(plot))
-  } else if (type == "boxplot"){
+  } else if (type == "boxplot") {
     # Partial dependence boxplot
     keep <- c("rank", ActColName, IndepVar)
     actual <- preds2[, ..keep]
@@ -2188,15 +2768,16 @@ ParDepCalPlots <- function(data,
 
     data <- rbindlist(list(actual, predicted))[order(rank)]
     data[, rank := as.factor(rank)]
-    data <- data[ , eval(IndepVar) := as.numeric(get(IndepVar))]
-    data <- data[ , eval(IndepVar) := round(Function(get(IndepVar)),3), by = rank]
+    data <- data[, eval(IndepVar) := as.numeric(get(IndepVar))]
+    data <-
+      data[, eval(IndepVar) := round(Function(get(IndepVar)), 3), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
     plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
       geom_boxplot(aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
       ggtitle("Partial Dependence Calibration Boxplot") +
       xlab(eval(IndepVar)) +
-      ChartTheme(Size= 15)
+      ChartTheme(Size = 15)
     #plot <- plotly_build(ggplotly(plot))
   } else if (type == "FactorVar") {
     keep <- c(IndepVar, ActColName)
@@ -2211,10 +2792,10 @@ ParDepCalPlots <- function(data,
     data <- rbindlist(list(actual, predicted))[order(-Output)]
 
     plot <- ggplot(data, aes(x = data[[IndepVar]], y = Output)) +
-      geom_bar(stat="identity", position="dodge", aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
+      geom_bar(stat = "identity", position = "dodge", aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
       ggtitle("Partial Dependence Calibration Barplot") +
       xlab(eval(IndepVar)) +
-      ChartTheme(Size= 15)
+      ChartTheme(Size = 15)
     #plot <- plotly_build(ggplotly(plot))
   }
   return(plot)
@@ -2297,69 +2878,70 @@ ParDepCalPlots <- function(data,
 EvalPlot <- function(data,
                      PredColName = "PredictedValues",
                      ActColName  = "ActualValues",
-                     type        = c("calibration","boxplot"),
+                     type        = c("calibration", "boxplot"),
                      bucket      = 0.05,
-                     aggrfun     = function(x) mean(x, na.rm = TRUE)) {
-
+                     aggrfun     = function(x)
+                       mean(x, na.rm = TRUE)) {
   # Load libraries
   library(data.table)
   library(ggplot2)
 
   # Turn data into data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Structure data
   cols <- c(eval(PredColName), eval(ActColName))
   data <- data[, ..cols]
   setcolorder(data, c(PredColName, ActColName))
-  setnames(data, c(PredColName,ActColName), c("preds","acts"))
+  setnames(data, c(PredColName, ActColName), c("preds", "acts"))
 
   # If actual is in factor form, convert to numeric and coerce type to calibration
-  if(!is.numeric(data[["acts"]])) {
+  if (!is.numeric(data[["acts"]])) {
     data[, acts := as.numeric(as.character(acts))]
     type <- "calibration"
   }
 
   # Add a column that ranks predicted values
-  data[, rank := 100*(round(percRank(data[[1]])/bucket)*bucket)]
+  data[, rank := 100 * (round(percRank(data[[1]]) / bucket) * bucket)]
 
   # Plot
-  if(type == "boxplot") {
+  if (type == "boxplot") {
     # Remove classification and non-event predicted values
     data[, rank := as.factor(rank)]
 
-    cols <- c("rank","preds")
+    cols <- c("rank", "preds")
     zz1 <- data[, ..cols]
     zz1[, Type := 'predicted']
     setnames(zz1, c("preds"), c("output"))
 
-    cols <- c("rank","acts")
+    cols <- c("rank", "acts")
     zz2 <- data[, ..cols]
     zz2[, Type := 'actual']
     setnames(zz2, c("acts"), c("output"))
 
-    data <- rbindlist(list(zz1,zz2))
+    data <- rbindlist(list(zz1, zz2))
 
-    plot <- ggplot(data, aes(x=rank, y=output, fill=Type)) +
+    plot <- ggplot(data, aes(x = rank, y = output, fill = Type)) +
       geom_boxplot(outlier.color = "red", color = "black") +
       ggtitle("Calibration Evaluation Boxplot") +
       xlab("Predicted Percentile") + ylab("Observed Values") +
-      ChartTheme(Size= 15)
+      ChartTheme(Size = 15)
 
   } else {
     # Aggregate all columns by rank, utilizing mean as the aggregator statistic
-    data <- data[, lapply(.SD, noquote(aggrfun)), by=rank]
+    data <- data[, lapply(.SD, noquote(aggrfun)), by = rank]
 
     # Build calibration plot
-    plot  <- ggplot(data, aes(x=rank))  +
-      geom_line(aes(y=data[[3]], colour="Actual")) +
-      geom_line(aes(y=data[[2]], colour="Predicted")) +
+    plot  <- ggplot(data, aes(x = rank))  +
+      geom_line(aes(y = data[[3]], colour = "Actual")) +
+      geom_line(aes(y = data[[2]], colour = "Predicted")) +
       xlab("Predicted Percentile") + ylab("Observed Values") +
-      scale_color_manual(values=c("red", "blue")) +
-      theme(axis.text.x=element_text(angle=90, hjust=1)) +
-      theme(legend.position="bottom") +
+      scale_color_manual(values = c("red", "blue")) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      theme(legend.position = "bottom") +
       ggtitle("Calibration Evaluation Plot") +
-      ChartTheme(Size= 15)
+      ChartTheme(Size = 15)
   }
   return(plot)
 }
@@ -2395,14 +2977,22 @@ EvalPlot <- function(data,
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
 #'                    DateTime = as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#'                    Target = stats::filter(rnorm(N,
+#'                                                 mean = 50,
+#'                                                 sd = 20),
+#'                                           filter=rep(1,10),
+#'                                           circular=TRUE))
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #'
 #' # Non Grouping Case
 #' N = 25116
 #' data <- data.table(DateTime = as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#'                    Target = stats::filter(rnorm(N,
+#'                                                 mean = 50,
+#'                                                 sd = 20),
+#'                                           filter=rep(1,10),
+#'                                           circular=TRUE))
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' data <- GDL_Feature_Engineering(data,
@@ -2427,32 +3017,38 @@ EvalPlot <- function(data,
 #'                                 SimpleImpute   = TRUE)
 #' @export
 GDL_Feature_Engineering <- function(data,
-                                    lags           = c(seq(1,5,1)),
-                                    periods        = c(3,5,10,15,20,25),
-                                    statsFUNs      = c(function(x) quantile(x, probs = 0.1, na.rm = TRUE),
-                                                       function(x) quantile(x, probs = 0.9, na.rm = TRUE),
-                                                       function(x) mean(x, na.rm = TRUE),
-                                                       function(x) sd(x, na.rm = TRUE),
-                                                       function(x) quantile(x, probs = 0.25, na.rm = TRUE),
-                                                       function(x) quantile(x, probs = 0.75, na.rm = TRUE)),
-                                    statsNames     = c("q10","q90","mean","sd","q25","q75"),
+                                    lags           = c(seq(1, 5, 1)),
+                                    periods        = c(3, 5, 10, 15, 20, 25),
+                                    statsFUNs      = c(function(x)
+                                      quantile(x, probs = 0.1, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.9, na.rm = TRUE),
+                                      function(x)
+                                        mean(x, na.rm = TRUE),
+                                      function(x)
+                                        sd(x, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.25, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.75, na.rm = TRUE)),
+                                    statsNames     = c("q10", "q90", "mean", "sd", "q25", "q75"),
                                     targets        = c("qty"),
-                                    groupingVars   = c("Group1","Group2"),
+                                    groupingVars   = c("Group1", "Group2"),
                                     sortDateName   = "date",
                                     timeDiffTarget = c("TimeDiffName"),
-                                    timeAgg        = c("auto","secs","mins","hours","days","weeks"),
+                                    timeAgg        = c("auto", "secs", "mins", "hours", "days", "weeks"),
                                     WindowingLag   = 0,
-                                    Type           = c("Lag","Lead"),
+                                    Type           = c("Lag", "Lead"),
                                     Timer          = TRUE,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
-
   # Load library
   library(data.table)
   library(zoo)
 
   # Convert to data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Ensure target is numeric
   data[, eval(targets) := as.numeric(get(targets))]
@@ -2467,32 +3063,34 @@ GDL_Feature_Engineering <- function(data,
 
   # Define total runs
   if (!is.null(groupingVars)) {
-    runs <- length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
   } else {
-    runs <- tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      tarNum * (length(periods) * length(statsNames) + length(lags))
   }
 
   # Begin feature engineering
-  if(!is.null(groupingVars)) {
+  if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
 
       # Sort data
-      if(tolower(Type) == "lag") {
-        colVar <- c(groupingVars[i],sortDateName[1])
+      if (tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = 1)
       } else {
-        colVar <- c(groupingVars[i],sortDateName[1])
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = -1)
       }
 
       # Lags
-      for(l in seq_along(lags)) {
+      for (l in seq_along(lags)) {
         for (t in Targets) {
-          if(!(paste0(groupingVars[i],"_LAG_",lags[l],"_",t) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+          if (!(paste0(groupingVars[i], "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+            data[, paste0(groupingVars[i], "_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
@@ -2500,63 +3098,74 @@ GDL_Feature_Engineering <- function(data,
       }
 
       # Time lags
-      if(!is.null(timeDiffTarget)) {
-
+      if (!is.null(timeDiffTarget)) {
         # Lag the dates first
-        for(l in seq_along(lags)) {
-          if(!(paste0(groupingVars[i],"TEMP",lags[l]) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+        for (l in seq_along(lags)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+            data[, paste0(groupingVars[i], "TEMP", lags[l]) := data.table::shift(get(sortDateName),
+                                                                                 n = lags[l],
+                                                                                 type = "lag"), by = get(groupingVars[i])]
           }
         }
 
         # Difference the lag dates
-        if(WindowingLag != 0) {
-          for(l in seq_along(lags)) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-              data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0(groupingVars[i],"TEMP",lags[l])),
-                         units = eval(timeAgg))), by = get(groupingVars[i])]
+        if (WindowingLag != 0) {
+          for (l in seq_along(lags)) {
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+              data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0(
+                  groupingVars[i], "TEMP", lags[l]
+                )),
+                units = eval(timeAgg)
+              )), by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             }
           }
         } else {
-          for(l in seq_along(lags)) {
+          for (l in seq_along(lags)) {
             if (l == 1) {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(get(sortDateName),
-                           get(paste0(groupingVars[i],"TEMP",lags[l])),
-                           units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                  get(sortDateName),
+                  get(paste0(
+                    groupingVars[i], "TEMP", lags[l]
+                  )),
+                  units = eval(timeAgg)
+                )), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
@@ -2566,19 +3175,22 @@ GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          data[, paste0(groupingVars[i],"TEMP",lags[l]) := NULL]
+          data[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
         # Store new target
-        timeTarget <- paste0(groupingVars[i],timeDiffTarget,"1")
+        timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
       # Define targets
-      if(WindowingLag != 0) {
+      if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets), timeTarget)
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets),
+              timeTarget)
         } else {
-          Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets))
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
@@ -2592,11 +3204,11 @@ GDL_Feature_Engineering <- function(data,
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
-            if(!(paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-              data[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := zoo::rollapply(get(t), periods[j], statsFUNs[k][[1]], partial = TRUE),
+            if (!(paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+              data[, paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) := zoo::rollapply(get(t), periods[j], statsFUNs[k][[1]], partial = TRUE),
                    by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -2607,23 +3219,25 @@ GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(data)) {
-      set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+      set(data,
+          j = col,
+          value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(data)) {
-        if(is.factor(data[[j]])) {
-          set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,"0")
+        if (is.factor(data[[j]])) {
+          set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          set(data,which(is.na(data[[j]])),j,-1)
+          set(data, which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -2642,12 +3256,12 @@ GDL_Feature_Engineering <- function(data,
     Targets <- targets
 
     # Lags
-    for(l in seq_along(lags)) {
+    for (l in seq_along(lags)) {
       for (t in Targets) {
-        if(!(paste0("LAG_",lags[l],"_",t) %in% SkipCols)) {
-          data[, paste0("LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+          data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
           CounterIndicator = CounterIndicator + 1
-          if(Timer) {
+          if (Timer) {
             print(CounterIndicator / runs)
           }
         }
@@ -2655,62 +3269,67 @@ GDL_Feature_Engineering <- function(data,
     }
 
     # Time lags
-    if(!is.null(timeDiffTarget)) {
-
+    if (!is.null(timeDiffTarget)) {
       # Lag the dates first
-      for(l in seq_along(lags)) {
-        if(!(paste0("TEMP",lags[l]) %in% SkipCols)) {
-          data[, paste0("TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
+      for (l in seq_along(lags)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+          data[, paste0("TEMP", lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
-      if(WindowingLag != 0) {
-        for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols) & l == 1) {
-            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-              difftime(
-                get(sortDateName),
-                get(paste0("TEMP",lags[l])),
-                units = eval(timeAgg)))]
+      if (WindowingLag != 0) {
+        for (l in seq_along(lags)) {
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+              l == 1) {
+            data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(sortDateName),
+                                                                               get(paste0(
+                                                                                 "TEMP", lags[l]
+                                                                               )),
+                                                                               units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-              difftime(
-                get(paste0("TEMP",lags[l]-1)),
-                get(paste0("TEMP",lags[l])),
-                units = eval(timeAgg)))]
+            data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
+              "TEMP", lags[l] - 1
+            )),
+            get(paste0(
+              "TEMP", lags[l]
+            )),
+            units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
         }
       } else {
-        for(l in seq_along(lags)) {
+        for (l in seq_along(lags)) {
           if (l == 1) {
-            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0("TEMP",lags[l])),
-                         units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0("TEMP", lags[l])),
+                units = eval(timeAgg)
+              ))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           } else {
-            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -2720,19 +3339,22 @@ GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        data[, paste0("TEMP",lags[l]) := NULL]
+        data[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget,"_1")
+      timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
     # Define targets
-    if(WindowingLag != 0) {
+    if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets), timeTarget)
+        Targets <-
+          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets),
+            timeTarget)
       } else {
-        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets))
+        Targets <-
+          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -2746,10 +3368,10 @@ GDL_Feature_Engineering <- function(data,
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
-          if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-            data[, paste0(statsNames[k],"_",periods[j],"_",t) := zoo::rollapply(get(t), periods[j], statsFUNs[k][[1]], partial = TRUE)]
+          if (!(paste0(statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+            data[, paste0(statsNames[k], "_", periods[j], "_", t) := zoo::rollapply(get(t), periods[j], statsFUNs[k][[1]], partial = TRUE)]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
@@ -2759,23 +3381,25 @@ GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(data)) {
-      set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+      set(data,
+          j = col,
+          value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(data)) {
-        if(is.factor(data[[j]])) {
-          set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,"0")
+        if (is.factor(data[[j]])) {
+          set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          set(data,which(is.na(data[[j]])),j,-1)
+          set(data, which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -2793,7 +3417,6 @@ GDL_Feature_Engineering <- function(data,
 #' @param lags The list of specific lags you want to have generated
 #' @param periods The number of periods for the rolling stats
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
-#' @param statsFUNs The functions to use with aggregation
 #' @param targets The column(s) in which you will build your lags and rolling stats
 #' @param groupingVars Categorical variables you will build your lags and rolling stats by
 #' @param sortDateName String name of your core date column in your transaction data
@@ -2816,14 +3439,22 @@ GDL_Feature_Engineering <- function(data,
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
 #'                    DateTime = as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#'                    Target = stats::filter(rnorm(N,
+#'                                                 mean = 50,
+#'                                                 sd = 20),
+#'                                           filter=rep(1,10),
+#'                                           circular=TRUE))
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #'
 #' # Non Grouping Case
 #' N = 25116
 #' data <- data.table(DateTime = as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,mean = 50, sd = 20), filter=rep(1,10), circular=TRUE))
+#'                    Target = stats::filter(rnorm(N,
+#'                                                 mean = 50,
+#'                                                 sd = 20),
+#'                                           filter=rep(1,10),
+#'                                           circular=TRUE))
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' data <- DT_GDL_Feature_Engineering(data,
@@ -2842,25 +3473,25 @@ GDL_Feature_Engineering <- function(data,
 #'                                    SimpleImpute   = TRUE)
 #' @export
 DT_GDL_Feature_Engineering <- function(data,
-                                       lags           = c(seq(1,50,1)),
-                                       periods        = c(seq(5,95,5)),
+                                       lags           = c(seq(1, 50, 1)),
+                                       periods        = c(seq(5, 95, 5)),
                                        statsNames     = c("MA"),
                                        targets        = c("qty"),
-                                       groupingVars   = c("Group1","Group2"),
+                                       groupingVars   = c("Group1", "Group2"),
                                        sortDateName   = "date",
                                        timeDiffTarget = c("TimeDiffName"),
-                                       timeAgg        = c("auto","secs","mins","hours","days","weeks"),
+                                       timeAgg        = c("auto", "secs", "mins", "hours", "days", "weeks"),
                                        WindowingLag   = 0,
-                                       Type           = c("Lag","Lead"),
+                                       Type           = c("Lag", "Lead"),
                                        Timer          = TRUE,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
-
   # Load libraries
   library(data.table)
 
   # Convert to data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Ensure target is numeric
   data[, eval(targets) := as.numeric(get(targets))]
@@ -2875,32 +3506,34 @@ DT_GDL_Feature_Engineering <- function(data,
 
   # Define total runs
   if (!is.null(groupingVars)) {
-    runs <- length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
   } else {
-    runs <- tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      tarNum * (length(periods) * length(statsNames) + length(lags))
   }
 
   # Begin feature engineering
-  if(!is.null(groupingVars)) {
+  if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
 
       # Sort data
-      if(tolower(Type) == "lag") {
-        colVar <- c(groupingVars[i],sortDateName[1])
+      if (tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = 1)
       } else {
-        colVar <- c(groupingVars[i],sortDateName[1])
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = -1)
       }
 
       # Lags
-      for(l in seq_along(lags)) {
+      for (l in seq_along(lags)) {
         for (t in Targets) {
-          if(!(paste0(groupingVars[i],"_LAG_",lags[l],"_",t) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+          if (!(paste0(groupingVars[i], "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+            data[, paste0(groupingVars[i], "_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
@@ -2908,63 +3541,74 @@ DT_GDL_Feature_Engineering <- function(data,
       }
 
       # Time lags
-      if(!is.null(timeDiffTarget)) {
-
+      if (!is.null(timeDiffTarget)) {
         # Lag the dates first
-        for(l in seq_along(lags)) {
-          if(!(paste0(groupingVars[i],"TEMP",lags[l]) %in% SkipCols)) {
-            data[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+        for (l in seq_along(lags)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+            data[, paste0(groupingVars[i], "TEMP", lags[l]) := data.table::shift(get(sortDateName),
+                                                                                 n = lags[l],
+                                                                                 type = "lag"), by = get(groupingVars[i])]
           }
         }
 
         # Difference the lag dates
-        if(WindowingLag != 0) {
-          for(l in seq_along(lags)) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-              data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0(groupingVars[i],"TEMP",lags[l])),
-                         units = eval(timeAgg))), by = get(groupingVars[i])]
+        if (WindowingLag != 0) {
+          for (l in seq_along(lags)) {
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+              data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0(
+                  groupingVars[i], "TEMP", lags[l]
+                )),
+                units = eval(timeAgg)
+              )), by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             }
           }
         } else {
-          for(l in seq_along(lags)) {
+          for (l in seq_along(lags)) {
             if (l == 1) {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(get(sortDateName),
-                           get(paste0(groupingVars[i],"TEMP",lags[l])),
-                           units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                  get(sortDateName),
+                  get(paste0(
+                    groupingVars[i], "TEMP", lags[l]
+                  )),
+                  units = eval(timeAgg)
+                )), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                data[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                data[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
@@ -2974,19 +3618,22 @@ DT_GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          data[, paste0(groupingVars[i],"TEMP",lags[l]) := NULL]
+          data[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
         # Store new target
-        timeTarget <- paste0(groupingVars[i],timeDiffTarget,"1")
+        timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
       # Define targets
-      if(WindowingLag != 0) {
+      if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets), timeTarget)
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets),
+              timeTarget)
         } else {
-          Targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",Targets))
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
@@ -3000,11 +3647,20 @@ DT_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
-            if(!(paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-              data[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := data.table::frollmean(x = get(t), n = periods[j], fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE),
-                   by = get(groupingVars[i])]
+            if (!(paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+              data[, paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) := data.table::frollmean(
+                x = get(t),
+                n = periods[j],
+                fill = NA,
+                algo = "fast",
+                align = "right",
+                na.rm = TRUE,
+                hasNA = TRUE,
+                adaptive = FALSE
+              ),
+              by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -3015,23 +3671,25 @@ DT_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(data)) {
-      set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+      set(data,
+          j = col,
+          value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(data)) {
-        if(is.factor(data[[j]])) {
-          set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,"0")
+        if (is.factor(data[[j]])) {
+          set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          set(data,which(is.na(data[[j]])),j,-1)
+          set(data, which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -3051,12 +3709,12 @@ DT_GDL_Feature_Engineering <- function(data,
     Targets <- targets
 
     # Lags
-    for(l in seq_along(lags)) {
+    for (l in seq_along(lags)) {
       for (t in Targets) {
-        if(!(paste0("LAG_",lags[l],"_",t) %in% SkipCols)) {
-          data[, paste0("LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+          data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
           CounterIndicator = CounterIndicator + 1
-          if(Timer) {
+          if (Timer) {
             print(CounterIndicator / runs)
           }
         }
@@ -3064,62 +3722,67 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Time lags
-    if(!is.null(timeDiffTarget)) {
-
+    if (!is.null(timeDiffTarget)) {
       # Lag the dates first
-      for(l in seq_along(lags)) {
-        if(!(paste0("TEMP",lags[l]) %in% SkipCols)) {
-          data[, paste0("TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
+      for (l in seq_along(lags)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+          data[, paste0("TEMP", lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
-      if(WindowingLag != 0) {
-        for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols) & l == 1) {
-            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-              difftime(
-                get(sortDateName),
-                get(paste0("TEMP",lags[l])),
-                units = eval(timeAgg)))]
+      if (WindowingLag != 0) {
+        for (l in seq_along(lags)) {
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+              l == 1) {
+            data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(sortDateName),
+                                                                               get(paste0(
+                                                                                 "TEMP", lags[l]
+                                                                               )),
+                                                                               units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-              difftime(
-                get(paste0("TEMP",lags[l]-1)),
-                get(paste0("TEMP",lags[l])),
-                units = eval(timeAgg)))]
+            data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
+              "TEMP", lags[l] - 1
+            )),
+            get(paste0(
+              "TEMP", lags[l]
+            )),
+            units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
         }
       } else {
-        for(l in seq_along(lags)) {
+        for (l in seq_along(lags)) {
           if (l == 1) {
-            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0("TEMP",lags[l])),
-                         units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0("TEMP", lags[l])),
+                units = eval(timeAgg)
+              ))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           } else {
-            if(!(paste0(timeDiffTarget,"_",lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,"_",lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -3129,19 +3792,22 @@ DT_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        data[, paste0("TEMP",lags[l]) := NULL]
+        data[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget,"_1")
+      timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
     # Define targets
-    if(WindowingLag != 0) {
+    if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets), timeTarget)
+        Targets <-
+          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets),
+            timeTarget)
       } else {
-        Targets <- c(paste0(groupingVars[i],"LAG_",WindowingLag,"_",Targets))
+        Targets <-
+          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -3155,10 +3821,19 @@ DT_GDL_Feature_Engineering <- function(data,
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
-          if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-            data[, paste0(statsNames[k],"_",periods[j],"_",t) := data.table::frollmean(x = get(t), n = periods[j], fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE)]
+          if (!(paste0(statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+            data[, paste0(statsNames[k], "_", periods[j], "_", t) := data.table::frollmean(
+              x = get(t),
+              n = periods[j],
+              fill = NA,
+              algo = "fast",
+              align = "right",
+              na.rm = TRUE,
+              hasNA = TRUE,
+              adaptive = FALSE
+            )]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           }
@@ -3168,23 +3843,25 @@ DT_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(data)) {
-      set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+      set(data,
+          j = col,
+          value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(data)) {
-        if(is.factor(data[[j]])) {
-          set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,"0")
+        if (is.factor(data[[j]])) {
+          set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          set(data,which(is.na(data[[j]])),j,-1)
+          set(data, which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -3283,11 +3960,13 @@ DT_GDL_Feature_Engineering <- function(data,
 #'                                         RecordsKeep    = 1)
 #' @export
 Scoring_GDL_Feature_Engineering <- function(data,
-                                            lags           = c(1:6,12,seq(24,168,24)),
-                                            periods        = c(6,12,24,72,168,720,4320,8640),
-                                            statsFUNs      = c(function(x) mean(x, na.rm = TRUE),
-                                                               function(x) sd(x, na.rm = TRUE)),
-                                            statsNames     = c("mean","sd"),
+                                            lags           = c(1:6, 12, seq(24, 168, 24)),
+                                            periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
+                                            statsFUNs      = c(function(x)
+                                              mean(x, na.rm = TRUE),
+                                              function(x)
+                                                sd(x, na.rm = TRUE)),
+                                            statsNames     = c("mean", "sd"),
                                             targets        = c("Target"),
                                             groupingVars   = c("GroupVariable"),
                                             sortDateName   = c("DateTime"),
@@ -3300,17 +3979,17 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             SimpleImpute   = TRUE,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
-
   # Load libraries
   library(data.table)
 
   # Convert to data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Max data to keep
-  MAX_RECORDS_FULL <- max(max(lags+1),max(periods+1),RecordsKeep)
-  MAX_RECORDS_LAGS <- max(max(lags+1),RecordsKeep)
-  MAX_RECORDS_ROLL <- max(max(periods+1),RecordsKeep)
+  MAX_RECORDS_FULL <- max(max(lags + 1), max(periods + 1), RecordsKeep)
+  MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
+  MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
 
   # Set up counter for countdown
   CounterIndicator = 0
@@ -3322,20 +4001,21 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
   # Define total runs
   if (!is.null(groupingVars)) {
-    runs <- length(groupingVars) * length(periods) * length(statsNames) * tarNum + length(lags)
+    runs <-
+      length(groupingVars) * length(periods) * length(statsNames) * tarNum + length(lags)
   } else {
     runs <- length(periods) * length(statsNames) * tarNum
   }
 
   # Begin feature engineering
-  if(!is.null(groupingVars)) {
+  if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       # Sort data
-      if(tolower(Type) == "lag") {
-        colVar <- c(groupingVars[i],sortDateName[1])
+      if (tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = 1)
       } else {
-        colVar <- c(groupingVars[i],sortDateName[1])
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = -1)
       }
 
@@ -3343,72 +4023,83 @@ Scoring_GDL_Feature_Engineering <- function(data,
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
       # Lags
-      for(l in seq_along(lags)) {
+      for (l in seq_along(lags)) {
         for (t in targets) {
-          if(!(paste0(groupingVars[i],"_LAG_",lags[l],"_",t) %in% SkipCols)) {
-            tempData[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+          if (!(paste0(groupingVars[i], "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+            tempData[, paste0(groupingVars[i], "_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
           }
         }
       }
 
       # Time lags
-      if(!is.null(timeDiffTarget)) {
-
+      if (!is.null(timeDiffTarget)) {
         # Lag the dates first
-        for(l in seq_along(lags)) {
-          if(!(paste0(groupingVars[i],"TEMP",lags[l]) %in% SkipCols)) {
-            tempData[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+        for (l in seq_along(lags)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+            tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := data.table::shift(get(sortDateName),
+                                                                                     n = lags[l],
+                                                                                     type = "lag"), by = get(groupingVars[i])]
           }
         }
 
         # Difference the lag dates
-        if(WindowingLag != 0) {
-          for(l in seq_along(lags)) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-              tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0(groupingVars[i],"TEMP",lags[l])),
-                         units = eval(timeAgg))), by = get(groupingVars[i])]
+        if (WindowingLag != 0) {
+          for (l in seq_along(lags)) {
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+              tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0(
+                  groupingVars[i], "TEMP", lags[l]
+                )),
+                units = eval(timeAgg)
+              )), by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             }
           }
         } else {
-          for(l in seq_along(lags)) {
+          for (l in seq_along(lags)) {
             if (l == 1) {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(get(sortDateName),
-                           get(paste0(groupingVars[i],"TEMP",lags[l])),
-                           units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                  get(sortDateName),
+                  get(paste0(
+                    groupingVars[i], "TEMP", lags[l]
+                  )),
+                  units = eval(timeAgg)
+                )), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
@@ -3418,19 +4109,22 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          tempData[, paste0(groupingVars[i],"TEMP",lags[l]) := NULL]
+          tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
         # Store new target
-        timeTarget <- paste0(groupingVars[i],timeDiffTarget,"1")
+        timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
       # Define targets
-      if(WindowingLag != 0) {
+      if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",targets), timeTarget)
+          targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets),
+              timeTarget)
         } else {
-          targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",targets))
+          targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
@@ -3447,17 +4141,21 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in targets) {
-            if(!(paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-              keep <- c(groupingVars[i],t,AscRowByGroup)
-              temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
-              temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := lapply(.SD, statsFUNs[k][[1]]), by = get(groupingVars[i]), .SDcols = eval(t)]
-              if(Timer) {
+            if (!(paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+              keep <- c(groupingVars[i], t, AscRowByGroup)
+              temp2 <-
+                tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
+              temp3 <-
+                temp2[, paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) := lapply(.SD, statsFUNs[k][[1]]), by = get(groupingVars[i]), .SDcols = eval(t)]
+              if (Timer) {
                 CounterIndicator = CounterIndicator + 1
                 print(CounterIndicator / runs)
               }
               # Merge files
-              temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
-              tempData1 <- merge(tempData1, temp4, by = c(eval(groupingVars[i]),eval(AscRowByGroup)))
+              temp4 <-
+                temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
+              tempData1 <-
+                merge(tempData1, temp4, by = c(eval(groupingVars[i]), eval(AscRowByGroup)))
             }
           }
         }
@@ -3466,23 +4164,29 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
-      set(tempData1, j = col, value = replace(tempData1[[col]], is.infinite(tempData1[[col]]),NA))
+      set(tempData1,
+          j = col,
+          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
-      if(is.character(tempData1[[col]])) {
-        set(tempData1, j = col, value = as.factor(tempData1[[col]]))
+      if (is.character(tempData1[[col]])) {
+        set(tempData1,
+            j = col,
+            value = as.factor(tempData1[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
-        if(is.factor(tempData1[[j]])) {
-          set(tempData1,which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),j,"0")
+        if (is.factor(tempData1[[j]])) {
+          set(tempData1, which(!(
+            tempData1[[j]] %in% levels(tempData1[[j]])
+          )), j, "0")
         } else {
-          set(tempData1,which(is.na(tempData1[[j]])),j,-1)
+          set(tempData1, which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
@@ -3492,7 +4196,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
   } else {
     # Sort data
-    if(tolower(Type) == "lag") {
+    if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       setorderv(data, colVar, order = 1)
     } else {
@@ -3504,72 +4208,77 @@ Scoring_GDL_Feature_Engineering <- function(data,
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
     # Lags
-    for(l in seq_along(lags)) {
+    for (l in seq_along(lags)) {
       for (t in targets) {
-        if(!(paste0("_LAG_",lags[l],"_",t) %in% SkipCols)) {
-          tempData[, paste0("_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+        if (!(paste0("_LAG_", lags[l], "_", t) %in% SkipCols)) {
+          tempData[, paste0("_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
         }
       }
     }
 
     # Time lags
-    if(!is.null(timeDiffTarget)) {
-
+    if (!is.null(timeDiffTarget)) {
       # Lag the dates first
-      for(l in seq_along(lags)) {
-        if(!(paste0("TEMP",lags[l]) %in% SkipCols)) {
-          tempData[, paste0("TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
+      for (l in seq_along(lags)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+          tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
-      if(WindowingLag != 0) {
-        for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-            tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-              difftime(get(sortDateName),
-                       get(paste0("TEMP",lags[l])),
-                       units = eval(timeAgg)))]
+      if (WindowingLag != 0) {
+        for (l in seq_along(lags)) {
+          if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+            tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(sortDateName),
+                                                                              get(paste0(
+                                                                                "TEMP", lags[l]
+                                                                              )),
+                                                                              units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           }
         }
       } else {
-        for(l in seq_along(lags)) {
+        for (l in seq_along(lags)) {
           if (l == 1) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0("TEMP",lags[l])),
-                         units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0("TEMP", lags[l])),
+                units = eval(timeAgg)
+              ))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           } else {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -3579,19 +4288,20 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        tempData[, paste0("TEMP",lags[l]) := NULL]
+        tempData[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget,"1")
+      timeTarget <- paste0(timeDiffTarget, "1")
     }
 
     # Define targets
-    if(WindowingLag != 0) {
+    if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(paste0("_LAG_",WindowingLag,"_",targets), timeTarget)
+        targets <- c(paste0("_LAG_", WindowingLag, "_", targets),
+                     timeTarget)
       } else {
-        targets <- c(paste0("_LAG_",WindowingLag,"_",targets))
+        targets <- c(paste0("_LAG_", WindowingLag, "_", targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -3608,17 +4318,19 @@ Scoring_GDL_Feature_Engineering <- function(data,
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in targets) {
-          if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-
-            keep <- c(t,AscRowByGroup)
-            temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_FULL][, ..keep]
-            temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := lapply(.SD, statsFUNs[k][[1]]), .SDcols = eval(t)]
-            if(Timer) {
+          if (!(paste0(statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+            keep <- c(t, AscRowByGroup)
+            temp2 <-
+              tempData[get(AscRowByGroup) <= MAX_RECORDS_FULL][, ..keep]
+            temp3 <-
+              temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := lapply(.SD, statsFUNs[k][[1]]), .SDcols = eval(t)]
+            if (Timer) {
               CounterIndicator = CounterIndicator + 1
               print(CounterIndicator / runs)
             }
             # Merge files
-            temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
+            temp4 <-
+              temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(AscRowByGroup), eval(t)) := NULL]
             tempData1 <- cbind(tempData1, temp4)
           }
         }
@@ -3627,23 +4339,29 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
-      set(tempData1, j = col, value = replace(tempData1[[col]], is.infinite(tempData1[[col]]),NA))
+      set(tempData1,
+          j = col,
+          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
-      if(is.character(tempData1[[col]])) {
-        set(tempData1, j = col, value = as.factor(tempData1[[col]]))
+      if (is.character(tempData1[[col]])) {
+        set(tempData1,
+            j = col,
+            value = as.factor(tempData1[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
-        if(is.factor(tempData1[[j]])) {
-          set(tempData1,which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),j,"0")
+        if (is.factor(tempData1[[j]])) {
+          set(tempData1, which(!(
+            tempData1[[j]] %in% levels(tempData1[[j]])
+          )), j, "0")
         } else {
-          set(tempData1,which(is.na(tempData1[[j]])),j,-1)
+          set(tempData1, which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
@@ -3659,7 +4377,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @author Adrian Antico
 #' @param data The data source you want to run the function on
 #' @param lags The list of specific lags you want to have generated
-#' @param statsFuns List of functions for your rolling windows, such as mean, sd, min, max, quantile
+#' @param periods The number of periods for the rolling stats
+#' @param statsFUNs List of functions for your rolling windows, such as mean, sd, min, max, quantile
 #' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
 #' @param targets The column(s) in which you will build your lags and rolling stats
 #' @param groupingVars Categorical variables you will build your lags and rolling stats by
@@ -3737,10 +4456,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'                                      AscRowByGroup  = "temp")
 #' @export
 FAST_GDL_Feature_Engineering <- function(data,
-                                         lags           = c(1:6,12,seq(24,168,24)),
-                                         periods        = c(6,12,24,72,168,720,4320,8640),
-                                         statsFUNs      = c("mean","median","sd","quantile85","quantile95"),
-                                         statsNames     = c("mean","median","sd","quantile85","quantile95"),
+                                         lags           = c(1:6, 12, seq(24, 168, 24)),
+                                         periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
+                                         statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
+                                         statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
                                          targets        = c("ScaledConsumption"),
                                          groupingVars   = c("BADGE_NBR"),
                                          sortDateName   = "DAY_DATE",
@@ -3753,13 +4472,13 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          SimpleImpute   = TRUE,
                                          AscRowByGroup  = "BadgeRowNum",
                                          RecordsKeep    = 1) {
-
   # Load libraries
   library(data.table)
   library(caTools)
 
   # Convert to data.table if not already
-  if(!is.data.table(data)) data <- as.data.table(data)
+  if (!is.data.table(data))
+    data <- as.data.table(data)
 
   # Ensure target is numeric
   data[, eval(targets) := as.numeric(get(targets))]
@@ -3774,25 +4493,27 @@ FAST_GDL_Feature_Engineering <- function(data,
 
   # Define total runs
   if (!is.null(groupingVars)) {
-    runs <- length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      length(groupingVars) * tarNum * (length(periods) * length(statsNames) + length(lags))
   } else {
-    runs <- tarNum * (length(periods) * length(statsNames) + length(lags))
+    runs <-
+      tarNum * (length(periods) * length(statsNames) + length(lags))
   }
 
   # Max data to keep
-  MAX_RECORDS_FULL <- max(max(lags+1),max(periods*2),RecordsKeep)
-  MAX_RECORDS_LAGS <- max(max(lags+1),RecordsKeep)
-  MAX_RECORDS_ROLL <- max(max(periods*2),RecordsKeep)
+  MAX_RECORDS_FULL <- max(max(lags + 1), max(periods * 2), RecordsKeep)
+  MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
+  MAX_RECORDS_ROLL <- max(max(periods * 2), RecordsKeep)
 
   # Begin feature engineering
-  if(!is.null(groupingVars)) {
+  if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       # Sort data
-      if(tolower(Type) == "lag") {
-        colVar <- c(groupingVars[i],sortDateName[1])
+      if (tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = 1)
       } else {
-        colVar <- c(groupingVars[i],sortDateName[1])
+        colVar <- c(groupingVars[i], sortDateName[1])
         setorderv(data, colVar, order = -1)
       }
 
@@ -3800,76 +4521,87 @@ FAST_GDL_Feature_Engineering <- function(data,
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
       # Lags
-      for(l in seq_along(lags)) {
+      for (l in seq_along(lags)) {
         for (t in targets) {
-          if(!(paste0(groupingVars[i],"_LAG_",lags[l],"_",t) %in% SkipCols)) {
-            tempData[, paste0(groupingVars[i],"_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+          if (!(paste0(groupingVars[i], "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+            tempData[, paste0(groupingVars[i], "_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
           }
           CounterIndicator = CounterIndicator + 1
-          if(Timer) {
+          if (Timer) {
             print(CounterIndicator / runs)
           }
         }
       }
 
       # Time lags
-      if(!is.null(timeDiffTarget)) {
-
+      if (!is.null(timeDiffTarget)) {
         # Lag the dates first
-        for(l in seq_along(lags)) {
-          if(!(paste0(groupingVars[i],"TEMP",lags[l]) %in% SkipCols)) {
-            tempData[, paste0(groupingVars[i],"TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+        for (l in seq_along(lags)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+            tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := data.table::shift(get(sortDateName),
+                                                                                     n = lags[l],
+                                                                                     type = "lag"), by = get(groupingVars[i])]
           }
         }
 
         # Difference the lag dates
-        if(WindowingLag != 0) {
-          for(l in seq_along(lags)) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-              tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0(groupingVars[i],"TEMP",lags[l])),
-                         units = eval(timeAgg))), by = get(groupingVars[i])]
+        if (WindowingLag != 0) {
+          for (l in seq_along(lags)) {
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+              tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0(
+                  groupingVars[i], "TEMP", lags[l]
+                )),
+                units = eval(timeAgg)
+              )), by = get(groupingVars[i])]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             }
           }
         } else {
-          for(l in seq_along(lags)) {
+          for (l in seq_along(lags)) {
             if (l == 1) {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(get(sortDateName),
-                           get(paste0(groupingVars[i],"TEMP",lags[l])),
-                           units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(
+                  get(sortDateName),
+                  get(paste0(
+                    groupingVars[i], "TEMP", lags[l]
+                  )),
+                  units = eval(timeAgg)
+                )), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
             } else {
-              if(!(paste0(groupingVars[i],timeDiffTarget,lags[l]) %in% SkipCols)) {
-                tempData[, paste0(groupingVars[i],timeDiffTarget,lags[l]) := as.numeric(
-                  difftime(
-                    get(paste0(groupingVars[i],"TEMP",(lags[l-1]))),
-                    get(paste0(groupingVars[i],"TEMP",lags[l])),
-                    units = eval(timeAgg))), by = get(groupingVars[i])]
+              if (!(paste0(groupingVars[i], timeDiffTarget, lags[l]) %in% SkipCols)) {
+                tempData[, paste0(groupingVars[i], timeDiffTarget, lags[l]) := as.numeric(difftime(get(
+                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                ),
+                get(
+                  paste0(groupingVars[i], "TEMP", lags[l])
+                ),
+                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator = CounterIndicator + 1
-                if(Timer) {
+                if (Timer) {
                   print(CounterIndicator / runs)
                 }
               }
@@ -3879,19 +4611,22 @@ FAST_GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          tempData[, paste0(groupingVars[i],"TEMP",lags[l]) := NULL]
+          tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
         # Store new target
-        timeTarget <- paste0(groupingVars[i],timeDiffTarget,"1")
+        timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
       # Define targets
-      if(WindowingLag != 0) {
+      if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",targets), timeTarget)
+          targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets),
+              timeTarget)
         } else {
-          targets <- c(paste0(groupingVars[i],"_LAG_",WindowingLag,"_",targets))
+          targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
@@ -3908,27 +4643,80 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in targets) {
-            if(!(paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-              keep <- c(groupingVars[i],t,AscRowByGroup)
-              temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
-              if(statsNames[k] == "mean") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim", alg = "fast"), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "median") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.50, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "sd") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runsd(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "quantile85") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.85, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
-              } else if(statsNames[k] == "quantile95") {
-                temp3 <- temp2[, paste0(groupingVars[i],statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.95, k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+            if (!(paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+              keep <- c(groupingVars[i], t, AscRowByGroup)
+              temp2 <-
+                tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
+              if (statsNames[k] == "mean") {
+                temp3 <-
+                  temp2[, paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t) := caTools::runmean(
+                                   get(t),
+                                   k = periods[j],
+                                   endrule = "trim",
+                                   alg = "fast"
+                                 ), by = get(groupingVars[i])]
+              } else if (statsNames[k] == "median") {
+                temp3 <-
+                  temp2[, paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t) := caTools::runquantile(
+                                   get(t),
+                                   probs = 0.50,
+                                   k = periods[j],
+                                   endrule = "trim"
+                                 ), by = get(groupingVars[i])]
+              } else if (statsNames[k] == "sd") {
+                temp3 <-
+                  temp2[, paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t) := caTools::runsd(get(t), k = periods[j], endrule = "trim"), by = get(groupingVars[i])]
+              } else if (statsNames[k] == "quantile85") {
+                temp3 <-
+                  temp2[, paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t) := caTools::runquantile(
+                                   get(t),
+                                   probs = 0.85,
+                                   k = periods[j],
+                                   endrule = "trim"
+                                 ), by = get(groupingVars[i])]
+              } else if (statsNames[k] == "quantile95") {
+                temp3 <-
+                  temp2[, paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t) := caTools::runquantile(
+                                   get(t),
+                                   probs = 0.95,
+                                   k = periods[j],
+                                   endrule = "trim"
+                                 ), by = get(groupingVars[i])]
               }
-              if(Timer) {
+              if (Timer) {
                 CounterIndicator = CounterIndicator + 1
                 print(CounterIndicator / runs)
               }
               # Merge files
-              temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
-              tempData1 <- merge(tempData1, temp4, by = c(eval(groupingVars[i]),eval(AscRowByGroup)))
+              temp4 <-
+                temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
+              tempData1 <-
+                merge(tempData1, temp4, by = c(eval(groupingVars[i]), eval(AscRowByGroup)))
             }
           }
         }
@@ -3937,23 +4725,29 @@ FAST_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
-      set(tempData1, j = col, value = replace(tempData1[[col]], is.infinite(tempData1[[col]]),NA))
+      set(tempData1,
+          j = col,
+          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
-      if(is.character(tempData1[[col]])) {
-        set(tempData1, j = col, value = as.factor(tempData1[[col]]))
+      if (is.character(tempData1[[col]])) {
+        set(tempData1,
+            j = col,
+            value = as.factor(tempData1[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
-        if(is.factor(tempData1[[j]])) {
-          set(tempData1,which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),j,"0")
+        if (is.factor(tempData1[[j]])) {
+          set(tempData1, which(!(
+            tempData1[[j]] %in% levels(tempData1[[j]])
+          )), j, "0")
         } else {
-          set(tempData1,which(is.na(tempData1[[j]])),j,-1)
+          set(tempData1, which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
@@ -3963,7 +4757,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 
   } else {
     # Sort data
-    if(tolower(Type) == "lag") {
+    if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       setorderv(data, colVar, order = 1)
     } else {
@@ -3975,76 +4769,83 @@ FAST_GDL_Feature_Engineering <- function(data,
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
     # Lags
-    for(l in seq_along(lags)) {
+    for (l in seq_along(lags)) {
       for (t in targets) {
-        if(!(paste0("_LAG_",lags[l],"_",t) %in% SkipCols)) {
-          tempData[, paste0("_LAG_",lags[l],"_",t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+        if (!(paste0("_LAG_", lags[l], "_", t) %in% SkipCols)) {
+          tempData[, paste0("_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
         }
         CounterIndicator = CounterIndicator + 1
-        if(Timer) {
+        if (Timer) {
           print(CounterIndicator / runs)
         }
       }
     }
 
     # Time lags
-    if(!is.null(timeDiffTarget)) {
-
+    if (!is.null(timeDiffTarget)) {
       # Lag the dates first
-      for(l in seq_along(lags)) {
-        if(!(paste0("TEMP",lags[l]) %in% SkipCols)) {
-          tempData[, paste0("TEMP",lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
+      for (l in seq_along(lags)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+          tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
-      if(WindowingLag != 0) {
-        for(l in seq_along(lags)) {
-          if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols) & l == 1) {
-            tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-              difftime(get(sortDateName),
-                       get(paste0("TEMP",lags[l])),
-                       units = eval(timeAgg)))]
+      if (WindowingLag != 0) {
+        for (l in seq_along(lags)) {
+          if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+            tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(sortDateName),
+                                                                              get(paste0(
+                                                                                "TEMP", lags[l]
+                                                                              )),
+                                                                              units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
-            if(Timer) {
+            if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           }
         }
       } else {
-        for(l in seq_along(lags)) {
+        for (l in seq_along(lags)) {
           if (l == 1) {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(get(sortDateName),
-                         get(paste0(groupingVars[i],"TEMP",lags[l])),
-                         units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(
+                get(sortDateName),
+                get(paste0(
+                  groupingVars[i], "TEMP", lags[l]
+                )),
+                units = eval(timeAgg)
+              ))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           } else {
-            if(!(paste0(timeDiffTarget,lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget,lags[l]) := as.numeric(
-                difftime(
-                  get(paste0("TEMP",(lags[l-1]))),
-                  get(paste0("TEMP",lags[l])),
-                  units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
+                "TEMP", (lags[l - 1])
+              )),
+              get(paste0(
+                "TEMP", lags[l]
+              )),
+              units = eval(timeAgg)))]
               CounterIndicator = CounterIndicator + 1
-              if(Timer) {
+              if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
@@ -4054,19 +4855,20 @@ FAST_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        tempData[, paste0("TEMP",lags[l]) := NULL]
+        tempData[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget,"1")
+      timeTarget <- paste0(timeDiffTarget, "1")
     }
 
     # Define targets
-    if(WindowingLag != 0) {
+    if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(paste0("_LAG_",WindowingLag,"_",targets), timeTarget)
+        targets <- c(paste0("_LAG_", WindowingLag, "_", targets),
+                     timeTarget)
       } else {
-        targets <- c(paste0("_LAG_",WindowingLag,"_",targets))
+        targets <- c(paste0("_LAG_", WindowingLag, "_", targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -4083,27 +4885,53 @@ FAST_GDL_Feature_Engineering <- function(data,
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in targets) {
-          if(!(paste0(statsNames[k],"_",periods[j],"_",t) %in% SkipCols)) {
-            keep <- c(t,AscRowByGroup)
-            temp2 <- tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
-            if(statsNames[k] == "mean") {
-              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runmean(get(t), k = periods[j], endrule = "trim", alg = "fast")]
-            } else if(statsNames[k] == "median") {
-              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.50, k = periods[j], endrule = "trim")]
-            } else if(statsNames[k] == "sd") {
-              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runsd(get(t), k = periods[j], endrule = "trim")]
-            } else if(statsNames[k] == "quantile85") {
-              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.85, k = periods[j], endrule = "trim")]
-            } else if(statsNames[k] == "quantile95") {
-              temp3 <- temp2[, paste0(statsNames[k],"_",periods[j],"_",t) := caTools::runquantile(get(t), probs = 0.95, k = periods[j], endrule = "trim")]
+          if (!(paste0(statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
+            keep <- c(t, AscRowByGroup)
+            temp2 <-
+              tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
+            if (statsNames[k] == "mean") {
+              temp3 <-
+                temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := caTools::runmean(get(t),
+                                                                                           k = periods[j],
+                                                                                           endrule = "trim",
+                                                                                           alg = "fast")]
+            } else if (statsNames[k] == "median") {
+              temp3 <-
+                temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := caTools::runquantile(
+                  get(t),
+                  probs = 0.50,
+                  k = periods[j],
+                  endrule = "trim"
+                )]
+            } else if (statsNames[k] == "sd") {
+              temp3 <-
+                temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := caTools::runsd(get(t), k = periods[j], endrule = "trim")]
+            } else if (statsNames[k] == "quantile85") {
+              temp3 <-
+                temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := caTools::runquantile(
+                  get(t),
+                  probs = 0.85,
+                  k = periods[j],
+                  endrule = "trim"
+                )]
+            } else if (statsNames[k] == "quantile95") {
+              temp3 <-
+                temp2[, paste0(statsNames[k], "_", periods[j], "_", t) := caTools::runquantile(
+                  get(t),
+                  probs = 0.95,
+                  k = periods[j],
+                  endrule = "trim"
+                )]
             }
-            if(Timer) {
+            if (Timer) {
               CounterIndicator = CounterIndicator + 1
               print(CounterIndicator / runs)
             }
             # Merge files
-            temp4 <- temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
-            tempData1 <- merge(tempData1, temp4, by = c(eval(AscRowByGroup)))
+            temp4 <-
+              temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
+            tempData1 <-
+              merge(tempData1, temp4, by = c(eval(AscRowByGroup)))
           }
         }
       }
@@ -4111,23 +4939,25 @@ FAST_GDL_Feature_Engineering <- function(data,
 
     # Replace any inf values with NA
     for (col in seq_along(data)) {
-      set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]),NA))
+      set(data,
+          j = col,
+          value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(data)) {
-      if(is.character(data[[col]])) {
+      if (is.character(data[[col]])) {
         set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
     # Impute missing values
-    if(SimpleImpute) {
+    if (SimpleImpute) {
       for (j in seq_along(data)) {
-        if(is.factor(data[[j]])) {
-          set(data,which(!(data[[j]] %in% levels(data[[j]]))),j,"0")
+        if (is.factor(data[[j]])) {
+          set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          set(data,which(is.na(data[[j]])),j,-1)
+          set(data, which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -4248,7 +5078,6 @@ AutoH20Modeler <- function(Construct,
                            MaxModels = 30,
                            TrainData = data,
                            TestData  = test) {
-
   library(data.table)
   library(h2o)
 
@@ -4274,278 +5103,715 @@ AutoH20Modeler <- function(Construct,
   # 3. Subset based on current value matching lower case value, and grabbing proper case value
   # 4. Replace current value for proper case value in Construct file
 
-  ErrorCollection <- data.table(Row = rep(-720,10000), Msg = "I like modeling")
+  ErrorCollection <-
+    data.table(Row = rep(-720, 10000), Msg = "I like modeling")
   j = 0
   for (i in 1:nrow(Construct)) {
     # Algorithm specific
-    if (tolower(Construct[i,6][[1]]) %in% c("gbm","randomforest","automl","xgboost","lightgbm")) {
-
+    if (tolower(Construct[i, 6][[1]]) %in% c("gbm", "randomforest", "automl", "xgboost", "lightgbm")) {
       # GBM and RF loss functions existence
-      if (!(tolower(Construct[i,3][[1]]) %in% c("auto","deviance","mse", "rmse", "mae", "rmsle", "auc", "lift_top_group","misclassification", "mean_per_class_error","logloss"))) {
+      if (!(
+        tolower(Construct[i, 3][[1]]) %in% c(
+          "auto",
+          "deviance",
+          "mse",
+          "rmse",
+          "mae",
+          "rmsle",
+          "auc",
+          "lift_top_group",
+          "misclassification",
+          "mean_per_class_error",
+          "logloss"
+        )
+      )) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = i, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: AUTO | deviance | logloss | MSE | RMSE | MAE | RMSLE | AUC | lift_top_group | misclassification | mean_per_class_error")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = i,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 3][[1]],
+              " is not in list: AUTO | deviance | logloss | MSE | RMSE | MAE | RMSLE | AUC | lift_top_group | misclassification | mean_per_class_error"
+            )
+          )
+        )
       } else {
-        temp <- tolower(Construct[i,3][[1]])
-        lower <- c("auto","deviance", "logloss", "mse", "rmse", "mae", "rmsle", "auc", "lift_top_group","misclassification", "mean_per_class_error")
-        proper <- c("AUTO","deviance","logloss","MSE","RMSE","MAE","RMSLE","AUC","lift_top_group","misclassification","mean_per_class_error")
-        distMatch <- data.table(act = rep(temp, 11), LCVals = lower, Proper = proper)
+        temp <- tolower(Construct[i, 3][[1]])
+        lower <-
+          c(
+            "auto",
+            "deviance",
+            "logloss",
+            "mse",
+            "rmse",
+            "mae",
+            "rmsle",
+            "auc",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        proper <-
+          c(
+            "AUTO",
+            "deviance",
+            "logloss",
+            "MSE",
+            "RMSE",
+            "MAE",
+            "RMSLE",
+            "AUC",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        distMatch <-
+          data.table(act = rep(temp, 11),
+                     LCVals = lower,
+                     Proper = proper)
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 3L, value = ReplaceValue)
       }
 
       # GBM and RF distributions
-      if (!(tolower(Construct[i,2][[1]]) %in% c("auto","bernoulli","quasibinomial","multinomial","gaussian","poisson","gamma","tweedie","laplace","quantile","huber"))) {
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Distribution ",Construct[i,2][[1]]," is not in list: AUTO | bernoulli | quasibinomial | multinomial | gaussian | poisson | gamma | tweedie | laplace | quantile | huber")))
+      if (!(
+        tolower(Construct[i, 2][[1]]) %in% c(
+          "auto",
+          "bernoulli",
+          "quasibinomial",
+          "multinomial",
+          "gaussian",
+          "poisson",
+          "gamma",
+          "tweedie",
+          "laplace",
+          "quantile",
+          "huber"
+        )
+      )) {
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Distribution ",
+              Construct[i, 2][[1]],
+              " is not in list: AUTO | bernoulli | quasibinomial | multinomial | gaussian | poisson | gamma | tweedie | laplace | quantile | huber"
+            )
+          )
+        )
       } else {
-        temp <- tolower(Construct[i,2][[1]])
-        lower <- c("auto","bernoulli","quasibinomial","multinomial","gaussian","poisson","gamma","tweedie","laplace","quantile","huber")
-        proper <- c("AUTO","bernoulli","quasibinomial","multinomial","gaussian","poisson","gamma","tweedie","laplace","quantile","huber")
-        distMatch <- data.table(act = rep(temp, 11), LCVals = lower, Proper = proper)
+        temp <- tolower(Construct[i, 2][[1]])
+        lower <-
+          c(
+            "auto",
+            "bernoulli",
+            "quasibinomial",
+            "multinomial",
+            "gaussian",
+            "poisson",
+            "gamma",
+            "tweedie",
+            "laplace",
+            "quantile",
+            "huber"
+          )
+        proper <-
+          c(
+            "AUTO",
+            "bernoulli",
+            "quasibinomial",
+            "multinomial",
+            "gaussian",
+            "poisson",
+            "gamma",
+            "tweedie",
+            "laplace",
+            "quantile",
+            "huber"
+          )
+        distMatch <-
+          data.table(act = rep(temp, 11),
+                     LCVals = lower,
+                     Proper = proper)
         ReplaceValue2 <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 2L, value = ReplaceValue2)
       }
 
       # Distribution and loss combos for non-regression
-      if(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","multinomial") && !(tolower(Construct[i,3][[1]]) %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli", "multinomial") &&
+          !(
+            tolower(Construct[i, 3][[1]]) %in% c(
+              "auc",
+              "logloss",
+              "auto",
+              "lift_top_group",
+              "misclassification",
+              "mean_per_class_error"
+            )
+          )) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: AUC | logloss | AUTO | lift_top_group | misclassification | mean_per_class_error")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 3][[1]],
+              " is not in list: AUC | logloss | AUTO | lift_top_group | misclassification | mean_per_class_error"
+            )
+          )
+        )
       }
 
       # Distribution and loss combos for regression
-      if(tolower(Construct[i,2][[1]]) %in% c("gaussian","poisson","gamma","tweedie","laplace","quantile","huber") && !(tolower(Construct[i,3][[1]]) %in% c("auto","mse", "rmse", "mae", "rmsle"))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
+                                               "poisson",
+                                               "gamma",
+                                               "tweedie",
+                                               "laplace",
+                                               "quantile",
+                                               "huber") &&
+          !(tolower(Construct[i, 3][[1]]) %in% c("auto", "mse", "rmse", "mae", "rmsle"))) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,2][[1]]," is not in list: AUTO | MSE | RMSE | MAE | RMSLE")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 2][[1]],
+              " is not in list: AUTO | MSE | RMSE | MAE | RMSLE"
+            )
+          )
+        )
       }
 
       # Quantile Regression with GBM
-      if(tolower(Construct[i,2][[1]]) %in% c("quantile") && (Construct[i,4][[1]] > 1 || Construct[i,4][[1]] < 0 || !is.numeric(Construct[i,4][[1]]))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
+          (Construct[i, 4][[1]] > 1 ||
+           Construct[i, 4][[1]] < 0 || !is.numeric(Construct[i, 4][[1]]))) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantiles using ",Construct[i,6][[1]]," must be a number less than or equal to 1 AND greater than or equal to 0")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Quantiles using ",
+              Construct[i, 6][[1]],
+              " must be a number less than or equal to 1 AND greater than or equal to 0"
+            )
+          )
+        )
       }
 
       # RF Quantile regression fail
-      if(tolower(Construct[i,6][[1]]) == "randomforest" && tolower(Construct[i,2][[1]]) == "quantile") {
+      if (tolower(Construct[i, 6][[1]]) == "randomforest" &&
+          tolower(Construct[i, 2][[1]]) == "quantile") {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression is only supported by GBM and Deeplearning models, not ",Construct[i,6][[1]]," models")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Quantile regression is only supported by GBM and Deeplearning models, not ",
+              Construct[i, 6][[1]],
+              " models"
+            )
+          )
+        )
       }
 
       # Quantile regression loss metrics
-      if(tolower(Construct[i,2][[1]]) == "quantile" && tolower(Construct[i,3][[1]]) != "mae") {
+      if (tolower(Construct[i, 2][[1]]) == "quantile" &&
+          tolower(Construct[i, 3][[1]]) != "mae") {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression is best supported by MAE when using ",Construct[i,6][[1]]," models")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Quantile regression is best supported by MAE when using ",
+              Construct[i, 6][[1]],
+              " models"
+            )
+          )
+        )
       }
 
-      if(tolower(Construct[i,6][[1]]) == "automl" & Construct[i,11][[1]] != TRUE) {
+      if (tolower(Construct[i, 6][[1]]) == "automl" &
+          Construct[i, 11][[1]] != TRUE) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c("using automl requires GridTune = TRUE"))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c("using automl requires GridTune = TRUE")
+        )
       }
 
-    } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-
+    } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
       # Deeplearning loss functions
-      if (!(tolower(Construct[i,3][[1]]) %in% c("automatic", "crossentropy", "quadratic","huber", "absolute", "quantile"))) {
+      if (!(
+        tolower(Construct[i, 3][[1]]) %in% c(
+          "automatic",
+          "crossentropy",
+          "quadratic",
+          "huber",
+          "absolute",
+          "quantile"
+        )
+      )) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: Automatic | CrossEntropy | Quadratic | Huber | Absolute | Quantile")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 3][[1]],
+              " is not in list: Automatic | CrossEntropy | Quadratic | Huber | Absolute | Quantile"
+            )
+          )
+        )
       } else {
-        temp <- tolower(Construct[i,2][[1]])
-        lower <- c("auto","bernoulli","quasibinomial","multinomial","gaussian","poisson","gamma","tweedie","laplace","quantile","huber")
-        proper <- c("Automatic", "CrossEntropy", "Quadratic","Huber", "Absolute", "Quantile")
-        distMatch <- data.table(act = rep(temp, 11), LCVals = lower, Proper = proper)
+        temp <- tolower(Construct[i, 2][[1]])
+        lower <-
+          c(
+            "auto",
+            "bernoulli",
+            "quasibinomial",
+            "multinomial",
+            "gaussian",
+            "poisson",
+            "gamma",
+            "tweedie",
+            "laplace",
+            "quantile",
+            "huber"
+          )
+        proper <-
+          c("Automatic",
+            "CrossEntropy",
+            "Quadratic",
+            "Huber",
+            "Absolute",
+            "Quantile")
+        distMatch <-
+          data.table(act = rep(temp, 11),
+                     LCVals = lower,
+                     Proper = proper)
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 3L, value = ReplaceVal)
       }
 
       # Deeplearning distributions
-      if (!(tolower(Construct[i,2][[1]]) %in% c("auto", "bernoulli","multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber"))) {
+      if (!(
+        tolower(Construct[i, 2][[1]]) %in% c(
+          "auto",
+          "bernoulli",
+          "multinomial",
+          "gaussian",
+          "poisson",
+          "gamma",
+          "tweedie",
+          "laplace",
+          "quantile",
+          "huber"
+        )
+      )) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Distributions ",Construct[i,2][[1]]," is not in list: AUTO | bernoulli | multinomial | gaussian | poisson | gamma | tweedie | laplace | quantile | huber")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Distributions ",
+              Construct[i, 2][[1]],
+              " is not in list: AUTO | bernoulli | multinomial | gaussian | poisson | gamma | tweedie | laplace | quantile | huber"
+            )
+          )
+        )
       } else {
-        temp <- tolower(Construct[i,2][[1]])
-        lower <- c("auto", "bernoulli","multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber")
-        proper <- c("AUTO", "bernoulli","multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber")
-        distMatch <- data.table(act = rep(temp, 11), LCVals = lower, Proper = proper)
+        temp <- tolower(Construct[i, 2][[1]])
+        lower <-
+          c(
+            "auto",
+            "bernoulli",
+            "multinomial",
+            "gaussian",
+            "poisson",
+            "gamma",
+            "tweedie",
+            "laplace",
+            "quantile",
+            "huber"
+          )
+        proper <-
+          c(
+            "AUTO",
+            "bernoulli",
+            "multinomial",
+            "gaussian",
+            "poisson",
+            "gamma",
+            "tweedie",
+            "laplace",
+            "quantile",
+            "huber"
+          )
+        distMatch <-
+          data.table(act = rep(temp, 11),
+                     LCVals = lower,
+                     Proper = proper)
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
         set(Construct, i, 2L, value = ReplaceVal2)
       }
 
       # Distribution and loss combos for non-regression
-      if(tolower(Construct[i,2][[1]]) %in% c("bernoulli","multinomial") && !(tolower(Construct[i,3][[1]]) %in% c("automatic", "crossentropy"))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("bernoulli", "multinomial") &&
+          !(tolower(Construct[i, 3][[1]]) %in% c("automatic", "crossentropy"))) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: Automatic | CrossEntropy")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 3][[1]],
+              " is not in list: Automatic | CrossEntropy"
+            )
+          )
+        )
       }
 
       # Distribution and loss combos for regression
-      if(tolower(Construct[i,2][[1]]) %in% c("gaussian", "poisson", "gamma", "tweedie", "laplace","quantile", "huber") && !(tolower(Construct[i,3][[1]]) %in% c("automatic","quadratic","huber", "absolute", "quantile"))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
+                                               "poisson",
+                                               "gamma",
+                                               "tweedie",
+                                               "laplace",
+                                               "quantile",
+                                               "huber") &&
+          !(
+            tolower(Construct[i, 3][[1]]) %in% c(
+              "automatic",
+              "quadratic",
+              "huber",
+              "absolute",
+              "quantile"
+            )
+          )) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Loss function ",Construct[i,3][[1]]," is not in list: Automatic | Quadratic | Huber | Absolute | Quantile")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Loss function ",
+              Construct[i, 3][[1]],
+              " is not in list: Automatic | Quadratic | Huber | Absolute | Quantile"
+            )
+          )
+        )
       }
 
       # Quantile regression loss metrics
-      if(tolower(Construct[i,2][[1]]) == "quantile" && tolower(Construct[i,3][[1]]) != "quantile") {
+      if (tolower(Construct[i, 2][[1]]) == "quantile" &&
+          tolower(Construct[i, 3][[1]]) != "quantile") {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantile regression needs to use Quantile for the loss function with ",Construct[i,6][[1]]," models")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Quantile regression needs to use Quantile for the loss function with ",
+              Construct[i, 6][[1]],
+              " models"
+            )
+          )
+        )
       }
 
       # Quantile Regression with DL
-      if(tolower(Construct[i,2][[1]]) %in% c("quantile") && (Construct[i,4][[1]] > 1 || Construct[i,4][[1]] < 0 || !is.numeric(Construct[i,4][[1]]))) {
+      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
+          (Construct[i, 4][[1]] > 1 ||
+           Construct[i, 4][[1]] < 0 || !is.numeric(Construct[i, 4][[1]]))) {
         j = j + 1
-        set(ErrorCollection, i = j, j = 1L, value = i)
-        set(ErrorCollection, i = j, j = 2L, value = c(paste0("Quantiles using ",Construct[i,6][[1]]," must be a number less than or equal to 1 AND greater than or equal to 0")))
+        set(ErrorCollection,
+            i = j,
+            j = 1L,
+            value = i)
+        set(
+          ErrorCollection,
+          i = j,
+          j = 2L,
+          value = c(
+            paste0(
+              "Quantiles using ",
+              Construct[i, 6][[1]],
+              " must be a number less than or equal to 1 AND greater than or equal to 0"
+            )
+          )
+        )
       }
 
     } else {
       j = j + 1
-      set(ErrorCollection, i = j, j = 1L, value = i)
-      set(ErrorCollection, i = j, j = 2L, value = c(paste0("Models supported are: GBM, randomForest, and deeplearning, while ",Construct[i,6][[1]]," is not")))
+      set(ErrorCollection,
+          i = j,
+          j = 1L,
+          value = i)
+      set(
+        ErrorCollection,
+        i = j,
+        j = 2L,
+        value = c(
+          paste0(
+            "Models supported are: GBM, randomForest, and deeplearning, while ",
+            Construct[i, 6][[1]],
+            " is not"
+          )
+        )
+      )
     }
   }
 
   # Error stopping point and Construct file save
   ErrorCollection <- ErrorCollection[Row != -720]
-  if(nrow(ErrorCollection) >= 1) {
+  if (nrow(ErrorCollection) >= 1) {
     ErrorCollectionLog <<- ErrorCollection
-    stop(print("Your model construction file has errors and an error log has been stored globally as 'ErrorCollectionLog'"))
+    stop(
+      print(
+        "Your model construction file has errors and an error log has been stored globally as 'ErrorCollectionLog'"
+      )
+    )
   } else {
     save(Construct, file = paste0(model_path, "/Construct.Rdata"))
   }
 
   # Set up grid_tuned_paths.R file
   if (file.exists(paste0(model_path, "/grid_tuned_paths.Rdata"))) {
-    load(paste0(model_path,"/grid_tuned_paths.Rdata"))
+    load(paste0(model_path, "/grid_tuned_paths.Rdata"))
   } else {
-    grid_tuned_paths <- data.table(Model     = rep("a", nrow(Construct)),
-                                   Path      = rep("a", nrow(Construct)),
-                                   GT_Metric = rep(1234.5678, nrow(Construct)),
-                                   BL_Metric = rep(1234.5678, nrow(Construct)),
-                                   BinThresh = rep(1234.5678, nrow(Construct)),
-                                   PathJar   = rep("a", nrow(Construct)))
+    grid_tuned_paths <-
+      data.table(
+        Model     = rep("a", nrow(Construct)),
+        Path      = rep("a", nrow(Construct)),
+        GT_Metric = rep(1234.5678, nrow(Construct)),
+        BL_Metric = rep(1234.5678, nrow(Construct)),
+        BinThresh = rep(1234.5678, nrow(Construct)),
+        PathJar   = rep("a", nrow(Construct))
+      )
   }
 
   ######################################
   # Loop through model building
   ######################################
 
-  for(i in 1:nrow(Construct)) {
-
+  for (i in 1:nrow(Construct)) {
     # No deeplearning loss functions as stopping metrics
-    if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-      if(tolower(Construct[i,2][[1]]) == "multinomial") {
+    if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
+      if (tolower(Construct[i, 2][[1]]) == "multinomial") {
         StoppingMetric = "logloss"
       } else {
         StoppingMetric = "auc"
       }
     } else {
-      if(tolower(Construct[i,3][[1]]) %in% c("quadratic", "huber")) {
+      if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
         StoppingMetric = "mse"
-      } else if (tolower(Construct[i,3][[1]]) %in% c("absolute", "quantile")) {
+      } else if (tolower(Construct[i, 3][[1]]) %in% c("absolute", "quantile")) {
         StoppingMetric = "mae"
       } else {
-        StoppingMetric = Construct[i,3][[1]]
+        StoppingMetric = Construct[i, 3][[1]]
       }
     }
 
     # Define grid tune search scheme in a named list
-    search_criteria  <- list(strategy             = "RandomDiscrete",
-                             max_runtime_secs     = MaxRuntimeSeconds,
-                             max_models           = MaxModels,
-                             seed                 = 1234,
-                             stopping_rounds      = 10,
-                             stopping_metric      = StoppingMetric,
-                             stopping_tolerance   = 1e-3)
+    search_criteria  <-
+      list(
+        strategy             = "RandomDiscrete",
+        max_runtime_secs     = MaxRuntimeSeconds,
+        max_models           = MaxModels,
+        seed                 = 1234,
+        stopping_rounds      = 10,
+        stopping_metric      = StoppingMetric,
+        stopping_tolerance   = 1e-3
+      )
 
     # Set up H20 environment instance
     Sys.sleep(10)
-    h2o.init(nthreads = nthreads, max_mem_size = max_memory, enable_assertions = FALSE)
+    h2o.init(
+      nthreads = nthreads,
+      max_mem_size = max_memory,
+      enable_assertions = FALSE
+    )
 
     # Keep setting
-    if(Construct[i,"SupplyData"][[1]]) {
+    if (Construct[i, "SupplyData"][[1]]) {
       data_train   <- as.h2o(TrainData)
       validate     <- as.h2o(TestData)
     } else {
-      data_h2o     <- eval(parse(text = paste0("as.h2o(",Construct[i,7][[1]],")")))
+      data_h2o     <-
+        eval(parse(text = paste0("as.h2o(", Construct[i, 7][[1]], ")")))
       data_train   <- h2o.splitFrame(data_h2o, ratios = ratios)
       train        <- data_train[[1]]
       validate     <- data_train[[2]]
     }
 
     # Define targets
-    target         <- eval(parse(text = paste0(Construct[i,8][[1]])))
-    features       <- eval(parse(text = paste0(Construct[i,9][[1]])))
+    target         <-
+      eval(parse(text = paste0(Construct[i, 8][[1]])))
+    features       <-
+      eval(parse(text = paste0(Construct[i, 9][[1]])))
     XGB            <- h2o.xgboost.available()
     if (XGB) {
-      if (tolower(Construct[i,2][[1]]) != "quantile") {
+      if (tolower(Construct[i, 2][[1]]) != "quantile") {
         ModelExclude   <- NULL
       } else {
-        ModelExclude   <- c("XGBoost","GLM","DRF")
+        ModelExclude   <- c("XGBoost", "GLM", "DRF")
       }
     } else {
-      if (tolower(Construct[i,2][[1]]) != "quantile") {
+      if (tolower(Construct[i, 2][[1]]) != "quantile") {
         ModelExclude   <- c("XGBoost")
       } else {
-        ModelExclude   <- c("XGBoost","GLM","DRF")
+        ModelExclude   <- c("XGBoost", "GLM", "DRF")
       }
     }
 
     N              <- length(features)
-    P5             <- 2^(-1/5)
-    P4             <- 2^(-1/4)
-    P3             <- 2^(-1/3)
-    set(grid_tuned_paths, i = i, j = 1L, value = Construct[i,5][[1]])
+    P5             <- 2 ^ (-1 / 5)
+    P4             <- 2 ^ (-1 / 4)
+    P3             <- 2 ^ (-1 / 3)
+    set(grid_tuned_paths,
+        i = i,
+        j = 1L,
+        value = Construct[i, 5][[1]])
 
     ######################################
     # Target Encoding
     ######################################
 
-    if(!is.na(Construct[i, "TargetEncoding"][[1]])) {
+    if (!is.na(Construct[i, "TargetEncoding"][[1]])) {
       TEncode <- eval(parse(text = Construct[i, "TargetEncoding"][[1]]))
       cols <- names(train)[TEncode]
-      train[, Construct[i,"Targets"][[1]]] <- as.numeric(train[, Construct[i,"Targets"][[1]]])
-      validate[, Construct[i,"Targets"][[1]]] <- as.numeric(validate[, Construct[i,"Targets"][[1]]])
+      train[, Construct[i, "Targets"][[1]]] <-
+        as.numeric(train[, Construct[i, "Targets"][[1]]])
+      validate[, Construct[i, "Targets"][[1]]] <-
+        as.numeric(validate[, Construct[i, "Targets"][[1]]])
       for (col in cols) {
         x     <- h2o.target_encode_create(data = train,
                                           x = list(col),
-                                          y = Construct[i,"Targets"][[1]])
+                                          y = Construct[i, "Targets"][[1]])
         # Apply to training data
-        train <- h2o.target_encode_apply(train,
-                                         x = list(col),
-                                         y = Construct[i,"Targets"][[1]],
-                                         target_encode_map = x,
-                                         holdout_type = "None",
-                                         blended_avg = TRUE,
-                                         noise_level = 0)
+        train <- h2o.target_encode_apply(
+          train,
+          x = list(col),
+          y = Construct[i, "Targets"][[1]],
+          target_encode_map = x,
+          holdout_type = "None",
+          blended_avg = TRUE,
+          noise_level = 0
+        )
 
         # Apply to validation data
-        validate <- h2o.target_encode_apply(validate,
-                                            x = list(col),
-                                            y = Construct[i,"Targets"][[1]],
-                                            target_encode_map = x,
-                                            holdout_type = "None",
-                                            blended_avg = TRUE,
-                                            noise_level = 0)
+        validate <- h2o.target_encode_apply(
+          validate,
+          x = list(col),
+          y = Construct[i, "Targets"][[1]],
+          target_encode_map = x,
+          holdout_type = "None",
+          blended_avg = TRUE,
+          noise_level = 0
+        )
 
-        save(x, file = paste0(model_path, "/" , Construct[i, "Targets"][[1]], "_", col, ".Rdata"))
+        save(x,
+             file = paste0(model_path, "/" , Construct[i, "Targets"][[1]], "_", col, ".Rdata"))
       }
 
       # Modify feature reference
-      features <- c((min(features) + length(eval(parse(text = paste0(Construct[i,24][[1]]))))):max(features), (max(target) + 1):(max(target) + length(eval(parse(text = paste0(Construct[i,24][[1]]))))))
+      features <-
+        c((min(features) + length(eval(
+          parse(text = paste0(Construct[i, 24][[1]]))
+        ))):max(features), (max(target) + 1):(max(target) + length(eval(
+          parse(text = paste0(Construct[i, 24][[1]]))
+        ))))
 
       # Turn target columns back to factor
-      train[, Construct[i,"Targets"][[1]]] <- as.factor(train[, Construct[i,"Targets"][[1]]])
-      validate[, Construct[i,"Targets"][[1]]] <- as.factor(validate[, Construct[i,"Targets"][[1]]])
-      set(Construct, i = i, j = "PD_Data", value = "Validate")
+      train[, Construct[i, "Targets"][[1]]] <-
+        as.factor(train[, Construct[i, "Targets"][[1]]])
+      validate[, Construct[i, "Targets"][[1]]] <-
+        as.factor(validate[, Construct[i, "Targets"][[1]]])
+      set(Construct,
+          i = i,
+          j = "PD_Data",
+          value = "Validate")
     }
 
     ######################################
@@ -4557,144 +5823,260 @@ AutoH20Modeler <- function(Construct,
     # 3. Check to see if this is classification / multinomial or not
     # 4. Select hyperparameter list
 
-    if (Construct[i,11][[1]]) {
-      if (tolower(Construct[i,6][[1]]) == "gbm") {
-        if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+    if (Construct[i, 11][[1]]) {
+      if (tolower(Construct[i, 6][[1]]) == "gbm") {
+        if (tolower(
+          Construct[i, 3][[1]] %in% c(
+            "auc",
+            "logloss",
+            "auto",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        )) {
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            balance_classes                  = c(TRUE, FALSE),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            nbins                            = 2 ^ seq(4, 10, 1),
+            nbins_cats                       = 2 ^ seq(4, 12, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+            histogram_type                   = c("UniformAdaptive", "QuantilesGlobal", "RoundRobin")
+          )
         } else {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            nbins                            = 2 ^ seq(4, 10, 1),
+            nbins_cats                       = 2 ^ seq(4, 12, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+            histogram_type                   = c("UniformAdaptive", "QuantilesGlobal", "RoundRobin")
+          )
         }
 
-      } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-        if (tolower(Construct[i,3][[1]] %in% c("automatic", "crossentropy"))) {
-          hyper_params <- list(activation = c("Rectifier", "Maxout", "Tanh", "RectifierWithDropout", "MaxoutWithDropout", "TanhWithDropout"),
-                               hidden              = list(c(floor(N*P5), floor(N*P5*P5), floor(N*P5*P5*P5), floor(N*P5*P5*P5*P5), floor(N*P5*P5*P5*P5*P5)),
-                                                          c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
-                                                          c(floor(N*P3), floor(N*P3*P3), floor(N*P3*P3*P3))),
-                               balance_classes     = c(TRUE,FALSE),
-                               epochs              = c(50, 100, 200),
-                               l1                  = c(0, 0.00001, 0.0001),
-                               l2                  = c(0, 0.00001, 0.0001),
-                               rate                = c(0, 0.01, 0.005, 0.001),
-                               rate_annealing      = c(1e-8, 1e-7, 1e-6),
-                               rho                 = c(0.9, 0.95, 0.99, 0.999),
-                               epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
-                               momentum_start      = c(0, 0.5),
-                               momentum_stable     = c(0.99, 0.5, 0),
-                               input_dropout_ratio = c(0, 0.1, 0.2),
-                               max_w2              = c(10, 100, 1000, 3.4028235e+38))
+      } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+        if (tolower(Construct[i, 3][[1]] %in% c("automatic", "crossentropy"))) {
+          hyper_params <-
+            list(
+              activation = c(
+                "Rectifier",
+                "Maxout",
+                "Tanh",
+                "RectifierWithDropout",
+                "MaxoutWithDropout",
+                "TanhWithDropout"
+              ),
+              hidden              = list(
+                c(
+                  floor(N * P5),
+                  floor(N * P5 * P5),
+                  floor(N * P5 * P5 * P5),
+                  floor(N * P5 * P5 * P5 * P5),
+                  floor(N * P5 * P5 * P5 * P5 * P5)
+                ),
+                c(
+                  floor(N * P4),
+                  floor(N * P4 * P4),
+                  floor(N * P4 * P4 * P4),
+                  floor(N * P4 * P4 * P4 * P4)
+                ),
+                c(floor(N * P3), floor(N *
+                                         P3 * P3), floor(N * P3 * P3 * P3))
+              ),
+              balance_classes     = c(TRUE, FALSE),
+              epochs              = c(50, 100, 200),
+              l1                  = c(0, 0.00001, 0.0001),
+              l2                  = c(0, 0.00001, 0.0001),
+              rate                = c(0, 0.01, 0.005, 0.001),
+              rate_annealing      = c(1e-8, 1e-7, 1e-6),
+              rho                 = c(0.9, 0.95, 0.99, 0.999),
+              epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
+              momentum_start      = c(0, 0.5),
+              momentum_stable     = c(0.99, 0.5, 0),
+              input_dropout_ratio = c(0, 0.1, 0.2),
+              max_w2              = c(10, 100, 1000, 3.4028235e+38)
+            )
         } else {
-          hyper_params <- list(activation = c("Rectifier", "Maxout", "Tanh", "RectifierWithDropout", "MaxoutWithDropout", "TanhWithDropout"),
-                               hidden              = list(c(floor(N*P5), floor(N*P5*P5), floor(N*P5*P5*P5), floor(N*P5*P5*P5*P5), floor(N*P5*P5*P5*P5*P5)),
-                                                          c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
-                                                          c(floor(N*P3), floor(N*P3*P3), floor(N*P3*P3*P3))),
-                               epochs              = c(50, 100, 200),
-                               l1                  = c(0, 0.00001, 0.0001),
-                               l2                  = c(0, 0.00001, 0.0001),
-                               rate                = c(0, 0.01, 0.005, 0.001),
-                               rate_annealing      = c(1e-8, 1e-7, 1e-6),
-                               rho                 = c(0.9, 0.95, 0.99, 0.999),
-                               epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
-                               momentum_start      = c(0, 0.5),
-                               momentum_stable     = c(0.99, 0.5, 0),
-                               input_dropout_ratio = c(0, 0.1, 0.2),
-                               max_w2              = c(10, 100, 1000, 3.4028235e+38))
+          hyper_params <-
+            list(
+              activation = c(
+                "Rectifier",
+                "Maxout",
+                "Tanh",
+                "RectifierWithDropout",
+                "MaxoutWithDropout",
+                "TanhWithDropout"
+              ),
+              hidden              = list(
+                c(
+                  floor(N * P5),
+                  floor(N * P5 * P5),
+                  floor(N * P5 * P5 * P5),
+                  floor(N * P5 * P5 * P5 * P5),
+                  floor(N * P5 * P5 * P5 * P5 * P5)
+                ),
+                c(
+                  floor(N * P4),
+                  floor(N * P4 * P4),
+                  floor(N * P4 * P4 * P4),
+                  floor(N * P4 * P4 * P4 * P4)
+                ),
+                c(floor(N * P3), floor(N *
+                                         P3 * P3), floor(N * P3 * P3 * P3))
+              ),
+              epochs              = c(50, 100, 200),
+              l1                  = c(0, 0.00001, 0.0001),
+              l2                  = c(0, 0.00001, 0.0001),
+              rate                = c(0, 0.01, 0.005, 0.001),
+              rate_annealing      = c(1e-8, 1e-7, 1e-6),
+              rho                 = c(0.9, 0.95, 0.99, 0.999),
+              epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
+              momentum_start      = c(0, 0.5),
+              momentum_stable     = c(0.99, 0.5, 0),
+              input_dropout_ratio = c(0, 0.1, 0.2),
+              max_w2              = c(10, 100, 1000, 3.4028235e+38)
+            )
         }
-      } else if (tolower(Construct[i,6][[1]]) == "randomforest") {
-        if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,750,1000),
-                               mtries                           = -1,
-                               sample_rate                      = seq(0.2,1,0.05),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.05),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+      } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+        if (tolower(
+          Construct[i, 3][[1]] %in% c(
+            "auc",
+            "logloss",
+            "auto",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        )) {
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            balance_classes                  = c(TRUE, FALSE),
+            ntrees                           = c(500, 750, 1000),
+            mtries                           = -1,
+            sample_rate                      = seq(0.2, 1, 0.05),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
+            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            nbins                            = 2 ^ seq(4, 10, 1),
+            nbins_cats                       = 2 ^ seq(4, 12, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+            histogram_type                   = c("UniformAdaptive", "QuantilesGlobal", "RoundRobin")
+          )
         } else {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(500,750,1000),
-                               mtries                           = -1,
-                               sample_rate                      = seq(0.2,1,0.05),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.05),
-                               col_sample_rate_change_per_level = seq(0.9,1.1,0.01),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               nbins                            = 2^seq(4,10,1),
-                               nbins_cats                       = 2^seq(4,12,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4),
-                               histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            ntrees                           = c(500, 750, 1000),
+            mtries                           = -1,
+            sample_rate                      = seq(0.2, 1, 0.05),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
+            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            nbins                            = 2 ^ seq(4, 10, 1),
+            nbins_cats                       = 2 ^ seq(4, 12, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+            histogram_type                   = c("UniformAdaptive", "QuantilesGlobal", "RoundRobin")
+          )
         }
-      } else if (tolower(Construct[i,6][[1]]) == "automl"){
+      } else if (tolower(Construct[i, 6][[1]]) == "automl") {
         print("automl is preset with tuning parameters")
-      } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
-        if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               tree_method                      = c("hist", "AUTO"),
-                               grow_policy                      = c("lossguide", "depthwise"),
-                               balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               reg_lambda                       = c(0.001, 0.01,0.05),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+      } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+        if (tolower(
+          Construct[i, 3][[1]] %in% c(
+            "auc",
+            "logloss",
+            "auto",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        )) {
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            tree_method                      = c("hist", "AUTO"),
+            grow_policy                      = c("lossguide", "depthwise"),
+            balance_classes                  = c(TRUE, FALSE),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            reg_lambda                       = c(0.001, 0.01, 0.05),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+          )
         } else {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               reg_lambda                       = c(0.001, 0.01,0.05),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            reg_lambda                       = c(0.001, 0.01, 0.05),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+          )
         }
-      } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
-        if (tolower(Construct[i,3][[1]] %in% c("auc","logloss","auto","lift_top_group","misclassification","mean_per_class_error"))) {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               tree_method                      = c("hist"),
-                               grow_policy                      = c("lossguide"),
-                               balance_classes                  = c(TRUE,FALSE),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               reg_lambda                       = c(0.001, 0.01,0.05),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+      } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+        if (tolower(
+          Construct[i, 3][[1]] %in% c(
+            "auc",
+            "logloss",
+            "auto",
+            "lift_top_group",
+            "misclassification",
+            "mean_per_class_error"
+          )
+        )) {
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            tree_method                      = c("hist"),
+            grow_policy                      = c("lossguide"),
+            balance_classes                  = c(TRUE, FALSE),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            reg_lambda                       = c(0.001, 0.01, 0.05),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+          )
         } else {
-          hyper_params <- list(max_depth                        = seq(5,8,1),
-                               ntrees                           = c(500,750,1000),
-                               sample_rate                      = seq(0.5,1,0.01),
-                               col_sample_rate                  = seq(0.2,1,0.01),
-                               col_sample_rate_per_tree         = seq(0.2,1,0.01),
-                               reg_lambda                       = c(0.001, 0.01,0.05),
-                               min_rows                         = 2^seq(0,log2(eval(parse(text=paste0("nrow(",Construct[i,7][[1]],")")))*ratios[1])-1,1),
-                               min_split_improvement            = c(0,1e-8,1e-6,1e-4))
+          hyper_params <- list(
+            max_depth                        = seq(5, 8, 1),
+            ntrees                           = c(500, 750, 1000),
+            sample_rate                      = seq(0.5, 1, 0.01),
+            col_sample_rate                  = seq(0.2, 1, 0.01),
+            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+            reg_lambda                       = c(0.001, 0.01, 0.05),
+            min_rows                         = 2 ^ seq(0, log2(eval(
+              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+            ) * ratios[1]) - 1, 1),
+            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+          )
         }
       }
     }
@@ -4708,171 +6090,207 @@ AutoH20Modeler <- function(Construct,
     # Select model
 
     # Grid tuned model build
-    if (Construct[i,11][[1]]) {
-      if(tolower(Construct[i,2][[1]]) == "quantile") {
-        if(tolower(Construct[i,6][[1]]) == "gbm") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           distribution         = Construct[i,2][[1]],
-                           quantile_alpha       = Construct[i,4][[1]],
-                           learn_rate           = 0.05,
-                           learn_rate_annealing = 0.99,
-                           max_runtime_secs     = MaxRuntimeSeconds,
-                           stopping_rounds      = 5,
-                           stopping_tolerance   = 1e-4,
-                           stopping_metric      = StoppingMetric,
-                           score_tree_interval  = 10,
-                           seed                 = 1234)
-        } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           distribution         = Construct[i,2][[1]],
-                           quantile_alpha       = Construct[i,4][[1]],
-                           seed                 = 42)
+    if (Construct[i, 11][[1]]) {
+      if (tolower(Construct[i, 2][[1]]) == "quantile") {
+        if (tolower(Construct[i, 6][[1]]) == "gbm") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            distribution         = Construct[i, 2][[1]],
+            quantile_alpha       = Construct[i, 4][[1]],
+            learn_rate           = 0.05,
+            learn_rate_annealing = 0.99,
+            max_runtime_secs     = MaxRuntimeSeconds,
+            stopping_rounds      = 5,
+            stopping_tolerance   = 1e-4,
+            stopping_metric      = StoppingMetric,
+            score_tree_interval  = 10,
+            seed                 = 1234
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            distribution         = Construct[i, 2][[1]],
+            quantile_alpha       = Construct[i, 4][[1]],
+            seed                 = 42
+          )
         }
       } else {
-        if (tolower(Construct[i,6][[1]]) == "gbm") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           distribution         = Construct[i,2][[1]],
-                           learn_rate           = 0.05,
-                           learn_rate_annealing = 0.99,
-                           max_runtime_secs     = MaxRuntimeSeconds,
-                           stopping_rounds      = 5,
-                           stopping_tolerance   = 1e-4,
-                           stopping_metric      = StoppingMetric,
-                           score_tree_interval  = 10,
-                           seed                 = 1234)
-        } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           distribution         = Construct[i,2][[1]],
-                           seed                 = 42)
-        } else if (tolower(Construct[i,6][[1]]) == "randomforest") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           max_runtime_secs     = MaxRuntimeSeconds,
-                           stopping_rounds      = 5,
-                           stopping_tolerance   = 1e-4,
-                           stopping_metric      = StoppingMetric,
-                           score_tree_interval  = 10,
-                           seed                 = 1234)
-        } else if (tolower(Construct[i,6][[1]]) == "automl") {
-          aml <- h2o.automl(x                  = features,
-                            y                  = target,
-                            training_frame     = train,
-                            validation_frame   = validate,
-                            max_models         = MaxModels,
-                            max_runtime_secs   = MaxRuntimeSeconds,
-                            stopping_metric    = StoppingMetric,
-                            stopping_tolerance = 1e-4,
-                            stopping_rounds    = 10,
-                            project_name       = "TestAML",
-                            exclude_algos      = ModelExclude,
-                            sort_metric        = StoppingMetric)
-        } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           categorical_encoding = "Enum",
-                           distribution         = Construct[i,2][[1]],
-                           learn_rate           = 0.05,
-                           max_runtime_secs     = MaxRuntimeSeconds,
-                           stopping_rounds      = 5,
-                           stopping_tolerance   = 1e-4,
-                           stopping_metric      = StoppingMetric,
-                           score_tree_interval  = 10,
-                           seed                 = 1234)
-        } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
-          grid <- h2o.grid(hyper_params         = hyper_params,
-                           search_criteria      = search_criteria,
-                           algorithm            = Construct[i,6][[1]],
-                           grid_id              = Construct[i,5][[1]],
-                           x                    = features,
-                           y                    = target,
-                           training_frame       = train,
-                           validation_frame     = validate,
-                           categorical_encoding = "Enum",
-                           distribution         = Construct[i,2][[1]],
-                           learn_rate           = 0.05,
-                           max_runtime_secs     = MaxRuntimeSeconds,
-                           stopping_rounds      = 5,
-                           stopping_tolerance   = 1e-4,
-                           stopping_metric      = StoppingMetric,
-                           score_tree_interval  = 10,
-                           seed                 = 1234)
+        if (tolower(Construct[i, 6][[1]]) == "gbm") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            distribution         = Construct[i, 2][[1]],
+            learn_rate           = 0.05,
+            learn_rate_annealing = 0.99,
+            max_runtime_secs     = MaxRuntimeSeconds,
+            stopping_rounds      = 5,
+            stopping_tolerance   = 1e-4,
+            stopping_metric      = StoppingMetric,
+            score_tree_interval  = 10,
+            seed                 = 1234
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            distribution         = Construct[i, 2][[1]],
+            seed                 = 42
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            max_runtime_secs     = MaxRuntimeSeconds,
+            stopping_rounds      = 5,
+            stopping_tolerance   = 1e-4,
+            stopping_metric      = StoppingMetric,
+            score_tree_interval  = 10,
+            seed                 = 1234
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "automl") {
+          aml <- h2o.automl(
+            x                  = features,
+            y                  = target,
+            training_frame     = train,
+            validation_frame   = validate,
+            max_models         = MaxModels,
+            max_runtime_secs   = MaxRuntimeSeconds,
+            stopping_metric    = StoppingMetric,
+            stopping_tolerance = 1e-4,
+            stopping_rounds    = 10,
+            project_name       = "TestAML",
+            exclude_algos      = ModelExclude,
+            sort_metric        = StoppingMetric
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            categorical_encoding = "Enum",
+            distribution         = Construct[i, 2][[1]],
+            learn_rate           = 0.05,
+            max_runtime_secs     = MaxRuntimeSeconds,
+            stopping_rounds      = 5,
+            stopping_tolerance   = 1e-4,
+            stopping_metric      = StoppingMetric,
+            score_tree_interval  = 10,
+            seed                 = 1234
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+          grid <- h2o.grid(
+            hyper_params         = hyper_params,
+            search_criteria      = search_criteria,
+            algorithm            = Construct[i, 6][[1]],
+            grid_id              = Construct[i, 5][[1]],
+            x                    = features,
+            y                    = target,
+            training_frame       = train,
+            validation_frame     = validate,
+            categorical_encoding = "Enum",
+            distribution         = Construct[i, 2][[1]],
+            learn_rate           = 0.05,
+            max_runtime_secs     = MaxRuntimeSeconds,
+            stopping_rounds      = 5,
+            stopping_tolerance   = 1e-4,
+            stopping_metric      = StoppingMetric,
+            score_tree_interval  = 10,
+            seed                 = 1234
+          )
         }
       }
 
       # Store all models built sorted by metric
-      if (tolower(Construct[i,6][[1]]) == "automl") {
+      if (tolower(Construct[i, 6][[1]]) == "automl") {
         Grid_Out <- h2o.getAutoML(project_name = "TestAML")
-      } else if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli","multinomial")) {
+      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli", "multinomial")) {
         Decreasing = TRUE
-        Grid_Out   <- h2o.getGrid(grid_id = Construct[i,5][[1]], sort_by = StoppingMetric, decreasing = Decreasing)
+        Grid_Out   <-
+          h2o.getGrid(
+            grid_id = Construct[i, 5][[1]],
+            sort_by = StoppingMetric,
+            decreasing = Decreasing
+          )
       } else {
         Decreasing = FALSE
-        Grid_Out   <- h2o.getGrid(grid_id = Construct[i,5][[1]], sort_by = StoppingMetric, decreasing = Decreasing)
+        Grid_Out   <-
+          h2o.getGrid(
+            grid_id = Construct[i, 5][[1]],
+            sort_by = StoppingMetric,
+            decreasing = Decreasing
+          )
       }
 
       # Store best model
-      if (tolower(Construct[i,6][[1]]) == "automl") {
+      if (tolower(Construct[i, 6][[1]]) == "automl") {
         best_model <- Grid_Out@leader
       } else {
         best_model <- h2o.getModel(Grid_Out@model_ids[[1]])
       }
 
       # Collect accuracy metric on validation data
-      if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-        if(tolower(Construct[i,2][[1]]) == "multinomial") {
+      if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
+        if (tolower(Construct[i, 2][[1]]) == "multinomial") {
           cc <- h2o.logloss(h2o.performance(best_model, valid = TRUE))
         } else {
           cc <- h2o.auc(h2o.performance(best_model, valid = TRUE))
         }
-      } else if(tolower(Construct[i,3][[1]]) == "absolute") {
+      } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         cc <- h2o.mae(h2o.performance(best_model, valid = TRUE))
-      } else if(tolower(Construct[i,3][[1]]) %in% c("quadratic","huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
         cc <- h2o.mse(h2o.performance(best_model, valid = TRUE))
       } else {
-        cc <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(best_model, valid = TRUE))")))
+        cc <-
+          eval(parse(
+            text = paste0(
+              "h2o.",
+              tolower(StoppingMetric),
+              "(h2o.performance(best_model, valid = TRUE))"
+            )
+          ))
       }
       # Store results in metadata file
-      set(grid_tuned_paths, i = i, j = 3L, value = cc)
+      set(grid_tuned_paths,
+          i = i,
+          j = 3L,
+          value = cc)
     }
 
     ######################################
@@ -4881,89 +6299,123 @@ AutoH20Modeler <- function(Construct,
 
     # Check to see if quantile is selected
     # Choose model
-    if(tolower(Construct[i,6][[1]]) != "automl") {
-      if(tolower(Construct[i,2][[1]]) == "quantile") {
-        if(tolower(Construct[i,6][[1]]) == "gbm") {
-          bl_model <- h2o.gbm(x                = features,
-                              y                = target,
-                              training_frame   = train,
-                              validation_frame = validate,
-                              distribution     = Construct[i,2][[1]],
-                              quantile_alpha   = Construct[i,4][[1]],
-                              model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
-                              ntrees           = BL_Trees)
-        } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-          bl_model <- h2o.deeplearning(x                = features,
-                                       y                = target,
-                                       hidden           = c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
-                                       training_frame   = train,
-                                       validation_frame = validate,
-                                       distribution     = Construct[i,2][[1]],
-                                       model_id         = paste0("BL_DL_",Construct[i,5][[1]]),
-                                       quantile_alpha   = Construct[i,4][[1]])
+    if (tolower(Construct[i, 6][[1]]) != "automl") {
+      if (tolower(Construct[i, 2][[1]]) == "quantile") {
+        if (tolower(Construct[i, 6][[1]]) == "gbm") {
+          bl_model <- h2o.gbm(
+            x                = features,
+            y                = target,
+            training_frame   = train,
+            validation_frame = validate,
+            distribution     = Construct[i, 2][[1]],
+            quantile_alpha   = Construct[i, 4][[1]],
+            model_id         = paste0("BL_GBM_", Construct[i, 5][[1]]),
+            ntrees           = BL_Trees
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+          bl_model <- h2o.deeplearning(
+            x                = features,
+            y                = target,
+            hidden           = c(
+              floor(N * P4),
+              floor(N * P4 * P4),
+              floor(N * P4 * P4 * P4),
+              floor(N * P4 * P4 * P4 * P4)
+            ),
+            training_frame   = train,
+            validation_frame = validate,
+            distribution     = Construct[i, 2][[1]],
+            model_id         = paste0("BL_DL_", Construct[i, 5][[1]]),
+            quantile_alpha   = Construct[i, 4][[1]]
+          )
         }
-      } else if (tolower(Construct[i,6][[1]]) == "gbm") {
-        bl_model <- h2o.gbm(x                = features,
-                            y                = target,
-                            training_frame   = train,
-                            validation_frame = validate,
-                            distribution     = Construct[i,2][[1]],
-                            model_id         = paste0("BL_GBM_",Construct[i,5][[1]]),
-                            ntrees           = BL_Trees)
-      } else if (tolower(Construct[i,6][[1]]) == "deeplearning") {
-        bl_model <- h2o.deeplearning(x                = features,
-                                     y                = target,
-                                     hidden           = c(floor(N*P4), floor(N*P4*P4), floor(N*P4*P4*P4), floor(N*P4*P4*P4*P4)),
-                                     training_frame   = train,
-                                     validation_frame = validate,
-                                     model_id         = paste0("BL_DL_",Construct[i,5][[1]]),
-                                     distribution     = Construct[i,2][[1]])
-      } else if (tolower(Construct[i,6][[1]]) == "randomforest") {
-        bl_model <- h2o.randomForest(x                = features,
-                                     y                = target,
-                                     training_frame   = train,
-                                     validation_frame = validate,
-                                     model_id         = paste0("BL_RF_",Construct[i,5][[1]]),
-                                     ntrees           = BL_Trees)
-      } else if (tolower(Construct[i,6][[1]]) == "xgboost") {
-        bl_model <- h2o.xgboost(x                = features,
-                                y                = target,
-                                training_frame   = train,
-                                validation_frame = validate,
-                                categorical_encoding = "Enum",
-                                distribution     = Construct[i,2][[1]],
-                                model_id         = paste0("BL_XG_",Construct[i,5][[1]]),
-                                ntrees           = BL_Trees)
-      } else if (tolower(Construct[i,6][[1]]) == "lightgbm") {
-        bl_model <- h2o.xgboost(x                = features,
-                                y                = target,
-                                training_frame   = train,
-                                validation_frame = validate,
-                                categorical_encoding = "Enum",
-                                distribution     = Construct[i,2][[1]],
-                                tree_method      = "hist",
-                                grow_policy      = "lossguide",
-                                model_id         = paste0("BL_lgbm_",Construct[i,5][[1]]),
-                                ntrees           = BL_Trees)
+      } else if (tolower(Construct[i, 6][[1]]) == "gbm") {
+        bl_model <- h2o.gbm(
+          x                = features,
+          y                = target,
+          training_frame   = train,
+          validation_frame = validate,
+          distribution     = Construct[i, 2][[1]],
+          model_id         = paste0("BL_GBM_", Construct[i, 5][[1]]),
+          ntrees           = BL_Trees
+        )
+      } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+        bl_model <- h2o.deeplearning(
+          x                = features,
+          y                = target,
+          hidden           = c(
+            floor(N * P4),
+            floor(N * P4 * P4),
+            floor(N * P4 * P4 * P4),
+            floor(N * P4 * P4 * P4 * P4)
+          ),
+          training_frame   = train,
+          validation_frame = validate,
+          model_id         = paste0("BL_DL_", Construct[i, 5][[1]]),
+          distribution     = Construct[i, 2][[1]]
+        )
+      } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+        bl_model <- h2o.randomForest(
+          x                = features,
+          y                = target,
+          training_frame   = train,
+          validation_frame = validate,
+          model_id         = paste0("BL_RF_", Construct[i, 5][[1]]),
+          ntrees           = BL_Trees
+        )
+      } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+        bl_model <- h2o.xgboost(
+          x                = features,
+          y                = target,
+          training_frame   = train,
+          validation_frame = validate,
+          categorical_encoding = "Enum",
+          distribution     = Construct[i, 2][[1]],
+          model_id         = paste0("BL_XG_", Construct[i, 5][[1]]),
+          ntrees           = BL_Trees
+        )
+      } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+        bl_model <- h2o.xgboost(
+          x                = features,
+          y                = target,
+          training_frame   = train,
+          validation_frame = validate,
+          categorical_encoding = "Enum",
+          distribution     = Construct[i, 2][[1]],
+          tree_method      = "hist",
+          grow_policy      = "lossguide",
+          model_id         = paste0("BL_lgbm_", Construct[i, 5][[1]]),
+          ntrees           = BL_Trees
+        )
       }
 
       # Collect accuracy metric on validation data
-      if(tolower(Construct[i,3][[1]]) == "crossentropy") {
-        if(tolower(Construct[i,2][[1]]) == "multinomial") {
+      if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
+        if (tolower(Construct[i, 2][[1]]) == "multinomial") {
           dd <- h2o.logloss(h2o.performance(bl_model, valid = TRUE))
         } else {
           dd <- h2o.auc(h2o.performance(bl_model, valid = TRUE))
         }
-      } else if(tolower(Construct[i,3][[1]]) == "absolute") {
+      } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         dd <- h2o.mae(h2o.performance(bl_model, valid = TRUE))
-      } else if(tolower(Construct[i,3][[1]]) %in% c("quadratic","huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
         dd <- h2o.mse(h2o.performance(bl_model, valid = TRUE))
       } else {
-        dd <- eval(parse(text = paste0("h2o.", tolower(StoppingMetric), "(h2o.performance(bl_model, valid = TRUE))")))
+        dd <-
+          eval(parse(
+            text = paste0(
+              "h2o.",
+              tolower(StoppingMetric),
+              "(h2o.performance(bl_model, valid = TRUE))"
+            )
+          ))
       }
 
       # Store results in metadata file
-      set(grid_tuned_paths, i = i, j = 4L, value = dd)
+      set(grid_tuned_paths,
+          i = i,
+          j = 4L,
+          value = dd)
     }
 
 
@@ -4975,329 +6427,596 @@ AutoH20Modeler <- function(Construct,
     # Check to see if Distribution is multinomial
     # Proceed
 
-    if(tolower(Construct[i,6][[1]] == "automl")) {
-      if(Construct[i,21][[1]] == TRUE) {
-        if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-        if(tolower(Construct[i,22][[1]]) == "standard") {
-          save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
-          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+    if (tolower(Construct[i, 6][[1]] == "automl")) {
+      if (Construct[i, 21][[1]] == TRUE) {
+        if (grid_tuned_paths[i, 2][[1]] != "a")
+          file.remove(grid_tuned_paths[i, 2][[1]])
+        if (tolower(Construct[i, 22][[1]]) == "standard") {
+          save_model <-
+            h2o.saveModel(object = best_model,
+                          path = model_path,
+                          force = TRUE)
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 2L,
+            value = save_model
+          )
+          save(grid_tuned_paths,
+               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         } else {
-          save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
-          h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-          set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          save_model <-
+            h2o.saveMojo(object = best_model,
+                         path = model_path,
+                         force = TRUE)
+          h2o.download_mojo(
+            model = best_model,
+            path = model_path,
+            get_genmodel_jar = TRUE,
+            genmodel_path = model_path,
+            genmodel_name = Construct[i, 5][[1]]
+          )
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 2L,
+            value = save_model
+          )
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 6L,
+            value = Construct[i, 5][[1]]
+          )
+          save(grid_tuned_paths,
+               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
       }
 
       # Save VarImp and VarNOTImp
-      if(best_model@algorithm != "stackedensemble") {
+      if (best_model@algorithm != "stackedensemble") {
         VIMP <- as.data.table(h2o.varimp(best_model))
-        save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
-        if(tolower(best_model@algorithm) != "glm") {
-          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+        save(VIMP,
+             file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+        if (tolower(best_model@algorithm) != "glm") {
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
         } else {
           NIF <- NULL
         }
         if (length(NIF) > 0) {
-          save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+          save(NIF,
+               file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
         }
       } else {
-        set(Construct, i = i, j = 13L, value = 0)
+        set(Construct,
+            i = i,
+            j = 13L,
+            value = 0)
       }
 
       # Gather predicted values
-      preds <- h2o.predict(best_model, newdata = validate)[,1]
-      if(Construct[i,14][[1]] == "All") {
-        predsPD <- h2o.predict(best_model, newdata = data_h2o)[,1]
+      preds <- h2o.predict(best_model, newdata = validate)[, 1]
+      if (Construct[i, 14][[1]] == "All") {
+        predsPD <- h2o.predict(best_model, newdata = data_h2o)[, 1]
         PredsPD <- as.data.table(predsPD)
-        fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-      } else if (Construct[i,14][[1]] == "Train") {
-        predsPD <- h2o.predict(best_model, newdata = train)[,1]
-      } else if (Construct[i,14][[1]] == "Validate") {
-        predsPD <- h2o.predict(best_model, newdata = validate)[,1]
+        fwrite(PredsPD,
+               file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+      } else if (Construct[i, 14][[1]] == "Train") {
+        predsPD <- h2o.predict(best_model, newdata = train)[, 1]
+      } else if (Construct[i, 14][[1]] == "Validate") {
+        predsPD <- h2o.predict(best_model, newdata = validate)[, 1]
       }
     }
 
-    if (Construct[i,11][[1]] == TRUE & tolower(Construct[i,6][[1]]) != "automl") {
-      if(!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) | tolower(Construct[i,3][[1]]) == "logloss") {
-        if(cc < dd) {
+    if (Construct[i, 11][[1]] == TRUE &
+        tolower(Construct[i, 6][[1]]) != "automl") {
+      if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) |
+          tolower(Construct[i, 3][[1]]) == "logloss") {
+        if (cc < dd) {
           # Save model
-          if(Construct[i,21][[1]] == TRUE) {
-            if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-            if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if (Construct[i, 21][[1]] == TRUE) {
+            if (grid_tuned_paths[i, 2][[1]] != "a")
+              file.remove(grid_tuned_paths[i, 2][[1]])
+            if (tolower(Construct[i, 22][[1]]) == "standard") {
+              save_model <-
+                h2o.saveModel(object = best_model,
+                              path = model_path,
+                              force = TRUE)
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              save_model <-
+                h2o.saveMojo(object = best_model,
+                             path = model_path,
+                             force = TRUE)
+              h2o.download_mojo(
+                model = best_model,
+                path = model_path,
+                get_genmodel_jar = TRUE,
+                genmodel_path = model_path,
+                genmodel_name = Construct[i, 5][[1]]
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 6L,
+                value = Construct[i, 5][[1]]
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
 
           # Save VarImp and VarNOTImp
           VIMP <- as.data.table(h2o.varimp(best_model))
-          save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
-          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+          save(VIMP,
+               file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+            save(NIF,
+                 file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
           }
 
           # Gather predicted values
-          preds <- h2o.predict(best_model, newdata = validate)[,1]
-          if(Construct[i,14][[1]] == "All") {
-            predsPD <- h2o.predict(best_model, newdata = data_h2o)[,1]
+          preds <- h2o.predict(best_model, newdata = validate)[, 1]
+          if (Construct[i, 14][[1]] == "All") {
+            predsPD <- h2o.predict(best_model, newdata = data_h2o)[, 1]
             PredsPD <- as.data.table(predsPD)
-            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-          } else if (Construct[i,14][[1]] == "Train") {
-            predsPD <- h2o.predict(best_model, newdata = train)[,1]
-          } else if (Construct[i,14][[1]] == "Validate") {
-            predsPD <- h2o.predict(best_model, newdata = validate)[,1]
+            fwrite(PredsPD,
+                   file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+          } else if (Construct[i, 14][[1]] == "Train") {
+            predsPD <- h2o.predict(best_model, newdata = train)[, 1]
+          } else if (Construct[i, 14][[1]] == "Validate") {
+            predsPD <- h2o.predict(best_model, newdata = validate)[, 1]
           }
         } else {
           # Save model
-          if(Construct[i,21][[1]] == TRUE) {
-            if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-            if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if (Construct[i, 21][[1]] == TRUE) {
+            if (grid_tuned_paths[i, 2][[1]] != "a")
+              file.remove(grid_tuned_paths[i, 2][[1]])
+            if (tolower(Construct[i, 22][[1]]) == "standard") {
+              save_model <-
+                h2o.saveModel(object = bl_model,
+                              path = model_path,
+                              force = TRUE)
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              save_model <-
+                h2o.saveMojo(object = bl_model,
+                             path = model_path,
+                             force = TRUE)
+              h2o.download_mojo(
+                model = bl_model,
+                path = model_path,
+                get_genmodel_jar = TRUE,
+                genmodel_path = model_path,
+                genmodel_name = Construct[i, 5][[1]]
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 6L,
+                value = Construct[i, 5][[1]]
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
 
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(bl_model))
-          save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
-          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+          save(VIMP,
+               file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+            save(NIF,
+                 file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
           }
 
           # Gather predicted values
-          preds <- h2o.predict(bl_model, newdata = validate)[,1]
-          if(Construct[i,14][[1]] == "All") {
-            predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,1]
+          preds <- h2o.predict(bl_model, newdata = validate)[, 1]
+          if (Construct[i, 14][[1]] == "All") {
+            predsPD <- h2o.predict(bl_model, newdata = data_h2o)[, 1]
             PredsPD <- as.data.table(predsPD)
-            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-          } else if (Construct[i,14][[1]] == "Train") {
-            predsPD <- h2o.predict(bl_model, newdata = train)[,1]
-          } else if (Construct[i,14][[1]] == "Validate") {
-            predsPD <- h2o.predict(bl_model, newdata = validate)[,1]
+            fwrite(PredsPD,
+                   file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+          } else if (Construct[i, 14][[1]] == "Train") {
+            predsPD <- h2o.predict(bl_model, newdata = train)[, 1]
+          } else if (Construct[i, 14][[1]] == "Validate") {
+            predsPD <- h2o.predict(bl_model, newdata = validate)[, 1]
           }
         }
       } else {
-        if(cc > dd) {
+        if (cc > dd) {
           # Save model
-          if(Construct[i,21][[1]] == TRUE) {
-            if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-            if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = best_model, path = model_path, force = TRUE)
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if (Construct[i, 21][[1]] == TRUE) {
+            if (grid_tuned_paths[i, 2][[1]] != "a")
+              file.remove(grid_tuned_paths[i, 2][[1]])
+            if (tolower(Construct[i, 22][[1]]) == "standard") {
+              save_model <-
+                h2o.saveModel(object = best_model,
+                              path = model_path,
+                              force = TRUE)
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = best_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = best_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              save_model <-
+                h2o.saveMojo(object = best_model,
+                             path = model_path,
+                             force = TRUE)
+              h2o.download_mojo(
+                model = best_model,
+                path = model_path,
+                get_genmodel_jar = TRUE,
+                genmodel_path = model_path,
+                genmodel_name = Construct[i, 5][[1]]
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 6L,
+                value = Construct[i, 5][[1]]
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
 
           # Store threshold
-          store_results <- data.table(best_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-          if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
+          store_results <-
+            data.table(
+              best_model@model$training_metrics@metrics$thresholds_and_metric_scores
+            )
+          if (Construct[i, 15][[1]] == "f1" ||
+              is.null(Construct[i, 15][[1]])) {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f1)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label  <<- "f1"
-          } else if (Construct[i,15][[1]] == "f2") {
-            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
+          } else if (Construct[i, 15][[1]] == "f2") {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f2)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label  <<- "f2"
-          } else if (Construct[i,15][[1]] == "f0point5") {
-            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
+          } else if (Construct[i, 15][[1]] == "f0point5") {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f0point5)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label <<- "f0point5"
-          } else if (Construct[i,15][[1]] == "CS") {
-            predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+          } else if (Construct[i, 15][[1]] == "CS") {
+            predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[, 3]
             data    <- as.data.table(h2o.cbind(data_h2o, predsPDD))
-            data[, eval(Construct[i,1][[1]]) := as.numeric(as.character(get(Construct[i,1][[1]])))]
-            temp  <- threshOptim(data     = data,
-                                 actTar   = Construct[i,1][[1]],
-                                 predTar  = 'p1',
-                                 tpProfit = Construct[i,17][[1]],
-                                 tnProfit = Construct[i,18][[1]],
-                                 fpProfit = Construct[i,19][[1]],
-                                 fnProfit = Construct[i,20][[1]])
+            data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
+            temp  <- threshOptim(
+              data     = data,
+              actTar   = Construct[i, 1][[1]],
+              predTar  = 'p1',
+              tpProfit = Construct[i, 17][[1]],
+              tnProfit = Construct[i, 18][[1]],
+              fpProfit = Construct[i, 19][[1]],
+              fnProfit = Construct[i, 20][[1]]
+            )
             Thresh <<- temp[[1]]
             Label <<- "CS"
           }
-          set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 5L,
+            value = Thresh
+          )
 
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(best_model))
-          save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]],".Rdata"))
-          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+          save(VIMP,
+               file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+            save(NIF,
+                 file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
           }
 
           # Gather predicted values
-          preds <- h2o.predict(best_model, newdata = validate)[,3]
-          if(Construct[i,14][[1]] == "All") {
-            predsPD <- h2o.predict(best_model, newdata = data_h2o)[,3]
+          preds <- h2o.predict(best_model, newdata = validate)[, 3]
+          if (Construct[i, 14][[1]] == "All") {
+            predsPD <- h2o.predict(best_model, newdata = data_h2o)[, 3]
             PredsPD <- as.data.table(predsPD)
-            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-          } else if (Construct[i,14][[1]] == "Train") {
-            predsPD <- h2o.predict(best_model, newdata = train)[,3]
-          } else if (Construct[i,14][[1]] == "Validate") {
-            predsPD <- h2o.predict(best_model, newdata = validate)[,3]
+            fwrite(PredsPD,
+                   file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+          } else if (Construct[i, 14][[1]] == "Train") {
+            predsPD <- h2o.predict(best_model, newdata = train)[, 3]
+          } else if (Construct[i, 14][[1]] == "Validate") {
+            predsPD <- h2o.predict(best_model, newdata = validate)[, 3]
           }
         } else {
           # Save model
-          if(Construct[i,21][[1]] == TRUE) {
-            if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-            if(tolower(Construct[i,22][[1]]) == "standard") {
-              save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if (Construct[i, 21][[1]] == TRUE) {
+            if (grid_tuned_paths[i, 2][[1]] != "a")
+              file.remove(grid_tuned_paths[i, 2][[1]])
+            if (tolower(Construct[i, 22][[1]]) == "standard") {
+              save_model <-
+                h2o.saveModel(object = bl_model,
+                              path = model_path,
+                              force = TRUE)
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             } else {
-              save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-              h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-              set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-              set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-              save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              save_model <-
+                h2o.saveMojo(object = bl_model,
+                             path = model_path,
+                             force = TRUE)
+              h2o.download_mojo(
+                model = bl_model,
+                path = model_path,
+                get_genmodel_jar = TRUE,
+                genmodel_path = model_path,
+                genmodel_name = Construct[i, 5][[1]]
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              set(
+                grid_tuned_paths,
+                i = i,
+                j = 6L,
+                value = Construct[i, 5][[1]]
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
 
           # Store threshold
-          store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-          if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-            Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
+          store_results <-
+            data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
+          if (Construct[i, 15][[1]] == "f1" ||
+              is.null(Construct[i, 15][[1]])) {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f1)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label  <<- "f1"
-          } else if (Construct[i,15][[1]] == "f2") {
-            Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
+          } else if (Construct[i, 15][[1]] == "f2") {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f2)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label  <<- "f2"
-          } else if (Construct[i,15][[1]] == "f0point5") {
-            Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
+          } else if (Construct[i, 15][[1]] == "f0point5") {
+            Thresh <<-
+              tryCatch({
+                store_results[order(-f0point5)][1, 1][[1]]
+              }, error = function(x)
+                1)
             Label <<- "f0point5"
-          } else if (Construct[i,15][[1]] == "CS") {
-            predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+          } else if (Construct[i, 15][[1]] == "CS") {
+            predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[, 3]
             data    <- as.data.table(h2o.cbind(data_h2o, predsPDD))
-            data[, eval(Construct[i,1][[1]]) := as.numeric(as.character(get(Construct[i,1][[1]])))]
-            temp  <- threshOptim(data     = data,
-                                 actTar   = Construct[i,1][[1]],
-                                 predTar  = 'p1',
-                                 tpProfit = Construct[i,17][[1]],
-                                 tnProfit = Construct[i,18][[1]],
-                                 fpProfit = Construct[i,19][[1]],
-                                 fnProfit = Construct[i,20][[1]])
+            data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
+            temp  <- threshOptim(
+              data     = data,
+              actTar   = Construct[i, 1][[1]],
+              predTar  = 'p1',
+              tpProfit = Construct[i, 17][[1]],
+              tnProfit = Construct[i, 18][[1]],
+              fpProfit = Construct[i, 19][[1]],
+              fnProfit = Construct[i, 20][[1]]
+            )
             Thresh <<- temp[[1]]
             Label <<- "CS"
           }
-          set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 5L,
+            value = Thresh
+          )
 
           # Save VarImp
           VIMP <- as.data.table(h2o.varimp(bl_model))
-          save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
-          NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+          save(VIMP,
+               file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+            save(NIF,
+                 file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
           }
 
           # Gather predicted values
-          preds <- h2o.predict(bl_model, newdata = validate)[,3]
-          if(Construct[i,14][[1]] == "All") {
-            predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+          preds <- h2o.predict(bl_model, newdata = validate)[, 3]
+          if (Construct[i, 14][[1]] == "All") {
+            predsPD <- h2o.predict(bl_model, newdata = data_h2o)[, 3]
             PredsPD <- as.data.table(predsPD)
-            fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-          } else if (Construct[i,14][[1]] == "Train") {
-            predsPD <- h2o.predict(bl_model, newdata = train)[,3]
-          } else if (Construct[i,14][[1]] == "Validate") {
-            predsPD <- h2o.predict(bl_model, newdata = validate)[,3]
+            fwrite(PredsPD,
+                   file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+          } else if (Construct[i, 14][[1]] == "Train") {
+            predsPD <- h2o.predict(bl_model, newdata = train)[, 3]
+          } else if (Construct[i, 14][[1]] == "Validate") {
+            predsPD <- h2o.predict(bl_model, newdata = validate)[, 3]
           }
         }
       }
-    } else if (tolower(Construct[i,6][[1]]) != "automl") {
+    } else if (tolower(Construct[i, 6][[1]]) != "automl") {
       # Save model
-      if(Construct[i,21][[1]] == TRUE) {
-        if(grid_tuned_paths[i,2][[1]] != "a") file.remove(grid_tuned_paths[i,2][[1]])
-        if(tolower(Construct[i,22][[1]]) == "standard") {
-          save_model <- h2o.saveModel(object = bl_model, path = model_path, force = TRUE)
-          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+      if (Construct[i, 21][[1]] == TRUE) {
+        if (grid_tuned_paths[i, 2][[1]] != "a")
+          file.remove(grid_tuned_paths[i, 2][[1]])
+        if (tolower(Construct[i, 22][[1]]) == "standard") {
+          save_model <-
+            h2o.saveModel(object = bl_model,
+                          path = model_path,
+                          force = TRUE)
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 2L,
+            value = save_model
+          )
+          save(grid_tuned_paths,
+               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         } else {
-          save_model <- h2o.saveMojo(object = bl_model, path = model_path, force = TRUE)
-          h2o.download_mojo(model = bl_model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = Construct[i,5][[1]])
-          set(grid_tuned_paths, i = i, j = 2L, value = save_model)
-          set(grid_tuned_paths, i = i, j = 6L, value = Construct[i,5][[1]])
-          save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          save_model <-
+            h2o.saveMojo(object = bl_model,
+                         path = model_path,
+                         force = TRUE)
+          h2o.download_mojo(
+            model = bl_model,
+            path = model_path,
+            get_genmodel_jar = TRUE,
+            genmodel_path = model_path,
+            genmodel_name = Construct[i, 5][[1]]
+          )
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 2L,
+            value = save_model
+          )
+          set(
+            grid_tuned_paths,
+            i = i,
+            j = 6L,
+            value = Construct[i, 5][[1]]
+          )
+          save(grid_tuned_paths,
+               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
         }
       }
 
       # Store threshold for binary classification
-      if(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-        store_results <- data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-        if (Construct[i,15][[1]] == "f1" || is.null(Construct[i,15][[1]])) {
-          Thresh <<- tryCatch({store_results[order(-f1)][1,1][[1]]}, error = function(x) 1)
+      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
+        store_results <-
+          data.table(bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
+        if (Construct[i, 15][[1]] == "f1" ||
+            is.null(Construct[i, 15][[1]])) {
+          Thresh <<-
+            tryCatch({
+              store_results[order(-f1)][1, 1][[1]]
+            }, error = function(x)
+              1)
           Label  <<- "f1"
-        } else if (Construct[i,15][[1]] == "f2") {
-          Thresh <<- tryCatch({store_results[order(-f2)][1,1][[1]]}, error = function(x) 1)
+        } else if (Construct[i, 15][[1]] == "f2") {
+          Thresh <<-
+            tryCatch({
+              store_results[order(-f2)][1, 1][[1]]
+            }, error = function(x)
+              1)
           Label  <<- "f2"
-        } else if (Construct[i,15][[1]] == "f0point5") {
-          Thresh <<- tryCatch({store_results[order(-f0point5)][1,1][[1]]}, error = function(x) 1)
+        } else if (Construct[i, 15][[1]] == "f0point5") {
+          Thresh <<-
+            tryCatch({
+              store_results[order(-f0point5)][1, 1][[1]]
+            }, error = function(x)
+              1)
           Label <<- "f0point5"
-        } else if (Construct[i,15][[1]] == "CS") {
-          predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+        } else if (Construct[i, 15][[1]] == "CS") {
+          predsPDD <- h2o.predict(bl_model, newdata = data_h2o)[, 3]
           data    <- as.data.table(h2o.cbind(data_h2o, predsPDD))
-          data[, eval(Construct[i,1][[1]]) := as.numeric(as.character(get(Construct[i,1][[1]])))]
-          temp  <- threshOptim(data     = data,
-                               actTar   = Construct[i,1][[1]],
-                               predTar  = 'p1',
-                               tpProfit = Construct[i,17][[1]],
-                               tnProfit = Construct[i,18][[1]],
-                               fpProfit = Construct[i,19][[1]],
-                               fnProfit = Construct[i,20][[1]])
+          data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
+          temp  <- threshOptim(
+            data     = data,
+            actTar   = Construct[i, 1][[1]],
+            predTar  = 'p1',
+            tpProfit = Construct[i, 17][[1]],
+            tnProfit = Construct[i, 18][[1]],
+            fpProfit = Construct[i, 19][[1]],
+            fnProfit = Construct[i, 20][[1]]
+          )
           Thresh <<- temp[[1]]
           Label <<- "CS"
         }
-        set(grid_tuned_paths, i = i, j = 5L, value = Thresh)
-        preds <- h2o.predict(bl_model, newdata = validate)[,3]
-        if(tolower(Construct[i,14][[1]]) == "all") {
-          predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,3]
+        set(grid_tuned_paths,
+            i = i,
+            j = 5L,
+            value = Thresh)
+        preds <- h2o.predict(bl_model, newdata = validate)[, 3]
+        if (tolower(Construct[i, 14][[1]]) == "all") {
+          predsPD <- h2o.predict(bl_model, newdata = data_h2o)[, 3]
           PredsPD <- as.data.table(predsPD)
-          fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-        } else if (tolower(Construct[i,14][[1]]) == "train") {
-          predsPD <- h2o.predict(bl_model, newdata = train)[,3]
-        } else if (tolower(Construct[i,14][[1]]) == "validate") {
-          predsPD <- h2o.predict(bl_model, newdata = validate)[,3]
+          fwrite(PredsPD,
+                 file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+        } else if (tolower(Construct[i, 14][[1]]) == "train") {
+          predsPD <- h2o.predict(bl_model, newdata = train)[, 3]
+        } else if (tolower(Construct[i, 14][[1]]) == "validate") {
+          predsPD <- h2o.predict(bl_model, newdata = validate)[, 3]
         }
       } else {
         # Store predicted values against validate data for calibration plot
-        preds <- h2o.predict(bl_model, newdata = validate)[,1]
-        if(tolower(Construct[i,14][[1]]) == "all") {
-          predsPD <- h2o.predict(bl_model, newdata = data_h2o)[,1]
+        preds <- h2o.predict(bl_model, newdata = validate)[, 1]
+        if (tolower(Construct[i, 14][[1]]) == "all") {
+          predsPD <- h2o.predict(bl_model, newdata = data_h2o)[, 1]
           PredsPD <- as.data.table(predsPD)
-          fwrite(PredsPD, file = paste0(model_path, "/",Construct[i,5][[1]],"_PredsAll.csv"))
-        } else if (tolower(Construct[i,14][[1]]) == "train") {
-          predsPD <- h2o.predict(bl_model, newdata = train)[,1]
-        } else if (tolower(Construct[i,14][[1]]) == "validate") {
-          predsPD <- h2o.predict(bl_model, newdata = validate)[,1]
+          fwrite(PredsPD,
+                 file = paste0(model_path, "/", Construct[i, 5][[1]], "_PredsAll.csv"))
+        } else if (tolower(Construct[i, 14][[1]]) == "train") {
+          predsPD <- h2o.predict(bl_model, newdata = train)[, 1]
+        } else if (tolower(Construct[i, 14][[1]]) == "validate") {
+          predsPD <- h2o.predict(bl_model, newdata = validate)[, 1]
         }
       }
 
       # Save VarImp
       VIMP <- as.data.table(h2o.varimp(bl_model))
-      save(VIMP, file = paste0(model_path, "/VarImp_", Construct[i,5][[1]], ".Rdata"))
-      NIF <- VIMP[percentage < Construct[i,16][[1]], 1][[1]]
+      save(VIMP,
+           file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
+      NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
       if (length(NIF) > 0) {
-        save(NIF, file = paste0(model_path, "/VarNOTImp_", Construct[i,5][[1]],".Rdata"))
+        save(NIF,
+             file = paste0(model_path, "/VarNOTImp_", Construct[i, 5][[1]], ".Rdata"))
       }
     }
 
@@ -5306,101 +7025,114 @@ AutoH20Modeler <- function(Construct,
     ######################################
 
     # Generate plots
-    col <- Construct[i,1][[1]]
+    col <- Construct[i, 1][[1]]
     calibration <- as.data.table(h2o.cbind(preds, validate[, col]))
-    if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
+    if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
       calibration[, eval(col) := as.numeric(as.character(get(col)))]
     }
-    if(Construct[i,13][[1]] >= 1) {
-      if (tolower(Construct[i,14][[1]]) == "all") {
+    if (Construct[i, 13][[1]] >= 1) {
+      if (tolower(Construct[i, 14][[1]]) == "all") {
         calibEval <- as.data.table(h2o.cbind(preds, validate))
         calib <- as.data.table(h2o.cbind(predsPD, data_h2o))
-      } else if (tolower(Construct[i,14][[1]]) == "train") {
+      } else if (tolower(Construct[i, 14][[1]]) == "train") {
         calibEval <- as.data.table(h2o.cbind(preds, validate))
         calib <- as.data.table(h2o.cbind(predsPD, train))
-      } else if (tolower(Construct[i,14][[1]]) == "validate") {
+      } else if (tolower(Construct[i, 14][[1]]) == "validate") {
         calibEval <- as.data.table(h2o.cbind(preds, validate))
         calib <- as.data.table(h2o.cbind(predsPD, validate))
       }
-      if(Construct[i,12][[1]]) {
-        save(calibEval, file = paste0(model_path,"/",Construct[i,5][[1]],".Rdata"))
+      if (Construct[i, 12][[1]]) {
+        save(calibEval,
+             file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
       }
     } else {
-      if(Construct[i,12][[1]]) {
+      if (Construct[i, 12][[1]]) {
         calibEval <- as.data.table(h2o.cbind(preds, validate))
-        save(calibEval, file = paste0(model_path,"/",Construct[i,5][[1]],".Rdata"))
+        save(calibEval,
+             file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
       }
     }
-    predName <- names(calibration[,1])
+    predName <- names(calibration[, 1])
 
     # Generate evaluation plots
-    if (tolower(Construct[i,2][[1]]) != "multinomial") {
-      if (tolower(Construct[i,2][[1]]) == "quantile") {
-
+    if (tolower(Construct[i, 2][[1]]) != "multinomial") {
+      if (tolower(Construct[i, 2][[1]]) == "quantile") {
         # Calibration plot
-        out1 <- EvalPlot(calibration,
-                         PredColName = predName,
-                         ActColName  = Construct[i,1][[1]],
-                         type        = "calibration",
-                         bucket      = 0.05,
-                         aggrfun     = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))
-        ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
+        out1 <- EvalPlot(
+          calibration,
+          PredColName = predName,
+          ActColName  = Construct[i, 1][[1]],
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            quantile(x, probs = Construct[i, 4][[1]], na.rm = TRUE)
+        )
+        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
 
         # Calibration boxplot
-        out2 <- EvalPlot(calibration,
-                         PredColName = predName,
-                         ActColName  = Construct[i,1][[1]],
-                         type        = "boxplot",
-                         bucket      = 0.05)
-        ggsave(paste0(model_path, "/CalBP_", Construct[i,5][[1]], ".png"))
-      } else if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-
+        out2 <- EvalPlot(
+          calibration,
+          PredColName = predName,
+          ActColName  = Construct[i, 1][[1]],
+          type        = "boxplot",
+          bucket      = 0.05
+        )
+        ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
+      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
         # Calibration plot
         #interc <<- mean(calibration[[eval(predName)]], na.rm = TRUE)
-        out1 <- EvalPlot(calibration,
-                         PredColName = predName,
-                         ActColName  = Construct[i,1][[1]],
-                         type        = "calibration",
-                         bucket      = 0.05,
-                         aggrfun     = function(x) mean(x, na.rm = TRUE))
+        out1 <- EvalPlot(
+          calibration,
+          PredColName = predName,
+          ActColName  = Construct[i, 1][[1]],
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            mean(x, na.rm = TRUE)
+        )
 
-        if(exists("Thresh")) {
+        if (exists("Thresh")) {
           out1 <- out1 + geom_hline(yintercept = Thresh)
         }
-        ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
+        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       } else {
         # Calibration plot
-        out1 <- EvalPlot(calibration,
-                         PredColName = predName,
-                         ActColName  = Construct[i,1][[1]],
-                         type        = "calibration",
-                         bucket      = 0.05,
-                         aggrfun     = function(x) mean(x, na.rm = TRUE))
-        ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
+        out1 <- EvalPlot(
+          calibration,
+          PredColName = predName,
+          ActColName  = Construct[i, 1][[1]],
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
 
         # Calibration boxplot
-        out2 <- EvalPlot(calibration,
-                         PredColName = predName,
-                         ActColName  = Construct[i,1][[1]],
-                         type        = "boxplot",
-                         bucket      = 0.05)
-        ggsave(paste0(model_path, "/CalBP_", Construct[i,5][[1]], ".png"))
+        out2 <- EvalPlot(
+          calibration,
+          PredColName = predName,
+          ActColName  = Construct[i, 1][[1]],
+          type        = "boxplot",
+          bucket      = 0.05
+        )
+        ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
       }
     } else {
       # Multinomial case
       # Stack each level's predicted values and actual values
-      if (Construct[i,11][[1]] && cc <= dd) {
+      if (Construct[i, 11][[1]] && cc <= dd) {
         predsMulti <- h2o.predict(best_model, newdata = validate)
-        col <- Construct[i,1][[1]]
-        xx <- as.data.table(h2o.cbind(validate[, col],predsMulti))
-        if(Construct[i,12][[1]]) {
+        col <- Construct[i, 1][[1]]
+        xx <- as.data.table(h2o.cbind(validate[, col], predsMulti))
+        if (Construct[i, 12][[1]]) {
           calib <- as.data.table(h2o.cbind(validate, preds))
-          save(calib, file = paste0(model_path,"/",Construct[i,5][[1]],".Rdata"))
+          save(calib, file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
         }
         N <- (ncol(xx) - 2)
-        data <- eval(parse(text = Construct[i,7][[1]]))
-        for (lev in levels(data[[Construct[i,1][[1]]]])) {
-          xx[, paste0("V",lev) := ifelse(xx[[1]] %in% lev,1,0)]
+        data <- eval(parse(text = Construct[i, 7][[1]]))
+        for (lev in levels(data[[Construct[i, 1][[1]]]])) {
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -5408,7 +7140,7 @@ AutoH20Modeler <- function(Construct,
         store <- list()
         for (k in 1:N) {
           j = k + N
-          temp <- cbind(xx[,..k],xx[,..j])
+          temp <- cbind(xx[, ..k], xx[, ..j])
           setnames(temp, KeepCols[k], "Preds")
           setnames(temp, KeepCols[j], "Act")
           store[[k]] <- temp
@@ -5416,25 +7148,28 @@ AutoH20Modeler <- function(Construct,
         xxx <- rbindlist(store)
 
         # Calibration plot
-        out1 <- EvalPlot(xxx,
-                         PredColName = "Preds",
-                         ActColName  = "Act",
-                         type        = "calibration",
-                         bucket      = 0.05,
-                         aggrfun     = function(x) mean(x, na.rm = TRUE))
-        ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
+        out1 <- EvalPlot(
+          xxx,
+          PredColName = "Preds",
+          ActColName  = "Act",
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       } else {
         predsMulti <- h2o.predict(bl_model, newdata = validate)
-        col <- Construct[i,1][[1]]
-        xx <- as.data.table(h2o.cbind(validate[, col],predsMulti))
-        if(Construct[i,12][[1]]) {
+        col <- Construct[i, 1][[1]]
+        xx <- as.data.table(h2o.cbind(validate[, col], predsMulti))
+        if (Construct[i, 12][[1]]) {
           calib <- as.data.table(h2o.cbind(validate, preds))
-          save(calib, file = paste0(model_path,"/",Construct[i,5][[1]],".Rdata"))
+          save(calib, file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
         }
         N <- (ncol(xx) - 2)
-        data <- eval(parse(text = Construct[i,7][[1]]))
-        for (lev in levels(data[[Construct[i,1][[1]]]])) {
-          xx[, paste0("V",lev) := ifelse(xx[[1]] %in% lev,1,0)]
+        data <- eval(parse(text = Construct[i, 7][[1]]))
+        for (lev in levels(data[[Construct[i, 1][[1]]]])) {
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -5442,7 +7177,7 @@ AutoH20Modeler <- function(Construct,
         store <- list()
         for (k in 1:N) {
           j = k + N
-          temp <- cbind(xx[,..k],xx[,..j])
+          temp <- cbind(xx[, ..k], xx[, ..j])
           setnames(temp, KeepCols[k], "Preds")
           setnames(temp, KeepCols[j], "Act")
           store[[k]] <- temp
@@ -5450,13 +7185,16 @@ AutoH20Modeler <- function(Construct,
         xxx <- rbindlist(store)
 
         # Calibration plot
-        out1 <- EvalPlot(xxx,
-                         PredColName = "Preds",
-                         ActColName  = "Act",
-                         type        = "calibration",
-                         bucket      = 0.05,
-                         aggrfun     = function(x) mean(x, na.rm = TRUE))
-        ggsave(paste0(model_path, "/CalP_", Construct[i,5][[1]], ".png"))
+        out1 <- EvalPlot(
+          xxx,
+          PredColName = "Preds",
+          ActColName  = "Act",
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       }
 
       # Multinomial AUC function here::
@@ -5468,41 +7206,53 @@ AutoH20Modeler <- function(Construct,
     # Partial dependence calibration plots
     #######################################
 
-    if(Construct[i,13][[1]] >= 1) {
-      VIMP <- VIMP[!is.na(VIMP[,2][[1]])]
+    if (Construct[i, 13][[1]] >= 1) {
+      VIMP <- VIMP[!is.na(VIMP[, 2][[1]])]
       rows <- nrow(VIMP)
-      cols <- VIMP[1:min(Construct[i,13][[1]],rows), 1][[1]]
+      cols <- VIMP[1:min(Construct[i, 13][[1]], rows), 1][[1]]
       calibr <- list()
       boxplotr <- list()
       j <- 0
-      if(!(tolower(Construct[i,2][[1]]) %in% c("multinomial"))) {
+      if (!(tolower(Construct[i, 2][[1]]) %in% c("multinomial"))) {
         for (col in cols) {
           j <- j + 1
-          if(tolower(Construct[i,2][[1]]) == "quantile") {
-            out1 <- tryCatch({ParDepCalPlots(calib,
-                                             PredColName = predName,
-                                             ActColName  = Construct[i,1][[1]],
-                                             IndepVar    = col,
-                                             type        = "calibration",
-                                             bucket      = 0.05,
-                                             FactLevels  = 10,
-                                             Function    = function(x) quantile(x, probs = Construct[i,4][[1]], na.rm = TRUE))},
-                             error = function(x) "skip")
+          if (tolower(Construct[i, 2][[1]]) == "quantile") {
+            out1 <- tryCatch({
+              ParDepCalPlots(
+                calib,
+                PredColName = predName,
+                ActColName  = Construct[i, 1][[1]],
+                IndepVar    = col,
+                type        = "calibration",
+                bucket      = 0.05,
+                FactLevels  = 10,
+                Function    = function(x)
+                  quantile(x, probs = Construct[i, 4][[1]], na.rm = TRUE)
+              )
+            },
+            error = function(x)
+              "skip")
           } else {
-            out1 <- tryCatch({ParDepCalPlots(calib,
-                                             PredColName = predName,
-                                             ActColName  = Construct[i,1][[1]],
-                                             IndepVar    = col,
-                                             type        = "calibration",
-                                             bucket      = 0.05,
-                                             FactLevels  = 10,
-                                             Function    = function(x) mean(x, na.rm = TRUE))},
-                             error = function(x) "skip")
+            out1 <- tryCatch({
+              ParDepCalPlots(
+                calib,
+                PredColName = predName,
+                ActColName  = Construct[i, 1][[1]],
+                IndepVar    = col,
+                type        = "calibration",
+                bucket      = 0.05,
+                FactLevels  = 10,
+                Function    = function(x)
+                  mean(x, na.rm = TRUE)
+              )
+            },
+            error = function(x)
+              "skip")
           }
 
           # Add threshold line to charts
-          if (tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli")) {
-            if(exists("Thresh")) {
+          if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
+            if (exists("Thresh")) {
               out1 <- out1 + geom_hline(yintercept = Thresh)
             }
             calibr[[j]] <- out1
@@ -5511,53 +7261,97 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Expected value regression
-          if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
-            boxplotr[[j]] <- tryCatch({ParDepCalPlots(calib,
-                                                      PredColName = predName,
-                                                      ActColName  = Construct[i,1][[1]],
-                                                      IndepVar    = col,
-                                                      type        = "boxplot",
-                                                      bucket      = 0.05,
-                                                      FactLevels  = 10)},
-                                      error = function(x) "skip")
+          if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli"))) {
+            boxplotr[[j]] <- tryCatch({
+              ParDepCalPlots(
+                calib,
+                PredColName = predName,
+                ActColName  = Construct[i, 1][[1]],
+                IndepVar    = col,
+                type        = "boxplot",
+                bucket      = 0.05,
+                FactLevels  = 10
+              )
+            },
+            error = function(x)
+              "skip")
           }
         }
 
         # Save output
-        if (!(tolower(Construct[i,2][[1]]) %in% c("quasibinomial","binomial","bernoulli"))) {
-          save(boxplotr, file = paste0(model_path,"/",Construct[i,5][[1]],"_ParDepCalBoxPlots.Rdata"))
+        if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli"))) {
+          save(
+            boxplotr,
+            file = paste0(
+              model_path,
+              "/",
+              Construct[i, 5][[1]],
+              "_ParDepCalBoxPlots.Rdata"
+            )
+          )
         }
-        save(calibr, file = paste0(model_path,"/",Construct[i,5][[1]],"_ParDepCalPlots.Rdata"))
+        save(calibr,
+             file = paste0(model_path, "/", Construct[i, 5][[1]], "_ParDepCalPlots.Rdata"))
       }
     }
 
     # Save grid_tuned_paths
-    save(grid_tuned_paths, file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+    save(grid_tuned_paths,
+         file = paste0(model_path, "/grid_tuned_paths.Rdata"))
 
     # Clear H20 environment between runs
     h2o.rm(data_h2o)
     h2o.rm(data_train)
     h2o.rm(train)
     h2o.rm(validate)
-    if (Construct[i,11][[1]]) {
+    if (Construct[i, 11][[1]]) {
       h2o.rm(best_model)
     }
-    if (Construct[i,6][[1]] != "automl") {
+    if (Construct[i, 6][[1]] != "automl") {
       h2o.rm(bl_model)
     }
     h2o.rm(preds)
     h2o.shutdown(prompt = FALSE)
 
     # Clear R environment between runs
-    if (Construct[i,11][[1]]) {
-      if (Construct[i,2][[1]] != "multinomial" & Construct[i,21][[1]] == TRUE) {
-        rm(grid, Grid_Out, cc, dd, VIMP, calibration, calib, out2, out1, features, target, save_model)
+    if (Construct[i, 11][[1]]) {
+      if (Construct[i, 2][[1]] != "multinomial" &
+          Construct[i, 21][[1]] == TRUE) {
+        rm(
+          grid,
+          Grid_Out,
+          cc,
+          dd,
+          VIMP,
+          calibration,
+          calib,
+          out2,
+          out1,
+          features,
+          target,
+          save_model
+        )
       } else {
-        rm(grid, Grid_Out, cc, dd, VIMP, features, target, predsMulti)
+        rm(grid,
+           Grid_Out,
+           cc,
+           dd,
+           VIMP,
+           features,
+           target,
+           predsMulti)
       }
     } else {
-      if (Construct[i,2][[1]] != "multinomial") {
-        rm(dd, VIMP, calibration, calib, out2, out1, features, target, save_model)
+      if (Construct[i, 2][[1]] != "multinomial") {
+        rm(dd,
+           VIMP,
+           calibration,
+           calib,
+           out2,
+           out1,
+           features,
+           target,
+           save_model)
       } else {
         rm(dd, VIMP, features, target)
       }
@@ -5565,8 +7359,8 @@ AutoH20Modeler <- function(Construct,
 
     # Remove data if no longer needed
     if (i > 1) {
-      if (Construct[i,7][[1]] != Construct[(i-1),7][[1]]) {
-        eval(parse(text = paste0("rm(",Construct[(i-1),7][[1]],")")))
+      if (Construct[i, 7][[1]] != Construct[(i - 1), 7][[1]]) {
+        eval(parse(text = paste0("rm(", Construct[(i - 1), 7][[1]], ")")))
       }
     }
   }
@@ -5577,16 +7371,18 @@ AutoH20Modeler <- function(Construct,
 #' This function tokenizes data
 #' @author Adrian Antico at RemixInstitute.com
 #' @param data3 The text data
-#' @param sentences Source data table to merge vects onto
-#' @param stop.words A string name for the column to convert via word2vec
 #' @import data.table
 #' @export
 tokenizeH20 <- function(data3) {
   library(h2o)
-  data3 <- as.h2o(data3, col.types=c("String"))
+  data3 <- as.h2o(data3, col.types = c("String"))
   tokenized <- h2o.tokenize(data3, "\\\\W+")
   tokenized.lower <- h2o.tolower(tokenized)
-  tokenized.words <- tokenized.lower[h2o.grep("[0-9]", tokenized.lower, invert = TRUE, output.logical = TRUE),]
+  tokenized.words <-
+    tokenized.lower[h2o.grep("[0-9]",
+                             tokenized.lower,
+                             invert = TRUE,
+                             output.logical = TRUE), ]
   tokenized.words
 }
 
@@ -5636,7 +7432,6 @@ Word2VecModel <- function(datax,
                           SaveModel     = "standard",
                           Threads       = 4,
                           MaxMemory     = "14G") {
-
   # Load libraries
   library(h2o)
   library(data.table)
@@ -5646,7 +7441,7 @@ Word2VecModel <- function(datax,
 
   # Create storage file
   N <- length(stringCol)
-  StoreFile <- data.table(ModelName = rep("a", N), Path = c("aa",N))
+  StoreFile <- data.table(ModelName = rep("a", N), Path = c("aa", N))
   i <- 0
 
   # Loop through all the string columns
@@ -5657,47 +7452,69 @@ Word2VecModel <- function(datax,
     h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
     # It is important to remove "\n" -- it appears to cause a parsing error when converting to an H2OFrame
-    data[,':=' (TEMP=gsub("  ", " ", data[[string]]))]
-    data[,':=' (TEMP=gsub("'|\"|'|"|"|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'", "", TEMP))]
+    data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
+    data[, ':=' (TEMP = gsub(
+      "'|\"|'|" |
+        "|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'",
+      "",
+      TEMP
+    ))]
     data2 <- data[, "TEMP"]
 
     # Tokenize
     tokenized_words <- tokenizeH20(data2)
 
     # Build model
-    w2v.model <- h2o.word2vec(tokenized_words,
-                              model_id           = ModelID[i],
-                              word_model         = "SkipGram",
-                              norm_model         = "HSM",
-                              vec_size           = vects,
-                              min_word_freq      = MinWords,
-                              window_size        = WindowSize,
-                              init_learning_rate = 0.025,
-                              sent_sample_rate   = 0.05,
-                              epochs             = Epochs)
+    w2v.model <- h2o.word2vec(
+      tokenized_words,
+      model_id           = ModelID[i],
+      word_model         = "SkipGram",
+      norm_model         = "HSM",
+      vec_size           = vects,
+      min_word_freq      = MinWords,
+      window_size        = WindowSize,
+      init_learning_rate = 0.025,
+      sent_sample_rate   = 0.05,
+      epochs             = Epochs
+    )
 
     # Save model
-    if(tolower(SaveModel) == "standard") {
+    if (tolower(SaveModel) == "standard") {
       w2vPath <- h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-      set(StoreFile, i = i, j = 1L, value = ModelID[i])
-      set(StoreFile, i = i, j = 2L, value = w2vPath)
+      set(StoreFile,
+          i = i,
+          j = 1L,
+          value = ModelID[i])
+      set(StoreFile,
+          i = i,
+          j = 2L,
+          value = w2vPath)
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     } else {
       w2vPath <- h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
-      h2o.download_mojo(model = w2v.model,
-                        path = model_path,
-                        get_genmodel_jar = TRUE,
-                        genmodel_path = model_path,
-                        genmodel_name = ModelID[i])
-      set(StoreFile, i = i, j = 1L, value = ModelID[i])
-      set(StoreFile, i = i, j = 2L, value = w2vPath)
+      h2o.download_mojo(
+        model = w2v.model,
+        path = model_path,
+        get_genmodel_jar = TRUE,
+        genmodel_path = model_path,
+        genmodel_name = ModelID[i]
+      )
+      set(StoreFile,
+          i = i,
+          j = 1L,
+          value = ModelID[i])
+      set(StoreFile,
+          i = i,
+          j = 2L,
+          value = w2vPath)
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
 
     h2o.rm('data3')
 
     # Score model
-    all_vecs <- h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
+    all_vecs <-
+      h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
 
     # Convert to data.table
     all_vecs <- as.data.table(all_vecs)
@@ -5705,14 +7522,14 @@ Word2VecModel <- function(datax,
 
     # Remove string cols
     data[, ':=' (TEMP = NULL)]
-    if(!KeepStringCol) {
+    if (!KeepStringCol) {
       data[, eval(string) := NULL]
     }
 
     # Replace Colnames
-    cols <- names(data[, (ncol(data)-vects+1):ncol(data)])
+    cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
     for (c in cols) {
-      data[, paste0(string,"_",c) := get(c)]
+      data[, paste0(string, "_", c) := get(c)]
       data[, eval(c) := NULL]
     }
 
@@ -5751,7 +7568,6 @@ WordFreq <- function(data,
                      RemoveEnglishStopwords = TRUE,
                      Stemming = TRUE,
                      StopWords = c("blabla1", "blabla2")) {
-
   # Load libraries
   library("tm")
   library("SnowballC")
@@ -5759,14 +7575,17 @@ WordFreq <- function(data,
   library("RColorBrewer")
 
   # Prepare data
-  if(is.null(ClusterCol)) {
+  if (is.null(ClusterCol)) {
     desc <- Corpus(VectorSource(data[[eval(TextColName)]]))
   } else {
-    desc <- Corpus(VectorSource(data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]]))
+    desc <-
+      Corpus(VectorSource(data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]]))
   }
 
   # Clean text
-  toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+  toSpace <-
+    content_transformer(function (x , pattern)
+      gsub(pattern, " ", x))
   text <- tm_map(text, toSpace, "/")
   text <- tm_map(text, toSpace, "@")
   text <- tm_map(text, toSpace, "\\|")
@@ -5778,7 +7597,8 @@ WordFreq <- function(data,
   text <- tm_map(text, removeNumbers)
 
   # Remove english common stopwords
-  if(RemoveEnglishStopwords) text <- tm_map(text, removeWords, stopwords("english"))
+  if (RemoveEnglishStopwords)
+    text <- tm_map(text, removeWords, stopwords("english"))
 
   # specify your stopwords as a character vector
   text <- tm_map(text, removeWords, StopWords)
@@ -5790,19 +7610,28 @@ WordFreq <- function(data,
   text <- tm_map(text, stripWhitespace)
 
   # Text stemming
-  if(Stemming) text <- tm_map(text, stemDocument)
+  if (Stemming)
+    text <- tm_map(text, stemDocument)
 
   # Finalize
   dtm <- TermDocumentMatrix(text)
   m <- as.matrix(dtm)
-  v <- sort(rowSums(m),decreasing=TRUE)
-  d <- data.table(word = names(v), freq=v)
+  v <- sort(rowSums(m), decreasing = TRUE)
+  d <- data.table(word = names(v), freq = v)
   print(head(d, 10))
 
   # Word Cloud
-  print(wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-                  max.words=200, random.order=FALSE, rot.per=0.35,
-                  colors=brewer.pal(8, "Dark2")))
+  print(
+    wordcloud(
+      words = d$word,
+      freq = d$freq,
+      min.freq = 1,
+      max.words = 200,
+      random.order = FALSE,
+      rot.per = 0.35,
+      colors = brewer.pal(8, "Dark2")
+    )
+  )
 
   # Return
   return(d)
