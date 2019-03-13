@@ -4,7 +4,7 @@
 \alias{multiplot}
 \title{Multiplot is a function for combining multiple plots}
 \usage{
-multiplot(..., plotlist = NULL, file, cols = 1, layout = NULL)
+multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
 }
 \arguments{
 \item{...}{Passthrough arguments}
@@ -12,6 +12,8 @@ multiplot(..., plotlist = NULL, file, cols = 1, layout = NULL)
 \item{plotlist}{This is the list of your charts}
 
 \item{cols}{This is the number of columns in your multiplot}
+
+\item{layout}{Leave NULL}
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign

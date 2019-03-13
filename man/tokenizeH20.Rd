@@ -8,10 +8,6 @@ tokenizeH20(data3)
 }
 \arguments{
 \item{data3}{The text data}
-
-\item{sentences}{Source data table to merge vects onto}
-
-\item{stop.words}{A string name for the column to convert via word2vec}
 }
 \description{
 This function tokenizes data
