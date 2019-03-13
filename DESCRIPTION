@@ -1,18 +1,16 @@
 Package: RemixAML
 Title: Automated Machine Learning
 Version: 1.0
-Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com", role = c("aut", "cre"))
+Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
+                  role = c("aut", "cre"))
 Description: This package contains functions to help automate many of your machine learning and data science tasks. They are high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5.1),
-    data.table,
-    zoo,
-    ggplot2,
-    chron
-License: MIT + file LICENSE
+License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
 Imports: data.table,
+    sde,
     zoo,
     h2o,
     lubridate,
@@ -25,10 +23,14 @@ Imports: data.table,
     pROC,
     stringr,
     snow,
+    SnowballC,
+    itertools,
     doParallel,
     parallel,
     scatterplot3d,
+    RColorBrewer,
     SnowballC,
     tm,
-    wordcloud
-Suggests: testthat
+    wordcloud,
+    testthat
+Suggests: 
