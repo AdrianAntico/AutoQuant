@@ -31,5 +31,7 @@ Imports: data.table,
     SnowballC,
     tm,
     wordcloud,
-    testthat
+    testthat,
+    foreach
 Suggests: 
+
