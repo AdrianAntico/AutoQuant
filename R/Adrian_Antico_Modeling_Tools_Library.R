@@ -320,7 +320,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
           all.x = TRUE)
   data.table::setnames(
     z,
-    c("tsData.a", "tsData.predicted", "residuals(fit)"),
+    c("tsData.a", "tsData.predicted", "stats::residuals(fit)"),
     c("ObsNum", "Preds", "Residuals")
   )
 
@@ -660,7 +660,6 @@ AutoTS <- function(data,
   }
 
   # Convert data.tables to stats::ts objects
-  #dataTSTrain <- copy(data_train)
   dataTSTrain <-
     stats::ts(data = data_train,
        start = data_train[, min(get(DateName))][[1]],
@@ -714,7 +713,7 @@ AutoTS <- function(data,
     # 2)
     if (tolower(class(ARFIMA_model)) == "fracdiff") {
       i <- i + 1
-      data_test_ARF <- copy(data_test)
+      data_test_ARF <- data.table::copy(data_test)
       data_test_ARF[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("ARFIMA", HoldOutPeriods),
@@ -789,7 +788,7 @@ AutoTS <- function(data,
     # 2)
     if (tolower(class(ARIMA_model)[1]) == "arima") {
       i <- i + 1
-      data_test_ARI <- copy(data_test)
+      data_test_ARI <- data.table::copy(data_test)
       data_test_ARI[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("ARIMA", HoldOutPeriods),
@@ -847,7 +846,7 @@ AutoTS <- function(data,
     # 2)
     if (tolower(class(EXPSMOOTH_model)) == "ets") {
       i <- i + 1
-      data_test_ETS <- copy(data_test)
+      data_test_ETS <- data.table::copy(data_test)
       data_test_ETS[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("ETS", HoldOutPeriods),
@@ -888,7 +887,7 @@ AutoTS <- function(data,
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
-      data_test_CS <- copy(data_test)
+      data_test_CS <- data.table::copy(data_test)
       data_test_CS[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("CS", HoldOutPeriods),
@@ -939,7 +938,7 @@ AutoTS <- function(data,
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
-      data_test_TBATS <- copy(data_test)
+      data_test_TBATS <- data.table::copy(data_test)
       data_test_TBATS[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("TBATS", HoldOutPeriods),
@@ -980,7 +979,7 @@ AutoTS <- function(data,
       i <- i + 1
       # Collect Test Data for Model Comparison
       # 2)
-      data_test_TSLM <- copy(data_test)
+      data_test_TSLM <- data.table::copy(data_test)
       data_test_TSLM[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("TSLM", HoldOutPeriods),
@@ -1094,7 +1093,7 @@ AutoTS <- function(data,
     # 2)
     if (tolower(class(NNETAR_model)) == "nnetar") {
       i <- i + 1
-      data_test_NN <- copy(data_test)
+      data_test_NN <- data.table::copy(data_test)
       data_test_NN[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("NN", HoldOutPeriods),
@@ -1127,7 +1126,7 @@ AutoTS <- function(data,
     }
 
     max_date <- data_train[, max(DateTime)]
-    dataProphet <- copy(data_train)
+    dataProphet <- data.table::copy(data_train)
     data.table::setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
 
     # 1)
@@ -1172,7 +1171,7 @@ AutoTS <- function(data,
 
       # Collect Test Data for Model Comparison
       # 2)
-      data_test_PROPHET <- copy(data_test)
+      data_test_PROPHET <- data.table::copy(data_test)
       data_test_PROPHET[, ':=' (
         Target = as.numeric(Target),
         ModelName = rep("PROPHET", HoldOutPeriods),
@@ -1462,7 +1461,7 @@ AutoTS <- function(data,
     }
 
     max_date <- data_train[, max(DateTime)]
-    dataProphet <- copy(data_train)
+    dataProphet <- data.table::copy(data_train)
     data.table::setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
 
     # 1)
@@ -2177,7 +2176,7 @@ threshOptim <- function(data,
 #' }
 #'
 #' # To keep original values
-#' data1 <- copy(data)
+#' data1 <- data.table::copy(data)
 #'
 #' # Merge and Model data
 #' data2 <- merge(data1,
