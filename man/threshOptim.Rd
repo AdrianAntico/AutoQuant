@@ -93,10 +93,10 @@ data <- threshOptim(data     = calibEval,
                     fnProfit = -2)
 optimalThreshold <- data[[1]]
 allResults       <- data[[2]]
-ggplot(allResults, aes(x = Thresholds)) +
-  geom_line(aes(y = allResults[["Utilities"]], color = "red")) +
+ggplot2::ggplot(allResults, ggplot2::aes(x = Thresholds)) +
+  ggplot2::geom_line(ggplot2::aes(y = allResults[["Utilities"]], color = "red")) +
   ChartTheme(Size = 12) +
-  ylab("Utility") + geom_vline(xintercept = optimalThreshold)
+  ggplot2::ylab("Utility") + ggplot2::geom_vline(xintercept = optimalThreshold)
 }
 \author{
 Adrian Antico

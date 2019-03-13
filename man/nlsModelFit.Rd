@@ -39,7 +39,7 @@ for (i in as.integer(1:500)) {
 }
 
 # To keep original values
-data1 <- copy(data)
+data1 <- data.table::copy(data)
 
 # Merge and Model data
 data2 <- merge(data1,
@@ -48,11 +48,11 @@ data2 <- merge(data1,
                all = TRUE)
 
 # Plot graphs of predicted vs actual
-ggplot(data2, aes(x = Variable)) +
-  geom_line(aes(y = data2[["Target.x"]], color = "blue")) +
-  geom_line(aes(y = data2[["Target.y"]], color = "red")) +
-  ChartTheme(Size = 12) + ggtitle("Growth Models") +
-  ylab("Target Variable") + xlab("Independent Variable")
+ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "blue")) +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "red")) +
+  ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
+  ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
 }
 \author{
 Adrian Antico
