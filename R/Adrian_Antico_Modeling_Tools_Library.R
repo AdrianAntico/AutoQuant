@@ -1,21 +1,127 @@
-utils::globalVariables(names = c("test", "act", "LCVals", "Row", "ErrorCollectionLog",
-                                 "prophet", "pushViewport", "quantile", "registerDoParallel",
-                                 "removeNumbers","removePunctuation", "removeWords",
-                                 "residuals", "rnorm", "runif","scale_color_manual",
-                                 "scale_colour_manual", "scale_fill_manual","scatterplot3d",
-                                 "sd", "stemDocument", "stopCluster", "stopwords", "stripWhitespace",
-                                 "theme", "tm_map", "ts", "val1", "val2", "val3", "vals", "viewport",
-                                 "wordcloud", "xlab", "years","ylab","TermDocumentMatrix","Thresholds",
-                                 "Type","Utilities","Utility","V1","V2","V3","VectorSource","acts","aes","as.formula",
-                                 "as_date","brewer.pal","coefhat","content_transformer","ds","element_blank","element_line",
-                                 "element_rect","element_text","f0point5","f1","f2","fitted","foreach","geom_bar","geom_boxplot",
-                                 "geom_hline","geom_line","ggplot","ggsave","ggtitle","grid.layout","grid.newpage",
-                                 "head","i","id","lm","makePSOCKcluster","margin","meanResid","monreg","nls","object.size",
-                                 "output","percentaR","CMD","check","results","Thresh","Label","..k","..j","Date","Target",
-                                 "RowNumAsc","AnomHigh","AnomLow","CumAnomHigh","CumAnomLow","AnomHighRate","AnomLowRate",
-                                 "predict","..cols", ".","..keep","Output","MTHT","MTLT","TEMP","Accuracy","FC_Eval","DateTime",
-                                 "Resid","PercentError","AbsolutePercentError","ModelName","MAPE","ID","Forecast_PROPHET",
-                                 "percentage"))
+.datatable.aware=TRUE
+
+utils::globalVariables(
+  names = c(
+    "test",
+    "act",
+    "LCVals",
+    "Row",
+    "ErrorCollectionLog",
+    "prophet",
+    "pushViewport",
+    "quantile",
+    "registerDoParallel",
+    "removeNumbers",
+    "removePunctuation",
+    "removeWords",
+    "residuals",
+    "rnorm",
+    "runif",
+    "scale_color_manual",
+    "scale_colour_manual",
+    "scale_fill_manual",
+    "scatterplot3d",
+    "sd",
+    "stemDocument",
+    "stopCluster",
+    "stopwords",
+    "stripWhitespace",
+    "theme",
+    "tm_map",
+    "ts",
+    "val1",
+    "val2",
+    "val3",
+    "vals",
+    "viewport",
+    "wordcloud",
+    "xlab",
+    "years",
+    "ylab",
+    "TermDocumentMatrix",
+    "Thresholds",
+    "Type",
+    "Utilities",
+    "Utility",
+    "V1",
+    "V2",
+    "V3",
+    "VectorSource",
+    "acts",
+    "aes",
+    "as.formula",
+    "as_date",
+    "brewer.pal",
+    "coefhat",
+    "content_transformer",
+    "ds",
+    "element_blank",
+    "element_line",
+    "element_rect",
+    "element_text",
+    "f0point5",
+    "f1",
+    "f2",
+    "fitted",
+    "foreach",
+    "geom_bar",
+    "geom_boxplot",
+    "geom_hline",
+    "geom_line",
+    "ggplot",
+    "ggsave",
+    "ggtitle",
+    "grid.layout",
+    "grid.newpage",
+    "head",
+    "i",
+    "id",
+    "lm",
+    "makePSOCKcluster",
+    "margin",
+    "meanResid",
+    "monreg",
+    "nls",
+    "object.size",
+    "output",
+    "percentaR",
+    "CMD",
+    "check",
+    "results",
+    "Thresh",
+    "Label",
+    "..k",
+    "..j",
+    "Date",
+    "Target",
+    "RowNumAsc",
+    "AnomHigh",
+    "AnomLow",
+    "CumAnomHigh",
+    "CumAnomLow",
+    "AnomHighRate",
+    "AnomLowRate",
+    "predict",
+    "..cols",
+    ".",
+    "..keep",
+    "Output",
+    "MTHT",
+    "MTLT",
+    "TEMP",
+    "Accuracy",
+    "FC_Eval",
+    "DateTime",
+    "Resid",
+    "PercentError",
+    "AbsolutePercentError",
+    "ModelName",
+    "MAPE",
+    "ID",
+    "Forecast_PROPHET",
+    "percentage"
+  )
+)
 
 #' DummifyDT creates dummy variables for the selected columns
 #'
@@ -49,7 +155,7 @@ DummifyDT <- function(data,
                       cols,
                       KeepBaseCols = TRUE,
                       OneHot = TRUE) {
-  library(data.table)
+  # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
   for (col in cols) {
@@ -83,9 +189,6 @@ DummifyDT <- function(data,
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
 #' @import data.table
-#' @import h2o
-#' @import pROC
-#' @import stringr
 #' @examples
 #' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
@@ -144,8 +247,7 @@ PrintObjectsSize <- function(N = 10) {
 #' @param DataScaled set to TRUE if you already scaled your data
 #' @import data.table
 #' @examples
-#' # Create data
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(10000,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -256,8 +358,6 @@ GenTSAnomVars <- function(data,
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
 #' @import data.table
-#' @import tsoutliers
-#' @import forecast
 #' @examples
 #' data <- data.table::data.table(a = seq(0,10000,1),
 #'                    predicted = sde::GBM(N=10000)*1000)[-1,]
@@ -284,9 +384,9 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
   # Convert to time series object
   tsData <- stats::ts(data,
-               frequency = 1,
-               start = 1,
-               end = nrow(data))
+                      frequency = 1,
+                      start = 1,
+                      end = nrow(data))
 
   # Build the auto arimia
   fit <- forecast::auto.arima(
@@ -355,12 +455,10 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @import data.table
-#' @import h2o
 #' @examples
 #' library(datasets)
 #' library(RemixAML)
 #' library(h2o)
-#' # Import data
 #' data <- data.table::as.data.table(iris)
 #' # Run algo, excluding Species column
 #' data <- GLRM_KMeans_Col(data,
@@ -536,7 +634,7 @@ GLRM_KMeans_Col <- function(data,
 
   } else {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
-    Nam <- h2o.colnames(x_raw)
+    Nam <- colnames(x_raw)
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
       x              = Nam,
@@ -570,11 +668,8 @@ GLRM_KMeans_Col <- function(data,
 #' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @import data.table
-#' @import forecast
-#' @import prophet
-#' @import lubridate
 #' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(1000,
 #'                                                            mean = 50,
 #'                                                             sd = 20),
@@ -600,18 +695,13 @@ AutoTS <- function(data,
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
-                   TimeUnit       = "day", # c("hour","day","week","month","quarter","year"),
+                   TimeUnit       = "day",
+                   # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE) {
-  # Load libraries
-  library(prophet)
-  library(forecast)
-  library(data.table)
-  library(lubridate)
-
   # Initialize collection variables
   i <- 0
   EvalList <- list()
@@ -671,8 +761,8 @@ AutoTS <- function(data,
   # Convert data.tables to stats::ts objects
   dataTSTrain <-
     stats::ts(data = data_train,
-       start = data_train[, min(get(DateName))][[1]],
-       frequency = freq)
+              start = data_train[, min(get(DateName))][[1]],
+              frequency = freq)
 
   # Begin model building
   if (!("ARFIMA" %in% toupper(SkipModels))) {
@@ -1040,36 +1130,36 @@ AutoTS <- function(data,
 
         if (length(NNETAR_model_temp) == 1) {
           data.table::set(temp,
-              i = k,
-              j = 1L,
-              value = lags)
+                          i = k,
+                          j = 1L,
+                          value = lags)
           data.table::set(temp,
-              i = k,
-              j = 2L,
-              value = slags)
+                          i = k,
+                          j = 2L,
+                          value = slags)
           data.table::set(temp,
-              i = k,
-              j = 3L,
-              value = 999999999)
+                          i = k,
+                          j = 3L,
+                          value = 999999999)
           data.table::set(temp,
-              i = k,
-              j = 4L,
-              value = 999999999)
+                          i = k,
+                          j = 4L,
+                          value = 999999999)
 
         } else {
           data.table::set(temp,
-              i = k,
-              j = 1L,
-              value = lags)
+                          i = k,
+                          j = 1L,
+                          value = lags)
           data.table::set(temp,
-              i = k,
-              j = 2L,
-              value = slags)
+                          i = k,
+                          j = 2L,
+                          value = slags)
           data.table::set(
             temp,
             i = k,
             j = 3L,
-            value = mean(abs(NNETAR_model_temp$residuals),
+            value = base::mean(abs(NNETAR_model_temp$residuals),
                          na.rm = TRUE)
           )
           data.table::set(
@@ -1084,8 +1174,8 @@ AutoTS <- function(data,
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(
@@ -1185,7 +1275,7 @@ AutoTS <- function(data,
         Target = as.numeric(Target),
         ModelName = rep("PROPHET", HoldOutPeriods),
         FC_Eval = data.table::as.data.table(predict(PROPHET_model,
-                                        PROPHET_future))[["yhat"]]
+                                                    PROPHET_future))[["yhat"]]
       )]
       # Add Evaluation Columns
       # 3)
@@ -1204,13 +1294,13 @@ AutoTS <- function(data,
 
   # Model Collection-------------
   print("FIND WINNER")
-  dataEval <- rbindlist(EvalList)
+  dataEval <- data.table::rbindlist(EvalList)
 
   # Model Evaluation
   Eval <- dataEval[, .(
-    MeanResid = mean(Resid, na.rm = TRUE),
-    MeanPercError = mean(PercentError, na.rm = TRUE),
-    MAPE = mean(AbsolutePercentError, na.rm = TRUE)
+    MeanResid = base::mean(Resid, na.rm = TRUE),
+    MeanPercError = base::mean(PercentError, na.rm = TRUE),
+    MAPE = base::mean(AbsolutePercentError, na.rm = TRUE)
   ),
   by = ModelName][order(MAPE)][, ID := 1:.N]
 
@@ -1226,8 +1316,8 @@ AutoTS <- function(data,
   # Convert data.tables to stats::ts objects
   dataTSTrain <-
     stats::ts(data = data_train,
-       start = data_train[, min(get(DateName))][[1]],
-       frequency = freq)
+              start = data_train[, min(get(DateName))][[1]],
+              frequency = freq)
 
   # Retrain best model
   if (BestModel == "ARFIMA") {
@@ -1404,36 +1494,36 @@ AutoTS <- function(data,
 
         if (length(NNETAR_model_temp) == 1) {
           data.table::set(temp,
-              i = k,
-              j = 1L,
-              value = lags)
+                          i = k,
+                          j = 1L,
+                          value = lags)
           data.table::set(temp,
-              i = k,
-              j = 2L,
-              value = slags)
+                          i = k,
+                          j = 2L,
+                          value = slags)
           data.table::set(temp,
-              i = k,
-              j = 3L,
-              value = 999999999)
+                          i = k,
+                          j = 3L,
+                          value = 999999999)
           data.table::set(temp,
-              i = k,
-              j = 4L,
-              value = 999999999)
+                          i = k,
+                          j = 4L,
+                          value = 999999999)
 
         } else {
           data.table::set(temp,
-              i = k,
-              j = 1L,
-              value = lags)
+                          i = k,
+                          j = 1L,
+                          value = lags)
           data.table::set(temp,
-              i = k,
-              j = 2L,
-              value = slags)
+                          i = k,
+                          j = 2L,
+                          value = slags)
           data.table::set(
             temp,
             i = k,
             j = 3L,
-            value = mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE)
+            value = base::mean(abs(NNETAR_model_temp$residuals), na.rm = TRUE)
           )
           data.table::set(
             temp,
@@ -1446,8 +1536,8 @@ AutoTS <- function(data,
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(y = dataTSTrain[, TargetName],
@@ -1505,13 +1595,13 @@ AutoTS <- function(data,
 #'
 #' @author Adrian Antico
 #' @param x The column of interest
+#' @import data.table
 #' @examples
 #' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
-#' Cdata[, DAY_DATE := as.Date(DAY_DATE, "%m/%d/%Y")]
-#' @import data.table
+#' Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-tempDatesFun <- Vectorize(function(x) {
+tempDatesFun <- base::Vectorize(function(x) {
   data.table::tstrsplit(x, " ")[[1]][1]
 })
 
@@ -1529,8 +1619,8 @@ tempDatesFun <- Vectorize(function(x) {
 #' @export
 SimpleCap <- function(x) {
   s <- data.table::tstrsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1, 1)),
-        substring(s, 2),
+  paste(base::toupper(base::substring(s, 1, 1)),
+        base::substring(s, 2),
         sep = "",
         collapse = " ")
 }
@@ -1540,9 +1630,9 @@ SimpleCap <- function(x) {
 #' This function adds the Remix Theme to ggplots
 #'
 #' @author DougVegas
-#' @import ggplot2
+#' @import data.table
 #' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(1000,
 #'                                                            mean = 50,
 #'                                                             sd = 20),
@@ -1556,39 +1646,39 @@ SimpleCap <- function(x) {
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 RemixTheme <- function() {
-  theme(
-    axis.title = element_blank(),
-    axis.text = element_text(family = "A",
-                             size = 11),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(family = "A",
+                                      size = 11),
+    legend.background = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(
       family = "A",
       color = "#1c1c1c",
       size = 11
     ),
-    legend.title = element_blank(),
+    legend.title = ggplot2::element_blank(),
     legend.justification = 0,
     legend.position = "top",
-    plot.background = element_rect(fill = "#E7E7E7"),
-    panel.background = element_rect(fill = "#E7E7E7"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "white"),
-    panel.grid.minor.y = element_line(color = "white"),
-    plot.title = element_text(
+    plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
+    panel.background = ggplot2::element_rect(fill = "#E7E7E7"),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.minor.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(color = "white"),
+    panel.grid.minor.y = ggplot2::element_line(color = "white"),
+    plot.title = ggplot2::element_text(
       family = "A",
       color = "#1c1c1c",
       size = 20,
       hjust = 0
     ),
-    plot.subtitle = element_text(
+    plot.subtitle = ggplot2::element_text(
       family = "C",
       color = "#1c1c1c",
       size = 12,
       hjust = 0
     ),
-    plot.caption = element_text(
+    plot.caption = ggplot2::element_text(
       family = "B",
       size = 9,
       hjust = 0,
@@ -1636,32 +1726,34 @@ ModelDataPrep <- function(data,
     data <- data.table::as.data.table(data)
 
   # Replace any inf values with NA
-  for (col in seq_along(data)) {
+  for (col in base::seq_along(data)) {
     data.table::set(data,
-        j = col,
-        value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                    j = col,
+                    value = base::replace(data[[col]], base::is.infinite(data[[col]]), NA))
   }
 
   # Turn character columns into factors
   if (CharToFactor) {
-    for (col in seq_along(data)) {
+    for (col in base::seq_along(data)) {
       if (is.character(data[[col]])) {
-        set(data, j = col, value = as.factor(data[[col]]))
+        data.table::set(data,
+                        j = col,
+                        value = base::as.factor(data[[col]]))
       }
     }
   }
 
   # Impute missing values
   if (Impute) {
-    for (j in seq_along(data)) {
-      if (is.factor(data[[j]])) {
-        data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, MissFactor)
+    for (j in base::seq_along(data)) {
+      if (base::is.factor(data[[j]])) {
+        data.table::set(data, base::which(!(data[[j]] %in% base::levels(data[[j]]))), j, MissFactor)
       } else {
-        data.table::set(data, which(is.na(data[[j]])), j, MissNum)
+        data.table::set(data, base::which(base::is.na(data[[j]])), j, MissNum)
       }
     }
   }
-  return(data)
+  base::return(data)
 }
 
 #' RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option
@@ -1680,12 +1772,6 @@ ModelDataPrep <- function(data,
 #' @param Cores Number of cores on your machine
 #' @param Precision Set the decimal number to increment by between 0 and 1
 #' @import data.table
-#' @import parallel
-#' @import snow
-#' @import doParallel
-#' @import foreach
-#' @import scatterplot3d
-#' @import RColorBrewer
 #' @examples
 #' library(h2o)
 #' library(RemixAML)
@@ -1769,31 +1855,31 @@ RedYellowGreen <- function(calibEval,
 
   # Set up evaluation table
   analysisTable <- data.table::data.table(
-    TPP = rep(TruePositiveCost, 1),
-    TNP = rep(TrueNegativeCost, 1),
-    FPP = rep(FalsePositiveCost, 1),
-    FNP = rep(FalseNegativeCost, 1),
-    MTDN = rep(TRUE, 1),
-    MTC = rep(MidTierCost, 1),
+    TPP = base::rep(TruePositiveCost, 1),
+    TNP = base::rep(TrueNegativeCost, 1),
+    FPP = base::rep(FalsePositiveCost, 1),
+    FNP = base::rep(FalseNegativeCost, 1),
+    MTDN = base::rep(TRUE, 1),
+    MTC = base::rep(MidTierCost, 1),
     Threshold = runif(1)
   )
 
   # Do nothing possibilities
   temp     <-
-    CJ(MTLT = seq(0.0, 1.0, Precision),
-       MTHT = seq(0.0, 1.0, Precision))[MTHT > MTLT]
+    data.table::CJ(MTLT = seq(0.0, 1.0, Precision),
+                   MTHT = seq(0.0, 1.0, Precision))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
-  new[, Utility := runif(nrow(new))]
+  new[, Utility := stats::runif(nrow(new))]
 
   # Parallel components
-  suppressMessages(library(parallel))
-  suppressMessages(library(snow))
-  suppressMessages(library(doParallel))
-  suppressMessages(library(foreach))
+  # suppressMessages(library(parallel))
+  # suppressMessages(library(snow))
+  # suppressMessages(library(doParallel))
+  # suppressMessages(library(foreach))
   packages <- c("data.table")
   cores    <- Cores
-  bat      <- ceiling(nrow(new) / cores)
-  parts    <- floor(nrow(new) / bat)
+  bat      <- base::ceiling(nrow(new) / cores)
+  parts    <- base::floor(nrow(new) / bat)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
 
@@ -1803,7 +1889,7 @@ RedYellowGreen <- function(calibEval,
       i            = itertools::isplitRows(new, chunks = parts),
       # splits data and passes to each core
       .combine      = function(...)
-        rbindlist(list(...)),
+        data.table::rbindlist(list(...)),
       # only way to get rbindlist to work
       .multicombine = TRUE,
       # required for rbindlist since list > 2 data sets
@@ -1820,11 +1906,11 @@ RedYellowGreen <- function(calibEval,
                                          MidTierCost       = -5,
                                          new = i) {
         # Loop through all combos
-        for (k in as.integer(1:nrow(new))) {
+        for (k in base::as.integer(1:nrow(new))) {
           x <- threshOptim(
             data = data,
-            actTar = names(data)[ActualColNumber],
-            predTar = names(data)[PredictColNumber],
+            actTar = base::names(data)[ActualColNumber],
+            predTar = base::names(data)[PredictColNumber],
             tpProfit = TruePositiveCost,
             tnProfit = TrueNegativeCost,
             fpProfit = FalsePositiveCost,
@@ -1835,18 +1921,16 @@ RedYellowGreen <- function(calibEval,
             MidTierHighThresh = new[k, 9][[1]]
           )
           data.table::set(new,
-              i = k,
-              j = 7L,
-              value = x[[1]])
+                          i = k,
+                          j = 7L,
+                          value = x[[1]])
           temp <- x[[2]]
           data.table::set(new,
-              i = k,
-              j = 10L,
-              value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
-          #print(k/nrow(new))
-          #print(k)
+                          i = k,
+                          j = 10L,
+                          value = temp[Thresholds == eval(x[[1]]), "Utilities"][[1]])
         }
-        return(new)
+        base::return(new)
       }
 
       # Inner function for threshold optimizataion
@@ -1862,18 +1946,18 @@ RedYellowGreen <- function(calibEval,
                               MidTierLowThresh = 0.25,
                               MidTierHighThresh = 0.75) {
         # Convert factor target to numeric
-        data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
+        data[, eval(actTar) := base::as.numeric(base::as.character(base::get(actTar)))]
 
         # Optimize each column's classification threshold ::
-        popTrue <- mean(data[[(actTar)]])
+        popTrue <- base::mean(data[[(actTar)]])
         store   <- list()
         j <- 0
-        options(warn = -1)
+        base::options(warn = -1)
         if (MidTierDoNothing) {
-          for (i in c(MidTierHighThresh)) {
+          for (i in base::c(MidTierHighThresh)) {
             j <- j + 1
             tp      <-
-              sum(ifelse(
+              base::sum(base::ifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 1 & data[[predTar]] >= i,
@@ -1881,7 +1965,7 @@ RedYellowGreen <- function(calibEval,
                 0
               ))
             tn      <-
-              sum(ifelse(
+              base::sum(base::ifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 0 & data[[predTar]] <  i,
@@ -1889,7 +1973,7 @@ RedYellowGreen <- function(calibEval,
                 0
               ))
             fp      <-
-              sum(ifelse(
+              base::sum(base::ifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 0 & data[[predTar]] >= i,
@@ -1897,7 +1981,7 @@ RedYellowGreen <- function(calibEval,
                 0
               ))
             fn      <-
-              sum(ifelse(
+              base::sum(base::ifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 1 & data[[predTar]] <  i,
@@ -1905,28 +1989,28 @@ RedYellowGreen <- function(calibEval,
                 0
               ))
             none    <-
-              sum(ifelse(
+              base::sum(base::ifelse(
                 data[[predTar]] <= MidTierHighThresh &
                   data[[predTar]] >= MidTierLowThresh,
                 1,
                 0
               ))
-            tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
-            fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
-            noneRate <- none / nrow(data)
+            tpr     <- base::ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+            fpr     <- base::ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+            noneRate <- none / base::nrow(data)
             utility <-
               (1 - noneRate) * (
                 popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -
                                                                                                                     fpr))
               ) + noneRate * MidTierCost
-            store[[j]] <- c(i, utility)
+            store[[j]] <- base::c(i, utility)
           }
-          all <- rbindlist(list(store))
-          utilities <- data.table::melt(all[2, ])
+          all <- data.table::rbindlist(list(store))
+          utilities <- data.table::melt(all[2,])
           data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- data.table::melt(all[1, ])
+          thresholds <- data.table::melt(all[1,])
           data.table::setnames(thresholds, "value", "Thresholds")
-          results <- cbind(utilities, thresholds)[, c(-1, -3)]
+          results <- cbind(utilities, thresholds)[, c(-1,-3)]
           thresh <-
             results[Thresholds <= eval(MidTierLowThresh) |
                       Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1, 2][[1]]
@@ -1938,13 +2022,17 @@ RedYellowGreen <- function(calibEval,
                         by = 0.01)) {
             j <- j + 1
             tp      <-
-              sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+              base::sum(ifelse(data[[actTar]] == 1 &
+                           data[[predTar]] >= i, 1, 0))
             tn      <-
-              sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+              base::sum(ifelse(data[[actTar]] == 0 &
+                           data[[predTar]] <  i, 1, 0))
             fp      <-
-              sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+              base::sum(ifelse(data[[actTar]] == 0 &
+                           data[[predTar]] >= i, 1, 0))
             fn      <-
-              sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+              base::sum(ifelse(data[[actTar]] == 1 &
+                           data[[predTar]] <  i, 1, 0))
             tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
             fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
             utility <-
@@ -1952,12 +2040,12 @@ RedYellowGreen <- function(calibEval,
                                                                                                                   fpr))
             store[[j]] <- c(i, utility)
           }
-          all <- rbindlist(list(store))
-          utilities <- data.table::melt(all[2, ])
+          all <- data.table::rbindlist(list(store))
+          utilities <- data.table::melt(all[2,])
           data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- data.table::melt(all[1, ])
+          thresholds <- data.table::melt(all[1,])
           data.table::setnames(thresholds, "value", "Thresholds")
-          results <- cbind(utilities, thresholds)[, c(-1, -3)]
+          results <- cbind(utilities, thresholds)[, c(-1,-3)]
           thresh <- results[order(-Utilities)][1, 2][[1]]
           options(warn = 1)
           return(list(thresh, results))
@@ -2131,20 +2219,20 @@ threshOptim <- function(data,
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
 
   # Optimize each column's classification threshold ::
-  popTrue <- mean(data[[(actTar)]])
+  popTrue <- base::mean(data[[(actTar)]])
   store   <- list()
   j <- 0
   options(warn = -1)
   for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
     j <- j + 1
     tp      <-
-      sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+      base::sum(ifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
     tn      <-
-      sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+      base::sum(ifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
     fp      <-
-      sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+      base::sum(ifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
     fn      <-
-      sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+      base::sum(ifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
     tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
     fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
     utility <-
@@ -2152,12 +2240,12 @@ threshOptim <- function(data,
                                                                                                           fpr))
     store[[j]] <- c(i, utility)
   }
-  all <- rbindlist(list(store))
-  utilities <- data.table::melt(all[2, ])
+  all <- data.table::rbindlist(list(store))
+  utilities <- data.table::melt(all[2,])
   data.table::setnames(utilities, "value", "Utilities")
-  thresholds <- data.table::melt(all[1, ])
+  thresholds <- data.table::melt(all[1,])
   data.table::setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[, c(-1, -3)]
+  results <- cbind(utilities, thresholds)[, c(-1,-3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
   return(list(thresh, results))
@@ -2173,8 +2261,6 @@ threshOptim <- function(data,
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @import data.table
-#' @import monreg
-#' @import stats
 #' @examples
 #' # Create Fake Annual Returns Data
 #' library(data.table)
@@ -2245,7 +2331,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
         baseline <- monreg::monreg(z, zz, hr = 0.5, hd = 0.5)
         preds    <- baseline$estimation
         preds[preds < 0] <- 0
-        val0     <- mean(abs(zz - preds))
+        val0     <- base::mean(abs(zz - preds))
         data.table::set(nls_collection, 1, 2, value = val0)
       }, error = function(x) {
         return("skip")
@@ -2256,7 +2342,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
           stats::lm(as.formula(paste(y, " ~ poly(", x, ",5)", sep = "")), data = DATA)
         preds    <- baseline$fitted.values
         preds[preds < 0] <- 0
-        val0     <- mean(abs(zz - preds))
+        val0     <- base::mean(abs(zz - preds))
         data.table::set(nls_collection, 1L, 2L, value = val0)
       }, error = function(x) {
         return("skip")
@@ -2270,9 +2356,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSasymp(", x, ", Asym, R0, lrc)", sep = ""
       )), data = DATA)
-    preds1 <- fitted(model1, DATA)
+    preds1 <- stats::fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
-    val    <- mean(abs(zz - preds1))
+    val    <- base::mean(abs(zz - preds1))
     data.table::set(nls_collection, 2L, 2L, value = val1)
   }, error = function(x) {
     return("skip")
@@ -2284,9 +2370,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSasympOff(", x, ", Asym, lrc, c0)", sep = ""
       )), data = DATA)
-    preds2 <- fitted(model2, DATA)
+    preds2 <- stats::fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
-    va2    <- mean(abs(zz - preds2))
+    va2    <- base::mean(abs(zz - preds2))
     data.table::set(nls_collection, 3L, 2L, value = val2)
   }, error = function(x) {
     return("skip")
@@ -2298,9 +2384,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSasympOrig(", x, ", Asym, lrc)", sep = ""
       )), data = DATA)
-    preds3 <- fitted(model3, DATA)
+    preds3 <- stats::fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
-    va3    <- mean(abs(zz - preds3))
+    va3    <- base::mean(abs(zz - preds3))
     data.table::set(nls_collection, 4L, 2L, value = val3)
   }, error = function(x) {
     return("skip")
@@ -2312,9 +2398,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSbiexp(", x, ", A1, lrc1, A2, lrc2)", sep = ""
       )), data = DATA)
-    preds4 <- fitted(model4, DATA)
+    preds4 <- stats::fitted(model4, DATA)
     preds4[preds4 < 0] <- 0
-    val4   <- mean(abs(zz - preds4))
+    val4   <- base::mean(abs(zz - preds4))
     data.table::set(nls_collection, 5L, 2L, value = val4)
   }, error = function(x) {
     return("skip")
@@ -2326,9 +2412,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSfpl(", x, ", A, B, xmid, scal)", sep = ""
       )), data = DATA)
-    preds5 <- fitted(model5, DATA)
+    preds5 <- stats::fitted(model5, DATA)
     preds5[preds5 < 0] <- 0
-    val5   <- mean(abs(zz - preds5))
+    val5   <- base::mean(abs(zz - preds5))
     data.table::set(nls_collection, 6L, 2L, value = val5)
   }, error = function(x) {
     return("skip")
@@ -2340,9 +2426,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSgompertz(", x, ", Asym, b2, b3)", sep = ""
       )), data = DATA)
-    preds6 <- fitted(model6, DATA)
+    preds6 <- stats::fitted(model6, DATA)
     preds6[preds6 < 0] <- 0
-    val6   <- mean(abs(zz - preds6))
+    val6   <- base::mean(abs(zz - preds6))
     data.table::set(nls_collection, 7L, 2L, value = val6)
   }, error = function(x) {
     return("skip")
@@ -2354,9 +2440,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSlogis(", x, ", Asym, xmid, scal)", sep = ""
       )), data = DATA)
-    preds7 <- fitted(model7, DATA)
+    preds7 <- stats::fitted(model7, DATA)
     preds7[preds7 < 0] <- 0
-    val7   <- mean(abs(zz - preds7))
+    val7   <- base::mean(abs(zz - preds7))
     data.table::set(nls_collection, 8L, 2L, value = val7)
   }, error = function(x) {
     return("skip")
@@ -2366,9 +2452,9 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   tryCatch({
     model8 <-
       stats::nls(as.formula(paste(y, " ~ SSmicmen(", x, ", Vm, K)", sep = "")), data = DATA)
-    preds8 <- fitted(model8, DATA)
+    preds8 <- stats::fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
-    val8   <- mean(abs(zz - preds8))
+    val8   <- base::mean(abs(zz - preds8))
     data.table::set(nls_collection, 9L, 2L, value = val8)
   }, error = function(x) {
     return("skip")
@@ -2380,16 +2466,17 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
       stats::nls(as.formula(paste(
         y, " ~ SSweibull(", x, ", Asym, Drop, lrc, pwr)", sep = ""
       )), data = DATA)
-    preds9 <- fitted(model9, DATA)
+    preds9 <- stats::fitted(model9, DATA)
     preds9[preds9 < 0] <- 0
-    val9   <- mean(abs(zz - preds9))
+    val9   <- base::mean(abs(zz - preds9))
     data.table::set(nls_collection, 10L, 2L, value = val9)
   }, error = function(x) {
     return("skip")
   })
 
   # Store best model name
-  name <- nls_collection[Accuracy != 999][order(Accuracy)][1, 1][[1]]
+  name <-
+    nls_collection[Accuracy != 999][order(Accuracy)][1, 1][[1]]
 
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
@@ -2504,7 +2591,7 @@ multiplot <-
            plotlist = NULL,
            cols = 1,
            layout = NULL) {
-    require(grid)
+    library(grid)
 
     plots <- c(list(...), plotlist)
 
@@ -2520,17 +2607,19 @@ multiplot <-
       print(plots[[1]])
 
     } else {
-      grid.newpage()
-      pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+      grid::grid.newpage()
+      grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
 
       for (i in 1:numPlots) {
         matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
-        print(plots[[i]],
-              vp = viewport(
-                layout.pos.row = matchidx$row,
-                layout.pos.col = matchidx$col
-              ))
+        print(
+          plots[[i]],
+          vp = grid::viewport(
+            layout.pos.row = matchidx$row,
+            layout.pos.col = matchidx$col
+          )
+        )
       }
     }
   }
@@ -2543,7 +2632,7 @@ multiplot <-
 #' @param Size The size of the axis labels and title
 #' @import data.table
 #' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(1000,
 #'                                                            mean = 50,
 #'                                                             sd = 20),
@@ -2735,7 +2824,7 @@ ParDepCalPlots <- function(data,
                            bucket      = 0.05,
                            FactLevels  = 10,
                            Function    = function(x)
-                             mean(x, na.rm = TRUE)) {
+                             base::mean(x, na.rm = TRUE)) {
   # Load libraries
   library(data.table)
   library(ggplot2)
@@ -2768,21 +2857,20 @@ ParDepCalPlots <- function(data,
   } else {
     type <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
-    #preds2 <- preds2[, ]
     preds2 <-
       preds2[, .(Function(get(ActColName)), Function(get(PredColName)), max(id)), by = get(IndepVar)][order(-V3)]
     if (nrow(preds2) > FactLevels) {
       temp1 <- preds2[1:FactLevels][, V3 := NULL]
       temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
-      temp2[, ':=' (V1 = V1 * V3 / sum(V3),
-                    V2 = V2 * V3 / sum(V3))]
-      temp3 <- temp2[, .(sum(V1), sum(V2))]
+      temp2[, ':=' (V1 = V1 * V3 / base::sum(V3),
+                    V2 = V2 * V3 / base::sum(V3))]
+      temp3 <- temp2[, .(base::sum(V1), base::sum(V2))]
       temp3[, get := "Other"]
       data.table::setcolorder(temp3, c(3, 1, 2))
     }
     preds2[, V3 := NULL]
     if (nrow(preds2) > FactLevels) {
-      preds3 <- rbindlist(list(temp1, temp3))
+      preds3 <- data.table::rbindlist(list(temp1, temp3))
     } else {
       preds3 <- preds2
     }
@@ -2802,7 +2890,8 @@ ParDepCalPlots <- function(data,
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot
-    plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
+    plot <-
+      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
       ggplot2::geom_line(ggplot2::aes(y = preds3[[PredColName]], color = "Predicted")) +
       ggplot2::geom_line(ggplot2::aes(y = preds3[[ActColName]], color = "Actuals")) +
       ggplot2::ylab("Actual / Predicted") + ggplot2::xlab(IndepVar) +
@@ -2824,14 +2913,15 @@ ParDepCalPlots <- function(data,
     predicted[, Type := "predicted"]
     data.table::setnames(predicted, PredColName, "Output")
 
-    data <- rbindlist(list(actual, predicted))[order(rank)]
+    data <- data.table::rbindlist(list(actual, predicted))[order(rank)]
     data[, rank := as.factor(rank)]
     data <- data[, eval(IndepVar) := as.numeric(get(IndepVar))]
     data <-
       data[, eval(IndepVar) := round(Function(get(IndepVar)), 3), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+    plot <-
+      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
       ggplot2::geom_boxplot(aes(fill = Type)) + ggplot2::scale_fill_manual(values = c("red", "blue")) +
       ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
       ggplot2::xlab(eval(IndepVar)) +
@@ -2846,10 +2936,13 @@ ParDepCalPlots <- function(data,
     predicted <- preds3[, ..keep]
     predicted[, Type := "predicted"]
     data.table::setnames(predicted, PredColName, "Output")
-    data <- rbindlist(list(actual, predicted))[order(-Output)]
+    data <- data.table::rbindlist(list(actual, predicted))[order(-Output)]
 
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
-      ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
+    plot <-
+      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+      ggplot2::geom_bar(stat = "identity",
+                        position = "dodge",
+                        ggplot2::aes(fill = Type)) + scale_fill_manual(values = c("red", "blue")) +
       ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
       ggplot2::xlab(eval(IndepVar)) +
       ChartTheme(Size = 15)
@@ -2937,7 +3030,7 @@ EvalPlot <- function(data,
                      type        = c("calibration", "boxplot"),
                      bucket      = 0.05,
                      aggrfun     = function(x)
-                       mean(x, na.rm = TRUE)) {
+                       base::mean(x, na.rm = TRUE)) {
   # Load libraries
   library(data.table)
   library(ggplot2)
@@ -2976,9 +3069,10 @@ EvalPlot <- function(data,
     zz2[, Type := 'actual']
     data.table::setnames(zz2, c("acts"), c("output"))
 
-    data <- rbindlist(list(zz1, zz2))
+    data <- data.table::rbindlist(list(zz1, zz2))
 
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = rank, y = output, fill = Type)) +
+    plot <-
+      ggplot2::ggplot(data, ggplot2::aes(x = rank, y = output, fill = Type)) +
       ggplot2::geom_boxplot(outlier.color = "red", color = "black") +
       ggplot2::ggtitle("Calibration Evaluation Boxplot") +
       ggplot2::xlab("Predicted Percentile") + ggplot2::ylab("Observed Values") +
@@ -3021,8 +3115,8 @@ EvalPlot <- function(data,
 #' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
 #' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @import data.table
 #' @return data.table of original data plus newly created features
+#' @import data.table
 #' @examples
 #' # Grouping Case
 #' N = 25116
@@ -3032,7 +3126,7 @@ EvalPlot <- function(data,
 #'                                                 paste0(LETTERS,LETTERS),
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = as.Date(Sys.time()),
+#'                    DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -3043,7 +3137,7 @@ EvalPlot <- function(data,
 #'
 #' # Non Grouping Case
 #' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -3080,7 +3174,7 @@ GDL_Feature_Engineering <- function(data,
                                       function(x)
                                         quantile(x, probs = 0.9, na.rm = TRUE),
                                       function(x)
-                                        mean(x, na.rm = TRUE),
+                                        base::mean(x, na.rm = TRUE),
                                       function(x)
                                         sd(x, na.rm = TRUE),
                                       function(x)
@@ -3276,8 +3370,8 @@ GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(data)) {
       data.table::set(data,
-          j = col,
-          value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                      j = col,
+                      value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
@@ -3293,7 +3387,7 @@ GDL_Feature_Engineering <- function(data,
         if (is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j, -1)
+          data.table::set(data, which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3438,8 +3532,8 @@ GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(data)) {
       data.table::set(data,
-          j = col,
-          value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                      j = col,
+                      value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
@@ -3455,7 +3549,7 @@ GDL_Feature_Engineering <- function(data,
         if (is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j, -1)
+          data.table::set(data, which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3483,8 +3577,8 @@ GDL_Feature_Engineering <- function(data,
 #' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
 #' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @import data.table
 #' @return data.table of original data plus newly created features
+#' @import data.table
 #' @examples
 #' # Grouping Case
 #' N = 25116
@@ -3494,7 +3588,7 @@ GDL_Feature_Engineering <- function(data,
 #'                                                 paste0(LETTERS,LETTERS),
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = as.Date(Sys.time()),
+#'                    DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -3505,7 +3599,7 @@ GDL_Feature_Engineering <- function(data,
 #'
 #' # Non Grouping Case
 #' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -3728,8 +3822,8 @@ DT_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(data)) {
       data.table::set(data,
-          j = col,
-          value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                      j = col,
+                      value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
@@ -3745,7 +3839,7 @@ DT_GDL_Feature_Engineering <- function(data,
         if (is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j, -1)
+          data.table::set(data, which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3900,8 +3994,8 @@ DT_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(data)) {
       data.table::set(data,
-          j = col,
-          value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                      j = col,
+                      value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
@@ -3917,7 +4011,7 @@ DT_GDL_Feature_Engineering <- function(data,
         if (is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j, -1)
+          data.table::set(data, which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3948,8 +4042,8 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
-#' @import data.table
 #' @return data.table of original data plus newly created features
+#' @import data.table
 #' @examples
 #' # Grouping Case
 #' N = 25116
@@ -3959,7 +4053,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #'                                                 paste0(LETTERS,LETTERS),
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = as.Date(Sys.time()),
+#'                    DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -3988,7 +4082,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #'
 #' # Non Grouping Case
 #' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -4019,7 +4113,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             lags           = c(1:6, 12, seq(24, 168, 24)),
                                             periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
                                             statsFUNs      = c(function(x)
-                                              mean(x, na.rm = TRUE),
+                                              base::mean(x, na.rm = TRUE),
                                               function(x)
                                                 sd(x, na.rm = TRUE)),
                                             statsNames     = c("mean", "sd"),
@@ -4043,7 +4137,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
     data <- data.table::as.data.table(data)
 
   # Max data to keep
-  MAX_RECORDS_FULL <- max(max(lags + 1), max(periods + 1), RecordsKeep)
+  MAX_RECORDS_FULL <-
+    max(max(lags + 1), max(periods + 1), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
 
@@ -4221,16 +4316,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
-          j = col,
-          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
+                      j = col,
+                      value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
-            j = col,
-            value = as.factor(tempData1[[col]]))
+                        j = col,
+                        value = as.factor(tempData1[[col]]))
       }
     }
 
@@ -4242,7 +4337,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
         }
       }
     }
@@ -4396,16 +4491,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
-          j = col,
-          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
+                      j = col,
+                      value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
-            j = col,
-            value = as.factor(tempData1[[col]]))
+                        j = col,
+                        value = as.factor(tempData1[[col]]))
       }
     }
 
@@ -4417,7 +4512,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
         }
       }
     }
@@ -4448,8 +4543,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
-#' @import data.table
 #' @return data.table of original data plus newly created features
+#' @import data.table
 #' @examples
 #' # Grouping Case
 #' N = 25116
@@ -4459,7 +4554,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'                                                 paste0(LETTERS,LETTERS),
 #'                                                 paste0(letters,LETTERS),
 #'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = as.Date(Sys.time()),
+#'                    DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -4486,7 +4581,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'
 #' # Non Grouping Case
 #' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
 #'                    Target = stats::filter(rnorm(N,
 #'                                                 mean = 50,
 #'                                                 sd = 20),
@@ -4557,7 +4652,8 @@ FAST_GDL_Feature_Engineering <- function(data,
   }
 
   # Max data to keep
-  MAX_RECORDS_FULL <- max(max(lags + 1), max(periods * 2), RecordsKeep)
+  MAX_RECORDS_FULL <-
+    max(max(lags + 1), max(periods * 2), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods * 2), RecordsKeep)
 
@@ -4782,16 +4878,16 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
-          j = col,
-          value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
+                      j = col,
+                      value = replace(tempData1[[col]], is.infinite(tempData1[[col]]), NA))
     }
 
     # Turn character columns into factors
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
-            j = col,
-            value = as.factor(tempData1[[col]]))
+                        j = col,
+                        value = as.factor(tempData1[[col]]))
       }
     }
 
@@ -4803,7 +4899,7 @@ FAST_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
         }
       }
     }
@@ -4996,8 +5092,8 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Replace any inf values with NA
     for (col in seq_along(data)) {
       data.table::set(data,
-          j = col,
-          value = replace(data[[col]], is.infinite(data[[col]]), NA))
+                      j = col,
+                      value = replace(data[[col]], is.infinite(data[[col]]), NA))
     }
 
     # Turn character columns into factors
@@ -5013,7 +5109,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         if (is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j, -1)
+          data.table::set(data, which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -5043,8 +5139,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param MaxModels Number of models you'd like to have returned
 #' @param TrainData Set to NULL or supply a data.table for training data
 #' @param TestData Set to NULL or supply  a data.table for validation data
-#' @import data.table
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
+#' @import data.table
 #' @examples
 #'Correl <- 0.85
 #'aa <- data.table::data.table(target = runif(10000))
@@ -5158,9 +5254,9 @@ AutoH20Modeler <- function(Construct,
       )) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = i,
@@ -5205,8 +5301,8 @@ AutoH20Modeler <- function(Construct,
           )
         distMatch <-
           data.table::data.table(act = rep(temp, 11),
-                     LCVals = lower,
-                     Proper = proper)
+                                 LCVals = lower,
+                                 Proper = proper)
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceValue)
       }
@@ -5228,9 +5324,9 @@ AutoH20Modeler <- function(Construct,
         )
       )) {
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5275,8 +5371,8 @@ AutoH20Modeler <- function(Construct,
           )
         distMatch <-
           data.table::data.table(act = rep(temp, 11),
-                     LCVals = lower,
-                     Proper = proper)
+                                 LCVals = lower,
+                                 Proper = proper)
         ReplaceValue2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceValue2)
       }
@@ -5295,9 +5391,9 @@ AutoH20Modeler <- function(Construct,
           )) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5323,9 +5419,9 @@ AutoH20Modeler <- function(Construct,
           !(tolower(Construct[i, 3][[1]]) %in% c("auto", "mse", "rmse", "mae", "rmsle"))) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5343,12 +5439,13 @@ AutoH20Modeler <- function(Construct,
       # Quantile Regression with GBM
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
-           Construct[i, 4][[1]] < 0 || !is.numeric(Construct[i, 4][[1]]))) {
+           Construct[i, 4][[1]] < 0 ||
+           !is.numeric(Construct[i, 4][[1]]))) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5368,9 +5465,9 @@ AutoH20Modeler <- function(Construct,
           tolower(Construct[i, 2][[1]]) == "quantile") {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5390,9 +5487,9 @@ AutoH20Modeler <- function(Construct,
           tolower(Construct[i, 3][[1]]) != "mae") {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5411,9 +5508,9 @@ AutoH20Modeler <- function(Construct,
           Construct[i, 11][[1]] != TRUE) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5436,9 +5533,9 @@ AutoH20Modeler <- function(Construct,
       )) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5476,8 +5573,8 @@ AutoH20Modeler <- function(Construct,
             "Quantile")
         distMatch <-
           data.table::data.table(act = rep(temp, 11),
-                     LCVals = lower,
-                     Proper = proper)
+                                 LCVals = lower,
+                                 Proper = proper)
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceVal)
       }
@@ -5499,9 +5596,9 @@ AutoH20Modeler <- function(Construct,
       )) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5544,8 +5641,8 @@ AutoH20Modeler <- function(Construct,
           )
         distMatch <-
           data.table::data.table(act = rep(temp, 11),
-                     LCVals = lower,
-                     Proper = proper)
+                                 LCVals = lower,
+                                 Proper = proper)
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceVal2)
       }
@@ -5555,9 +5652,9 @@ AutoH20Modeler <- function(Construct,
           !(tolower(Construct[i, 3][[1]]) %in% c("automatic", "crossentropy"))) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5591,9 +5688,9 @@ AutoH20Modeler <- function(Construct,
           )) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5613,9 +5710,9 @@ AutoH20Modeler <- function(Construct,
           tolower(Construct[i, 3][[1]]) != "quantile") {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5633,12 +5730,13 @@ AutoH20Modeler <- function(Construct,
       # Quantile Regression with DL
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
-           Construct[i, 4][[1]] < 0 || !is.numeric(Construct[i, 4][[1]]))) {
+           Construct[i, 4][[1]] < 0 ||
+           !is.numeric(Construct[i, 4][[1]]))) {
         j = j + 1
         data.table::set(ErrorCollection,
-            i = j,
-            j = 1L,
-            value = i)
+                        i = j,
+                        j = 1L,
+                        value = i)
         data.table::set(
           ErrorCollection,
           i = j,
@@ -5656,9 +5754,9 @@ AutoH20Modeler <- function(Construct,
     } else {
       j = j + 1
       data.table::set(ErrorCollection,
-          i = j,
-          j = 1L,
-          value = i)
+                      i = j,
+                      j = 1L,
+                      value = i)
       data.table::set(
         ErrorCollection,
         i = j,
@@ -5683,7 +5781,8 @@ AutoH20Modeler <- function(Construct,
         "Your model construction file has errors and an error log has been stored globally as 'ErrorCollectionLog'"
       )
     )
-    save(ErrorCollectionLog, file = paste0(model_path,"/ErrorCollectionLog.Rdata"))
+    save(ErrorCollectionLog,
+         file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
   } else {
     save(Construct, file = paste0(model_path, "/Construct.Rdata"))
   }
@@ -5782,9 +5881,9 @@ AutoH20Modeler <- function(Construct,
     P4             <- 2 ^ (-1 / 4)
     P3             <- 2 ^ (-1 / 3)
     data.table::set(grid_tuned_paths,
-        i = i,
-        j = 1L,
-        value = Construct[i, 5][[1]])
+                    i = i,
+                    j = 1L,
+                    value = Construct[i, 5][[1]])
 
     ######################################
     # Target Encoding
@@ -5799,8 +5898,8 @@ AutoH20Modeler <- function(Construct,
         as.numeric(validate[, Construct[i, "Targets"][[1]]])
       for (col in cols) {
         x     <- h2o::h2o.target_encode_create(data = train,
-                                          x = list(col),
-                                          y = Construct[i, "Targets"][[1]])
+                                               x = list(col),
+                                               y = Construct[i, "Targets"][[1]])
         # Apply to training data
         train <- h2o::h2o.target_encode_apply(
           train,
@@ -5841,9 +5940,9 @@ AutoH20Modeler <- function(Construct,
       validate[, Construct[i, "Targets"][[1]]] <-
         as.factor(validate[, Construct[i, "Targets"][[1]]])
       data.table::set(Construct,
-          i = i,
-          j = "PD_Data",
-          value = "Validate")
+                      i = i,
+                      j = "PD_Data",
+                      value = "Validate")
     }
 
     ######################################
@@ -6300,7 +6399,8 @@ AutoH20Modeler <- function(Construct,
       # Collect accuracy metric on validation data
       if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
         if (tolower(Construct[i, 2][[1]]) == "multinomial") {
-          cc <- h2o::h2o.logloss(h2o::h2o.performance(best_model, valid = TRUE))
+          cc <-
+            h2o::h2o.logloss(h2o::h2o.performance(best_model, valid = TRUE))
         } else {
           cc <- h2o::h2o.auc(h2o::h2o.performance(best_model, valid = TRUE))
         }
@@ -6320,9 +6420,9 @@ AutoH20Modeler <- function(Construct,
       }
       # Store results in metadata file
       data.table::set(grid_tuned_paths,
-          i = i,
-          j = 3L,
-          value = cc)
+                      i = i,
+                      j = 3L,
+                      value = cc)
     }
 
     ######################################
@@ -6445,9 +6545,9 @@ AutoH20Modeler <- function(Construct,
 
       # Store results in metadata file
       data.table::set(grid_tuned_paths,
-          i = i,
-          j = 4L,
-          value = dd)
+                      i = i,
+                      j = 4L,
+                      value = dd)
     }
 
 
@@ -6466,8 +6566,8 @@ AutoH20Modeler <- function(Construct,
         if (tolower(Construct[i, 22][[1]]) == "standard") {
           save_model <-
             h2o::h2o.saveModel(object = best_model,
-                          path = model_path,
-                          force = TRUE)
+                               path = model_path,
+                               force = TRUE)
           data.table::set(
             grid_tuned_paths,
             i = i,
@@ -6479,8 +6579,8 @@ AutoH20Modeler <- function(Construct,
         } else {
           save_model <-
             h2o::h2o.saveMojo(object = best_model,
-                         path = model_path,
-                         force = TRUE)
+                              path = model_path,
+                              force = TRUE)
           h2o::h2o.download_mojo(
             model = best_model,
             path = model_path,
@@ -6521,9 +6621,9 @@ AutoH20Modeler <- function(Construct,
         }
       } else {
         data.table::set(Construct,
-            i = i,
-            j = 13L,
-            value = 0)
+                        i = i,
+                        j = 13L,
+                        value = 0)
       }
 
       # Gather predicted values
@@ -6552,8 +6652,8 @@ AutoH20Modeler <- function(Construct,
             if (tolower(Construct[i, 22][[1]]) == "standard") {
               save_model <-
                 h2o::h2o.saveModel(object = best_model,
-                              path = model_path,
-                              force = TRUE)
+                                   path = model_path,
+                                   force = TRUE)
               data.table::set(
                 grid_tuned_paths,
                 i = i,
@@ -6565,8 +6665,8 @@ AutoH20Modeler <- function(Construct,
             } else {
               save_model <-
                 h2o::h2o.saveMojo(object = best_model,
-                             path = model_path,
-                             force = TRUE)
+                                  path = model_path,
+                                  force = TRUE)
               h2o::h2o.download_mojo(
                 model = best_model,
                 path = model_path,
@@ -6592,7 +6692,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Save VarImp and VarNOTImp
-          VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
+          VIMP <-
+            data.table::as.data.table(h2o::h2o.varimp(best_model))
           save(VIMP,
                file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
@@ -6602,7 +6703,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Gather predicted values
-          preds <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
+          preds <-
+            h2o::h2o.predict(best_model, newdata = validate)[, 1]
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
             PredsPD <- as.data.table(predsPD)
@@ -6621,8 +6723,8 @@ AutoH20Modeler <- function(Construct,
             if (tolower(Construct[i, 22][[1]]) == "standard") {
               save_model <-
                 h2o::h2o.saveModel(object = bl_model,
-                              path = model_path,
-                              force = TRUE)
+                                   path = model_path,
+                                   force = TRUE)
               data.table::set(
                 grid_tuned_paths,
                 i = i,
@@ -6634,8 +6736,8 @@ AutoH20Modeler <- function(Construct,
             } else {
               save_model <-
                 h2o::h2o.saveMojo(object = bl_model,
-                             path = model_path,
-                             force = TRUE)
+                                  path = model_path,
+                                  force = TRUE)
               h2o::h2o.download_mojo(
                 model = bl_model,
                 path = model_path,
@@ -6661,7 +6763,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Save VarImp
-          VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
+          VIMP <-
+            data.table::as.data.table(h2o::h2o.varimp(bl_model))
           save(VIMP,
                file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
@@ -6671,7 +6774,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Gather predicted values
-          preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
+          preds <-
+            h2o::h2o.predict(bl_model, newdata = validate)[, 1]
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
             PredsPD <- data.table::as.data.table(predsPD)
@@ -6692,8 +6796,8 @@ AutoH20Modeler <- function(Construct,
             if (tolower(Construct[i, 22][[1]]) == "standard") {
               save_model <-
                 h2o::h2o.saveModel(object = best_model,
-                              path = model_path,
-                              force = TRUE)
+                                   path = model_path,
+                                   force = TRUE)
               data.table::set(
                 grid_tuned_paths,
                 i = i,
@@ -6705,8 +6809,8 @@ AutoH20Modeler <- function(Construct,
             } else {
               save_model <-
                 h2o::h2o.saveMojo(object = best_model,
-                             path = model_path,
-                             force = TRUE)
+                                  path = model_path,
+                                  force = TRUE)
               h2o::h2o.download_mojo(
                 model = best_model,
                 path = model_path,
@@ -6760,7 +6864,8 @@ AutoH20Modeler <- function(Construct,
             Label <- "f0point5"
           } else if (Construct[i, 15][[1]] == "CS") {
             predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
-            data    <- data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
+            data    <-
+              data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
             data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
             temp  <- threshOptim(
               data     = data,
@@ -6782,7 +6887,8 @@ AutoH20Modeler <- function(Construct,
           )
 
           # Save VarImp
-          VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
+          VIMP <-
+            data.table::as.data.table(h2o::h2o.varimp(best_model))
           save(VIMP,
                file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
@@ -6792,7 +6898,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Gather predicted values
-          preds <- h2o::h2o.predict(best_model, newdata = validate)[, 3]
+          preds <-
+            h2o::h2o.predict(best_model, newdata = validate)[, 3]
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
@@ -6811,8 +6918,8 @@ AutoH20Modeler <- function(Construct,
             if (tolower(Construct[i, 22][[1]]) == "standard") {
               save_model <-
                 h2o::h2o.saveModel(object = bl_model,
-                              path = model_path,
-                              force = TRUE)
+                                   path = model_path,
+                                   force = TRUE)
               data.table::set(
                 grid_tuned_paths,
                 i = i,
@@ -6824,8 +6931,8 @@ AutoH20Modeler <- function(Construct,
             } else {
               save_model <-
                 h2o::h2o.saveMojo(object = bl_model,
-                             path = model_path,
-                             force = TRUE)
+                                  path = model_path,
+                                  force = TRUE)
               h2o::h2o.download_mojo(
                 model = bl_model,
                 path = model_path,
@@ -6877,7 +6984,8 @@ AutoH20Modeler <- function(Construct,
             Label <- "f0point5"
           } else if (Construct[i, 15][[1]] == "CS") {
             predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
-            data    <- data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
+            data    <-
+              data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
             data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
             temp  <- threshOptim(
               data     = data,
@@ -6899,7 +7007,8 @@ AutoH20Modeler <- function(Construct,
           )
 
           # Save VarImp
-          VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
+          VIMP <-
+            data.table::as.data.table(h2o::h2o.varimp(bl_model))
           save(VIMP,
                file = paste0(model_path, "/VarImp_", Construct[i, 5][[1]], ".Rdata"))
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
@@ -6909,7 +7018,8 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Gather predicted values
-          preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+          preds <-
+            h2o::h2o.predict(bl_model, newdata = validate)[, 3]
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
@@ -6930,8 +7040,8 @@ AutoH20Modeler <- function(Construct,
         if (tolower(Construct[i, 22][[1]]) == "standard") {
           save_model <-
             h2o::h2o.saveModel(object = bl_model,
-                          path = model_path,
-                          force = TRUE)
+                               path = model_path,
+                               force = TRUE)
           data.table::set(
             grid_tuned_paths,
             i = i,
@@ -6943,8 +7053,8 @@ AutoH20Modeler <- function(Construct,
         } else {
           save_model <-
             h2o::h2o.saveMojo(object = bl_model,
-                         path = model_path,
-                         force = TRUE)
+                              path = model_path,
+                              force = TRUE)
           h2o::h2o.download_mojo(
             model = bl_model,
             path = model_path,
@@ -6997,7 +7107,8 @@ AutoH20Modeler <- function(Construct,
           Label <- "f0point5"
         } else if (Construct[i, 15][[1]] == "CS") {
           predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
-          data    <- data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
+          data    <-
+            data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
           data[, eval(Construct[i, 1][[1]]) := as.numeric(as.character(get(Construct[i, 1][[1]])))]
           temp  <- threshOptim(
             data     = data,
@@ -7012,9 +7123,9 @@ AutoH20Modeler <- function(Construct,
           Label <- "CS"
         }
         data.table::set(grid_tuned_paths,
-            i = i,
-            j = 5L,
-            value = Thresh)
+                        i = i,
+                        j = 5L,
+                        value = Thresh)
         preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
         if (tolower(Construct[i, 14][[1]]) == "all") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
@@ -7058,19 +7169,24 @@ AutoH20Modeler <- function(Construct,
 
     # Generate plots
     col <- Construct[i, 1][[1]]
-    calibration <- data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
+    calibration <-
+      data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
     if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
       calibration[, eval(col) := as.numeric(as.character(get(col)))]
     }
     if (Construct[i, 13][[1]] >= 1) {
       if (tolower(Construct[i, 14][[1]]) == "all") {
-        calibEval <- data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        calib <- data.table::as.data.table(h2o::h2o.cbind(predsPD, data_h2o))
+        calibEval <-
+          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+        calib <-
+          data.table::as.data.table(h2o::h2o.cbind(predsPD, data_h2o))
       } else if (tolower(Construct[i, 14][[1]]) == "train") {
-        calibEval <- data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+        calibEval <-
+          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
         calib <- as.data.table(h2o::h2o.cbind(predsPD, train))
       } else if (tolower(Construct[i, 14][[1]]) == "validate") {
-        calibEval <- data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+        calibEval <-
+          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
         calib <- as.data.table(h2o::h2o.cbind(predsPD, validate))
       }
       if (Construct[i, 12][[1]]) {
@@ -7079,7 +7195,8 @@ AutoH20Modeler <- function(Construct,
       }
     } else {
       if (Construct[i, 12][[1]]) {
-        calibEval <- data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+        calibEval <-
+          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
         save(calibEval,
              file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
       }
@@ -7111,8 +7228,6 @@ AutoH20Modeler <- function(Construct,
         )
         ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
       } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
-        # Calibration plot
-        #interc <- mean(calibration[[eval(predName)]], na.rm = TRUE)
         out1 <- EvalPlot(
           calibration,
           PredColName = predName,
@@ -7120,7 +7235,7 @@ AutoH20Modeler <- function(Construct,
           type        = "calibration",
           bucket      = 0.05,
           aggrfun     = function(x)
-            mean(x, na.rm = TRUE)
+            base::mean(x, na.rm = TRUE)
         )
 
         if (exists("Thresh")) {
@@ -7136,7 +7251,7 @@ AutoH20Modeler <- function(Construct,
           type        = "calibration",
           bucket      = 0.05,
           aggrfun     = function(x)
-            mean(x, na.rm = TRUE)
+            base::mean(x, na.rm = TRUE)
         )
         ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
 
@@ -7156,7 +7271,8 @@ AutoH20Modeler <- function(Construct,
       if (Construct[i, 11][[1]] && cc <= dd) {
         predsMulti <- h2o::h2o.predict(best_model, newdata = validate)
         col <- Construct[i, 1][[1]]
-        xx <- data.table::as.data.table(h2o::h2o.cbind(validate[, col], predsMulti))
+        xx <-
+          data.table::as.data.table(h2o::h2o.cbind(validate[, col], predsMulti))
         if (Construct[i, 12][[1]]) {
           calib <- data.table::as.data.table(h2o::h2o.cbind(validate, preds))
           save(calib, file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
@@ -7177,7 +7293,7 @@ AutoH20Modeler <- function(Construct,
           data.table::setnames(temp, KeepCols[j], "Act")
           store[[k]] <- temp
         }
-        xxx <- rbindlist(store)
+        xxx <- data.table::rbindlist(store)
 
         # Calibration plot
         out1 <- EvalPlot(
@@ -7187,13 +7303,14 @@ AutoH20Modeler <- function(Construct,
           type        = "calibration",
           bucket      = 0.05,
           aggrfun     = function(x)
-            mean(x, na.rm = TRUE)
+            base::mean(x, na.rm = TRUE)
         )
         ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       } else {
         predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
         col <- Construct[i, 1][[1]]
-        xx <- data.table::as.data.table(h2o::h2o.cbind(validate[, col], predsMulti))
+        xx <-
+          data.table::as.data.table(h2o::h2o.cbind(validate[, col], predsMulti))
         if (Construct[i, 12][[1]]) {
           calib <- data.table::as.data.table(h2o::h2o.cbind(validate, preds))
           save(calib, file = paste0(model_path, "/", Construct[i, 5][[1]], ".Rdata"))
@@ -7214,7 +7331,7 @@ AutoH20Modeler <- function(Construct,
           data.table::setnames(temp, KeepCols[j], "Act")
           store[[k]] <- temp
         }
-        xxx <- rbindlist(store)
+        xxx <- data.table::rbindlist(store)
 
         # Calibration plot
         out1 <- EvalPlot(
@@ -7224,7 +7341,7 @@ AutoH20Modeler <- function(Construct,
           type        = "calibration",
           bucket      = 0.05,
           aggrfun     = function(x)
-            mean(x, na.rm = TRUE)
+            base::mean(x, na.rm = TRUE)
         )
         ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       }
@@ -7275,7 +7392,7 @@ AutoH20Modeler <- function(Construct,
                 bucket      = 0.05,
                 FactLevels  = 10,
                 Function    = function(x)
-                  mean(x, na.rm = TRUE)
+                  base::mean(x, na.rm = TRUE)
               )
             },
             error = function(x)
@@ -7412,9 +7529,9 @@ tokenizeH20 <- function(data3) {
   tokenized.lower <- h2o::h2o.tolower(tokenized)
   tokenized.words <-
     tokenized.lower[h2o::h2o.grep("[0-9]",
-                             tokenized.lower,
-                             invert = TRUE,
-                             output.logical = TRUE), ]
+                                  tokenized.lower,
+                                  invert = TRUE,
+                                  output.logical = TRUE),]
   tokenized.words
 }
 
@@ -7473,7 +7590,8 @@ Word2VecModel <- function(datax,
 
   # Create storage file
   N <- length(stringCol)
-  StoreFile <- data.table::data.table(ModelName = rep("a", N), Path = c("aa", N))
+  StoreFile <-
+    data.table::data.table(ModelName = rep("a", N), Path = c("aa", N))
   i <- 0
 
   # Loop through all the string columns
@@ -7512,18 +7630,20 @@ Word2VecModel <- function(datax,
 
     # Save model
     if (tolower(SaveModel) == "standard") {
-      w2vPath <- h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+      w2vPath <-
+        h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
       data.table::set(StoreFile,
-          i = i,
-          j = 1L,
-          value = ModelID[i])
+                      i = i,
+                      j = 1L,
+                      value = ModelID[i])
       data.table::set(StoreFile,
-          i = i,
-          j = 2L,
-          value = w2vPath)
+                      i = i,
+                      j = 2L,
+                      value = w2vPath)
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     } else {
-      w2vPath <- h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+      w2vPath <-
+        h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
       h2o::h2o.download_mojo(
         model = w2v.model,
         path = model_path,
@@ -7532,13 +7652,13 @@ Word2VecModel <- function(datax,
         genmodel_name = ModelID[i]
       )
       data.table::set(StoreFile,
-          i = i,
-          j = 1L,
-          value = ModelID[i])
+                      i = i,
+                      j = 1L,
+                      value = ModelID[i])
       data.table::set(StoreFile,
-          i = i,
-          j = 2L,
-          value = w2vPath)
+                      i = i,
+                      j = 2L,
+                      value = w2vPath)
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
 
@@ -7600,50 +7720,45 @@ WordFreq <- function(data,
                      RemoveEnglishStopwords = TRUE,
                      Stemming = TRUE,
                      StopWords = c("blabla1", "blabla2")) {
-  # Load libraries
-  library("tm")
-  library("SnowballC")
-  library("wordcloud")
-  library("RColorBrewer")
 
   # Prepare data
   if (is.null(ClusterCol)) {
-    desc <- tm::Corpus(VectorSource(data[[eval(TextColName)]]))
+    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
   } else {
     desc <-
-      tm::Corpus(VectorSource(data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]]))
+      tm::Corpus(tm::VectorSource(data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]]))
   }
 
   # Clean text
   toSpace <-
-    content_transformer(function (x , pattern)
+    tm::content_transformer(function (x , pattern)
       gsub(pattern, " ", x))
   text <- tm::tm_map(text, toSpace, "/")
   text <- tm::tm_map(text, toSpace, "@")
   text <- tm::tm_map(text, toSpace, "\\|")
 
   # Convert the text to lower case
-  text <- tm::tm_map(text, content_transformer(tolower))
+  text <- tm::tm_map(text, tm::content_transformer(tolower))
 
   # Remove numbers
-  text <- tm::tm_map(text, removeNumbers)
+  text <- tm::tm_map(text, tm::removeNumbers)
 
   # Remove english common stopwords
   if (RemoveEnglishStopwords)
-    text <- tm_map(text, removeWords, stopwords("english"))
+    text <- tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
 
   # specify your stopwords as a character vector
-  text <- tm::tm_map(text, removeWords, StopWords)
+  text <- tm::tm_map(text, tm::removeWords, StopWords)
 
   # Remove punctuations
-  text <- tm::tm_map(text, removePunctuation)
+  text <- tm::tm_map(text, tm::removePunctuation)
 
   # Eliminate extra white spaces
-  text <- tm::tm_map(text, stripWhitespace)
+  text <- tm::tm_map(text, tm::stripWhitespace)
 
   # Text stemming
   if (Stemming)
-    text <- tm::tm_map(text, stemDocument)
+    text <- tm::tm_map(text, tm::stemDocument)
 
   # Finalize
   dtm <- tm::TermDocumentMatrix(text)
