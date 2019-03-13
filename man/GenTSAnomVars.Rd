@@ -34,8 +34,7 @@ The original data.table with the added columns merged in
 GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them.
 }
 \examples{
-# Create data
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(10000,
                                                 mean = 50,
                                                 sd = 20),

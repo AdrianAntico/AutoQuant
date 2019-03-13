@@ -6,7 +6,7 @@
 \usage{
 EvalPlot(data, PredColName = "PredictedValues",
   ActColName = "ActualValues", type = c("calibration", "boxplot"),
-  bucket = 0.05, aggrfun = function(x) mean(x, na.rm = TRUE))
+  bucket = 0.05, aggrfun = function(x) base::mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}

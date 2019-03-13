@@ -6,12 +6,13 @@
 \usage{
 Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
   24)), periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-  statsFUNs = c(function(x) mean(x, na.rm = TRUE), function(x) sd(x,
-  na.rm = TRUE)), statsNames = c("mean", "sd"), targets = c("Target"),
-  groupingVars = c("GroupVariable"), sortDateName = c("DateTime"),
-  timeDiffTarget = c("Time_Gap"), timeAgg = "days", WindowingLag = 1,
-  Type = "Lag", Timer = FALSE, SkipCols = FALSE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
+  statsFUNs = c(function(x) base::mean(x, na.rm = TRUE), function(x)
+  sd(x, na.rm = TRUE)), statsNames = c("mean", "sd"),
+  targets = c("Target"), groupingVars = c("GroupVariable"),
+  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
+  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = FALSE,
+  SkipCols = FALSE, SimpleImpute = TRUE, AscRowByGroup = "temp",
+  RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}
@@ -63,7 +64,7 @@ data <- data.table::data.table(GroupVariable = sample(x = c(letters,
                                                 paste0(LETTERS,LETTERS),
                                                 paste0(letters,LETTERS),
                                                 paste0(LETTERS,letters))),
-                   DateTime = as.Date(Sys.time()),
+                   DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),
@@ -92,7 +93,7 @@ data <- Scoring_GDL_Feature_Engineering(data,
 
 # Non Grouping Case
 N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),

@@ -7,7 +7,7 @@
 GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
   10, 15, 20, 25), statsFUNs = c(function(x) quantile(x, probs = 0.1,
   na.rm = TRUE), function(x) quantile(x, probs = 0.9, na.rm = TRUE),
-  function(x) mean(x, na.rm = TRUE), function(x) sd(x, na.rm = TRUE),
+  function(x) base::mean(x, na.rm = TRUE), function(x) sd(x, na.rm = TRUE),
   function(x) quantile(x, probs = 0.25, na.rm = TRUE), function(x)
   quantile(x, probs = 0.75, na.rm = TRUE)), statsNames = c("q10", "q90",
   "mean", "sd", "q25", "q75"), targets = c("qty"),
@@ -62,7 +62,7 @@ data <- data.table::data.table(GroupVariable = sample(x = c(letters,
                                                 paste0(LETTERS,LETTERS),
                                                 paste0(letters,LETTERS),
                                                 paste0(LETTERS,letters))),
-                   DateTime = as.Date(Sys.time()),
+                   DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),
@@ -73,7 +73,7 @@ data <- data[order(DateTime)]
 
 # Non Grouping Case
 N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),

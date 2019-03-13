@@ -56,7 +56,7 @@ data <- data.table::data.table(GroupVariable = sample(x = c(letters,
                                                 paste0(LETTERS,LETTERS),
                                                 paste0(letters,LETTERS),
                                                 paste0(LETTERS,letters))),
-                   DateTime = as.Date(Sys.time()),
+                   DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),
@@ -67,7 +67,7 @@ data <- data[order(DateTime)]
 
 # Non Grouping Case
 N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                    Target = stats::filter(rnorm(N,
                                                 mean = 50,
                                                 sd = 20),

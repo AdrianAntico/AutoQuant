@@ -38,7 +38,7 @@ If Ensemble is TRUE, return a data.table object with a date column and the forec
 AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts.
 }
 \examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                                Target = stats::filter(rnorm(1000,
                                                            mean = 50,
                                                             sd = 20),

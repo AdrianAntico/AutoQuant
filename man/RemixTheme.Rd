@@ -13,7 +13,7 @@ An object to pass along to ggplot objects following the "+" sign
 This function adds the Remix Theme to ggplots
 }
 \examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                                Target = stats::filter(rnorm(1000,
                                                            mean = 50,
                                                             sd = 20),
@@ -26,5 +26,5 @@ p <- p + RemixTheme()
 p
 }
 \author{
-DougVegas at RemixInstitute.com
+DougVegas
 }

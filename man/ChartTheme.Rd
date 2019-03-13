@@ -16,7 +16,7 @@ An object to pass along to ggplot objects following the "+" sign
 This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 }
 \examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
                                Target = stats::filter(rnorm(1000,
                                                            mean = 50,
                                                             sd = 20),

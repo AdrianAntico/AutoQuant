@@ -7,7 +7,7 @@
 ParDepCalPlots(data, PredColName = "PredictedValues",
   ActColName = "ActualValues", IndepVar = "Independent_Variable_Name",
   type = "calibration", bucket = 0.05, FactLevels = 10,
-  Function = function(x) mean(x, na.rm = TRUE))
+  Function = function(x) base::mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
