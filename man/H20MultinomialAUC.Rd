@@ -23,7 +23,7 @@ Micro AUC
 H20MultinomialAUC computes the micro auc from a multinomial model
 }
 \examples{
-auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+# auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 }
 \author{
 Adrian Antico
