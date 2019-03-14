@@ -1589,8 +1589,8 @@ AutoTS <- function(data,
 #' @param x The column of interest
 #' @import data.table
 #' @examples
-#' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
-#' Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
+#' # Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
+#' # Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- base::Vectorize(function(x) {
@@ -1769,14 +1769,14 @@ ModelDataPrep <- function(data,
 #' @import doParallel
 #' @import parallel
 #' @examples
-#' data <- RedYellowGreen(data,
-#'                        PredictColNumber  = 1,
-#'                        ActualColNumber   = 2,
-#'                        TruePositiveCost  = 0,
-#'                        TrueNegativeCost  = 0,
-#'                        FalsePositiveCost = -1,
-#'                        FalseNegativeCost = -2,
-#'                        MidTierCost       = -0.5)
+#' # data <- RedYellowGreen(data,
+#' #                         PredictColNumber  = 1,
+#' #                         ActualColNumber   = 2,
+#' #                         TruePositiveCost  = 0,
+#' #                         TrueNegativeCost  = 0,
+#' #                         FalsePositiveCost = -1,
+#' #                         FalseNegativeCost = -2,
+#' #                         MidTierCost       = -0.5)
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(data,
@@ -2819,7 +2819,7 @@ EvalPlot <- function(data,
 #'                                                 sd = 20),
 #'                                           filter=rep(1,10),
 #'                                           circular=TRUE))
-#' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+#' data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #'
 #' # Non Grouping Case
