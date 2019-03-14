@@ -2805,24 +2805,6 @@ EvalPlot <- function(data,
 #' @return data.table of original data plus newly created features
 #' @import data.table
 #' @examples
-#' # Grouping Case
-#' N = 25116
-#' data <- data.table::data.table(GroupVariable = sample(x = c(letters,
-#'                                                 LETTERS,
-#'                                                 paste0(letters,letters),
-#'                                                 paste0(LETTERS,LETTERS),
-#'                                                 paste0(letters,LETTERS),
-#'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = base::as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,
-#'                                                 mean = 50,
-#'                                                 sd = 20),
-#'                                           filter=rep(1,10),
-#'                                           circular=TRUE))
-#' data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp][, temp := NULL]
-#' data <- data[order(DateTime)]
-#'
-#' # Non Grouping Case
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
@@ -3263,37 +3245,6 @@ GDL_Feature_Engineering <- function(data,
 #' @return data.table of original data plus newly created features
 #' @import data.table
 #' @examples
-# Grouping Case
-#' N = 25116
-#' data <- data.table::data.table(GroupVariable = sample(x = c(letters,
-#'                                                             LETTERS,
-#'                                                             paste0(letters,letters),
-#'                                                             paste0(LETTERS,LETTERS),
-#'                                                             paste0(letters,LETTERS),
-#'                                                             paste0(LETTERS,letters))),
-#'                                DateTime = base::as.Date(Sys.time()),
-#'                                Target = stats::filter(rnorm(N,
-#'                                                             mean = 50,
-#'                                                             sd = 20),
-#'                                                       filter=rep(1,10),
-#'                                                       circular=TRUE))
-#' data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp][, temp := NULL]
-#' data <- data[order(DateTime)]
-#' data <- DT_GDL_Feature_Engineering(data,
-#'                                    lags           = c(seq(1,5,1)),
-#'                                    periods        = c(3,5,10,15,20,25),
-#'                                    statsNames     = c("MA"),
-#'                                    targets        = c("Target"),
-#'                                    groupingVars   = "GroupVariable",
-#'                                    sortDateName   = "DateTime",
-#'                                    timeDiffTarget = c("Time_Gap"),
-#'                                    timeAgg        = c("days"),
-#'                                    WindowingLag   = 1,
-#'                                    Type           = "Lag",
-#'                                    Timer          = TRUE,
-#'                                    SkipCols       = FALSE,
-#'                                    SimpleImpute   = TRUE)
-#' # Non Grouping Case
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(N,
@@ -3739,40 +3690,6 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @return data.table of original data plus newly created features
 #' @import data.table
 #' @examples
-#' # Grouping Case
-#' N = 25116
-#' data1 <- data.table::data.table(GroupVariable = sample(x = c(letters,
-#'                                                              LETTERS,
-#'                                                              paste0(letters,letters),
-#'                                                              paste0(LETTERS,LETTERS),
-#'                                                              paste0(letters,LETTERS),
-#'                                                              paste0(LETTERS,letters))),
-#'                                 DateTime = base::as.Date(Sys.time()),
-#'                                 Target = stats::filter(rnorm(N,
-#'                                                              mean = 50,
-#'                                                              sd = 20),
-#'                                                        filter=rep(1,10),
-#'                                                        circular=TRUE))
-#' data1[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp]
-#' data1 <- data1[order(DateTime)]
-#' data1 <- Scoring_GDL_Feature_Engineering(data1,
-#'                                          lags           = c(seq(1,5,1)),
-#'                                          periods        = c(3,5,10,15,20,25),
-#'                                          statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
-#'                                          statsNames     = c("MA"),
-#'                                          targets        = c("Target"),
-#'                                          groupingVars   = c("GroupVariable"),
-#'                                          sortDateName   = c("DateTime"),
-#'                                          timeDiffTarget = c("Time_Gap"),
-#'                                          timeAgg        = "days",
-#'                                          WindowingLag   = 1,
-#'                                          Type           = "Lag",
-#'                                          Timer          = TRUE,
-#'                                          SkipCols       = FALSE,
-#'                                          SimpleImpute   = TRUE,
-#'                                          AscRowByGroup  = "temp",
-#'                                          RecordsKeep    = 1)
-#' # Non Grouping Case
 #' N = 25116
 #' data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                 Target = stats::filter(rnorm(25116,
@@ -4245,40 +4162,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @return data.table of original data plus newly created features
 #' @import data.table
 #' @examples
-#' # Grouping Case
-#' N = 25116
-#' data <- data.table::data.table(GroupVariable = sample(x = c(letters,
-#'                                                 LETTERS,
-#'                                                 paste0(letters,letters),
-#'                                                 paste0(LETTERS,LETTERS),
-#'                                                 paste0(letters,LETTERS),
-#'                                                 paste0(LETTERS,letters))),
-#'                    DateTime = base::as.Date(Sys.time()),
-#'                    Target = stats::filter(rnorm(N,
-#'                                                 mean = 50,
-#'                                                 sd = 20),
-#'                                           filter=rep(1,10),
-#'                                           circular=TRUE))
-#' data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp]
-#' data <- data[order(DateTime)]
-#' data <- FAST_GDL_Feature_Engineering(data,
-#'                              lags           = c(1:6,12,seq(24,168,24)),
-#'                              periods        = c(6,12,24,72,168,720,4320,8640),
-#'                              statsFUNs      = c("mean","sd"),
-#'                              statsNames     = c("mean","sd"),
-#'                              targets        = c("Target"),
-#'                              groupingVars   = c("GroupVariable"),
-#'                              sortDateName   = "DateTime",
-#'                              timeDiffTarget = c("Time_Gap"),
-#'                              timeAgg        = "days",
-#'                              WindowingLag   = 1,
-#'                              Type           = "Lag",
-#'                              Timer          = TRUE,
-#'                              SkipCols       = FALSE,
-#'                              SimpleImpute   = TRUE,
-#'                              AscRowByGroup  = "temp")
-#'
-#' # Non Grouping Case
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
