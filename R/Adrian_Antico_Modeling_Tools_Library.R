@@ -4259,7 +4259,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'                                                 sd = 20),
 #'                                           filter=rep(1,10),
 #'                                           circular=TRUE))
-#' data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#' data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp]
 #' data <- data[order(DateTime)]
 #' data <- FAST_GDL_Feature_Engineering(data,
 #'                              lags           = c(1:6,12,seq(24,168,24)),
