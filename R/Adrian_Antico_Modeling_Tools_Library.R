@@ -6884,7 +6884,7 @@ AutoH20Modeler <- function(Construct,
           aggrfun     = function(x)
             quantile(x, probs = Construct[i, 4][[1]], na.rm = TRUE)
         )
-        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
 
         # Calibration boxplot
         out2 <- EvalPlot(
@@ -6894,7 +6894,7 @@ AutoH20Modeler <- function(Construct,
           type        = "boxplot",
           bucket      = 0.05
         )
-        ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
       } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial", "bernoulli")) {
         out1 <- EvalPlot(
           calibration,
@@ -6909,7 +6909,7 @@ AutoH20Modeler <- function(Construct,
         if (exists("Thresh")) {
           out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
         }
-        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       } else {
         # Calibration plot
         out1 <- EvalPlot(
@@ -6921,7 +6921,7 @@ AutoH20Modeler <- function(Construct,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
-        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
 
         # Calibration boxplot
         out2 <- EvalPlot(
@@ -6931,7 +6931,7 @@ AutoH20Modeler <- function(Construct,
           type        = "boxplot",
           bucket      = 0.05
         )
-        ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalBP_", Construct[i, 5][[1]], ".png"))
       }
     } else {
       # Multinomial case
@@ -6973,7 +6973,7 @@ AutoH20Modeler <- function(Construct,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
-        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       } else {
         predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
         col <- Construct[i, 1][[1]]
@@ -7011,7 +7011,7 @@ AutoH20Modeler <- function(Construct,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
-        ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
+        ggplot2::ggsave(paste0(model_path, "/CalP_", Construct[i, 5][[1]], ".png"))
       }
 
       # Multinomial AUC function here::
