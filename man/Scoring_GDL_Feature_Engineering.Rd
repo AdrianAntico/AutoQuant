@@ -56,40 +56,6 @@ data.table of original data plus newly created features
 For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 }
 \examples{
-# Grouping Case
-N = 25116
-data1 <- data.table::data.table(GroupVariable = sample(x = c(letters,
-                                                             LETTERS,
-                                                             paste0(letters,letters),
-                                                             paste0(LETTERS,LETTERS),
-                                                             paste0(letters,LETTERS),
-                                                             paste0(LETTERS,letters))),
-                                DateTime = base::as.Date(Sys.time()),
-                                Target = stats::filter(rnorm(N,
-                                                             mean = 50,
-                                                             sd = 20),
-                                                       filter=rep(1,10),
-                                                       circular=TRUE))
-data1[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp]
-data1 <- data1[order(DateTime)]
-data1 <- Scoring_GDL_Feature_Engineering(data1,
-                                         lags           = c(seq(1,5,1)),
-                                         periods        = c(3,5,10,15,20,25),
-                                         statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
-                                         statsNames     = c("MA"),
-                                         targets        = c("Target"),
-                                         groupingVars   = c("GroupVariable"),
-                                         sortDateName   = c("DateTime"),
-                                         timeDiffTarget = c("Time_Gap"),
-                                         timeAgg        = "days",
-                                         WindowingLag   = 1,
-                                         Type           = "Lag",
-                                         Timer          = TRUE,
-                                         SkipCols       = FALSE,
-                                         SimpleImpute   = TRUE,
-                                         AscRowByGroup  = "temp",
-                                         RecordsKeep    = 1)
-# Non Grouping Case
 N = 25116
 data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
                                 Target = stats::filter(rnorm(25116,
