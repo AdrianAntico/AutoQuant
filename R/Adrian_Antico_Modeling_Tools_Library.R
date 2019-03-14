@@ -1766,6 +1766,8 @@ ModelDataPrep <- function(data,
 #' @param Precision Set the decimal number to increment by between 0 and 1
 #' @import data.table
 #' @import foreach
+#' @import doParallel
+#' @import parallel
 #' @examples
 #' data <- RedYellowGreen(data,
 #'                        PredictColNumber  = 1,
@@ -2390,7 +2392,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param ... Passthrough arguments
 #' @import data.table
 #' @examples
-#' multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
+#' # multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 multiplot <-
@@ -2528,7 +2530,7 @@ ChartTheme <- function(Size = 12) {
 #' @param x X is your variable of interest
 #' @import data.table
 #' @examples
-#' percRank(x)
+#' # percRank(x)
 #' @return vector of percentile ranks
 #' @export
 percRank <- function(x)
@@ -2550,14 +2552,14 @@ percRank <- function(x)
 #' @import data.table
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
-#' ParDepCalPlots(data,
-#'                PredColName = "predict",
-#'                ActColName  = "target",
-#'                IndepVar    = "Independent_Variable",
-#'                type        = "boxplot",
-#'                bucket      = 0.05,
-#'                FactLevels  = 10,
-#'                Function    = function(x) mean(x, na.rm = TRUE))
+#' # ParDepCalPlots(data,
+#' #                PredColName = "predict",
+#' #                ActColName  = "target",
+#' #                IndepVar    = "Independent_Variable",
+#' #                type        = "boxplot",
+#' #                bucket      = 0.05,
+#' #                FactLevels  = 10,
+#' #                Function    = function(x) mean(x, na.rm = TRUE))
 #' @export
 ParDepCalPlots <- function(data,
                            PredColName = "PredictedValues",
@@ -2705,12 +2707,12 @@ ParDepCalPlots <- function(data,
 #' @import data.table
 #' @return Calibration plot or boxplot
 #' @examples
-#' EvalPlot(data,
-#'          PredColName = "predict",
-#'          ActColName  = "target",
-#'          type        = "calibration",
-#'          bucket      = 0.05,
-#'          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+#' # EvalPlot(data,
+#' #          PredColName = "predict",
+#' #          ActColName  = "target",
+#' #          type        = "calibration",
+#' #          bucket      = 0.05,
+#' #          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 #' @export
 EvalPlot <- function(data,
                      PredColName = "PredictedValues",
