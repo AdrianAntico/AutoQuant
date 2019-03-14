@@ -68,17 +68,17 @@ data <- data.table::data.table(GroupVariable = sample(x = c(letters,
                                                 sd = 20),
                                           filter=rep(1,10),
                                           circular=TRUE))
-data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data[, temp := seq(1:161), by = "GroupVariable"][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 
 # Non Grouping Case
 N = 25116
-data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
-                   Target = stats::filter(rnorm(N,
-                                                mean = 50,
-                                                sd = 20),
-                                          filter=rep(1,10),
-                                          circular=TRUE))
+data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+  Target = stats::filter(rnorm(1000,
+                               mean = 50,
+                               sd = 20),
+                         filter=rep(1,10),
+                         circular=TRUE))
 data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 data <- GDL_Feature_Engineering(data,
