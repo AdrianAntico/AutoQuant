@@ -1634,7 +1634,7 @@ SimpleCap <- function(x) {
 #'                          circular=TRUE))
 #' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
-#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + geom_line()
+#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 #' p <- p + RemixTheme()
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
@@ -2058,7 +2058,7 @@ RedYellowGreen <- function(data,
 #' @param fnProfit This is the cost of generating a false negative prediction
 #' @import data.table
 #' @examples
-#' data <- threshOptim(data     = calibEval,
+#' data <- threshOptim(data     = data,
 #'                     actTar   = "target",
 #'                     predTar  = "p1",
 #'                     tpProfit = 0,
@@ -2445,7 +2445,7 @@ multiplot <-
 #'                          circular=TRUE))
 #' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
-#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + geom_line()
+#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 #' p <- p + ChartTheme(Size = 12)
 #' p
 #' @return An object to pass along to ggplot objects following the "+" sign
