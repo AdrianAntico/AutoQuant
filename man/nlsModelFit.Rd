@@ -48,7 +48,7 @@ data2 <- merge(data1,
                all = TRUE)
 
 # Plot graphs of predicted vs actual
-ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "blue")) +
   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "red")) +
   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
