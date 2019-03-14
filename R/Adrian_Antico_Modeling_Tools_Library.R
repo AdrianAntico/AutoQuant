@@ -1987,7 +1987,7 @@ RedYellowGreen <- function(data,
 
       # Run core function
       data <- RedYellowGreenParallel(
-        calibEval,
+        data,
         PredictColNumber  = PredictColNumber,
         ActualColNumber   = ActualColNumber,
         TruePositiveCost  = TruePositiveCost,
