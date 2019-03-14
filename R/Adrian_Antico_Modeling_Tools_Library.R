@@ -7229,17 +7229,17 @@ tokenizeH20 <- function(data3) {
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @import data.table
 #' @examples
-#'data <- Word2VecModel(data,
-#'                      stringCol     = c("Text_Col1", "Text_Col2"),
-#'                      KeepStringCol = FALSE,
-#'                      model_path    = getwd(),
-#'                      ModelID       = c("Text_Col1", "Text_Col2"),
-#'                      vects         = 50,
-#'                      SaveStopWords = FALSE,
-#'                      MinWords      = 1,
-#'                      WindowSize    = 1,
-#'                      Epochs        = 25,
-#'                      StopWords     = NULL)
+#' # data <- Word2VecModel(data,
+#' #                       stringCol     = c("Text_Col1", "Text_Col2"),
+#' #                       KeepStringCol = FALSE,
+#' #                       model_path    = getwd(),
+#' #                       ModelID       = c("Text_Col1", "Text_Col2"),
+#' #                       vects         = 50,
+#' #                       SaveStopWords = FALSE,
+#' #                       MinWords      = 1,
+#' #                       WindowSize    = 1,
+#' #                       Epochs        = 25,
+#' #                       StopWords     = NULL)
 #' @export
 Word2VecModel <- function(datax,
                           stringCol     = c("Text_Col1", "Text_Col2"),
@@ -7375,13 +7375,13 @@ Word2VecModel <- function(datax,
 #' @param StopWords Add your own stopwords, in vector format
 #' @import data.table
 #' @examples
-#' data <- WordFreq(data,
-#'                  TextColName = "DESCR",
-#'                  ClusterCol = "ClusterAllNoTarget",
-#'                  ClusterID = 0,
-#'                  RemoveEnglishStopwords = TRUE,
-#'                  Stemming = TRUE,
-#'                  StopWords = c("blabla1", "blabla2")
+#' #  data <- WordFreq(data,
+#' #                   TextColName = "DESCR",
+#' #                   ClusterCol = "ClusterAllNoTarget",
+#' #                   ClusterID = 0,
+#' #                   RemoveEnglishStopwords = TRUE,
+#' #                   Stemming = TRUE,
+#' #                   StopWords = c("blabla1", "blabla2")
 #' @export
 WordFreq <- function(data,
                      TextColName = "DESCR",
