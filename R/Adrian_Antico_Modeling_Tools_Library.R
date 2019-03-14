@@ -3181,11 +3181,11 @@ GDL_Feature_Engineering <- function(data,
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
-          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets),
+          c(paste0("LAG_", WindowingLag, "_", Targets),
             timeTarget)
       } else {
         Targets <-
-          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets))
+          c(paste0("LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -3631,11 +3631,11 @@ DT_GDL_Feature_Engineering <- function(data,
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
-          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets),
+          c(paste0("LAG_", WindowingLag, "_", Targets),
             timeTarget)
       } else {
         Targets <-
-          c(paste0(groupingVars[i], "LAG_", WindowingLag, "_", Targets))
+          c(paste0("LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
@@ -3850,9 +3850,13 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
       # Lags
       for (l in seq_along(lags)) {
-        for (t in targets) {
+        for (t in Targets) {
           if (!(paste0(groupingVars[i], "_LAG_", lags[l], "_", t) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i], "_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"), by = get(groupingVars[i])]
+            CounterIndicator = CounterIndicator + 1
+            if (Timer) {
+              print(CounterIndicator / runs)
+            }
           }
         }
       }
@@ -3863,8 +3867,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := data.table::shift(get(sortDateName),
-                                                                                     n = lags[l],
-                                                                                     type = "lag"), by = get(groupingVars[i])]
+                                                                                 n = lags[l],
+                                                                                 type = "lag"), by = get(groupingVars[i])]
           }
         }
 
@@ -3945,18 +3949,18 @@ Scoring_GDL_Feature_Engineering <- function(data,
       # Define targets
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          targets <-
-            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets),
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets),
               timeTarget)
         } else {
-          targets <-
-            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", targets))
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
-          targets <- c(targets, timeTarget)
+          Targets <- c(Targets, timeTarget)
         } else {
-          targets <- targets
+          Targets <- Targets
         }
       }
 
@@ -4035,9 +4039,13 @@ Scoring_GDL_Feature_Engineering <- function(data,
 
     # Lags
     for (l in seq_along(lags)) {
-      for (t in targets) {
-        if (!(paste0("_LAG_", lags[l], "_", t) %in% SkipCols)) {
-          tempData[, paste0("_LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+      for (t in Targets) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+          tempData[, paste0("LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+          CounterIndicator = CounterIndicator + 1
+          if (Timer) {
+            print(CounterIndicator / runs)
+          }
         }
       }
     }
@@ -4054,37 +4062,36 @@ Scoring_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
-            tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(sortDateName),
-                                                                              get(paste0(
-                                                                                "TEMP", lags[l]
-                                                                              )),
-                                                                              units = eval(timeAgg)))]
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+              l == 1) {
+            tempData[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(sortDateName),
+                                                                               get(paste0(
+                                                                                 "TEMP", lags[l]
+                                                                               )),
+                                                                               units = eval(timeAgg)))]
             CounterIndicator = CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
-                "TEMP", (lags[l - 1])
-              )),
-              get(paste0(
-                "TEMP", lags[l]
-              )),
-              units = eval(timeAgg)))]
-              CounterIndicator = CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
+            tempData[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
+              "TEMP", lags[l] - 1
+            )),
+            get(paste0(
+              "TEMP", lags[l]
+            )),
+            units = eval(timeAgg)))]
+            CounterIndicator = CounterIndicator + 1
+            if (Timer) {
+              print(CounterIndicator / runs)
             }
           }
         }
       } else {
         for (l in seq_along(lags)) {
           if (l == 1) {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(
                 get(sortDateName),
                 get(paste0("TEMP", lags[l])),
                 units = eval(timeAgg)
@@ -4095,8 +4102,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(difftime(get(paste0(
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+              tempData[, paste0(timeDiffTarget, "_", lags[l]) := as.numeric(difftime(get(paste0(
                 "TEMP", (lags[l - 1])
               )),
               get(paste0(
@@ -4118,22 +4125,24 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget, "1")
+      timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
     # Define targets
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(paste0("_LAG_", WindowingLag, "_", targets),
-                     timeTarget)
+        Targets <-
+          c(paste0("LAG_", WindowingLag, "_", Targets),
+            timeTarget)
       } else {
-        targets <- c(paste0("_LAG_", WindowingLag, "_", targets))
+        Targets <-
+          c(paste0("LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(targets, timeTarget)
+        Targets <- c(Targets, timeTarget)
       } else {
-        targets <- targets
+        Targets <- Targets
       }
     }
 
