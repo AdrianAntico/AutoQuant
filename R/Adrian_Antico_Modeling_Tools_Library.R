@@ -190,7 +190,7 @@ DummifyDT <- function(data,
 #' @param targetName the name, in quotes, of the target variable
 #' @import data.table
 #' @examples
-#' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+#' # auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
 H20MultinomialAUC <-
   function(validate,
