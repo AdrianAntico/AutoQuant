@@ -3972,7 +3972,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       # Moving stats
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
-          for (t in targets) {
+          for (t in Targets) {
             if (!(paste0(groupingVars[i], statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
               keep <- c(groupingVars[i], t, AscRowByGroup)
               temp2 <-
@@ -4155,7 +4155,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Moving stats
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
-        for (t in targets) {
+        for (t in Targets) {
           if (!(paste0(statsNames[k], "_", periods[j], "_", t) %in% SkipCols)) {
             keep <- c(t, AscRowByGroup)
             temp2 <-
