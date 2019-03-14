@@ -3317,6 +3317,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Timer          = TRUE,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
+
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -3836,6 +3837,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
   # Begin feature engineering
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
+      Targets <- targets
       # Sort data
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
@@ -4033,6 +4035,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = -1)
     }
+    Targets <- targets
 
     # Remove records
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
