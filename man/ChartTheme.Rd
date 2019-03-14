@@ -24,7 +24,7 @@ data <- data.table::data.table(DateTime = as.Date(Sys.time()),
                          circular=TRUE))
 data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
-p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + geom_line()
+p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 p <- p + ChartTheme(Size = 12)
 p
 }
