@@ -2060,15 +2060,15 @@ RedYellowGreen <- function(data,
 #' @param fnProfit This is the cost of generating a false negative prediction
 #' @import data.table
 #' @examples
-#' data <- threshOptim(data     = data,
-#'                     actTar   = "target",
-#'                     predTar  = "p1",
-#'                     tpProfit = 0,
-#'                     tnProfit = 0,
-#'                     fpProfit = -1,
-#'                     fnProfit = -2)
-#' optimalThreshold <- data[[1]]
-#' allResults       <- data[[2]]
+#' # data <- threshOptim(data     = data,
+#' #                      actTar   = "target",
+#' #                      predTar  = "p1",
+#' #                      tpProfit = 0,
+#' #                      tnProfit = 0,
+#' #                      fpProfit = -1,
+#' #                      fnProfit = -2)
+#' #  optimalThreshold <- data[[1]]
+#' #  allResults       <- data[[2]]
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,
