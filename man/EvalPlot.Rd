@@ -28,12 +28,12 @@ Calibration plot or boxplot
 This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-EvalPlot(data,
-         PredColName = "predict",
-         ActColName  = "target",
-         type        = "calibration",
-         bucket      = 0.05,
-         aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+# EvalPlot(data,
+#          PredColName = "predict",
+#          ActColName  = "target",
+#          type        = "calibration",
+#          bucket      = 0.05,
+#          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 }
 \author{
 Adrian Antico

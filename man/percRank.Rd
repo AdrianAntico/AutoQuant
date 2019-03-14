@@ -16,8 +16,8 @@ vector of percentile ranks
 This function computes percentile ranks for each row in your data like Excel's PERCENT_RANK
 }
 \examples{
-percRank(x)
+# percRank(x)
 }
 \author{
-Adrian Antico at RemixInstitute.com
+Adrian Antico
 }

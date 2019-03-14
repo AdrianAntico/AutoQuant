@@ -33,14 +33,14 @@ Partial dependence calibration plot or boxplot
 This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-ParDepCalPlots(data,
-               PredColName = "predict",
-               ActColName  = "target",
-               IndepVar    = "Independent_Variable",
-               type        = "boxplot",
-               bucket      = 0.05,
-               FactLevels  = 10,
-               Function    = function(x) mean(x, na.rm = TRUE))
+# ParDepCalPlots(data,
+#                PredColName = "predict",
+#                ActColName  = "target",
+#                IndepVar    = "Independent_Variable",
+#                type        = "boxplot",
+#                bucket      = 0.05,
+#                FactLevels  = 10,
+#                Function    = function(x) mean(x, na.rm = TRUE))
 }
 \author{
 Adrian Antico
