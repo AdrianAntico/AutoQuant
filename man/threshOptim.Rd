@@ -29,7 +29,7 @@ Optimal threshold and corresponding utilities for the range of thresholds tested
 This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
-data <- threshOptim(data     = calibEval,
+data <- threshOptim(data     = data,
                     actTar   = "target",
                     predTar  = "p1",
                     tpProfit = 0,
