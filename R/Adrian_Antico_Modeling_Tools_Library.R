@@ -1636,7 +1636,6 @@ SimpleCap <- function(x) {
 #' data <- data[order(DateTime)]
 #' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 #' p <- p + RemixTheme()
-#' p
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 RemixTheme <- function() {
@@ -2449,7 +2448,6 @@ multiplot <-
 #' data <- data[order(DateTime)]
 #' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 #' p <- p + ChartTheme(Size = 12)
-#' p
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 ChartTheme <- function(Size = 12) {
