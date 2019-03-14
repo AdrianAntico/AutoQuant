@@ -4,15 +4,15 @@ Version: 1.0
 Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
                   role = c("aut", "cre"))
 Description: This package contains functions to help automate many of your machine learning and data science tasks. They are high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
-Depends: R (>= 3.5.1),
+Depends: R (>= 3.5),
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
 Imports: data.table,
-    sde,
     zoo,
     h2o,
+    Rcpp,
     lubridate,
     ggplot2,
     caTools,
@@ -21,6 +21,7 @@ Imports: data.table,
     tsoutliers,
     chron,
     pROC,
+    sde,
     stringr,
     snow,
     itertools,
@@ -28,10 +29,10 @@ Imports: data.table,
     parallel,
     scatterplot3d,
     RColorBrewer,
-    SnowballC,
+    grid,
+    monreg,
     tm,
     wordcloud,
     testthat,
     foreach
-Suggests: 
-
+Suggests:
