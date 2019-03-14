@@ -44,17 +44,17 @@ Word2VecModel(datax, stringCol = c("Text_Col1", "Text_Col2"),
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
-data <- Word2VecModel(data,
-                     stringCol     = c("Text_Col1", "Text_Col2"),
-                     KeepStringCol = FALSE,
-                     model_path    = getwd(),
-                     ModelID       = c("Text_Col1", "Text_Col2"),
-                     vects         = 50,
-                     SaveStopWords = FALSE,
-                     MinWords      = 1,
-                     WindowSize    = 1,
-                     Epochs        = 25,
-                     StopWords     = NULL)
+# data <- Word2VecModel(data,
+#                       stringCol     = c("Text_Col1", "Text_Col2"),
+#                       KeepStringCol = FALSE,
+#                       model_path    = getwd(),
+#                       ModelID       = c("Text_Col1", "Text_Col2"),
+#                       vects         = 50,
+#                       SaveStopWords = FALSE,
+#                       MinWords      = 1,
+#                       WindowSize    = 1,
+#                       Epochs        = 25,
+#                       StopWords     = NULL)
 }
 \author{
 Adrian Antico
