@@ -4,15 +4,14 @@
 \alias{FAST_GDL_Feature_Engineering}
 \title{An Fast Automated Feature Engineering Function}
 \usage{
-FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
-  periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-  statsFUNs = c("mean", "median", "sd", "quantile85", "quantile95"),
-  statsNames = c("mean", "median", "sd", "quantile85", "quantile95"),
-  targets = c("Target"), groupingVars = c("GroupVariable"),
-  sortDateName = "DateVar", timeDiffTarget = NULL, timeAgg = "hours",
-  WindowingLag = 1, Type = "Lag", Timer = FALSE, SkipCols = FALSE,
-  SimpleImpute = TRUE, AscRowByGroup = "BadgeRowNum",
-  RecordsKeep = 1)
+FAST_GDL_Feature_Engineering(data, lags = c(1:5), periods = c(seq(10,
+  50, 10)), statsFUNs = c("mean", "median", "sd", "quantile85",
+  "quantile95"), statsNames = c("mean", "median", "sd", "quantile85",
+  "quantile95"), targets = c("Target"),
+  groupingVars = c("GroupVariable"), sortDateName = "DateTime",
+  timeDiffTarget = NULL, timeAgg = "hours", WindowingLag = 1,
+  Type = "Lag", Timer = FALSE, SkipCols = FALSE,
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}
@@ -66,10 +65,10 @@ data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 data[, temp := seq(1:N)][, DateTime := DateTime - temp]
 data <- data[order(DateTime)]
 data <- FAST_GDL_Feature_Engineering(data,
-                                     lags           = c(1:6,12,seq(24,168,24)),
-                                     periods        = c(6,12,24,72,168,720,4320,8640),
-                                     statsFUNs      = c("mean","sd"),
-                                     statsNames     = c("mean","sd"),
+                                     lags           = c(1:5),
+                                     periods        = c(seq(10,50,10)),
+                                     statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
+                                     statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
                                      targets        = c("Target"),
                                      groupingVars   = NULL,
                                      sortDateName   = "DateTime",
