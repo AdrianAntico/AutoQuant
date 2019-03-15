@@ -4481,10 +4481,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp]
 #' data <- data[order(DateTime)]
 #' data <- FAST_GDL_Feature_Engineering(data,
-#'                                      lags           = c(1:6,12,seq(24,168,24)),
-#'                                      periods        = c(6,12,24,72,168,720,4320,8640),
-#'                                      statsFUNs      = c("mean","sd"),
-#'                                      statsNames     = c("mean","sd"),
+#'                                      lags           = c(1:5),
+#'                                      periods        = c(seq(10,50,10)),
+#'                                      statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
+#'                                      statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
 #'                                      targets        = c("Target"),
 #'                                      groupingVars   = NULL,
 #'                                      sortDateName   = "DateTime",
@@ -4498,30 +4498,31 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'                                      AscRowByGroup  = "temp")
 #' @export
 FAST_GDL_Feature_Engineering <- function(data,
-     lags           = c(1:6, 12, seq(24, 168, 24)),
-     periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-     statsFUNs      = c("mean", "median",
-                        "sd", "quantile85", "quantile95"),
-     statsNames     = c("mean", "median",
-                        "sd", "quantile85", "quantile95"),
-     targets        = c("Target"),
-     groupingVars   = c("GroupVariable"),
-     sortDateName   = "DateVar",
-     timeDiffTarget = NULL,
-     timeAgg        = "hours",
-     WindowingLag   = 1,
-     Type           = "Lag",
-     Timer          = FALSE,
-     SkipCols       = FALSE,
-     SimpleImpute   = TRUE,
-     AscRowByGroup  = "BadgeRowNum",
-     RecordsKeep    = 1) {
+                                         lags           = c(1:5),
+                                         periods        = c(seq(10,50,10)),
+                                         statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
+                                         statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
+                                         targets        = c("Target"),
+                                         groupingVars   = c("GroupVariable"),
+                                         sortDateName   = "DateTime",
+                                         timeDiffTarget = NULL,
+                                         timeAgg        = "hours",
+                                         WindowingLag   = 1,
+                                         Type           = "Lag",
+                                         Timer          = FALSE,
+                                         SkipCols       = FALSE,
+                                         SimpleImpute   = TRUE,
+                                         AscRowByGroup  = "temp",
+                                         RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
-  # Ensure target is numeric
-  data[, eval(targets) := as.numeric(get(targets))]
+  # Max data to keep
+  MAX_RECORDS_FULL <-
+    max(max(lags + 1), max(periods + 1), RecordsKeep)
+  MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
+  MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
 
   # Set up counter for countdown
   CounterIndicator <- 0
@@ -4534,25 +4535,19 @@ FAST_GDL_Feature_Engineering <- function(data,
   # Define total runs
   if (!is.null(groupingVars)) {
     runs <-
-      length(groupingVars) *
-      tarNum * (length(periods) *
-                  length(statsNames) + length(lags))
+      length(groupingVars) * tarNum * (length(periods) *
+                                         length(statsNames) +
+                                         length(lags))
   } else {
     runs <-
-      tarNum * (length(periods) *
-                  length(statsNames) +
+      tarNum * (length(periods) * length(statsNames) +
                   length(lags))
   }
-
-  # Max data to keep
-  MAX_RECORDS_FULL <-
-    max(max(lags + 1), max(periods * 2), RecordsKeep)
-  MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
-  MAX_RECORDS_ROLL <- max(max(periods * 2), RecordsKeep)
 
   # Begin feature engineering
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
+      Targets <- targets
       # Sort data
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
@@ -4567,20 +4562,18 @@ FAST_GDL_Feature_Engineering <- function(data,
 
       # Lags
       for (l in seq_along(lags)) {
-        for (t in targets) {
+        for (t in Targets) {
           if (!(paste0(groupingVars[i],
-                       "_LAG_", lags[l],
-                       "_", t) %in% SkipCols)) {
+                       "_LAG_", lags[l], "_", t) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "_LAG_",
-                              lags[l],
-                              "_", t) := data.table::shift(get(
+                              lags[l], "_", t) := data.table::shift(get(
                                 t), n = lags[l], type = "lag"),
                      by = get(groupingVars[i])]
-          }
-          CounterIndicator <- CounterIndicator + 1
-          if (Timer) {
-            print(CounterIndicator / runs)
+            CounterIndicator <- CounterIndicator + 1
+            if (Timer) {
+              print(CounterIndicator / runs)
+            }
           }
         }
       }
@@ -4589,15 +4582,13 @@ FAST_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i],
-                       "TEMP", lags[l]) %in% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "TEMP",
                               lags[l]) := data.table::shift(get(
                                 sortDateName),
                                 n = lags[l],
-                                type = "lag"),
-                     by = get(groupingVars[i])]
+                                type = "lag"), by = get(groupingVars[i])]
           }
         }
 
@@ -4608,8 +4599,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                          lags[l]) %in% SkipCols) & l == 1) {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
-                                lags[l]) := as.numeric(
-                                  difftime(
+                                lags[l]) := as.numeric(difftime(
                                   get(sortDateName),
                                   get(paste0(
                                     groupingVars[i], "TEMP", lags[l]
@@ -4622,22 +4612,16 @@ FAST_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
-                                  lags[l]) := as.numeric(
-                                    difftime(get(
-                                    paste0(groupingVars[i],
-                                           "TEMP",
-                                           (lags[l - 1]))
+                                  lags[l]) := as.numeric(difftime(get(
+                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
                                   ),
                                   get(
-                                    paste0(groupingVars[i],
-                                           "TEMP", lags[l])
+                                    paste0(groupingVars[i], "TEMP", lags[l])
                                   ),
-                                  units = eval(timeAgg))),
-                         by = get(groupingVars[i])]
+                                  units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -4649,8 +4633,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
@@ -4671,9 +4654,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
-                                    paste0(groupingVars[i],
-                                           "TEMP",
-                                           (lags[l - 1]))
+                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
                                   ),
                                   get(
                                     paste0(groupingVars[i], "TEMP", lags[l])
@@ -4690,40 +4671,28 @@ FAST_GDL_Feature_Engineering <- function(data,
 
         # Remove temporary lagged dates
         for (l in seq_along(lags)) {
-          tempData[, paste0(groupingVars[i],
-                            "TEMP",
-                            lags[l]) := NULL]
+          tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
         # Store new target
-        timeTarget <- paste0(groupingVars[i],
-                             timeDiffTarget,
-                             "1")
+        timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
       # Define targets
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
-          targets <-
-            c(paste0(groupingVars[i],
-                     "_LAG_",
-                     WindowingLag,
-                     "_",
-                     targets),
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets),
               timeTarget)
         } else {
-          targets <-
-            c(paste0(groupingVars[i],
-                     "_LAG_",
-                     WindowingLag,
-                     "_",
-                     targets))
+          Targets <-
+            c(paste0(groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
         }
       } else {
         if (!is.null(timeDiffTarget)) {
-          targets <- c(targets, timeTarget)
+          Targets <- c(Targets, timeTarget)
         } else {
-          targets <- targets
+          Targets <- Targets
         }
       }
 
@@ -4733,7 +4702,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Moving stats
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
-          for (t in targets) {
+          for (t in Targets) {
             if (!(paste0(groupingVars[i],
                          statsNames[k],
                          "_",
@@ -4743,7 +4712,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               temp2 <-
                 tempData[get(AscRowByGroup) <=
                            MAX_RECORDS_ROLL][, ..keep]
-              if (statsNames[k] == "mean") {
+              if (statsFUNs[k] == "mean") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4753,10 +4722,10 @@ FAST_GDL_Feature_Engineering <- function(data,
                                  t) := caTools::runmean(
                                    get(t),
                                    k = periods[j],
-                                   endrule = "trim",
-                                   alg = "fast"
+                                   endrule = "mean",
+                                   alg = "C"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "median") {
+              } else if (statsFUNs[k] == "median") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4767,9 +4736,9 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    get(t),
                                    probs = 0.50,
                                    k = periods[j],
-                                   endrule = "trim"
+                                   endrule = "quantile"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "sd") {
+              } else if (statsFUNs[k] == "sd") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4778,9 +4747,9 @@ FAST_GDL_Feature_Engineering <- function(data,
                                  "_",
                                  t) := caTools::runsd(get(t),
                                                       k = periods[j],
-                                                      endrule = "trim"),
+                                                      endrule = "sd"),
                         by = get(groupingVars[i])]
-              } else if (statsNames[k] == "quantile85") {
+              } else if (statsFUNs[k] == "quantile85") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4791,9 +4760,9 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    get(t),
                                    probs = 0.85,
                                    k = periods[j],
-                                   endrule = "trim"
+                                   endrule = "quantile"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "quantile95") {
+              } else if (statsFUNs[k] == "quantile95") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4804,7 +4773,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    get(t),
                                    probs = 0.95,
                                    k = periods[j],
-                                   endrule = "trim"
+                                   endrule = "quantile"
                                  ), by = get(groupingVars[i])]
               }
               if (Timer) {
@@ -4866,26 +4835,18 @@ FAST_GDL_Feature_Engineering <- function(data,
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = -1)
     }
-
-    # Remove records
-    tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
+    Targets <- targets
 
     # Lags
     for (l in seq_along(lags)) {
-      for (t in targets) {
-        if (!(paste0("_LAG_",
-                     lags[l],
-                     "_", t) %in% SkipCols)) {
-          tempData[, paste0("_LAG_",
-                            lags[l],
-                            "_",
-                            t) := data.table::shift(get(
-                              t),
-                              n = lags[l], type = "lag")]
-        }
-        CounterIndicator <- CounterIndicator + 1
-        if (Timer) {
-          print(CounterIndicator / runs)
+      for (t in Targets) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+          data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
+            get(t), n = lags[l], type = "lag")]
+          CounterIndicator <- CounterIndicator + 1
+          if (Timer) {
+            print(CounterIndicator / runs)
+          }
         }
       }
     }
@@ -4895,69 +4856,74 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Lag the dates first
       for (l in seq_along(lags)) {
         if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
-          tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(
-            sortDateName), n = lags[l], type = "lag")]
+          data[, paste0("TEMP",
+                        lags[l]) := data.table::shift(get(
+                          sortDateName), n = lags[l], type = "lag")]
         }
       }
 
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
-            tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(
-              difftime(get(sortDateName),
-                       get(paste0(
-                         "TEMP", lags[l]
-                       )),
-                       units = eval(timeAgg)))]
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+              l == 1) {
+            data[, paste0(timeDiffTarget,
+                          "_",
+                          lags[l]) := as.numeric(difftime(
+                            get(sortDateName),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(
-                difftime(get(paste0(
-                  "TEMP", (lags[l - 1])
-                )),
-                get(paste0(
-                  "TEMP", lags[l]
-                )),
-                units = eval(timeAgg)))]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
+            data[, paste0(timeDiffTarget,
+                          "_", lags[l]) := as.numeric(difftime(
+                            get(paste0(
+                              "TEMP", lags[l] - 1
+                            )),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
+            CounterIndicator <- CounterIndicator + 1
+            if (Timer) {
+              print(CounterIndicator / runs)
             }
           }
         }
       } else {
         for (l in seq_along(lags)) {
           if (l == 1) {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(
-                difftime(
-                  get(sortDateName),
-                  get(paste0(
-                    groupingVars[i], "TEMP", lags[l]
-                  )),
-                  units = eval(timeAgg)
-                ))]
+            if (!(paste0(timeDiffTarget,
+                         "_", lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget,
+                            "_", lags[l]) := as.numeric(difftime(
+                              get(sortDateName),
+                              get(paste0("TEMP", lags[l])),
+                              units = eval(timeAgg)
+                            ))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols)) {
-              tempData[, paste0(timeDiffTarget, lags[l]) := as.numeric(
-                difftime(get(paste0(
-                  "TEMP", (lags[l - 1])
-                )),
-                get(paste0(
-                  "TEMP", lags[l]
-                )),
-                units = eval(timeAgg)))]
+            if (!(paste0(timeDiffTarget,
+                         "_",
+                         lags[l]) %in% SkipCols)) {
+              data[, paste0(timeDiffTarget,
+                            "_",
+                            lags[l]) := as.numeric(difftime(get(paste0(
+                              "TEMP", (lags[l - 1])
+                            )),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4969,26 +4935,28 @@ FAST_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        tempData[, paste0("TEMP", lags[l]) := NULL]
+        data[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
-      timeTarget <- paste0(timeDiffTarget, "1")
+      timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
     # Define targets
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(paste0("_LAG_", WindowingLag, "_", targets),
-                     timeTarget)
+        Targets <-
+          c(paste0("LAG_", WindowingLag, "_", Targets),
+            timeTarget)
       } else {
-        targets <- c(paste0("_LAG_", WindowingLag, "_", targets))
+        Targets <-
+          c(paste0("LAG_", WindowingLag, "_", Targets))
       }
     } else {
       if (!is.null(timeDiffTarget)) {
-        targets <- c(targets, timeTarget)
+        Targets <- c(Targets, timeTarget)
       } else {
-        targets <- targets
+        Targets <- Targets
       }
     }
 
@@ -4998,7 +4966,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Moving stats
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
-        for (t in targets) {
+        for (t in Targets) {
           if (!(paste0(statsNames[k],
                        "_",
                        periods[j],
@@ -5015,8 +4983,8 @@ FAST_GDL_Feature_Engineering <- function(data,
                                "_",
                                t) := caTools::runmean(get(t),
                                                       k = periods[j],
-                                                      endrule = "trim",
-                                                      alg = "fast")]
+                                                      endrule = "mean",
+                                                      alg = "C")]
             } else if (statsFUNs[k] == "median") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
@@ -5027,7 +4995,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                  get(t),
                                  probs = 0.50,
                                  k = periods[j],
-                                 endrule = "trim"
+                                 endrule = "quantile"
                                )]
             } else if (statsFUNs[k] == "sd") {
               temp3 <-
@@ -5037,7 +5005,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                "_",
                                t) := caTools::runsd(get(t),
                                                     k = periods[j],
-                                                    endrule = "trim")]
+                                                    endrule = "sd")]
             } else if (statsFUNs[k] == "quantile85") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
@@ -5048,7 +5016,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                  get(t),
                                  probs = 0.85,
                                  k = periods[j],
-                                 endrule = "trim"
+                                 endrule = "quantile"
                                )]
             } else if (statsFUNs[k] == "quantile95") {
               temp3 <-
@@ -5060,7 +5028,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                  get(t),
                                  probs = 0.95,
                                  k = periods[j],
-                                 endrule = "trim"
+                                 endrule = "quantile"
                                )]
             }
             if (Timer) {
