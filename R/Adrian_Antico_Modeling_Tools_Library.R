@@ -156,7 +156,7 @@ DummifyDT <- function(data,
                       OneHot = TRUE) {
   # Check data.table
   if (!data.table::is.data.table(data))
-    data <- data.table::as.data.table(data)
+    tadata <- data.table::as.data.table(data)
   for (col in cols) {
     inds <- unique(data[[eval(col)]])
     data.table::alloc.col(data,
@@ -7706,12 +7706,9 @@ Word2VecModel <- function(datax,
 
     # It is important to remove "\n" --
     data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
-    data[, ':=' (TEMP = gsub(
-      "'|\"|'|" |
-        "|\"|\n|,|\\.|.|\\?|\\+|\\-|\\/|\\=|\\(|\\)|'",
-      "",
-      TEMP
-    ))]
+    data[, ':=' (TEMP =
+                   gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
+                             "","",TEMP))]
     data2 <- data[, "TEMP"]
 
     # Tokenize
