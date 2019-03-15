@@ -8,11 +8,11 @@ FAST_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168, 24)),
   periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
   statsFUNs = c("mean", "median", "sd", "quantile85", "quantile95"),
   statsNames = c("mean", "median", "sd", "quantile85", "quantile95"),
-  targets = c("ScaledConsumption"), groupingVars = c("BADGE_NBR"),
-  sortDateName = "DAY_DATE", timeDiffTarget = NULL,
-  timeAgg = "hours", WindowingLag = 1, Type = "Lag", Timer = FALSE,
-  SkipCols = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = "BadgeRowNum", RecordsKeep = 1)
+  targets = c("Target"), groupingVars = c("GroupVariable"),
+  sortDateName = "DateVar", timeDiffTarget = NULL, timeAgg = "hours",
+  WindowingLag = 1, Type = "Lag", Timer = FALSE, SkipCols = FALSE,
+  SimpleImpute = TRUE, AscRowByGroup = "BadgeRowNum",
+  RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}
