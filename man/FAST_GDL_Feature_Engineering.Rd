@@ -58,7 +58,7 @@ For models with target variables within the realm of the current time frame but 
 \examples{
 N = 25116
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(1000,
+  Target = stats::filter(rnorm(N,
                                mean = 50,
                                sd = 20),
                          filter=rep(1,10),

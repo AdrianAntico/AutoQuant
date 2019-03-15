@@ -56,7 +56,7 @@ Builds autoregressive and rolling stats from target columns and distributed lags
 \examples{
 N = 25116
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(1000,
+  Target = stats::filter(rnorm(N,
                                mean = 50,
                                sd = 20),
                          filter=rep(1,10),

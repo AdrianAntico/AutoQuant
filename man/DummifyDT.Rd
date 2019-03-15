@@ -22,8 +22,6 @@ data table with new dummy variables columns and optionally removes base columns
 DummifyDT creates dummy variables for the selected columns
 }
 \examples{
-library(data.table)
-library(RemixAML)
 test <- data.table::data.table(Value = runif(100000),
                    FactorCol = sample(x = c(letters,
                                             LETTERS,

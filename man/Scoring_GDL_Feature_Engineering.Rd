@@ -58,7 +58,7 @@ For scoring purposes (brings back a single row by group), this function creates 
 \examples{
 N = 25116
 data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                                Target = stats::filter(rnorm(25116,
+                                Target = stats::filter(rnorm(N,
                                                              mean = 50,
                                                              sd = 20),
                                                        filter=rep(1,10),
