@@ -233,7 +233,7 @@ H20MultinomialAUC <-
 #' PrintObjectsSize(N = 10)
 #' @return The objects in your environment and their sizes
 #' @export
-PrintObjectsSize(N = 10) {
+PrintObjectsSize <- function(N = 10) {
   m <- length(ls())
   z <- min(m,N)
   print(sort(-vapply(ls(), FUN.VALUE = 1.1, function(x) {
