@@ -4837,11 +4837,14 @@ FAST_GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
 
+    # Remove records
+    tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
+
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
         if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
-          data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
+          tempData[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
             get(t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
           if (Timer) {
@@ -4856,7 +4859,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Lag the dates first
       for (l in seq_along(lags)) {
         if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
-          data[, paste0("TEMP",
+          tempData[, paste0("TEMP",
                         lags[l]) := data.table::shift(get(
                           sortDateName), n = lags[l], type = "lag")]
         }
@@ -4867,7 +4870,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
-            data[, paste0(timeDiffTarget,
+            tempData[, paste0(timeDiffTarget,
                           "_",
                           lags[l]) := as.numeric(difftime(
                             get(sortDateName),
@@ -4880,7 +4883,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               print(CounterIndicator / runs)
             }
           } else {
-            data[, paste0(timeDiffTarget,
+            tempData[, paste0(timeDiffTarget,
                           "_", lags[l]) := as.numeric(difftime(
                             get(paste0(
                               "TEMP", lags[l] - 1
@@ -4900,7 +4903,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
                          "_", lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,
+              tempData[, paste0(timeDiffTarget,
                             "_", lags[l]) := as.numeric(difftime(
                               get(sortDateName),
                               get(paste0("TEMP", lags[l])),
@@ -4915,7 +4918,7 @@ FAST_GDL_Feature_Engineering <- function(data,
             if (!(paste0(timeDiffTarget,
                          "_",
                          lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,
+              tempData[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(get(paste0(
                               "TEMP", (lags[l - 1])
@@ -4935,7 +4938,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates
       for (l in seq_along(lags)) {
-        data[, paste0("TEMP", lags[l]) := NULL]
+        tempData[, paste0("TEMP", lags[l]) := NULL]
       }
 
       # Store new target
@@ -5047,34 +5050,34 @@ FAST_GDL_Feature_Engineering <- function(data,
     }
 
     # Replace any inf values with NA
-    for (col in seq_along(data)) {
-      data.table::set(data,
+    for (col in seq_along(tempData1)) {
+      data.table::set(tempData1,
                       j = col,
-                      value = replace(data[[col]],
-                                      is.infinite(data[[col]]),
+                      value = replace(tempData1[[col]],
+                                      is.infinite(tempData1[[col]]),
                                       NA))
     }
 
     # Turn character columns into factors
-    for (col in seq_along(data)) {
-      if (is.character(data[[col]])) {
-        data.table::set(data,
+    for (col in seq_along(tempData1)) {
+      if (is.character(tempData1[[col]])) {
+        data.table::set(tempData1,
                         j = col,
-                        value = as.factor(data[[col]]))
+                        value = as.factor(tempData1[[col]]))
       }
     }
 
     # Impute missing values
     if (SimpleImpute) {
-      for (j in seq_along(data)) {
-        if (is.factor(data[[j]])) {
-          data.table::set(data,
-                          which(!(data[[j]] %in% levels(data[[j]]))),
+      for (j in seq_along(tempData1)) {
+        if (is.factor(tempData1[[j]])) {
+          data.table::set(tempData1,
+                          which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),
                           j,
                           "0")
         } else {
-          data.table::set(data,
-                          which(is.na(data[[j]])),
+          data.table::set(tempData1,
+                          which(is.na(tempData1[[j]])),
                           j,
                           -1)
         }
@@ -5082,7 +5085,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     }
 
     # Done!!
-    return(data)
+    return(tempData1)
   }
 }
 
