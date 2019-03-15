@@ -36,6 +36,14 @@ This function builds a word frequency table and a word cloud. It prepares data, 
 #                   Stemming = TRUE,
 #                   StopWords = c("blabla1", "blabla2")
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}

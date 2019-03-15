@@ -19,6 +19,14 @@ SimpleCap function is for capitalizing the first letter of words (need I say mor
 x <- "adrian"
 x <- SimpleCap(x)
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{WordFreq}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}

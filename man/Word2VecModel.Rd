@@ -56,6 +56,15 @@ This function allows you to automatically build a word2vec model and merge the d
 #                       Epochs        = 25,
 #                       StopWords     = NULL)
 }
+\seealso{
+Other Feature Engineering: \code{\link{DT_GDL_Feature_Engineering}},
+  \code{\link{DummifyDT}},
+  \code{\link{FAST_GDL_Feature_Engineering}},
+  \code{\link{GDL_Feature_Engineering}},
+  \code{\link{ModelDataPrep}},
+  \code{\link{Scoring_GDL_Feature_Engineering}}
+}
 \author{
 Adrian Antico
 }
+\concept{Feature Engineering}

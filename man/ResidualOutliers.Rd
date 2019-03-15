@@ -36,6 +36,11 @@ model    <- stuff[[2]]
 resid    <- stuff[[3]]
 outliers <- data[type != "<NA>"]
 }
+\seealso{
+Other Unsupervised Learning: \code{\link{GLRM_KMeans_Col}},
+  \code{\link{GenTSAnomVars}}
+}
 \author{
 Adrian Antico
 }
+\concept{Unsupervised Learning}

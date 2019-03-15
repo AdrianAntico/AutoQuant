@@ -72,6 +72,15 @@ data <- DT_GDL_Feature_Engineering(data,
                                    SkipCols       = FALSE,
                                    SimpleImpute   = TRUE)
 }
+\seealso{
+Other Feature Engineering: \code{\link{DummifyDT}},
+  \code{\link{FAST_GDL_Feature_Engineering}},
+  \code{\link{GDL_Feature_Engineering}},
+  \code{\link{ModelDataPrep}},
+  \code{\link{Scoring_GDL_Feature_Engineering}},
+  \code{\link{Word2VecModel}}
+}
 \author{
 Adrian Antico
 }
+\concept{Feature Engineering}

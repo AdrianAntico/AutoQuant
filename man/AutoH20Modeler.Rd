@@ -78,6 +78,11 @@ Returns saved models, corrected Construct file, variable importance tables, eval
 #                TrainData = data,
 #                TestData  = test)
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoTS}},
+  \code{\link{nlsModelFit}}
+}
 \author{
 Adrian Antico
 }
+\concept{Supervised Learning}

@@ -12,6 +12,14 @@ tokenizeH20(data3)
 \description{
 This function tokenizes data
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{WordFreq}},
+  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{tempDatesFun}}
+}
 \author{
 Adrian Antico at RemixInstitute.com
 }
+\concept{Misc}

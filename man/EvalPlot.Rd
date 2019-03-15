@@ -35,6 +35,12 @@ This function automatically builds calibration plots and calibration boxplots fo
 #          bucket      = 0.05,
 #          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 }
+\seealso{
+Other Model Evaluation and Interpretation: \code{\link{H20MultinomialAUC}},
+  \code{\link{ParDepCalPlots}},
+  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+}
 \author{
 Adrian Antico
 }
+\concept{Model Evaluation and Interpretation}

@@ -54,6 +54,11 @@ p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
   ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoH20Modeler}},
+  \code{\link{AutoTS}}
+}
 \author{
 Adrian Antico
 }
+\concept{Supervised Learning}

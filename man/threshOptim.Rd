@@ -39,6 +39,13 @@ This function will return the utility maximizing threshold for future prediction
 #  optimalThreshold <- data[[1]]
 #  allResults       <- data[[2]]
 }
+\seealso{
+Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+  \code{\link{H20MultinomialAUC}},
+  \code{\link{ParDepCalPlots}},
+  \code{\link{RedYellowGreen}}
+}
 \author{
 Adrian Antico
 }
+\concept{Model Evaluation and Interpretation}

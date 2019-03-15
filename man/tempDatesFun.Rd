@@ -19,6 +19,14 @@ tempDatesFun takes the Excel datetime column, which imports as character, and co
 # Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 # Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "\%m/\%d/\%Y")]
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{WordFreq}},
+  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}

@@ -25,6 +25,12 @@ H20MultinomialAUC computes the micro auc from a multinomial model
 \examples{
 # auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 }
+\seealso{
+Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+  \code{\link{ParDepCalPlots}},
+  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+}
 \author{
 Adrian Antico
 }
+\concept{Model Evaluation and Interpretation}

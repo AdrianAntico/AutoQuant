@@ -77,6 +77,11 @@ data[ClusterID == eval(Versicolor), Check := "versicolor"]
 data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
 data[, mean(Acc)][[1]]
 }
+\seealso{
+Other Unsupervised Learning: \code{\link{GenTSAnomVars}},
+  \code{\link{ResidualOutliers}}
+}
 \author{
 Adrian Antico
 }
+\concept{Unsupervised Learning}

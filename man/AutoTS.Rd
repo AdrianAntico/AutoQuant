@@ -38,12 +38,12 @@ If Ensemble is TRUE, return a data.table object with a date column and the forec
 AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts.
 }
 \examples{
-data <- data.table::data.table(DateTime = base::as.Date(Sys.time()),
-                               Target = stats::filter(rnorm(1000,
-                                                           mean = 50,
-                                                            sd = 20),
-                                                      filter=rep(1,10),
-                                                      circular=TRUE))
+data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+  Target = stats::filter(rnorm(1000,
+                               mean = 50,
+                               sd = 20),
+                         filter=rep(1,10),
+                         circular=TRUE))
 data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 output <-   AutoTS(data,
@@ -58,6 +58,11 @@ output <-   AutoTS(data,
                    SkipModels     = NULL,
                    StepWise       = TRUE)
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoH20Modeler}},
+  \code{\link{nlsModelFit}}
+}
 \author{
 Adrian Antico
 }
+\concept{Supervised Learning}

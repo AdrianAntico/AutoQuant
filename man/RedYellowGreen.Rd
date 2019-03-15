@@ -46,6 +46,12 @@ This function will find the optimial thresholds for applying the main label and 
 #                         FalseNegativeCost = -2,
 #                         MidTierCost       = -0.5)
 }
+\seealso{
+Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+  \code{\link{H20MultinomialAUC}},
+  \code{\link{ParDepCalPlots}}, \code{\link{threshOptim}}
+}
 \author{
 Adrian Antico
 }
+\concept{Model Evaluation and Interpretation}

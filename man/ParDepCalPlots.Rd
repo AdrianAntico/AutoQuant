@@ -42,6 +42,12 @@ This function automatically builds partial dependence calibration plots and part
 #                FactLevels  = 10,
 #                Function    = function(x) mean(x, na.rm = TRUE))
 }
+\seealso{
+Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+  \code{\link{H20MultinomialAUC}},
+  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+}
 \author{
 Adrian Antico
 }
+\concept{Model Evaluation and Interpretation}

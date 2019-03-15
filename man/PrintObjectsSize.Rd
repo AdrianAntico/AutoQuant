@@ -18,6 +18,14 @@ PrintObjectsSize prints out the top N objects and their associated sizes, sorted
 \examples{
 PrintObjectsSize(N = 10)
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
+  \code{\link{WordFreq}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}

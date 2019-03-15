@@ -24,6 +24,14 @@ Sick of copying this one into your code? Well, not anymore.
 \examples{
 # multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 }
+\seealso{
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{WordFreq}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}

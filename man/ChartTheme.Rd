@@ -27,6 +27,14 @@ data <- data[order(DateTime)]
 p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
 p <- p + ChartTheme(Size = 12)
 }
+\seealso{
+Other Misc: \code{\link{PrintObjectsSize}},
+  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
+  \code{\link{WordFreq}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
+}
 \author{
 Adrian Antico
 }
+\concept{Misc}
