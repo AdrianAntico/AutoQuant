@@ -5085,7 +5085,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     }
     
     # Ensure correct order of columns
-    setcolorder(tempdata1, c(2,3,1,4:ncol(tempData1)))
+    setcolorder(tempData1, c(2,3,1,4:ncol(tempData1)))
     
     # Done!!
     return(tempData1)
