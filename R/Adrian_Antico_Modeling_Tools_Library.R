@@ -156,7 +156,7 @@ DummifyDT <- function(data,
                       OneHot = TRUE) {
   # Check data.table
   if (!data.table::is.data.table(data))
-    tadata <- data.table::as.data.table(data)
+    data <- data.table::as.data.table(data)
   for (col in cols) {
     inds <- unique(data[[eval(col)]])
     data.table::alloc.col(data,
@@ -164,8 +164,9 @@ DummifyDT <- function(data,
     data.table::set(data,
                     j = paste0(col, "_", inds),
                     value = 0L)
-    if (is.factor(data[[eval(col)]]))
+    if (is.factor(data[[eval(col)]])) {
       data[, eval(col) := as.character(get(col))]
+    }
     for (ind in inds) {
       data.table::set(
         data,
@@ -4553,10 +4554,10 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Sort data
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
-        setorderv(data, colVar, order = 1)
+        data.table::setorderv(data, colVar, order = 1)
       } else {
         colVar <- c(groupingVars[i], sortDateName[1])
-        setorderv(data, colVar, order = -1)
+        data.table::setorderv(data, colVar, order = -1)
       }
 
       # Remove records
@@ -4728,7 +4729,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               temp2 <-
                 tempData[get(AscRowByGroup) <=
                            MAX_RECORDS_ROLL][, ..keep]
-              if (statsNames[k] == "mean") {
+              if (statsFUNs[k] == "mean") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4741,7 +4742,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    endrule = "trim",
                                    alg = "fast"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "median") {
+              } else if (statsFUNs[k] == "median") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4754,7 +4755,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    k = periods[j],
                                    endrule = "trim"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "sd") {
+              } else if (statsFUNs[k] == "sd") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4765,7 +4766,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                                       k = periods[j],
                                                       endrule = "trim"),
                         by = get(groupingVars[i])]
-              } else if (statsNames[k] == "quantile85") {
+              } else if (statsFUNs[k] == "quantile85") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4778,7 +4779,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                    k = periods[j],
                                    endrule = "trim"
                                  ), by = get(groupingVars[i])]
-              } else if (statsNames[k] == "quantile95") {
+              } else if (statsFUNs[k] == "quantile95") {
                 temp3 <-
                   temp2[, paste0(groupingVars[i],
                                  statsNames[k],
@@ -4846,10 +4847,10 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Sort data
     if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
-      setorderv(data, colVar, order = 1)
+      data.table::setorderv(data, colVar, order = 1)
     } else {
       colVar <- c(sortDateName[1])
-      setorderv(data, colVar, order = -1)
+      data.table::setorderv(data, colVar, order = -1)
     }
 
     # Remove records
@@ -4992,7 +4993,7 @@ FAST_GDL_Feature_Engineering <- function(data,
             keep <- c(t, AscRowByGroup)
             temp2 <-
               tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
-            if (statsNames[k] == "mean") {
+            if (statsFUNs[k] == "mean") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
                                "_",
@@ -5002,7 +5003,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                                       k = periods[j],
                                                       endrule = "trim",
                                                       alg = "fast")]
-            } else if (statsNames[k] == "median") {
+            } else if (statsFUNs[k] == "median") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
                                "_",
@@ -5014,7 +5015,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                   k = periods[j],
                   endrule = "trim"
                 )]
-            } else if (statsNames[k] == "sd") {
+            } else if (statsFUNs[k] == "sd") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
                                "_",
@@ -5023,7 +5024,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                t) := caTools::runsd(get(t),
                                                     k = periods[j],
                                                     endrule = "trim")]
-            } else if (statsNames[k] == "quantile85") {
+            } else if (statsFUNs[k] == "quantile85") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
                                "_",
@@ -5035,7 +5036,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                   k = periods[j],
                   endrule = "trim"
                 )]
-            } else if (statsNames[k] == "quantile95") {
+            } else if (statsFUNs[k] == "quantile95") {
               temp3 <-
                 temp2[, paste0(statsNames[k],
                                "_",
@@ -7708,7 +7709,7 @@ Word2VecModel <- function(datax,
     # It is important to remove "\n" --
     data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
     data[, ':=' (TEMP =
-                   gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
+        gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
                              "","",TEMP))]
     data2 <- data[, "TEMP"]
 
