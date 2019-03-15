@@ -132,8 +132,6 @@ utils::globalVariables(
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @import data.table
 #' @examples
-#' library(data.table)
-#' library(RemixAML)
 #' test <- data.table::data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
 #'                                             LETTERS,
@@ -450,9 +448,6 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @import data.table
 #' @examples
-#' library(datasets)
-#' library(RemixAML)
-#' library(h2o)
 #' data <- data.table::as.data.table(iris)
 #' # Run algo, excluding Species column
 #' data <- GLRM_KMeans_Col(data,
@@ -2805,7 +2800,7 @@ EvalPlot <- function(data,
 #' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(1000,
+#'   Target = stats::filter(rnorm(N,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
@@ -3690,7 +3685,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @examples
 #' N = 25116
 #' data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'                                 Target = stats::filter(rnorm(25116,
+#'                                 Target = stats::filter(rnorm(N,
 #'                                                              mean = 50,
 #'                                                              sd = 20),
 #'                                                        filter=rep(1,10),
@@ -4162,7 +4157,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(1000,
+#'   Target = stats::filter(rnorm(N,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
