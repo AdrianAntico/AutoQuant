@@ -48,7 +48,6 @@ This function will find the optimial thresholds for applying the main label and 
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
-  \code{\link{H20MultinomialAUC}},
   \code{\link{ParDepCalPlots}}, \code{\link{threshOptim}}
 }
 \author{

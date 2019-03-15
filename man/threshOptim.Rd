@@ -41,7 +41,6 @@ This function will return the utility maximizing threshold for future prediction
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
-  \code{\link{H20MultinomialAUC}},
   \code{\link{ParDepCalPlots}},
   \code{\link{RedYellowGreen}}
 }
