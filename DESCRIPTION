@@ -7,23 +7,21 @@ Description: This package contains functions to help automate many of your machi
 Depends: R (>= 3.5),
 License: GPL-2
 Encoding: UTF-8
+Language: en-US
+URL: https://github.com/AdrianAntico/ModelingTools
 LazyData: true
 RoxygenNote: 6.1.0
 Imports: data.table,
     zoo,
     h2o,
-    Rcpp,
     lubridate,
     ggplot2,
     caTools,
     forecast,
     prophet,
     tsoutliers,
-    chron,
     pROC,
-    sde,
     stringr,
-    snow,
     itertools,
     doParallel,
     parallel,
@@ -33,6 +31,5 @@ Imports: data.table,
     monreg,
     tm,
     wordcloud,
-    testthat,
     foreach
-Suggests:
+Suggests: testthat
