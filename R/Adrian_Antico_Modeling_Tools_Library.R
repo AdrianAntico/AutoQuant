@@ -234,11 +234,10 @@ H20MultinomialAUC <-
 #' @return The objects in your environment and their sizes
 #' @export
 PrintObjectsSize(N = 10) {
-    x <- length(ls())
-    z <- min(x,N)
-    print(sort(-vapply(ls(), function(x) {
-      object.size(get(x))
-    }))[1:z] / 1024 / 1024)
+  m <- length(ls())
+  z <- min(m,N)
+  print(sort(-vapply(ls(), FUN.VALUE = 1.1, function(x) {
+    object.size(get(x))}))[1:z] / 1024 / 1024)
 }
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
