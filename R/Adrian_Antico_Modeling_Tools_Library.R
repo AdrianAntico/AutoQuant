@@ -7722,7 +7722,7 @@ Word2VecModel <- function(datax,
     # It is important to remove "\n" --
     data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
     data[, ':=' (TEMP =
-        gsub("'|\"|'|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
+        gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
                              "","",TEMP))]
     data2 <- data[, "TEMP"]
 
