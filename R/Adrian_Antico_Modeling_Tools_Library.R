@@ -4488,8 +4488,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' data <- FAST_GDL_Feature_Engineering(data,
 #'                                      lags           = c(1:5),
 #'                                      periods        = c(seq(10,50,10)),
-#'                                      statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
-#'                                      statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
+#'                                      statsFUNs      = c("mean",
+#'                                                         "median",
+#'                                                         "sd",
+#'                                                         "quantile85",
+#'                                                         "quantile95"),
+#'                                      statsNames     = c("mean",
+#'                                                         "median",
+#'                                                         "sd",
+#'                                                         "quantile85",
+#'                                                         "quantile95"),
 #'                                      targets        = c("Target"),
 #'                                      groupingVars   = NULL,
 #'                                      sortDateName   = "DateTime",
@@ -7714,7 +7722,7 @@ Word2VecModel <- function(datax,
     # It is important to remove "\n" --
     data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
     data[, ':=' (TEMP =
-        gsub("'|\"|'|“|”|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
+        gsub("'|\"|'|\"|\n|,|\\.|…|\\?|\\+|\\-|\\/|\\=|\\(|\\)|‘",
                              "","",TEMP))]
     data2 <- data[, "TEMP"]
 
