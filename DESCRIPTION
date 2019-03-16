@@ -1,39 +1,26 @@
+SystemRequirements: H20
 Package: RemixAML
 Title: Automated Machine Learning
 Version: 1.0
-Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",role = c("aut", "cre"))
+Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
+                  role = c("aut", "cre"))
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5),
 License: GPL-2
 Encoding: UTF-8
 Language: en-US
-URL: "https://github.com/AdrianAntico/ModelingTools"
-BugReports: "https://github.com/AdrianAntico/ModelingTools"
+URL: https://github.com/AdrianAntico/ModelingTools
+BugReports: https://github.com/AdrianAntico/ModelingTools
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: data.table,
-zoo,
-h2o,
-lubridate,
-ggplot2,
-caTools,
-forecast,
-prophet,
-tsoutliers,
-stringr,
-itertools,
-doParallel,
-parallel,
-scatterplot3d,
-RColorBrewer,
-grid,
-monreg,
-tm,
-wordcloud,
-foreach,
-pROC
-Suggests: testthat,
-sde,
-knitr,
-rmarkdown
+Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
+        prophet, tsoutliers, stringr, itertools, doParallel, parallel,
+        scatterplot3d, RColorBrewer, grid, monreg, tm, wordcloud,
+        foreach, pROC
+Suggests: testthat, sde, knitr, rmarkdown
 VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2019-03-16 07:07:23 UTC; aantico
+Author: Adrian Antico [aut, cre]
+Maintainer: Adrian Antico <adrianantico@gmail.com>
+Built: R 3.5.1; ; 2019-03-16 07:07:27 UTC; windows
