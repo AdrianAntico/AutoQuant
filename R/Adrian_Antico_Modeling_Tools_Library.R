@@ -2953,7 +2953,8 @@ GDL_Feature_Engineering <- function(data,
       groupingVars   = c("Group1", "Group2"),
       sortDateName   = "date",
       timeDiffTarget = c("TimeDiffName"),
-      timeAgg        = c("auto", "secs", "mins", "hours", "days", "weeks"),
+      timeAgg        = c("auto", "secs", "mins",
+                         "hours", "days", "weeks"),
       WindowingLag   = 0,
       Type           = c("Lag", "Lead"),
       Timer          = TRUE,
@@ -3444,7 +3445,8 @@ DT_GDL_Feature_Engineering <- function(data,
            groupingVars   = c("Group1", "Group2"),
            sortDateName   = "date",
            timeDiffTarget = c("TimeDiffName"),
-           timeAgg        = c("auto", "secs", "mins", "hours", "days", "weeks"),
+           timeAgg        = c("auto", "secs", "mins",
+                              "hours", "days", "weeks"),
            WindowingLag   = 0,
            Type           = c("Lag", "Lead"),
            Timer          = TRUE,
@@ -4503,8 +4505,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
 FAST_GDL_Feature_Engineering <- function(data,
        lags           = c(1:5),
        periods        = c(seq(10,50,10)),
-       statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
-       statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
+       statsFUNs      = c("mean", "median", "sd",
+                          "quantile85", "quantile95"),
+       statsNames     = c("mean", "median", "sd",
+                          "quantile85", "quantile95"),
        targets        = c("Target"),
        groupingVars   = c("GroupVariable"),
        sortDateName   = "DateTime",
@@ -4619,12 +4623,17 @@ FAST_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
-                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                                    paste0(groupingVars[i],
+                                           "TEMP",
+                                           (lags[l - 1]))
                                   ),
                                   get(
-                                    paste0(groupingVars[i], "TEMP", lags[l])
+                                    paste0(groupingVars[i],
+                                           "TEMP",
+                                           lags[l])
                                   ),
-                                  units = eval(timeAgg))), by = get(groupingVars[i])]
+                                  units = eval(timeAgg))),
+                         by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -4657,12 +4666,17 @@ FAST_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
-                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                                    paste0(groupingVars[i],
+                                           "TEMP",
+                                           (lags[l - 1]))
                                   ),
                                   get(
-                                    paste0(groupingVars[i], "TEMP", lags[l])
+                                    paste0(groupingVars[i],
+                                           "TEMP",
+                                           lags[l])
                                   ),
-                                  units = eval(timeAgg))), by = get(groupingVars[i])]
+                                  units = eval(timeAgg))),
+                         by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
