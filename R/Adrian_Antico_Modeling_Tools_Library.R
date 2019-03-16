@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-#Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 utils::globalVariables(
   names = c(
@@ -134,7 +134,7 @@ utils::globalVariables(
 #' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @import data.table
-#' @example
+#' @examples
 #' test <- data.table::data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
 #'                                             LETTERS,
@@ -196,7 +196,7 @@ DummifyDT <- function(data,
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
 #' @import data.table
-#' @example
+#' @examples
 #' # auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' @return Micro AUC
 H20MultinomialAUC <-
@@ -232,7 +232,7 @@ H20MultinomialAUC <-
 #' @family Misc
 #' @param N The number of objects to display
 #' @import data.table
-#' @example
+#' @examples
 #' PrintObjectsSize(N = 10)
 #' @return The objects in your environment and their sizes
 #' @export
@@ -259,7 +259,7 @@ PrintObjectsSize <- function(N = 10) {
 #' @param KeepAllCols set to TRUE to remove the intermediate features
 #' @param DataScaled set to TRUE if you already scaled your data
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
@@ -387,7 +387,7 @@ GenTSAnomVars <- function(data,
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(a = seq(0,10000,1),
 #'                    predicted = sde::GBM(N=10000)*1000)[-1,]
 #' data <- data.table::data.table(a = seq(1,10000,1),
@@ -480,7 +480,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::as.data.table(iris)
 #' # Run algo, excluding Species column
 #' data <- GLRM_KMeans_Col(data,
@@ -689,7 +689,7 @@ GLRM_KMeans_Col <- function(data,
 #' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","SPLINE","NNET","TBATS","TSLM","PROPHET")
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
@@ -1631,7 +1631,7 @@ AutoTS <- function(data,
 #' @family Misc
 #' @param x The column of interest
 #' @import data.table
-#' @example
+#' @examples
 #' # Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 #' # Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
 #' @return An object to pass along to ggplot objects following the "+" sign
@@ -1648,7 +1648,7 @@ tempDatesFun <- base::Vectorize(function(x) {
 #' @family Misc
 #' @param x Column of interest
 #' @import data.table
-#' @example
+#' @examples
 #' x <- "adrian"
 #' x <- SimpleCap(x)
 #' @return An object to pass along to ggplot objects following the "+" sign
@@ -1670,7 +1670,7 @@ SimpleCap <- function(x) {
 #' @author DougVegas
 #' @family Misc
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
@@ -1737,7 +1737,7 @@ RemixTheme <- function() {
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(Value = runif(100000),
 #'                                FactorCol = as.character(sample(x = c(letters,
 #'                                                                      LETTERS,
@@ -1821,7 +1821,7 @@ ModelDataPrep <- function(data,
 #' @import foreach
 #' @import doParallel
 #' @import parallel
-#' @example
+#' @examples
 #' # data <- RedYellowGreen(data,
 #' #                         PredictColNumber  = 1,
 #' #                         ActualColNumber   = 2,
@@ -2123,7 +2123,7 @@ RedYellowGreen <- function(data,
 #' @param fpProfit This is the cost of generating a false positive prediction
 #' @param fnProfit This is the cost of generating a false negative prediction
 #' @import data.table
-#' @example
+#' @examples
 #' # data <- threshOptim(data     = data,
 #' #                      actTar   = "target",
 #' #                      predTar  = "p1",
@@ -2198,7 +2198,7 @@ threshOptim <- function(data,
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @import data.table
-#' @example
+#' @examples
 #' # Create Fake Annual Returns Data
 #' library(data.table)
 #' library(RemixAML)
@@ -2462,7 +2462,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param layout Leave NULL
 #' @param ... Passthrough arguments
 #' @import data.table
-#' @example
+#' @examples
 #' # multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
@@ -2512,7 +2512,7 @@ multiplot <-
 #' @family Misc
 #' @param Size The size of the axis labels and title
 #' @import data.table
-#' @example
+#' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
@@ -2603,7 +2603,7 @@ ChartTheme <- function(Size = 12) {
 #' @family Misc
 #' @param x X is your variable of interest
 #' @import data.table
-#' @example
+#' @examples
 #' # percRank(x)
 #' @return vector of percentile ranks
 #' @export
@@ -2625,7 +2625,7 @@ percRank <- function(x)
 #' @param Function Supply the function you wish to use for aggregation.
 #' @import data.table
 #' @return Partial dependence calibration plot or boxplot
-#' @example
+#' @examples
 #' # ParDepCalPlots(data,
 #' #                PredColName = "predict",
 #' #                ActColName  = "target",
@@ -2796,7 +2796,7 @@ ParDepCalPlots <- function(data,
 #' @param aggrfun The statistics function used in aggregation, listed as a function
 #' @import data.table
 #' @return Calibration plot or boxplot
-#' @example
+#' @examples
 #' # EvalPlot(data,
 #' #          PredColName = "predict",
 #' #          ActColName  = "target",
@@ -2904,7 +2904,7 @@ EvalPlot <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @return data.table of original data plus newly created features
 #' @import data.table
-#' @example
+#' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(N,
@@ -3414,7 +3414,7 @@ GDL_Feature_Engineering <- function(data,
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @return data.table of original data plus newly created features
 #' @import data.table
-#' @example
+#' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                Target = stats::filter(rnorm(N,
@@ -3939,7 +3939,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus newly created features
 #' @import data.table
-#' @example
+#' @examples
 #' N = 25116
 #' data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                 Target = stats::filter(rnorm(N,
@@ -4477,7 +4477,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus newly created features
 #' @import data.table
-#' @example
+#' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(N,
@@ -5142,7 +5142,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param TestData Set to NULL or supply  a data.table for validation data
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @import data.table
-#' @example
+#' @examples
 #' # Construct <- data.table::data.table(Targets         = "target",
 #' #                         Distribution    = "bernoulli",
 #' #                         Loss            = "AUC",
@@ -7678,7 +7678,7 @@ tokenizeH20 <- function(data3) {
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @import data.table
-#' @example
+#' @examples
 #' # data <- Word2VecModel(data,
 #' #                       stringCol     = c("Text_Col1", "Text_Col2"),
 #' #                       KeepStringCol = FALSE,
@@ -7823,7 +7823,7 @@ Word2VecModel <- function(datax,
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @import data.table
-#' @example
+#' @examples
 #' #  data <- WordFreq(data,
 #' #                   TextColName = "DESCR",
 #' #                   ClusterCol = "ClusterAllNoTarget",
