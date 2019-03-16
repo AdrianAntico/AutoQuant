@@ -19,8 +19,3 @@ Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
         foreach, pROC
 Suggests: testthat, sde, knitr, rmarkdown
 VignetteBuilder: knitr
-NeedsCompilation: no
-Packaged: 2019-03-16 07:07:23 UTC; aantico
-Author: Adrian Antico [aut, cre]
-Maintainer: Adrian Antico <adrianantico@gmail.com>
-
