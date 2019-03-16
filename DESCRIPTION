@@ -8,8 +8,8 @@ Depends: R (>= 3.5),
 License: GPL-2
 Encoding: UTF-8
 Language: en-US
-URL: https://github.com/AdrianAntico/ModelingTools
-BugReports: https://github.com/AdrianAntico/ModelingTools
+URL: "https://github.com/AdrianAntico/ModelingTools"
+BugReports: "https://github.com/AdrianAntico/ModelingTools"
 LazyData: true
 RoxygenNote: 6.1.1
 Imports: data.table,
