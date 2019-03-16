@@ -1,5 +1,5 @@
 .datatable.aware <- TRUE
-Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+#Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 utils::globalVariables(
   names = c(
     "test",
