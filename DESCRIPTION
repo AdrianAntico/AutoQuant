@@ -1,8 +1,7 @@
 Package: RemixAML
 Title: Automated Machine Learning
 Version: 1.0
-Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
-                  role = c("aut", "cre"))
+Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",role = c("aut", "cre"))
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5),
 License: GPL-2
