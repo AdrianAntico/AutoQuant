@@ -33,7 +33,7 @@ Imports: data.table,
     monreg,
     tm,
     wordcloud,
-    foreach
-Suggests: testthat,
-    sde,
+    foreach,
     pROC
+Suggests: testthat,
+    sde
