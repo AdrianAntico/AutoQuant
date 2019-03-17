@@ -461,7 +461,6 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 
   # Reorder data, remove the coefhat column to send to database or stakeholder
   z[, coefhat := NULL]
-  remove(tsData)
   return(list(z, fit, resid))
 }
 
@@ -755,7 +754,7 @@ AutoTS <- function(data,
   data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
 
   # Check for different time aggregations
-  MaxDate <- data_train[, max(get(DateName))]
+  MaxDate <- data[, max(get(DateName))]
   FC_Data <- data.table::data.table(Date = seq(1:FCPeriods))
 
   # Define TS Frequency
@@ -2867,7 +2866,9 @@ EvalPlot <- function(data,
       ggplot2::ggtitle("Calibration Evaluation Boxplot") +
       ggplot2::xlab("Predicted Percentile") +
       ggplot2::ylab("Observed Values") +
-      ChartTheme(Size = 15)
+      ChartTheme(Size = 15) +
+      ggplot2::scale_fill_manual(values=c("blue",
+                                          "red"))
 
   } else {
     # Aggregate all columns by rank, utilizing mean as the aggregator statistic
