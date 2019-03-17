@@ -22,11 +22,6 @@ A data table with your original column replaced by the nls model predictions
 This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 }
 \examples{
-# Create Fake Annual Returns Data
-library(data.table)
-library(RemixAML)
-library(monreg)
-library(ggplot2)
 data <- data.table::data.table(Variable = seq(1,500,1), Target = rep(1, 500))
 for (i in as.integer(1:500)) {
   if(i == 1) {

@@ -12,6 +12,8 @@ Word2VecModel(data, stringCol = c("Text_Col1", "Text_Col2"),
   MaxMemory = "14G")
 }
 \arguments{
+\item{data}{Source data table to merge vects onto}
+
 \item{stringCol}{A string name for the column to convert via word2vec}
 
 \item{KeepStringCol}{Set to TRUE if you want to keep the original string column that you convert via word2vec}
@@ -37,8 +39,6 @@ Word2VecModel(data, stringCol = c("Text_Col1", "Text_Col2"),
 \item{Threads}{Number of available threads you want to dedicate to model building}
 
 \item{MaxMemory}{Amount of memory you want to dedicate to model building}
-
-\item{datax}{Source data table to merge vects onto}
 }
 \description{
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
