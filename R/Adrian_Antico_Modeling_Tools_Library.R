@@ -2887,7 +2887,9 @@ EvalPlot <- function(data,
                                                          hjust = 1)) +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::ggtitle("Calibration Evaluation Plot") +
-      ChartTheme(Size = 15)
+      ChartTheme(Size = 15) +
+      ggplot2::scale_fill_manual(values=c("blue",
+                                          "red"))
   }
   return(plot)
 }
