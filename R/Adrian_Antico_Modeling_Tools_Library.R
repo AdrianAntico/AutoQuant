@@ -2205,11 +2205,6 @@ threshOptim <- function(data,
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @import data.table
 #' @examples
-#' # Create Fake Annual Returns Data
-#' library(data.table)
-#' library(RemixAML)
-#' library(monreg)
-#' library(ggplot2)
 #' data <- data.table::data.table(Variable = seq(1,500,1), Target = rep(1, 500))
 #' for (i in as.integer(1:500)) {
 #'   if(i == 1) {
@@ -7678,7 +7673,7 @@ tokenizeH20 <- function(data) {
 #' This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 #' @author Adrian Antico
 #' @family Feature Engineering
-#' @param datax Source data table to merge vects onto
+#' @param data Source data table to merge vects onto
 #' @param stringCol A string name for the column to convert via word2vec
 #' @param KeepStringCol Set to TRUE if you want to keep the original string column that you convert via word2vec
 #' @param model_path A string path to the location where you want the model and metadata stored
