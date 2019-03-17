@@ -125,7 +125,9 @@ utils::globalVariables(
   )
 )
 
-#' DummifyDT creates dummy variables for the selected columns
+#' DummifyDT creates dummy variables for the selected columns.
+#'
+#' DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
@@ -197,7 +199,9 @@ DummifyDT <- function(data,
 #' @param targetName the name, in quotes, of the target variable
 #' @import data.table
 #' @examples
-#' # auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+#' \dontrun{
+#' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+#' }
 #' @return Micro AUC
 H20MultinomialAUC <-
   function(validate,
@@ -233,7 +237,9 @@ H20MultinomialAUC <-
 #' @param N The number of objects to display
 #' @import data.table
 #' @examples
+#' \dontrun{
 #' PrintObjectsSize(N = 10)
+#' }
 #' @return The objects in your environment and their sizes
 #' @export
 PrintObjectsSize <- function(N = 10) {
@@ -482,7 +488,6 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @import data.table
 #' @examples
 #' data <- data.table::as.data.table(iris)
-#' # Run algo, excluding Species column
 #' data <- GLRM_KMeans_Col(data,
 #'                         GridTuneGLRM = TRUE,
 #'                         nthreads = 8,
@@ -495,20 +500,16 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #'                         SVDMethod = "Randomized",
 #'                         MaxRunTimeSecs = 3600,
 #'                         KMeansK = 5)
-#' # View unique levels
 #' unique(data[["Species"]])
 #' unique(data[["ClusterID"]])
-#' # Store ClusterID associated with Species Level
 #' temp <- data[, mean(ClusterID), by = "Species"]
 #' Setosa <- round(temp[Species == "setosa", V1][[1]],0)
 #' Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
 #' Virginica <- round(temp[Species == "virginica", V1][[1]],0)
-#' # Line up ClusterID with Species Type
 #' data[, Check := "a"]
 #' data[ClusterID == eval(Setosa), Check := "setosa"]
 #' data[ClusterID == eval(Virginica), Check := "virginica"]
 #' data[ClusterID == eval(Versicolor), Check := "versicolor"]
-#' # Collect accuracy measures
 #' data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
 #' data[, mean(Acc)][[1]]
 #' @return Original data.table with added column with cluster number identifier
@@ -717,7 +718,6 @@ AutoTS <- function(data,
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
                    TimeUnit       = "day",
-                   # c("hour","day","week","month","quarter","year"),
                    Lags           = 25,
                    SLags          = 2,
                    NumCores       = 4,
@@ -1632,8 +1632,10 @@ AutoTS <- function(data,
 #' @param x The column of interest
 #' @import data.table
 #' @examples
-#' # Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
-#' # Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
+#' \dontrun{
+#' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
+#' Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
+#' }
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- base::Vectorize(function(x) {
@@ -1822,14 +1824,16 @@ ModelDataPrep <- function(data,
 #' @import doParallel
 #' @import parallel
 #' @examples
-#' # data <- RedYellowGreen(data,
-#' #                         PredictColNumber  = 1,
-#' #                         ActualColNumber   = 2,
-#' #                         TruePositiveCost  = 0,
-#' #                         TrueNegativeCost  = 0,
-#' #                         FalsePositiveCost = -1,
-#' #                         FalseNegativeCost = -2,
-#' #                         MidTierCost       = -0.5)
+#' \dontrun{
+#' data <- RedYellowGreen(data,
+#'                         PredictColNumber  = 1,
+#'                         ActualColNumber   = 2,
+#'                         TruePositiveCost  = 0,
+#'                         TrueNegativeCost  = 0,
+#'                         FalsePositiveCost = -1,
+#'                         FalseNegativeCost = -2,
+#'                         MidTierCost       = -0.5)
+#' }
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(data,
@@ -2124,15 +2128,17 @@ RedYellowGreen <- function(data,
 #' @param fnProfit This is the cost of generating a false negative prediction
 #' @import data.table
 #' @examples
-#' # data <- threshOptim(data     = data,
-#' #                      actTar   = "target",
-#' #                      predTar  = "p1",
-#' #                      tpProfit = 0,
-#' #                      tnProfit = 0,
-#' #                      fpProfit = -1,
-#' #                      fnProfit = -2)
-#' #  optimalThreshold <- data[[1]]
-#' #  allResults       <- data[[2]]
+#' \dontrun{
+#' data <- threshOptim(data     = data,
+#'                      actTar   = "target",
+#'                      predTar  = "p1",
+#'                      tpProfit = 0,
+#'                      tnProfit = 0,
+#'                      fpProfit = -1,
+#'                      fnProfit = -2)
+#' optimalThreshold <- data[[1]]
+#' allResults       <- data[[2]]
+#' }
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,
@@ -2463,13 +2469,15 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 #' @param ... Passthrough arguments
 #' @import data.table
 #' @examples
-#' # multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
-#' @return An object to pass along to ggplot objects following the "+" sign
+#' \dontrun{
+#' multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
+#' }
+#' @return Multiple ggplots on a single image
 #' @export
 multiplot <-
   function(...,
            plotlist = NULL,
-           cols = 1,
+           cols = 2,
            layout = NULL) {
     plots <- c(list(...), plotlist)
 
@@ -2604,7 +2612,9 @@ ChartTheme <- function(Size = 12) {
 #' @param x X is your variable of interest
 #' @import data.table
 #' @examples
-#' # percRank(x)
+#' \dontrun{
+#' percRank(x)
+#' }
 #' @return vector of percentile ranks
 #' @export
 percRank <- function(x)
@@ -2626,20 +2636,22 @@ percRank <- function(x)
 #' @import data.table
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
-#' # ParDepCalPlots(data,
-#' #                PredColName = "predict",
-#' #                ActColName  = "target",
-#' #                IndepVar    = "Independent_Variable",
-#' #                type        = "boxplot",
-#' #                bucket      = 0.05,
-#' #                FactLevels  = 10,
-#' #                Function    = function(x) mean(x, na.rm = TRUE))
+#' \dontrun{
+#' ParDepCalPlots(data,
+#'                PredColName = "predict",
+#'                ActColName  = "target",
+#'                IndepVar    = "Independent_Variable",
+#'                type        = "boxplot",
+#'                bucket      = 0.05,
+#'                FactLevels  = 10,
+#'                Function    = function(x) mean(x, na.rm = TRUE))
+#'}
 #' @export
 ParDepCalPlots <- function(data,
-                           PredColName = "PredictedValues",
-                           ActColName  = "ActualValues",
-                           IndepVar    = "Independent_Variable_Name",
-                           type        = "calibration",
+                           PredColName = c("PredictedValues"),
+                           ActColName  = c("ActualValues"),
+                           IndepVar    = c("Independent_Variable_Name"),
+                           type        = c("calibration"),
                            bucket      = 0.05,
                            FactLevels  = 10,
                            Function    = function(x)
@@ -2797,17 +2809,19 @@ ParDepCalPlots <- function(data,
 #' @import data.table
 #' @return Calibration plot or boxplot
 #' @examples
-#' # EvalPlot(data,
-#' #          PredColName = "predict",
-#' #          ActColName  = "target",
-#' #          type        = "calibration",
-#' #          bucket      = 0.05,
-#' #          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+#' \dontrun{
+#' EvalPlot(data,
+#'          PredColName = "predict",
+#'          ActColName  = "target",
+#'          type        = "calibration",
+#'          bucket      = 0.05,
+#'          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+#'}
 #' @export
 EvalPlot <- function(data,
-                     PredColName = "PredictedValues",
-                     ActColName  = "ActualValues",
-                     type        = c("calibration", "boxplot"),
+                     PredColName = c("PredictedValues"),
+                     ActColName  = c("ActualValues"),
+                     type        = c("calibration"),
                      bucket      = 0.05,
                      aggrfun     = function(x)
                        base::mean(x, na.rm = TRUE)) {
@@ -2950,15 +2964,15 @@ GDL_Feature_Engineering <- function(data,
           quantile(x, probs = 0.25, na.rm = TRUE),
         function(x)
           quantile(x, probs = 0.75, na.rm = TRUE)),
-      statsNames     = c("q10", "q90", "mean", "sd", "q25", "q75"),
+      statsNames     = c("q10", "q90", "mean",
+                         "sd", "q25", "q75"),
       targets        = c("qty"),
       groupingVars   = c("Group1", "Group2"),
-      sortDateName   = "date",
+      sortDateName   = c("date"),
       timeDiffTarget = c("TimeDiffName"),
-      timeAgg        = c("auto", "secs", "mins",
-                         "hours", "days", "weeks"),
+      timeAgg        = c("days"),
       WindowingLag   = 0,
-      Type           = c("Lag", "Lead"),
+      Type           = c("Lag"),
       Timer          = TRUE,
       SkipCols       = NULL,
       SimpleImpute   = TRUE) {
@@ -3445,12 +3459,11 @@ DT_GDL_Feature_Engineering <- function(data,
            statsNames     = c("MA"),
            targets        = c("qty"),
            groupingVars   = c("Group1", "Group2"),
-           sortDateName   = "date",
+           sortDateName   = c("date"),
            timeDiffTarget = c("TimeDiffName"),
-           timeAgg        = c("auto", "secs", "mins",
-                              "hours", "days", "weeks"),
+           timeAgg        = c("days"),
            WindowingLag   = 0,
-           Type           = c("Lag", "Lead"),
+           Type           = c("Lag"),
            Timer          = TRUE,
            SkipCols       = NULL,
            SimpleImpute   = TRUE) {
@@ -3973,19 +3986,19 @@ Scoring_GDL_Feature_Engineering <- function(data,
                   statsFUNs      = c(function(x)
                     base::mean(x, na.rm = TRUE),
                     function(x)
-                      sd(x, na.rm = TRUE)),
+                      base::sd(x, na.rm = TRUE)),
                   statsNames     = c("mean", "sd"),
                   targets        = c("Target"),
                   groupingVars   = c("GroupVariable"),
                   sortDateName   = c("DateTime"),
                   timeDiffTarget = c("Time_Gap"),
-                  timeAgg        = "days",
+                  timeAgg        = c("days"),
                   WindowingLag   = 1,
-                  Type           = "Lag",
+                  Type           = c("Lag"),
                   Timer          = FALSE,
                   SkipCols       = FALSE,
                   SimpleImpute   = TRUE,
-                  AscRowByGroup  = "temp",
+                  AscRowByGroup  = c("temp"),
                   RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
@@ -4521,15 +4534,15 @@ FAST_GDL_Feature_Engineering <- function(data,
                           "quantile85", "quantile95"),
        targets        = c("Target"),
        groupingVars   = c("GroupVariable"),
-       sortDateName   = "DateTime",
+       sortDateName   = c("DateTime"),
        timeDiffTarget = NULL,
-       timeAgg        = "hours",
+       timeAgg        = c("hours"),
        WindowingLag   = 1,
-       Type           = "Lag",
+       Type           = c("Lag"),
        Timer          = FALSE,
        SkipCols       = FALSE,
        SimpleImpute   = TRUE,
-       AscRowByGroup  = "temp",
+       AscRowByGroup  = c("temp"),
        RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
@@ -5143,41 +5156,43 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
 #' @import data.table
 #' @examples
-#' # Construct <- data.table::data.table(Targets         = "target",
-#' #                         Distribution    = "bernoulli",
-#' #                         Loss            = "AUC",
-#' #                         Quantile        = 0.01,
-#' #                         ModelName       = "bla",
-#' #                         Algorithm       = "gbm",
-#' #                         dataName        = "aa",
-#' #                         TargetCol       = c("1"),
-#' #                         FeatureCols     = c("2:4"),
-#' #                         CreateDate      = Sys.time(),
-#' #                         GridTune        = FALSE,
-#' #                         ExportValidData = TRUE,
-#' #                         ParDep          = 10,
-#' #                         PD_Data         = "All",
-#' #                         ThreshType      = "f1",
-#' #                         FSC             = 0.001,
-#' #                         tpProfit        = rep(0,N),
-#' #                         tnProfit        = rep(0,N),
-#' #                         fpProfit        = rep(-1,N),
-#' #                         fnProfit        = rep(-5,N),
-#' #                         SaveModel       = rep("FALSE",N),
-#' #                         SaveModelType   = rep("Mojo",N),
-#' #                         PredsAllData    = rep(TRUE,N),
-#' #                         TargetEncoding  = rep(NA,N),
-#' #                         SupplyData      = rep(FALSE,N))
-#' # AutoH20Modeler(Construct,
-#' #                max_memory = "28G",
-#' #                ratios = 0.75,
-#' #                BL_Trees = 500,
-#' #                nthreads = 5,
-#' #                model_path = getwd(),
-#' #                MaxRuntimeSeconds = 3600,
-#' #                MaxModels = 30,
-#' #                TrainData = data,
-#' #                TestData  = test)
+#' \dontrun{
+#' Construct <- data.table::data.table(Targets = "target",
+#'                         Distribution    = "bernoulli",
+#'                         Loss            = "AUC",
+#'                         Quantile        = 0.01,
+#'                         ModelName       = "bla",
+#'                         Algorithm       = "gbm",
+#'                         dataName        = "aa",
+#'                         TargetCol       = c("1"),
+#'                         FeatureCols     = c("2:4"),
+#'                         CreateDate      = Sys.time(),
+#'                         GridTune        = FALSE,
+#'                         ExportValidData = TRUE,
+#'                         ParDep          = 10,
+#'                         PD_Data         = "All",
+#'                         ThreshType      = "f1",
+#'                         FSC             = 0.001,
+#'                         tpProfit        = rep(0,N),
+#'                         tnProfit        = rep(0,N),
+#'                         fpProfit        = rep(-1,N),
+#'                         fnProfit        = rep(-5,N),
+#'                         SaveModel       = rep("FALSE",N),
+#'                         SaveModelType   = rep("Mojo",N),
+#'                         PredsAllData    = rep(TRUE,N),
+#'                         TargetEncoding  = rep(NA,N),
+#'                         SupplyData      = rep(FALSE,N))
+#' AutoH20Modeler(Construct,
+#'                max_memory = "28G",
+#'                ratios = 0.75,
+#'                BL_Trees = 500,
+#'                nthreads = 5,
+#'                model_path = getwd(),
+#'                MaxRuntimeSeconds = 3600,
+#'                MaxModels = 30,
+#'                TrainData = NULL,
+#'                TestData  = NULL)
+#'}
 #' @export
 AutoH20Modeler <- function(Construct,
                            max_memory,
@@ -5187,8 +5202,8 @@ AutoH20Modeler <- function(Construct,
                            model_path,
                            MaxRuntimeSeconds = 3600,
                            MaxModels = 30,
-                           TrainData = data,
-                           TestData  = test) {
+                           TrainData = NULL,
+                           TestData  = NULL) {
   ######################################
   # Error handling
   ######################################
@@ -7643,12 +7658,12 @@ AutoH20Modeler <- function(Construct,
 #' This function tokenizes data
 #' @author Adrian Antico at RemixInstitute.com
 #' @family Misc
-#' @param data3 The text data
+#' @param data The text data
 #' @import data.table
 #' @export
-tokenizeH20 <- function(data3) {
-  data3 <- h2o::as.h2o(data3, col.types = c("String"))
-  tokenized <- h2o::h2o.tokenize(data3, "\\\\W+")
+tokenizeH20 <- function(data) {
+  data3 <- h2o::as.h2o(data, col.types = c("String"))
+  tokenized <- h2o::h2o.tokenize(data, "\\\\W+")
   tokenized.lower <- h2o::h2o.tolower(tokenized)
   tokenized.words <-
     tokenized.lower[h2o::h2o.grep("[0-9]",
@@ -7679,19 +7694,21 @@ tokenizeH20 <- function(data3) {
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @import data.table
 #' @examples
-#' # data <- Word2VecModel(data,
-#' #                       stringCol     = c("Text_Col1", "Text_Col2"),
-#' #                       KeepStringCol = FALSE,
-#' #                       model_path    = getwd(),
-#' #                       ModelID       = c("Text_Col1", "Text_Col2"),
-#' #                       vects         = 50,
-#' #                       SaveStopWords = FALSE,
-#' #                       MinWords      = 1,
-#' #                       WindowSize    = 1,
-#' #                       Epochs        = 25,
-#' #                       StopWords     = NULL)
+#' \dontrun{
+#' data <- Word2VecModel(data,
+#'                       stringCol     = c("Text_Col1", "Text_Col2"),
+#'                       KeepStringCol = FALSE,
+#'                       model_path    = getwd(),
+#'                       ModelID       = c("Text_Col1", "Text_Col2"),
+#'                       vects         = 50,
+#'                       SaveStopWords = FALSE,
+#'                       MinWords      = 1,
+#'                       WindowSize    = 1,
+#'                       Epochs        = 25,
+#'                       StopWords     = NULL)
+#'}
 #' @export
-Word2VecModel <- function(datax,
+Word2VecModel <- function(data,
                           stringCol     = c("Text_Col1", "Text_Col2"),
                           KeepStringCol = FALSE,
                           model_path    = getwd(),
@@ -7706,7 +7723,7 @@ Word2VecModel <- function(datax,
                           Threads       = 4,
                           MaxMemory     = "14G") {
   # Ensure data is a data.table
-  data <- data.table::as.data.table(datax)
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
   # Create storage file
   N <- length(stringCol)
@@ -7716,6 +7733,11 @@ Word2VecModel <- function(datax,
 
   # Loop through all the string columns
   for (string in stringCol) {
+
+    # Ensure stringCol is character (not factor)
+    if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
+
+    # word2vec time
     i <- i + 1
     Sys.sleep(10)
     data[, eval(string) := as.character(get(string))]
@@ -7824,13 +7846,15 @@ Word2VecModel <- function(datax,
 #' @param StopWords Add your own stopwords, in vector format
 #' @import data.table
 #' @examples
-#' #  data <- WordFreq(data,
-#' #                   TextColName = "DESCR",
-#' #                   ClusterCol = "ClusterAllNoTarget",
-#' #                   ClusterID = 0,
-#' #                   RemoveEnglishStopwords = TRUE,
-#' #                   Stemming = TRUE,
-#' #                   StopWords = c("blabla1", "blabla2")
+#' \dontrun{
+#' data <- WordFreq(data,
+#'                  TextColName = "DESCR",
+#'                  ClusterCol = "ClusterAllNoTarget",
+#'                  ClusterID = 0,
+#'                  RemoveEnglishStopwords = TRUE,
+#'                  Stemming = TRUE,
+#'                  StopWords = c("blabla1", "blabla2")
+#'}
 #' @export
 WordFreq <- function(data,
                      TextColName = "DESCR",
@@ -7839,6 +7863,15 @@ WordFreq <- function(data,
                      RemoveEnglishStopwords = TRUE,
                      Stemming = TRUE,
                      StopWords = c("blabla1", "blabla2")) {
+  # Check data.table
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+
+  # Ensure stringCol is character (not factor)
+  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+
+  # Ensure ClusterCol is character
+  if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
+
   # Prepare data
   if (is.null(ClusterCol)) {
     desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
