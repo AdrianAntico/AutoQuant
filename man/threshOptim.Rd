@@ -29,15 +29,17 @@ Optimal threshold and corresponding utilities for the range of thresholds tested
 This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
-# data <- threshOptim(data     = data,
-#                      actTar   = "target",
-#                      predTar  = "p1",
-#                      tpProfit = 0,
-#                      tnProfit = 0,
-#                      fpProfit = -1,
-#                      fnProfit = -2)
-#  optimalThreshold <- data[[1]]
-#  allResults       <- data[[2]]
+\dontrun{
+data <- threshOptim(data     = data,
+                     actTar   = "target",
+                     predTar  = "p1",
+                     tpProfit = 0,
+                     tnProfit = 0,
+                     fpProfit = -1,
+                     fnProfit = -2)
+optimalThreshold <- data[[1]]
+allResults       <- data[[2]]
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},

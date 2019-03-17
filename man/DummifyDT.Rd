@@ -2,7 +2,7 @@
 % Please edit documentation in R/Adrian_Antico_Modeling_Tools_Library.R
 \name{DummifyDT}
 \alias{DummifyDT}
-\title{DummifyDT creates dummy variables for the selected columns}
+\title{DummifyDT creates dummy variables for the selected columns.}
 \usage{
 DummifyDT(data, cols, KeepBaseCols = TRUE, OneHot = TRUE)
 }
@@ -19,7 +19,7 @@ DummifyDT(data, cols, KeepBaseCols = TRUE, OneHot = TRUE)
 data table with new dummy variables columns and optionally removes base columns
 }
 \description{
-DummifyDT creates dummy variables for the selected columns
+DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
 }
 \examples{
 test <- data.table::data.table(Value = runif(100000),

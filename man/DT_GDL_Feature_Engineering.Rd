@@ -7,10 +7,9 @@
 DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
   periods = c(seq(5, 95, 5)), statsNames = c("MA"),
   targets = c("qty"), groupingVars = c("Group1", "Group2"),
-  sortDateName = "date", timeDiffTarget = c("TimeDiffName"),
-  timeAgg = c("auto", "secs", "mins", "hours", "days", "weeks"),
-  WindowingLag = 0, Type = c("Lag", "Lead"), Timer = TRUE,
-  SkipCols = NULL, SimpleImpute = TRUE)
+  sortDateName = c("date"), timeDiffTarget = c("TimeDiffName"),
+  timeAgg = c("days"), WindowingLag = 0, Type = c("Lag"),
+  Timer = TRUE, SkipCols = NULL, SimpleImpute = TRUE)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}

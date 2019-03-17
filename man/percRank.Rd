@@ -16,7 +16,9 @@ vector of percentile ranks
 This function computes percentile ranks for each row in your data like Excel's PERCENT_RANK
 }
 \examples{
-# percRank(x)
+\dontrun{
+percRank(x)
+}
 }
 \seealso{
 Other Misc: \code{\link{ChartTheme}},

@@ -16,8 +16,10 @@ An object to pass along to ggplot objects following the "+" sign
 tempDatesFun takes the Excel datetime column, which imports as character, and converts it into a date type
 }
 \examples{
-# Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
-# Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "\%m/\%d/\%Y")]
+\dontrun{
+Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
+Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "\%m/\%d/\%Y")]
+}
 }
 \seealso{
 Other Misc: \code{\link{ChartTheme}},

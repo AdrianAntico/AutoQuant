@@ -28,13 +28,15 @@ WordFreq(data, TextColName = "DESCR",
 This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 }
 \examples{
-#  data <- WordFreq(data,
-#                   TextColName = "DESCR",
-#                   ClusterCol = "ClusterAllNoTarget",
-#                   ClusterID = 0,
-#                   RemoveEnglishStopwords = TRUE,
-#                   Stemming = TRUE,
-#                   StopWords = c("blabla1", "blabla2")
+\dontrun{
+data <- WordFreq(data,
+                 TextColName = "DESCR",
+                 ClusterCol = "ClusterAllNoTarget",
+                 ClusterID = 0,
+                 RemoveEnglishStopwords = TRUE,
+                 Stemming = TRUE,
+                 StopWords = c("blabla1", "blabla2")
+}
 }
 \seealso{
 Other Misc: \code{\link{ChartTheme}},

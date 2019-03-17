@@ -4,10 +4,11 @@
 \alias{ParDepCalPlots}
 \title{Function automatically builds partial dependence calibration plots for model evaluation}
 \usage{
-ParDepCalPlots(data, PredColName = "PredictedValues",
-  ActColName = "ActualValues", IndepVar = "Independent_Variable_Name",
-  type = "calibration", bucket = 0.05, FactLevels = 10,
-  Function = function(x) base::mean(x, na.rm = TRUE))
+ParDepCalPlots(data, PredColName = c("PredictedValues"),
+  ActColName = c("ActualValues"),
+  IndepVar = c("Independent_Variable_Name"), type = c("calibration"),
+  bucket = 0.05, FactLevels = 10, Function = function(x)
+  base::mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -33,14 +34,16 @@ Partial dependence calibration plot or boxplot
 This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-# ParDepCalPlots(data,
-#                PredColName = "predict",
-#                ActColName  = "target",
-#                IndepVar    = "Independent_Variable",
-#                type        = "boxplot",
-#                bucket      = 0.05,
-#                FactLevels  = 10,
-#                Function    = function(x) mean(x, na.rm = TRUE))
+\dontrun{
+ParDepCalPlots(data,
+               PredColName = "predict",
+               ActColName  = "target",
+               IndepVar    = "Independent_Variable",
+               type        = "boxplot",
+               bucket      = 0.05,
+               FactLevels  = 10,
+               Function    = function(x) mean(x, na.rm = TRUE))
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},

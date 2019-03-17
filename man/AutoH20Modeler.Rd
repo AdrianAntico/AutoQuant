@@ -6,7 +6,7 @@
 \usage{
 AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
   model_path, MaxRuntimeSeconds = 3600, MaxModels = 30,
-  TrainData = data, TestData = test)
+  TrainData = NULL, TestData = NULL)
 }
 \arguments{
 \item{Construct}{Core instruction file for automation}
@@ -42,41 +42,43 @@ Returns saved models, corrected Construct file, variable importance tables, eval
 7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
 }
 \examples{
-# Construct <- data.table::data.table(Targets         = "target",
-#                         Distribution    = "bernoulli",
-#                         Loss            = "AUC",
-#                         Quantile        = 0.01,
-#                         ModelName       = "bla",
-#                         Algorithm       = "gbm",
-#                         dataName        = "aa",
-#                         TargetCol       = c("1"),
-#                         FeatureCols     = c("2:4"),
-#                         CreateDate      = Sys.time(),
-#                         GridTune        = FALSE,
-#                         ExportValidData = TRUE,
-#                         ParDep          = 10,
-#                         PD_Data         = "All",
-#                         ThreshType      = "f1",
-#                         FSC             = 0.001,
-#                         tpProfit        = rep(0,N),
-#                         tnProfit        = rep(0,N),
-#                         fpProfit        = rep(-1,N),
-#                         fnProfit        = rep(-5,N),
-#                         SaveModel       = rep("FALSE",N),
-#                         SaveModelType   = rep("Mojo",N),
-#                         PredsAllData    = rep(TRUE,N),
-#                         TargetEncoding  = rep(NA,N),
-#                         SupplyData      = rep(FALSE,N))
-# AutoH20Modeler(Construct,
-#                max_memory = "28G",
-#                ratios = 0.75,
-#                BL_Trees = 500,
-#                nthreads = 5,
-#                model_path = getwd(),
-#                MaxRuntimeSeconds = 3600,
-#                MaxModels = 30,
-#                TrainData = data,
-#                TestData  = test)
+\dontrun{
+Construct <- data.table::data.table(Targets = "target",
+                        Distribution    = "bernoulli",
+                        Loss            = "AUC",
+                        Quantile        = 0.01,
+                        ModelName       = "bla",
+                        Algorithm       = "gbm",
+                        dataName        = "aa",
+                        TargetCol       = c("1"),
+                        FeatureCols     = c("2:4"),
+                        CreateDate      = Sys.time(),
+                        GridTune        = FALSE,
+                        ExportValidData = TRUE,
+                        ParDep          = 10,
+                        PD_Data         = "All",
+                        ThreshType      = "f1",
+                        FSC             = 0.001,
+                        tpProfit        = rep(0,N),
+                        tnProfit        = rep(0,N),
+                        fpProfit        = rep(-1,N),
+                        fnProfit        = rep(-5,N),
+                        SaveModel       = rep("FALSE",N),
+                        SaveModelType   = rep("Mojo",N),
+                        PredsAllData    = rep(TRUE,N),
+                        TargetEncoding  = rep(NA,N),
+                        SupplyData      = rep(FALSE,N))
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30,
+               TrainData = NULL,
+               TestData  = NULL)
+}
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoTS}},

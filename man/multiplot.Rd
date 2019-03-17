@@ -4,7 +4,7 @@
 \alias{multiplot}
 \title{Multiplot is a function for combining multiple plots}
 \usage{
-multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
+multiplot(..., plotlist = NULL, cols = 2, layout = NULL)
 }
 \arguments{
 \item{...}{Passthrough arguments}
@@ -16,13 +16,15 @@ multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
 \item{layout}{Leave NULL}
 }
 \value{
-An object to pass along to ggplot objects following the "+" sign
+Multiple ggplots on a single image
 }
 \description{
 Sick of copying this one into your code? Well, not anymore.
 }
 \examples{
-# multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
+\dontrun{
+multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
+}
 }
 \seealso{
 Other Misc: \code{\link{ChartTheme}},

@@ -4,8 +4,8 @@
 \alias{EvalPlot}
 \title{Function automatically builds calibration plots for model evaluation}
 \usage{
-EvalPlot(data, PredColName = "PredictedValues",
-  ActColName = "ActualValues", type = c("calibration", "boxplot"),
+EvalPlot(data, PredColName = c("PredictedValues"),
+  ActColName = c("ActualValues"), type = c("calibration"),
   bucket = 0.05, aggrfun = function(x) base::mean(x, na.rm = TRUE))
 }
 \arguments{
@@ -28,12 +28,14 @@ Calibration plot or boxplot
 This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-# EvalPlot(data,
-#          PredColName = "predict",
-#          ActColName  = "target",
-#          type        = "calibration",
-#          bucket      = 0.05,
-#          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+\dontrun{
+EvalPlot(data,
+         PredColName = "predict",
+         ActColName  = "target",
+         type        = "calibration",
+         bucket      = 0.05,
+         aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{ParDepCalPlots}},

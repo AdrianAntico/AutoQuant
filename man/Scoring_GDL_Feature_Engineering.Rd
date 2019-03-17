@@ -7,12 +7,12 @@
 Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
   24)), periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
   statsFUNs = c(function(x) base::mean(x, na.rm = TRUE), function(x)
-  sd(x, na.rm = TRUE)), statsNames = c("mean", "sd"),
+  base::sd(x, na.rm = TRUE)), statsNames = c("mean", "sd"),
   targets = c("Target"), groupingVars = c("GroupVariable"),
   sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
-  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = FALSE,
-  SkipCols = FALSE, SimpleImpute = TRUE, AscRowByGroup = "temp",
-  RecordsKeep = 1)
+  timeAgg = c("days"), WindowingLag = 1, Type = c("Lag"),
+  Timer = FALSE, SkipCols = FALSE, SimpleImpute = TRUE,
+  AscRowByGroup = c("temp"), RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}

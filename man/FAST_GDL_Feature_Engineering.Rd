@@ -8,10 +8,10 @@ FAST_GDL_Feature_Engineering(data, lags = c(1:5), periods = c(seq(10,
   50, 10)), statsFUNs = c("mean", "median", "sd", "quantile85",
   "quantile95"), statsNames = c("mean", "median", "sd", "quantile85",
   "quantile95"), targets = c("Target"),
-  groupingVars = c("GroupVariable"), sortDateName = "DateTime",
-  timeDiffTarget = NULL, timeAgg = "hours", WindowingLag = 1,
-  Type = "Lag", Timer = FALSE, SkipCols = FALSE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
+  groupingVars = c("GroupVariable"), sortDateName = c("DateTime"),
+  timeDiffTarget = NULL, timeAgg = c("hours"), WindowingLag = 1,
+  Type = c("Lag"), Timer = FALSE, SkipCols = FALSE,
+  SimpleImpute = TRUE, AscRowByGroup = c("temp"), RecordsKeep = 1)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}
@@ -67,8 +67,16 @@ data <- data[order(DateTime)]
 data <- FAST_GDL_Feature_Engineering(data,
                                      lags           = c(1:5),
                                      periods        = c(seq(10,50,10)),
-                                     statsFUNs      = c("mean", "median", "sd", "quantile85", "quantile95"),
-                                     statsNames     = c("mean", "median", "sd", "quantile85", "quantile95"),
+                                     statsFUNs      = c("mean",
+                                                        "median",
+                                                        "sd",
+                                                        "quantile85",
+                                                        "quantile95"),
+                                     statsNames     = c("mean",
+                                                        "median",
+                                                        "sd",
+                                                        "quantile85",
+                                                        "quantile95"),
                                      targets        = c("Target"),
                                      groupingVars   = NULL,
                                      sortDateName   = "DateTime",

@@ -16,7 +16,9 @@ The objects in your environment and their sizes
 PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 }
 \examples{
+\dontrun{
 PrintObjectsSize(N = 10)
+}
 }
 \seealso{
 Other Misc: \code{\link{ChartTheme}},

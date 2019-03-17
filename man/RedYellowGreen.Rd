@@ -37,14 +37,16 @@ A data table with all evaluated strategies, parameters, and utilities, along wit
 This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
 }
 \examples{
-# data <- RedYellowGreen(data,
-#                         PredictColNumber  = 1,
-#                         ActualColNumber   = 2,
-#                         TruePositiveCost  = 0,
-#                         TrueNegativeCost  = 0,
-#                         FalsePositiveCost = -1,
-#                         FalseNegativeCost = -2,
-#                         MidTierCost       = -0.5)
+\dontrun{
+data <- RedYellowGreen(data,
+                        PredictColNumber  = 1,
+                        ActualColNumber   = 2,
+                        TruePositiveCost  = 0,
+                        TrueNegativeCost  = 0,
+                        FalsePositiveCost = -1,
+                        FalseNegativeCost = -2,
+                        MidTierCost       = -0.5)
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},

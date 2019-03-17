@@ -11,10 +11,10 @@ GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
   function(x) quantile(x, probs = 0.25, na.rm = TRUE), function(x)
   quantile(x, probs = 0.75, na.rm = TRUE)), statsNames = c("q10", "q90",
   "mean", "sd", "q25", "q75"), targets = c("qty"),
-  groupingVars = c("Group1", "Group2"), sortDateName = "date",
-  timeDiffTarget = c("TimeDiffName"), timeAgg = c("auto", "secs",
-  "mins", "hours", "days", "weeks"), WindowingLag = 0, Type = c("Lag",
-  "Lead"), Timer = TRUE, SkipCols = NULL, SimpleImpute = TRUE)
+  groupingVars = c("Group1", "Group2"), sortDateName = c("date"),
+  timeDiffTarget = c("TimeDiffName"), timeAgg = c("days"),
+  WindowingLag = 0, Type = c("Lag"), Timer = TRUE, SkipCols = NULL,
+  SimpleImpute = TRUE)
 }
 \arguments{
 \item{data}{The data source you want to run the function on}

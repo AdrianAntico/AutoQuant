@@ -4,7 +4,7 @@
 \alias{Word2VecModel}
 \title{Automated word2vec data generation via H20}
 \usage{
-Word2VecModel(datax, stringCol = c("Text_Col1", "Text_Col2"),
+Word2VecModel(data, stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = getwd(),
   ModelID = c("Text_Col1", "Text_Col2"), vects = 5,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 1, Epochs = 25,
@@ -12,8 +12,6 @@ Word2VecModel(datax, stringCol = c("Text_Col1", "Text_Col2"),
   MaxMemory = "14G")
 }
 \arguments{
-\item{datax}{Source data table to merge vects onto}
-
 \item{stringCol}{A string name for the column to convert via word2vec}
 
 \item{KeepStringCol}{Set to TRUE if you want to keep the original string column that you convert via word2vec}
@@ -39,22 +37,26 @@ Word2VecModel(datax, stringCol = c("Text_Col1", "Text_Col2"),
 \item{Threads}{Number of available threads you want to dedicate to model building}
 
 \item{MaxMemory}{Amount of memory you want to dedicate to model building}
+
+\item{datax}{Source data table to merge vects onto}
 }
 \description{
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
-# data <- Word2VecModel(data,
-#                       stringCol     = c("Text_Col1", "Text_Col2"),
-#                       KeepStringCol = FALSE,
-#                       model_path    = getwd(),
-#                       ModelID       = c("Text_Col1", "Text_Col2"),
-#                       vects         = 50,
-#                       SaveStopWords = FALSE,
-#                       MinWords      = 1,
-#                       WindowSize    = 1,
-#                       Epochs        = 25,
-#                       StopWords     = NULL)
+\dontrun{
+data <- Word2VecModel(data,
+                      stringCol     = c("Text_Col1", "Text_Col2"),
+                      KeepStringCol = FALSE,
+                      model_path    = getwd(),
+                      ModelID       = c("Text_Col1", "Text_Col2"),
+                      vects         = 50,
+                      SaveStopWords = FALSE,
+                      MinWords      = 1,
+                      WindowSize    = 1,
+                      Epochs        = 25,
+                      StopWords     = NULL)
+}
 }
 \seealso{
 Other Feature Engineering: \code{\link{DT_GDL_Feature_Engineering}},

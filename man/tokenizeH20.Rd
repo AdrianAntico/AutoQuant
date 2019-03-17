@@ -4,10 +4,10 @@
 \alias{tokenizeH20}
 \title{For NLP work}
 \usage{
-tokenizeH20(data3)
+tokenizeH20(data)
 }
 \arguments{
-\item{data3}{The text data}
+\item{data}{The text data}
 }
 \description{
 This function tokenizes data
