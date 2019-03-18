@@ -1036,25 +1036,27 @@ AutoTS <- function(data,
       if(MinVal > 0) {
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
-          forecast::ets(
-            y = dataTSTrain[, TargetName],
-            model = "ZZN",
-            allow.multiplicative.trend = TRUE,
-            restrict = TRUE,
-            lambda = TRUE,
-            biasadj = TRUE
-          )
+          tryCatch({
+            forecast::ets(
+              y = dataTSTrain[, TargetName],
+              model = "ZZN",
+              allow.multiplicative.trend = TRUE,
+              restrict = TRUE,
+              lambda = TRUE,
+              biasadj = TRUE
+          )}, error = function(x) "empty")
       } else {
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
-          forecast::ets(
-            y = dataTSTrain[, TargetName],
-            model = "ZZN",
-            allow.multiplicative.trend = TRUE,
-            restrict = TRUE,
-            lambda = FALSE,
-            biasadj = FALSE
-          )
+          tryCatch({
+            forecast::ets(
+              y = dataTSTrain[, TargetName],
+              model = "ZZN",
+              allow.multiplicative.trend = TRUE,
+              restrict = TRUE,
+              lambda = FALSE,
+              biasadj = FALSE
+            )}, error = function(x) "empty")
       }
     } else {
       if(MinVal > 0) {
