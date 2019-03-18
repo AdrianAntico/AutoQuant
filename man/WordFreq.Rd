@@ -7,7 +7,7 @@
 WordFreq(data, TextColName = "DESCR",
   ClusterCol = "ClusterAllNoTarget", ClusterID = 0,
   RemoveEnglishStopwords = TRUE, Stemming = TRUE,
-  StopWords = c("blabla1", "blabla2"))
+  StopWords = c("bla", "blab2"))
 }
 \arguments{
 \item{data}{Source data table}
@@ -35,7 +35,7 @@ data <- WordFreq(data,
                  ClusterID = 0,
                  RemoveEnglishStopwords = TRUE,
                  Stemming = TRUE,
-                 StopWords = c("blabla1", "blabla2")
+                 StopWords = c("bla1", "bla2")
 }
 }
 \seealso{
