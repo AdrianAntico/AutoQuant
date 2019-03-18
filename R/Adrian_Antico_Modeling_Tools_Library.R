@@ -1117,57 +1117,6 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("SPLINE" %in% toupper(SkipModels))) {
-    # CUBIC SMOOTHING SPLINE-------------
-    # 1)
-    print("SPLINE FITTING")
-    if(MinVal > 0) {
-      splinef_model <-
-        tryCatch({
-          forecast::splinef(y = dataTSTrain[, TargetName],
-                            lambda = TRUE,
-                            biasadj = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else {
-      splinef_model <-
-        tryCatch({
-          forecast::splinef(y = dataTSTrain[, TargetName],
-                            lambda = FALSE,
-                            biasadj = FALSE)
-        },
-        error = function(x)
-          "empty")
-    }
-
-    if (tolower(class(splinef_model)) == "forecast") {
-      i <- i + 1
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_CS <- data.table::copy(data_test)
-      data_test_CS[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("CS", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(splinef_model, h = HoldOutPeriods)$mean
-        )
-      )]
-
-      # Add Evaluation Columns
-      # 3)
-      data_test_CS[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
-
-      # Collect model filename
-      EvalList[[i]] <- data_test_CS
-    }
-  }
-
   if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
@@ -1710,26 +1659,6 @@ AutoTS <- function(data,
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(EXPSMOOTH_model,
-                         h = FCPeriods)$mean)]
-
-  } else if (BestModel == "CS") {
-    if(MinVal > 0) {
-      # Rebuild model on full data
-      splinef_model <-
-        forecast::splinef(y = dataTSTrain[, TargetName],
-                          lambda = TRUE,
-                          biasadj = TRUE)
-    } else {
-      # Rebuild model on full data
-      splinef_model <-
-        forecast::splinef(y = dataTSTrain[, TargetName],
-                          lambda = FALSE,
-                          biasadj = FALSE)
-    }
-
-    # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
-      forecast::forecast(splinef_model,
                          h = FCPeriods)$mean)]
 
   } else if (BestModel == "TBATS") {
