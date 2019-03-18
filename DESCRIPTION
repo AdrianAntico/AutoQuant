@@ -20,3 +20,4 @@ Suggests: testthat, sde, knitr, rmarkdown
 VignetteBuilder: knitr
 Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
+Date: '2019-03-18'
