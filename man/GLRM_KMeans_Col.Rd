@@ -46,6 +46,7 @@ Original data.table with added column with cluster number identifier
 GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 }
 \examples{
+\dontrun{
 data <- data.table::as.data.table(iris)
 data <- GLRM_KMeans_Col(data,
                         GridTuneGLRM = TRUE,
@@ -71,6 +72,7 @@ data[ClusterID == eval(Virginica), Check := "virginica"]
 data[ClusterID == eval(Versicolor), Check := "versicolor"]
 data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
 data[, mean(Acc)][[1]]
+}
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{GenTSAnomVars}},
