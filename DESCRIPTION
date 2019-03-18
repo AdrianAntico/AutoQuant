@@ -1,15 +1,15 @@
-Package: RemixAML
+Package: RemixAutoML
 Title: Automated Machine Learning
 Version: 1.0
 Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
-                  role = c("aut", "cre"))
+                  role = c("aut", "cre", "cph"))
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5),
 License: GPL-2
 Encoding: UTF-8
 Language: en-US
-URL: https://github.com/AdrianAntico/ModelingTools
-BugReports: https://github.com/AdrianAntico/ModelingTools
+URL: https://github.com/AdrianAntico/RemixAutoML
+BugReports: https://github.com/AdrianAntico/RemixAutoML
 LazyData: true
 RoxygenNote: 6.1.1
 Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
@@ -18,3 +18,5 @@ Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
         foreach, pROC
 Suggests: testthat, sde, knitr, rmarkdown
 VignetteBuilder: knitr
+Author: Adrian Antico
+Maintainer: Adrian Antico <adrianantico@gmail.com>
