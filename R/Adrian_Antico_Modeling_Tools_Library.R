@@ -490,6 +490,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' data <- data.table::as.data.table(iris)
 #' data <- GLRM_KMeans_Col(data,
 #'                         GridTuneGLRM = TRUE,
+#'                         GridTuneKMeans = TRUE,
 #'                         nthreads = 8,
 #'                         MaxMem = "28G",
 #'                         glrmCols = 1:(ncol(data)-1),
@@ -523,7 +524,7 @@ GLRM_KMeans_Col <- function(data,
                             glrmCols        = 3:ncol(data),
                             IgnoreConstCols = TRUE,
                             glrmFactors     = 5,
-                            Loss            = "Quadratic",
+                            Loss            = "Absolute",
                             glrmMaxIters    = 1000,
                             SVDMethod       = "Randomized",
                             MaxRunTimeSecs  = 3600,
@@ -552,7 +553,10 @@ GLRM_KMeans_Col <- function(data,
     # Define hyperparameters
     HyperParams <-
       list(
-        transform        = c("NONE", "DEMEAN", "DESCALE", "STANDARDIZE"),
+        transform        = c("NONE",
+                             "DEMEAN",
+                             "DESCALE",
+                             "STANDARDIZE"),
         k                = 1:5,
         regularization_x = c(
           "None",
@@ -576,7 +580,9 @@ GLRM_KMeans_Col <- function(data,
         ),
         gamma_x          = seq(0.01, 0.10, 0.01),
         gamma_y          = seq(0.01, 0.10, 0.01),
-        svd_method       = c("Randomized", "GramSVD", "Power")
+        svd_method       = c("Randomized",
+                             "GramSVD",
+                             "Power")
       )
 
     # Run grid tune
@@ -732,6 +738,9 @@ AutoTS <- function(data,
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
+  # Check for min value of data
+  MinVal <- data[, min(get(TargetName))]
+
   # Convert to lubridate as_date() or POSIXct
   if (tolower(TimeUnit) != "hour") {
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
@@ -792,42 +801,83 @@ AutoTS <- function(data,
     # 1)
     print("ARFIMA FITTING")
     if (StepWise) {
-      ARFIMA_model <-
-        tryCatch({
-          forecast::arfima(
-            y = dataTSTrain[, TargetName],
-            lambda = TRUE,
-            biasadj = TRUE,
-            max.p = Lags,
-            max.q = Lags,
-            max.d = 1,
-            max.D = 1,
-            ic = "bic",
-            stepwise = StepWise,
-            num.cores = NumCores
-          )
-        },
-        error = function(x)
-          "empty")
+      if(MinVal > 0) {
+        ARFIMA_model <-
+          tryCatch({
+            forecast::arfima(
+              y = dataTSTrain[, TargetName],
+              lambda = TRUE,
+              biasadj = TRUE,
+              max.p = Lags,
+              max.q = Lags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      } else {
+        ARFIMA_model <-
+          tryCatch({
+            forecast::arfima(
+              y = dataTSTrain[, TargetName],
+              lambda = FALSE,
+              biasadj = FALSE,
+              max.p = Lags,
+              max.q = Lags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     } else {
-      ARFIMA_model <-
-        tryCatch({
-          forecast::arfima(
-            y = dataTSTrain[, TargetName],
-            lambda = TRUE,
-            biasadj = TRUE,
-            max.p = Lags,
-            max.q = Lags,
-            max.d = 1,
-            max.D = 1,
-            ic = "bic",
-            stepwise = StepWise,
-            parallel = TRUE,
-            num.cores = NumCores
-          )
-        },
-        error = function(x)
-          "empty")
+      if(MinVal > 0) {
+        ARFIMA_model <-
+          tryCatch({
+            forecast::arfima(
+              y = dataTSTrain[, TargetName],
+              lambda = TRUE,
+              biasadj = TRUE,
+              max.p = Lags,
+              max.q = Lags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      } else {
+        ARFIMA_model <-
+          tryCatch({
+            forecast::arfima(
+              y = dataTSTrain[, TargetName],
+              lambda = FALSE,
+              biasadj = FALSE,
+              max.p = Lags,
+              max.q = Lags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     }
 
     # Collect Test Data for Model Comparison
@@ -863,46 +913,91 @@ AutoTS <- function(data,
     # 1)
     print("ARIMA FITTING")
     if (StepWise) {
-      ARIMA_model <-
-        tryCatch({
-          forecast::auto.arima(
-            y = dataTSTrain[, TargetName],
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = 1,
-            max.D = 1,
-            ic = "bic",
-            lambda = TRUE,
-            biasadj = TRUE,
-            stepwise = StepWise,
-            num.cores = NumCores
-          )
-        },
-        error = function(x)
-          "empty")
+      if(MinVal > 0) {
+        ARIMA_model <-
+          tryCatch({
+            forecast::auto.arima(
+              y = dataTSTrain[, TargetName],
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      } else {
+        ARIMA_model <-
+          tryCatch({
+            forecast::auto.arima(
+              y = dataTSTrain[, TargetName],
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     } else {
-      ARIMA_model <-
-        tryCatch({
-          forecast::auto.arima(
-            y = dataTSTrain[, TargetName],
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = 1,
-            max.D = 1,
-            ic = "bic",
-            lambda = TRUE,
-            biasadj = TRUE,
-            stepwise = StepWise,
-            parallel = TRUE,
-            num.cores = NumCores
-          )
-        },
-        error = function(x)
-          "empty")
+      if(MinVal > 0) {
+        ARIMA_model <-
+          tryCatch({
+            forecast::auto.arima(
+              y = dataTSTrain[, TargetName],
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      } else {
+        ARIMA_model <-
+          tryCatch({
+            forecast::auto.arima(
+              y = dataTSTrain[, TargetName],
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = 1,
+              max.D = 1,
+              ic = "bic",
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     }
 
     # Collect Test Data for Model Comparison
@@ -938,30 +1033,59 @@ AutoTS <- function(data,
     # 1)
     print("ETS FITTING")
     if (freq > 24) {
-      # when > 24, model's third letter has to be N for none
-      EXPSMOOTH_model <-
-        forecast::ets(
-          y = dataTSTrain[, TargetName],
-          model = "ZZN",
-          allow.multiplicative.trend = TRUE,
-          restrict = TRUE,
-          lambda = TRUE,
-          biasadj = TRUE
-        )
-    } else {
-      EXPSMOOTH_model <-
-        tryCatch({
+      if(MinVal > 0) {
+        # when > 24, model's third letter has to be N for none
+        EXPSMOOTH_model <-
           forecast::ets(
             y = dataTSTrain[, TargetName],
-            model = "ZZZ",
+            model = "ZZN",
             allow.multiplicative.trend = TRUE,
             restrict = TRUE,
             lambda = TRUE,
             biasadj = TRUE
           )
-        },
-        error = function(x)
-          "empty")
+      } else {
+        # when > 24, model's third letter has to be N for none
+        EXPSMOOTH_model <-
+          forecast::ets(
+            y = dataTSTrain[, TargetName],
+            model = "ZZN",
+            allow.multiplicative.trend = TRUE,
+            restrict = TRUE,
+            lambda = FALSE,
+            biasadj = FALSE
+          )
+      }
+    } else {
+      if(MinVal > 0) {
+        EXPSMOOTH_model <-
+          tryCatch({
+            forecast::ets(
+              y = dataTSTrain[, TargetName],
+              model = "ZZZ",
+              allow.multiplicative.trend = TRUE,
+              restrict = TRUE,
+              lambda = TRUE,
+              biasadj = TRUE
+            )
+          },
+          error = function(x)
+            "empty")
+      } else {
+        EXPSMOOTH_model <-
+          tryCatch({
+            forecast::ets(
+              y = dataTSTrain[, TargetName],
+              model = "ZZZ",
+              allow.multiplicative.trend = TRUE,
+              restrict = TRUE,
+              lambda = FALSE,
+              biasadj = FALSE
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     }
     # Collect Test Data for Model Comparison
     # 2)
@@ -995,14 +1119,25 @@ AutoTS <- function(data,
     # CUBIC SMOOTHING SPLINE-------------
     # 1)
     print("SPLINE FITTING")
-    splinef_model <-
-      tryCatch({
-        forecast::splinef(y = dataTSTrain[, TargetName],
-                          lambda = TRUE,
-                          biasadj = TRUE)
-      },
-      error = function(x)
-        "empty")
+    if(MinVal > 0) {
+      splinef_model <-
+        tryCatch({
+          forecast::splinef(y = dataTSTrain[, TargetName],
+                            lambda = TRUE,
+                            biasadj = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else {
+      splinef_model <-
+        tryCatch({
+          forecast::splinef(y = dataTSTrain[, TargetName],
+                            lambda = FALSE,
+                            biasadj = FALSE)
+        },
+        error = function(x)
+          "empty")
+    }
 
     if (tolower(class(splinef_model)) == "forecast") {
       i <- i + 1
@@ -1035,24 +1170,45 @@ AutoTS <- function(data,
     # TBATS-------------
     # 1)
     print("TBATS FITTING")
-    TBATS_model <-
-      tryCatch({
-        forecast::tbats(
-          y               = dataTSTrain[, TargetName],
-          use.arma.errors = TRUE,
-          lambda          = TRUE,
-          biasadj         = TRUE,
-          max.p           = Lags,
-          max.q           = Lags,
-          max.P           = SLags,
-          max.Q           = SLags,
-          max.d           = 1,
-          max.D           = 1,
-          num.cores       = NumCores
-        )
-      },
-      error = function(x)
-        "empty")
+    if(MinVal > 0) {
+      TBATS_model <-
+        tryCatch({
+          forecast::tbats(
+            y               = dataTSTrain[, TargetName],
+            use.arma.errors = TRUE,
+            lambda          = TRUE,
+            biasadj         = TRUE,
+            max.p           = Lags,
+            max.q           = Lags,
+            max.P           = SLags,
+            max.Q           = SLags,
+            max.d           = 1,
+            max.D           = 1,
+            num.cores       = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
+    } else {
+      TBATS_model <-
+        tryCatch({
+          forecast::tbats(
+            y               = dataTSTrain[, TargetName],
+            use.arma.errors = TRUE,
+            lambda          = FALSE,
+            biasadj         = FALSE,
+            max.p           = Lags,
+            max.q           = Lags,
+            max.P           = SLags,
+            max.Q           = SLags,
+            max.d           = 1,
+            max.D           = 1,
+            num.cores       = NumCores
+          )
+        },
+        error = function(x)
+          "empty")
+    }
 
     if (class(TBATS_model)[1] == "tbats" |
         class(TBATS_model)[1] == "bats") {
@@ -1087,14 +1243,25 @@ AutoTS <- function(data,
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
     print("TSLM FITTING")
-    TSLM_model <-
-      tryCatch({
-        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                       lambda = TRUE,
-                       biasadj = TRUE)
-      },
-      error = function(x)
-        "empty")
+    if(MinVal > 0) {
+      TSLM_model <-
+        tryCatch({
+          forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                         lambda = TRUE,
+                         biasadj = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else {
+      TSLM_model <-
+        tryCatch({
+          forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                         lambda = FALSE,
+                         biasadj = FALSE)
+        },
+        error = function(x)
+          "empty")
+    }
 
     if (tolower(class(TSLM_model)[1]) == "tslm") {
       i <- i + 1
@@ -1345,32 +1512,63 @@ AutoTS <- function(data,
   if (BestModel == "ARFIMA") {
     # Rebuild model on full data
     if (StepWise) {
-      ARFIMA_model <- forecast::arfima(
-        y = dataTSTrain[, TargetName],
-        lambda = TRUE,
-        biasadj = TRUE,
-        max.p = Lags,
-        max.q = Lags,
-        max.d = 1,
-        max.D = 1,
-        ic = "bic",
-        stepwise = StepWise,
-        num.cores = NumCores
-      )
+      if(MinVal > 0) {
+        ARFIMA_model <- forecast::arfima(
+          y = dataTSTrain[, TargetName],
+          lambda = TRUE,
+          biasadj = TRUE,
+          max.p = Lags,
+          max.q = Lags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          stepwise = StepWise,
+          num.cores = NumCores
+        )
+      } else {
+        ARFIMA_model <- forecast::arfima(
+          y = dataTSTrain[, TargetName],
+          lambda = FALSE,
+          biasadj = FALSE,
+          max.p = Lags,
+          max.q = Lags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          stepwise = StepWise,
+          num.cores = NumCores
+        )
+      }
     } else {
-      ARFIMA_model <- forecast::arfima(
-        y = dataTSTrain[, TargetName],
-        lambda = TRUE,
-        biasadj = TRUE,
-        max.p = Lags,
-        max.q = Lags,
-        max.d = 1,
-        max.D = 1,
-        ic = "bic",
-        stepwise = StepWise,
-        parallel = TRUE,
-        num.cores = NumCores
-      )
+      if(MinVal > 0) {
+        ARFIMA_model <- forecast::arfima(
+          y = dataTSTrain[, TargetName],
+          lambda = TRUE,
+          biasadj = TRUE,
+          max.p = Lags,
+          max.q = Lags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          stepwise = StepWise,
+          parallel = TRUE,
+          num.cores = NumCores
+        )
+      } else {
+        ARFIMA_model <- forecast::arfima(
+          y = dataTSTrain[, TargetName],
+          lambda = FALSE,
+          biasadj = FALSE,
+          max.p = Lags,
+          max.q = Lags,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          stepwise = StepWise,
+          parallel = TRUE,
+          num.cores = NumCores
+        )
+      }
     }
 
     # Forecast with new model
@@ -1381,38 +1579,75 @@ AutoTS <- function(data,
   } else if (BestModel == "ARIMA") {
     # Rebuild model on full data
     if (StepWise) {
-      ARIMA_model <-
-        forecast::auto.arima(
-          y     = dataTSTrain[, TargetName],
-          max.p = Lags,
-          max.q = Lags,
-          max.P = SLags,
-          max.Q = SLags,
-          max.d = 1,
-          max.D = 1,
-          ic = "bic",
-          lambda = TRUE,
-          biasadj = TRUE,
-          stepwise = StepWise,
-          num.cores = NumCores
-        )
+      if(MinVal > 0) {
+        ARIMA_model <-
+          forecast::auto.arima(
+            y     = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = TRUE,
+            biasadj = TRUE,
+            stepwise = StepWise,
+            num.cores = NumCores
+          )
+      } else {
+        ARIMA_model <-
+          forecast::auto.arima(
+            y     = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = FALSE,
+            biasadj = FALSE,
+            stepwise = StepWise,
+            num.cores = NumCores
+          )
+      }
     } else {
-      ARIMA_model <-
-        forecast::auto.arima(
-          y     = dataTSTrain[, TargetName],
-          max.p = Lags,
-          max.q = Lags,
-          max.P = SLags,
-          max.Q = SLags,
-          max.d = 1,
-          max.D = 1,
-          ic = "bic",
-          lambda = TRUE,
-          biasadj = TRUE,
-          stepwise = StepWise,
-          parallel = TRUE,
-          num.cores = NumCores
-        )
+      if(MinVal > 0) {
+        ARIMA_model <-
+          forecast::auto.arima(
+            y     = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = TRUE,
+            biasadj = TRUE,
+            stepwise = StepWise,
+            parallel = TRUE,
+            num.cores = NumCores
+          )
+      } else {
+        ARIMA_model <-
+          forecast::auto.arima(
+            y     = dataTSTrain[, TargetName],
+            max.p = Lags,
+            max.q = Lags,
+            max.P = SLags,
+            max.Q = SLags,
+            max.d = 1,
+            max.D = 1,
+            ic = "bic",
+            lambda = FALSE,
+            biasadj = FALSE,
+            stepwise = StepWise,
+            parallel = TRUE,
+            num.cores = NumCores
+          )
+      }
     }
 
     # Forecast with new model
@@ -1423,26 +1658,51 @@ AutoTS <- function(data,
   } else if (BestModel == "ETS") {
     # Rebuild model on full data
     if (freq > 24) {
-      # when > 24, model's third letter has to be N for none
-      EXPSMOOTH_model <-
-        forecast::ets(
-          y                          = dataTSTrain[, TargetName],
-          model                      = "ZZN",
-          allow.multiplicative.trend = TRUE,
-          restrict                   = TRUE,
-          lambda                     = TRUE,
-          biasadj                    = TRUE
-        )
+      if(MinVal > 0) {
+        # when > 24, model's third letter has to be N for none
+        EXPSMOOTH_model <-
+          forecast::ets(
+            y                          = dataTSTrain[, TargetName],
+            model                      = "ZZN",
+            allow.multiplicative.trend = TRUE,
+            restrict                   = TRUE,
+            lambda                     = TRUE,
+            biasadj                    = TRUE
+          )
+      } else {
+        # when > 24, model's third letter has to be N for none
+        EXPSMOOTH_model <-
+          forecast::ets(
+            y                          = dataTSTrain[, TargetName],
+            model                      = "ZZN",
+            allow.multiplicative.trend = TRUE,
+            restrict                   = TRUE,
+            lambda                     = FALSE,
+            biasadj                    = FALSE
+          )
+      }
     } else {
-      EXPSMOOTH_model <-
-        forecast::ets(
-          y                          = dataTSTrain[, TargetName],
-          model                      = "ZZZ",
-          allow.multiplicative.trend = TRUE,
-          restrict                   = TRUE,
-          lambda                     = TRUE,
-          biasadj                    = TRUE
-        )
+      if(MinVal > 0) {
+        EXPSMOOTH_model <-
+          forecast::ets(
+            y                          = dataTSTrain[, TargetName],
+            model                      = "ZZZ",
+            allow.multiplicative.trend = TRUE,
+            restrict                   = TRUE,
+            lambda                     = TRUE,
+            biasadj                    = TRUE
+          )
+      } else {
+        EXPSMOOTH_model <-
+          forecast::ets(
+            y                          = dataTSTrain[, TargetName],
+            model                      = "ZZZ",
+            allow.multiplicative.trend = TRUE,
+            restrict                   = TRUE,
+            lambda                     = FALSE,
+            biasadj                    = FALSE
+          )
+      }
     }
 
     # Forecast with new model
@@ -1451,11 +1711,19 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
   } else if (BestModel == "CS") {
-    # Rebuild model on full data
-    splinef_model <-
-      forecast::splinef(y = dataTSTrain[, TargetName],
-                        lambda = TRUE,
-                        biasadj = TRUE)
+    if(MinVal > 0) {
+      # Rebuild model on full data
+      splinef_model <-
+        forecast::splinef(y = dataTSTrain[, TargetName],
+                          lambda = TRUE,
+                          biasadj = TRUE)
+    } else {
+      # Rebuild model on full data
+      splinef_model <-
+        forecast::splinef(y = dataTSTrain[, TargetName],
+                          lambda = FALSE,
+                          biasadj = FALSE)
+    }
 
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
@@ -1463,20 +1731,37 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
   } else if (BestModel == "TBATS") {
-    # Rebuild model on full data
-    TBATS_model <- forecast::tbats(
-      y = dataTSTrain[, TargetName],
-      use.arma.errors = TRUE,
-      lambda = TRUE,
-      biasadj = TRUE,
-      max.p = Lags,
-      max.q = Lags,
-      max.P = SLags,
-      max.Q = SLags,
-      max.d = 1,
-      max.D = 1,
-      num.cores = NumCores
-    )
+    if(MinVal > 0) {
+      # Rebuild model on full data
+      TBATS_model <- forecast::tbats(
+        y = dataTSTrain[, TargetName],
+        use.arma.errors = TRUE,
+        lambda = TRUE,
+        biasadj = TRUE,
+        max.p = Lags,
+        max.q = Lags,
+        max.P = SLags,
+        max.Q = SLags,
+        max.d = 1,
+        max.D = 1,
+        num.cores = NumCores
+      )
+    } else {
+      # Rebuild model on full data
+      TBATS_model <- forecast::tbats(
+        y = dataTSTrain[, TargetName],
+        use.arma.errors = TRUE,
+        lambda = FALSE,
+        biasadj = FALSE,
+        max.p = Lags,
+        max.q = Lags,
+        max.P = SLags,
+        max.Q = SLags,
+        max.d = 1,
+        max.D = 1,
+        num.cores = NumCores
+      )
+    }
 
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
@@ -1484,11 +1769,19 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
   } else if (BestModel == "TSLM") {
-    # Rebuild model on full data
-    TSLM_model <-
-      forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
-                     lambda = TRUE,
-                     biasadj = TRUE)
+    if(MinVal > 0) {
+      # Rebuild model on full data
+      TSLM_model <-
+        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                       lambda = TRUE,
+                       biasadj = TRUE)
+    } else {
+      # Rebuild model on full data
+      TSLM_model <-
+        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+                       lambda = FALSE,
+                       biasadj = FALSE)
+    }
 
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
@@ -2964,10 +3257,15 @@ GDL_Feature_Engineering <- function(data,
           quantile(x, probs = 0.25, na.rm = TRUE),
         function(x)
           quantile(x, probs = 0.75, na.rm = TRUE)),
-      statsNames     = c("q10", "q90", "mean",
-                         "sd", "q25", "q75"),
+      statsNames     = c("q10",
+                         "q90",
+                         "mean",
+                         "sd",
+                         "q25",
+                         "q75"),
       targets        = c("qty"),
-      groupingVars   = c("Group1", "Group2"),
+      groupingVars   = c("Group1",
+                         "Group2"),
       sortDateName   = c("date"),
       timeDiffTarget = c("TimeDiffName"),
       timeAgg        = c("days"),
@@ -3458,7 +3756,8 @@ DT_GDL_Feature_Engineering <- function(data,
            periods        = c(seq(5, 95, 5)),
            statsNames     = c("MA"),
            targets        = c("qty"),
-           groupingVars   = c("Group1", "Group2"),
+           groupingVars   = c("Group1",
+                              "Group2"),
            sortDateName   = c("date"),
            timeDiffTarget = c("TimeDiffName"),
            timeAgg        = c("days"),
@@ -3987,7 +4286,8 @@ Scoring_GDL_Feature_Engineering <- function(data,
                     base::mean(x, na.rm = TRUE),
                     function(x)
                       base::sd(x, na.rm = TRUE)),
-                  statsNames     = c("mean", "sd"),
+                  statsNames     = c("mean",
+                                     "sd"),
                   targets        = c("Target"),
                   groupingVars   = c("GroupVariable"),
                   sortDateName   = c("DateTime"),
@@ -4528,10 +4828,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
 FAST_GDL_Feature_Engineering <- function(data,
        lags           = c(1:5),
        periods        = c(seq(10,50,10)),
-       statsFUNs      = c("mean", "median", "sd",
-                          "quantile85", "quantile95"),
-       statsNames     = c("mean", "median", "sd",
-                          "quantile85", "quantile95"),
+       statsFUNs      = c("mean",
+                          "median",
+                          "sd",
+                          "quantile85",
+                          "quantile95"),
+       statsNames     = c("mean",
+                          "median",
+                          "sd",
+                          "quantile85",
+                          "quantile95"),
        targets        = c("Target"),
        groupingVars   = c("GroupVariable"),
        sortDateName   = c("DateTime"),
@@ -7696,10 +8002,12 @@ tokenizeH20 <- function(data) {
 #' @examples
 #' \dontrun{
 #' data <- Word2VecModel(data,
-#'                       stringCol     = c("Text_Col1", "Text_Col2"),
+#'                       stringCol     = c("Text_Col1",
+#'                                         "Text_Col2"),
 #'                       KeepStringCol = FALSE,
 #'                       model_path    = getwd(),
-#'                       ModelID       = c("Text_Col1", "Text_Col2"),
+#'                       ModelID       = c("Text_Col1",
+#'                                         "Text_Col2"),
 #'                       vects         = 50,
 #'                       SaveStopWords = FALSE,
 #'                       MinWords      = 1,
@@ -7709,10 +8017,12 @@ tokenizeH20 <- function(data) {
 #'}
 #' @export
 Word2VecModel <- function(data,
-                          stringCol     = c("Text_Col1", "Text_Col2"),
+                          stringCol     = c("Text_Col1",
+                                            "Text_Col2"),
                           KeepStringCol = FALSE,
                           model_path    = getwd(),
-                          ModelID       = c("Text_Col1", "Text_Col2"),
+                          ModelID       = c("Text_Col1",
+                                            "Text_Col2"),
                           vects         = 5,
                           SaveStopWords = FALSE,
                           MinWords      = 1,
@@ -7854,7 +8164,7 @@ Word2VecModel <- function(data,
 #'                  ClusterID = 0,
 #'                  RemoveEnglishStopwords = TRUE,
 #'                  Stemming = TRUE,
-#'                  StopWords = c("blabla1", "blabla2")
+#'                  StopWords = c("bla1", "bla2")
 #'}
 #' @export
 WordFreq <- function(data,
@@ -7863,7 +8173,8 @@ WordFreq <- function(data,
                      ClusterID = 0,
                      RemoveEnglishStopwords = TRUE,
                      Stemming = TRUE,
-                     StopWords = c("blabla1", "blabla2")) {
+                     StopWords = c("bla",
+                                   "blab2")) {
   # Check data.table
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
