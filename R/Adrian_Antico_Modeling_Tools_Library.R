@@ -486,6 +486,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @import data.table
 #' @examples
+#' \dontrun{
 #' data <- data.table::as.data.table(iris)
 #' data <- GLRM_KMeans_Col(data,
 #'                         GridTuneGLRM = TRUE,
@@ -511,6 +512,7 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' data[ClusterID == eval(Versicolor), Check := "versicolor"]
 #' data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
 #' data[, mean(Acc)][[1]]
+#' }
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 GLRM_KMeans_Col <- function(data,
@@ -7733,8 +7735,9 @@ Word2VecModel <- function(data,
   for (string in stringCol) {
 
     # Ensure stringCol is character (not factor)
-    if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
-
+    if(!is.character(data[[eval(string)]])) {
+      data[, eval(string) := as.character(get(string))]
+    }
     # word2vec time
     i <- i + 1
     Sys.sleep(10)
