@@ -7,7 +7,7 @@
   * GBM
   * Deeplearning
   * XGBoost (for Linux)
-  * lightGBM (for Linux)
+  * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
 2. **AutoTS**: Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), along with generating forecasts and evaluation metrics.
 * Models include:
