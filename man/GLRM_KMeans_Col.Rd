@@ -50,6 +50,7 @@ GLRM_KMeans_Col adds a column to your original data with a cluster number identi
 data <- data.table::as.data.table(iris)
 data <- GLRM_KMeans_Col(data,
                         GridTuneGLRM = TRUE,
+                        GridTuneKMeans = TRUE,
                         nthreads = 8,
                         MaxMem = "28G",
                         glrmCols = 1:(ncol(data)-1),
