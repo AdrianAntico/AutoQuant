@@ -6,7 +6,7 @@
 \usage{
 GLRM_KMeans_Col(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
   nthreads = 4, MaxMem = "14G", glrmCols = 3:ncol(data),
-  IgnoreConstCols = TRUE, glrmFactors = 5, Loss = "Quadratic",
+  IgnoreConstCols = TRUE, glrmFactors = 5, Loss = "Absolute",
   glrmMaxIters = 1000, SVDMethod = "Randomized",
   MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
 }
