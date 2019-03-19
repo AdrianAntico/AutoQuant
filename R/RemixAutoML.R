@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 utils::globalVariables(
   names = c(
@@ -1044,7 +1044,7 @@ AutoTS <- function(data,
               restrict = TRUE,
               lambda = TRUE,
               biasadj = TRUE
-          )}, error = function(x) "empty")
+            )}, error = function(x) "empty")
       } else {
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
@@ -3174,37 +3174,37 @@ EvalPlot <- function(data,
 #'            SimpleImpute   = TRUE)
 #' @export
 GDL_Feature_Engineering <- function(data,
-      lags           = c(seq(1, 5, 1)),
-      periods        = c(3, 5, 10, 15, 20, 25),
-      statsFUNs      = c(function(x)
-        quantile(x, probs = 0.1, na.rm = TRUE),
-        function(x)
-          quantile(x, probs = 0.9, na.rm = TRUE),
-        function(x)
-          base::mean(x, na.rm = TRUE),
-        function(x)
-          sd(x, na.rm = TRUE),
-        function(x)
-          quantile(x, probs = 0.25, na.rm = TRUE),
-        function(x)
-          quantile(x, probs = 0.75, na.rm = TRUE)),
-      statsNames     = c("q10",
-                         "q90",
-                         "mean",
-                         "sd",
-                         "q25",
-                         "q75"),
-      targets        = c("qty"),
-      groupingVars   = c("Group1",
-                         "Group2"),
-      sortDateName   = c("date"),
-      timeDiffTarget = c("TimeDiffName"),
-      timeAgg        = c("days"),
-      WindowingLag   = 0,
-      Type           = c("Lag"),
-      Timer          = TRUE,
-      SkipCols       = NULL,
-      SimpleImpute   = TRUE) {
+                                    lags           = c(seq(1, 5, 1)),
+                                    periods        = c(3, 5, 10, 15, 20, 25),
+                                    statsFUNs      = c(function(x)
+                                      quantile(x, probs = 0.1, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.9, na.rm = TRUE),
+                                      function(x)
+                                        base::mean(x, na.rm = TRUE),
+                                      function(x)
+                                        sd(x, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.25, na.rm = TRUE),
+                                      function(x)
+                                        quantile(x, probs = 0.75, na.rm = TRUE)),
+                                    statsNames     = c("q10",
+                                                       "q90",
+                                                       "mean",
+                                                       "sd",
+                                                       "q25",
+                                                       "q75"),
+                                    targets        = c("qty"),
+                                    groupingVars   = c("Group1",
+                                                       "Group2"),
+                                    sortDateName   = c("date"),
+                                    timeDiffTarget = c("TimeDiffName"),
+                                    timeAgg        = c("days"),
+                                    WindowingLag   = 0,
+                                    Type           = c("Lag"),
+                                    Timer          = TRUE,
+                                    SkipCols       = NULL,
+                                    SimpleImpute   = TRUE) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -3282,12 +3282,12 @@ GDL_Feature_Engineering <- function(data,
             if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
               data[, paste0(groupingVars[i],
                             timeDiffTarget, lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0(
-                  groupingVars[i], "TEMP", lags[l]
-                )),
-                units = eval(timeAgg)
-              )), by = get(groupingVars[i])]
+                              get(sortDateName),
+                              get(paste0(
+                                groupingVars[i], "TEMP", lags[l]
+                              )),
+                              units = eval(timeAgg)
+                            )), by = get(groupingVars[i])]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -3298,12 +3298,12 @@ GDL_Feature_Engineering <- function(data,
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(
                                 difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                                ),
+                                get(
+                                  paste0(groupingVars[i], "TEMP", lags[l])
+                                ),
+                                units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3318,12 +3318,12 @@ GDL_Feature_Engineering <- function(data,
                            timeDiffTarget, lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(difftime(
-                  get(sortDateName),
-                  get(paste0(
-                    groupingVars[i], "TEMP", lags[l]
-                  )),
-                  units = eval(timeAgg)
-                )), by = get(groupingVars[i])]
+                                get(sortDateName),
+                                get(paste0(
+                                  groupingVars[i], "TEMP", lags[l]
+                                )),
+                                units = eval(timeAgg)
+                              )), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3335,12 +3335,12 @@ GDL_Feature_Engineering <- function(data,
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                              ),
+                              get(
+                                paste0(groupingVars[i], "TEMP", lags[l])
+                              ),
+                              units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3485,7 +3485,7 @@ GDL_Feature_Engineering <- function(data,
                           lags[l]) := as.numeric(
                             difftime(get(sortDateName),
                                      get(paste0(
-                                     "TEMP", lags[l]
+                                       "TEMP", lags[l]
                                      )),
                                      units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
@@ -3497,12 +3497,12 @@ GDL_Feature_Engineering <- function(data,
                           "_",
                           lags[l]) := as.numeric(
                             difftime(get(paste0(
-              "TEMP", lags[l] - 1
-            )),
-            get(paste0(
-              "TEMP", lags[l]
-            )),
-            units = eval(timeAgg)))]
+                              "TEMP", lags[l] - 1
+                            )),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
@@ -3518,10 +3518,10 @@ GDL_Feature_Engineering <- function(data,
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0("TEMP", lags[l])),
-                units = eval(timeAgg)
-              ))]
+                              get(sortDateName),
+                              get(paste0("TEMP", lags[l])),
+                              units = eval(timeAgg)
+                            ))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -3533,12 +3533,12 @@ GDL_Feature_Engineering <- function(data,
                             "_",
                             lags[l]) := as.numeric(
                               difftime(get(paste0(
-                "TEMP", (lags[l - 1])
-              )),
-              get(paste0(
-                "TEMP", lags[l]
-              )),
-              units = eval(timeAgg)))]
+                                "TEMP", (lags[l - 1])
+                              )),
+                              get(paste0(
+                                "TEMP", lags[l]
+                              )),
+                              units = eval(timeAgg)))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -3683,20 +3683,20 @@ GDL_Feature_Engineering <- function(data,
 #'                                    SimpleImpute   = TRUE)
 #' @export
 DT_GDL_Feature_Engineering <- function(data,
-           lags           = c(seq(1, 50, 1)),
-           periods        = c(seq(5, 95, 5)),
-           statsNames     = c("MA"),
-           targets        = c("qty"),
-           groupingVars   = c("Group1",
-                              "Group2"),
-           sortDateName   = c("date"),
-           timeDiffTarget = c("TimeDiffName"),
-           timeAgg        = c("days"),
-           WindowingLag   = 0,
-           Type           = c("Lag"),
-           Timer          = TRUE,
-           SkipCols       = NULL,
-           SimpleImpute   = TRUE) {
+                                       lags           = c(seq(1, 50, 1)),
+                                       periods        = c(seq(5, 95, 5)),
+                                       statsNames     = c("MA"),
+                                       targets        = c("qty"),
+                                       groupingVars   = c("Group1",
+                                                          "Group2"),
+                                       sortDateName   = c("date"),
+                                       timeDiffTarget = c("TimeDiffName"),
+                                       timeAgg        = c("days"),
+                                       WindowingLag   = 0,
+                                       Type           = c("Lag"),
+                                       Timer          = TRUE,
+                                       SkipCols       = NULL,
+                                       SimpleImpute   = TRUE) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -3785,12 +3785,12 @@ DT_GDL_Feature_Engineering <- function(data,
               data[, paste0(groupingVars[i],
                             timeDiffTarget,
                             lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0(
-                  groupingVars[i], "TEMP", lags[l]
-                )),
-                units = eval(timeAgg)
-              )), by = get(groupingVars[i])]
+                              get(sortDateName),
+                              get(paste0(
+                                groupingVars[i], "TEMP", lags[l]
+                              )),
+                              units = eval(timeAgg)
+                            )), by = get(groupingVars[i])]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -3802,12 +3802,12 @@ DT_GDL_Feature_Engineering <- function(data,
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                              ),
+                              get(
+                                paste0(groupingVars[i], "TEMP", lags[l])
+                              ),
+                              units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3824,12 +3824,12 @@ DT_GDL_Feature_Engineering <- function(data,
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(
-                  get(sortDateName),
-                  get(paste0(
-                    groupingVars[i], "TEMP", lags[l]
-                  )),
-                  units = eval(timeAgg)
-                )), by = get(groupingVars[i])]
+                                get(sortDateName),
+                                get(paste0(
+                                  groupingVars[i], "TEMP", lags[l]
+                                )),
+                                units = eval(timeAgg)
+                              )), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3842,12 +3842,12 @@ DT_GDL_Feature_Engineering <- function(data,
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                              ),
+                              get(
+                                paste0(groupingVars[i], "TEMP", lags[l])
+                              ),
+                              units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -3908,16 +3908,16 @@ DT_GDL_Feature_Engineering <- function(data,
                             periods[j],
                             "_",
                             t) := data.table::frollmean(
-                x = get(t),
-                n = periods[j],
-                fill = NA,
-                algo = "fast",
-                align = "right",
-                na.rm = TRUE,
-                hasNA = TRUE,
-                adaptive = FALSE
-              ),
-              by = get(groupingVars[i])]
+                              x = get(t),
+                              n = periods[j],
+                              fill = NA,
+                              algo = "fast",
+                              align = "right",
+                              na.rm = TRUE,
+                              hasNA = TRUE,
+                              adaptive = FALSE
+                            ),
+                   by = get(groupingVars[i])]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4005,7 +4005,7 @@ DT_GDL_Feature_Engineering <- function(data,
                           lags[l]) := as.numeric(difftime(
                             get(sortDateName),
                             get(paste0(
-                            "TEMP", lags[l]
+                              "TEMP", lags[l]
                             )),
                             units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
@@ -4016,12 +4016,12 @@ DT_GDL_Feature_Engineering <- function(data,
             data[, paste0(timeDiffTarget,
                           "_", lags[l]) := as.numeric(difftime(
                             get(paste0(
-              "TEMP", lags[l] - 1
-            )),
-            get(paste0(
-              "TEMP", lags[l]
-            )),
-            units = eval(timeAgg)))]
+                              "TEMP", lags[l] - 1
+                            )),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
@@ -4035,10 +4035,10 @@ DT_GDL_Feature_Engineering <- function(data,
                          "_", lags[l]) %in% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_", lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0("TEMP", lags[l])),
-                units = eval(timeAgg)
-              ))]
+                              get(sortDateName),
+                              get(paste0("TEMP", lags[l])),
+                              units = eval(timeAgg)
+                            ))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4051,12 +4051,12 @@ DT_GDL_Feature_Engineering <- function(data,
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(get(paste0(
-                "TEMP", (lags[l - 1])
-              )),
-              get(paste0(
-                "TEMP", lags[l]
-              )),
-              units = eval(timeAgg)))]
+                              "TEMP", (lags[l - 1])
+                            )),
+                            get(paste0(
+                              "TEMP", lags[l]
+                            )),
+                            units = eval(timeAgg)))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4105,15 +4105,15 @@ DT_GDL_Feature_Engineering <- function(data,
                           "_",
                           periods[j],
                           "_", t) := data.table::frollmean(
-              x = get(t),
-              n = periods[j],
-              fill = NA,
-              algo = "fast",
-              align = "right",
-              na.rm = TRUE,
-              hasNA = TRUE,
-              adaptive = FALSE
-            )]
+                            x = get(t),
+                            n = periods[j],
+                            fill = NA,
+                            algo = "fast",
+                            align = "right",
+                            na.rm = TRUE,
+                            hasNA = TRUE,
+                            adaptive = FALSE
+                          )]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
@@ -4211,26 +4211,26 @@ DT_GDL_Feature_Engineering <- function(data,
 #'                                          RecordsKeep    = 1)
 #' @export
 Scoring_GDL_Feature_Engineering <- function(data,
-                  lags           = c(1:6, 12, seq(24, 168, 24)),
-                  periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-                  statsFUNs      = c(function(x)
-                    base::mean(x, na.rm = TRUE),
-                    function(x)
-                      base::sd(x, na.rm = TRUE)),
-                  statsNames     = c("mean",
-                                     "sd"),
-                  targets        = c("Target"),
-                  groupingVars   = c("GroupVariable"),
-                  sortDateName   = c("DateTime"),
-                  timeDiffTarget = c("Time_Gap"),
-                  timeAgg        = c("days"),
-                  WindowingLag   = 1,
-                  Type           = c("Lag"),
-                  Timer          = FALSE,
-                  SkipCols       = FALSE,
-                  SimpleImpute   = TRUE,
-                  AscRowByGroup  = c("temp"),
-                  RecordsKeep    = 1) {
+                                            lags           = c(1:6, 12, seq(24, 168, 24)),
+                                            periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
+                                            statsFUNs      = c(function(x)
+                                              base::mean(x, na.rm = TRUE),
+                                              function(x)
+                                                base::sd(x, na.rm = TRUE)),
+                                            statsNames     = c("mean",
+                                                               "sd"),
+                                            targets        = c("Target"),
+                                            groupingVars   = c("GroupVariable"),
+                                            sortDateName   = c("DateTime"),
+                                            timeDiffTarget = c("Time_Gap"),
+                                            timeAgg        = c("days"),
+                                            WindowingLag   = 1,
+                                            Type           = c("Lag"),
+                                            Timer          = FALSE,
+                                            SkipCols       = FALSE,
+                                            SimpleImpute   = TRUE,
+                                            AscRowByGroup  = c("temp"),
+                                            RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -4317,12 +4317,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
                                 lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0(
-                  groupingVars[i], "TEMP", lags[l]
-                )),
-                units = eval(timeAgg)
-              )), by = get(groupingVars[i])]
+                                  get(sortDateName),
+                                  get(paste0(
+                                    groupingVars[i], "TEMP", lags[l]
+                                  )),
+                                  units = eval(timeAgg)
+                                )), by = get(groupingVars[i])]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4333,12 +4333,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                                  ),
+                                  get(
+                                    paste0(groupingVars[i], "TEMP", lags[l])
+                                  ),
+                                  units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -4354,12 +4354,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
-                  get(sortDateName),
-                  get(paste0(
-                    groupingVars[i], "TEMP", lags[l]
-                  )),
-                  units = eval(timeAgg)
-                )), by = get(groupingVars[i])]
+                                    get(sortDateName),
+                                    get(paste0(
+                                      groupingVars[i], "TEMP", lags[l]
+                                    )),
+                                    units = eval(timeAgg)
+                                  )), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -4371,12 +4371,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
-                  paste0(groupingVars[i], "TEMP", (lags[l - 1]))
-                ),
-                get(
-                  paste0(groupingVars[i], "TEMP", lags[l])
-                ),
-                units = eval(timeAgg))), by = get(groupingVars[i])]
+                                    paste0(groupingVars[i], "TEMP", (lags[l - 1]))
+                                  ),
+                                  get(
+                                    paste0(groupingVars[i], "TEMP", lags[l])
+                                  ),
+                                  units = eval(timeAgg))), by = get(groupingVars[i])]
                 CounterIndicator <- CounterIndicator + 1
                 if (Timer) {
                   print(CounterIndicator / runs)
@@ -4511,7 +4511,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                             lags[l],
                             "_",
                             t) := data.table::shift(get(
-            t), n = lags[l], type = "lag")]
+                              t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
           if (Timer) {
             print(CounterIndicator / runs)
@@ -4540,7 +4540,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                               lags[l]) := as.numeric(difftime(get(
                                 sortDateName),
                                 get(paste0(
-                                "TEMP", lags[l]
+                                  "TEMP", lags[l]
                                 )),
                                 units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
@@ -4551,12 +4551,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
             tempData[, paste0(timeDiffTarget,
                               "_",
                               lags[l]) := as.numeric(difftime(get(paste0(
-              "TEMP", lags[l] - 1
-            )),
-            get(paste0(
-              "TEMP", lags[l]
-            )),
-            units = eval(timeAgg)))]
+                                "TEMP", lags[l] - 1
+                              )),
+                              get(paste0(
+                                "TEMP", lags[l]
+                              )),
+                              units = eval(timeAgg)))]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
@@ -4570,10 +4570,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(
-                get(sortDateName),
-                get(paste0("TEMP", lags[l])),
-                units = eval(timeAgg)
-              ))]
+                                  get(sortDateName),
+                                  get(paste0("TEMP", lags[l])),
+                                  units = eval(timeAgg)
+                                ))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4584,12 +4584,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(get(paste0(
-                "TEMP", (lags[l - 1])
-              )),
-              get(paste0(
-                "TEMP", lags[l]
-              )),
-              units = eval(timeAgg)))]
+                                  "TEMP", (lags[l - 1])
+                                )),
+                                get(paste0(
+                                  "TEMP", lags[l]
+                                )),
+                                units = eval(timeAgg)))]
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -4757,30 +4757,30 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #'                                      AscRowByGroup  = "temp")
 #' @export
 FAST_GDL_Feature_Engineering <- function(data,
-       lags           = c(1:5),
-       periods        = c(seq(10,50,10)),
-       statsFUNs      = c("mean",
-                          "median",
-                          "sd",
-                          "quantile85",
-                          "quantile95"),
-       statsNames     = c("mean",
-                          "median",
-                          "sd",
-                          "quantile85",
-                          "quantile95"),
-       targets        = c("Target"),
-       groupingVars   = c("GroupVariable"),
-       sortDateName   = c("DateTime"),
-       timeDiffTarget = NULL,
-       timeAgg        = c("hours"),
-       WindowingLag   = 1,
-       Type           = c("Lag"),
-       Timer          = FALSE,
-       SkipCols       = FALSE,
-       SimpleImpute   = TRUE,
-       AscRowByGroup  = c("temp"),
-       RecordsKeep    = 1) {
+                                         lags           = c(1:5),
+                                         periods        = c(seq(10,50,10)),
+                                         statsFUNs      = c("mean",
+                                                            "median",
+                                                            "sd",
+                                                            "quantile85",
+                                                            "quantile95"),
+                                         statsNames     = c("mean",
+                                                            "median",
+                                                            "sd",
+                                                            "quantile85",
+                                                            "quantile95"),
+                                         targets        = c("Target"),
+                                         groupingVars   = c("GroupVariable"),
+                                         sortDateName   = c("DateTime"),
+                                         timeDiffTarget = NULL,
+                                         timeAgg        = c("hours"),
+                                         WindowingLag   = 1,
+                                         Type           = c("Lag"),
+                                         Timer          = FALSE,
+                                         SkipCols       = FALSE,
+                                         SimpleImpute   = TRUE,
+                                         AscRowByGroup  = c("temp"),
+                                         RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -5882,9 +5882,9 @@ AutoH20Modeler <- function(Construct,
 
       # Distribution and loss combos for non-regression
       if (tolower(Construct[i,2][[1]]) %in% c("bernoulli",
-                                             "multinomial") &&
+                                              "multinomial") &&
           !(tolower(Construct[i,3][[1]]) %in% c("automatic",
-                                               "crossentropy"))) {
+                                                "crossentropy"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
                         i = j,
@@ -6185,8 +6185,8 @@ AutoH20Modeler <- function(Construct,
           parse(text = paste0(Construct[i, 24][[1]]))
         ))):max(features), (max(target) + 1):(max(target) +
                                                 length(eval(
-          parse(text = paste0(Construct[i, 24][[1]]))
-        ))))
+                                                  parse(text = paste0(Construct[i, 24][[1]]))
+                                                ))))
 
       # Turn target columns back to factor
       train[, Construct[i, "Targets"][[1]]] <-
@@ -7129,7 +7129,7 @@ AutoH20Modeler <- function(Construct,
           # Store threshold
           store_results <-
             data.table::data.table(
-  best_model@model$training_metrics@metrics$thresholds_and_metric_scores
+              best_model@model$training_metrics@metrics$thresholds_and_metric_scores
             )
           if (Construct[i, 15][[1]] == "f1" ||
               is.null(Construct[i, 15][[1]])) {
@@ -7259,8 +7259,8 @@ AutoH20Modeler <- function(Construct,
 
           # Store threshold
           store_results <-
-  data.table::data.table(
-    bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
+            data.table::data.table(
+              bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
           if (Construct[i, 15][[1]] == "f1" ||
               is.null(Construct[i, 15][[1]])) {
             Thresh <-
@@ -7394,8 +7394,8 @@ AutoH20Modeler <- function(Construct,
                                                "binomial",
                                                "bernoulli")) {
         store_results <-
-  data.table::data.table(
-    bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
+          data.table::data.table(
+            bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
         if (Construct[i, 15][[1]] == "f1" ||
             is.null(Construct[i, 15][[1]])) {
           Thresh <-
@@ -7899,7 +7899,7 @@ AutoH20Modeler <- function(Construct,
 #' @import data.table
 #' @export
 tokenizeH20 <- function(data) {
-  data3 <- h2o::as.h2o(data, col.types = c("String"))
+  data <- h2o::as.h2o(data, col.types = c("String"))
   tokenized <- h2o::h2o.tokenize(data, "\\\\W+")
   tokenized.lower <- h2o::h2o.tolower(tokenized)
   tokenized.words <-
@@ -7988,8 +7988,8 @@ Word2VecModel <- function(data,
     # It is important to remove "\n" --
     data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
     data[, ':=' (TEMP =
-        gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
-                             "","",TEMP))]
+                   gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
+                        "","",TEMP))]
     data2 <- data[, "TEMP"]
 
     # Tokenize
@@ -8122,7 +8122,7 @@ WordFreq <- function(data,
     desc <-
       tm::Corpus(tm::VectorSource(
         data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]])
-        )
+      )
   }
 
   # Clean text
