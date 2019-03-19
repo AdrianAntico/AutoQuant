@@ -36,14 +36,16 @@ The two core packages RemixAutoML relies on are H20 and data.table. There are ot
 ##### There are five categories of functions (currently) in this library I'll go over:
 - Automated Supervised Learning
 - Automated Unsupervised Learning
-- Automated Model Evaluation, Feature Interpretation, and Cost Sensitive Optimization
+- Automated Model Evaluation 
+- Automated Feature Interpretation
+- Automated Cost Sensitive Optimization
 - Automated Feature Engineering
 - A Few Miscellaneous Functions
 
 ### **Automated Supervised Learning Functions**
 
 #### **AutoH20Modeler()**
-The supervised learning functions handle multiple tasks internally. For example, the **AutoH20Modeler** function can build any number of H20 models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. 
+The supervised learning functions handle multiple tasks internally. The **AutoH20Modeler** function can build any number of H20 models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. 
 
 ##### The models available include:
 - Gradient Boosting Machines (Linux only)
@@ -99,14 +101,19 @@ for (i in as.integer(2:500)) {
 # Build Model and Merge Onto Source Data
 data1 <- data.table::copy(data)
 data2 <- merge(data1,
-               nlsModelFit(data = data, y = "Target", x = "Variable", monotonic = FALSE),
+               RemixAutoML::nlsModelFit(data = data, 
+                                        y = "Target", 
+                                        x = "Variable", 
+                                        monotonic = FALSE),
                by = "Variable",
                all = FALSE)
 data2[, Target.z := lm(Target.x ~ poly(Variable,10))]
 ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "Target"), color = "blue") +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "Predicted"), color = "red") +
-  ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]]), 
+                     color = "blue") +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]]), 
+                     color = "red") +
+  RemixAutoML::ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
   ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
 ```
 
@@ -118,28 +125,33 @@ Find more demos at **https://www.remyxcourses.com**
 ```{r, fig.show='hold', fig.width=6, fig.height=3.5}
 library(RemixAutoML)
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                               Target = (10 + arima.sim(model = list(2,0,2), n = 1000)))
+                               Target = (10 + arima.sim(model = list(2,0,2), 
+                                                        n = 1000)))
 data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
-output <- AutoTS(data,
-                 TargetName     = "Target",
-                 DateName       = "DateTime",
-                 FCPeriods      = 120,
-                 HoldOutPeriods = 30,
-                 TimeUnit       = "day",
-                 Lags           = 5,
-                 SLags          = 1,
-                 NumCores       = 4,
-                 SkipModels     = NULL,
-                 StepWise       = TRUE)
+output <- RemixAutoML::AutoTS(data,
+                              TargetName     = "Target",
+                              DateName       = "DateTime",
+                              FCPeriods      = 120,
+                              HoldOutPeriods = 30,
+                              TimeUnit       = "day",
+                              Lags           = 5,
+                              SLags          = 1,
+                              NumCores       = 4,
+                              SkipModels     = NULL,
+                              StepWise       = TRUE)
 data1 <- output[[1]]
 maxDate <- data[, max(DateTime)]
 data.table::setnames(data1, names(data1), c("DateTime","Target"))
-data2 <- data.table::rbindlist(list(data[, Target := as.numeric(Target)],data1))
+data2 <- data.table::rbindlist(list(data[, Target := as.numeric(Target)],
+                                    data1))
 ggplot2::ggplot(data2, ggplot2::aes(x = DateTime, y = Target)) +
-  ggplot2::geom_line() + ChartTheme(Size = 10) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = maxDate), color = "blue") +
-  ggplot2::ggtitle(paste0("Historical and FC - ", output[[2]][1,1][[1]])) +
+  ggplot2::geom_line() + 
+  RemixAutoML::ChartTheme(Size = 10) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept = maxDate), 
+                      color = "blue") +
+  ggplot2::ggtitle(paste0("Historical and FC - ", 
+                          output[[2]][1,1][[1]])) +
   ggplot2::theme(legend.position="none")
 
 knitr::kable(output[[2]])
@@ -184,75 +196,80 @@ data3 <- dataGen(Correlation = 0.90)
 data4 <- dataGen(Correlation = 0.99)
 
 # Generate EvalPlots (calibration)
-p1 <- EvalPlot(data = data1,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "calibration",
-               bucket = 0.05,
-               aggrfun = function(x) mean(x, na.rm = TRUE))
+p1 <- RemixAutoML::EvalPlot(data = data1,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "calibration",
+                            bucket = 0.05,
+                            aggrfun = function(x) mean(x, 
+                                                       na.rm = TRUE))
 p1 <- p1 + ggplot2::ggtitle("Calibration Evaluation p1: Corr = 0.50") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p2 <- EvalPlot(data = data2,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "calibration",
-               bucket = 0.05,
-               aggrfun = function(x) mean(x, na.rm = TRUE))
+p2 <- RemixAutoML::EvalPlot(data = data2,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "calibration",
+                            bucket = 0.05,
+                            aggrfun = function(x) mean(x, 
+                                                       na.rm = TRUE))
 p2 <- p2 + ggplot2::ggtitle("Calibration Evaluation p2: Corr = 0.75") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p3 <- EvalPlot(data = data3,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "calibration",
-               bucket = 0.05,
-               aggrfun = function(x) mean(x, na.rm = TRUE))
+p3 <- RemixAutoML::EvalPlot(data = data3,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "calibration",
+                            bucket = 0.05,
+                            aggrfun = function(x) mean(x, 
+                                                       na.rm = TRUE))
 p3 <- p3 + ggplot2::ggtitle("Calibration Evaluation p3: Corr = 0.90") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p4 <- EvalPlot(data = data4,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "calibration",
-               bucket = 0.05,
-               aggrfun = function(x) mean(x, na.rm = TRUE))
+p4 <- RemixAutoML::EvalPlot(data = data4,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "calibration",
+                            bucket = 0.05,
+                            aggrfun = function(x) mean(x, 
+                                                       na.rm = TRUE))
 p4 <- p4 + ggplot2::ggtitle("Calibration Evaluation p4: Corr = 0.99") + 
   RemixAutoML::ChartTheme(Size = 10)
 RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 
 # Generate EvalPlots (boxplots)
-p1 <- EvalPlot(data = data1,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "boxplot",
-               bucket = 0.05)
+p1 <- RemixAutoML::EvalPlot(data = data1,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "boxplot",
+                            bucket = 0.05)
 p1 <- p1 + ggplot2::ggtitle("Calibration Evaluation p1: Corr = 0.50") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p2 <- EvalPlot(data = data2,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "boxplot",
-               bucket = 0.05)
+p2 <- RemixAutoML::EvalPlot(data = data2,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "boxplot",
+                            bucket = 0.05)
 p2 <- p2 + ggplot2::ggtitle("Calibration Evaluation p2: Corr = 0.75") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p3 <- EvalPlot(data = data3,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "boxplot",
-               bucket = 0.05)
+p3 <- RemixAutoML::EvalPlot(data = data3,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "boxplot",
+                            bucket = 0.05)
 p3 <- p3 + ggplot2::ggtitle("Calibration Evaluation p3: Corr = 0.90") + 
   RemixAutoML::ChartTheme(Size = 10)
 
-p4 <- EvalPlot(data = data4,
-               PredColName = "predict",
-               ActColName = "target",
-               type = "boxplot",
-               bucket = 0.05)
+p4 <- RemixAutoML::EvalPlot(data = data4,
+                            PredColName = "predict",
+                            ActColName = "target",
+                            type = "boxplot",
+                            bucket = 0.05)
 p4 <- p4 + ggplot2::ggtitle("Calibration Evaluation p4: Corr = 0.99") + 
   RemixAutoML::ChartTheme(Size = 10)
+
 RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 ```
 
@@ -278,10 +295,10 @@ Correl <- 0.70
   aa[, x1 := qnorm(target)]
   aa[, x2 := runif(1000)]
   aa[, predict := pnorm(Correl * x1 +
-                              sqrt(1 - Correl ^2) *
-                              qnorm(x2))]
+                        sqrt(1 - Correl ^2) *
+                        qnorm(x2))]
   aa[, target := as.numeric(ifelse(target < 0.5, 0, 1))]
-  data <- RedYellowGreen(
+  data <- RemixAutoML::RedYellowGreen(
     aa,
     PredictColNumber  = 4,
     ActualColNumber   = 1,
@@ -332,7 +349,7 @@ ModelData[, temp := seq(1:161), by = "GroupVariable"][
        , DateTime := DateTime - temp][
          , temp := NULL]
 ModelData <- ModelData[order(DateTime)]
-ModelData <- DT_GDL_Feature_Engineering(
+ModelData <- RemixAutoML::DT_GDL_Feature_Engineering(
   ModelData,
   lags           = c(seq(1, 5, 1)),
   periods        = c(3, 5, 10, 15, 20, 25),
@@ -365,7 +382,7 @@ ScoringData <-
 ScoringData[, temp := seq(1:161),
       by = "GroupVariable"][, DateTime := DateTime - temp]
 ScoringData <- ScoringData[order(DateTime)]
-ScoringData <- Scoring_GDL_Feature_Engineering(
+ScoringData <- RemixAutoML::Scoring_GDL_Feature_Engineering(
   ScoringData,
   lags           = c(seq(1, 5, 1)),
   periods        = c(3, 5, 10, 15, 20, 25),
