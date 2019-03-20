@@ -694,7 +694,7 @@ GLRM_KMeans_Col <- function(data,
 #' @param Lags is the number of lags you wish to test in various models (same with moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
 #' @param NumCores is the number of cores available on your computer
-#' @param SkipModels Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","NNET","TBATS","TSLM","PROPHET")
+#' @param SkipModels Don't run specified models - e.g. exclude all models "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @import data.table
 #' @examples
