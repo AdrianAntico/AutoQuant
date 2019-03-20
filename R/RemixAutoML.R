@@ -5547,7 +5547,6 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                                     TargetEncoding  = rep(NA,3),
 #'                                     SupplyData      = rep(FALSE,3))
 #'
-#' # Regression Example
 #' AutoH20Modeler(Construct,
 #'                max_memory = "28G",
 #'                ratios = 0.75,
@@ -5614,18 +5613,6 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                                     PredsAllData    = rep(TRUE,3),
 #'                                     TargetEncoding  = rep(NA,3),
 #'                                     SupplyData      = rep(FALSE,3))
-#' AutoH20Modeler(Construct,
-#'                max_memory = "28G",
-#'                ratios = 0.75,
-#'                BL_Trees = 500,
-#'                nthreads = 5,
-#'                model_path = getwd(),
-#'                MaxRuntimeSeconds = 3600,
-#'                MaxModels = 30,
-#'                TrainData = NULL,
-#'                TestData  = NULL)
-#'
-#' # Regression Example
 #' AutoH20Modeler(Construct,
 #'                max_memory = "28G",
 #'                ratios = 0.75,
@@ -6070,7 +6057,7 @@ AutoH20Modeler <- function(Construct,
             "Absolute",
             "Quantile")
         distMatch <-
-          data.table::data.table(act = rep(temp, 11),
+          data.table::data.table(act = rep(temp, 6),
                                  LCVals = lower,
                                  Proper = proper)
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
@@ -6139,7 +6126,7 @@ AutoH20Modeler <- function(Construct,
             "huber"
           )
         distMatch <-
-          data.table::data.table(act = rep(temp, 11),
+          data.table::data.table(act = rep(temp, 10),
                                  LCVals = lower,
                                  Proper = proper)
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
