@@ -5449,7 +5449,7 @@ AutoH20Modeler <- function(Construct,
     data.table::data.table(Row = rep(-720, 10000),
                            Msg = "I like modeling")
   j <- 0
-  for (i in seq_len(nrow(Construct))) {
+  for (i in as.integer(seq_len(nrow(Construct)))) {
     # Algorithm specific
     if (tolower(
       Construct[i, 6][[1]]) %in% c("gbm",
@@ -6015,6 +6015,8 @@ AutoH20Modeler <- function(Construct,
   ErrorCollection <- ErrorCollection[Row != -720]
   if (nrow(ErrorCollection) >= 1) {
     ErrorCollectionLog <- ErrorCollection
+    save(ErrorCollectionLog,
+         file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
     stop(
       print(
         "Your model construction file has errors and
@@ -6022,8 +6024,6 @@ AutoH20Modeler <- function(Construct,
         been stored globally as 'ErrorCollectionLog'"
       )
     )
-    save(ErrorCollectionLog,
-         file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
   } else {
     save(Construct, file = paste0(model_path, "/Construct.Rdata"))
   }
