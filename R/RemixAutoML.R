@@ -5781,20 +5781,15 @@ AutoH20Modeler <- function(Construct,
           )
         )
       } else {
-        temp <- tolower(Construct[i, 2][[1]])
+        temp <- tolower(Construct[i, 3][[1]])
         lower <-
           c(
-            "auto",
-            "bernoulli",
-            "quasibinomial",
-            "multinomial",
-            "gaussian",
-            "poisson",
-            "gamma",
-            "tweedie",
-            "laplace",
-            "quantile",
-            "huber"
+            "automatic",
+            "crossentropy",
+            "quadratic",
+            "huber",
+            "absolute",
+            "quantile"
           )
         proper <-
           c("Automatic",
