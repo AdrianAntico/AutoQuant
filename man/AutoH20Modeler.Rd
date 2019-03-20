@@ -9,7 +9,7 @@ AutoH20Modeler(Construct, max_memory, ratios, BL_Trees, nthreads,
   TrainData = NULL, TestData = NULL)
 }
 \arguments{
-\item{Construct}{Core instruction file for automation}
+\item{Construct}{Core instruction file for automation (see Details below for more information on this)}
 
 \item{max_memory}{The ceiling amount of memory H20 will utilize}
 
