@@ -2646,34 +2646,34 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
     DATA[, eval(y) := preds9]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[2, 1][[1]]) {
     DATA[, eval(y) := preds1]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[3, 1][[1]]) {
     DATA[, eval(y) := preds2]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[4, 1][[1]]) {
     DATA[, eval(y) := preds3]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[5, 1][[1]]) {
     DATA[, eval(y) := preds4]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[6, 1][[1]]) {
     DATA[, eval(y) := preds5]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[7, 1][[1]]) {
     DATA[, eval(y) := preds6]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[8, 1][[1]]) {
     DATA[, eval(y) := preds7]
-    return(DATA)
+    return(list(DATA,name))
   } else if (name == nls_collection[9, 1][[1]]) {
     DATA[, eval(y) := preds8]
-    return(DATA)
+    return(list(DATA,name))
   } else {
     DATA[, eval(y) := preds]
-    return(DATA)
+    return(list(DATA,name))
   }
 }
 
