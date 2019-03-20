@@ -43,7 +43,33 @@ Steps in the function include:
 7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
 }
 \details{
-The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a 0|1 and a "Factor" type.
+The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a (0,1) of type "Factor." See the examples below for help with setting up the Construct file for various modeling target variable types. There are examples for regression, classification, multinomial, and quantile regression.
+
+Let's go over the construct file, column by column. The Targets column is where you specify the column number of your target variable (in quotes, e.g. "c(1)").
+The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H20 docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
+The Loss column tells H20 which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
+The Quantile column tells H20 which quantile to use for quantile regression (in decimal form).
+The ModelName column is the name you wish to give your model as a prefix.
+The Algorithm column is the model you wish to use: gbm, randomForest, deeplearning, AutoML, XGBoost, LightGBM.
+The dataName column is the name of your data.
+The TargetCol column is the column number of your target variable.
+The FeatureCols column is the column numbers of your features.
+The CreateDate column is for tracking your model build dates.
+The GridTune column is a TRUE / FALSE column for whether you want to run a grid tune model for comparison.
+The ExportValidData column is a TRUE / FALSE column indicating if you want to export the validation data.
+The ParDep column is where you put the number of partial dependence calibration plots you wish to generate.
+The PD_Data column is where you specify if you want to generate the partial dependence plots on "All" data, "Validate" data, or "Train" data.
+The ThreshType column is for classification models. You can specify "f1", "f2", "f0point5", or "CS" for cost sentitive.
+The FSC column is the feature selection column. Specify the percentage importance cutoff to create a table of "unimportant" features.
+The tpProfit column is for when you specify "CS" in the ThreshType column. This is your true positive profit.
+The tnProfit column is for when you specify "CS" in the ThreshType column. This is your true negative profit.
+The fpProfit column is for when you specify "CS" in the ThreshType column. This is your false positive profit.
+The fnProfit column is for when you specify "CS" in the ThreshType column. This is your false negative profit.
+The SaveModel column is a TRUE / FALSE indicator. If you are just testing out models, set this to FALSE.
+The SaveModelType column is where you specify if you want a "standard" model object saveed or a "mojo" model object saved.
+The PredsAllData column is a TRUE / FALSE column. Set to TRUE if you want all the predicted values returns (for all data).
+The TargetEncoding column let's you specify the column number of features you wish to run target encoding on. Set to NA to not run this feature.
+The SupplyData column lets you supply the data names for training and validation data. Set to NULL if you want the data partitioning to be done internally.
 }
 \examples{
 \dontrun{
@@ -114,6 +140,75 @@ AutoH20Modeler(Construct,
                TrainData = NULL,
                TestData  = NULL)
 
+# Multinomial Example
+Correl <- 0.85
+aa <- data.table::data.table(target = runif(1000))
+aa[, x1 := qnorm(target)]
+aa[, x2 := runif(1000)]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 +
+                                          sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+                                          sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+                                              sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+                                           sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 +
+                                        sqrt(1-Correl^2) * qnorm(x2)))^4]
+aa[, ':=' (x1 = NULL, x2 = NULL)]
+aa[, target := as.factor(ifelse(target < 0.33,"A",ifelse(target < 0.66, "B","C")))]
+Construct <- data.table::data.table(Targets = rep("target",3),
+                                    Distribution    = c("multinomial",
+                                                        "multinomial",
+                                                        "multinomial"),
+                                    Loss            = c("logloss","logloss","CrossEntropy"),
+                                    Quantile        = rep(NA,3),
+                                    ModelName       = c("GBM","DRF","DL"),
+                                    Algorithm       = c("gbm",
+                                                        "randomForest",
+                                                        "deeplearning"),
+                                    dataName        = rep("aa",3),
+                                    TargetCol       = rep(c("1"),3),
+                                    FeatureCols     = rep(c("2:11"),3),
+                                    CreateDate      = rep(Sys.time(),3),
+                                    GridTune        = rep(FALSE,3),
+                                    ExportValidData = rep(TRUE,3),
+                                    ParDep          = rep(NA,3),
+                                    PD_Data         = rep("All",3),
+                                    ThreshType      = rep("f1",3),
+                                    FSC             = rep(0.001,3),
+                                    tpProfit        = rep(NA,3),
+                                    tnProfit        = rep(NA,3),
+                                    fpProfit        = rep(NA,3),
+                                    fnProfit        = rep(NA,3),
+                                    SaveModel       = rep(FALSE,3),
+                                    SaveModelType   = c("Mojo","standard","mojo"),
+                                    PredsAllData    = rep(TRUE,3),
+                                    TargetEncoding  = rep(NA,3),
+                                    SupplyData      = rep(FALSE,3))
+
+# Regression Example
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30,
+               TrainData = NULL,
+               TestData  = NULL)
+
 # Regression Example
 Correl <- 0.85
 aa <- data.table::data.table(target = runif(1000))
@@ -169,6 +264,82 @@ Construct <- data.table::data.table(Targets = rep("target",3),
                                     PredsAllData    = rep(TRUE,3),
                                     TargetEncoding  = rep(NA,3),
                                     SupplyData      = rep(FALSE,3))
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30,
+               TrainData = NULL,
+               TestData  = NULL)
+
+# Regression Example
+AutoH20Modeler(Construct,
+               max_memory = "28G",
+               ratios = 0.75,
+               BL_Trees = 500,
+               nthreads = 5,
+               model_path = getwd(),
+               MaxRuntimeSeconds = 3600,
+               MaxModels = 30,
+               TrainData = NULL,
+               TestData  = NULL)
+
+# Quantile Regression Example
+Correl <- 0.85
+aa <- data.table::data.table(target = runif(1000))
+aa[, x1 := qnorm(target)]
+aa[, x2 := runif(1000)]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 +
+                                          sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+                                          sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+                                              sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+                                           sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 +
+                                       sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 +
+                                        sqrt(1-Correl^2) * qnorm(x2)))^4]
+aa[, ':=' (x1 = NULL, x2 = NULL)]
+Construct <- data.table::data.table(Targets = rep("target",3),
+                                    Distribution    = c("quantile",
+                                                        "quantile"),
+                                    Loss            = c("MAE","Absolute"),
+                                    Quantile        = rep(0.75,2),
+                                    ModelName       = c("GBM","DL"),
+                                    Algorithm       = c("gbm",
+                                                        "deeplearning"),
+                                    dataName        = rep("aa",2),
+                                    TargetCol       = rep(c("1"),2),
+                                    FeatureCols     = rep(c("2:11"),2),
+                                    CreateDate      = rep(Sys.time(),2),
+                                    GridTune        = rep(FALSE,2),
+                                    ExportValidData = rep(TRUE,2),
+                                    ParDep          = rep(4,2),
+                                    PD_Data         = rep("All",2),
+                                    ThreshType      = rep("f1",2),
+                                    FSC             = rep(0.001,2),
+                                    tpProfit        = rep(NA,2),
+                                    tnProfit        = rep(NA,2),
+                                    fpProfit        = rep(NA,2),
+                                    fnProfit        = rep(NA,2),
+                                    SaveModel       = rep(FALSE,2),
+                                    SaveModelType   = c("Mojo","mojo"),
+                                    PredsAllData    = rep(TRUE,2),
+                                    TargetEncoding  = rep(NA,2),
+                                    SupplyData      = rep(FALSE,2))
 AutoH20Modeler(Construct,
                max_memory = "28G",
                ratios = 0.75,
