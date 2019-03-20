@@ -197,7 +197,6 @@ Construct <- data.table::data.table(Targets = rep("target",3),
                                     TargetEncoding  = rep(NA,3),
                                     SupplyData      = rep(FALSE,3))
 
-# Regression Example
 AutoH20Modeler(Construct,
                max_memory = "28G",
                ratios = 0.75,
@@ -264,18 +263,6 @@ Construct <- data.table::data.table(Targets = rep("target",3),
                                     PredsAllData    = rep(TRUE,3),
                                     TargetEncoding  = rep(NA,3),
                                     SupplyData      = rep(FALSE,3))
-AutoH20Modeler(Construct,
-               max_memory = "28G",
-               ratios = 0.75,
-               BL_Trees = 500,
-               nthreads = 5,
-               model_path = getwd(),
-               MaxRuntimeSeconds = 3600,
-               MaxModels = 30,
-               TrainData = NULL,
-               TestData  = NULL)
-
-# Regression Example
 AutoH20Modeler(Construct,
                max_memory = "28G",
                ratios = 0.75,
