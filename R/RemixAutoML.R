@@ -681,7 +681,7 @@ GLRM_KMeans_Col <- function(data,
 
 #' AutoTS is an automated time series modeling function
 #'
-#' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts.
+#' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
