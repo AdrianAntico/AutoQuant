@@ -6303,7 +6303,7 @@ AutoH20Modeler <- function(Construct,
   # Loop through model building
   ######################################
 
-  for (i in seq_len(nrow(Construct))) {
+  for (i in as.integer(seq_len(nrow(Construct)))) {
     # No deeplearning loss functions as stopping metrics
     if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
       if (tolower(Construct[i, 2][[1]]) == "multinomial") {
