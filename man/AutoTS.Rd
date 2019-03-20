@@ -35,7 +35,7 @@ AutoTS(data, TargetName = "Targets", DateName = "DateTime",
 If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
 }
 \description{
-AutoTS builds the best time series models for each type, compares all types, selects the winner, and generate forecasts.
+AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.
 }
 \examples{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
