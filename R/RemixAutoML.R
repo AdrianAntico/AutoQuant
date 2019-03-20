@@ -2484,8 +2484,8 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
 
   xx <- x
   yy <- y
-  z <- DATA[, get(xx)][[1]]
-  zz <- DATA[, get(yy)][[1]]
+  z <- DATA[[eval(xx)]]
+  zz <- DATA[[eval(yy)]]
   tryCatch({
     if (monotonic == TRUE) {
       tryCatch({
@@ -2493,7 +2493,7 @@ nlsModelFit <- function(data, y, x, monotonic = TRUE) {
         preds    <- baseline$estimation
         preds[preds < 0] <- 0
         val0     <- base::mean(abs(zz - preds))
-        data.table::set(nls_collection, 1, 2, value = val0)
+        data.table::set(nls_collection, 1L, 2L, value = val0)
       }, error = function(x) {
         return("skip")
       })
