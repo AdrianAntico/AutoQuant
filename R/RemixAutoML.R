@@ -5409,7 +5409,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' The SupplyData column lets you supply the data names for training and validation data. Set to NULL if you want the data partitioning to be done internally.
 #' @author Adrian Antico
 #' @family Supervised Learning
-#' @param Construct Core instruction file for automation
+#' @param Construct Core instruction file for automation (see Details below for more information on this)
 #' @param max_memory The ceiling amount of memory H20 will utilize
 #' @param ratios The percentage of train samples from source data (remainder goes to validation set)
 #' @param BL_Trees The number of trees to build in baseline GBM or RandomForest
