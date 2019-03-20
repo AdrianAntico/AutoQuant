@@ -43,7 +43,7 @@ Steps in the function include:
 7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
 }
 \details{
-The Construct file must be a data.table and the columns need to be in the correct order (see examples).
+The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a 0|1 and a "Factor" type.
 }
 \examples{
 \dontrun{
