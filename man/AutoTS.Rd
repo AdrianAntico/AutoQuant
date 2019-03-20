@@ -27,7 +27,7 @@ AutoTS(data, TargetName = "Targets", DateName = "DateTime",
 
 \item{NumCores}{is the number of cores available on your computer}
 
-\item{SkipModels}{Don't run specified models - e.g. exclude all models c("ARFIMA","ARIMA","ETS","NNET","TBATS","TSLM","PROPHET")}
+\item{SkipModels}{Don't run specified models - e.g. exclude all models "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"}
 
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 }
