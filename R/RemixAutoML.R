@@ -6023,6 +6023,9 @@ AutoH20Modeler <- function(Construct,
     save(Construct, file = paste0(model_path, "/Construct.Rdata"))
   }
 
+  # Clear table
+  rm(distMatch)
+
   # Set up grid_tuned_paths.R file
   if (file.exists(paste0(model_path, "/grid_tuned_paths.Rdata"))) {
     load(paste0(model_path, "/grid_tuned_paths.Rdata"))
