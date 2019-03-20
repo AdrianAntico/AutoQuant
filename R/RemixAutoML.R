@@ -7387,7 +7387,7 @@ AutoH20Modeler <- function(Construct,
             data.table::data.table(
               best_model@model$training_metrics@metrics$thresholds_and_metric_scores
             )
-          if (Construct[i, 15][[1]] == "f1" ||
+          if (tolower(Construct[i, 15][[1]]) == "f1" ||
               is.null(Construct[i, 15][[1]])) {
             Thresh <-
               tryCatch({
@@ -7395,21 +7395,21 @@ AutoH20Modeler <- function(Construct,
               }, error = function(x)
                 1)
             Label  <- "f1"
-          } else if (Construct[i, 15][[1]] == "f2") {
+          } else if (tolower(Construct[i, 15][[1]]) == "f2") {
             Thresh <-
               tryCatch({
                 store_results[order(-f2)][1, 1][[1]]
               }, error = function(x)
                 1)
             Label  <- "f2"
-          } else if (Construct[i, 15][[1]] == "f0point5") {
+          } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
             Thresh <-
               tryCatch({
                 store_results[order(-f0point5)][1, 1][[1]]
               }, error = function(x)
                 1)
             Label <- "f0point5"
-          } else if (Construct[i, 15][[1]] == "CS") {
+          } else if (tolower(Construct[i, 15][[1]]) == "cs") {
             predsPDD <- h2o::h2o.predict(bl_model,
                                          newdata = data_h2o)[, 3]
             data    <-
@@ -7517,7 +7517,7 @@ AutoH20Modeler <- function(Construct,
           store_results <-
             data.table::data.table(
               bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-          if (Construct[i, 15][[1]] == "f1" ||
+          if (tolower(Construct[i, 15][[1]]) == "f1" ||
               is.null(Construct[i, 15][[1]])) {
             Thresh <-
               tryCatch({
@@ -7525,21 +7525,21 @@ AutoH20Modeler <- function(Construct,
               }, error = function(x)
                 1)
             Label  <- "f1"
-          } else if (Construct[i, 15][[1]] == "f2") {
+          } else if (tolower(Construct[i, 15][[1]]) == "f2") {
             Thresh <-
               tryCatch({
                 store_results[order(-f2)][1, 1][[1]]
               }, error = function(x)
                 1)
             Label  <- "f2"
-          } else if (Construct[i, 15][[1]] == "f0point5") {
+          } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
             Thresh <-
               tryCatch({
                 store_results[order(-f0point5)][1, 1][[1]]
               }, error = function(x)
                 1)
             Label <- "f0point5"
-          } else if (Construct[i, 15][[1]] == "CS") {
+          } else if (tolower(Construct[i, 15][[1]]) == "CS") {
             predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
             data    <-
               data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
@@ -7652,7 +7652,7 @@ AutoH20Modeler <- function(Construct,
         store_results <-
           data.table::data.table(
             bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-        if (Construct[i, 15][[1]] == "f1" ||
+        if (tolower(Construct[i, 15][[1]]) == "f1" ||
             is.null(Construct[i, 15][[1]])) {
           Thresh <-
             tryCatch({
@@ -7660,21 +7660,21 @@ AutoH20Modeler <- function(Construct,
             }, error = function(x)
               1)
           Label  <- "f1"
-        } else if (Construct[i, 15][[1]] == "f2") {
+        } else if (tolower(Construct[i, 15][[1]]) == "f2") {
           Thresh <-
             tryCatch({
               store_results[order(-f2)][1, 1][[1]]
             }, error = function(x)
               1)
           Label  <- "f2"
-        } else if (Construct[i, 15][[1]] == "f0point5") {
+        } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
           Thresh <-
             tryCatch({
               store_results[order(-f0point5)][1, 1][[1]]
             }, error = function(x)
               1)
           Label <- "f0point5"
-        } else if (Construct[i, 15][[1]] == "CS") {
+        } else if (tolower(Construct[i, 15][[1]]) == "cs") {
           predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
           data    <-
             data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
