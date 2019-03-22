@@ -7117,7 +7117,7 @@ AutoH20Modeler <- function(Construct,
             grid_tuned_paths,
             i = i,
             j = 6L,
-            value = Construct[i, 5][[1]]
+            value = paste0(model_path, "\\", Construct[i, 5][[1]])
           )
           save(grid_tuned_paths,
                file = paste0(model_path, "/grid_tuned_paths.Rdata"))
@@ -7214,7 +7214,7 @@ AutoH20Modeler <- function(Construct,
                 grid_tuned_paths,
                 i = i,
                 j = 6L,
-                value = Construct[i, 5][[1]]
+                value = paste0(model_path, "\\", Construct[i, 5][[1]])
               )
               save(grid_tuned_paths,
                    file = paste0(model_path, "/grid_tuned_paths.Rdata"))
@@ -7294,7 +7294,7 @@ AutoH20Modeler <- function(Construct,
                 grid_tuned_paths,
                 i = i,
                 j = 6L,
-                value = Construct[i, 5][[1]]
+                value = paste0(model_path, "\\", Construct[i, 5][[1]])
               )
               save(grid_tuned_paths,
                    file = paste0(model_path, "/grid_tuned_paths.Rdata"))
@@ -7375,7 +7375,7 @@ AutoH20Modeler <- function(Construct,
                 grid_tuned_paths,
                 i = i,
                 j = 6L,
-                value = Construct[i, 5][[1]]
+                value = paste0(model_path, "\\", Construct[i, 5][[1]])
               )
               save(grid_tuned_paths,
                    file = paste0(model_path, "/grid_tuned_paths.Rdata"))
@@ -7506,7 +7506,7 @@ AutoH20Modeler <- function(Construct,
                 grid_tuned_paths,
                 i = i,
                 j = 6L,
-                value = Construct[i, 5][[1]]
+                value = paste0(model_path, "\\", Construct[i, 5][[1]])
               )
               save(grid_tuned_paths,
                    file = paste0(model_path, "/grid_tuned_paths.Rdata"))
@@ -7637,7 +7637,7 @@ AutoH20Modeler <- function(Construct,
             grid_tuned_paths,
             i = i,
             j = 6L,
-            value = Construct[i, 5][[1]]
+            value = paste0(model_path, "\\", Construct[i, 5][[1]])
           )
           save(grid_tuned_paths,
                file = paste0(model_path,
