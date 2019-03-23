@@ -796,7 +796,7 @@ AutoTS <- function(data,
               frequency = freq)
 
   # Begin model building
-  if (!("ARFIMA" %in% toupper(SkipModels))) {
+  if (!("ARFIMA" %chin% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
     print("ARFIMA FITTING")
@@ -908,7 +908,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("ARIMA" %in% toupper(SkipModels))) {
+  if (!("ARIMA" %chin% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
     print("ARIMA FITTING")
@@ -1028,7 +1028,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("ETS" %in% toupper(SkipModels))) {
+  if (!("ETS" %chin% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
     print("ETS FITTING")
@@ -1117,7 +1117,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("TBATS" %in% toupper(SkipModels))) {
+  if (!("TBATS" %chin% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
     print("TBATS FITTING")
@@ -1190,7 +1190,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("TSLM" %in% toupper(SkipModels))) {
+  if (!("TSLM" %chin% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
     print("TSLM FITTING")
@@ -1241,7 +1241,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("NNET" %in% toupper(SkipModels))) {
+  if (!("NNET" %chin% toupper(SkipModels))) {
     # Neural Network-------------
     # 1)
     print("NNet FITTING")
@@ -1355,7 +1355,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("PROPHET" %in% toupper(SkipModels))) {
+  if (!("PROPHET" %chin% toupper(SkipModels))) {
     # Prophet Model-------------
     print("PROPHET FITTING")
     if (TimeUnit == "hour") {
@@ -2014,7 +2014,7 @@ ModelDataPrep <- function(data,
     for (j in base::seq_along(data)) {
       if (base::is.factor(data[[j]])) {
         data.table::set(data,
-                        base::which(!(data[[j]] %in% base::levels(data[[j]]))),
+                        base::which(!(data[[j]] %chin% base::levels(data[[j]]))),
                         j,
                         MissFactor)
       } else {
@@ -3250,7 +3250,7 @@ GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i], "_LAG_",
-                       lags[l], "_", t) %in% SkipCols)) {
+                       lags[l], "_", t) %chin% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_", lags[l], "_", t) := data.table::shift(
                             get(t), n = lags[l], type = "lag"),
@@ -3267,7 +3267,7 @@ GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
             data[, paste0(groupingVars[i], "TEMP",
                           lags[l]) := data.table::shift(get(sortDateName),
                                                         n = lags[l],
@@ -3279,7 +3279,7 @@ GDL_Feature_Engineering <- function(data,
         # Difference the lag dates
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
-            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
+            if (!(paste0(timeDiffTarget, lags[l]) %chin% SkipCols) & l == 1) {
               data[, paste0(groupingVars[i],
                             timeDiffTarget, lags[l]) := as.numeric(difftime(
                               get(sortDateName),
@@ -3294,7 +3294,7 @@ GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i], timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(
                                 difftime(get(
@@ -3315,7 +3315,7 @@ GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(difftime(
                                 get(sortDateName),
@@ -3331,7 +3331,7 @@ GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3385,7 +3385,7 @@ GDL_Feature_Engineering <- function(data,
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
             if (!(paste0(groupingVars[i], statsNames[k], "_",
-                         periods[j], "_", t) %in% SkipCols)) {
+                         periods[j], "_", t) %chin% SkipCols)) {
               data[, paste0(groupingVars[i],
                             statsNames[k], "_",
                             periods[j], "_", t) := zoo::rollapply(
@@ -3422,7 +3422,7 @@ GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %in% levels(data[[j]]))),
+                          which(!(data[[j]] %chin% levels(data[[j]]))),
                           j, "0")
         } else {
           data.table::set(data,
@@ -3447,7 +3447,7 @@ GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
           data[, paste0("LAG_",
                         lags[l],
                         "_",
@@ -3466,7 +3466,7 @@ GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
           data[, paste0("TEMP",
                         lags[l]) := data.table::shift(get(
                           sortDateName),
@@ -3478,7 +3478,7 @@ GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
               l == 1) {
             data[, paste0(timeDiffTarget,
                           "_",
@@ -3514,7 +3514,7 @@ GDL_Feature_Engineering <- function(data,
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %in% SkipCols)) {
+                         lags[l]) %chin% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(
@@ -3528,7 +3528,7 @@ GDL_Feature_Engineering <- function(data,
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(
@@ -3582,7 +3582,7 @@ GDL_Feature_Engineering <- function(data,
           if (!(paste0(statsNames[k],
                        "_",
                        periods[j],
-                       "_", t) %in% SkipCols)) {
+                       "_", t) %chin% SkipCols)) {
             data[, paste0(statsNames[k],
                           "_",
                           periods[j],
@@ -3622,7 +3622,7 @@ GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %in% levels(data[[j]]))),
+                          which(!(data[[j]] %chin% levels(data[[j]]))),
                           j, "0")
         } else {
           data.table::set(data,
@@ -3745,7 +3745,7 @@ DT_GDL_Feature_Engineering <- function(data,
                        "_LAG_",
                        lags[l],
                        "_",
-                       t) %in% SkipCols)) {
+                       t) %chin% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_",
                           lags[l],
@@ -3766,7 +3766,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "TEMP",
                           lags[l]) := data.table::shift(get(
@@ -3781,7 +3781,7 @@ DT_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %in% SkipCols) & l == 1) {
+                         lags[l]) %chin% SkipCols) & l == 1) {
               data[, paste0(groupingVars[i],
                             timeDiffTarget,
                             lags[l]) := as.numeric(difftime(
@@ -3798,7 +3798,7 @@ DT_GDL_Feature_Engineering <- function(data,
             } else {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3820,7 +3820,7 @@ DT_GDL_Feature_Engineering <- function(data,
             if (l == 1) {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(
@@ -3838,7 +3838,7 @@ DT_GDL_Feature_Engineering <- function(data,
             } else {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %in% SkipCols)) {
+                           lags[l]) %chin% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3901,7 +3901,7 @@ DT_GDL_Feature_Engineering <- function(data,
             if (!(paste0(groupingVars[i],
                          statsNames[k],
                          "_",
-                         periods[j], "_", t) %in% SkipCols)) {
+                         periods[j], "_", t) %chin% SkipCols)) {
               data[, paste0(groupingVars[i],
                             statsNames[k],
                             "_",
@@ -3948,7 +3948,7 @@ DT_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
+                          which(!(data[[j]] %chin% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
                           which(is.na(data[[j]])), j, -1)
@@ -3973,7 +3973,7 @@ DT_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
           data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
             get(t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
@@ -3988,7 +3988,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
           data[, paste0("TEMP",
                         lags[l]) := data.table::shift(get(
                           sortDateName), n = lags[l], type = "lag")]
@@ -3998,7 +3998,7 @@ DT_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
               l == 1) {
             data[, paste0(timeDiffTarget,
                           "_",
@@ -4032,7 +4032,7 @@ DT_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
-                         "_", lags[l]) %in% SkipCols)) {
+                         "_", lags[l]) %chin% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_", lags[l]) := as.numeric(difftime(
                               get(sortDateName),
@@ -4047,7 +4047,7 @@ DT_GDL_Feature_Engineering <- function(data,
           } else {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %in% SkipCols)) {
+                         lags[l]) %chin% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(get(paste0(
@@ -4100,7 +4100,7 @@ DT_GDL_Feature_Engineering <- function(data,
           if (!(paste0(statsNames[k],
                        "_",
                        periods[j],
-                       "_", t) %in% SkipCols)) {
+                       "_", t) %chin% SkipCols)) {
             data[, paste0(statsNames[k],
                           "_",
                           periods[j],
@@ -4145,7 +4145,7 @@ DT_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
+                          which(!(data[[j]] %chin% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
                           which(is.na(data[[j]])), j, -1)
@@ -4281,7 +4281,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
-                       "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+                       "_LAG_", lags[l], "_", t) %chin% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "_LAG_",
                               lags[l], "_", t) := data.table::shift(get(
@@ -4299,7 +4299,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "TEMP",
                               lags[l]) := data.table::shift(get(
@@ -4313,7 +4313,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %in% SkipCols) & l == 1) {
+                         lags[l]) %chin% SkipCols) & l == 1) {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
                                 lags[l]) := as.numeric(difftime(
@@ -4329,7 +4329,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4350,7 +4350,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
@@ -4367,7 +4367,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4423,7 +4423,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
             if (!(paste0(groupingVars[i],
                          statsNames[k],
                          "_",
-                         periods[j], "_", t) %in% SkipCols)) {
+                         periods[j], "_", t) %chin% SkipCols)) {
               keep <- c(groupingVars[i], t, AscRowByGroup)
               temp2 <-
                 tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
@@ -4476,7 +4476,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %in% levels(tempData1[[j]])
+            tempData1[[j]] %chin% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1,
@@ -4506,7 +4506,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
           tempData[, paste0("LAG_",
                             lags[l],
                             "_",
@@ -4524,7 +4524,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
           tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(
             sortDateName), n = lags[l], type = "lag")]
         }
@@ -4533,7 +4533,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
               l == 1) {
             tempData[, paste0(timeDiffTarget,
                               "_",
@@ -4566,7 +4566,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       } else {
         for (l in seq_along(lags)) {
           if (l == 1) {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(
@@ -4580,7 +4580,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(get(paste0(
@@ -4635,7 +4635,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         for (t in Targets) {
           if (!(paste0(statsNames[k],
                        "_", periods[j],
-                       "_", t) %in% SkipCols)) {
+                       "_", t) %chin% SkipCols)) {
             keep <- c(t, AscRowByGroup)
             temp2 <-
               tempData[get(AscRowByGroup) <=
@@ -4683,7 +4683,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %in% levels(tempData1[[j]])
+            tempData1[[j]] %chin% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1,
@@ -4831,7 +4831,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
-                       "_LAG_", lags[l], "_", t) %in% SkipCols)) {
+                       "_LAG_", lags[l], "_", t) %chin% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "_LAG_",
                               lags[l], "_", t) := data.table::shift(get(
@@ -4849,7 +4849,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "TEMP",
                               lags[l]) := data.table::shift(get(
@@ -4863,7 +4863,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %in% SkipCols) & l == 1) {
+                         lags[l]) %chin% SkipCols) & l == 1) {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
                                 lags[l]) := as.numeric(difftime(
@@ -4879,7 +4879,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4905,7 +4905,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
@@ -4922,7 +4922,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %in% SkipCols)) {
+                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4984,7 +4984,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                          statsNames[k],
                          "_",
                          periods[j],
-                         "_", t) %in% SkipCols)) {
+                         "_", t) %chin% SkipCols)) {
               keep <- c(groupingVars[i], t, AscRowByGroup)
               temp2 <-
                 tempData[get(AscRowByGroup) <=
@@ -5092,7 +5092,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %in% levels(tempData1[[j]])
+            tempData1[[j]] %chin% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
@@ -5120,7 +5120,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
           tempData[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
             get(t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
@@ -5135,7 +5135,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
           tempData[, paste0("TEMP",
                             lags[l]) := data.table::shift(get(
                               sortDateName), n = lags[l], type = "lag")]
@@ -5145,7 +5145,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
               l == 1) {
             tempData[, paste0(timeDiffTarget,
                               "_",
@@ -5179,7 +5179,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
-                         "_", lags[l]) %in% SkipCols)) {
+                         "_", lags[l]) %chin% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_", lags[l]) := as.numeric(difftime(
                                   get(sortDateName),
@@ -5194,7 +5194,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           } else {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %in% SkipCols)) {
+                         lags[l]) %chin% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(get(paste0(
@@ -5251,7 +5251,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                        "_",
                        periods[j],
                        "_",
-                       t) %in% SkipCols)) {
+                       t) %chin% SkipCols)) {
             keep <- c(t, AscRowByGroup)
             temp2 <-
               tempData1[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
@@ -5349,7 +5349,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1,
-                          which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),
+                          which(!(tempData1[[j]] %chin% levels(tempData1[[j]]))),
                           j,
                           "0")
         } else {
@@ -5710,14 +5710,14 @@ AutoH20Modeler <- function(Construct,
   for (i in as.integer(seq_len(nrow(Construct)))) {
     # Algorithm specific
     if (tolower(
-      Construct[i, 6][[1]]) %in% c("gbm",
+      Construct[i, 6][[1]]) %chin% c("gbm",
                                    "randomforest",
                                    "automl",
                                    "xgboost",
                                    "lightgbm")) {
       # GBM and RF loss functions existence
       if (!(
-        tolower(Construct[i, 3][[1]]) %in% c(
+        tolower(Construct[i, 3][[1]]) %chin% c(
           "auto",
           "deviance",
           "mse",
@@ -5791,7 +5791,7 @@ AutoH20Modeler <- function(Construct,
 
       # GBM and RF distributions
       if (!(
-        tolower(Construct[i, 2][[1]]) %in% c(
+        tolower(Construct[i, 2][[1]]) %chin% c(
           "auto",
           "bernoulli",
           "quasibinomial",
@@ -5862,10 +5862,10 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for non-regression
-      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial",
+      if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial", "binomial",
                                                "bernoulli", "multinomial") &&
           !(
-            tolower(Construct[i, 3][[1]]) %in% c(
+            tolower(Construct[i, 3][[1]]) %chin% c(
               "auc",
               "logloss",
               "auto",
@@ -5895,14 +5895,14 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for regression
-      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
+      if (tolower(Construct[i, 2][[1]]) %chin% c("gaussian",
                                                "poisson",
                                                "gamma",
                                                "tweedie",
                                                "laplace",
                                                "quantile",
                                                "huber") &&
-          !(tolower(Construct[i, 3][[1]]) %in% c("auto", "mse", "rmse",
+          !(tolower(Construct[i, 3][[1]]) %chin% c("auto", "mse", "rmse",
                                                  "mae", "rmsle"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
@@ -5924,7 +5924,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Quantile Regression with GBM
-      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
+      if (tolower(Construct[i, 2][[1]]) %chin% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
            Construct[i, 4][[1]] < 0 ||
            !is.numeric(Construct[i, 4][[1]]))) {
@@ -6011,7 +6011,7 @@ AutoH20Modeler <- function(Construct,
     } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
       # Deeplearning loss functions
       if (!(
-        tolower(Construct[i, 3][[1]]) %in% c(
+        tolower(Construct[i, 3][[1]]) %chin% c(
           "automatic",
           "crossentropy",
           "quadratic",
@@ -6066,7 +6066,7 @@ AutoH20Modeler <- function(Construct,
 
       # Deeplearning distributions
       if (!(
-        tolower(Construct[i, 2][[1]]) %in% c(
+        tolower(Construct[i, 2][[1]]) %chin% c(
           "auto",
           "bernoulli",
           "multinomial",
@@ -6134,9 +6134,9 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for non-regression
-      if (tolower(Construct[i,2][[1]]) %in% c("bernoulli",
+      if (tolower(Construct[i,2][[1]]) %chin% c("bernoulli",
                                               "multinomial") &&
-          !(tolower(Construct[i,3][[1]]) %in% c("automatic",
+          !(tolower(Construct[i,3][[1]]) %chin% c("automatic",
                                                 "crossentropy"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
@@ -6158,7 +6158,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for regression
-      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
+      if (tolower(Construct[i, 2][[1]]) %chin% c("gaussian",
                                                "poisson",
                                                "gamma",
                                                "tweedie",
@@ -6166,7 +6166,7 @@ AutoH20Modeler <- function(Construct,
                                                "quantile",
                                                "huber") &&
           !(
-            tolower(Construct[i, 3][[1]]) %in% c(
+            tolower(Construct[i, 3][[1]]) %chin% c(
               "automatic",
               "quadratic",
               "huber",
@@ -6218,7 +6218,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Quantile Regression with DL
-      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
+      if (tolower(Construct[i, 2][[1]]) %chin% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
            Construct[i, 4][[1]] < 0 ||
            !is.numeric(Construct[i, 4][[1]]))) {
@@ -6312,11 +6312,11 @@ AutoH20Modeler <- function(Construct,
         StoppingMetric <- "auc"
       }
     } else {
-      if (tolower(Construct[i, 3][[1]]) %in% c("quadratic",
+      if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic",
                                                "huber")) {
         StoppingMetric <- "mse"
       } else if (tolower(
-        Construct[i, 3][[1]]) %in% c("absolute",
+        Construct[i, 3][[1]]) %chin% c("absolute",
                                      "quantile")) {
         StoppingMetric <- "mae"
       } else {
@@ -6462,7 +6462,7 @@ AutoH20Modeler <- function(Construct,
     if (Construct[i, 11][[1]]) {
       if (tolower(Construct[i, 6][[1]]) == "gbm") {
         if (tolower(
-          Construct[i, 3][[1]] %in% c(
+          Construct[i, 3][[1]] %chin% c(
             "auc",
             "logloss",
             "auto",
@@ -6510,7 +6510,7 @@ AutoH20Modeler <- function(Construct,
         }
 
       } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-        if (tolower(Construct[i, 3][[1]] %in% c("automatic",
+        if (tolower(Construct[i, 3][[1]] %chin% c("automatic",
                                                 "crossentropy"))) {
           hyper_params <-
             list(
@@ -6597,7 +6597,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
         if (tolower(
-          Construct[i, 3][[1]] %in% c(
+          Construct[i, 3][[1]] %chin% c(
             "auc",
             "logloss",
             "auto",
@@ -6647,7 +6647,7 @@ AutoH20Modeler <- function(Construct,
         print("automl is preset with tuning parameters")
       } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
         if (tolower(
-          Construct[i, 3][[1]] %in% c(
+          Construct[i, 3][[1]] %chin% c(
             "auc",
             "logloss",
             "auto",
@@ -6687,7 +6687,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
         if (tolower(
-          Construct[i, 3][[1]] %in% c(
+          Construct[i, 3][[1]] %chin% c(
             "auc",
             "logloss",
             "auto",
@@ -6887,7 +6887,7 @@ AutoH20Modeler <- function(Construct,
       # Store all models built sorted by metric
       if (tolower(Construct[i, 6][[1]]) == "automl") {
         Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
-      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+      } else if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli",
                                                       "multinomial")) {
@@ -6925,7 +6925,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         cc <- h2o::h2o.mae(h2o::h2o.performance(best_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic", "huber")) {
         cc <- h2o::h2o.mse(h2o::h2o.performance(best_model, valid = TRUE))
       } else {
         cc <-
@@ -7049,7 +7049,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         dd <- h2o::h2o.mae(h2o::h2o.performance(bl_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic", "huber")) {
         dd <- h2o::h2o.mse(h2o::h2o.performance(bl_model, valid = TRUE))
       } else {
         dd <-
@@ -7170,7 +7170,7 @@ AutoH20Modeler <- function(Construct,
 
     if (Construct[i, 11][[1]] == TRUE &
         tolower(Construct[i, 6][[1]]) != "automl") {
-      if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+      if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                  "binomial",
                                                  "bernoulli")) |
           tolower(Construct[i, 3][[1]]) == "logloss") {
@@ -7646,7 +7646,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Store threshold for binary classification
-      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+      if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                "binomial",
                                                "bernoulli")) {
         store_results <-
@@ -7751,7 +7751,7 @@ AutoH20Modeler <- function(Construct,
     col <- Construct[i, 1][[1]]
     calibration <-
       data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
-    if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+    if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                              "binomial",
                                              "bernoulli")) {
       calibration[, eval(col) := as.numeric(as.character(get(col)))]
@@ -7822,7 +7822,7 @@ AutoH20Modeler <- function(Construct,
                                "/CalBP_",
                                Construct[i, 5][[1]],
                                ".png"))
-      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+      } else if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli")) {
         out1 <- EvalPlot(
@@ -7891,7 +7891,7 @@ AutoH20Modeler <- function(Construct,
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
         for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %chin% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -7936,7 +7936,7 @@ AutoH20Modeler <- function(Construct,
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
         for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %chin% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -7983,7 +7983,7 @@ AutoH20Modeler <- function(Construct,
       calibr <- list()
       boxplotr <- list()
       j <- 0
-      if (!(tolower(Construct[i, 2][[1]]) %in% c("multinomial"))) {
+      if (!(tolower(Construct[i, 2][[1]]) %chin% c("multinomial"))) {
         for (col in cols) {
           j <- j + 1
           if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -8023,7 +8023,7 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Add threshold line to charts
-          if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+          if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                    "binomial",
                                                    "bernoulli")) {
             if (exists("Thresh")) {
@@ -8035,7 +8035,7 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Expected value regression
-          if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+          if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                      "binomial",
                                                      "bernoulli"))) {
             boxplotr[[j]] <- tryCatch({
@@ -8055,7 +8055,7 @@ AutoH20Modeler <- function(Construct,
         }
 
         # Save output
-        if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+        if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
                                                    "binomial",
                                                    "bernoulli"))) {
           save(
