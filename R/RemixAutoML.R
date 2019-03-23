@@ -8228,7 +8228,7 @@ Word2VecModel <- function(data,
   # Create storage file
   N <- length(stringCol)
   StoreFile <-
-    data.table::data.table(ModelName = rep("a", N), Path = c("aa", N))
+    data.table::data.table(ModelName = rep("a", N), Path = c("aa", N), Jar = c("aa", N))
   i <- 0
 
   # Loop through all the string columns
@@ -8299,6 +8299,10 @@ Word2VecModel <- function(data,
                       i = i,
                       j = 2L,
                       value = w2vPath)
+      data.table::set(StoreFile,
+                      i = i,
+                      j = 3L,
+                      value = paste0(model_path, "\\", ModelID[i]))
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
 
