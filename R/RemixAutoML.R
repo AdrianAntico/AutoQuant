@@ -8144,6 +8144,7 @@ AutoH20Modeler <- function(Construct,
 #'
 #' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 #'
+#' @family Supervised Learning
 #' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score
 #' @param ScoreMethod "Standard" or "Mojo"
 #' @param TargetType "Regression", "Classification", "Multinomial", "Text", "MultiOutcome". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
@@ -8154,6 +8155,7 @@ AutoH20Modeler <- function(Construct,
 #' @param FilesPath Set this to the folder where your models are saved (and hence where your grid_tuned_paths.Rdata file resides)
 #' @param H20ShutDown TRUE to shutdown H20 after the run (do this if you are scoring once and not after that for a long time). Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your script
 #' @import data.table
+#' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 #' @examples
 #' \dontrun{
 #' # Multinomial Example
