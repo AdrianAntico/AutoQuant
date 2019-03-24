@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 utils::globalVariables(
   names = c(
@@ -8138,6 +8138,340 @@ AutoH20Modeler <- function(Construct,
       }
     }
   }
+}
+
+#' AutoH20Scoring is the complement of AutoH20Modeler.
+#'
+#' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
+#'
+#' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score
+#' @param ScoreMethod "Standard" or "Mojo"
+#' @param TargetType "Regression", "Classification", "Multinomial", "Text", "MultiOutcome". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
+#' @param ClassVals Choose from "p1", "Probs", "Label", or "All"
+#' @param NThreads Number of available threads for H20
+#' @param MaxMem Amount of memory to dedicate to H20
+#' @param JavaOptions Modify to your machine if the default doesn't work
+#' @param FilesPath Set this to the folder where your models are saved (and hence where your grid_tuned_paths.Rdata file resides)
+#' @param H20ShutDown TRUE to shutdown H20 after the run (do this if you are scoring once and not after that for a long time). Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your script
+#' @import data.table
+#' @examples
+#' \dontrun{
+#' # Multinomial Example
+#' Correl <- 0.85
+#' aa <- data.table::data.table(target = runif(1000))
+#' aa[, x1 := qnorm(target)]
+#' aa[, x2 := runif(1000)]
+#' aa[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                           sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable2 := (pnorm(Correl * x1 +
+#'                                        sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+#'                                           sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+#'                                               sqrt(1-Correl^2) * qnorm(x2))))]
+#' aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+#'                                            sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable6 := (pnorm(Correl * x1 +
+#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' aa[, Independent_Variable7 := (pnorm(Correl * x1 +
+#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' aa[, Independent_Variable8 := (pnorm(Correl * x1 +
+#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' aa[, Independent_Variable9 := (pnorm(Correl * x1 +
+#'                                        sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' aa[, Independent_Variable10 := (pnorm(Correl * x1 +
+#'                                         sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' aa[, ':=' (x1 = NULL, x2 = NULL)]
+#' aa[, target := as.factor(ifelse(target < 0.33,"A",ifelse(target < 0.66, "B","C")))]
+#' Construct <- data.table::data.table(Targets = rep("target",3),
+#'                                     Distribution    = c("multinomial",
+#'                                                         "multinomial",
+#'                                                         "multinomial"),
+#'                                     Loss            = c("logloss","logloss","CrossEntropy"),
+#'                                     Quantile        = rep(NA,3),
+#'                                     ModelName       = c("GBM","DRF","DL"),
+#'                                     Algorithm       = c("gbm",
+#'                                                         "randomForest",
+#'                                                         "deeplearning"),
+#'                                     dataName        = rep("aa",3),
+#'                                     TargetCol       = rep(c("1"),3),
+#'                                     FeatureCols     = rep(c("2:11"),3),
+#'                                     CreateDate      = rep(Sys.time(),3),
+#'                                     GridTune        = rep(FALSE,3),
+#'                                     ExportValidData = rep(TRUE,3),
+#'                                     ParDep          = rep(NA,3),
+#'                                     PD_Data         = rep("All",3),
+#'                                     ThreshType      = rep("f1",3),
+#'                                     FSC             = rep(0.001,3),
+#'                                     tpProfit        = rep(NA,3),
+#'                                     tnProfit        = rep(NA,3),
+#'                                     fpProfit        = rep(NA,3),
+#'                                     fnProfit        = rep(NA,3),
+#'                                     SaveModel       = rep(FALSE,3),
+#'                                     SaveModelType   = c("Mojo","standard","mojo"),
+#'                                     PredsAllData    = rep(TRUE,3),
+#'                                     TargetEncoding  = rep(NA,3),
+#'                                     SupplyData      = rep(FALSE,3))
+#'
+#' AutoH20Modeler(Construct,
+#'                max_memory = "28G",
+#'                ratios = 0.75,
+#'                BL_Trees = 500,
+#'                nthreads = 5,
+#'                model_path = getwd(),
+#'                MaxRuntimeSeconds = 3600,
+#'                MaxModels = 30,
+#'                TrainData = NULL,
+#'                TestData  = NULL)
+#'
+#' N <- 3
+#' AutoH20Scoring(Features     = data,
+#'                GridTuneRow  = c(1:N),
+#'                ScoreMethod  = "standard",
+#'                TargetType   = rep("multinomial",N),
+#'                ClassVals    = rep("Probs",N),
+#'                NThreads     = 6,
+#'                MaxMem       = "28G",
+#'                JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+#'                FilesPath    = getwd(),
+#'                H20ShutDown  = rep(FALSE,N))
+#'}
+#' @export
+AutoH20Scoring <- function(Features     = data,
+                           GridTuneRow  = c(1:3),
+                           ScoreMethod  = "Standard",
+                           TargetType   = rep("multinomial",3),
+                           ClassVals    = rep("probs",3),
+                           NThreads     = 6,
+                           MaxMem       = "28G",
+                           JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+                           FilesPath    = getwd(),
+                           H20ShutDown  = rep(FALSE,3)) {
+
+  # Import grid_tuned_paths or StoreFile
+  if(any(tolower(TargetType) %chin% c("regression",
+                                      "classification",
+                                      "multinomial",
+                                      "multioutcome"))) {
+    load(paste0(FilesPath, "\\grid_tuned_paths.Rdata"))
+  } else if (tolower(TargetType) == "text") {
+    load(paste0(FilePath, "\\StoreFile.Rdata"))
+  } else {
+    stop("TargetType not a valid option")
+  }
+
+  # Match TargetType with grid_tuned_paths
+  if(ncol(grid_tuned_paths) > 3 & any(tolower(TargetType) %chin% "text")) {
+    stop("TargetType or grid_tuned_paths are not correct")
+  }
+
+  # Ensure GridTuneRow exists
+  if(nrow(grid_tuned_paths) < max(GridTuneRow)) {
+    stop("GridTuneRow is greater than
+          the number of rows in grid_tuned_paths")
+  }
+
+  ScoresList <- list()
+  for(i in as.integer(seq_along(GridTuneRow))) {
+    # Scoring
+    if(tolower(ScoreMethod) == "mojo") {
+      if(tolower(TargetType[i]) == "multinomial") {
+        if(tolower(ClassVals[i]) == c("probs")) {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)[,-1])
+        } else if(tolower(ClassVals[i]) == "label") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)[,1])
+          data.table::setnames(Scores, "V1","Class")
+        } else if (tolower(ClassVals[i]) == "all") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE))
+          data.table::setnames(Scores, "V1","Class")
+        } else {
+          stop("ClassVals can only be probs or label")
+        }
+      } else if(tolower(TargetType[i]) == "classification") {
+        if(tolower(ClassVals[i]) == c("p1")) {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)[,3])
+        } else if(tolower(ClassVals[i]) == c("probs")) {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)[,-1])
+        } else if(tolower(ClassVals[i]) == "label") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)[,1])
+          data.table::setnames(Scores, "V1","Class")
+        } else if(tolower(ClassVals[i]) == "all") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE))
+          data.table::setnames(Scores, "V1","Class")
+        } else {
+          stop("ClassVals can only be probs or label")
+        }
+      } else if(tolower(TargetType[i]) == "regression") {
+        Scores <- data.table::as.data.table(
+          h2o::h2o.mojo_predict_df(
+            frame = data,
+            mojo_zip_path = grid_tuned_paths[i,2][[1]],
+            java_options = JavaOptions,
+            genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+            verbose = FALSE))
+      } else if(tolower(TargetType[i]) == "text") {
+        Scores <- data.table::as.data.table(
+          h2o::h2o.mojo_predict_df(
+            frame = data,
+            mojo_zip_path = StoreFile[i,2][[1]],
+            java_options = JavaOptions,
+            genmodel_jar_path = StoreFile[i,3][[1]],
+            verbose = FALSE))
+      } else if(tolower(TargetType[i]) == "multioutcome") {
+        Counts <- as.numeric(
+          as.character(
+            h2o::h2o.mojo_predict_df(
+              frame = data,
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE)))
+        Temp <- data.table::as.data.table(
+          h2o::h2o.mojo_predict_df(
+            frame = data[i],
+            mojo_zip_path = grid_tuned_paths[i,2][[1]],
+            java_options = JavaOptions,
+            genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+            verbose = FALSE))
+        Vals <- names(sort(Temp[1,2:ncol(temp)], decreasing = TRUE))
+        Scores <- paste0(Vals, collapse = " ")
+        preds$ModelName[i] <- grid_tuned_paths[i,1][[1]]
+        preds$Scores[i] <- Scores
+      } else {
+        stop("TargetType is not Multinomial,
+          Classification, Regression, or Text")
+      }
+    } else if(tolower(ScoreMethod) == "standard") {
+
+      # H20 Startup function
+      startH2o <- function(){
+        h2o::h2o.init(nthreads     = NThreads,
+                      max_mem_size = MaxMem)
+      }
+
+      # Check if H20 is running
+      tryCatch(expr = {h2o::h2o.init(startH2O = FALSE)},
+               error = function(e){startH2o()})
+
+      # Load model
+      model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
+
+      # Load Features
+      if(i == 1) {
+        features <- h2o::as.h2o(Features)
+      }
+      if(tolower(TargetType[i]) == "multinomial") {
+        if(tolower(ClassVals[i]) == "probs") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[,-1])
+        } else if(tolower(ClassVals[i]) == "label") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[,1])
+          data.table::setnames(Scores, "predict","Class")
+        } else if(tolower(ClassVals[i]) == "all") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features))
+          data.table::setnames(Scores, "predict","Class")
+        } else {
+          stop("ClassVals can only be Probs, Label, or All")
+        }
+      } else if(tolower(TargetType[i]) == "classification") {
+        if(tolower(ClassVals[i]) == "p1") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[,3])
+        } else if(tolower(ClassVals[i]) == "probs") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[,-1])
+        } else if(tolower(ClassVals[i]) == "label") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[,1])
+          data.table::setnames(Scores, "predict","Class")
+        } else if(tolower(ClassVals[i]) == "all") {
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features))
+          data.table::setnames(Scores, "predict","Class")
+        } else {
+          stop("ClassVals can only be Probs, Label, or All")
+        }
+      } else if(tolower(TargetType[i]) == "regression") {
+        Scores <- data.table::as.data.table(
+          h2o::h2o.predict(model,
+                           newdata = features)[,1])
+      } else if(tolower(TargetType[i]) == c("text")) {
+        Scores <- data.table::as.data.table(
+          h2o::h2o.predict(model,
+                           newdata = features)[,1])
+      } else if(tolower(TargetType[i]) == "multioutcome") {
+        Counts <- data.table::as.data.table(
+          h2o::h2o.predict(model,
+                           newdata = features)[1,1])
+        Temp <- data.table::as.data.table(
+          h2o::h2o.predict(model,
+                           newdata = features))
+        Vals <- names(sort(Temp[1,2:ncol(temp)], decreasing = TRUE))
+        Scores <- paste0(Vals, collapse = " ")
+      } else {
+        stop("TargetType is not Multinomial,
+          Classification, Regression, or Text")
+      }
+    } else {
+      stop("ScoreMethod must be Standard or Mojo")
+    }
+    if(H20ShutDown[i]) {
+      h2o::h2o.shutdown(prompt = FALSE)
+    }
+    ScoresList[[i]] <- Scores
+  }
+  return(ScoresList)
 }
 
 #' For NLP work
