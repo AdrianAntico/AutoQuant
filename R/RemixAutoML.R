@@ -6291,19 +6291,15 @@ AutoH20Modeler <- function(Construct,
   rm(distMatch)
 
   # Set up grid_tuned_paths.R file
-  if (file.exists(paste0(model_path, "/grid_tuned_paths.Rdata"))) {
-    load(paste0(model_path, "/grid_tuned_paths.Rdata"))
-  } else {
-    grid_tuned_paths <-
-      data.table::data.table(
-        Model     = rep("a", nrow(Construct)),
-        Path      = rep("a", nrow(Construct)),
-        GT_Metric = rep(1234.5678, nrow(Construct)),
-        BL_Metric = rep(1234.5678, nrow(Construct)),
-        BinThresh = rep(1234.5678, nrow(Construct)),
-        PathJar   = rep("a", nrow(Construct))
-      )
-  }
+  grid_tuned_paths <-
+    data.table::data.table(
+      Model     = rep("a", nrow(Construct)),
+      Path      = rep("a", nrow(Construct)),
+      GT_Metric = rep(1234.5678, nrow(Construct)),
+      BL_Metric = rep(1234.5678, nrow(Construct)),
+      BinThresh = rep(1234.5678, nrow(Construct)),
+      PathJar   = rep("a", nrow(Construct))
+    )
 
   ######################################
   # Loop through model building
