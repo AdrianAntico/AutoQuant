@@ -8271,7 +8271,7 @@ AutoH20Scoring <- function(Features     = data,
   }
 
   # Match TargetType with grid_tuned_paths
-  if(ncol(grid_tuned_paths) > 3 & any(tolower(TargetType) == "text")) {
+  if(ncol(grid_tuned_paths) > 3 & tolower(TargetType) == "text") {
     stop("TargetType or grid_tuned_paths are not correct")
   }
 
