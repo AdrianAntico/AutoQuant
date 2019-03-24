@@ -61,5 +61,4 @@
 24. percRank - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
 25. multiplot - Useful for displaying multiple plots in a single pane.
 26. PrintObjectsSize - print out objects and their sizes that are in the envrionment
-27. NumWeekdays - vectorized function to count up the number of weekdays in a range of dates
-28. WordFreq - creates a word frequency data.table and a word cloud
+27. WordFreq - creates a word frequency data.table and a word cloud
