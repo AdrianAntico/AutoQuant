@@ -59,8 +59,8 @@ data <- Word2VecModel(data,
                       Epochs        = 25,
                       StopWords     = NULL,
                       SaveModel     = "standard",
-                      Threads       = 4,
-                      MaxMemory     = "14G")
+                      Threads       = 6,
+                      MaxMemory     = "28G")
 }
 }
 \seealso{
