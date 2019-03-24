@@ -8567,7 +8567,7 @@ AutoWord2VecModeler <- function(data,
         N <- length(stringCol)
         StoreFile <-
           data.table::data.table(ModelName = rep("a", N), Path = c("aa", N), Jar = c("aa", N))
-        i <- as.integer(0)
+        i <- 0
 
         # Loop through all the string columns
         for (string in stringCol) {
