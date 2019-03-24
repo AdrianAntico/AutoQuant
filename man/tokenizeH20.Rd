@@ -14,9 +14,9 @@ This function tokenizes data
 }
 \seealso{
 Other Misc: \code{\link{AutoH20TextPrepScoring}},
-  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{WordFreq}}, \code{\link{multiplot}},
+  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{multiplot}},
   \code{\link{percRank}}, \code{\link{tempDatesFun}}
 }
 \author{

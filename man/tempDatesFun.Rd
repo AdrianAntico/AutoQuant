@@ -23,9 +23,9 @@ Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "\%m/\%d/\%Y")]
 }
 \seealso{
 Other Misc: \code{\link{AutoH20TextPrepScoring}},
-  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{WordFreq}}, \code{\link{multiplot}},
+  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{multiplot}},
   \code{\link{percRank}}, \code{\link{tokenizeH20}}
 }
 \author{
