@@ -8551,15 +8551,15 @@ Word2VecModel <- function(data,
                           model_path    = getwd(),
                           ModelID       = c("Text_Col1",
                                             "Text_Col2"),
-                          vects         = 5,
+                          vects         = 100,
                           SaveStopWords = FALSE,
                           MinWords      = 1,
-                          WindowSize    = 1,
+                          WindowSize    = 12,
                           Epochs        = 25,
                           StopWords     = NULL,
                           SaveModel     = "standard",
-                          Threads       = 4,
-                          MaxMemory     = "14G") {
+                          Threads       = 6,
+                          MaxMemory     = "28G") {
   # Ensure data is a data.table
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
@@ -8567,7 +8567,7 @@ Word2VecModel <- function(data,
   N <- length(stringCol)
   StoreFile <-
     data.table::data.table(ModelName = rep("a", N), Path = c("aa", N), Jar = c("aa", N))
-  i <- 0
+  i <- as.integer(0)
 
   # Loop through all the string columns
   for (string in stringCol) {
