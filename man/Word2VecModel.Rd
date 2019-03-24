@@ -6,10 +6,10 @@
 \usage{
 Word2VecModel(data, stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = getwd(),
-  ModelID = c("Text_Col1", "Text_Col2"), vects = 5,
-  SaveStopWords = FALSE, MinWords = 1, WindowSize = 1, Epochs = 25,
-  StopWords = NULL, SaveModel = "standard", Threads = 4,
-  MaxMemory = "14G")
+  ModelID = c("Text_Col1", "Text_Col2"), vects = 100,
+  SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
+  Epochs = 25, StopWords = NULL, SaveModel = "standard",
+  Threads = 6, MaxMemory = "28G")
 }
 \arguments{
 \item{data}{Source data table to merge vects onto}
