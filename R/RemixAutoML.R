@@ -8487,7 +8487,7 @@ AutoH20Scoring <- function(Features     = data,
 #' For NLP work
 #'
 #' This function tokenizes data
-#' @author Adrian Antico at RemixInstitute.com
+#' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
 #' @import data.table
@@ -8544,136 +8544,137 @@ tokenizeH20 <- function(data) {
 #'                       MaxMemory     = "14G")
 #'}
 #' @export
-Word2VecModel <- function(data,
-                          stringCol     = c("Text_Col1",
-                                            "Text_Col2"),
-                          KeepStringCol = FALSE,
-                          model_path    = getwd(),
-                          ModelID       = c("Text_Col1",
-                                            "Text_Col2"),
-                          vects         = 100,
-                          SaveStopWords = FALSE,
-                          MinWords      = 1,
-                          WindowSize    = 12,
-                          Epochs        = 25,
-                          StopWords     = NULL,
-                          SaveModel     = "standard",
-                          Threads       = 6,
-                          MaxMemory     = "28G") {
-  # Ensure data is a data.table
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+AutoWord2VecModeler <- function(data,
+                                stringCol     = c("Text_Col1",
+                                                  "Text_Col2"),
+                                KeepStringCol = FALSE,
+                                model_path    = getwd(),
+                                ModelID       = c("Text_Col1",
+                                                  "Text_Col2"),
+                                vects         = 100,
+                                SaveStopWords = FALSE,
+                                MinWords      = 1,
+                                WindowSize    = 12,
+                                Epochs        = 25,
+                                StopWords     = NULL,
+                                SaveModel     = "standard",
+                                Threads       = 6,
+                                MaxMemory     = "28G") {
+        # Ensure data is a data.table
+        if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
-  # Create storage file
-  N <- length(stringCol)
-  StoreFile <-
-    data.table::data.table(ModelName = rep("a", N), Path = c("aa", N), Jar = c("aa", N))
-  i <- as.integer(0)
+        # Create storage file
+        N <- length(stringCol)
+        StoreFile <-
+          data.table::data.table(ModelName = rep("a", N), Path = c("aa", N), Jar = c("aa", N))
+        i <- as.integer(0)
 
-  # Loop through all the string columns
-  for (string in stringCol) {
+        # Loop through all the string columns
+        for (string in stringCol) {
 
-    # Ensure stringCol is character (not factor)
-    if(!is.character(data[[eval(string)]])) {
-      data[, eval(string) := as.character(get(string))]
-    }
-    # word2vec time
-    i <- i + 1
-    Sys.sleep(10)
-    data[, eval(string) := as.character(get(string))]
-    h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
+          # Ensure stringCol is character (not factor)
+          if(!is.character(data[[eval(string)]])) {
+            data[, eval(string) := as.character(get(string))]
+          }
 
-    # It is important to remove "\n" --
-    data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
-    data[, ':=' (TEMP =
-                   gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
-                        "","",TEMP))]
-    data2 <- data[, "TEMP"]
+          # word2vec time
+          i <- as.integer(i + 1)
+          Sys.sleep(10)
+          data[, eval(string) := as.character(get(string))]
+          h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
-    # Tokenize
-    tokenized_words <- tokenizeH20(data2)
+          # It is important to remove "\n" --
+          data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
+          data[, ':=' (TEMP =
+                         gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
+                              "","",TEMP))]
+          data2 <- data[, "TEMP"]
 
-    # Build model
-    w2v.model <- h2o::h2o.word2vec(
-      tokenized_words,
-      model_id           = ModelID[i],
-      word_model         = "SkipGram",
-      norm_model         = "HSM",
-      vec_size           = vects,
-      min_word_freq      = MinWords,
-      window_size        = WindowSize,
-      init_learning_rate = 0.025,
-      sent_sample_rate   = 0.05,
-      epochs             = Epochs
-    )
+          # Tokenize
+          tokenized_words <- tokenizeH20(data2)
 
-    # Save model
-    if (tolower(SaveModel) == "standard") {
-      w2vPath <-
-        h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 1L,
-                      value = ModelID[i])
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 2L,
-                      value = w2vPath)
-      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
-    } else {
-      w2vPath <-
-        h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
-      h2o::h2o.download_mojo(
-        model = w2v.model,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = ModelID[i]
-      )
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 1L,
-                      value = ModelID[i])
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 2L,
-                      value = w2vPath)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 3L,
-                      value = paste0(model_path, "\\", ModelID[i]))
-      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
-    }
+          # Build model
+          w2v.model <- h2o::h2o.word2vec(
+            tokenized_words,
+            model_id           = ModelID[i],
+            word_model         = "SkipGram",
+            norm_model         = "HSM",
+            vec_size           = vects,
+            min_word_freq      = MinWords,
+            window_size        = WindowSize,
+            init_learning_rate = 0.025,
+            sent_sample_rate   = 0.05,
+            epochs             = Epochs
+          )
 
-    h2o::h2o.rm('data3')
+          # Save model
+          if (tolower(SaveModel) == "standard") {
+            w2vPath <-
+              h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+            data.table::set(StoreFile,
+                            i = i,
+                            j = 1L,
+                            value = ModelID[i])
+            data.table::set(StoreFile,
+                            i = i,
+                            j = 2L,
+                            value = w2vPath)
+            save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+          } else {
+            w2vPath <-
+              h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+            h2o::h2o.download_mojo(
+              model = w2v.model,
+              path = model_path,
+              get_genmodel_jar = TRUE,
+              genmodel_path = model_path,
+              genmodel_name = ModelID[i]
+            )
+            data.table::set(StoreFile,
+                            i = i,
+                            j = 1L,
+                            value = ModelID[i])
+            data.table::set(StoreFile,
+                            i = i,
+                            j = 2L,
+                            value = w2vPath)
+            data.table::set(StoreFile,
+                            i = i,
+                            j = 3L,
+                            value = paste0(model_path, "\\", ModelID[i]))
+            save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+          }
 
-    # Score model
-    all_vecs <-
-      h2o::h2o.transform(w2v.model, tokenized_words,
-                         aggregate_method = "AVERAGE")
+          h2o::h2o.rm('data3')
 
-    # Convert to data.table
-    all_vecs <- data.table::as.data.table(all_vecs)
-    data <- data.table::data.table(cbind(data, all_vecs))
+          # Score model
+          all_vecs <-
+            h2o::h2o.transform(w2v.model, tokenized_words,
+                               aggregate_method = "AVERAGE")
 
-    # Remove string cols
-    data[, ':=' (TEMP = NULL)]
-    if (!KeepStringCol) {
-      data[, eval(string) := NULL]
-    }
+          # Convert to data.table
+          all_vecs <- data.table::as.data.table(all_vecs)
+          data <- data.table::data.table(cbind(data, all_vecs))
 
-    # Replace Colnames
-    cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
-    for (c in cols) {
-      data[, paste0(string, "_", c) := get(c)]
-      data[, eval(c) := NULL]
-    }
+          # Remove string cols
+          data[, ':=' (TEMP = NULL)]
+          if (!KeepStringCol) {
+            data[, eval(string) := NULL]
+          }
 
-    # Final Prep
-    h2o::h2o.rm(w2v.model)
-    h2o::h2o.shutdown(prompt = FALSE)
-  }
-  return(data)
-}
+          # Replace Colnames
+          cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
+          for (c in cols) {
+            data[, paste0(string, "_", c) := get(c)]
+            data[, eval(c) := NULL]
+          }
+
+          # Final Prep
+          h2o::h2o.rm(w2v.model)
+          h2o::h2o.shutdown(prompt = FALSE)
+        }
+        return(data)
+      }
 
 #' Automated Word Frequency and Word Cloud Creation
 #'
@@ -8699,7 +8700,7 @@ Word2VecModel <- function(data,
 #'                  StopWords = c("bla1", "bla2")
 #'}
 #' @export
-WordFreq <- function(data,
+AutoWordFreq <- function(data,
                      TextColName = "DESCR",
                      ClusterCol = "ClusterAllNoTarget",
                      ClusterID = 0,
@@ -8782,7 +8783,7 @@ WordFreq <- function(data,
   return(d)
 }
 
-                            #' AutoH20TextPrepScoring is for NLP scoring
+#' AutoH20TextPrepScoring is for NLP scoring
 #'
 #' This function returns prepared tokenized data for H20 Word2VecModeler scoring
 #' @author Adrian Antico
