@@ -11,6 +11,8 @@ AutoH20Scoring(Features = data, GridTuneRow = c(1:3),
   FilesPath = getwd(), H20ShutDown = rep(FALSE, 3))
 }
 \arguments{
+\item{Features}{This is a data.table of features for scoring.}
+
 \item{GridTuneRow}{Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score}
 
 \item{ScoreMethod}{"Standard" or "Mojo"}
@@ -120,6 +122,6 @@ AutoH20Scoring(Features     = data,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
-  \code{\link{AutoTS}}, \code{\link{nlsModelFit}}
+  \code{\link{AutoNLS}}, \code{\link{AutoTS}}
 }
 \concept{Supervised Learning}
