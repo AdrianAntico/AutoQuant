@@ -470,9 +470,9 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
   return(list(z, fit, resid))
 }
 
-#' GLRM_KMeans_Col Automated row clustering for mixed column types
+#' AutoKMeans Automated row clustering for mixed column types
 #'
-#' GLRM_KMeans_Col adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
+#' AutoKMeans adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
@@ -494,19 +494,19 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @examples
 #' \dontrun{
 #' data <- data.table::as.data.table(iris)
-#' data <- GLRM_KMeans_Col(data,
-#'                         GridTuneGLRM = TRUE,
-#'                         GridTuneKMeans = TRUE,
-#'                         nthreads = 8,
-#'                         MaxMem = "28G",
-#'                         glrmCols = 1:(ncol(data)-1),
-#'                         IgnoreConstCols = TRUE,
-#'                         glrmFactors = 2,
-#'                         Loss = "Absolute",
-#'                         glrmMaxIters = 1000,
-#'                         SVDMethod = "Randomized",
-#'                         MaxRunTimeSecs = 3600,
-#'                         KMeansK = 5)
+#' data <- AutoKMeans(data,
+#'                    GridTuneGLRM = TRUE,
+#'                    GridTuneKMeans = TRUE,
+#'                    nthreads = 8,
+#'                    MaxMem = "28G",
+#'                    glrmCols = 1:(ncol(data)-1),
+#'                    IgnoreConstCols = TRUE,
+#'                    glrmFactors = 2,
+#'                    Loss = "Absolute",
+#'                    glrmMaxIters = 1000,
+#'                    SVDMethod = "Randomized",
+#'                    MaxRunTimeSecs = 3600,
+#'                    KMeansK = 5)
 #' unique(data[["Species"]])
 #' unique(data[["ClusterID"]])
 #' temp <- data[, mean(ClusterID), by = "Species"]
@@ -522,20 +522,20 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' }
 #' @return Original data.table with added column with cluster number identifier
 #' @export
-GLRM_KMeans_Col <- function(data,
-                            GridTuneGLRM    = TRUE,
-                            GridTuneKMeans  = TRUE,
-                            nthreads        = 4,
-                            MaxMem          = "14G",
-                            glrmCols        = 3:ncol(data),
-                            IgnoreConstCols = TRUE,
-                            glrmFactors     = 5,
-                            Loss            = "Absolute",
-                            glrmMaxIters    = 1000,
-                            SVDMethod       = "Randomized",
-                            MaxRunTimeSecs  = 3600,
-                            KMeansK         = 50,
-                            KMeansMetric    = "totss") {
+AutoKMeans <- function(data,
+                       GridTuneGLRM    = TRUE,
+                       GridTuneKMeans  = TRUE,
+                       nthreads        = 4,
+                       MaxMem          = "14G",
+                       glrmCols        = 3:ncol(data),
+                       IgnoreConstCols = TRUE,
+                       glrmFactors     = 5,
+                       Loss            = "Absolute",
+                       glrmMaxIters    = 1000,
+                       SVDMethod       = "Randomized",
+                       MaxRunTimeSecs  = 3600,
+                       KMeansK         = 50,
+                       KMeansMetric    = "totss") {
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -2424,7 +2424,7 @@ threshOptim <- function(data,
   return(list(thresh, results))
 }
 
-#' nlsModelFit is a function for automatically building nls models
+#' AutoNLS is a function for automatically building nls models
 #'
 #' This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 #'
@@ -2452,7 +2452,7 @@ threshOptim <- function(data,
 #'
 #' # Merge and Model data
 #' data2 <- merge(data1,
-#'                nlsModelFit(data = data, y = "Target", x = "Variable", monotonic = FALSE),
+#'                AutoNLS(data = data, y = "Target", x = "Variable", monotonic = FALSE),
 #'                by = "Variable",
 #'                all = TRUE)
 #'
@@ -2464,7 +2464,7 @@ threshOptim <- function(data,
 #'   ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
 #' @return A data table with your original column replaced by the nls model predictions
 #' @export
-nlsModelFit <- function(data, y, x, monotonic = TRUE) {
+AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Begin
   DATA <- data
   nls_collection <-
@@ -8150,7 +8150,9 @@ AutoH20Modeler <- function(Construct,
 #'
 #' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 #'
+#' @author Adrian Antico
 #' @family Supervised Learning
+#' @param Features This is a data.table of features for scoring.
 #' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score
 #' @param ScoreMethod "Standard" or "Mojo"
 #' @param TargetType "Regression", "Classification", "Multinomial", "Text", "MultiOutcome". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
