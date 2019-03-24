@@ -121,7 +121,13 @@ utils::globalVariables(
     "MAPE",
     "ID",
     "Forecast_PROPHET",
-    "percentage"
+    "percentage",
+    "data",
+    "FilePath",
+    "grid_tuned_paths",
+    "StoreFile",
+    "temp",
+    "Path"
   )
 )
 
