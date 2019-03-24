@@ -124,4 +124,7 @@ AutoH20Scoring(Features     = data,
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
   \code{\link{AutoNLS}}, \code{\link{AutoTS}}
 }
+\author{
+Adrian Antico
+}
 \concept{Supervised Learning}
