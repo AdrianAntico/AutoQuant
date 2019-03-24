@@ -62,3 +62,4 @@
 25. multiplot - Useful for displaying multiple plots in a single pane.
 26. PrintObjectsSize - print out objects and their sizes that are in the envrionment
 27. WordFreq - creates a word frequency data.table and a word cloud
+28. AutoH20TextPrepScoring - prepares your data for scoring based on models built with Word2VecModel
