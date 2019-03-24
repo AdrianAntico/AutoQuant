@@ -802,7 +802,7 @@ AutoTS <- function(data,
               frequency = freq)
 
   # Begin model building
-  if (!("ARFIMA" %chin% toupper(SkipModels))) {
+  if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
     print("ARFIMA FITTING")
@@ -914,7 +914,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("ARIMA" %chin% toupper(SkipModels))) {
+  if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
     print("ARIMA FITTING")
@@ -1034,7 +1034,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("ETS" %chin% toupper(SkipModels))) {
+  if (!("ETS" %in% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
     print("ETS FITTING")
@@ -1123,7 +1123,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("TBATS" %chin% toupper(SkipModels))) {
+  if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
     print("TBATS FITTING")
@@ -1196,7 +1196,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("TSLM" %chin% toupper(SkipModels))) {
+  if (!("TSLM" %in% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
     print("TSLM FITTING")
@@ -1247,7 +1247,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("NNET" %chin% toupper(SkipModels))) {
+  if (!("NNET" %in% toupper(SkipModels))) {
     # Neural Network-------------
     # 1)
     print("NNet FITTING")
@@ -1361,7 +1361,7 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("PROPHET" %chin% toupper(SkipModels))) {
+  if (!("PROPHET" %in% toupper(SkipModels))) {
     # Prophet Model-------------
     print("PROPHET FITTING")
     if (TimeUnit == "hour") {
@@ -2020,7 +2020,7 @@ ModelDataPrep <- function(data,
     for (j in base::seq_along(data)) {
       if (base::is.factor(data[[j]])) {
         data.table::set(data,
-                        base::which(!(data[[j]] %chin% base::levels(data[[j]]))),
+                        base::which(!(data[[j]] %in% base::levels(data[[j]]))),
                         j,
                         MissFactor)
       } else {
@@ -5716,14 +5716,14 @@ AutoH20Modeler <- function(Construct,
   for (i in as.integer(seq_len(nrow(Construct)))) {
     # Algorithm specific
     if (tolower(
-      Construct[i, 6][[1]]) %chin% c("gbm",
+      Construct[i, 6][[1]]) %in% c("gbm",
                                    "randomforest",
                                    "automl",
                                    "xgboost",
                                    "lightgbm")) {
       # GBM and RF loss functions existence
       if (!(
-        tolower(Construct[i, 3][[1]]) %chin% c(
+        tolower(Construct[i, 3][[1]]) %in% c(
           "auto",
           "deviance",
           "mse",
@@ -5797,7 +5797,7 @@ AutoH20Modeler <- function(Construct,
 
       # GBM and RF distributions
       if (!(
-        tolower(Construct[i, 2][[1]]) %chin% c(
+        tolower(Construct[i, 2][[1]]) %in% c(
           "auto",
           "bernoulli",
           "quasibinomial",
@@ -5868,10 +5868,10 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for non-regression
-      if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial", "binomial",
+      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial",
                                                "bernoulli", "multinomial") &&
           !(
-            tolower(Construct[i, 3][[1]]) %chin% c(
+            tolower(Construct[i, 3][[1]]) %in% c(
               "auc",
               "logloss",
               "auto",
@@ -5901,14 +5901,14 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for regression
-      if (tolower(Construct[i, 2][[1]]) %chin% c("gaussian",
+      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
                                                "gamma",
                                                "tweedie",
                                                "laplace",
                                                "quantile",
                                                "huber") &&
-          !(tolower(Construct[i, 3][[1]]) %chin% c("auto", "mse", "rmse",
+          !(tolower(Construct[i, 3][[1]]) %in% c("auto", "mse", "rmse",
                                                  "mae", "rmsle"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
@@ -5930,7 +5930,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Quantile Regression with GBM
-      if (tolower(Construct[i, 2][[1]]) %chin% c("quantile") &&
+      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
            Construct[i, 4][[1]] < 0 ||
            !is.numeric(Construct[i, 4][[1]]))) {
@@ -6017,7 +6017,7 @@ AutoH20Modeler <- function(Construct,
     } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
       # Deeplearning loss functions
       if (!(
-        tolower(Construct[i, 3][[1]]) %chin% c(
+        tolower(Construct[i, 3][[1]]) %in% c(
           "automatic",
           "crossentropy",
           "quadratic",
@@ -6072,7 +6072,7 @@ AutoH20Modeler <- function(Construct,
 
       # Deeplearning distributions
       if (!(
-        tolower(Construct[i, 2][[1]]) %chin% c(
+        tolower(Construct[i, 2][[1]]) %in% c(
           "auto",
           "bernoulli",
           "multinomial",
@@ -6140,9 +6140,9 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for non-regression
-      if (tolower(Construct[i,2][[1]]) %chin% c("bernoulli",
+      if (tolower(Construct[i,2][[1]]) %in% c("bernoulli",
                                               "multinomial") &&
-          !(tolower(Construct[i,3][[1]]) %chin% c("automatic",
+          !(tolower(Construct[i,3][[1]]) %in% c("automatic",
                                                 "crossentropy"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
@@ -6164,7 +6164,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Distribution and loss combos for regression
-      if (tolower(Construct[i, 2][[1]]) %chin% c("gaussian",
+      if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
                                                "gamma",
                                                "tweedie",
@@ -6172,7 +6172,7 @@ AutoH20Modeler <- function(Construct,
                                                "quantile",
                                                "huber") &&
           !(
-            tolower(Construct[i, 3][[1]]) %chin% c(
+            tolower(Construct[i, 3][[1]]) %in% c(
               "automatic",
               "quadratic",
               "huber",
@@ -6224,7 +6224,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Quantile Regression with DL
-      if (tolower(Construct[i, 2][[1]]) %chin% c("quantile") &&
+      if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
            Construct[i, 4][[1]] < 0 ||
            !is.numeric(Construct[i, 4][[1]]))) {
@@ -6318,11 +6318,11 @@ AutoH20Modeler <- function(Construct,
         StoppingMetric <- "auc"
       }
     } else {
-      if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic",
+      if (tolower(Construct[i, 3][[1]]) %in% c("quadratic",
                                                "huber")) {
         StoppingMetric <- "mse"
       } else if (tolower(
-        Construct[i, 3][[1]]) %chin% c("absolute",
+        Construct[i, 3][[1]]) %in% c("absolute",
                                      "quantile")) {
         StoppingMetric <- "mae"
       } else {
@@ -6468,7 +6468,7 @@ AutoH20Modeler <- function(Construct,
     if (Construct[i, 11][[1]]) {
       if (tolower(Construct[i, 6][[1]]) == "gbm") {
         if (tolower(
-          Construct[i, 3][[1]] %chin% c(
+          Construct[i, 3][[1]] %in% c(
             "auc",
             "logloss",
             "auto",
@@ -6516,7 +6516,7 @@ AutoH20Modeler <- function(Construct,
         }
 
       } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-        if (tolower(Construct[i, 3][[1]] %chin% c("automatic",
+        if (tolower(Construct[i, 3][[1]] %in% c("automatic",
                                                 "crossentropy"))) {
           hyper_params <-
             list(
@@ -6603,7 +6603,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
         if (tolower(
-          Construct[i, 3][[1]] %chin% c(
+          Construct[i, 3][[1]] %in% c(
             "auc",
             "logloss",
             "auto",
@@ -6653,7 +6653,7 @@ AutoH20Modeler <- function(Construct,
         print("automl is preset with tuning parameters")
       } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
         if (tolower(
-          Construct[i, 3][[1]] %chin% c(
+          Construct[i, 3][[1]] %in% c(
             "auc",
             "logloss",
             "auto",
@@ -6693,7 +6693,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
         if (tolower(
-          Construct[i, 3][[1]] %chin% c(
+          Construct[i, 3][[1]] %in% c(
             "auc",
             "logloss",
             "auto",
@@ -6893,7 +6893,7 @@ AutoH20Modeler <- function(Construct,
       # Store all models built sorted by metric
       if (tolower(Construct[i, 6][[1]]) == "automl") {
         Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
-      } else if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli",
                                                       "multinomial")) {
@@ -6931,7 +6931,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         cc <- h2o::h2o.mae(h2o::h2o.performance(best_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic", "huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
         cc <- h2o::h2o.mse(h2o::h2o.performance(best_model, valid = TRUE))
       } else {
         cc <-
@@ -7055,7 +7055,7 @@ AutoH20Modeler <- function(Construct,
         }
       } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
         dd <- h2o::h2o.mae(h2o::h2o.performance(bl_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %chin% c("quadratic", "huber")) {
+      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
         dd <- h2o::h2o.mse(h2o::h2o.performance(bl_model, valid = TRUE))
       } else {
         dd <-
@@ -7176,7 +7176,7 @@ AutoH20Modeler <- function(Construct,
 
     if (Construct[i, 11][[1]] == TRUE &
         tolower(Construct[i, 6][[1]]) != "automl") {
-      if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+      if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                  "binomial",
                                                  "bernoulli")) |
           tolower(Construct[i, 3][[1]]) == "logloss") {
@@ -7652,7 +7652,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Store threshold for binary classification
-      if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                "binomial",
                                                "bernoulli")) {
         store_results <-
@@ -7757,7 +7757,7 @@ AutoH20Modeler <- function(Construct,
     col <- Construct[i, 1][[1]]
     calibration <-
       data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
-    if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+    if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                              "binomial",
                                              "bernoulli")) {
       calibration[, eval(col) := as.numeric(as.character(get(col)))]
@@ -7828,7 +7828,7 @@ AutoH20Modeler <- function(Construct,
                                "/CalBP_",
                                Construct[i, 5][[1]],
                                ".png"))
-      } else if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli")) {
         out1 <- EvalPlot(
@@ -7897,7 +7897,7 @@ AutoH20Modeler <- function(Construct,
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
         for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %chin% lev, 1, 0)]
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -7942,7 +7942,7 @@ AutoH20Modeler <- function(Construct,
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
         for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %chin% lev, 1, 0)]
+          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
         }
         RemoveCols <- names(xx)[1:2]
         KeepCols   <- names(xx)[3:length(names(xx))]
@@ -7989,7 +7989,7 @@ AutoH20Modeler <- function(Construct,
       calibr <- list()
       boxplotr <- list()
       j <- 0
-      if (!(tolower(Construct[i, 2][[1]]) %chin% c("multinomial"))) {
+      if (!(tolower(Construct[i, 2][[1]]) %in% c("multinomial"))) {
         for (col in cols) {
           j <- j + 1
           if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -8029,7 +8029,7 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Add threshold line to charts
-          if (tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+          if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                    "binomial",
                                                    "bernoulli")) {
             if (exists("Thresh")) {
@@ -8041,7 +8041,7 @@ AutoH20Modeler <- function(Construct,
           }
 
           # Expected value regression
-          if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+          if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
                                                      "bernoulli"))) {
             boxplotr[[j]] <- tryCatch({
@@ -8061,7 +8061,7 @@ AutoH20Modeler <- function(Construct,
         }
 
         # Save output
-        if (!(tolower(Construct[i, 2][[1]]) %chin% c("quasibinomial",
+        if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                    "binomial",
                                                    "bernoulli"))) {
           save(
@@ -8257,7 +8257,7 @@ AutoH20Scoring <- function(Features     = data,
                            H20ShutDown  = rep(FALSE,3)) {
 
   # Import grid_tuned_paths or StoreFile
-  if(any(tolower(TargetType) %chin% c("regression",
+  if(any(tolower(TargetType) %in% c("regression",
                                       "classification",
                                       "multinomial",
                                       "multioutcome"))) {
