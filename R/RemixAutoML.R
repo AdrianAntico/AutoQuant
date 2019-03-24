@@ -8781,3 +8781,27 @@ WordFreq <- function(data,
   # Return
   return(d)
 }
+
+                            #' AutoH20TextPrepScoring is for NLP scoring
+#'
+#' This function returns prepared tokenized data for H20 Word2VecModeler scoring
+#' @author Adrian Antico
+#' @family Misc
+#' @param data The text data
+#' @import data.table
+#' @export
+AutoH20TextPrepScoring <- function(data) {
+  data[, eval(string) := as.character(get(string))]
+  h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
+
+  # It is important to remove "\n" --
+  data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
+  data[, ':=' (TEMP =
+                 gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
+                      "","",TEMP))]
+  data2 <- data[, "TEMP"]
+
+  # Tokenize
+  tokenized_words <- tokenizeH20(data2)
+  return(tokenized_words)
+}
