@@ -3250,7 +3250,7 @@ GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i], "_LAG_",
-                       lags[l], "_", t) %chin% SkipCols)) {
+                       lags[l], "_", t) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_", lags[l], "_", t) := data.table::shift(
                             get(t), n = lags[l], type = "lag"),
@@ -3267,7 +3267,7 @@ GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             data[, paste0(groupingVars[i], "TEMP",
                           lags[l]) := data.table::shift(get(sortDateName),
                                                         n = lags[l],
@@ -3279,7 +3279,7 @@ GDL_Feature_Engineering <- function(data,
         # Difference the lag dates
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
-            if (!(paste0(timeDiffTarget, lags[l]) %chin% SkipCols) & l == 1) {
+            if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
               data[, paste0(groupingVars[i],
                             timeDiffTarget, lags[l]) := as.numeric(difftime(
                               get(sortDateName),
@@ -3294,7 +3294,7 @@ GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i], timeDiffTarget,
-                           lags[l]) %chin% SkipCols)) {
+                           lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(
                                 difftime(get(
@@ -3315,7 +3315,7 @@ GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget, lags[l]) := as.numeric(difftime(
                                 get(sortDateName),
@@ -3331,7 +3331,7 @@ GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3385,7 +3385,7 @@ GDL_Feature_Engineering <- function(data,
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
             if (!(paste0(groupingVars[i], statsNames[k], "_",
-                         periods[j], "_", t) %chin% SkipCols)) {
+                         periods[j], "_", t) %in% SkipCols)) {
               data[, paste0(groupingVars[i],
                             statsNames[k], "_",
                             periods[j], "_", t) := zoo::rollapply(
@@ -3422,7 +3422,7 @@ GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %chin% levels(data[[j]]))),
+                          which(!(data[[j]] %in% levels(data[[j]]))),
                           j, "0")
         } else {
           data.table::set(data,
@@ -3447,7 +3447,7 @@ GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
           data[, paste0("LAG_",
                         lags[l],
                         "_",
@@ -3466,7 +3466,7 @@ GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
           data[, paste0("TEMP",
                         lags[l]) := data.table::shift(get(
                           sortDateName),
@@ -3478,7 +3478,7 @@ GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
             data[, paste0(timeDiffTarget,
                           "_",
@@ -3514,7 +3514,7 @@ GDL_Feature_Engineering <- function(data,
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %chin% SkipCols)) {
+                         lags[l]) %in% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(
@@ -3528,7 +3528,7 @@ GDL_Feature_Engineering <- function(data,
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(
@@ -3582,7 +3582,7 @@ GDL_Feature_Engineering <- function(data,
           if (!(paste0(statsNames[k],
                        "_",
                        periods[j],
-                       "_", t) %chin% SkipCols)) {
+                       "_", t) %in% SkipCols)) {
             data[, paste0(statsNames[k],
                           "_",
                           periods[j],
@@ -3622,7 +3622,7 @@ GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %chin% levels(data[[j]]))),
+                          which(!(data[[j]] %in% levels(data[[j]]))),
                           j, "0")
         } else {
           data.table::set(data,
@@ -3745,7 +3745,7 @@ DT_GDL_Feature_Engineering <- function(data,
                        "_LAG_",
                        lags[l],
                        "_",
-                       t) %chin% SkipCols)) {
+                       t) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_",
                           lags[l],
@@ -3766,7 +3766,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "TEMP",
                           lags[l]) := data.table::shift(get(
@@ -3781,7 +3781,7 @@ DT_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %chin% SkipCols) & l == 1) {
+                         lags[l]) %in% SkipCols) & l == 1) {
               data[, paste0(groupingVars[i],
                             timeDiffTarget,
                             lags[l]) := as.numeric(difftime(
@@ -3798,7 +3798,7 @@ DT_GDL_Feature_Engineering <- function(data,
             } else {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %chin% SkipCols)) {
+                           lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3820,7 +3820,7 @@ DT_GDL_Feature_Engineering <- function(data,
             if (l == 1) {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %chin% SkipCols)) {
+                           lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(
@@ -3838,7 +3838,7 @@ DT_GDL_Feature_Engineering <- function(data,
             } else {
               if (!(paste0(groupingVars[i],
                            timeDiffTarget,
-                           lags[l]) %chin% SkipCols)) {
+                           lags[l]) %in% SkipCols)) {
                 data[, paste0(groupingVars[i],
                               timeDiffTarget,
                               lags[l]) := as.numeric(difftime(get(
@@ -3901,7 +3901,7 @@ DT_GDL_Feature_Engineering <- function(data,
             if (!(paste0(groupingVars[i],
                          statsNames[k],
                          "_",
-                         periods[j], "_", t) %chin% SkipCols)) {
+                         periods[j], "_", t) %in% SkipCols)) {
               data[, paste0(groupingVars[i],
                             statsNames[k],
                             "_",
@@ -3948,7 +3948,7 @@ DT_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %chin% levels(data[[j]]))), j, "0")
+                          which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
                           which(is.na(data[[j]])), j, -1)
@@ -3973,7 +3973,7 @@ DT_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
           data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
             get(t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
@@ -3988,7 +3988,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
           data[, paste0("TEMP",
                         lags[l]) := data.table::shift(get(
                           sortDateName), n = lags[l], type = "lag")]
@@ -3998,7 +3998,7 @@ DT_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
             data[, paste0(timeDiffTarget,
                           "_",
@@ -4032,7 +4032,7 @@ DT_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
-                         "_", lags[l]) %chin% SkipCols)) {
+                         "_", lags[l]) %in% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_", lags[l]) := as.numeric(difftime(
                               get(sortDateName),
@@ -4047,7 +4047,7 @@ DT_GDL_Feature_Engineering <- function(data,
           } else {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %chin% SkipCols)) {
+                         lags[l]) %in% SkipCols)) {
               data[, paste0(timeDiffTarget,
                             "_",
                             lags[l]) := as.numeric(difftime(get(paste0(
@@ -4100,7 +4100,7 @@ DT_GDL_Feature_Engineering <- function(data,
           if (!(paste0(statsNames[k],
                        "_",
                        periods[j],
-                       "_", t) %chin% SkipCols)) {
+                       "_", t) %in% SkipCols)) {
             data[, paste0(statsNames[k],
                           "_",
                           periods[j],
@@ -4145,7 +4145,7 @@ DT_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
           data.table::set(data,
-                          which(!(data[[j]] %chin% levels(data[[j]]))), j, "0")
+                          which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
                           which(is.na(data[[j]])), j, -1)
@@ -4281,7 +4281,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
-                       "_LAG_", lags[l], "_", t) %chin% SkipCols)) {
+                       "_LAG_", lags[l], "_", t) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "_LAG_",
                               lags[l], "_", t) := data.table::shift(get(
@@ -4299,7 +4299,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "TEMP",
                               lags[l]) := data.table::shift(get(
@@ -4313,7 +4313,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %chin% SkipCols) & l == 1) {
+                         lags[l]) %in% SkipCols) & l == 1) {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
                                 lags[l]) := as.numeric(difftime(
@@ -4329,7 +4329,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4350,7 +4350,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
@@ -4367,7 +4367,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4423,7 +4423,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
             if (!(paste0(groupingVars[i],
                          statsNames[k],
                          "_",
-                         periods[j], "_", t) %chin% SkipCols)) {
+                         periods[j], "_", t) %in% SkipCols)) {
               keep <- c(groupingVars[i], t, AscRowByGroup)
               temp2 <-
                 tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
@@ -4476,7 +4476,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %chin% levels(tempData1[[j]])
+            tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1,
@@ -4506,7 +4506,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
           tempData[, paste0("LAG_",
                             lags[l],
                             "_",
@@ -4524,7 +4524,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
           tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(
             sortDateName), n = lags[l], type = "lag")]
         }
@@ -4533,7 +4533,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
             tempData[, paste0(timeDiffTarget,
                               "_",
@@ -4566,7 +4566,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       } else {
         for (l in seq_along(lags)) {
           if (l == 1) {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(
@@ -4580,7 +4580,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               }
             }
           } else {
-            if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols)) {
+            if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(get(paste0(
@@ -4635,7 +4635,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         for (t in Targets) {
           if (!(paste0(statsNames[k],
                        "_", periods[j],
-                       "_", t) %chin% SkipCols)) {
+                       "_", t) %in% SkipCols)) {
             keep <- c(t, AscRowByGroup)
             temp2 <-
               tempData[get(AscRowByGroup) <=
@@ -4683,7 +4683,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %chin% levels(tempData1[[j]])
+            tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1,
@@ -4831,7 +4831,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
-                       "_LAG_", lags[l], "_", t) %chin% SkipCols)) {
+                       "_LAG_", lags[l], "_", t) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "_LAG_",
                               lags[l], "_", t) := data.table::shift(get(
@@ -4849,7 +4849,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
-          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %chin% SkipCols)) {
+          if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
                               "TEMP",
                               lags[l]) := data.table::shift(get(
@@ -4863,7 +4863,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
-                         lags[l]) %chin% SkipCols) & l == 1) {
+                         lags[l]) %in% SkipCols) & l == 1) {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
                                 lags[l]) := as.numeric(difftime(
@@ -4879,7 +4879,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4905,7 +4905,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           for (l in seq_along(lags)) {
             if (l == 1) {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(
@@ -4922,7 +4922,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               }
             } else {
               if (!(paste0(groupingVars[i],
-                           timeDiffTarget, lags[l]) %chin% SkipCols)) {
+                           timeDiffTarget, lags[l]) %in% SkipCols)) {
                 tempData[, paste0(groupingVars[i],
                                   timeDiffTarget,
                                   lags[l]) := as.numeric(difftime(get(
@@ -4984,7 +4984,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                          statsNames[k],
                          "_",
                          periods[j],
-                         "_", t) %chin% SkipCols)) {
+                         "_", t) %in% SkipCols)) {
               keep <- c(groupingVars[i], t, AscRowByGroup)
               temp2 <-
                 tempData[get(AscRowByGroup) <=
@@ -5092,7 +5092,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1, which(!(
-            tempData1[[j]] %chin% levels(tempData1[[j]])
+            tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
           data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
@@ -5120,7 +5120,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
-        if (!(paste0("LAG_", lags[l], "_", t) %chin% SkipCols)) {
+        if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
           tempData[, paste0("LAG_", lags[l], "_", t) := data.table::shift(
             get(t), n = lags[l], type = "lag")]
           CounterIndicator <- CounterIndicator + 1
@@ -5135,7 +5135,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
-        if (!(paste0("TEMP", lags[l]) %chin% SkipCols)) {
+        if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
           tempData[, paste0("TEMP",
                             lags[l]) := data.table::shift(get(
                               sortDateName), n = lags[l], type = "lag")]
@@ -5145,7 +5145,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       # Difference the lag dates
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
-          if (!(paste0(timeDiffTarget, "_", lags[l]) %chin% SkipCols) &
+          if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
             tempData[, paste0(timeDiffTarget,
                               "_",
@@ -5179,7 +5179,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
-                         "_", lags[l]) %chin% SkipCols)) {
+                         "_", lags[l]) %in% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_", lags[l]) := as.numeric(difftime(
                                   get(sortDateName),
@@ -5194,7 +5194,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           } else {
             if (!(paste0(timeDiffTarget,
                          "_",
-                         lags[l]) %chin% SkipCols)) {
+                         lags[l]) %in% SkipCols)) {
               tempData[, paste0(timeDiffTarget,
                                 "_",
                                 lags[l]) := as.numeric(difftime(get(paste0(
@@ -5251,7 +5251,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                        "_",
                        periods[j],
                        "_",
-                       t) %chin% SkipCols)) {
+                       t) %in% SkipCols)) {
             keep <- c(t, AscRowByGroup)
             temp2 <-
               tempData1[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
@@ -5349,7 +5349,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
           data.table::set(tempData1,
-                          which(!(tempData1[[j]] %chin% levels(tempData1[[j]]))),
+                          which(!(tempData1[[j]] %in% levels(tempData1[[j]]))),
                           j,
                           "0")
         } else {
@@ -8263,7 +8263,7 @@ AutoH20Scoring <- function(Features     = data,
   }
 
   # Match TargetType with grid_tuned_paths
-  if(ncol(grid_tuned_paths) > 3 & any(tolower(TargetType) %chin% "text")) {
+  if(ncol(grid_tuned_paths) > 3 & any(tolower(TargetType) == "text")) {
     stop("TargetType or grid_tuned_paths are not correct")
   }
 
