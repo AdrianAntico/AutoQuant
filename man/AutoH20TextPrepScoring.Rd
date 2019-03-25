@@ -8,6 +8,8 @@ AutoH20TextPrepScoring(data, string)
 }
 \arguments{
 \item{data}{The text data}
+
+\item{string}{The name of the string column to prepare}
 }
 \description{
 This function returns prepared tokenized data for H20 Word2VecModeler scoring
