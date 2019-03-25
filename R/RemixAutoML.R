@@ -2993,6 +2993,7 @@ ParDepCalPlots <- function(data,
       ggplot2::scale_fill_manual(values = c("red", "blue")) +
       ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
       ggplot2::xlab(eval(IndepVar)) +
+      ggplot2::ylab("Actual / Predicted") +
       ChartTheme(Size = 15)
   } else if (type == "FactorVar") {
     keep <- c(IndepVar, ActColName)
@@ -3019,6 +3020,7 @@ ParDepCalPlots <- function(data,
       ggplot2::ggtitle("Partial Dependence
                        Calibration Barplot") +
       ggplot2::xlab(eval(IndepVar)) +
+      ggplot2::ylab("Actual / Predicted") +
       ChartTheme(Size = 15)
   }
   return(plot)
@@ -8234,16 +8236,16 @@ AutoH20Modeler <- function(Construct,
 #'                TestData  = NULL)
 #'
 #' N <- 3
-#' AutoH20Scoring(Features     = data,
-#'                GridTuneRow  = c(1:N),
-#'                ScoreMethod  = "standard",
-#'                TargetType   = rep("multinomial",N),
-#'                ClassVals    = rep("Probs",N),
-#'                NThreads     = 6,
-#'                MaxMem       = "28G",
-#'                JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-#'                FilesPath    = getwd(),
-#'                H20ShutDown  = rep(FALSE,N))
+#' data <- AutoH20Scoring(Features     = data,
+#'                        GridTuneRow  = c(1:N),
+#'                        ScoreMethod  = "standard",
+#'                        TargetType   = rep("multinomial",N),
+#'                        ClassVals    = rep("Probs",N),
+#'                        NThreads     = 6,
+#'                        MaxMem       = "28G",
+#'                        JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+#'                        FilesPath    = getwd(),
+#'                        H20ShutDown  = rep(FALSE,N))
 #'}
 #' @export
 AutoH20Scoring <- function(Features     = data,
