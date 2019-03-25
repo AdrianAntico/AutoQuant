@@ -9,7 +9,6 @@ utils::globalVariables(
     "string",
     "NThreads",
     "MaxMem",
-    ""
     "LCVals",
     "Row",
     "ErrorCollectionLog",
