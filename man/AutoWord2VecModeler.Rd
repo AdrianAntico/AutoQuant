@@ -5,8 +5,7 @@
 \title{Automated word2vec data generation via H20}
 \usage{
 AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
-  KeepStringCol = FALSE, model_path = getwd(),
-  ModelID = c("Text_Col1", "Text_Col2"), vects = 100,
+  KeepStringCol = FALSE, model_path = getwd(), vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
   Epochs = 25, StopWords = NULL, SaveModel = "standard",
   Threads = 6, MaxMemory = "28G")
