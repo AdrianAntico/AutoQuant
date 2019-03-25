@@ -7,6 +7,7 @@ utils::globalVariables(
     "test",
     "act",
     "string",
+    "..string",
     "NThreads",
     "MaxMem",
     "LCVals",
