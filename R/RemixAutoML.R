@@ -7128,7 +7128,6 @@ AutoH20Modeler <- function(Construct,
                       value = dd)
     }
 
-
     ######################################
     # Model Evaluation & Saving
     ######################################
@@ -7836,7 +7835,7 @@ AutoH20Modeler <- function(Construct,
         save(calibEval,
              file = paste0(model_path,
                            "/", Construct[i, 5][[1]],
-                           ".Rdata"))
+                           "_Validation.Rdata"))
       }
     } else {
       if (Construct[i, 12][[1]]) {
@@ -7846,7 +7845,7 @@ AutoH20Modeler <- function(Construct,
              file = paste0(model_path,
                            "/",
                            Construct[i, 5][[1]],
-                           ".Rdata"))
+                           "_Validation.Rdata"))
       }
     }
     predName <- names(calibration[, 1])
@@ -8007,7 +8006,7 @@ AutoH20Modeler <- function(Construct,
           save(calib, file = paste0(model_path,
                                     "/",
                                     Construct[i, 5][[1]],
-                                    ".Rdata"))
+                                    "_Validation.Rdata"))
         }
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
