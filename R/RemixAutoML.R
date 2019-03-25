@@ -5532,7 +5532,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                                     Distribution    = c("multinomial",
 #'                                                         "multinomial",
 #'                                                         "multinomial"),
-#'                                     Loss            = c("logloss","logloss","CrossEntropy"),
+#'                                     Loss            = c("auc","logloss","accuracy"),
 #'                                     Quantile        = rep(NA,3),
 #'                                     ModelName       = c("GBM","DRF","DL"),
 #'                                     Algorithm       = c("gbm",
@@ -5710,14 +5710,30 @@ AutoH20Modeler <- function(Construct,
                            MaxModels = 30,
                            TrainData = NULL,
                            TestData  = NULL) {
+  
   ######################################
   # Error handling
   ######################################
 
-  if(tolower(Construct[i,2][[1]]) == "multinomial" && tolower(Construct[i,3][[1]]) == "accuracy") {
+  # Handle the multinomial case
+  if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+     tolower(Construct[i,3][[1]]) == "accuracy" &&
+     tolower(Construct[i,6][[1]]) != "deeplearning") {
     multinomialMetric <- "accuracy"
-  } else if(tolower(Construct[i,2][[1]]) == "multinomial" && tolower(Construct[i,3][[1]]) == "auc") {
+  } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+            tolower(Construct[i,3][[1]]) == "auc" &&
+            tolower(Construct[i,6][[1]]) != "deeplearning") {
     multinomialMetric <- "auc"
+  } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+            tolower(Construct[i,3][[1]]) == "accuracy" &&
+            tolower(Construct[i,6][[1]]) == "deeplearning") {
+    multinomialMetric <- "accuracy"
+    set(Construct, i = i, j = 3, value = "crossentropy")
+  } else if (tolower(Construct[i,2][[1]]) == "multinomial" &&
+             tolower(Construct[i,3][[1]]) == "auc" &&
+             tolower(Construct[i,6][[1]]) == "deeplearning") {
+    multinomialMetric <- "auc"
+    set(Construct, i = i, j = 3, value = "crossentropy")
   }
 
   ErrorCollection <-
