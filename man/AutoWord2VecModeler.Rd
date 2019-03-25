@@ -20,8 +20,6 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 
 \item{model_path}{A string path to the location where you want the model and metadata stored}
 
-\item{ModelID}{A vector of your model names}
-
 \item{vects}{The number of vectors to retain from the word2vec model}
 
 \item{SaveStopWords}{Set to TRUE to save the stop words used}
@@ -50,8 +48,6 @@ data <- Word2VecModel(data,
                       "Text_Col2"),
                       KeepStringCol = FALSE,
                       model_path    = getwd(),
-                      ModelID       = c("Text_Col1",
-                                        "Text_Col2"),
                       vects         = 5,
                       SaveStopWords = FALSE,
                       MinWords      = 1,
