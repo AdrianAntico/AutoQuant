@@ -6401,10 +6401,13 @@ AutoH20Modeler <- function(Construct,
       enable_assertions = FALSE
     )
 
-    # Keep setting
+    # Define data sets
     if (Construct[i, "SupplyData"][[1]]) {
-      data_train   <- h2o::as.h2o(TrainData)
+      train        <- h2o::as.h2o(TrainData)
       validate     <- h2o::as.h2o(TestData)
+      data_h2o     <- h2o::as.h2o(data.table::rblindlist(
+        list(TrainData,
+             TestData)))
     } else {
       data_h2o     <-
         eval(parse(text = paste0("h2o::as.h2o(",
