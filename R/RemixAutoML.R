@@ -7861,6 +7861,8 @@ AutoH20Modeler <- function(Construct,
           } else {
             val <- dd
           }
+        } else {
+          val <- dd
         }
 
         # Calibration plot
@@ -7910,11 +7912,13 @@ AutoH20Modeler <- function(Construct,
 
         # Store best metric
         if(Construct[i,11][[1]]) {
-          if(cc > dd) {
+          if(cc < dd) {
             val <- cc
           } else {
             val <- dd
           }
+        } else {
+          val <- dd
         }
 
         out1 <- EvalPlot(
@@ -7949,6 +7953,8 @@ AutoH20Modeler <- function(Construct,
           } else {
             val <- dd
           }
+        } else {
+          val <- dd
         }
 
         # Calibration plot
@@ -8044,6 +8050,16 @@ AutoH20Modeler <- function(Construct,
             na.rm = TRUE)
         }
 
+        # Store baseline val
+        temp <- H20MultinomialAUC(validate,
+                                 best_model,
+                                 targetColNum = 1,
+                                 targetName = Construct[i,1][[1]])
+
+        # Store micro auc
+        data.table::set(grid_tuned_paths, i = i, j = 3L, value = val)
+        data.table::set(grid_tuned_paths, i = i, j = 4L, value = temp)
+
         # Calibration plot
         out1 <- EvalPlot(
           xxx,
@@ -8065,8 +8081,6 @@ AutoH20Modeler <- function(Construct,
                                Construct[i, 5][[1]],
                                ".png"))
 
-        # Store micro auc
-        data.table::set(grid_tuned_paths, i = i, j = 1L, value = val)
       } else {
         predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
         col <- Construct[i, 1][[1]]
@@ -8139,7 +8153,7 @@ AutoH20Modeler <- function(Construct,
       }
 
       # Store micro auc
-      data.table::set(grid_tuned_paths, i = i, j = 1L, value = val)
+      data.table::set(grid_tuned_paths, i = i, j = 4L, value = val)
     }
 
     #######################################
