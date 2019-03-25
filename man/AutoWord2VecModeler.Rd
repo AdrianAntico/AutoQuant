@@ -44,7 +44,7 @@ This function allows you to automatically build a word2vec model and merge the d
 \dontrun{
 data <- Word2VecModel(data,
                       stringCol     = c("Text_Col1",
-                      "Text_Col2"),
+                                        "Text_Col2"),
                       KeepStringCol = FALSE,
                       model_path    = getwd(),
                       vects         = 5,
