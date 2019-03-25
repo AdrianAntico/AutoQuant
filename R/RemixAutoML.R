@@ -6435,7 +6435,7 @@ AutoH20Modeler <- function(Construct,
       }
     }
 
-    if(tolower(Construct[i, 5]) == "deeplearning") {
+    if(tolower(Construct[i,6][[1]]) == "deeplearning") {
       N              <- length(features)
       P5             <- 2 ^ (-1 / 5)
       P4             <- 2 ^ (-1 / 4)
