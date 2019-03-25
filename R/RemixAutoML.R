@@ -6,6 +6,10 @@ utils::globalVariables(
   names = c(
     "test",
     "act",
+    "string",
+    "NThreads",
+    "MaxMem",
+    ""
     "LCVals",
     "Row",
     "ErrorCollectionLog",
@@ -8578,8 +8582,6 @@ AutoWord2VecModeler <- function(data,
                                                   "Text_Col2"),
                                 KeepStringCol = FALSE,
                                 model_path    = getwd(),
-                                ModelID       = c("Text_Col1",
-                                                  "Text_Col2"),
                                 vects         = 100,
                                 SaveStopWords = FALSE,
                                 MinWords      = 1,
@@ -8828,6 +8830,6 @@ AutoH20TextPrepScoring <- function(data, string) {
   data2 <- data[, ..string]
 
   # Tokenize
-  tokenized_words <- tokenizeH20(data2)
+  tokenized_words <- RemixAutoML::tokenizeH20(data2)
   return(tokenized_words)
 }
