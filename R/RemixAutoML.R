@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 utils::globalVariables(
   names = c(
@@ -6405,7 +6405,7 @@ AutoH20Modeler <- function(Construct,
     if (Construct[i, "SupplyData"][[1]]) {
       train        <- h2o::as.h2o(TrainData)
       validate     <- h2o::as.h2o(TestData)
-      data_h2o     <- h2o::as.h2o(data.table::rblindlist(
+      data_h2o     <- h2o::as.h2o(data.table::rbindlist(
         list(TrainData,
              TestData)))
     } else {
