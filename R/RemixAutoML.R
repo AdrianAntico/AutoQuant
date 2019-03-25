@@ -218,27 +218,27 @@ H20MultinomialAUC <-
            best_model,
            targetColNum = 1,
            targetName = "TargetVar") {
-    xx <-
-      data.table::as.data.table(h2o::h2o.cbind(
-        validate[, targetColNum],
-        h2o::h2o.predict(best_model,
-                         newdata = validate)))
-    xx[, predict := as.character(predict)]
-    xx[, vals := 0.5]
-    z <- ncol(xx)
-    col <- targetName
-    for (l in seq_len(nrow(xx))) {
-      cols <- xx[l, get(col)][[1]]
-      valss <- xx[l, ..cols][[1]]
-      data.table::set(xx, l, j = z, value = valss)
-    }
-    return(round(as.numeric(noquote(
-      stringr::str_extract(
-        pROC::multiclass.roc(xx$target, xx$vals)$auc,
-        "\\d+\\.*\\d*"
-      )
-    )), 4))
+  xx <-
+    data.table::as.data.table(h2o::h2o.cbind(
+      validate[, targetColNum],
+      h2o::h2o.predict(best_model,
+                       newdata = validate)))
+  xx[, predict := as.character(predict)]
+  xx[, vals := 0.5]
+  z <- ncol(xx)
+  col <- targetName
+  for (l in seq_len(nrow(xx))) {
+    cols <- xx[l, get(col)][[1]]
+    valss <- xx[l, ..cols][[1]]
+    data.table::set(xx, l, j = z, value = valss)
   }
+  return(round(as.numeric(noquote(
+    stringr::str_extract(
+      pROC::multiclass.roc(xx$target, xx$vals)$auc,
+      "\\d+\\.*\\d*"
+    )
+  )), 4))
+}
 
 #' PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 #'
@@ -5714,6 +5714,12 @@ AutoH20Modeler <- function(Construct,
   # Error handling
   ######################################
 
+  if(tolower(Construct[i,2][[1]]) == "multinomial" && tolower(Construct[i,3][[1]]) == "accuracy") {
+    multinomialMetric <- "accuracy"
+  } else if(tolower(Construct[i,2][[1]]) == "multinomial" && tolower(Construct[i,3][[1]]) == "auc") {
+    multinomialMetric <- "auc"
+  }
+
   ErrorCollection <-
     data.table::data.table(Row = rep(-720, 10000),
                            Msg = "I like modeling")
@@ -6385,10 +6391,12 @@ AutoH20Modeler <- function(Construct,
       }
     }
 
-    N              <- length(features)
-    P5             <- 2 ^ (-1 / 5)
-    P4             <- 2 ^ (-1 / 4)
-    P3             <- 2 ^ (-1 / 3)
+    if(tolower(Construct[i, 5]) == "deeplearning") {
+      N              <- length(features)
+      P5             <- 2 ^ (-1 / 5)
+      P4             <- 2 ^ (-1 / 4)
+      P3             <- 2 ^ (-1 / 3)
+    }
     data.table::set(grid_tuned_paths,
                     i = i,
                     j = 1L,
@@ -7163,11 +7171,11 @@ AutoH20Modeler <- function(Construct,
       if (Construct[i, 14][[1]] == "All") {
         predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
         PredsPD <- data.table::as.data.table(predsPD)
-        fwrite(PredsPD,
-               file = paste0(model_path,
-                             "/",
-                             Construct[i, 5][[1]],
-                             "_PredsAll.csv"))
+        data.table::fwrite(PredsPD,
+                           file = paste0(model_path,
+                                         "/",
+                                         Construct[i, 5][[1]],
+                                         "_PredsAll.csv"))
       } else if (Construct[i, 14][[1]] == "Train") {
         predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
       } else if (Construct[i, 14][[1]] == "Validate") {
@@ -7251,11 +7259,11 @@ AutoH20Modeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
             PredsPD <- as.data.table(predsPD)
-            fwrite(PredsPD,
-                   file = paste0(model_path,
-                                 "/",
-                                 Construct[i, 5][[1]],
-                                 "_PredsAll.csv"))
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/",
+                                             Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -7331,10 +7339,10 @@ AutoH20Modeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
             PredsPD <- data.table::as.data.table(predsPD)
-            fwrite(PredsPD,
-                   file = paste0(model_path,
-                                 "/", Construct[i, 5][[1]],
-                                 "_PredsAll.csv"))
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/", Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -7464,10 +7472,10 @@ AutoH20Modeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
-            fwrite(PredsPD,
-                   file = paste0(model_path,
-                                 "/", Construct[i, 5][[1]],
-                                 "_PredsAll.csv"))
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/", Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 3]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -7592,10 +7600,11 @@ AutoH20Modeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
-            fwrite(PredsPD,
-                   file = paste0(model_path,
-                                 "/", Construct[i, 5][[1]],
-                                 "_PredsAll.csv"))
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/",
+                                             Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -7722,10 +7731,11 @@ AutoH20Modeler <- function(Construct,
         if (tolower(Construct[i, 14][[1]]) == "all") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
           PredsPD <- data.table::as.data.table(predsPD)
-          fwrite(PredsPD,
-                 file = paste0(model_path,
-                               "/", Construct[i, 5][[1]],
-                               "_PredsAll.csv"))
+          data.table::fwrite(PredsPD,
+                             file = paste0(model_path,
+                                           "/",
+                                           Construct[i, 5][[1]],
+                                           "_PredsAll.csv"))
         } else if (tolower(Construct[i, 14][[1]]) == "train") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
         } else if (tolower(Construct[i, 14][[1]]) == "validate") {
@@ -7927,6 +7937,25 @@ AutoH20Modeler <- function(Construct,
                                "/CalP_",
                                Construct[i, 5][[1]],
                                ".png"))
+
+        # Multinomial metric
+        if(multinomialMetric == "auc") {
+          val <- H20MultinomialAUC(validate,
+                                   best_model,
+                                   targetColNum = 1,
+                                   targetName = Construct[i,1][[1]])
+        } else {
+          xx <- data.table::as.data.table(h2o::h2o.cbind(
+            validate[, 1],
+            h2o::h2o.predict(best_model,
+                             newdata = validate)[,1]))
+          names(xx)
+          val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+                      na.rm = TRUE)
+        }
+
+        # Store micro auc
+        data.table::set(grid_tuned_paths, i = i, j = 1L, value = val)
       } else {
         predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
         col <- Construct[i, 1][[1]]
@@ -7973,10 +8002,24 @@ AutoH20Modeler <- function(Construct,
                                Construct[i, 5][[1]], ".png"))
       }
 
-      # Multinomial AUC function here::
-      #val <- H20MultinomialAUC(validate,
-      #best_model, targetColNum = 1, targetName = "TargetVar")
+      # Multinomial metric
+      if(multinomialMetric == "auc") {
+        val <- H20MultinomialAUC(validate,
+                                 bl_model,
+                                 targetColNum = 1,
+                                 targetName = Construct[i,1][[1]])
+      } else {
+        xx <- data.table::as.data.table(h2o::h2o.cbind(
+          validate[, 1],
+          h2o::h2o.predict(bl_model,
+                             newdata = validate)[,1]))
+        names(xx)
+        val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+                    na.rm = TRUE)
+      }
 
+      # Store micro auc
+      data.table::set(grid_tuned_paths, i = i, j = 1L, value = val)
     }
 
     #######################################
