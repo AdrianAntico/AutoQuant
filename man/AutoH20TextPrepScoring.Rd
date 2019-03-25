@@ -4,7 +4,7 @@
 \alias{AutoH20TextPrepScoring}
 \title{AutoH20TextPrepScoring is for NLP scoring}
 \usage{
-AutoH20TextPrepScoring(data)
+AutoH20TextPrepScoring(data, string)
 }
 \arguments{
 \item{data}{The text data}
