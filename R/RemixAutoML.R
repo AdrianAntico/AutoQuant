@@ -8256,25 +8256,33 @@ AutoH20Scoring <- function(Features     = data,
 
   # Import grid_tuned_paths or StoreFile
   if(any(tolower(TargetType) %in% c("regression",
-                                      "classification",
-                                      "multinomial",
-                                      "multioutcome"))) {
+                                    "classification",
+                                    "multinomial",
+                                    "multioutcome"))) {
     load(paste0(FilesPath, "\\grid_tuned_paths.Rdata"))
-  } else if (tolower(TargetType) == "text") {
-    load(paste0(FilePath, "\\StoreFile.Rdata"))
+  } else if (any(tolower(TargetType) %in% "text")) {
+    load(paste0(FilesPath, "\\StoreFile.Rdata"))
   } else {
     stop("TargetType not a valid option")
   }
 
-  # Match TargetType with grid_tuned_paths
-  if(ncol(grid_tuned_paths) > 3 & tolower(TargetType) == "text") {
-    stop("TargetType or grid_tuned_paths are not correct")
-  }
-
-  # Ensure GridTuneRow exists
-  if(nrow(grid_tuned_paths) < max(GridTuneRow)) {
-    stop("GridTuneRow is greater than
+  # Ensure GridTuneRow is not out of bounds
+  if(any(tolower(TargetType) %in% c("regression",
+                                    "classification",
+                                    "multinomial",
+                                    "multioutcome"))) {
+    if(nrow(grid_tuned_paths) < max(GridTuneRow)) {
+      stop("GridTuneRow is greater than
           the number of rows in grid_tuned_paths")
+    }
+  } else if (any(tolower(TargetType) %in% "text")) {
+    load(paste0(FilesPath, "\\StoreFile.Rdata"))
+    if(nrow(StoreFile) < max(GridTuneRow)) {
+      stop("GridTuneRow is greater than
+          the number of rows in StoreFile")
+    }
+  } else {
+    stop("TargetType not a valid option")
   }
 
   ScoresList <- list()
@@ -8285,7 +8293,7 @@ AutoH20Scoring <- function(Features     = data,
         if(tolower(ClassVals[i]) == c("probs")) {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8293,7 +8301,7 @@ AutoH20Scoring <- function(Features     = data,
         } else if(tolower(ClassVals[i]) == "label") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8302,7 +8310,7 @@ AutoH20Scoring <- function(Features     = data,
         } else if (tolower(ClassVals[i]) == "all") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8315,7 +8323,7 @@ AutoH20Scoring <- function(Features     = data,
         if(tolower(ClassVals[i]) == c("p1")) {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8323,7 +8331,7 @@ AutoH20Scoring <- function(Features     = data,
         } else if(tolower(ClassVals[i]) == c("probs")) {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8331,7 +8339,7 @@ AutoH20Scoring <- function(Features     = data,
         } else if(tolower(ClassVals[i]) == "label") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8340,7 +8348,7 @@ AutoH20Scoring <- function(Features     = data,
         } else if(tolower(ClassVals[i]) == "all") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8352,12 +8360,15 @@ AutoH20Scoring <- function(Features     = data,
       } else if(tolower(TargetType[i]) == "regression") {
         Scores <- data.table::as.data.table(
           h2o::h2o.mojo_predict_df(
-            frame = data,
+            frame = Features,
             mojo_zip_path = grid_tuned_paths[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = grid_tuned_paths[i,6][[1]],
             verbose = FALSE))
       } else if(tolower(TargetType[i]) == "text") {
+        keep <- StoreFile[i,1][[1]]
+        temp <- AutoH20TextPrepScoring(data = Features[, ..keep],
+                                       string = StoreFile[i,1][[1]])
         Scores <- data.table::as.data.table(
           h2o::h2o.mojo_predict_df(
             frame = data,
@@ -8369,14 +8380,14 @@ AutoH20Scoring <- function(Features     = data,
         Counts <- as.numeric(
           as.character(
             h2o::h2o.mojo_predict_df(
-              frame = data,
+              frame = Features,
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)))
         Temp <- data.table::as.data.table(
           h2o::h2o.mojo_predict_df(
-            frame = data[i],
+            frame = Features,
             mojo_zip_path = grid_tuned_paths[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8402,10 +8413,15 @@ AutoH20Scoring <- function(Features     = data,
                error = function(e){startH2o()})
 
       # Load model
-      model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
+      if(tolower(TargetType[i]) == "text") {
+        model <- h2o::h2o.loadModel(path = StoreFile[i,Path])
+      } else {
+        model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
+      }
+
 
       # Load Features
-      if(i == 1) {
+      if(i == 1 && tolower(TargetType[i]) != "text") {
         features <- h2o::as.h2o(Features)
       }
       if(tolower(TargetType[i]) == "multinomial") {
@@ -8453,9 +8469,17 @@ AutoH20Scoring <- function(Features     = data,
           h2o::h2o.predict(model,
                            newdata = features)[,1])
       } else if(tolower(TargetType[i]) == c("text")) {
+        name <- StoreFile[i, ModelName][[1]]
+        data <- AutoH20TextPrepScoring(data = Features,
+                                       string = name)
         Scores <- data.table::as.data.table(
-          h2o::h2o.predict(model,
-                           newdata = features)[,1])
+          h2o::h2o.transform(model,
+                             words = data,
+                             aggregate_method = "AVERAGE"))
+        setnames(Scores, names(Scores), paste0(name,
+                                               "_",
+                                               names(Scores)))
+        Features <- cbind(Features[, paste0(name) := NULL], Scores)
       } else if(tolower(TargetType[i]) == "multioutcome") {
         Counts <- data.table::as.data.table(
           h2o::h2o.predict(model,
@@ -8509,7 +8533,6 @@ tokenizeH20 <- function(data) {
 #' @param stringCol A string name for the column to convert via word2vec
 #' @param KeepStringCol Set to TRUE if you want to keep the original string column that you convert via word2vec
 #' @param model_path A string path to the location where you want the model and metadata stored
-#' @param ModelID A vector of your model names
 #' @param vects The number of vectors to retain from the word2vec model
 #' @param SaveStopWords Set to TRUE to save the stop words used
 #' @param MinWords For H20 word2vec model
@@ -8527,8 +8550,6 @@ tokenizeH20 <- function(data) {
 #'                       "Text_Col2"),
 #'                       KeepStringCol = FALSE,
 #'                       model_path    = getwd(),
-#'                       ModelID       = c("Text_Col1",
-#'                                         "Text_Col2"),
 #'                       vects         = 5,
 #'                       SaveStopWords = FALSE,
 #'                       MinWords      = 1,
@@ -8536,8 +8557,8 @@ tokenizeH20 <- function(data) {
 #'                       Epochs        = 25,
 #'                       StopWords     = NULL,
 #'                       SaveModel     = "standard",
-#'                       Threads       = 4,
-#'                       MaxMemory     = "14G")
+#'                       Threads       = 6,
+#'                       MaxMemory     = "28G")
 #'}
 #' @export
 AutoWord2VecModeler <- function(data,
@@ -8589,7 +8610,7 @@ AutoWord2VecModeler <- function(data,
     # Build model
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
-      model_id           = ModelID[i],
+      model_id           = stringCol[i],
       word_model         = "SkipGram",
       norm_model         = "HSM",
       vec_size           = vects,
@@ -8607,7 +8628,7 @@ AutoWord2VecModeler <- function(data,
       data.table::set(StoreFile,
                       i = i,
                       j = 1L,
-                      value = ModelID[i])
+                      value = stringCol[i])
       data.table::set(StoreFile,
                       i = i,
                       j = 2L,
@@ -8621,12 +8642,12 @@ AutoWord2VecModeler <- function(data,
         path = model_path,
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = ModelID[i]
+        genmodel_name = stringCol[i]
       )
       data.table::set(StoreFile,
                       i = i,
                       j = 1L,
-                      value = ModelID[i])
+                      value = stringCol[i])
       data.table::set(StoreFile,
                       i = i,
                       j = 2L,
@@ -8634,7 +8655,7 @@ AutoWord2VecModeler <- function(data,
       data.table::set(StoreFile,
                       i = i,
                       j = 3L,
-                      value = paste0(model_path, "\\", ModelID[i]))
+                      value = paste0(model_path, "\\", stringCol[i]))
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
 
@@ -8784,15 +8805,14 @@ AutoWordFreq <- function(data,
 #' @param data The text data
 #' @import data.table
 #' @export
-AutoH20TextPrepScoring <- function(data) {
+AutoH20TextPrepScoring <- function(data, string) {
+  if(!is.data.table(data)) data <- data.table::as.data.table((data))
   data[, eval(string) := as.character(get(string))]
-  h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
+  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
 
   # It is important to remove "\n" --
   data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
-  data[, ':=' (TEMP =
-                 gsub("'|\"|'|\"|\n|,|\\.|\\?|\\+|\\-|\\/|\\=|\\(|\\)",
-                      "","",TEMP))]
+  data[, ':=' (TEMP = stringr::str_replace_all(TEMP, "[[:punct:]]", ""))]
   data2 <- data[, "TEMP"]
 
   # Tokenize
