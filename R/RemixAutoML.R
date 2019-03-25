@@ -5712,28 +5712,36 @@ AutoH20Modeler <- function(Construct,
                            TestData  = NULL) {
 
   ######################################
-  # Error handling
+  # Error handling and prevention
   ######################################
 
   # Handle the multinomial case
-  if(tolower(Construct[i,2][[1]]) == "multinomial" &&
-     tolower(Construct[i,3][[1]]) == "accuracy" &&
-     tolower(Construct[i,6][[1]]) != "deeplearning") {
-    multinomialMetric <- "accuracy"
-  } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
-            tolower(Construct[i,3][[1]]) == "auc" &&
-            tolower(Construct[i,6][[1]]) != "deeplearning") {
-    multinomialMetric <- "auc"
-  } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
-            tolower(Construct[i,3][[1]]) == "accuracy" &&
-            tolower(Construct[i,6][[1]]) == "deeplearning") {
-    multinomialMetric <- "accuracy"
-    set(Construct, i = i, j = 3, value = "crossentropy")
-  } else if (tolower(Construct[i,2][[1]]) == "multinomial" &&
-             tolower(Construct[i,3][[1]]) == "auc" &&
-             tolower(Construct[i,6][[1]]) == "deeplearning") {
-    multinomialMetric <- "auc"
-    set(Construct, i = i, j = 3, value = "crossentropy")
+  for (i in as.integer(seq_len(nrow(Construct)))) {
+    if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+       tolower(Construct[i,3][[1]]) == "accuracy" &&
+       tolower(Construct[i,6][[1]]) != "deeplearning") {
+      multinomialMetric <- "accuracy"
+    } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+              tolower(Construct[i,3][[1]]) == "auc" &&
+              tolower(Construct[i,6][[1]]) != "deeplearning") {
+      multinomialMetric <- "auc"
+    } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
+              tolower(Construct[i,3][[1]]) == "accuracy" &&
+              tolower(Construct[i,6][[1]]) == "deeplearning") {
+      multinomialMetric <- "accuracy"
+      data.table::set(Construct,
+                      i = i,
+                      j = 3L,
+                      value = "crossentropy")
+    } else if (tolower(Construct[i,2][[1]]) == "multinomial" &&
+               tolower(Construct[i,3][[1]]) == "auc" &&
+               tolower(Construct[i,6][[1]]) == "deeplearning") {
+      multinomialMetric <- "auc"
+      data.table::set(Construct,
+                      i = i,
+                      j = 3L,
+                      value = "crossentropy")
+    }
   }
 
   ErrorCollection <-
