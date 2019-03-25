@@ -8551,7 +8551,7 @@ tokenizeH20 <- function(data) {
 #' @param WindowSize For H20 word2vec model
 #' @param Epochs For H20 word2vec model
 #' @param StopWords For H20 word2vec model
-#' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo
+#' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @import data.table
