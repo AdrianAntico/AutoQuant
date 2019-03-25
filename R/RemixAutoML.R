@@ -5765,6 +5765,7 @@ AutoH20Modeler <- function(Construct,
           "rmse",
           "mae",
           "rmsle",
+          "accuracy",
           "auc",
           "lift_top_group",
           "misclassification",
@@ -5801,6 +5802,7 @@ AutoH20Modeler <- function(Construct,
             "logloss",
             "mse",
             "rmse",
+            "accuracy",
             "mae",
             "rmsle",
             "auc",
@@ -5816,6 +5818,7 @@ AutoH20Modeler <- function(Construct,
             "MSE",
             "RMSE",
             "MAE",
+            "accuracy",
             "RMSLE",
             "AUC",
             "lift_top_group",
@@ -5823,7 +5826,7 @@ AutoH20Modeler <- function(Construct,
             "mean_per_class_error"
           )
         distMatch <-
-          data.table::data.table(act = rep(temp, 11),
+          data.table::data.table(act = rep(temp, 12),
                                  LCVals = lower,
                                  Proper = proper)
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
@@ -5909,6 +5912,7 @@ AutoH20Modeler <- function(Construct,
             tolower(Construct[i, 3][[1]]) %in% c(
               "auc",
               "logloss",
+              "accuracy",
               "auto",
               "lift_top_group",
               "misclassification",
@@ -5929,7 +5933,7 @@ AutoH20Modeler <- function(Construct,
               "Loss function ",
               Construct[i, 3][[1]],
               " is not in list: AUC | logloss | AUTO | lift_top_group |
-              misclassification | mean_per_class_error"
+              misclassification | mean_per_class_error | accuracy"
             )
           )
         )
@@ -6056,6 +6060,8 @@ AutoH20Modeler <- function(Construct,
           "automatic",
           "crossentropy",
           "quadratic",
+          "accuracy",
+          "auc",
           "huber",
           "absolute",
           "quantile"
@@ -6075,7 +6081,7 @@ AutoH20Modeler <- function(Construct,
               "Loss function ",
               Construct[i, 3][[1]],
               " is not in list: Automatic | CrossEntropy | Quadratic |
-              Huber | Absolute | Quantile"
+              Huber | Absolute | Quantile | AUC | ACCURACY"
             )
           )
         )
@@ -6086,6 +6092,8 @@ AutoH20Modeler <- function(Construct,
             "automatic",
             "crossentropy",
             "quadratic",
+            "auc",
+            "accuracy",
             "huber",
             "absolute",
             "quantile"
@@ -6094,11 +6102,13 @@ AutoH20Modeler <- function(Construct,
           c("Automatic",
             "CrossEntropy",
             "Quadratic",
+            "AUC",
+            "ACCURACY",
             "Huber",
             "Absolute",
             "Quantile")
         distMatch <-
-          data.table::data.table(act = rep(temp, 6),
+          data.table::data.table(act = rep(temp, 8),
                                  LCVals = lower,
                                  Proper = proper)
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
@@ -6178,7 +6188,9 @@ AutoH20Modeler <- function(Construct,
       if (tolower(Construct[i,2][[1]]) %in% c("bernoulli",
                                               "multinomial") &&
           !(tolower(Construct[i,3][[1]]) %in% c("automatic",
-                                                "crossentropy"))) {
+                                                "crossentropy",
+                                                "auc",
+                                                "accuracy"))) {
         j <- j + 1
         data.table::set(ErrorCollection,
                         i = j,
@@ -6192,7 +6204,7 @@ AutoH20Modeler <- function(Construct,
             paste0(
               "Loss function ",
               Construct[i, 3][[1]],
-              " is not in list: Automatic | CrossEntropy"
+              " is not in list: Automatic | CrossEntropy | AUC | ACCURACY"
             )
           )
         )
