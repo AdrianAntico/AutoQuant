@@ -5721,10 +5721,18 @@ AutoH20Modeler <- function(Construct,
        tolower(Construct[i,3][[1]]) == "accuracy" &&
        tolower(Construct[i,6][[1]]) != "deeplearning") {
       multinomialMetric <- "accuracy"
+      data.table::set(Construct,
+                      i = i,
+                      j = 3L,
+                      value = "logloss")
     } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
               tolower(Construct[i,3][[1]]) == "auc" &&
               tolower(Construct[i,6][[1]]) != "deeplearning") {
       multinomialMetric <- "auc"
+      data.table::set(Construct,
+                      i = i,
+                      j = 3L,
+                      value = "logloss")
     } else if(tolower(Construct[i,2][[1]]) == "multinomial" &&
               tolower(Construct[i,3][[1]]) == "accuracy" &&
               tolower(Construct[i,6][[1]]) == "deeplearning") {
