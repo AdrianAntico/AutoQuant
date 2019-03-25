@@ -8817,6 +8817,7 @@ AutoWordFreq <- function(data,
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
+#' @param string The name of the string column to prepare
 #' @import data.table
 #' @export
 AutoH20TextPrepScoring <- function(data, string) {
