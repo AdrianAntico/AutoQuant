@@ -2893,7 +2893,6 @@ ParDepCalPlots <- function(data,
   preds2 <- preds2[, ..cols]
 
   # Structure data
-  cols <- c(PredColName, ActColName, IndepVar)
   data <- data[, ..cols]
   data.table::setcolorder(data, c(PredColName, ActColName, IndepVar))
 
@@ -8824,9 +8823,9 @@ AutoH20TextPrepScoring <- function(data, string) {
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
 
   # It is important to remove "\n" --
-  data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
-  data[, ':=' (TEMP = stringr::str_replace_all(TEMP, "[[:punct:]]", ""))]
-  data2 <- data[, "TEMP"]
+  data[, eval(string) := gsub("  ", " ", get(string))]
+  data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
+  data2 <- data[, ..string]
 
   # Tokenize
   tokenized_words <- tokenizeH20(data2)
