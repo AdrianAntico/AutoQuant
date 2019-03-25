@@ -7878,7 +7878,7 @@ AutoH20Modeler <- function(Construct,
         )
         out1 <- out1 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 Construct[i,3][[1]],
+                 toupper(Construct[i,3][[1]]),
                  ": ",
                  round(val,4))
         )
@@ -7897,7 +7897,7 @@ AutoH20Modeler <- function(Construct,
         )
         out2 <- out2 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 Construct[i,3][[1]],
+                 toupper(Construct[i,3][[1]]),
                  ": ",
                  round(val,4))
         )
@@ -7929,7 +7929,7 @@ AutoH20Modeler <- function(Construct,
         )
         out1 <- out1 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 Construct[i,3][[1]],
+                 toupper(Construct[i,3][[1]]),
                  ": ",
                  round(val,4))
         )
@@ -7964,7 +7964,7 @@ AutoH20Modeler <- function(Construct,
         )
         out1 <- out1 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 Construct[i,3][[1]],
+                 toupper(Construct[i,3][[1]]),
                  ": ",
                  round(val,4))
         )
@@ -7983,7 +7983,7 @@ AutoH20Modeler <- function(Construct,
         )
         out2 <- out2 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 Construct[i,3][[1]],
+                 toupper(Construct[i,3][[1]]),
                  ": ",
                  round(val,4))
         )
@@ -8055,7 +8055,7 @@ AutoH20Modeler <- function(Construct,
         )
         out1 <- out1 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 multinomialMetric,
+                 toupper(multinomialMetric),
                  ": ",
                  round(val,4))
         )
@@ -8125,7 +8125,7 @@ AutoH20Modeler <- function(Construct,
         )
         out1 <- out1 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
-                 multinomialMetric,
+                 toupper(multinomialMetric),
                  ": ",
                  round(val,4))
           )
