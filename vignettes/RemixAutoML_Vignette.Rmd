@@ -17,21 +17,19 @@ knitr::opts_chunk$set(
 )
 ```
 
-### Contact Info
-Email: $\color{blue}{\text{adrianantico@gmail.com}}$
-
+## Contact Info
 LinkedIn: $\color{blue}{\text{https://www.linkedin.com/in/adrian-antico/}}$
 
-Remix Instute: $\color{blue}{\text{https://www.remyxcourses.com}}$ or $\color{blue}{\text{adrian.antico@remix.institute}}$
+Remix Instute: $\color{blue}{\text{https://www.remyxcourses.com}}$ or $\color{blue}{\text{https://www.remixinstitute.ai}}$
 
 ## **Vignette Intent**
 This vignette is designed to give you the highlights of the set of automated machine learning functions available in the RemixAutoML package. To see the functions in action, visit the Remyx Courses website for the free course at **https://www.remyxcourses.com** and walk through them (and check our the other courses too!).
 
 ## **Package Goals**
-The **RemixAutoML** package (*Remix Automated Machine Learning*) is designed to automate and optimize the quality of machine learning, the pace of development, along with the handling of big data and the processing time of data management. The library has been a development task at [Remix Institute](remixinstitute.com) over the course of the past year to consolidate all of our winning methods for successfully completing machine learning and data science consulting projects. We are avid R users and feel that the R community could benefit from its release. 
+The **RemixAutoML** package (*Remix Automated Machine Learning*) is designed to automate and optimize the quality of machine learning, the pace of development, along with the handling of big data and the processing time of data management. The library has been a development task at [Remix Institute](remixinstitute.ai) over the course of the past year to consolidate all of our winning methods for successfully completing machine learning and data science consulting projects. These were actual projects at Fortune 500 companies, Fortune 100 companies, tech startups, and other consulting clients. We are avid R users and feel that the R community could benefit from its release. 
 
-## **Function Design Philosophy**
-The two core packages RemixAutoML relies on are H20 and data.table. There are other packages used, for example, the forecast package, but H20 and data.table are used the most. I use data.table for data wrangling of all internal functions due to its ability to handle big data with minimal memory and the speed at which their functions process data. I chose to use H20 and their machine learning algorithms because of their high quality results, flexibility of use, ease of operationalization, and ability to manage big data. 
+## **Package Design Philosophy**
+The two core packages RemixAutoML relies on are H2O and data.table. There are other packages used, for example, the forecast package, but H2O and data.table are used the most. I use data.table for data wrangling of all internal functions due to its ability to handle big data with minimal memory and the speed at which their functions process data. I chose to use H2O and their machine learning algorithms because of their high quality results, flexibility of use, ease of operationalization, and ability to manage big data. I use these functions routinely for machine learning projects and they continue to outperform every other package / software I test them against. Many of the other R packages for modeling or data manipulation have terrible run times and fail once I get going with bigger data. As a simple example, sometimes I do a one-hot encoding for testing out keras models and I can just run my DummifyDT function to create those. I've tried out a few others with fast runtimes but they fail on bigger data, mess up the column ordering, and don't offer the flexibility of creating one-hot encoding features versus standard dichotomized features.
 
 ##### There are five categories of functions (currently) in this library I'll go over:
 - Automated Supervised Learning
@@ -45,10 +43,10 @@ The two core packages RemixAutoML relies on are H20 and data.table. There are ot
 ### **Automated Supervised Learning Functions**
 
 #### **AutoH20Modeler()**
-The supervised learning functions handle multiple tasks internally. The **AutoH20Modeler** function can build any number of H20 models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. 
+The supervised learning functions handle multiple tasks internally. The **AutoH20Modeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting.
 
 ##### The models available include:
-- Gradient Boosting Machines (Linux only)
+- Gradient Boosting Machines
 - LightGBM (Linux only)
 - Distributed Random Forest
 - XGBoost (Linux only)
@@ -57,22 +55,25 @@ The supervised learning functions handle multiple tasks internally. The **AutoH2
 
 For Windows users (Mac?), XGBoost is not available and therefore neither is LightGBM (XGBoost and LightGBM are not utlized in AutoML model selection with Windows).
 
-#### **AutoTS()**
-Another automated supervised learning function we have is an automated time series modeling function that optimially builds out eight types of forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a box-cox transformation and predicts are back-transformed. 
+#### **AutoH20Scoring()**
+This function is the complement of the AutoH20Modeler function. Specify which rows of your grid_tuned_paths.Rdata file to run and **AutoH20Scoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran.
 
-##### The models tried include:
+#### **AutoTS()**
+Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. 
+
+##### The following time series forecast models are used in AutoTS:
 - ARFIMA (Autoregressive Fractional Integrated Moving Average)
 - ARIMA (Autoregressive Integrated Moving Average)
 - ETS (Exponential Smoothing and Holt Winters)
 - TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components)
 - TSLM (Time Series Linear Model)
 - NN (Autoregressive Neural Network)
-- Facebook's Prophet
+- Facebook Prophet
 
-##### **nlsModelFit()**
+##### **AutoNLS()**
 The other automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks.
 
-##### The models competing include:
+##### The competing models include:
 - Asymptotic
 - Asymptotic through origin
 - Asymptotic with offset
@@ -84,11 +85,11 @@ The other automated supervised learning function builds nonlinear regression mod
 - Weibull
 - Polynomial regression or monotonic regression
 
-## Example of nlsModelFit with Plot (simulated data)
+## Example of AutoNLS with Plot (simulated data)
 
-Find more demos at **https://www.remyxcourses.com**
+Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
-```{r, fig.show='hold', fig.width=6, fig.height=3.5}
+```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
 
 # Create Growth Data
@@ -98,31 +99,43 @@ for (i in as.integer(2:500)) {
   data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
 }
 
+# Add some jitter to Target
+#data[, Target := jitter(Target, amount = 1.0)]
+
 # Build Model and Merge Onto Source Data
 data1 <- data.table::copy(data)
-data2 <- merge(data1,
-               RemixAutoML::nlsModelFit(data = data, 
+data2 <- RemixAutoML::AutoNLS(data = data, 
                                         y = "Target", 
                                         x = "Variable", 
-                                        monotonic = FALSE),
+                                        monotonic = TRUE)
+data3 <- merge(data1,
+               data2[[1]],
                by = "Variable",
                all = FALSE)
-data2[, Target.z := lm(Target.x ~ poly(Variable,10))]
-ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]]), 
-                     color = "blue") +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]]), 
-                     color = "red") +
-  RemixAutoML::ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
-  ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
+data3[, Target.z := lm(Target.x ~ poly(Variable,10))]
+ggplot2::ggplot(data3, ggplot2::aes(x = Variable)) +
+  ggplot2::geom_line(ggplot2::aes(y = data3[["Target.x"]], 
+                                  color = "Target")) +
+  ggplot2::geom_line(ggplot2::aes(y = data3[["Target.y"]], 
+                                  color = "Predicted")) +
+  RemixAutoML::ChartTheme(Size = 12) + 
+  ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
+                          data2[[2]])) +
+  ggplot2::ylab("Target Variable") + 
+  ggplot2::xlab("Independent Variable") +
+  ggplot2::scale_colour_manual("Values", 
+                               breaks = c("Target", 
+                                          "Predicted"),
+                               values = c("red", 
+                                          "blue")) 
 ```
 
 
 ## Example of AutoTS with Plot (simulated data)
 
-Find more demos at **https://www.remyxcourses.com**
+Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
-```{r, fig.show='hold', fig.width=6, fig.height=3.5}
+```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
                                Target = (10 + arima.sim(model = list(2,0,2), 
@@ -148,7 +161,8 @@ data2 <- data.table::rbindlist(list(data[, Target := as.numeric(Target)],
 ggplot2::ggplot(data2, ggplot2::aes(x = DateTime, y = Target)) +
   ggplot2::geom_line() + 
   RemixAutoML::ChartTheme(Size = 10) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = maxDate), 
+  ggplot2::geom_vline(ggplot2::aes(xintercept = maxDate),
+                      linetype = "dotted",
                       color = "blue") +
   ggplot2::ggtitle(paste0("Historical and FC - ", 
                           output[[2]][1,1][[1]])) +
@@ -158,12 +172,12 @@ knitr::kable(output[[2]])
 ```
 
 ### **Automated Unsupervised Learning Functions**
-The suite of functions in this category currently handle optimized row-clustering and anomaly detection. For the row-clustering, we utilize H20's Generalized Low Rank Model and their KMeans algorithm, with hyper-parameter tuning for both. We have a few others currently in development and will release those when they are complete. The anomaly detection functions we have currently are for time series applications. We have a control chart methodology version that lets you build upper and lower confidence bounds by up to two grouping variables along with a time series modeling version. The clustering function and the control chart method function update your data set that you feed in with new columns that store the clusterID or anomaly information. The time series function updates your data, supplies you with the final time series model built, and a data.table that only contains anomalies.
+The suite of functions in this category currently handle optimized row-clustering and anomaly detection. For the row-clustering, we utilize H2O's Generalized Low Rank Model and their KMeans algorithm, with hyper-parameter tuning for both. We have a few others currently in development and will release those when they are complete. The anomaly detection functions we have currently are for time series applications. We have a control chart methodology version that lets you build upper and lower confidence bounds by up to two grouping variables along with a time series modeling version. The clustering function and the control chart method function update your data set that you feed in with new columns that store the clusterID or anomaly information. The time series function updates your data, supplies you with the final time series model built, and a data.table that only contains anomalies.
 
 ##### Functions include:
 - `GenTSAnomVars()`
 - `ResidualOutliers()`
-- `GLRM_KMeans_Col()`
+- `AutoKMeans()`
 
 
 ### **Automated Model Evaluation, Feature Interpretation, and Cost Sensitive Optimization Functions**
@@ -174,7 +188,7 @@ The model evaluation graphs are calibration plots or calibration boxplots. The c
 
 ## Demo of **EvalPlot()** for calibration and boxplots
 
-Find more demos at **https://www.remyxcourses.com**
+Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
 ```{r, fig.show='hold', fig.width=8, fig.height=8}
 library(RemixAutoML)
@@ -281,14 +295,99 @@ The feature interpretation function graphs are very similar in nature to the mod
 The cost sensitive optimizaition functions provide the user the ability to generate utility-optimized thresholds for classification tasks. There are two of these functions: one for generating a single threshold based on the values supplied to your cost confusion matrix outcomes and the second one provides two thresholds, where your final predicted classification could be (0|1) and "do something else". With the latter function, you would also need to supply a cost to the "do something else" option.
 
 ##### Functions include:
+- `ParDepCalPlots()`
+
+## Demo of **ParDepCalPlots()** for calibration, boxplots, and barplots
+
+Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+
+```{r, fig.show='hold', fig.width=8, fig.height=8}
+library(RemixAutoML)
+
+# Data generator function
+dataGen <- function(Correlation = 0.95) {
+  Validation <- data.table::data.table(target = runif(1000))
+  Validation[, x1 := qnorm(target)]
+  Validation[, x2 := runif(1000)]
+  Validation[, predict := pnorm(Correlation * x1 +
+                                  sqrt(1 - Correlation ^2) * qnorm(x2))]
+  Validation[, Feature1 := (pnorm(Correlation * x1 +
+                                    sqrt(1 - Correlation ^2) * qnorm(x2)))^1.25]
+  Validation[, Feature2 := (pnorm(Correlation * x1 +
+                                    sqrt(1 - Correlation ^2) * qnorm(x2)))^0.25]
+  Validation[, Feature3 := (pnorm(Correlation * x1 +
+                                    sqrt(1 - Correlation ^2) * qnorm(x2)))^(-1)]
+  Validation[, Feature4 := pnorm(Correlation * x1 +
+                                    sqrt(1 - Correlation ^2) * qnorm(x2))]
+  Validation[, Feature4 := ifelse(Feature4 < 0.5, "A",
+                                  ifelse(Feature4 < 1, "B",
+                                         ifelse(Feature4 < 1.5, "C","D")))]
+  return(Validation)
+}
+
+# Store data sets
+data1 <- dataGen(Correlation = 0.95)
+
+# Generate EvalPlots (calibration)
+p1 <- RemixAutoML::ParDepCalPlots(data = data1,
+                                  PredColName = "predict",
+                                  ActColName = "target",
+                                  IndepVar = "Feature1",
+                                  type = "calibration",
+                                  bucket = 0.05,
+                                  Function = function(x) mean(x,
+                                                              na.rm = TRUE),
+                                  FactLevels = 10)
+p1 <- p1 + ggplot2::ggtitle("Partial Dependence Calibration p1") + 
+  RemixAutoML::ChartTheme(Size = 10)
+
+p2 <- RemixAutoML::ParDepCalPlots(data = data1,
+                                  PredColName = "predict",
+                                  ActColName = "target",
+                                  IndepVar = "Feature2",
+                                  type = "calibration",
+                                  bucket = 0.05,
+                                  Function = function(x) mean(x,
+                                                              na.rm = TRUE),
+                                  FactLevels = 10)
+p2 <- p2 + ggplot2::ggtitle("Partial Dependence Calibration p2") + 
+  RemixAutoML::ChartTheme(Size = 10)
+
+p3 <- RemixAutoML::ParDepCalPlots(data = data1,
+                                  PredColName = "predict",
+                                  ActColName = "target",
+                                  IndepVar = "Feature3",
+                                  type = "boxplot",
+                                  bucket = 0.05,
+                                  Function = function(x) mean(x,
+                                                              na.rm = TRUE),
+                                  FactLevels = 10)
+p3 <- p3 + ggplot2::ggtitle("Partial Dependence Calibration p3") + 
+  RemixAutoML::ChartTheme(Size = 10)
+
+p4 <- RemixAutoML::ParDepCalPlots(data = data1,
+                                  PredColName = "predict",
+                                  ActColName = "target",
+                                  IndepVar = "Feature4",
+                                  type = "calibration",
+                                  bucket = 0.05,
+                                  Function = function(x) mean(x,
+                                                              na.rm = TRUE),
+                                  FactLevels = 10)
+p4 <- p4 + ggplot2::ggtitle("Partial Dependence Calibration p4") + 
+  RemixAutoML::ChartTheme(Size = 10)
+RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
+```
+
+##### Functions include:
 - `threshOptim()`
 - `RedYellowGreen()`
 
 ## RedYellowGreen Output (simulated data)
 
-Find more demos at **https://www.remyxcourses.com**
+Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
-```{r, fig.show='hold', fig.width=6, fig.height=3.5}
+```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
 Correl <- 0.70
   aa <- data.table::data.table(target = runif(1000))
@@ -326,7 +425,7 @@ The first three are used for building out lags and rolling statistics from targe
 
 ## DT_GDL_Feature_Engineering and Scoring_GDL_Feature_Engineering Demo (simulated data)
 
-Find more demos atFind many more at **https://www.remyxcourses.com**
+Find more demos atFind many more at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
 ```{r, fig.show='hold'}
 library(RemixAutoML)
@@ -414,20 +513,20 @@ knitr::kable(
 ```
 
 ##### Functions include:
-- `Word2VecModel()`
+- `AutoWord2VecModeler()`
 - `ModelDataPrep()`
 - `DummifyDT()`
 
-The **Word2VecModel** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H20's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH20Modeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
+The **AutoWord2VecModeler** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH20Modeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
 
 ### **Miscellaneous Functions**
 ##### Functions include:
-- `WordFreq()`
+- `AutoWordFreq()`
 - `ChartTheme()`
 - `RemixTheme()`
 - `multiplot()`
 - `PrintObjectsSize()`
 - `percRank()`
 
-The **WordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data.
+The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data.
 
