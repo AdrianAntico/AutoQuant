@@ -8092,7 +8092,8 @@ AutoH20Modeler <- function(Construct,
                                                             preds))
           save(calib, file = paste0(model_path,
                                     "/",
-                                    Construct[i, 5][[1]], ".Rdata"))
+                                    Construct[i, 5][[1]],
+                                    "_Validation.Rdata"))
         }
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
