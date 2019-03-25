@@ -5710,7 +5710,7 @@ AutoH20Modeler <- function(Construct,
                            MaxModels = 30,
                            TrainData = NULL,
                            TestData  = NULL) {
-  
+
   ######################################
   # Error handling
   ######################################
@@ -7826,6 +7826,16 @@ AutoH20Modeler <- function(Construct,
     # Generate evaluation plots
     if (tolower(Construct[i, 2][[1]]) != "multinomial") {
       if (tolower(Construct[i, 2][[1]]) == "quantile") {
+
+        # Store best metric
+        if(Construct[i,11][[1]]) {
+          if(cc < dd) {
+            val <- cc
+          } else {
+            val <- dd
+          }
+        }
+
         # Calibration plot
         out1 <- EvalPlot(
           calibration,
@@ -7838,6 +7848,12 @@ AutoH20Modeler <- function(Construct,
                      probs = Construct[i, 4][[1]],
                      na.rm = TRUE)
         )
+        out1 <- out1 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 Construct[i,3][[1]],
+                 ": ",
+                 round(val,4))
+        )
         ggplot2::ggsave(paste0(model_path,
                                "/CalP_",
                                Construct[i, 5][[1]],
@@ -7851,6 +7867,12 @@ AutoH20Modeler <- function(Construct,
           type        = "boxplot",
           bucket      = 0.05
         )
+        out2 <- out2 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 Construct[i,3][[1]],
+                 ": ",
+                 round(val,4))
+        )
         ggplot2::ggsave(paste0(model_path,
                                "/CalBP_",
                                Construct[i, 5][[1]],
@@ -7858,6 +7880,16 @@ AutoH20Modeler <- function(Construct,
       } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli")) {
+
+        # Store best metric
+        if(Construct[i,11][[1]]) {
+          if(cc > dd) {
+            val <- cc
+          } else {
+            val <- dd
+          }
+        }
+
         out1 <- EvalPlot(
           calibration,
           PredColName = predName,
@@ -7866,6 +7898,12 @@ AutoH20Modeler <- function(Construct,
           bucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
+        )
+        out1 <- out1 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 Construct[i,3][[1]],
+                 ": ",
+                 round(val,4))
         )
 
         if (exists("Thresh")) {
@@ -7876,6 +7914,16 @@ AutoH20Modeler <- function(Construct,
                                Construct[i, 5][[1]],
                                ".png"))
       } else {
+
+        # Store best metric
+        if(Construct[i,11][[1]]) {
+          if(cc < dd) {
+            val <- cc
+          } else {
+            val <- dd
+          }
+        }
+
         # Calibration plot
         out1 <- EvalPlot(
           calibration,
@@ -7885,6 +7933,12 @@ AutoH20Modeler <- function(Construct,
           bucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
+        )
+        out1 <- out1 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 Construct[i,3][[1]],
+                 ": ",
+                 round(val,4))
         )
         ggplot2::ggsave(paste0(model_path,
                                "/CalP_",
@@ -7898,6 +7952,12 @@ AutoH20Modeler <- function(Construct,
           ActColName  = Construct[i, 1][[1]],
           type        = "boxplot",
           bucket      = 0.05
+        )
+        out2 <- out2 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 Construct[i,3][[1]],
+                 ": ",
+                 round(val,4))
         )
         ggplot2::ggsave(paste0(model_path,
                                "/CalBP_",
@@ -7939,21 +7999,6 @@ AutoH20Modeler <- function(Construct,
         }
         xxx <- data.table::rbindlist(store)
 
-        # Calibration plot
-        out1 <- EvalPlot(
-          xxx,
-          PredColName = "Preds",
-          ActColName  = "Act",
-          type        = "calibration",
-          bucket      = 0.05,
-          aggrfun     = function(x)
-            base::mean(x, na.rm = TRUE)
-        )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
-
         # Multinomial metric
         if(multinomialMetric == "auc") {
           val <- H20MultinomialAUC(validate,
@@ -7969,6 +8014,27 @@ AutoH20Modeler <- function(Construct,
           val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
                       na.rm = TRUE)
         }
+
+        # Calibration plot
+        out1 <- EvalPlot(
+          xxx,
+          PredColName = "Preds",
+          ActColName  = "Act",
+          type        = "calibration",
+          bucket      = 0.05,
+          aggrfun     = function(x)
+            base::mean(x, na.rm = TRUE)
+        )
+        out1 <- out1 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 multinomialMetric,
+                 ": ",
+                 round(val,4))
+        )
+        ggplot2::ggsave(paste0(model_path,
+                               "/CalP_",
+                               Construct[i, 5][[1]],
+                               ".png"))
 
         # Store micro auc
         data.table::set(grid_tuned_paths, i = i, j = 1L, value = val)
@@ -8003,6 +8069,22 @@ AutoH20Modeler <- function(Construct,
         }
         xxx <- data.table::rbindlist(store)
 
+        # Multinomial metric
+        if(multinomialMetric == "auc") {
+          val <- H20MultinomialAUC(validate,
+                                   bl_model,
+                                   targetColNum = 1,
+                                   targetName = Construct[i,1][[1]])
+        } else {
+          xx <- data.table::as.data.table(h2o::h2o.cbind(
+            validate[, 1],
+            h2o::h2o.predict(bl_model,
+                             newdata = validate)[,1]))
+          names(xx)
+          val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+                      na.rm = TRUE)
+        }
+
         # Calibration plot
         out1 <- EvalPlot(
           xxx,
@@ -8013,25 +8095,15 @@ AutoH20Modeler <- function(Construct,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
+        out1 <- out1 + ggplot2::ggtitle(
+          paste0("Calibration Evaluation Plot ",
+                 multinomialMetric,
+                 ": ",
+                 round(val,4))
+          )
         ggplot2::ggsave(paste0(model_path,
                                "/CalP_",
                                Construct[i, 5][[1]], ".png"))
-      }
-
-      # Multinomial metric
-      if(multinomialMetric == "auc") {
-        val <- H20MultinomialAUC(validate,
-                                 bl_model,
-                                 targetColNum = 1,
-                                 targetName = Construct[i,1][[1]])
-      } else {
-        xx <- data.table::as.data.table(h2o::h2o.cbind(
-          validate[, 1],
-          h2o::h2o.predict(bl_model,
-                             newdata = validate)[,1]))
-        names(xx)
-        val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
-                    na.rm = TRUE)
       }
 
       # Store micro auc
