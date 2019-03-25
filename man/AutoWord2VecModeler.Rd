@@ -32,7 +32,7 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 
 \item{StopWords}{For H20 word2vec model}
 
-\item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo}
+\item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.}
 
 \item{Threads}{Number of available threads you want to dedicate to model building}
 
