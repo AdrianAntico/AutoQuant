@@ -8254,6 +8254,15 @@ AutoH20Scoring <- function(Features     = data,
                            FilesPath    = getwd(),
                            H20ShutDown  = rep(FALSE,3)) {
 
+  # Only run text or other models types
+  if(any(tolower(TargetType) %in% "text") &
+     any(tolower(TargetType) %in% c("regression",
+                                    "classification",
+                                    "multinomial",
+                                    "multioutcome"))) {
+    stop("Run either text or other models, but not both")
+  }
+
   # Import grid_tuned_paths or StoreFile
   if(any(tolower(TargetType) %in% c("regression",
                                     "classification",
@@ -8499,7 +8508,11 @@ AutoH20Scoring <- function(Features     = data,
     if(H20ShutDown[i]) {
       h2o::h2o.shutdown(prompt = FALSE)
     }
-    ScoresList[[i]] <- Scores
+    if(any(tolower(TargetType) == "text")) {
+      ScoresList <- Features
+    } else {
+      ScoresList[[i]] <- Scores
+    }
   }
   return(ScoresList)
 }
