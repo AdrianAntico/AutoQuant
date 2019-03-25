@@ -8039,8 +8039,10 @@ AutoH20Modeler <- function(Construct,
             h2o::h2o.predict(best_model,
                              newdata = validate)[,1]))
           names(xx)
-          val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
-                      na.rm = TRUE)
+          val <- mean(
+            xx[, Accuracy := as.numeric(
+              ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+            na.rm = TRUE)
         }
 
         # Calibration plot
@@ -8109,8 +8111,11 @@ AutoH20Modeler <- function(Construct,
             h2o::h2o.predict(bl_model,
                              newdata = validate)[,1]))
           names(xx)
-          val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
-                      na.rm = TRUE)
+          val <- mean(xx[, Accuracy := as.numeric(
+            ifelse(
+              get(
+                Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+            na.rm = TRUE)
         }
 
         # Calibration plot
@@ -8724,7 +8729,7 @@ tokenizeH20 <- function(data) {
 #' \dontrun{
 #' data <- Word2VecModel(data,
 #'                       stringCol     = c("Text_Col1",
-#'                       "Text_Col2"),
+#'                                         "Text_Col2"),
 #'                       KeepStringCol = FALSE,
 #'                       model_path    = getwd(),
 #'                       vects         = 5,
