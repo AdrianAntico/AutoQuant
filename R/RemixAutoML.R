@@ -1876,7 +1876,7 @@ AutoTS <- function(data,
   }
 
   # Return values
-  return(list(FC_Data, Eval, model)
+  return(list(FC_Data, Eval, model))
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
