@@ -57,6 +57,9 @@ output <-   AutoTS(data,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE)
+ForecastData <- output[[1]]
+ModelName    <- output[[2]]
+WinningModel <- output[[3]]
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
