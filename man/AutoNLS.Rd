@@ -37,17 +37,29 @@ for (i in as.integer(1:500)) {
 data1 <- data.table::copy(data)
 
 # Merge and Model data
-data2 <- merge(data1,
-               AutoNLS(data = data, y = "Target", x = "Variable", monotonic = FALSE),
-               by = "Variable",
-               all = TRUE)
+data11 <- AutoNLS(
+  data = data,
+  y = "Target",
+  x = "Variable",
+  monotonic = FALSE
+)
+
+data2 <- merge(
+  data1,
+  data11[[1]],
+  by = "Variable",
+  all = TRUE
+)
 
 # Plot graphs of predicted vs actual
 p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "blue")) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "red")) +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
+                                  color = "blue")) +
+  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
+                                  color = "red")) +
   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
-  ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
+  ggplot2::ylab("Target Variable") +
+  ggplot2::xlab("Independent Variable")
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
