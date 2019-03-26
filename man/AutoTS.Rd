@@ -32,7 +32,7 @@ AutoTS(data, TargetName = "Targets", DateName = "DateTime",
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 }
 \value{
-If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
+Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
 }
 \description{
 AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.

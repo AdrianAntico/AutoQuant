@@ -16,7 +16,7 @@ AutoNLS(data, y, x, monotonic = TRUE)
 \item{monotonic}{This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression}
 }
 \value{
-A data table with your original column replaced by the nls model predictions
+A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use.
 }
 \description{
 This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
