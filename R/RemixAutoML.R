@@ -727,7 +727,7 @@ AutoKMeans <- function(data,
 #'                    NumCores       = 4,
 #'                    SkipModels     = NULL,
 #'                    StepWise       = TRUE)
-#' @return If Ensemble is TRUE, return a data.table object with a date column and the forecasts, an evaluation data set, and an ensemble training data set (all in a list). If Ensemble is FALSE, then all items returned except the ensemble training set.
+#' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
 #' @export
 AutoTS <- function(data,
                    TargetName     = "Targets",
@@ -2487,7 +2487,7 @@ threshOptim <- function(data,
 #'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "red")) +
 #'   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
 #'   ggplot2::ylab("Target Variable") + ggplot2::xlab("Independent Variable")
-#' @return A data table with your original column replaced by the nls model predictions
+#' @return A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use.
 #' @export
 AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Begin
@@ -2704,6 +2704,11 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
     return(list(DATA,name,model8))
   } else {
     DATA[, eval(y) := preds]
+    if(monotonic) {
+      name <- "Monotonic Regression"
+    } else {
+      name <- "Polynomial Regression"
+    }
     return(list(DATA,name,baseline))
   }
 }
