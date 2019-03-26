@@ -1537,6 +1537,9 @@ AutoTS <- function(data,
       forecast::forecast(ARFIMA_model,
                          h = FCPeriods)$mean)]
 
+    # Store model
+    model <- ARFIMA_model
+
   } else if (BestModel == "ARIMA") {
     # Rebuild model on full data
     if (StepWise) {
@@ -1616,6 +1619,9 @@ AutoTS <- function(data,
       forecast::forecast(ARIMA_model,
                          h = FCPeriods)$mean)]
 
+    # Store model
+    model <- ARIMA_model
+
   } else if (BestModel == "ETS") {
     # Rebuild model on full data
     if (freq > 24) {
@@ -1671,6 +1677,9 @@ AutoTS <- function(data,
       forecast::forecast(EXPSMOOTH_model,
                          h = FCPeriods)$mean)]
 
+    # Store model
+    model <- EXPSMOOTH_model
+
   } else if (BestModel == "TBATS") {
     if(MinVal > 0) {
       # Rebuild model on full data
@@ -1709,6 +1718,9 @@ AutoTS <- function(data,
       forecast::forecast(TBATS_model,
                          h = FCPeriods)$mean)]
 
+    # Store model
+    model <- TBATS_model
+
   } else if (BestModel == "TSLM") {
     if(MinVal > 0) {
       # Rebuild model on full data
@@ -1727,6 +1739,9 @@ AutoTS <- function(data,
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(TSLM_model,h = FCPeriods)$mean)]
+
+    # Store model
+    model <- TSLM_model
 
   } else if (BestModel == "NN") {
     # Rebuild model on full data
@@ -1814,6 +1829,9 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
 
+    # Store model
+    model <- NNETAR_model
+
   } else if (BestModel == "PROPHET") {
     # Rebuild model on full data
     print("PROPHET FITTING")
@@ -1852,10 +1870,13 @@ AutoTS <- function(data,
       )[ds > MaxDate]
     FC_Data[, Forecast_PROPHET := data.table::as.data.table(predict(
       PROPHET_model,PROPHET_FC))[["yhat"]]]
+
+    # Store model
+    model <- PROPHET_model
   }
 
   # Return values
-  return(list(FC_Data, Eval))
+  return(list(FC_Data, Eval, model)
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
@@ -2656,34 +2677,34 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
     DATA[, eval(y) := preds9]
-    return(list(DATA,name))
+    return(list(DATA,name,model9))
   } else if (name == nls_collection[2, 1][[1]]) {
     DATA[, eval(y) := preds1]
-    return(list(DATA,name))
+    return(list(DATA,name,model1))
   } else if (name == nls_collection[3, 1][[1]]) {
     DATA[, eval(y) := preds2]
-    return(list(DATA,name))
+    return(list(DATA,name,model2))
   } else if (name == nls_collection[4, 1][[1]]) {
     DATA[, eval(y) := preds3]
-    return(list(DATA,name))
+    return(list(DATA,name,model3))
   } else if (name == nls_collection[5, 1][[1]]) {
     DATA[, eval(y) := preds4]
-    return(list(DATA,name))
+    return(list(DATA,name,model4))
   } else if (name == nls_collection[6, 1][[1]]) {
     DATA[, eval(y) := preds5]
-    return(list(DATA,name))
+    return(list(DATA,name,model5))
   } else if (name == nls_collection[7, 1][[1]]) {
     DATA[, eval(y) := preds6]
-    return(list(DATA,name))
+    return(list(DATA,name,model6))
   } else if (name == nls_collection[8, 1][[1]]) {
     DATA[, eval(y) := preds7]
-    return(list(DATA,name))
+    return(list(DATA,name,model7))
   } else if (name == nls_collection[9, 1][[1]]) {
     DATA[, eval(y) := preds8]
-    return(list(DATA,name))
+    return(list(DATA,name,model8))
   } else {
     DATA[, eval(y) := preds]
-    return(list(DATA,name))
+    return(list(DATA,name,baseline))
   }
 }
 
