@@ -406,13 +406,13 @@ test_that("AutoNLS", {
       y = "Target",
       x = "Variable",
       monotonic = FALSE
-    ),
+    )[[1]],
     by = "Variable",
     all = TRUE
   )
 
   # Plot graphs of predicted vs actual
-  p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+  p <- ggplot2::ggplot(data2[[1]], ggplot2::aes(x = Variable)) +
     ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
                                     color = "blue")) +
     ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
