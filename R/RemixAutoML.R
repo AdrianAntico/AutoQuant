@@ -729,7 +729,7 @@ AutoKMeans <- function(data,
 #'                    SkipModels     = NULL,
 #'                    StepWise       = TRUE)
 #' ForecastData <- output[[1]]
-#' ModelName    <- output[[2]]
+#' ModelEval    <- output[[2]]
 #' WinningModel <- output[[3]]
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
 #' @export
