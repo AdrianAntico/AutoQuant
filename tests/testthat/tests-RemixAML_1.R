@@ -399,20 +399,22 @@ test_that("AutoNLS", {
   data1 <- data.table::copy(data)
 
   # Merge and Model data
+  data11 <- AutoNLS(
+    data = data,
+    y = "Target",
+    x = "Variable",
+    monotonic = FALSE
+  )
+
   data2 <- merge(
     data1,
-    AutoNLS(
-      data = data,
-      y = "Target",
-      x = "Variable",
-      monotonic = FALSE
-    )[[1]],
+    data11[[1]],
     by = "Variable",
     all = TRUE
   )
 
   # Plot graphs of predicted vs actual
-  p <- ggplot2::ggplot(data2[[1]], ggplot2::aes(x = Variable)) +
+  p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
     ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
                                     color = "blue")) +
     ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
