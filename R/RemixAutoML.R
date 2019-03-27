@@ -2503,7 +2503,7 @@ threshOptim <- function(data,
 #'   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
 #'   ggplot2::ylab("Target Variable") +
 #'   ggplot2::xlab("Independent Variable")
-#' @return A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use.
+#' @return A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use; 4: Model metrics for models with ability to build.
 #' @export
 AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Begin
@@ -2690,34 +2690,37 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   name <-
     nls_collection[Accuracy != 999][order(Accuracy)][1, 1][[1]]
 
+  # Collect metrics for all models fitted
+  temp <- nls_collection[Accuracy != 999][order(Accuracy)]
+
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
     DATA[, eval(y) := preds9]
-    return(list(DATA,name,model9))
+    return(list(DATA,name,model9,temp))
   } else if (name == nls_collection[2, 1][[1]]) {
     DATA[, eval(y) := preds1]
-    return(list(DATA,name,model1))
+    return(list(DATA,name,model1,temp))
   } else if (name == nls_collection[3, 1][[1]]) {
     DATA[, eval(y) := preds2]
-    return(list(DATA,name,model2))
+    return(list(DATA,name,model2,temp))
   } else if (name == nls_collection[4, 1][[1]]) {
     DATA[, eval(y) := preds3]
-    return(list(DATA,name,model3))
+    return(list(DATA,name,model3,temp))
   } else if (name == nls_collection[5, 1][[1]]) {
     DATA[, eval(y) := preds4]
-    return(list(DATA,name,model4))
+    return(list(DATA,name,model4,temp))
   } else if (name == nls_collection[6, 1][[1]]) {
     DATA[, eval(y) := preds5]
-    return(list(DATA,name,model5))
+    return(list(DATA,name,model5,temp))
   } else if (name == nls_collection[7, 1][[1]]) {
     DATA[, eval(y) := preds6]
-    return(list(DATA,name,model6))
+    return(list(DATA,name,model6,temp))
   } else if (name == nls_collection[8, 1][[1]]) {
     DATA[, eval(y) := preds7]
-    return(list(DATA,name,model7))
+    return(list(DATA,name,model7,temp))
   } else if (name == nls_collection[9, 1][[1]]) {
     DATA[, eval(y) := preds8]
-    return(list(DATA,name,model8))
+    return(list(DATA,name,model8,temp))
   } else {
     DATA[, eval(y) := preds]
     if(monotonic) {
@@ -2725,7 +2728,7 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
     } else {
       name <- "Polynomial Regression"
     }
-    return(list(DATA,name,baseline))
+    return(list(DATA,name,baseline,temp))
   }
 }
 
