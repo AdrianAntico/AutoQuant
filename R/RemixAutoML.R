@@ -2688,10 +2688,10 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
 
   # Store best model name
   name <-
-    nls_collection[Accuracy != 999][order(Accuracy)][1, 1][[1]]
+    nls_collection[MeanAbsError != 999][order(MeanAbsError)][1, 1][[1]]
 
   # Collect metrics for all models fitted
-  temp <- nls_collection[Accuracy != 999][order(Accuracy)]
+  temp <- nls_collection[MeanAbsError != 999][order(MeanAbsError)]
 
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
