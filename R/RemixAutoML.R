@@ -8841,12 +8841,13 @@ AutoWord2VecModeler <- function(data,
     h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
     # It is important to remove "\n" --
-    data[, ':=' (TEMP = gsub("  ", " ", data[[string]]))]
-    data[, ':=' (TEMP = stringr::str_replace_all(TEMP, "[[:punct:]]", ""))]
-    data2 <- data[, "TEMP"]
+    data[, eval(string) := gsub("  ", " ", get(string))]
+    data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
+    data2 <- data[, .(get(string))]
 
     # Tokenize
     tokenized_words <- tokenizeH20(data2)
+    rm(data2)
 
     # Build model
     w2v.model <- h2o::h2o.word2vec(
@@ -8903,8 +8904,6 @@ AutoWord2VecModeler <- function(data,
                       value = paste0(model_path, "/", string))
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
-
-    h2o::h2o.rm('data3')
 
     # Score model
     all_vecs <-
