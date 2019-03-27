@@ -2548,7 +2548,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
     } else {
       tryCatch({
         baseline <-
-          stats::lm(as.formula(paste(y, " ~ poly(", x, ",5)", sep = "")),
+          stats::lm(as.formula(Target ~ poly(Variable,
+                                             5)),
                     data = DATA)
         preds    <- baseline$fitted.values
         preds[preds < 0] <- 0
@@ -2561,11 +2562,12 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   }, error = function(x) {
     return("skip")
   })
+
+  # Asymp model
   tryCatch({
     model1 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSasymp(", x, ", Asym, R0, lrc)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSasymp(Variable, Asym, R0, lrc),
+                 data = DATA)
     preds1 <- stats::fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
     val    <- base::mean(abs(zz - preds1))
@@ -2577,9 +2579,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Asymp offset model
   tryCatch({
     model2 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSasympOff(", x, ", Asym, lrc, c0)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSasympOff(Variable, Asym, lrc, c0),
+                 data = DATA)
     preds2 <- stats::fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
     va2    <- base::mean(abs(zz - preds2))
@@ -2591,9 +2592,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Asymp origin model
   tryCatch({
     model3 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSasympOrig(", x, ", Asym, lrc)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSasympOrig(Variable,Asym,lrc),
+                 data = DATA)
     preds3 <- stats::fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
     va3    <- base::mean(abs(zz - preds3))
@@ -2605,9 +2605,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Biexp model
   tryCatch({
     model4 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSbiexp(", x, ", A1, lrc1, A2, lrc2)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSbiexp(Variable,A1,lrc1,A2,lrc2),
+                 data = DATA)
     preds4 <- stats::fitted(model4, DATA)
     preds4[preds4 < 0] <- 0
     val4   <- base::mean(abs(zz - preds4))
@@ -2619,9 +2618,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Four parameter logistic model
   tryCatch({
     model5 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSfpl(", x, ", A, B, xmid, scal)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSfpl(Variable, A, B, xmid, scal),
+                 data = DATA)
     preds5 <- stats::fitted(model5, DATA)
     preds5[preds5 < 0] <- 0
     val5   <- base::mean(abs(zz - preds5))
@@ -2633,9 +2631,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Gompertz model
   tryCatch({
     model6 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSgompertz(", x, ", Asym, b2, b3)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSgompertz(Variable,Asym,b2,b3),
+                 data = DATA)
     preds6 <- stats::fitted(model6, DATA)
     preds6[preds6 < 0] <- 0
     val6   <- base::mean(abs(zz - preds6))
@@ -2647,9 +2644,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Logistic model
   tryCatch({
     model7 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSlogis(", x, ", Asym, xmid, scal)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSlogis(Variable,Asym,xmid,scal),
+                 data = DATA)
     preds7 <- stats::fitted(model7, DATA)
     preds7[preds7 < 0] <- 0
     val7   <- base::mean(abs(zz - preds7))
@@ -2661,8 +2657,7 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Michaelis-Menton model
   tryCatch({
     model8 <-
-      stats::nls(as.formula(paste(y, " ~ SSmicmen(", x, ", Vm, K)",
-                                  sep = "")),
+      stats::nls(Target ~ SSmicmen(Variable,Vm,K),
                  data = DATA)
     preds8 <- stats::fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
@@ -2676,9 +2671,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Weibull Growth model
   tryCatch({
     model9 <-
-      stats::nls(as.formula(paste(
-        y, " ~ SSweibull(", x, ", Asym, Drop, lrc, pwr)", sep = ""
-      )), data = DATA)
+      stats::nls(Target ~ SSweibull(Variable,Asym,Drop,lrc,pwr),
+                 data = DATA)
     preds9 <- stats::fitted(model9, DATA)
     preds9[preds9 < 0] <- 0
     val9   <- base::mean(abs(zz - preds9))
