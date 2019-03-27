@@ -8710,7 +8710,9 @@ AutoH20Scoring <- function(Features     = data,
       } else if(tolower(TargetType[i]) == c("text")) {
         name <- StoreFile[i, ModelName][[1]]
         data <- AutoH20TextPrepScoring(data = Features,
-                                       string = name)
+                                       string = name,
+                                       NThreads = NThreads,
+                                       MaxMem = MaxMem)
         Scores <- data.table::as.data.table(
           h2o::h2o.transform(model,
                              words = data,
