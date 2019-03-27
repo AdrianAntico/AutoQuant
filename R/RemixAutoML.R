@@ -8851,7 +8851,7 @@ AutoWord2VecModeler <- function(data,
     # Build model
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
-      model_id           = stringCol[i],
+      model_id           = string,
       word_model         = "SkipGram",
       norm_model         = "HSM",
       vec_size           = vects,
@@ -8869,11 +8869,15 @@ AutoWord2VecModeler <- function(data,
       data.table::set(StoreFile,
                       i = i,
                       j = 1L,
-                      value = stringCol[i])
+                      value = string)
       data.table::set(StoreFile,
                       i = i,
                       j = 2L,
                       value = w2vPath)
+      data.table::set(StoreFile,
+                      i = i,
+                      j = 3L,
+                      value = "NA")
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     } else {
       w2vPath <-
@@ -8883,12 +8887,12 @@ AutoWord2VecModeler <- function(data,
         path = model_path,
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = stringCol[i]
+        genmodel_name = string
       )
       data.table::set(StoreFile,
                       i = i,
                       j = 1L,
-                      value = stringCol[i])
+                      value = string)
       data.table::set(StoreFile,
                       i = i,
                       j = 2L,
@@ -8896,7 +8900,7 @@ AutoWord2VecModeler <- function(data,
       data.table::set(StoreFile,
                       i = i,
                       j = 3L,
-                      value = paste0(model_path, "\\", stringCol[i]))
+                      value = paste0(model_path, "/", string))
       save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
     }
 
