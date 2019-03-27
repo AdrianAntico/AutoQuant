@@ -2522,7 +2522,7 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
         "Michal_Menton",
         "Weilbull"
       ),
-      Accuracy = rep(999, 10)
+      MeanAbsError = rep(999, 10)
     )
 
   # Convert to data.table if not already
