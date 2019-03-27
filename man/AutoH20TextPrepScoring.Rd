@@ -4,12 +4,16 @@
 \alias{AutoH20TextPrepScoring}
 \title{AutoH20TextPrepScoring is for NLP scoring}
 \usage{
-AutoH20TextPrepScoring(data, string)
+AutoH20TextPrepScoring(data, string, MaxMem, NThreads)
 }
 \arguments{
 \item{data}{The text data}
 
 \item{string}{The name of the string column to prepare}
+
+\item{MaxMem}{Amount of memory you want to let H20 utilize}
+
+\item{NThreads}{The number of threads you want to let H20 utilize}
 }
 \description{
 This function returns prepared tokenized data for H20 Word2VecModeler scoring

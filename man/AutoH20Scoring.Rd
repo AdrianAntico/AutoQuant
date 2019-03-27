@@ -91,7 +91,7 @@ Construct <- data.table::data.table(Targets = rep("target",3),
                                     fpProfit        = rep(NA,3),
                                     fnProfit        = rep(NA,3),
                                     SaveModel       = rep(FALSE,3),
-                                    SaveModelType   = c("Mojo","standard","mojo"),
+                                    SaveModelType   = c("Mojo","mojo","mojo"),
                                     PredsAllData    = rep(TRUE,3),
                                     TargetEncoding  = rep(NA,3),
                                     SupplyData      = rep(FALSE,3))
@@ -108,16 +108,16 @@ AutoH20Modeler(Construct,
                TestData  = NULL)
 
 N <- 3
-AutoH20Scoring(Features     = data,
-               GridTuneRow  = c(1:N),
-               ScoreMethod  = "standard",
-               TargetType   = rep("multinomial",N),
-               ClassVals    = rep("Probs",N),
-               NThreads     = 6,
-               MaxMem       = "28G",
-               JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-               FilesPath    = getwd(),
-               H20ShutDown  = rep(FALSE,N))
+data <- AutoH20Scoring(Features     = data,
+                       GridTuneRow  = c(1:N),
+                       ScoreMethod  = "standard",
+                       TargetType   = rep("multinomial",N),
+                       ClassVals    = rep("Probs",N),
+                       NThreads     = 6,
+                       MaxMem       = "28G",
+                       JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+                       FilesPath    = getwd(),
+                       H20ShutDown  = rep(FALSE,N))
 }
 }
 \seealso{
