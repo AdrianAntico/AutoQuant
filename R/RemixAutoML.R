@@ -6,6 +6,7 @@ utils::globalVariables(
   names = c(
     "test",
     "act",
+    "MeanAbsError",
     "SupplyData",
     "string",
     "..string",
