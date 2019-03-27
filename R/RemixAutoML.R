@@ -8444,7 +8444,7 @@ AutoH20Modeler <- function(Construct,
 #'                                     fpProfit        = rep(NA,3),
 #'                                     fnProfit        = rep(NA,3),
 #'                                     SaveModel       = rep(FALSE,3),
-#'                                     SaveModelType   = c("Mojo","standard","mojo"),
+#'                                     SaveModelType   = c("Mojo","mojo","mojo"),
 #'                                     PredsAllData    = rep(TRUE,3),
 #'                                     TargetEncoding  = rep(NA,3),
 #'                                     SupplyData      = rep(FALSE,3))
@@ -8498,9 +8498,9 @@ AutoH20Scoring <- function(Features     = data,
                                     "classification",
                                     "multinomial",
                                     "multioutcome"))) {
-    load(paste0(FilesPath, "\\grid_tuned_paths.Rdata"))
+    load(paste0(FilesPath, "/grid_tuned_paths.Rdata"))
   } else if (any(tolower(TargetType) %in% "text")) {
-    load(paste0(FilesPath, "\\StoreFile.Rdata"))
+    load(paste0(FilesPath, "/StoreFile.Rdata"))
   } else {
     stop("TargetType not a valid option")
   }
@@ -8515,7 +8515,7 @@ AutoH20Scoring <- function(Features     = data,
           the number of rows in grid_tuned_paths")
     }
   } else if (any(tolower(TargetType) %in% "text")) {
-    load(paste0(FilesPath, "\\StoreFile.Rdata"))
+    load(paste0(FilesPath, "/StoreFile.Rdata"))
     if(nrow(StoreFile) < max(GridTuneRow)) {
       stop("GridTuneRow is greater than
           the number of rows in StoreFile")
@@ -8545,7 +8545,7 @@ AutoH20Scoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,1])
-          data.table::setnames(Scores, "V1","Class")
+          data.table::setnames(Scores, "predict","Class")
         } else if (tolower(ClassVals[i]) == "all") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
@@ -8554,9 +8554,9 @@ AutoH20Scoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE))
-          data.table::setnames(Scores, "V1","Class")
+          data.table::setnames(Scores, "predict","Class")
         } else {
-          stop("ClassVals can only be probs or label")
+          stop("ClassVals can only be Probs, Label or All")
         }
       } else if(tolower(TargetType[i]) == "classification") {
         if(tolower(ClassVals[i]) == c("p1")) {
@@ -8583,7 +8583,7 @@ AutoH20Scoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,1])
-          data.table::setnames(Scores, "V1","Class")
+          data.table::setnames(Scores, "predict","Class")
         } else if(tolower(ClassVals[i]) == "all") {
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_df(
@@ -8592,9 +8592,9 @@ AutoH20Scoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE))
-          data.table::setnames(Scores, "V1","Class")
+          data.table::setnames(Scores, "predict","Class")
         } else {
-          stop("ClassVals can only be probs or label")
+          stop("ClassVals can only be Probs, Label or All")
         }
       } else if(tolower(TargetType[i]) == "regression") {
         Scores <- data.table::as.data.table(
@@ -8735,7 +8735,7 @@ AutoH20Scoring <- function(Features     = data,
     } else {
       stop("ScoreMethod must be Standard or Mojo")
     }
-    if(H20ShutDown[i]) {
+    if(H20ShutDown[i] && tolower(ScoreMethod) == "standard") {
       h2o::h2o.shutdown(prompt = FALSE)
     }
     if(any(tolower(TargetType) == "text")) {
@@ -9045,9 +9045,11 @@ AutoWordFreq <- function(data,
 #' @family Misc
 #' @param data The text data
 #' @param string The name of the string column to prepare
+#' @param MaxMem Amount of memory you want to let H20 utilize
+#' @param NThreads The number of threads you want to let H20 utilize
 #' @import data.table
 #' @export
-AutoH20TextPrepScoring <- function(data, string) {
+AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
   if(!is.data.table(data)) data <- data.table::as.data.table((data))
   data[, eval(string) := as.character(get(string))]
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
