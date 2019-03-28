@@ -63,7 +63,8 @@ WinningModel <- output[[3]]
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
-  \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}}
+  \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}},
+  \code{\link{AutoRecommender}}
 }
 \author{
 Adrian Antico and Douglas Pestana

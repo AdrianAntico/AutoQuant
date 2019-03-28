@@ -16,6 +16,9 @@ RecomDataCreate(data, EntityColName = "CustomerID",
 
 \item{MetricColName}{This is the column name in quotes that represents the column name for the metric, such as total sales}
 }
+\value{
+A BinaryRatingsMatrix
+}
 \description{
 Convert transactional data.table to a binary ratings matrix
 }

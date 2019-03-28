@@ -13,18 +13,21 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 
 \item{Partition}{Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.}
 
-\item{KFolds}{Choose 2 for traditional train / test. Choose > 2 for the number of cross validations}
+\item{KFolds}{Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations}
 
-\item{Ratio}{The ratio for train and test. E.g. 0.75 for 75% data allocated to training}
+\item{Ratio}{The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training}
+
+\item{RatingType}{Choose from “topNList”, “ratings”, “ratingMatrix”}
 
 \item{RatingsKeep}{The total ratings you wish to return. Default is 20.}
 
 \item{SkipModels}{AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"}
-
-\item{RatingsType}{Choose from “topNList”, “ratings”, “ratingMatrix”}
+}
+\value{
+The winning model
 }
 \description{
-Automatically build the best recommendere model.
+This function returns the winning model
 }
 \examples{
 \dontrun{
@@ -37,6 +40,12 @@ ModelResults <- AutoRecommender(BinaryRatingsMatrix,
                                 SkipModels = "AssociationRules")
 }
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoH20Modeler}},
+  \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}},
+  \code{\link{AutoTS}}
+}
 \author{
 Adrian Antico and Douglas Pestana
 }
+\concept{Supervised Learning}

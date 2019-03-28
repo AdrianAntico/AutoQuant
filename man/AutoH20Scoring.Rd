@@ -122,7 +122,8 @@ data <- AutoH20Scoring(Features     = data,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
-  \code{\link{AutoNLS}}, \code{\link{AutoTS}}
+  \code{\link{AutoNLS}}, \code{\link{AutoRecommender}},
+  \code{\link{AutoTS}}
 }
 \author{
 Adrian Antico
