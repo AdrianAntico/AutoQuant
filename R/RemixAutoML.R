@@ -5,6 +5,10 @@
 utils::globalVariables(
   names = c(
     "test",
+    "BinaryRatingsMatrix",
+    "model",
+    "n_products",
+    "TPR",
     "item",
     "value",
     "act",
@@ -9202,7 +9206,7 @@ RecomDataCreate <- function(data,
   row.names(train_data_matrix) <- train_data_rownames
 
   # Return binary rating matrix
-  return(as(object = train_data_matrix,
+  return(methods::as(object = train_data_matrix,
             Class = "binaryRatingMatrix"))
 }
 
@@ -9259,7 +9263,7 @@ AutoRecommender <- function(data,
     RatingType <- "topNList"
   } else if(tolower(RatingType) == "ratings") {
     RatingType <- "ratings"
-  } else if(tolower(RatingsType) == "ratingMatrix") {
+  } else if(tolower(RatingType) == "ratingMatrix") {
     RatingType <- "ratingMatrix"
   }
 
