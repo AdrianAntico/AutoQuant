@@ -8589,26 +8589,29 @@ AutoH20Scoring <- function(Features     = data,
     if(tolower(ScoreMethod) == "mojo") {
       if(tolower(TargetType[i]) == "multinomial") {
         if(tolower(ClassVals[i]) == c("probs")) {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,-1])
         } else if(tolower(ClassVals[i]) == "label") {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,1])
           data.table::setnames(Scores, "predict","Class")
         } else if (tolower(ClassVals[i]) == "all") {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8619,34 +8622,38 @@ AutoH20Scoring <- function(Features     = data,
         }
       } else if(tolower(TargetType[i]) == "classification") {
         if(tolower(ClassVals[i]) == c("p1")) {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,3])
         } else if(tolower(ClassVals[i]) == c("probs")) {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,-1])
         } else if(tolower(ClassVals[i]) == "label") {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,1])
           data.table::setnames(Scores, "predict","Class")
         } else if(tolower(ClassVals[i]) == "all") {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
           Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8656,9 +8663,10 @@ AutoH20Scoring <- function(Features     = data,
           stop("ClassVals can only be Probs, Label or All")
         }
       } else if(tolower(TargetType[i]) == "regression") {
-        Scores <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_df(
-            frame = Features,
+        data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
             mojo_zip_path = grid_tuned_paths[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8667,25 +8675,28 @@ AutoH20Scoring <- function(Features     = data,
         keep <- StoreFile[i,1][[1]]
         temp <- AutoH20TextPrepScoring(data = Features[, ..keep],
                                        string = StoreFile[i,1][[1]])
-        Scores <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_df(
-            frame = data,
+        data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
             mojo_zip_path = StoreFile[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = StoreFile[i,3][[1]],
             verbose = FALSE))
       } else if(tolower(TargetType[i]) == "multioutcome") {
+        data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
         Counts <- as.numeric(
           as.character(
-            h2o::h2o.mojo_predict_df(
-              frame = Features,
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = paste0(paste0(FilesPath,"/Features.csv")),
               mojo_zip_path = grid_tuned_paths[i,2][[1]],
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)))
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
         Temp <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_df(
-            frame = Features,
+          h2o::h2o.mojo_predict_csv(
+            input_csv_path <- paste0(paste0(FilesPath,"/Features.csv")),
             mojo_zip_path = grid_tuned_paths[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = grid_tuned_paths[i,6][[1]],
