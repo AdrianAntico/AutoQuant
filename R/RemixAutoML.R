@@ -5,6 +5,8 @@
 utils::globalVariables(
   names = c(
     "test",
+    "item",
+    "value",
     "act",
     "MeanAbsError",
     "SupplyData",
@@ -9130,6 +9132,7 @@ AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
 #' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
 #' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU
 #' @param MetricColName This is the column name in quotes that represents the column name for the metric, such as total sales
+#' @return A BinaryRatingsMatrix
 #' @examples
 #' \dontrun{
 #' BinaryRatingsMatrix <- RecomDataCreate(data,
@@ -9205,12 +9208,14 @@ RecomDataCreate <- function(data,
 
 #' Automatically build the best recommendere model.
 #'
+#' This function returns the winning model
 #' @author Adrian Antico and Douglas Pestana
+#' @family Supervised Learning
 #' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
-#' @param KFolds Choose 2 for traditional train / test. Choose > 2 for the number of cross validations
-#' @param Ratio The ratio for train and test. E.g. 0.75 for 75% data allocated to training
-#' @param RatingsType Choose from “topNList”, “ratings”, “ratingMatrix”
+#' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
+#' @param Ratio The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training
+#' @param RatingType Choose from “topNList”, “ratings”, “ratingMatrix”
 #' @param RatingsKeep The total ratings you wish to return. Default is 20.
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
 #' @examples
@@ -9223,7 +9228,7 @@ RecomDataCreate <- function(data,
 #'                                 RatingsKeep = 20,
 #'                                 SkipModels = "AssociationRules")
 #' }
-#' @return
+#' @return The winning model
 #' @export
 AutoRecommender <- function(data,
                             Partition = "Split",
@@ -9307,7 +9312,7 @@ AutoRecommender <- function(data,
   n <- length(results)
   store <- list()
   for (i in 1:n) {
-    temp <- data.table(avg(results)[[i]])
+    temp <- data.table(recommenderlab::avg(results)[[i]])
     temp[, model := results[[i]]@method]
     temp[, n_products := seq(1:RatingsKeep)]
     store[[i]] <- temp
