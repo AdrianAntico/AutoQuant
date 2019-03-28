@@ -1,12 +1,13 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
 Version: 1.0
-Authors@R: person("Adrian", "Antico", email = "adrianantico@gmail.com",
-                  role = c("aut", "cre", "cph"))
+Authors@R: c(
+  person("Adrian","Antico",role=c("aut","cre"), email="adrianantico@gmail.com"),
+  person("Douglas","Pestana", role="ctb", email="douglas.pestana@remix.institute.com"))
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5.0)
 SystemRequirements: Java (>= 7.0)
-License: GPL-2
+License: License: MPL-2.0 | file LICENSE
 Encoding: UTF-8
 Language: en-US
 URL: https://github.com/AdrianAntico/RemixAutoML
