@@ -17,8 +17,8 @@ RoxygenNote: 6.1.1
 Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
         prophet, tsoutliers, stringr, itertools, doParallel, parallel,
         scatterplot3d, RColorBrewer, grid, monreg, tm, wordcloud,
-        foreach, pROC, doSNOW
-Suggests: testthat, sde, knitr, rmarkdown
+        foreach, pROC, doSNOW, recommenderlab
+Suggests: testthat, sde, knitr, rmarkdown, methods
 VignetteBuilder: knitr
 Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
@@ -39,4 +39,4 @@ Views: MachineLearning,
         AutomatedTimeSeriesForecasting,
         TimeSeries,
         Forecasting
-        
+
