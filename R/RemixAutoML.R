@@ -695,7 +695,7 @@ AutoKMeans <- function(data,
 #'
 #' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.
 #'
-#' @author Adrian Antico
+#' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
 #' @param data is the source time series data.table
 #' @param TargetName is the name of the dependent variable in your data.table
@@ -1930,7 +1930,7 @@ SimpleCap <- function(x) {
 #'
 #' This function adds the Remix Theme to ggplots
 #'
-#' @author DougVegas
+#' @author Douglas Pestana
 #' @family Misc
 #' @import data.table
 #' @examples
@@ -2466,16 +2466,29 @@ threshOptim <- function(data,
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @import data.table
 #' @examples
-#' data <- data.table::data.table(Variable = seq(1,500,1), Target = rep(1, 500))
+#' # Create Growth Data
+#' data <-
+#'   data.table::data.table(Target = seq(1, 500, 1),
+#'                          Variable = rep(1, 500))
 #' for (i in as.integer(1:500)) {
-#'   if(i == 1) {
-#'     var <- data[i, "Variable"][[1]]
-#'     data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
-#' } else {
-#'     var = data[i-1, "Target"][[1]]
-#'     data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+#'   if (i == 1) {
+#'     var <- data[i, "Target"][[1]]
+#'     data.table::set(data,
+#'                     i = i,
+#'                     j = 2L,
+#'                     value = var * (1 + runif(1) / 100))
+#'   } else {
+#'     var <- data[i - 1, "Variable"][[1]]
+#'     data.table::set(data,
+#'                     i = i,
+#'                     j = 2L,
+#'                     value = var * (1 + runif(1) / 100))
 #'   }
 #' }
+#'
+#' # Add jitter to Target
+#' data[, Target := jitter(Target,
+#'                         factor = 0.25)]
 #'
 #' # To keep original values
 #' data1 <- data.table::copy(data)
@@ -2485,25 +2498,35 @@ threshOptim <- function(data,
 #'   data = data,
 #'   y = "Target",
 #'   x = "Variable",
-#'   monotonic = FALSE
+#'   monotonic = TRUE
 #' )
 #'
+#' # Join predictions to source data
 #' data2 <- merge(
 #'   data1,
 #'   data11[[1]],
 #'   by = "Variable",
-#'   all = TRUE
+#'   all = FALSE
 #' )
 #'
-#' # Plot graphs of predicted vs actual
-#' p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+#' # Plot output
+#' ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
 #'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
-#'                                   color = "blue")) +
+#'                                   color = "Target")) +
 #'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
-#'                                   color = "red")) +
-#'   ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
+#'                                   color = "Predicted")) +
+#'  RemixAutoML::ChartTheme(Size = 12) +
+#'   ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
+#'                           data11[[2]])) +
 #'   ggplot2::ylab("Target Variable") +
-#'   ggplot2::xlab("Independent Variable")
+#'   ggplot2::xlab("Independent Variable") +
+#'   ggplot2::scale_colour_manual("Values",
+#'                                breaks = c("Target",
+#'                                           "Predicted"),
+#'                                values = c("red",
+#'                                           "blue"))
+#' summary(data11[[3]])
+#' data11[[4]]
 #' @return A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use; 4: Model metrics for models with ability to build.
 #' @export
 AutoNLS <- function(data, y, x, monotonic = TRUE) {
@@ -2528,12 +2551,14 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
 
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
-    data <- data.table::as.data.table(data)
+    DATA <- data.table::as.data.table(data)
 
-  xx <- x
-  yy <- y
-  z <- DATA[[eval(xx)]]
-  zz <- DATA[[eval(yy)]]
+  data.table::setnames(DATA,
+                       c(eval(y),eval(x)),
+                       c("Target","Variable"))
+
+  z <- DATA[["Variable"]]
+  zz <- DATA[["Target"]]
   tryCatch({
     if (monotonic == TRUE) {
       tryCatch({
@@ -2690,34 +2715,64 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
 
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
-    DATA[, eval(y) := preds9]
+    DATA[, Target := preds9]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model9,temp))
   } else if (name == nls_collection[2, 1][[1]]) {
-    DATA[, eval(y) := preds1]
+    DATA[, Target := preds1]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model1,temp))
   } else if (name == nls_collection[3, 1][[1]]) {
-    DATA[, eval(y) := preds2]
+    DATA[, Target := preds2]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model2,temp))
   } else if (name == nls_collection[4, 1][[1]]) {
-    DATA[, eval(y) := preds3]
+    DATA[, Target := preds3]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model3,temp))
   } else if (name == nls_collection[5, 1][[1]]) {
-    DATA[, eval(y) := preds4]
+    DATA[, Target := preds4]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model4,temp))
   } else if (name == nls_collection[6, 1][[1]]) {
-    DATA[, eval(y) := preds5]
+    DATA[, Target := preds5]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model5,temp))
   } else if (name == nls_collection[7, 1][[1]]) {
-    DATA[, eval(y) := preds6]
+    DATA[, Target := preds6]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model6,temp))
   } else if (name == nls_collection[8, 1][[1]]) {
-    DATA[, eval(y) := preds7]
+    DATA[, Target := preds7]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model7,temp))
   } else if (name == nls_collection[9, 1][[1]]) {
-    DATA[, eval(y) := preds8]
+    DATA[, Target := preds8]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     return(list(DATA,name,model8,temp))
   } else {
-    DATA[, eval(y) := preds]
+    DATA[, Target := preds]
+    data.table::setnames(DATA,
+                         c("Target","Variable"),
+                         c(eval(y),eval(x)))
     if(monotonic) {
       name <- "Monotonic Regression"
     } else {
@@ -9065,4 +9120,204 @@ AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
   # Tokenize
   tokenized_words <- RemixAutoML::tokenizeH20(data2)
   return(tokenized_words)
+}
+
+#' Convert transactional data.table to a binary ratings matrix
+#'
+#' @author Adrian Antico and Douglas Pestana
+#' @family Misc
+#' @param data This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).
+#' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
+#' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU
+#' @param MetricColName This is the column name in quotes that represents the column name for the metric, such as total sales
+#' @examples
+#' \dontrun{
+#' BinaryRatingsMatrix <- RecomDataCreate(data,
+#'                                        EntityColName = "CustomerID",
+#'                                        ProductColName = "StockCode",
+#'                                        MetricColName = "TotalSales")
+#'
+#' }
+#' @export
+RecomDataCreate <- function(data,
+                            EntityColName = "CustomerID",
+                            ProductColName = "StockCode",
+                            MetricColName = "TotalSales") {
+
+  # Ensure data is data.table
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+
+  # Ensure EntityColName is character type
+  if(!is.character(data[1,get(EntityColName)])) {
+    data[, eval(EntityColName) := as.character(get(EntityColName))]
+  }
+
+  # Ensure ProductColName is character type
+  if(!is.character(data[1,get(ProductColName)])) {
+    data[, eval(ProductColName) := as.character(get(ProductColName))]
+  }
+
+  # Ensure MtricColName is numeri
+  if(!is.numeric(data[1,get(MetricColName)])) {
+    data[, eval(MetricColName) := as.numeric(get(MetricColName))]
+  }
+
+  # Only keep the necessary columns
+  keep <- c(EntityColName, ProductColName, MetricColName)
+  data <- data[, ..keep]
+
+  # CREATE BINARY RATING MATRIX-----
+  train_data <- data.table::dcast(data,
+                                  get(EntityColName) ~ get(ProductColName),
+                                  value.var = eval(MetricColName),
+                                  fun.aggregate = function(x) sum(!is.na(x)),
+                                  fill = 0)
+
+  # Change name back to original
+  data.table::setnames(train_data,
+                       "EntityColName",
+                       eval(EntityColName))
+
+  # Convert Sales data to Binary (60% faster than ifelse)
+  for (j in 2:ncol(train_data)) {
+    data.table::set(train_data,which(train_data[[j]] > 0), j, 1)
+    data.table::set(train_data,which(train_data[[j]] <= 0), j, 0)
+  }
+
+  # Store customerID for rownames
+  train_data_rownames <- train_data[[eval(EntityColName)]]
+
+  # Remove CustomerID column
+  train_data[, eval(EntityColName) := NULL]
+
+  # Convert train to matrix
+  train_data_matrix <- as.matrix(train_data)
+
+  # Set rownames
+  row.names(train_data_matrix) <- train_data_rownames
+
+  # Return binary rating matrix
+  return(as(object = train_data_matrix,
+            Class = "binaryRatingMatrix"))
+}
+
+#' Automatically build the best recommendere model.
+#'
+#' @author Adrian Antico and Douglas Pestana
+#' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
+#' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
+#' @param KFolds Choose 2 for traditional train / test. Choose > 2 for the number of cross validations
+#' @param Ratio The ratio for train and test. E.g. 0.75 for 75% data allocated to training
+#' @param RatingsType Choose from “topNList”, “ratings”, “ratingMatrix”
+#' @param RatingsKeep The total ratings you wish to return. Default is 20.
+#' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
+#' @examples
+#' \dontrun{
+#' ModelResults <- AutoRecommender(BinaryRatingsMatrix,
+#'                                 Partition = "Split",
+#'                                 KFolds = 2,
+#'                                 Ratio = 0.75,
+#'                                 RatingType = "TopN",
+#'                                 RatingsKeep = 20,
+#'                                 SkipModels = "AssociationRules")
+#' }
+#' @return
+#' @export
+AutoRecommender <- function(data,
+                            Partition = "Split",
+                            KFolds = 2,
+                            Ratio = 0.75,
+                            RatingType = "TopN",
+                            RatingsKeep = 20,
+                            SkipModels = "AssociationRules") {
+
+  # Ensure data is proper
+  if(class(BinaryRatingsMatrix)[1] != "binaryRatingMatrix") {
+    stop("data must be of class binaryRatingMatrix")
+  }
+
+  # Ensure KFolds is correct
+  if(tolower(Partition) == "split") {
+    KFolds <- 1
+  }
+
+  # Ensure Ratio is proper
+  if(abs(Ratio) > 1 | Ratio == 0) {
+    stop("Ratio must be a decimal between 0 and 1.
+         Default is 0.75")
+  }
+
+  # Ensure RatingType is real
+  if(tolower(RatingType) == "topn") {
+    RatingType <- "topNList"
+  } else if(tolower(RatingType) == "ratings") {
+    RatingType <- "ratings"
+  } else if(tolower(RatingsType) == "ratingMatrix") {
+    RatingType <- "ratingMatrix"
+  }
+
+  # Evaluation setup
+  scheme <- recommenderlab::evaluationScheme(
+    data,
+    method     = tolower(Partition),
+    k          = KFolds,
+    train      = Ratio,
+    given      = 1,
+    goodRating = 1)
+
+  # Store algorithms in nested list
+  algorithms <- list(
+    "RandomItems"  = list(name = "RANDOM",  param = NULL),
+    "PopularItems" = list(name = "POPULAR", param = NULL),
+    "UserBasedCF" = list(name = "UBCF",    param = NULL),
+    "ItemBasedCF" = list(name = "IBCF",    param = NULL),
+    "AssociationRules" = list(name = "AR",      param = list(support=0.001, confidence=0.05))
+  )
+
+  # Remove all algos in SkipModels
+  if(any(tolower(SkipModels) == "associationrules")) {
+    algorithms[["AssociationRules"]] <- NULL
+  }
+  if(any(tolower(SkipModels) == "itembasedcf")) {
+    algorithms[["ItemBasedCF"]] <- NULL
+  }
+  if(any(tolower(SkipModels) == "userbasedcf")) {
+    algorithms[["UserBasedCF"]] <- NULL
+  }
+  if(any(tolower(SkipModels) == "popularitems")) {
+    algorithms[["PopularItems"]] <- NULL
+  }
+  if(any(tolower(SkipModels) == "randomitems")) {
+    algorithms[["RandomItems"]] <- NULL
+  }
+  if(length(algorithms) == 0) {
+    stop("You must have at least one algorithm to run")
+  }
+
+  # evauluate predicted ratings from each algorithm
+  results <- recommenderlab::evaluate(x      = scheme,
+                                      method = algorithms,
+                                      type   = RatingType,
+                                      n      = 1:RatingsKeep)
+
+  # determine winning model - highest TPR for next best 10 products
+  # start by averaging Confusion Matrix for all k-fold runs - to look at all runs use getConfusionMatrix(results$`algorithm_name`)
+  n <- length(results)
+  store <- list()
+  for (i in 1:n) {
+    temp <- data.table(avg(results)[[i]])
+    temp[, model := results[[i]]@method]
+    temp[, n_products := seq(1:RatingsKeep)]
+    store[[i]] <- temp
+  }
+
+  # Collect results in one data.table
+  x <- data.table::rbindlist(store)
+
+  # Pick winning model based max TPR for 10th recommendation
+  WinningModel <- x[n_products == 10][
+    order(-TPR)][1, "model"][[1]]
+  return(WinningModel)
 }
