@@ -22,16 +22,29 @@ A list containing 1: A data table with your original column replaced by the nls 
 This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 }
 \examples{
-data <- data.table::data.table(Variable = seq(1,500,1), Target = rep(1, 500))
+# Create Growth Data
+data <-
+  data.table::data.table(Target = seq(1, 500, 1),
+                         Variable = rep(1, 500))
 for (i in as.integer(1:500)) {
-  if(i == 1) {
-    var <- data[i, "Variable"][[1]]
-    data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
-} else {
-    var = data[i-1, "Target"][[1]]
-    data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1)/100))
+  if (i == 1) {
+    var <- data[i, "Target"][[1]]
+    data.table::set(data,
+                    i = i,
+                    j = 2L,
+                    value = var * (1 + runif(1) / 100))
+  } else {
+    var <- data[i - 1, "Variable"][[1]]
+    data.table::set(data,
+                    i = i,
+                    j = 2L,
+                    value = var * (1 + runif(1) / 100))
   }
 }
+
+# Add jitter to Target
+data[, Target := jitter(Target,
+                        factor = 0.25)]
 
 # To keep original values
 data1 <- data.table::copy(data)
@@ -41,25 +54,35 @@ data11 <- AutoNLS(
   data = data,
   y = "Target",
   x = "Variable",
-  monotonic = FALSE
+  monotonic = TRUE
 )
 
+# Join predictions to source data
 data2 <- merge(
   data1,
   data11[[1]],
   by = "Variable",
-  all = TRUE
+  all = FALSE
 )
 
-# Plot graphs of predicted vs actual
-p <- ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
+# Plot output
+ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
-                                  color = "blue")) +
+                                  color = "Target")) +
   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
-                                  color = "red")) +
-  ChartTheme(Size = 12) + ggplot2::ggtitle("Growth Models") +
+                                  color = "Predicted")) +
+ RemixAutoML::ChartTheme(Size = 12) +
+  ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
+                          data11[[2]])) +
   ggplot2::ylab("Target Variable") +
-  ggplot2::xlab("Independent Variable")
+  ggplot2::xlab("Independent Variable") +
+  ggplot2::scale_colour_manual("Values",
+                               breaks = c("Target",
+                                          "Predicted"),
+                               values = c("red",
+                                          "blue"))
+summary(data11[[3]])
+data11[[4]]
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},

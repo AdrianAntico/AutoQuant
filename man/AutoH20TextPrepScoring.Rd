@@ -21,9 +21,10 @@ This function returns prepared tokenized data for H20 Word2VecModeler scoring
 \seealso{
 Other Misc: \code{\link{AutoWordFreq}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{multiplot}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH20}}
+  \code{\link{RecomDataCreate}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH20}}
 }
 \author{
 Adrian Antico

@@ -30,7 +30,8 @@ p <- p + ChartTheme(Size = 12)
 \seealso{
 Other Misc: \code{\link{AutoH20TextPrepScoring}},
   \code{\link{AutoWordFreq}},
-  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{PrintObjectsSize}},
+  \code{\link{RecomDataCreate}}, \code{\link{RemixTheme}},
   \code{\link{SimpleCap}}, \code{\link{multiplot}},
   \code{\link{percRank}}, \code{\link{tempDatesFun}},
   \code{\link{tokenizeH20}}

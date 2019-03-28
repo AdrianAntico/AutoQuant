@@ -66,6 +66,6 @@ Other Supervised Learning: \code{\link{AutoH20Modeler}},
   \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}}
 }
 \author{
-Adrian Antico
+Adrian Antico and Douglas Pestana
 }
 \concept{Supervised Learning}
