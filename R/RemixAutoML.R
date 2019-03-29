@@ -2727,55 +2727,91 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model9,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model9,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[2, 1][[1]]) {
     DATA[, Target := preds1]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model1,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model1,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[3, 1][[1]]) {
     DATA[, Target := preds2]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model2,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model2,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[4, 1][[1]]) {
     DATA[, Target := preds3]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model3,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model3,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[5, 1][[1]]) {
     DATA[, Target := preds4]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model4,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model4,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[6, 1][[1]]) {
     DATA[, Target := preds5]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model5,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model5,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[7, 1][[1]]) {
     DATA[, Target := preds6]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model6,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model6,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[8, 1][[1]]) {
     DATA[, Target := preds7]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model7,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model7,
+           EvaluationMetrics = temp))
   } else if (name == nls_collection[9, 1][[1]]) {
     DATA[, Target := preds8]
     data.table::setnames(DATA,
                          c("Target","Variable"),
                          c(eval(y),eval(x)))
-    return(list(DATA,name,model8,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = model8,
+           EvaluationMetrics = temp))
   } else {
     DATA[, Target := preds]
     data.table::setnames(DATA,
@@ -2786,7 +2822,11 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
     } else {
       name <- "Polynomial Regression"
     }
-    return(list(DATA,name,baseline,temp))
+    return(
+      list(PredictionData = DATA,
+           ModelName = name,
+           ModelObject = baseline,
+           EvaluationMetrics = temp))
   }
 }
 
