@@ -6,6 +6,8 @@ utils::globalVariables(
   names = c(
     "test",
     "BinaryRatingsMatrix",
+    "RatingMatrix",
+    "ProductRank",
     "model",
     "n_products",
     "TPR",
@@ -9188,11 +9190,10 @@ AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
 #' @return A BinaryRatingsMatrix
 #' @examples
 #' \dontrun{
-#' BinaryRatingsMatrix <- RecomDataCreate(data,
-#'                                        EntityColName = "CustomerID",
-#'                                        ProductColName = "StockCode",
-#'                                        MetricColName = "TotalSales")
-#'
+#' RatingsMatrix <- RecomDataCreate(data,
+#'                                  EntityColName = "CustomerID",
+#'                                  ProductColName = "StockCode",
+#'                                  MetricColName = "TotalSales")
 #' }
 #' @export
 RecomDataCreate <- function(data,
@@ -9274,7 +9275,7 @@ RecomDataCreate <- function(data,
 #' @param ModelMetric Choose from "Precision", "Recall", "TPR", or "FPR"
 #' @examples
 #' \dontrun{
-#' ModelResults <- AutoRecommender(BinaryRatingsMatrix,
+#' WinningModel <- AutoRecommender(RatingsMatrix,
 #'                                 Partition = "Split",
 #'                                 KFolds = 2,
 #'                                 Ratio = 0.75,
@@ -9295,7 +9296,7 @@ AutoRecommender <- function(data,
                             ModelMetric = "TPR") {
 
   # Ensure data is proper
-  if(class(BinaryRatingsMatrix)[1] != "binaryRatingMatrix") {
+  if(class(data)[1] != "binaryRatingMatrix") {
     stop("data must be of class binaryRatingMatrix")
   }
 
@@ -9324,9 +9325,9 @@ AutoRecommender <- function(data,
     ModelMetric <- "precision"
   } else if(tolower(ModelMetric) == "recall") {
     ModelMetric <- "recall"
-  } else if(tolower(ModelMetric) == "TPR") {
+  } else if(tolower(ModelMetric) == "tpr") {
     ModelMetric <- "TPR"
-  } else if(tolower(ModelMetric) == "FPR") {
+  } else if(tolower(ModelMetric) == "fpr") {
     ModelMetric <- "FPR"
   } else {
     stop("ModelMetric not in list of usable metrics")
@@ -9400,7 +9401,7 @@ AutoRecommender <- function(data,
 #' This function will take your ratings matrix and model and score your data in parallel.
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
-#' @param BinaryRatingMatrix The binary ratings matrix from RecomDataCreate()
+#' @param data The binary ratings matrix from RecomDataCreate()
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
 #' @param ProductColName Something like "StockCode"
@@ -9408,9 +9409,18 @@ AutoRecommender <- function(data,
 #' @import data.table
 #' @import parallel
 #' @import foreach
+#' @import doParallel
 #' @return Returns the prediction data
+#' @examples
+#' \dontrun{
+#' AutoRecommenderScoring(RatingMatrix,
+#'                        WinningModel,
+#'                        EntityColName = "CustomerID",
+#'                        ProductColName = "StockCode",
+#'                        MetricColName = "TotalSales")
+#' }
 #' @export
-AutoRecommenderScoring <- function(RatingMatrix,
+AutoRecommenderScoring <- function(data,
                                    WinningModel,
                                    EntityColName = "CustomerID",
                                    ProductColName = "StockCode",
@@ -9421,9 +9431,9 @@ AutoRecommenderScoring <- function(RatingMatrix,
     recommender <- recommenderlab::Recommender(
       data = RatingMatrix,
       method = "AR",
-      parameter=list(
-        support=0.001,
-        confidence=0.05))
+      parameter = list(
+        support = 0.001,
+        confidence = 0.05))
   } else {
     recommender <- recommenderlab::Recommender(
       data = RatingMatrix,
@@ -9435,14 +9445,14 @@ AutoRecommenderScoring <- function(RatingMatrix,
   cores    <- 8
   parts    <- floor(
     nrow(RatingMatrix) * ncol(RatingMatrix) / 250000)
-  cl       <- parallell::makePSOCKcluster(cores)
-  parallell::registerDoParallel(cl)
+  cl       <- parallel::makePSOCKcluster(cores)
+  doParallel::registerDoParallel(cl)
 
   # Begin scoring
   results <- foreach::foreach(
     i = itertools::isplitRows(
       RatingMatrix,
-      chunks=parts),
+      chunks = parts),
     .combine = function(...) data.table::rbindlist(list(...)),
     .multicombine = TRUE,
     .packages = packages
@@ -9461,12 +9471,12 @@ AutoRecommenderScoring <- function(RatingMatrix,
     data.table::setcolorder(temp,c(2,1))
     data.table::setnames(temp,
                          c("L1","value"),
-                         c(EntityColName,ProductColName))
+                         c(EntityColName, ProductColName))
     temp
   }
 
   # shut down parallel objects
-  stopCluster(cl)
+  parallel::stopCluster(cl)
   rm(cl)
 
   # Finalize data transformations: append list of data.tables, add ProductRank, gsub x 2, add ts
