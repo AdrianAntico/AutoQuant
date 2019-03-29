@@ -2535,7 +2535,7 @@ threshOptim <- function(data,
 #'                                           "blue"))
 #' summary(data11[[3]])
 #' data11[[4]]
-#' @return A list containing 1: A data table with your original column replaced by the nls model predictions; 2: The model name; 3: The winning model to later use; 4: Model metrics for models with ability to build.
+#' @return A list containing "PredictionData" which is a data table with your original column replaced by the nls model predictions; "ModelName" the model name; "ModelObject" The winning model to later use; "EvaluationMetrics" Model metrics for models with ability to build.
 #' @export
 AutoNLS <- function(data, y, x, monotonic = TRUE) {
   # Begin
