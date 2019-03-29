@@ -3061,7 +3061,7 @@ ParDepCalPlots <- function(data,
       ggplot2::xlab(IndepVar) +
       ggplot2::scale_colour_manual(
         "",
-        breaks = c("Actuals", "Predicted"),
+        breaks = c("Actual", "Predicted"),
         values = c("blue", "red")
       ) +
       ChartTheme(Size = 15) +
@@ -3286,8 +3286,8 @@ EvalPlot <- function(data,
 #'            SimpleImpute   = TRUE)
 #' @export
 GDL_Feature_Engineering <- function(data,
-                                    lags           = c(seq(1, 5, 1)),
-                                    periods        = c(3, 5, 10, 15, 20, 25),
+                                    lags           = c(seq(1,5,1)),
+                                    periods        = c(3,5,10,15,20,25),
                                     statsFUNs      = c(function(x)
                                       quantile(x, probs = 0.1, na.rm = TRUE),
                                       function(x)
@@ -3795,8 +3795,8 @@ GDL_Feature_Engineering <- function(data,
 #'                                    SimpleImpute   = TRUE)
 #' @export
 DT_GDL_Feature_Engineering <- function(data,
-                                       lags           = c(seq(1, 50, 1)),
-                                       periods        = c(seq(5, 95, 5)),
+                                       lags           = c(seq(1,50,1)),
+                                       periods        = c(seq(5,95,5)),
                                        statsNames     = c("MA"),
                                        targets        = c("qty"),
                                        groupingVars   = c("Group1",
@@ -4322,26 +4322,22 @@ DT_GDL_Feature_Engineering <- function(data,
 #'                                          AscRowByGroup  = "temp",
 #'                                          RecordsKeep    = 1)
 #' @export
-Scoring_GDL_Feature_Engineering <- function(data,
-                                            lags           = c(1:6, 12, seq(24, 168, 24)),
-                                            periods        = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-                                            statsFUNs      = c(function(x)
-                                              base::mean(x, na.rm = TRUE),
-                                              function(x)
-                                                base::sd(x, na.rm = TRUE)),
-                                            statsNames     = c("mean",
-                                                               "sd"),
+Scoring_GDL_Feature_Engineering <- function(data1,
+                                            lags           = c(seq(1,5,1)),
+                                            periods        = c(3,5,10,15,20,25),
+                                            statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
+                                            statsNames     = c("MA"),
                                             targets        = c("Target"),
-                                            groupingVars   = c("GroupVariable"),
+                                            groupingVars   = NULL,
                                             sortDateName   = c("DateTime"),
                                             timeDiffTarget = c("Time_Gap"),
-                                            timeAgg        = c("days"),
+                                            timeAgg        = "days",
                                             WindowingLag   = 1,
-                                            Type           = c("Lag"),
-                                            Timer          = FALSE,
+                                            Type           = "Lag",
+                                            Timer          = TRUE,
                                             SkipCols       = FALSE,
                                             SimpleImpute   = TRUE,
-                                            AscRowByGroup  = c("temp"),
+                                            AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
