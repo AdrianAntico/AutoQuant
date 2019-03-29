@@ -4,11 +4,12 @@
 \alias{AutoRecommenderScoring}
 \title{The AutoRecomScoring function scores recommender models from AutoRecommender()}
 \usage{
-AutoRecommenderScoring(RatingMatrix, WinningModel,
-  EntityColName = "CustomerID", ProductColName = "StockCode",
-  MetricColName = "TotalSales")
+AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
+  ProductColName = "StockCode", MetricColName = "TotalSales")
 }
 \arguments{
+\item{data}{The binary ratings matrix from RecomDataCreate()}
+
 \item{WinningModel}{The winning model returned from AutoRecommender()}
 
 \item{EntityColName}{Typically your customer ID}
@@ -16,14 +17,38 @@ AutoRecommenderScoring(RatingMatrix, WinningModel,
 \item{ProductColName}{Something like "StockCode"}
 
 \item{MetricColName}{Something like "TotalSales"}
-
-\item{BinaryRatingMatrix}{The binary ratings matrix from RecomDataCreate()}
 }
 \value{
 Returns the prediction data
 }
 \description{
 This function will take your ratings matrix and model and score your data in parallel.
+}
+\examples{
+\dontrun{
+Results <- AutoRecommenderScoring(
+  data = RecomDataCreate(
+      data,
+      EntityColName = "CustomerID",
+      ProductColName = "StockCode",
+      MetricColName = "TotalSales"),
+  WinningModel = AutoRecommender(
+      RecomDataCreate(
+        data,
+        EntityColName = "CustomerID",
+        ProductColName = "StockCode",
+        MetricColName = "TotalSales"),
+      Partition = "Split",
+      KFolds = 2,
+      Ratio = 0.75,
+      RatingType = "TopN",
+      RatingsKeep = 20,
+      SkipModels = "AssociationRules",
+      ModelMetric = "TPR"),
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode",
+  MetricColName = "TotalSales")
+}
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},

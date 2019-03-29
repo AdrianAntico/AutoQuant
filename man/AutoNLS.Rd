@@ -60,7 +60,7 @@ data11 <- AutoNLS(
 # Join predictions to source data
 data2 <- merge(
   data1,
-  data11[[1]],
+  data11$PredictionData,
   by = "Variable",
   all = FALSE
 )
@@ -73,7 +73,7 @@ ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
                                   color = "Predicted")) +
  RemixAutoML::ChartTheme(Size = 12) +
   ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
-                          data11[[2]])) +
+                          data11$ModelName)) +
   ggplot2::ylab("Target Variable") +
   ggplot2::xlab("Independent Variable") +
   ggplot2::scale_colour_manual("Values",
@@ -81,8 +81,8 @@ ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
                                           "Predicted"),
                                values = c("red",
                                           "blue"))
-summary(data11[[3]])
-data11[[4]]
+summary(data11$ModelObject)
+data11$EvaluationMetrics
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
