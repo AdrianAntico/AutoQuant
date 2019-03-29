@@ -8664,9 +8664,9 @@ AutoH20Scoring <- function(Features     = data,
         }
       } else if(tolower(TargetType[i]) == "regression") {
         data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
+        Scores <- data.table::as.data.table(
+          h2o::h2o.mojo_predict_csv(
+            input_csv_path = file.path(FilesPath,'Features.csv'),
             mojo_zip_path = grid_tuned_paths[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = grid_tuned_paths[i,6][[1]],
@@ -8676,9 +8676,9 @@ AutoH20Scoring <- function(Features     = data,
         temp <- AutoH20TextPrepScoring(data = Features[, ..keep],
                                        string = StoreFile[i,1][[1]])
         data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
+        Scores <- data.table::as.data.table(
+          h2o::h2o.mojo_predict_csv(
+            input_csv_path = file.path(FilesPath,'Features.csv'),
             mojo_zip_path = StoreFile[i,2][[1]],
             java_options = JavaOptions,
             genmodel_jar_path = StoreFile[i,3][[1]],
@@ -8693,7 +8693,7 @@ AutoH20Scoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)))
-          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+        data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
         Temp <- data.table::as.data.table(
           h2o::h2o.mojo_predict_csv(
             input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -8798,7 +8798,7 @@ AutoH20Scoring <- function(Features     = data,
         Temp <- data.table::as.data.table(
           h2o::h2o.predict(model,
                            newdata = features))
-        Vals <- names(sort(Temp[1,2:ncol(temp)], decreasing = TRUE))
+        Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
         Scores <- paste0(Vals, collapse = " ")
       } else {
         stop("TargetType is not Multinomial,
