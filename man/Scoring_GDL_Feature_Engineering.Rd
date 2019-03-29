@@ -4,19 +4,15 @@
 \alias{Scoring_GDL_Feature_Engineering}
 \title{An Automated Scoring Feature Engineering Function}
 \usage{
-Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
-  24)), periods = c(6, 12, 24, 72, 168, 720, 4320, 8640),
-  statsFUNs = c(function(x) base::mean(x, na.rm = TRUE), function(x)
-  base::sd(x, na.rm = TRUE)), statsNames = c("mean", "sd"),
-  targets = c("Target"), groupingVars = c("GroupVariable"),
-  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
-  timeAgg = c("days"), WindowingLag = 1, Type = c("Lag"),
-  Timer = FALSE, SkipCols = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = c("temp"), RecordsKeep = 1)
+Scoring_GDL_Feature_Engineering(data1, lags = c(seq(1, 5, 1)),
+  periods = c(3, 5, 10, 15, 20, 25), statsFUNs = c(function(x) mean(x,
+  na.rm = TRUE)), statsNames = c("MA"), targets = c("Target"),
+  groupingVars = NULL, sortDateName = c("DateTime"),
+  timeDiffTarget = c("Time_Gap"), timeAgg = "days", WindowingLag = 1,
+  Type = "Lag", Timer = TRUE, SkipCols = FALSE,
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
-\item{data}{The data source you want to run the function on}
-
 \item{lags}{The list of specific lags you want to have generated}
 
 \item{periods}{The number of periods in the rolling statistics}
@@ -48,6 +44,8 @@ Scoring_GDL_Feature_Engineering(data, lags = c(1:6, 12, seq(24, 168,
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
 
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
+
+\item{data}{The data source you want to run the function on}
 }
 \value{
 data.table of original data plus newly created features
