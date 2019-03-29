@@ -9429,14 +9429,14 @@ AutoRecommenderScoring <- function(data,
   # Setup winning model and arguments
   if (WinningModel == "AR") {
     recommender <- recommenderlab::Recommender(
-      data = RatingMatrix,
+      data = data,
       method = "AR",
       parameter = list(
         support = 0.001,
         confidence = 0.05))
   } else {
     recommender <- recommenderlab::Recommender(
-      data = RatingMatrix,
+      data = data,
       method = WinningModel)
   }
 
@@ -9444,14 +9444,14 @@ AutoRecommenderScoring <- function(data,
   packages <- c("curl","reshape2", "recommenderlab", "data.table")
   cores    <- 8
   parts    <- floor(
-    nrow(RatingMatrix) * ncol(RatingMatrix) / 250000)
+    nrow(data) * ncol(data) / 250000)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
 
   # Begin scoring
   results <- foreach::foreach(
     i = itertools::isplitRows(
-      RatingMatrix,
+      data,
       chunks = parts),
     .combine = function(...) data.table::rbindlist(list(...)),
     .multicombine = TRUE,
