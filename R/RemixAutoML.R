@@ -9394,3 +9394,84 @@ AutoRecommender <- function(data,
     order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
 }
+
+#' The AutoRecomScoring function scores recommender models from AutoRecommender()
+#'
+#' This function will take your ratings matrix and model and score your data in parallel.
+#' @author Adrian Antico and Douglas Pestana
+#' @family Supervised Learning
+#' @param BinaryRatingMatrix The binary ratings matrix from RecomDataCreate()
+#' @param WinningModel The winning model returned from AutoRecommender()
+#' @param EntityColName Typically your customer ID
+#' @param ProductColName Something like "StockCode"
+#' @param MetricColName Something like "TotalSales"
+#' @import data.table
+#' @import parallel
+#' @import foreach
+#' @return Returns the prediction data
+#' @export
+AutoRecommenderScoring <- function(RatingMatrix,
+                                   WinningModel,
+                                   EntityColName = "CustomerID",
+                                   ProductColName = "StockCode",
+                                   MetricColName = "TotalSales") {
+
+  # Setup winning model and arguments
+  if (WinningModel == "AR") {
+    recommender <- recommenderlab::Recommender(
+      data = RatingMatrix,
+      method = "AR",
+      parameter=list(
+        support=0.001,
+        confidence=0.05))
+  } else {
+    recommender <- recommenderlab::Recommender(
+      data = RatingMatrix,
+      method = WinningModel)
+  }
+
+  # Setup the parallel environment
+  packages <- c("curl","reshape2", "recommenderlab", "data.table")
+  cores    <- 8
+  parts    <- floor(
+    nrow(RatingMatrix) * ncol(RatingMatrix) / 250000)
+  cl       <- parallell::makePSOCKcluster(cores)
+  parallell::registerDoParallel(cl)
+
+  # Begin scoring
+  results <- foreach::foreach(
+    i = itertools::isplitRows(
+      RatingMatrix,
+      chunks=parts),
+    .combine = function(...) data.table::rbindlist(list(...)),
+    .multicombine = TRUE,
+    .packages = packages
+  ) %dopar% {
+    data <- methods::as(
+      recommenderlab::predict(
+        recommender,
+        i,
+        type = "topNList",
+        n = 10),
+      "list")
+
+    # Data transformations
+    temp <- data.table::data.table(
+      data.table::melt(data))
+    data.table::setcolorder(temp,c(2,1))
+    data.table::setnames(temp,
+                         c("L1","value"),
+                         c(EntityColName,ProductColName))
+    temp
+  }
+
+  # shut down parallel objects
+  stopCluster(cl)
+  rm(cl)
+
+  # Finalize data transformations: append list of data.tables, add ProductRank, gsub x 2, add ts
+  results[, ProductRank := seq_len(.N), by = eval(EntityColName)]
+  results[, ':=' (TimeStamp = as.character(Sys.time()))]
+
+  return(results)
+}
