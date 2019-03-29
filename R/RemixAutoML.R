@@ -1887,7 +1887,9 @@ AutoTS <- function(data,
   }
 
   # Return values
-  return(list(FC_Data, Eval, model))
+  return(list(Forecast = FC_Data,
+              EvaluationMetrics = Eval,
+              TimeSeriesModel = model))
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
@@ -4322,7 +4324,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #'                                          AscRowByGroup  = "temp",
 #'                                          RecordsKeep    = 1)
 #' @export
-Scoring_GDL_Feature_Engineering <- function(data1,
+Scoring_GDL_Feature_Engineering <- function(data,
                                             lags           = c(seq(1,5,1)),
                                             periods        = c(3,5,10,15,20,25),
                                             statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
@@ -9229,6 +9231,7 @@ RecomDataCreate <- function(data,
 #' @param RatingType Choose from “topNList”, “ratings”, “ratingMatrix”
 #' @param RatingsKeep The total ratings you wish to return. Default is 20.
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
+#' @param ModelMetric Choose from "Precision", "Recall", "TPR", or "FPR"
 #' @examples
 #' \dontrun{
 #' ModelResults <- AutoRecommender(BinaryRatingsMatrix,
@@ -9237,7 +9240,8 @@ RecomDataCreate <- function(data,
 #'                                 Ratio = 0.75,
 #'                                 RatingType = "TopN",
 #'                                 RatingsKeep = 20,
-#'                                 SkipModels = "AssociationRules")
+#'                                 SkipModels = "AssociationRules",
+#'                                 ModelMetric = "TPR")
 #' }
 #' @return The winning model
 #' @export
@@ -9247,7 +9251,8 @@ AutoRecommender <- function(data,
                             Ratio = 0.75,
                             RatingType = "TopN",
                             RatingsKeep = 20,
-                            SkipModels = "AssociationRules") {
+                            SkipModels = "AssociationRules",
+                            ModelMetric = "TPR") {
 
   # Ensure data is proper
   if(class(BinaryRatingsMatrix)[1] != "binaryRatingMatrix") {
@@ -9272,6 +9277,19 @@ AutoRecommender <- function(data,
     RatingType <- "ratings"
   } else if(tolower(RatingType) == "ratingMatrix") {
     RatingType <- "ratingMatrix"
+  }
+
+  # Pick winning model based max TPR for 10th recommendation
+  if(tolower(ModelMetric) == "precision") {
+    ModelMetric <- "precision"
+  } else if(tolower(ModelMetric) == "recall") {
+    ModelMetric <- "recall"
+  } else if(tolower(ModelMetric) == "TPR") {
+    ModelMetric <- "TPR"
+  } else if(tolower(ModelMetric) == "FPR") {
+    ModelMetric <- "FPR"
+  } else {
+    stop("ModelMetric not in list of usable metrics")
   }
 
   # Evaluation setup
@@ -9319,7 +9337,7 @@ AutoRecommender <- function(data,
                                       n      = 1:RatingsKeep)
 
   # determine winning model - highest TPR for next best 10 products
-  # start by averaging Confusion Matrix for all k-fold runs - to look at all runs use getConfusionMatrix(results$`algorithm_name`)
+  # start by averaging Confusion Matrix for all k-fold runs
   n <- length(results)
   store <- list()
   for (i in 1:n) {
@@ -9332,8 +9350,7 @@ AutoRecommender <- function(data,
   # Collect results in one data.table
   x <- data.table::rbindlist(store)
 
-  # Pick winning model based max TPR for 10th recommendation
   WinningModel <- x[n_products == 10][
-    order(-TPR)][1, "model"][[1]]
+    order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
 }
