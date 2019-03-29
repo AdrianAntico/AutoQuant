@@ -341,8 +341,9 @@ AutoH20Modeler(Construct,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Scoring}},
-  \code{\link{AutoNLS}}, \code{\link{AutoRecommender}},
-  \code{\link{AutoTS}}
+  \code{\link{AutoNLS}},
+  \code{\link{AutoRecommenderScoring}},
+  \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
 }
 \author{
 Adrian Antico

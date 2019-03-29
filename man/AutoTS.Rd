@@ -64,6 +64,7 @@ WinningModel <- output[[3]]
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
   \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}},
+  \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}
 }
 \author{

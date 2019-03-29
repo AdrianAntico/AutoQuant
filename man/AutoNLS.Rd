@@ -87,6 +87,7 @@ data11[[4]]
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
   \code{\link{AutoH20Scoring}},
+  \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
 }
 \author{

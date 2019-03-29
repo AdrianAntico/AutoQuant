@@ -6,7 +6,7 @@
 \usage{
 AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
   RatingType = "TopN", RatingsKeep = 20,
-  SkipModels = "AssociationRules")
+  SkipModels = "AssociationRules", ModelMetric = "TPR")
 }
 \arguments{
 \item{data}{This is your BinaryRatingsMatrix. See function RecomDataCreate}
@@ -22,6 +22,8 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 \item{RatingsKeep}{The total ratings you wish to return. Default is 20.}
 
 \item{SkipModels}{AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"}
+
+\item{ModelMetric}{Choose from "Precision", "Recall", "TPR", or "FPR"}
 }
 \value{
 The winning model
@@ -37,12 +39,14 @@ ModelResults <- AutoRecommender(BinaryRatingsMatrix,
                                 Ratio = 0.75,
                                 RatingType = "TopN",
                                 RatingsKeep = 20,
-                                SkipModels = "AssociationRules")
+                                SkipModels = "AssociationRules",
+                                ModelMetric = "TPR")
 }
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH20Modeler}},
   \code{\link{AutoH20Scoring}}, \code{\link{AutoNLS}},
+  \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoTS}}
 }
 \author{
