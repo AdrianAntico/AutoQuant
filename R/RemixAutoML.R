@@ -661,7 +661,7 @@ AutoKMeans <- function(data,
         model = model,
         path = paste0(PathFile, "/GLRM"),
         get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
+        genmodel_path = PathFile,
         genmodel_name = "GLRM"
       )
       set(KMeansModelFile,
@@ -753,7 +753,7 @@ AutoKMeans <- function(data,
                           force = TRUE)
       h2o::h2o.download_mojo(
         model = model,
-        path = model_path,
+        path = PathFile,
         get_genmodel_jar = TRUE,
         genmodel_path = PathFile,
         genmodel_name = "KMeans"
