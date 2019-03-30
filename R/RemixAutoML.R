@@ -9510,6 +9510,7 @@ AutoRecommender <- function(data,
 #' @return Returns the prediction data
 #' @examples
 #' \dontrun{
+#' # Score(Model(Wrangle(x)))
 #' Results <- AutoRecommenderScoring(
 #'   data = RecomDataCreate(
 #'       data,
