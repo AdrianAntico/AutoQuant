@@ -555,8 +555,9 @@ AutoKMeans <- function(data,
                        SaveModels      = NULL,
                        PathFile        = getwd()) {
   # Check data.table
-  if (!data.table::is.data.table(data))
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
+  }
 
   # Set up Scoring File if SaveModels is not NULL
   if(!is.null(SaveModels)) {
@@ -681,7 +682,7 @@ AutoKMeans <- function(data,
                            force = TRUE)
       data.table::set(
         KMeansModelFile,
-        i = 2L,
+        i = 1L,
         j = 2L,
         value = save_model
       )
@@ -697,6 +698,7 @@ AutoKMeans <- function(data,
   if (GridTuneKMeans) {
     # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
+    fitY <- model@model$archetypes
     Nam <- colnames(x_raw)
 
     # Define grid tune search scheme in a named list
@@ -8577,7 +8579,7 @@ AutoH20Modeler <- function(Construct,
 #' @param Features This is a data.table of features for scoring.
 #' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score
 #' @param ScoreMethod "Standard" or "Mojo"
-#' @param TargetType "Regression", "Classification", "Multinomial", "Text", "MultiOutcome". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
+#' @param TargetType "Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
 #' @param ClassVals Choose from "p1", "Probs", "Label", or "All"
 #' @param NThreads Number of available threads for H20
 #' @param MaxMem Amount of memory to dedicate to H20
@@ -8681,12 +8683,14 @@ AutoH20Scoring <- function(Features     = data,
                            H20ShutDown  = rep(FALSE,3)) {
 
   # Only run text or other models types
-  if(any(tolower(TargetType) %in% "text") &
+  if(any(tolower(TargetType) %in% "clustering") &
+     any(tolower(TargetType) %in% "text") &
      any(tolower(TargetType) %in% c("regression",
                                     "classification",
                                     "multinomial",
                                     "multioutcome"))) {
-    stop("Run either text or other models, but not both")
+    stop("Run either text models, supervised models,
+         or unsupervised models, but only one")
   }
 
   # Import grid_tuned_paths or StoreFile
@@ -8861,8 +8865,11 @@ AutoH20Scoring <- function(Features     = data,
       # Load model
       if(tolower(TargetType[i]) == "text") {
         model <- h2o::h2o.loadModel(path = StoreFile[i,Path])
+      } else if (TargetType[i] == "clustering"){
+        model <- h2o::h2o.loadModel(path = KMeansModelFile[i,Path])
       } else {
-        model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
+        GLRM <- h2o::h2o.loadModel(path = grid_tuned_paths[i,FilePath1])
+        KMeans <- h2o::h2o.loadModel(path = grid_tuned_paths[i+1,FilePath1])
       }
 
 
@@ -8937,10 +8944,15 @@ AutoH20Scoring <- function(Features     = data,
                            newdata = features))
         Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
         Scores <- paste0(Vals, collapse = " ")
+      } else if(tolower(TargetType[i]) == "clustering") {
+        Archetypes <- h2o::h2o.predict(object = GLRM, newdata = features)
+        Scores <- data.table::as.data.table(
+          h2o::h2o.predict(object = KMeans, newdata = Archetypes))
       } else {
         stop("TargetType is not Multinomial,
-          Classification, Regression, or Text")
-      }
+          Classification, Regression, Text, Multioutcome,
+          or Clustering.")
+        }
     } else {
       stop("ScoreMethod must be Standard or Mojo")
     }
@@ -9181,13 +9193,11 @@ AutoWordFreq <- function(data,
       # Ensure stringCol is character (not factor)
       if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
 
-      # Ensure ClusterCol is character
-      if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
-
       # Prepare data
       if (is.null(ClusterCol)) {
         desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
       } else {
+        if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
         desc <-
           tm::Corpus(tm::VectorSource(
             data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]])
@@ -9198,7 +9208,7 @@ AutoWordFreq <- function(data,
       toSpace <-
         tm::content_transformer(function (x , pattern)
           gsub(pattern, " ", x))
-      text <- tm::tm_map(text, toSpace, "/")
+      text <- tm::tm_map(desc, toSpace, "/")
       text <- tm::tm_map(text, toSpace, "@")
       text <- tm::tm_map(text, toSpace, "\\|")
 
