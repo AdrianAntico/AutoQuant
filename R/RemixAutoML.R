@@ -653,53 +653,27 @@ AutoKMeans <- function(data,
 
   # Save model if requested
   if(!is.null(SaveModels)) {
-    if(tolower(SaveModels) == "mojo") {
-      save_model <-
-        h2o::h2o.saveMojo(object = model,
-                          path = PathFile,
-                          force = TRUE)
-      h2o::h2o.download_mojo(
-        model = model,
-        path = paste0(PathFile, "/GLRM"),
-        get_genmodel_jar = TRUE,
-        genmodel_path = PathFile,
-        genmodel_name = "GLRM"
-      )
-      set(KMeansModelFile,
-          i = 1L,
-          j = 2L,
-          value = save_model)
-      set(KMeansModelFile,
-          i = 1L,
-          j = 3L,
-          value = paste0(PathFile, "/GLRM"))
-      save(KMeansModelFile, file = paste0(PathFile,
-                                          "/KMeansModelFile.Rdata"))
-    } else if(tolower(SaveModels) == "standard") {
-      save_model <-
-        h2o::h2o.saveModel(object = model,
-                           path = PathFile,
-                           force = TRUE)
-      data.table::set(
-        KMeansModelFile,
+
+    # Save archetypes and colnames
+    fitY <- model@model$archetypes
+    save(fitY, file = paste0(PathFile, "/fitY"))
+    set(KMeansModelFile,
         i = 1L,
         j = 2L,
-        value = save_model
-      )
-      save(KMeansModelFile,
-           file = paste0(PathFile,
-                         "/KMeansModelFile.Rdata"))
-    } else {
-      return("You need to specify mojo or standard if you want to save your models")
-    }
+        value = paste0(PathFile, "/fitY"))
   }
 
   # Run k-means
   if (GridTuneKMeans) {
     # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
-    fitY <- model@model$archetypes
-    Nam <- colnames(x_raw)
+    Names <- colnames(x_raw)
+    save(Names, file = paste0(PathFile, "/Names.Rdata"))
+    set(KMeansModelFile,
+        i = 1L,
+        j = 3L,
+        value = paste0(PathFile, "/Names.Rdata"))
+    save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
 
     # Define grid tune search scheme in a named list
     search_criteria  <-
@@ -736,8 +710,17 @@ AutoKMeans <- function(data,
                        decreasing = FALSE)
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
   } else {
+    # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
-    Nam <- colnames(x_raw)
+    Names <- colnames(x_raw)
+    save(Names, file = paste0(PathFile, "/Names.Rdata"))
+    set(KMeansModelFile,
+        i = 1L,
+        j = 3L,
+        value = paste0(PathFile, "/Names.Rdata"))
+    save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+
+    # Train KMeans
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
       x              = Nam,
