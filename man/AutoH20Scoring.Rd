@@ -17,7 +17,7 @@ AutoH20Scoring(Features = data, GridTuneRow = c(1:3),
 
 \item{ScoreMethod}{"Standard" or "Mojo"}
 
-\item{TargetType}{"Regression", "Classification", "Multinomial", "Text", "MultiOutcome". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.}
+\item{TargetType}{"Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.}
 
 \item{ClassVals}{Choose from "p1", "Probs", "Label", or "All"}
 

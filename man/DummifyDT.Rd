@@ -4,7 +4,8 @@
 \alias{DummifyDT}
 \title{DummifyDT creates dummy variables for the selected columns.}
 \usage{
-DummifyDT(data, cols, KeepBaseCols = TRUE, OneHot = TRUE)
+DummifyDT(data, cols, KeepBaseCols = FALSE, OneHot = TRUE,
+  ClustScore = FALSE)
 }
 \arguments{
 \item{data}{the data set to run the micro auc on}
@@ -14,6 +15,8 @@ DummifyDT(data, cols, KeepBaseCols = TRUE, OneHot = TRUE)
 \item{KeepBaseCols}{set to TRUE to keep the original columns used in the dichotomization process}
 
 \item{OneHot}{Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels}
+
+\item{ClustScore}{This is for scoring AutoKMeans. Set to FALSE for all other applications.}
 }
 \value{
 data table with new dummy variables columns and optionally removes base columns
