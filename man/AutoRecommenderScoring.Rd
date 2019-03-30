@@ -26,6 +26,7 @@ This function will take your ratings matrix and model and score your data in par
 }
 \examples{
 \dontrun{
+# Score(Model(Wrangle(x)))
 Results <- AutoRecommenderScoring(
   data = RecomDataCreate(
       data,
