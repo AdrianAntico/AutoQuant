@@ -504,6 +504,8 @@ ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
 #' @param MaxRunTimeSecs set the timeout for max run time
 #' @param KMeansK number of factors to test out in k-means to find the optimal number
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
+#' @param SaveModels Set to "standard", "mojo", or NULL (default)
+#' @param PathFile Set to folder where you will keep the models
 #' @import data.table
 #' @examples
 #' \dontrun{
@@ -549,10 +551,21 @@ AutoKMeans <- function(data,
                        SVDMethod       = "Randomized",
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
-                       KMeansMetric    = "totss") {
+                       KMeansMetric    = "totss",
+                       SaveModels      = NULL,
+                       PathFile        = getwd()) {
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
+
+  # Set up Scoring File if SaveModels is not NULL
+  if(!is.null(SaveModels)) {
+    KMeansModelFile <- data.table::data.table(
+      Name = c("GLMR","AutoKMeans"),
+      FilePath1 = rep("bla",2),
+      FilePath2 = rep("bla",2)
+    )
+  }
 
   # Build glmr model
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
@@ -610,7 +623,7 @@ AutoKMeans <- function(data,
       "glrm",
       search_criteria   = search_criteria,
       training_frame    = datax,
-      grid_id           = "Temp",
+      grid_id           = "GLRM",
       ignore_const_cols = IgnoreConstCols,
       loss              = Loss,
       hyper_params      = HyperParams
@@ -619,12 +632,11 @@ AutoKMeans <- function(data,
     # Get best performer
     Grid_Out <-
       h2o::h2o.getGrid(
-        grid_id = "Temp",
+        grid_id = "GLRM",
         sort_by = search_criteria$stopping_metric,
         decreasing = FALSE
       )
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
-
   } else {
     model <- h2o::h2o.glrm(
       training_frame    = datax,
@@ -636,6 +648,47 @@ AutoKMeans <- function(data,
       svd_method        = SVDMethod,
       max_runtime_secs  = MaxRunTimeSecs
     )
+  }
+
+  # Save model if requested
+  if(!is.null(SaveModels)) {
+    if(tolower(SaveModels) == "mojo") {
+      save_model <-
+        h2o::h2o.saveMojo(object = model,
+                          path = PathFile,
+                          force = TRUE)
+      h2o::h2o.download_mojo(
+        model = best_model,
+        path = model_path,
+        get_genmodel_jar = TRUE,
+        genmodel_path = model_path,
+        genmodel_name = Construct[i, 5][[1]]
+      )
+      set(KMeansModelFile,
+          i = 1L,
+          j = 2L,
+          value = save_model)
+      set(KMeansModelFile,
+          i = 1L,
+          j = 3L,
+          value = paste0(PathFile, "/GLRM"))
+      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    } else if(tolower(SaveModels) == "standard") {
+      save_model <-
+        h2o::h2o.saveModel(object = model,
+                           path = PathFile,
+                           force = TRUE)
+      data.table::set(
+        KMeansModelFile,
+        i = 2L,
+        j = 2L,
+        value = save_model
+      )
+      save(KMeansModelFile,
+           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    } else {
+      return("You need to specify mojo or standard if you want to save your models")
+    }
   }
 
   # Run k-means
@@ -667,19 +720,17 @@ AutoKMeans <- function(data,
       training_frame    = x_raw,
       x                 = Nam,
       k                 = KMeansK,
-      grid_id           = "grid",
+      grid_id           = "KMeans",
       estimate_k        = TRUE,
       hyper_params      = HyperParams
     )
 
     # Get best performer
     Grid_Out <-
-      h2o::h2o.getGrid(grid_id = "grid",
+      h2o::h2o.getGrid(grid_id = "KMeans",
                        sort_by = KMeansMetric,
                        decreasing = FALSE)
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
-
-
   } else {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Nam <- colnames(x_raw)
@@ -689,6 +740,47 @@ AutoKMeans <- function(data,
       k              = KMeansK,
       estimate_k     = TRUE
     )
+  }
+
+  # Save model if requested
+  if(!is.null(SaveModels)) {
+    if(tolower(SaveModels) == "mojo") {
+      save_model <-
+        h2o::h2o.saveMojo(object = model,
+                          path = PathFile,
+                          force = TRUE)
+      h2o::h2o.download_mojo(
+        model = best_model,
+        path = model_path,
+        get_genmodel_jar = TRUE,
+        genmodel_path = model_path,
+        genmodel_name = Construct[i, 5][[1]]
+      )
+      set(KMeansModelFile,
+          i = 2L,
+          j = 2L,
+          value = save_model)
+      set(KMeansModelFile,
+          i = 2L,
+          j = 3L,
+          value = paste0(PathFile, "/KMeans"))
+      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    } else if(tolower(SaveModels) == "standard") {
+      save_model <-
+        h2o::h2o.saveModel(object = model,
+                           path = PathFile,
+                           force = TRUE)
+      data.table::set(
+        KMeansModelFile,
+        i = 2L,
+        j = 2L,
+        value = save_model
+      )
+      save(KMeansModelFile,
+           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    } else {
+      return("You need to specify mojo or standard if you want to save your models")
+    }
   }
 
   # Combine outputs
@@ -2514,7 +2606,7 @@ threshOptim <- function(data,
 #' # Join predictions to source data
 #' data2 <- merge(
 #'   data1,
-#'   data11[[1]],
+#'   data11$PredictionData,
 #'   by = "Variable",
 #'   all = FALSE
 #' )
@@ -2527,7 +2619,7 @@ threshOptim <- function(data,
 #'                                   color = "Predicted")) +
 #'  RemixAutoML::ChartTheme(Size = 12) +
 #'   ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
-#'                           data11[[2]])) +
+#'                           data11$ModelName)) +
 #'   ggplot2::ylab("Target Variable") +
 #'   ggplot2::xlab("Independent Variable") +
 #'   ggplot2::scale_colour_manual("Values",
@@ -2535,8 +2627,8 @@ threshOptim <- function(data,
 #'                                           "Predicted"),
 #'                                values = c("red",
 #'                                           "blue"))
-#' summary(data11[[3]])
-#' data11[[4]]
+#' summary(data11$ModelObject)
+#' data11$EvaluationMetrics
 #' @return A list containing "PredictionData" which is a data table with your original column replaced by the nls model predictions; "ModelName" the model name; "ModelObject" The winning model to later use; "EvaluationMetrics" Model metrics for models with ability to build.
 #' @export
 AutoNLS <- function(data, y, x, monotonic = TRUE) {
@@ -4369,7 +4461,8 @@ DT_GDL_Feature_Engineering <- function(data,
 Scoring_GDL_Feature_Engineering <- function(data,
                                             lags           = c(seq(1,5,1)),
                                             periods        = c(3,5,10,15,20,25),
-                                            statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
+                                            statsFUNs      = c(function(x)
+                                              mean(x,na.rm = TRUE)),
                                             statsNames     = c("MA"),
                                             targets        = c("Target"),
                                             groupingVars   = NULL,
@@ -9071,87 +9164,87 @@ AutoWord2VecModeler <- function(data,
 #'}
 #' @export
 AutoWordFreq <- function(data,
-                     TextColName = "DESCR",
-                     ClusterCol = "ClusterAllNoTarget",
-                     ClusterID = 0,
-                     RemoveEnglishStopwords = TRUE,
-                     Stemming = TRUE,
-                     StopWords = c("bla",
-                                   "blab2")) {
-  # Check data.table
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+                         TextColName = "DESCR",
+                         ClusterCol = "ClusterAllNoTarget",
+                         ClusterID = 0,
+                         RemoveEnglishStopwords = TRUE,
+                         Stemming = TRUE,
+                         StopWords = c("bla",
+                                       "blab2")) {
+      # Check data.table
+      if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
-  # Ensure stringCol is character (not factor)
-  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+      # Ensure stringCol is character (not factor)
+      if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
 
-  # Ensure ClusterCol is character
-  if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
+      # Ensure ClusterCol is character
+      if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
 
-  # Prepare data
-  if (is.null(ClusterCol)) {
-    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
-  } else {
-    desc <-
-      tm::Corpus(tm::VectorSource(
-        data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]])
+      # Prepare data
+      if (is.null(ClusterCol)) {
+        desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
+      } else {
+        desc <-
+          tm::Corpus(tm::VectorSource(
+            data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]])
+          )
+      }
+
+      # Clean text
+      toSpace <-
+        tm::content_transformer(function (x , pattern)
+          gsub(pattern, " ", x))
+      text <- tm::tm_map(text, toSpace, "/")
+      text <- tm::tm_map(text, toSpace, "@")
+      text <- tm::tm_map(text, toSpace, "\\|")
+
+      # Convert the text to lower case
+      text <- tm::tm_map(text, tm::content_transformer(tolower))
+
+      # Remove numbers
+      text <- tm::tm_map(text, tm::removeNumbers)
+
+      # Remove english common stopwords
+      if (RemoveEnglishStopwords)
+        text <-
+        tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
+
+      # specify your stopwords as a character vector
+      text <- tm::tm_map(text, tm::removeWords, StopWords)
+
+      # Remove punctuations
+      text <- tm::tm_map(text, tm::removePunctuation)
+
+      # Eliminate extra white spaces
+      text <- tm::tm_map(text, tm::stripWhitespace)
+
+      # Text stemming
+      if (Stemming)
+        text <- tm::tm_map(text, tm::stemDocument)
+
+      # Finalize
+      dtm <- tm::TermDocumentMatrix(text)
+      m <- as.matrix(dtm)
+      v <- sort(rowSums(m), decreasing = TRUE)
+      d <- data.table::data.table(word = names(v), freq = v)
+      print(head(d, 10))
+
+      # Word Cloud
+      print(
+        wordcloud::wordcloud(
+          words = d$word,
+          freq = d$freq,
+          min.freq = 1,
+          max.words = 200,
+          random.order = FALSE,
+          rot.per = 0.35,
+          colors = RColorBrewer::brewer.pal(8, "Dark2")
+        )
       )
-  }
 
-  # Clean text
-  toSpace <-
-    tm::content_transformer(function (x , pattern)
-      gsub(pattern, " ", x))
-  text <- tm::tm_map(text, toSpace, "/")
-  text <- tm::tm_map(text, toSpace, "@")
-  text <- tm::tm_map(text, toSpace, "\\|")
-
-  # Convert the text to lower case
-  text <- tm::tm_map(text, tm::content_transformer(tolower))
-
-  # Remove numbers
-  text <- tm::tm_map(text, tm::removeNumbers)
-
-  # Remove english common stopwords
-  if (RemoveEnglishStopwords)
-    text <-
-    tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
-
-  # specify your stopwords as a character vector
-  text <- tm::tm_map(text, tm::removeWords, StopWords)
-
-  # Remove punctuations
-  text <- tm::tm_map(text, tm::removePunctuation)
-
-  # Eliminate extra white spaces
-  text <- tm::tm_map(text, tm::stripWhitespace)
-
-  # Text stemming
-  if (Stemming)
-    text <- tm::tm_map(text, tm::stemDocument)
-
-  # Finalize
-  dtm <- tm::TermDocumentMatrix(text)
-  m <- as.matrix(dtm)
-  v <- sort(rowSums(m), decreasing = TRUE)
-  d <- data.table::data.table(word = names(v), freq = v)
-  print(head(d, 10))
-
-  # Word Cloud
-  print(
-    wordcloud::wordcloud(
-      words = d$word,
-      freq = d$freq,
-      min.freq = 1,
-      max.words = 200,
-      random.order = FALSE,
-      rot.per = 0.35,
-      colors = RColorBrewer::brewer.pal(8, "Dark2")
-    )
-  )
-
-  # Return
-  return(d)
-}
+      # Return
+      return(d)
+    }
 
 #' AutoH20TextPrepScoring is for NLP scoring
 #'
@@ -9413,11 +9506,28 @@ AutoRecommender <- function(data,
 #' @return Returns the prediction data
 #' @examples
 #' \dontrun{
-#' AutoRecommenderScoring(RatingMatrix,
-#'                        WinningModel,
-#'                        EntityColName = "CustomerID",
-#'                        ProductColName = "StockCode",
-#'                        MetricColName = "TotalSales")
+#' Results <- AutoRecommenderScoring(
+#'   data = RecomDataCreate(
+#'       data,
+#'       EntityColName = "CustomerID",
+#'       ProductColName = "StockCode",
+#'       MetricColName = "TotalSales"),
+#'   WinningModel = AutoRecommender(
+#'       RecomDataCreate(
+#'         data,
+#'         EntityColName = "CustomerID",
+#'         ProductColName = "StockCode",
+#'         MetricColName = "TotalSales"),
+#'       Partition = "Split",
+#'       KFolds = 2,
+#'       Ratio = 0.75,
+#'       RatingType = "TopN",
+#'       RatingsKeep = 20,
+#'       SkipModels = "AssociationRules",
+#'       ModelMetric = "TPR"),
+#'   EntityColName = "CustomerID",
+#'   ProductColName = "StockCode",
+#'   MetricColName = "TotalSales")
 #' }
 #' @export
 AutoRecommenderScoring <- function(data,
