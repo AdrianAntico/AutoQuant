@@ -8911,15 +8911,13 @@ AutoH20Scoring <- function(Features     = data,
               x[z] <- nam
             }
           }
-          Features <- DummifyDT(Features,
+          features <- data.table::copy(Features)
+          features <- DummifyDT(features,
                                 cols = x,
                                 KeepBaseCols = FALSE,
                                 OneHot = FALSE,
                                 ClustScore = TRUE)
-          features <- h2o::as.h2o(Features)
-
-
-          features <- h2o::as.h2o(Features)
+          features <- h2o::as.h2o(features)
         } else {
           features <- h2o::as.h2o(Features)
         }
@@ -8999,6 +8997,9 @@ AutoH20Scoring <- function(Features     = data,
         Scores <- data.table::as.data.table(
           h2o::h2o.predict(object = KMeans,
                            newdata = x_raw))
+        Scores <- cbind(data.table::as.data.table(
+          Scores),
+          Features)
       } else {
         stop("TargetType is not Multinomial,
           Classification, Regression, Text, Multioutcome,
