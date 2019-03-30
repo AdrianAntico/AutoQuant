@@ -155,6 +155,7 @@ utils::globalVariables(
 #' @param cols a vector with the names of the columns you wish to dichotomize
 #' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
+#' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @import data.table
 #' @examples
 #' test <- data.table::data.table(Value = runif(100000),
@@ -176,34 +177,75 @@ utils::globalVariables(
 # Dummify meters
 DummifyDT <- function(data,
                       cols,
-                      KeepBaseCols = TRUE,
-                      OneHot = TRUE) {
+                      KeepBaseCols = FALSE,
+                      OneHot = TRUE,
+                      ClustScore = FALSE) {
   # Check data.table
-  if (!data.table::is.data.table(data))
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
-  for (col in cols) {
+  }
+
+  # Ensure correct argument settings
+  if(OneHot == TRUE & ClustScore == TRUE) {
+    OneHot <- FALSE
+    KeepBaseCols <- FALSE
+  }
+
+  for (col in rev(cols)) {
+    # Store original column size
+    size <- ncol(data)
+    Names <- setdiff(names(data),col)
     inds <- unique(data[[eval(col)]])
     data.table::alloc.col(data,
                           ncol(data) + length(inds))
-    data.table::set(data,
-                    j = paste0(col, "_", inds),
-                    value = 0L)
     if (is.factor(data[[eval(col)]])) {
       data[, eval(col) := as.character(get(col))]
     }
+    if(!ClustScore) {
+      data.table::set(data,
+                      j = paste0(col, "_", inds),
+                      value = 0L)
+    } else {
+      data.table::set(data,
+                      j = paste0(col, inds),
+                      value = 0L)
+    }
     for (ind in inds) {
-      data.table::set(
-        data,
-        i = which(data[[col]] %chin% ind),
-        j = paste0(col, "_", ind),
-        value = 1L
-      )
+      if(!ClustScore) {
+        data.table::set(
+          data,
+          i = which(data[[col]] %chin% ind),
+          j = paste0(col, "_", ind),
+          value = 1L
+        )
+      } else {
+        data.table::set(
+          data,
+          i = which(data[[col]] %chin% ind),
+          j = paste0(col, ind),
+          value = 1L
+        )
+      }
+    }
+    if (!KeepBaseCols) {
+      data[, eval(col) := NULL]
+    }
+    if(ClustScore) {
+      setcolorder(data,
+                  c(setdiff(names(data),
+                            Names),
+                    Names))
     }
     if (OneHot) {
       data[, paste0(col, "_Base") := 0]
     }
-    if (!KeepBaseCols)
-      data[, eval(col) := NULL]
+  }
+  if(ClustScore) {
+    setnames(data,names(data),
+             tolower(
+               gsub('[[:punct:] ]+',
+                    replacement = "",
+                    names(data))))
   }
   return(data)
 }
@@ -653,7 +695,6 @@ AutoKMeans <- function(data,
 
   # Save model if requested
   if(!is.null(SaveModels)) {
-
     # Save archetypes and colnames
     fitY <- model@model$archetypes
     save(fitY, file = paste0(PathFile, "/fitY"))
@@ -8684,6 +8725,8 @@ AutoH20Scoring <- function(Features     = data,
     load(paste0(FilesPath, "/grid_tuned_paths.Rdata"))
   } else if (any(tolower(TargetType) %in% "text")) {
     load(paste0(FilesPath, "/StoreFile.Rdata"))
+  } else if (any(tolower(TargetType) %in% "clustering")) {
+    load(paste0(FilesPath, "/KMeansModelFile.Rdata"))
   } else {
     stop("TargetType not a valid option")
   }
@@ -8698,10 +8741,14 @@ AutoH20Scoring <- function(Features     = data,
           the number of rows in grid_tuned_paths")
     }
   } else if (any(tolower(TargetType) %in% "text")) {
-    load(paste0(FilesPath, "/StoreFile.Rdata"))
     if(nrow(StoreFile) < max(GridTuneRow)) {
       stop("GridTuneRow is greater than
           the number of rows in StoreFile")
+    }
+  } else if(any(tolower(TargetType) %in% "clustering")) {
+    if(nrow(KMeansModelFile) < max(GridTuneRow)) {
+      stop("GridTuneRow is greater than
+            the number of rows in KMeansModelFile")
     }
   } else {
     stop("TargetType not a valid option")
@@ -8840,7 +8887,6 @@ AutoH20Scoring <- function(Features     = data,
         h2o::h2o.init(nthreads     = NThreads,
                       max_mem_size = MaxMem)
       }
-
       # Check if H20 is running
       tryCatch(expr = {h2o::h2o.init(startH2O = FALSE)},
                error = function(e){startH2o()})
@@ -8848,17 +8894,35 @@ AutoH20Scoring <- function(Features     = data,
       # Load model
       if(tolower(TargetType[i]) == "text") {
         model <- h2o::h2o.loadModel(path = StoreFile[i,Path])
-      } else if (TargetType[i] == "clustering"){
-        model <- h2o::h2o.loadModel(path = KMeansModelFile[i,Path])
+      } else if (TargetType[i] != "clustering"){
+        model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
       } else {
-        GLRM <- h2o::h2o.loadModel(path = grid_tuned_paths[i,FilePath1])
-        KMeans <- h2o::h2o.loadModel(path = grid_tuned_paths[i+1,FilePath1])
+        KMeans <- h2o::h2o.loadModel(path = KMeansModelFile[i+1,FilePath1])
       }
-
-
       # Load Features
       if(i == 1 && tolower(TargetType[i]) != "text") {
-        features <- h2o::as.h2o(Features)
+        if(tolower(TargetType[i]) == "clustering") {
+          x <- c()
+          z <- 0
+          for(nam in names(Features)) {
+            if(is.factor(Features[1,get(nam)]) |
+               is.character(Features[1,get(nam)])) {
+              z <- z + 1
+              x[z] <- nam
+            }
+          }
+          Features <- DummifyDT(Features,
+                                cols = x,
+                                KeepBaseCols = FALSE,
+                                OneHot = FALSE,
+                                ClustScore = TRUE)
+          features <- h2o::as.h2o(Features)
+
+
+          features <- h2o::as.h2o(Features)
+        } else {
+          features <- h2o::as.h2o(Features)
+        }
       }
       if(tolower(TargetType[i]) == "multinomial") {
         if(tolower(ClassVals[i]) == "probs") {
@@ -8928,14 +8992,18 @@ AutoH20Scoring <- function(Features     = data,
         Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
         Scores <- paste0(Vals, collapse = " ")
       } else if(tolower(TargetType[i]) == "clustering") {
-        Archetypes <- h2o::h2o.predict(object = GLRM, newdata = features)
+        load(file = KMeansModelFile[i,FilePath1][[1]])
+        load(file = KMeansModelFile[i,FilePath2][[1]])
+        NewGLRM <- h2o::h2o.glrm(training_frame = features, init = "User", user_y = fitY)
+        x_raw <- h2o::h2o.getFrame(NewGLRM@model$representation_name)
         Scores <- data.table::as.data.table(
-          h2o::h2o.predict(object = KMeans, newdata = Archetypes))
+          h2o::h2o.predict(object = KMeans,
+                           newdata = x_raw))
       } else {
         stop("TargetType is not Multinomial,
           Classification, Regression, Text, Multioutcome,
           or Clustering.")
-        }
+      }
     } else {
       stop("ScoreMethod must be Standard or Mojo")
     }
