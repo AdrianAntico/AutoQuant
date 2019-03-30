@@ -9510,7 +9510,7 @@ AutoRecommender <- function(data,
 #' @return Returns the prediction data
 #' @examples
 #' \dontrun{
-#' # Score(Model(Wrangle(x)))
+#' # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(RecomDataCreate(TransactionData)))
 #' Results <- AutoRecommenderScoring(
 #'   data = RecomDataCreate(
 #'       data,
