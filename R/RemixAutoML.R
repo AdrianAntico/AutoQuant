@@ -8,6 +8,9 @@ utils::globalVariables(
     "BinaryRatingsMatrix",
     "RatingMatrix",
     "ProductRank",
+    "best_model",
+    "model_path",
+    "Construct",
     "model",
     "n_products",
     "TPR",
@@ -658,11 +661,11 @@ AutoKMeans <- function(data,
                           path = PathFile,
                           force = TRUE)
       h2o::h2o.download_mojo(
-        model = best_model,
-        path = model_path,
+        model = model,
+        path = paste0(PathFile, "/GLRM"),
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = Construct[i, 5][[1]]
+        genmodel_name = "GLRM"
       )
       set(KMeansModelFile,
           i = 1L,
@@ -750,11 +753,11 @@ AutoKMeans <- function(data,
                           path = PathFile,
                           force = TRUE)
       h2o::h2o.download_mojo(
-        model = best_model,
+        model = model,
         path = model_path,
         get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = Construct[i, 5][[1]]
+        genmodel_path = PathFile,
+        genmodel_name = "KMeans"
       )
       set(KMeansModelFile,
           i = 2L,
