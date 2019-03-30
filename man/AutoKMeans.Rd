@@ -8,7 +8,8 @@ AutoKMeans(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
   nthreads = 4, MaxMem = "14G", glrmCols = 3:ncol(data),
   IgnoreConstCols = TRUE, glrmFactors = 5, Loss = "Absolute",
   glrmMaxIters = 1000, SVDMethod = "Randomized",
-  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
+  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss",
+  SaveModels = NULL, PathFile = getwd())
 }
 \arguments{
 \item{data}{is the source time series data.table}
@@ -38,6 +39,10 @@ AutoKMeans(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
 \item{KMeansK}{number of factors to test out in k-means to find the optimal number}
 
 \item{KMeansMetric}{pick the metric to identify top model in grid tune c("totss","betweenss","withinss")}
+
+\item{SaveModels}{Set to "standard", "mojo", or NULL (default)}
+
+\item{PathFile}{Set to folder where you will keep the models}
 }
 \value{
 Original data.table with added column with cluster number identifier
