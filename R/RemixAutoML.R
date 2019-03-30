@@ -675,7 +675,8 @@ AutoKMeans <- function(data,
           i = 1L,
           j = 3L,
           value = paste0(PathFile, "/GLRM"))
-      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+      save(KMeansModelFile, file = paste0(PathFile,
+                                          "/KMeansModelFile.Rdata"))
     } else if(tolower(SaveModels) == "standard") {
       save_model <-
         h2o::h2o.saveModel(object = model,
@@ -688,7 +689,8 @@ AutoKMeans <- function(data,
         value = save_model
       )
       save(KMeansModelFile,
-           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+           file = paste0(PathFile,
+                         "/KMeansModelFile.Rdata"))
     } else {
       return("You need to specify mojo or standard if you want to save your models")
     }
@@ -767,7 +769,8 @@ AutoKMeans <- function(data,
           i = 2L,
           j = 3L,
           value = paste0(PathFile, "/KMeans"))
-      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+      save(KMeansModelFile, file = paste0(PathFile,
+                                          "/KMeansModelFile.Rdata"))
     } else if(tolower(SaveModels) == "standard") {
       save_model <-
         h2o::h2o.saveModel(object = model,
@@ -780,7 +783,8 @@ AutoKMeans <- function(data,
         value = save_model
       )
       save(KMeansModelFile,
-           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+           file = paste0(PathFile,
+                         "/KMeansModelFile.Rdata"))
     } else {
       return("You need to specify mojo or standard if you want to save your models")
     }
