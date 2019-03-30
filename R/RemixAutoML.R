@@ -6,6 +6,11 @@ utils::globalVariables(
   names = c(
     "test",
     "BinaryRatingsMatrix",
+    "KMeansModelFile",
+    "FilePath1",
+    "FilePath2",
+    "fitY",
+    "Nam",
     "RatingMatrix",
     "ProductRank",
     "model",
@@ -737,7 +742,7 @@ AutoKMeans <- function(data,
       "kmeans",
       search_criteria   = search_criteria,
       training_frame    = x_raw,
-      x                 = Nam,
+      x                 = Names,
       k                 = KMeansK,
       grid_id           = "KMeans",
       estimate_k        = TRUE,
@@ -764,7 +769,7 @@ AutoKMeans <- function(data,
     # Train KMeans
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
-      x              = Nam,
+      x              = Names,
       k              = KMeansK,
       estimate_k     = TRUE
     )
