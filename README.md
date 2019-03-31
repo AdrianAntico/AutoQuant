@@ -9,7 +9,7 @@
   * XGBoost (for Linux)
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-**AutoH20Scoring** Scoring models that were built with the AutoH20Modeler function. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
+**AutoH20Scoring**: Scoring models that were built with the AutoH20Modeler function. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 **AutoTS**: Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), along with generating forecasts and evaluation metrics.
 * Models include:
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
@@ -37,7 +37,7 @@
 **AutoRecommenderScoring**: Automatically score a recommender model from AutoRecommender
 
 ##### Unsupervised Learning Functions: 
-**GenTSAnomVars**: - Generate time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
+**GenTSAnomVars**: Generate time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 **ResidualOutliers**: Residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 **AutoKMeans**: Generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
@@ -48,23 +48,23 @@
 **DT_GDL_Feature_Engineering**: Lags + Moving Averages, 100% data.table
 **AutoWord2VecModeler**: Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
 **ModelDataPrep**: Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
-**DummifyDT** - rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
+**DummifyDT** rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
 
 ##### Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 **ParDepCalPlots**: Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 **EvalPlot**: Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
 **threshOptim**: Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models
-**RedYellowGreen** - computes optimal thresholds for binary classification models when "don't classify" is an option
+**RedYellowGreen** computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-**AutoH20TextPrepScoring** - prepares your data for scoring based on models built with Word2VecModel
-**RecomDataCreate** - Turns your transactional data into a binary ratings matrix
-**tokenizeH20** - Tokenize and H20 string column.
-**tempDatesFun** - Special case for character conversion to date when importing from Excel.
-**RemixTheme** - Fonts, colors, style for plots.
-**ChartTheme** - Fonts, colors, style for plots.
-**SimpleCap** - Apply proper case to text.
-**percRank** - Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-**multiplot** - Useful for displaying multiple plots in a single pane.
-**PrintObjectsSize** - print out objects and their sizes that are in the envrionment
-**AutoWordFreq** - creates a word frequency data.table and a word cloud
+**AutoH20TextPrepScoring** prepares your data for scoring based on models built with Word2VecModel
+**RecomDataCreate** Turns your transactional data into a binary ratings matrix
+**tokenizeH20** Tokenize and H20 string column.
+**tempDatesFun** Special case for character conversion to date when importing from Excel.
+**RemixTheme** Fonts, colors, style for plots.
+**ChartTheme** Fonts, colors, style for plots.
+**SimpleCap** Apply proper case to text.
+**percRank** Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+**multiplot** Useful for displaying multiple plots in a single pane.
+**PrintObjectsSize** print out objects and their sizes that are in the envrionment
+**AutoWordFreq** creates a word frequency data.table and a word cloud
