@@ -6,6 +6,10 @@ utils::globalVariables(
   names = c(
     "test",
     "BinaryRatingsMatrix",
+    "Residuals",
+    "ind",
+    "ObsNum",
+    "type",
     "KMeansModelFile",
     "FilePath1",
     "FilePath2",
@@ -266,7 +270,7 @@ DummifyDT <- function(data,
 #' @import data.table
 #' @examples
 #' \dontrun{
-#' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+#' auc_val <- H2OMultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' }
 #' @return Micro AUC
 H2OMultinomialAUC <-
@@ -461,7 +465,7 @@ GenTSAnomVars <- function(data,
 #' @param PredictedColName The name of your predicted value. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
 #' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
-#' @param cvar the t-stat value for tsoutliers
+#' @param tstat the t-stat value for tsoutliers
 #' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -8394,7 +8398,7 @@ AutoH2OModeler <- function(Construct,
 
         # Multinomial metric
         if(multinomialMetric == "auc") {
-          val <- H20MultinomialAUC(validate,
+          val <- H2OMultinomialAUC(validate,
                                    best_model,
                                    targetColNum = 1,
                                    targetName = Construct[i,1][[1]])
@@ -8411,7 +8415,7 @@ AutoH2OModeler <- function(Construct,
         }
 
         # Store baseline val
-        temp <- H20MultinomialAUC(validate,
+        temp <- H2OMultinomialAUC(validate,
                                  best_model,
                                  targetColNum = 1,
                                  targetName = Construct[i,1][[1]])
@@ -8475,7 +8479,7 @@ AutoH2OModeler <- function(Construct,
 
         # Multinomial metric
         if(multinomialMetric == "auc") {
-          val <- H20MultinomialAUC(validate,
+          val <- H2OMultinomialAUC(validate,
                                    bl_model,
                                    targetColNum = 1,
                                    targetName = Construct[i,1][[1]])
@@ -8937,7 +8941,7 @@ AutoH2OScoring <- function(Features     = data,
             verbose = FALSE))
       } else if(tolower(TargetType[i]) == "text") {
         keep <- StoreFile[i,1][[1]]
-        temp <- AutoH20TextPrepScoring(data = Features[, ..keep],
+        temp <- AutoH2OTextPrepScoring(data = Features[, ..keep],
                                        string = StoreFile[i,1][[1]])
         data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
         Scores <- data.table::as.data.table(
@@ -9007,7 +9011,7 @@ AutoH2OScoring <- function(Features     = data,
           features <- data.table::copy(Features)
           features <- DummifyDT(features,
                                 cols = x,
-                                KeepBaseCols = FALSE,
+                                KeepFactorCols = FALSE,
                                 OneHot = FALSE,
                                 ClustScore = TRUE)
           features <- h2o::as.h2o(features)
@@ -9061,7 +9065,7 @@ AutoH2OScoring <- function(Features     = data,
                            newdata = features)[,1])
       } else if(tolower(TargetType[i]) == c("text")) {
         name <- StoreFile[i, ModelName][[1]]
-        data <- AutoH20TextPrepScoring(data = Features,
+        data <- AutoH2OTextPrepScoring(data = Features,
                                        string = name,
                                        NThreads = NThreads,
                                        MaxMem = MaxMem)
@@ -9212,7 +9216,7 @@ AutoWord2VecModeler <- function(data,
     data2 <- data[, .(get(string))]
 
     # Tokenize
-    tokenized_words <- tokenizeH20(data2)
+    tokenized_words <- tokenizeH2O(data2)
     rm(data2)
 
     # Build model
@@ -9405,7 +9409,7 @@ AutoWordFreq <- function(data,
       return(d)
     }
 
-#' AutoH20TextPrepScoring is for NLP scoring
+#' AutoH2OTextPrepScoring is for NLP scoring
 #'
 #' This function returns prepared tokenized data for H20 Word2VecModeler scoring
 #' @author Adrian Antico
@@ -9427,7 +9431,7 @@ AutoH2OTextPrepScoring <- function(data, string, MaxMem, NThreads) {
   data2 <- data[, ..string]
 
   # Tokenize
-  tokenized_words <- RemixAutoML::tokenizeH20(data2)
+  tokenized_words <- RemixAutoML::tokenizeH2O(data2)
   return(tokenized_words)
 }
 
