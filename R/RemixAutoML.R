@@ -9315,8 +9315,8 @@ AutoWord2VecModeler <- function(data,
 #' @family Misc
 #' @param data Source data table
 #' @param TextColName A string name for the column
-#' @param ClusterCol Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
-#' @param ClusterID Must be set if ClusterCol is defined. Set to cluster ID (or factor level)
+#' @param GroupColName Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
+#' @param GroupLevel Must be set if GroupColName is defined. Set to cluster ID (or factor level)
 #' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
@@ -9325,8 +9325,8 @@ AutoWord2VecModeler <- function(data,
 #' \dontrun{
 #' data <- WordFreq(data,
 #'                  TextColName = "DESCR",
-#'                  ClusterCol = "ClusterAllNoTarget",
-#'                  ClusterID = 0,
+#'                  GroupColName = "ClusterAllNoTarget",
+#'                  GroupLevel = 0,
 #'                  RemoveEnglishStopwords = TRUE,
 #'                  Stemming = TRUE,
 #'                  StopWords = c("bla1", "bla2")
@@ -9334,84 +9334,85 @@ AutoWord2VecModeler <- function(data,
 #' @export
 AutoWordFreq <- function(data,
                          TextColName = "DESCR",
-                         ClusterCol  = "ClusterAllNoTarget",
-                         ClusterID   = 0,
+                         GroupColName  = "ClusterAllNoTarget",
+                         GroupLevel   = 0,
                          RemoveEnglishStopwords = TRUE,
                          Stemming    = TRUE,
                          StopWords   = c("bla",
                                          "blab2")) {
-      # Check data.table
-      if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  # Check data.table
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
-      # Ensure stringCol is character (not factor)
-      if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+  # Ensure stringCol is character (not factor)
+  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
 
-      # Prepare data
-      if (is.null(ClusterCol)) {
-        desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
-      } else {
-        if(!is.character(data[[ClusterCol]])) data[, eval(ClusterCol) := as.character(get(ClusterCol))]
-        desc <-
-          tm::Corpus(tm::VectorSource(
-            data[get(ClusterCol) == eval(ClusterID)][[eval(TextColName)]])
-          )
-      }
-
-      # Clean text
-      toSpace <-
-        tm::content_transformer(function (x , pattern)
-          gsub(pattern, " ", x))
-      text <- tm::tm_map(desc, toSpace, "/")
-      text <- tm::tm_map(text, toSpace, "@")
-      text <- tm::tm_map(text, toSpace, "\\|")
-
-      # Convert the text to lower case
-      text <- tm::tm_map(text, tm::content_transformer(tolower))
-
-      # Remove numbers
-      text <- tm::tm_map(text, tm::removeNumbers)
-
-      # Remove english common stopwords
-      if (RemoveEnglishStopwords)
-        text <-
-        tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
-
-      # specify your stopwords as a character vector
-      text <- tm::tm_map(text, tm::removeWords, StopWords)
-
-      # Remove punctuations
-      text <- tm::tm_map(text, tm::removePunctuation)
-
-      # Eliminate extra white spaces
-      text <- tm::tm_map(text, tm::stripWhitespace)
-
-      # Text stemming
-      if (Stemming)
-        text <- tm::tm_map(text, tm::stemDocument)
-
-      # Finalize
-      dtm <- tm::TermDocumentMatrix(text)
-      m <- as.matrix(dtm)
-      v <- sort(rowSums(m), decreasing = TRUE)
-      d <- data.table::data.table(word = names(v), freq = v)
-      print(head(d, 10))
-
-      # Word Cloud
-      print(
-        wordcloud::wordcloud(
-          words = d$word,
-          freq = d$freq,
-          min.freq = 1,
-          max.words = 200,
-          random.order = FALSE,
-          rot.per = 0.35,
-          colors = RColorBrewer::brewer.pal(8, "Dark2")
-        )
+  # Prepare data
+  if (is.null(GroupColName)) {
+    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
+  } else {
+    if(!is.character(data[[GroupColName]])) {
+      data[, eval(GroupColName) := as.character(get(GroupColName))]
+      desc <- tm::Corpus(tm::VectorSource(
+        data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]])
       )
-
-      # Return
-      return(d)
     }
+  }
+
+  # Clean text
+  toSpace <-
+    tm::content_transformer(function (x , pattern)
+      gsub(pattern, " ", x))
+  text <- tm::tm_map(desc, toSpace, "/")
+  text <- tm::tm_map(text, toSpace, "@")
+  text <- tm::tm_map(text, toSpace, "\\|")
+
+  # Convert the text to lower case
+  text <- tm::tm_map(text, tm::content_transformer(tolower))
+
+  # Remove numbers
+  text <- tm::tm_map(text, tm::removeNumbers)
+
+  # Remove english common stopwords
+  if (RemoveEnglishStopwords)
+    text <-
+    tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
+
+  # specify your stopwords as a character vector
+  text <- tm::tm_map(text, tm::removeWords, StopWords)
+
+  # Remove punctuations
+  text <- tm::tm_map(text, tm::removePunctuation)
+
+  # Eliminate extra white spaces
+  text <- tm::tm_map(text, tm::stripWhitespace)
+
+  # Text stemming
+  if (Stemming)
+    text <- tm::tm_map(text, tm::stemDocument)
+
+  # Finalize
+  dtm <- tm::TermDocumentMatrix(text)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m), decreasing = TRUE)
+  d <- data.table::data.table(word = names(v), freq = v)
+  print(head(d, 10))
+
+  # Word Cloud
+  print(
+    wordcloud::wordcloud(
+      words = d$word,
+      freq = d$freq,
+      min.freq = 1,
+      max.words = 200,
+      random.order = FALSE,
+      rot.per = 0.35,
+      colors = RColorBrewer::brewer.pal(8, "Dark2")
+    )
+  )
+
+  # Return
+  return(d)
+}
 
 #' AutoH2OTextPrepScoring is for NLP scoring
 #'
@@ -9520,9 +9521,9 @@ RecomDataCreate <- function(data,
             Class = "binaryRatingMatrix"))
 }
 
-#' Automatically build the best recommendere model.
+#' Automatically build the best recommendere model among models available.
 #'
-#' This function returns the winning model
+#' This function returns the winning model that you pass onto AutoRecommenderScoring
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
 #' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
@@ -9544,7 +9545,7 @@ RecomDataCreate <- function(data,
 #'                                 SkipModels = "AssociationRules",
 #'                                 ModelMetric = "TPR")
 #' }
-#' @return The winning model
+#' @return The winning model used for scoring in the AutoRecommenderScoring function
 #' @export
 AutoRecommender <- function(data,
                             Partition   = "Split",
