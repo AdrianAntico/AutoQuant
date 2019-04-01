@@ -10,7 +10,7 @@ tokenizeH20(data)
 \item{data}{The text data}
 }
 \description{
-This function tokenizes data
+This function tokenizes text data
 }
 \seealso{
 Other Misc: \code{\link{AutoH20TextPrepScoring}},
