@@ -5757,29 +5757,53 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a (0,1) of type "Factor." See the examples below for help with setting up the Construct file for various modeling target variable types. There are examples for regression, classification, multinomial, and quantile regression.
 #'
 #' Let's go over the construct file, column by column. The Targets column is where you specify the column number of your target variable (in quotes, e.g. "c(1)").
+#'
 #' The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H20 docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
+#'
 #' The Loss column tells H20 which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
+#'
 #' The Quantile column tells H20 which quantile to use for quantile regression (in decimal form).
+#'
 #' The ModelName column is the name you wish to give your model as a prefix.
+#'
 #' The Algorithm column is the model you wish to use: gbm, randomForest, deeplearning, AutoML, XGBoost, LightGBM.
+#'
 #' The dataName column is the name of your data.
+#'
 #' The TargetCol column is the column number of your target variable.
+#'
 #' The FeatureCols column is the column numbers of your features.
+#'
 #' The CreateDate column is for tracking your model build dates.
+#'
 #' The GridTune column is a TRUE / FALSE column for whether you want to run a grid tune model for comparison.
+#'
 #' The ExportValidData column is a TRUE / FALSE column indicating if you want to export the validation data.
+#'
 #' The ParDep column is where you put the number of partial dependence calibration plots you wish to generate.
+#'
 #' The PD_Data column is where you specify if you want to generate the partial dependence plots on "All" data, "Validate" data, or "Train" data.
+#'
 #' The ThreshType column is for classification models. You can specify "f1", "f2", "f0point5", or "CS" for cost sentitive.
+#'
 #' The FSC column is the feature selection column. Specify the percentage importance cutoff to create a table of "unimportant" features.
+#'
 #' The tpProfit column is for when you specify "CS" in the ThreshType column. This is your true positive profit.
+#'
 #' The tnProfit column is for when you specify "CS" in the ThreshType column. This is your true negative profit.
+#'
 #' The fpProfit column is for when you specify "CS" in the ThreshType column. This is your false positive profit.
+#'
 #' The fnProfit column is for when you specify "CS" in the ThreshType column. This is your false negative profit.
+#'
 #' The SaveModel column is a TRUE / FALSE indicator. If you are just testing out models, set this to FALSE.
+#'
 #' The SaveModelType column is where you specify if you want a "standard" model object saveed or a "mojo" model object saved.
+#'
 #' The PredsAllData column is a TRUE / FALSE column. Set to TRUE if you want all the predicted values returns (for all data).
+#'
 #' The TargetEncoding column let's you specify the column number of features you wish to run target encoding on. Set to NA to not run this feature.
+#'
 #' The SupplyData column lets you supply the data names for training and validation data. Set to NULL if you want the data partitioning to be done internally.
 #' @author Adrian Antico
 #' @family Supervised Learning
@@ -9334,12 +9358,12 @@ AutoWord2VecModeler <- function(data,
 #' @export
 AutoWordFreq <- function(data,
                          TextColName = "DESCR",
-                         GroupColName  = "ClusterAllNoTarget",
-                         GroupLevel   = 0,
+                         GroupColName = "ClusterAllNoTarget",
+                         GroupLevel = 0,
                          RemoveEnglishStopwords = TRUE,
-                         Stemming    = TRUE,
-                         StopWords   = c("bla",
-                                         "bla2")) {
+                         Stemming = TRUE,
+                         StopWords = c("bla",
+                                       "bla2")) {
   # Check data.table
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
@@ -9425,7 +9449,10 @@ AutoWordFreq <- function(data,
 #' @param NThreads The number of threads you want to let H20 utilize
 #' @import data.table
 #' @export
-AutoH2OTextPrepScoring <- function(data, string, MaxMem, NThreads) {
+AutoH2OTextPrepScoring <- function(data,
+                                   string,
+                                   MaxMem,
+                                   NThreads) {
   if(!is.data.table(data)) data <- data.table::as.data.table((data))
   data[, eval(string) := as.character(get(string))]
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
