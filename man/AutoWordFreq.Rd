@@ -7,7 +7,7 @@
 AutoWordFreq(data, TextColName = "DESCR",
   GroupColName = "ClusterAllNoTarget", GroupLevel = 0,
   RemoveEnglishStopwords = TRUE, Stemming = TRUE,
-  StopWords = c("bla", "blab2"))
+  StopWords = c("bla", "bla2"))
 }
 \arguments{
 \item{data}{Source data table}
