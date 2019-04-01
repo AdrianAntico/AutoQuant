@@ -179,7 +179,6 @@ utils::globalVariables(
 #' test[, sum(FactorCol_gg)]
 #' @return data table with new dummy variables columns and optionally removes base columns
 #' @export
-# Dummify meters
 DummifyDT <- function(data,
                       cols,
                       KeepBaseCols = FALSE,
@@ -478,7 +477,9 @@ GenTSAnomVars <- function(data,
 #' outliers <- data[type != "<NA>"]
 #' @return A data.table with outliers, the arima model, and residuals from the arima fit
 #' @export
-ResidualOutliers <- function(data, maxN = 5, cvar = 4) {
+ResidualOutliers <- function(data,
+                             maxN = 5,
+                             cvar = 4) {
   # Convert to time series object
   tsData <- stats::ts(data,
                       frequency = 1,
@@ -9027,7 +9028,7 @@ AutoH20Scoring <- function(Features     = data,
 
 #' For NLP work
 #'
-#' This function tokenizes data
+#' This function tokenizes text data
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
