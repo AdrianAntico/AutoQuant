@@ -158,7 +158,7 @@ utils::globalVariables(
 #' @family Feature Engineering
 #' @param data the data set to run the micro auc on
 #' @param cols a vector with the names of the columns you wish to dichotomize
-#' @param KeepBaseCols set to TRUE to keep the original columns used in the dichotomization process
+#' @param KeepFactorCols set to TRUE to keep the original columns used in the dichotomization process
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @import data.table
@@ -174,16 +174,16 @@ utils::globalVariables(
 #'                                       replace = TRUE))
 #' test <- DummifyDT(data = test,
 #'                   cols = "FactorCol",
-#'                   KeepBaseCols = FALSE)
+#'                   KeepFactorCols = FALSE)
 #' ncol(test)
 #' test[, sum(FactorCol_gg)]
 #' @return data table with new dummy variables columns and optionally removes base columns
 #' @export
 DummifyDT <- function(data,
                       cols,
-                      KeepBaseCols = FALSE,
-                      OneHot = TRUE,
-                      ClustScore = FALSE) {
+                      KeepFactorCols = FALSE,
+                      OneHot         = TRUE,
+                      ClustScore     = FALSE) {
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -192,7 +192,7 @@ DummifyDT <- function(data,
   # Ensure correct argument settings
   if(OneHot == TRUE & ClustScore == TRUE) {
     OneHot <- FALSE
-    KeepBaseCols <- FALSE
+    KeepFactorCols <- FALSE
   }
 
   for (col in rev(cols)) {
@@ -231,7 +231,7 @@ DummifyDT <- function(data,
         )
       }
     }
-    if (!KeepBaseCols) {
+    if (!KeepFactorCols) {
       data[, eval(col) := NULL]
     }
     if(ClustScore) {
@@ -273,7 +273,7 @@ H20MultinomialAUC <-
   function(validate,
            best_model,
            targetColNum = 1,
-           targetName = "TargetVar") {
+           targetName   = "TargetVar") {
   xx <-
     data.table::as.data.table(h2o::h2o.cbind(
       validate[, targetColNum],
@@ -326,10 +326,10 @@ PrintObjectsSize <- function(N = 10) {
 #' @param GroupVar1 this is a group by variable
 #' @param GroupVar2 this is another group by variable
 #' @param DateVar this is a time variable for grouping
-#' @param High this is the threshold on the high end
-#' @param Low this is the threshold on the low end
+#' @param HighThreshold this is the threshold on the high end
+#' @param LowThreshold this is the threshold on the low end
 #' @param KeepAllCols set to TRUE to remove the intermediate features
-#' @param DataScaled set to TRUE if you already scaled your data
+#' @param IsDataScaled set to TRUE if you already scaled your data
 #' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -347,27 +347,27 @@ PrintObjectsSize <- function(N = 10) {
 #'                           GroupVar1   = NULL,
 #'                           GroupVar2   = NULL,
 #'                           DateVar     = "DateTime",
-#'                           High        = 1.96,
-#'                           Low         = -1.96,
+#'                           HighThreshold        = 1.96,
+#'                           LowThreshold         = -1.96,
 #'                           KeepAllCols = TRUE,
-#'                           DataScaled  = FALSE)
-#' @return The original data.table with the added columns merged in
+#'                           IsDataScaled  = FALSE)
+#' @return The original data.table with the added columns merged in. When KeepAllCols is set to FALSE, you will get back two columns: AnomHighRate and AnomLowRate - these are the cumulative anomaly rates over time for when you get anomalies from above the thresholds (e.g. 1.96) and below the thresholds.
 #' @export
 GenTSAnomVars <- function(data,
                           ValueCol    = "Value",
                           GroupVar1   = "SKU",
                           GroupVar2   = NULL,
                           DateVar     = "DATE",
-                          High        = 1.96,
-                          Low         = -1.96,
+                          HighThreshold = 1.96,
+                          LowThreshold  = -1.96,
                           KeepAllCols = FALSE,
-                          DataScaled  = TRUE) {
+                          IsDataScaled  = TRUE) {
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
   # Scale data if not already
-  if (!DataScaled) {
+  if (!IsDataScaled) {
     data[, eval(ValueCol) := scale(get(ValueCol),
                                    center = TRUE,
                                    scale = TRUE)]
@@ -378,9 +378,9 @@ GenTSAnomVars <- function(data,
     if (is.null(GroupVar1) & is.null(GroupVar2)) {
       data <- data[order(get(DateVar))]
       data[, RowNumAsc := 1:.N]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High,
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low,
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh)]
       data[, CumAnomLow := cumsum(AnomLow)]
@@ -398,9 +398,9 @@ GenTSAnomVars <- function(data,
     } else if (is.null(GroupVar2) & !is.null(GroupVar1)) {
       data <- data[order(get(GroupVar1), get(DateVar))]
       data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High,
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low,
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
       data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
@@ -420,9 +420,9 @@ GenTSAnomVars <- function(data,
                          get(DateVar))]
       data[, RowNumAsc := 1:.N, by = list(get(GroupVar1),
                                           get(GroupVar2))]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > High,
+      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < Low,
+      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh),
            by = list(get(GroupVar1),
@@ -456,48 +456,130 @@ GenTSAnomVars <- function(data,
 #' @author Adrian Antico
 #' @family Unsupervised Learning
 #' @param data the source residuals data.table
+#' @param DateColName The name of your data column to use in reference to the target variable
+#' @param TargetColName The name of your target variable column
+#' @param PredictedColName The name of your predicted value. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
+#' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param cvar the t-stat value for tsoutliers
 #' @import data.table
 #' @examples
-#' data <- data.table::data.table(a = seq(0,10000,1),
-#'                    predicted = sde::GBM(N=10000)*1000)[-1,]
-#' data <- data.table::data.table(a = seq(1,10000,1),
-#'                    predicted = sde::rcCIR(n=10000,
-#'                                           Dt=0.1,
-#'                                           x0=1,
-#'                                           theta=c(6,2,2)))
-#' data <- data.table::data.table(a = seq(1,10000,1),
-#'                    predicted = sde::rsOU(n=10000,
-#'                                          theta=c(0,2,1)))
-#' stuff    <- ResidualOutliers(data = data, maxN = 5, cvar = 4)
+#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#'                                Target = as.numeric(stats::filter(rnorm(1000,
+#'                                                                        mean = 50,
+#'                                                                        sd = 20),
+#'                                                                  filter=rep(1,10),
+#'                                                                  circular=TRUE)))
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data <- data[order(DateTime)]
+#' data[, Predicted := as.numeric(stats::filter(rnorm(1000,
+#'                                                    mean = 50,
+#'                                                    sd = 20),
+#'                                              filter=rep(1,10),
+#'                                              circular=TRUE))]
+#' stuff    <- ResidualOutliers(data = data,
+#'                              DateColName = "DateTime",
+#'                              TargetColName = "Target",
+#'                              PredictedColName = NULL,
+#'                              TimeUnit = "day",
+#'                              maxN = 5,
+#'                              tstat = 4)
 #' data     <- stuff[[1]]
 #' model    <- stuff[[2]]
-#' resid    <- stuff[[3]]
 #' outliers <- data[type != "<NA>"]
-#' @return A data.table with outliers, the arima model, and residuals from the arima fit
+#' @return A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
 #' @export
 ResidualOutliers <- function(data,
+                             DateColName = "DateTime",
+                             TargetColName = "Target",
+                             PredictedColName = NULL,
+                             TimeUnit = "day",
                              maxN = 5,
-                             cvar = 4) {
+                             tstat = 2) {
+
+  # Define TS Frequency
+  if (tolower(TimeUnit) == "hour") {
+    freq <- 24
+  } else if (tolower(TimeUnit) == "day") {
+    freq <- 365
+  } else if (tolower(TimeUnit) == "week") {
+    freq <- 52
+  } else if (tolower(TimeUnit) == "month") {
+    freq <- 12
+  } else if (tolower(TimeUnit) == "quarter") {
+    freq <- 4
+  } else if (tolower(TimeUnit) == "year") {
+    freq <- 1
+  } else {
+    return("TimeUnit is not in hour, day, week, month,
+    quarter, or year")
+  }
+
+  # Ensure data is a data.table
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+
+  # Ensure data is sorted
+  data.table::setorderv(x = data,
+                        cols = eval(DateColName),
+                        order = 1)
+
+  # Keep columns
+  if(!is.null(PredictedColName)) {
+    data[, Residuals := get(TargetColName) - get(PredictedColName)]
+  } else {
+    data[, Residuals := get(TargetColName)]
+  }
+  keep <- c(DateColName, "Residuals")
+  temp <- data[, ..keep]
+  MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
+
   # Convert to time series object
-  tsData <- stats::ts(data,
-                      frequency = 1,
-                      start = 1,
-                      end = nrow(data))
+  tsData <- stats::ts(temp,
+                      start = temp[, min(get(DateColName))][[1]],
+                      frequency = freq)
 
   # Build the auto arimia
-  fit <- forecast::auto.arima(
-    tsData[, 2],
-    max.p   = maxN,
-    max.q   = maxN,
-    max.P   = maxN,
-    max.Q   = maxN,
-    start.p = maxN,
-    start.q = maxN,
-    start.P = maxN,
-    start.Q = maxN
-  )
+  if(MinVal > 0) {
+    fit <-
+      tryCatch({
+        forecast::auto.arima(
+          y = tsData[, "Residuals"],
+          max.p = maxN,
+          max.q = maxN,
+          max.P = maxN,
+          max.Q = maxN,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          lambda = TRUE,
+          biasadj = TRUE,
+          stepwise = TRUE
+        )
+      },
+      error = function(x)
+        "empty")
+  } else {
+    fit <-
+      tryCatch({
+        forecast::auto.arima(
+          y = tsData[, "Residuals"],
+          max.p = maxN,
+          max.q = maxN,
+          max.P = maxN,
+          max.Q = maxN,
+          max.d = 1,
+          max.D = 1,
+          ic = "bic",
+          lambda = FALSE,
+          biasadj = FALSE,
+          stepwise = TRUE
+        )
+      },
+      error = function(x)
+        "empty")
+  }
 
   # Store the arima parameters
   pars  <- tsoutliers::coefs2poly(fit)
@@ -509,27 +591,26 @@ ResidualOutliers <- function(data,
   x <- data.table::as.data.table(tsoutliers::locate.outliers(
     resid = resid[, 3],
     pars = pars,
-    cval = cvar,
+    cval = tstat,
     types = c("AO", "TC", "LS", "IO", "SLS")
   ))
 
   # Merge back to source data
   residDT <- data.table::as.data.table(resid)
-  z <-
-    merge(residDT,
-          x,
-          by.x = "tsData.a",
-          by.y = "ind",
-          all.x = TRUE)
+  z <- cbind(data, residDT)
+  z[, ind := 1:.N]
   data.table::setnames(
     z,
-    c("tsData.a", "tsData.predicted", "stats::residuals(fit)"),
-    c("ObsNum", "Preds", "Residuals")
+    names(z)[c((ncol(z)-3):(ncol(z)-1))],
+    c("ObsNum", "Preds", "ARIMA_Residuals")
   )
+  z[, ObsNum := NULL]
+  data <- merge(z, x, by = "ind", all.x = TRUE)
+  data[, ':=' (ind = NULL, coefhat = NULL)]
+  data[type == "<NA>", type := NA]
 
   # Reorder data, remove the coefhat column to send to database or stakeholder
-  z[, coefhat := NULL]
-  return(list(z, fit, resid))
+  return(list(FullData = data, ARIMA_MODEL = fit))
 }
 
 #' AutoKMeans Automated row clustering for mixed column types
@@ -938,6 +1019,9 @@ AutoTS <- function(data,
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
     FC_Data[, Date := MaxDate + years(Date)]
+  } else {
+    return("TimeUnit is not in hour, day, week, month,
+    quarter, or year")
   }
 
   # Convert data.tables to stats::ts objects
@@ -2156,10 +2240,10 @@ RemixTheme <- function() {
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
-                          Impute     = TRUE,
+                          Impute       = TRUE,
                           CharToFactor = TRUE,
-                          MissFactor = "0",
-                          MissNum    = -1) {
+                          MissFactor   = "0",
+                          MissNum      = -1) {
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -2667,7 +2751,10 @@ threshOptim <- function(data,
 #' data11$EvaluationMetrics
 #' @return A list containing "PredictionData" which is a data table with your original column replaced by the nls model predictions; "ModelName" the model name; "ModelObject" The winning model to later use; "EvaluationMetrics" Model metrics for models with ability to build.
 #' @export
-AutoNLS <- function(data, y, x, monotonic = TRUE) {
+AutoNLS <- function(data,
+                    y,
+                    x,
+                    monotonic = TRUE) {
   # Begin
   DATA <- data
   nls_collection <-
@@ -2980,8 +3067,8 @@ AutoNLS <- function(data, y, x, monotonic = TRUE) {
 multiplot <-
   function(...,
            plotlist = NULL,
-           cols = 2,
-           layout = NULL) {
+           cols     = 2,
+           layout   = NULL) {
     plots <- c(list(...), plotlist)
 
     numPlots <- length(plots)
@@ -5977,9 +6064,9 @@ AutoH20Modeler <- function(Construct,
                            nthreads,
                            model_path,
                            MaxRuntimeSeconds = 3600,
-                           MaxModels = 30,
-                           TrainData = NULL,
-                           TestData  = NULL) {
+                           MaxModels         = 30,
+                           TrainData         = NULL,
+                           TestData          = NULL) {
 
   ######################################
   # Error handling and prevention
@@ -6127,6 +6214,7 @@ AutoH20Modeler <- function(Construct,
           "huber"
         )
       )) {
+        j <- j + 1
         data.table::set(ErrorCollection,
                         i = j,
                         j = 1L,
@@ -6330,7 +6418,6 @@ AutoH20Modeler <- function(Construct,
           value = c("using automl requires GridTune = TRUE")
         )
       }
-
     } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
       # Deeplearning loss functions
       if (!(
@@ -9072,7 +9159,7 @@ tokenizeH20 <- function(data) {
 #'                                         "Text_Col2"),
 #'                       KeepStringCol = FALSE,
 #'                       model_path    = getwd(),
-#'                       vects         = 5,
+#'                       vects         = 100,
 #'                       SaveStopWords = FALSE,
 #'                       MinWords      = 1,
 #'                       WindowSize    = 1,
@@ -9239,12 +9326,12 @@ AutoWord2VecModeler <- function(data,
 #' @export
 AutoWordFreq <- function(data,
                          TextColName = "DESCR",
-                         ClusterCol = "ClusterAllNoTarget",
-                         ClusterID = 0,
+                         ClusterCol  = "ClusterAllNoTarget",
+                         ClusterID   = 0,
                          RemoveEnglishStopwords = TRUE,
-                         Stemming = TRUE,
-                         StopWords = c("bla",
-                                       "blab2")) {
+                         Stemming    = TRUE,
+                         StopWords   = c("bla",
+                                         "blab2")) {
       # Check data.table
       if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
@@ -9362,9 +9449,9 @@ AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
 #' }
 #' @export
 RecomDataCreate <- function(data,
-                            EntityColName = "CustomerID",
+                            EntityColName  = "CustomerID",
                             ProductColName = "StockCode",
-                            MetricColName = "TotalSales") {
+                            MetricColName  = "TotalSales") {
 
   # Ensure data is data.table
   if(!data.table::is.data.table(data)) {
@@ -9452,12 +9539,12 @@ RecomDataCreate <- function(data,
 #' @return The winning model
 #' @export
 AutoRecommender <- function(data,
-                            Partition = "Split",
-                            KFolds = 2,
-                            Ratio = 0.75,
-                            RatingType = "TopN",
+                            Partition   = "Split",
+                            KFolds      = 2,
+                            Ratio       = 0.75,
+                            RatingType  = "TopN",
                             RatingsKeep = 20,
-                            SkipModels = "AssociationRules",
+                            SkipModels  = "AssociationRules",
                             ModelMetric = "TPR") {
 
   # Ensure data is proper
@@ -9605,9 +9692,9 @@ AutoRecommender <- function(data,
 #' @export
 AutoRecommenderScoring <- function(data,
                                    WinningModel,
-                                   EntityColName = "CustomerID",
+                                   EntityColName  = "CustomerID",
                                    ProductColName = "StockCode",
-                                   MetricColName = "TotalSales") {
+                                   MetricColName  = "TotalSales") {
 
   # Setup winning model and arguments
   if (WinningModel == "AR") {
