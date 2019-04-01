@@ -13,33 +13,33 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
   SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
-\item{data}{The data source you want to run the function on}
+\item{data}{A data.table you want to run the function on}
 
-\item{lags}{The list of specific lags you want to have generated}
+\item{lags}{A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.}
 
-\item{periods}{The number of periods in the rolling statistics}
+\item{periods}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
 
-\item{statsFUNs}{List of functions for your rolling windows, such as mean, sd, min, max, quantile}
+\item{statsFUNs}{Vector of functions for your rolling windows, such as mean, sd, min, max, quantile}
 
-\item{statsNames}{The corresponding names to append to your colnames created associated with statsFuns}
+\item{statsNames}{A character vector of the corresponding names to create for the rollings stats variables.}
 
-\item{targets}{The column(s) in which you will build your lags and rolling stats}
+\item{targets}{A character vector of the column names for the reference column in which you will build your lags and rolling stats}
 
-\item{groupingVars}{Categorical variables you will build your lags and rolling stats by}
+\item{groupingVars}{A character vector of categorical variable names you will build your lags and rolling stats by}
 
-\item{sortDateName}{String name of your core date column in your transaction data}
+\item{sortDateName}{The column name of your date column used to sort events over time}
 
-\item{timeDiffTarget}{List a name in order to create time between events with assiciated lags and rolling features}
+\item{timeDiffTarget}{Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.}
 
-\item{timeAgg}{Unit of time to aggregate by}
+\item{timeAgg}{List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"}
 
-\item{WindowingLag}{Build moving stats off of target column(s) or one of their lags (1+)}
+\item{WindowingLag}{Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target}
 
-\item{Type}{input "Lag" if you want features built on historical values; use "Lead" if you want features built on future values}
+\item{Type}{List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values}
 
-\item{Timer}{Set to TRUE if you want a time run for the operation; useful when there is grouping}
+\item{Timer}{Set to TRUE if you percentage complete tracker printout}
 
-\item{SkipCols}{Defaults to NULL; otherwise name the vector containing the names of columns to skip}
+\item{SkipCols}{Defaults to NULL; otherwise supply a character vector of the names of columns to skip}
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
 
@@ -48,7 +48,7 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
 }
 \value{
-data.table of original data plus newly created features
+data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 }
 \description{
 For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
