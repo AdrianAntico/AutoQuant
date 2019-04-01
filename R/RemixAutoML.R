@@ -629,7 +629,7 @@ ResidualOutliers <- function(data,
 #' @param nthreads set based on number of threads your machine has available
 #' @param MaxMem set based on the amount of memory your machine has available
 #' @param glrmCols the column numbers for the glrm
-#' @param IgnoreConstCols tell H20 to ignore any columns that have zero variance
+#' @param IgnoreConstCols tell H2O to ignore any columns that have zero variance
 #' @param glrmFactors similar to the number of factors to return from PCA
 #' @param Loss set to one of "Quadratic", "Absolute", "Huber", "Poisson", "Hinge", "Logistic", "Periodic"
 #' @param glrmMaxIters max number of iterations
@@ -5743,7 +5743,7 @@ FAST_GDL_Feature_Engineering <- function(data,
   }
 }
 
-#' An Automated Machine Learning Framework using H20
+#' An Automated Machine Learning Framework using H2O
 #'
 #' Steps in the function include:
 #' 1. Logic: Error checking in the modeling arguments from your Construction file
@@ -5758,11 +5758,11 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'
 #' Let's go over the construct file, column by column. The Targets column is where you specify the column number of your target variable (in quotes, e.g. "c(1)").
 #'
-#' The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H20 docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
+#' The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H2O docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
 #'
-#' The Loss column tells H20 which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
+#' The Loss column tells H2O which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
 #'
-#' The Quantile column tells H20 which quantile to use for quantile regression (in decimal form).
+#' The Quantile column tells H2O which quantile to use for quantile regression (in decimal form).
 #'
 #' The ModelName column is the name you wish to give your model as a prefix.
 #'
@@ -5808,7 +5808,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param Construct Core instruction file for automation (see Details below for more information on this)
-#' @param max_memory The ceiling amount of memory H20 will utilize
+#' @param max_memory The ceiling amount of memory H2O will utilize
 #' @param ratios The percentage of train samples from source data (remainder goes to validation set)
 #' @param BL_Trees The number of trees to build in baseline GBM or RandomForest
 #' @param nthreads Set the number of threads to run function
@@ -6780,7 +6780,7 @@ AutoH2OModeler <- function(Construct,
         stopping_tolerance   = 1e-3
       )
 
-    # Set up H20 environment instance
+    # Set up H2O environment instance
     Sys.sleep(10)
     h2o::h2o.init(
       nthreads = nthreads,
@@ -8654,7 +8654,7 @@ AutoH2OModeler <- function(Construct,
     save(grid_tuned_paths,
          file = paste0(model_path, "/grid_tuned_paths.Rdata"))
 
-    # Clear H20 environment between runs
+    # Clear H2O environment between runs
     h2o::h2o.rm(data_h2o)
     if(!Construct[i,SupplyData][[1]]) {
       h2o::h2o.rm(data_train)
@@ -8728,11 +8728,11 @@ AutoH2OModeler <- function(Construct,
 #' @param ScoreMethod "Standard" or "Mojo": Mojo is available for supervised models; use standard for all others
 #' @param TargetType "Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
 #' @param ClassVals Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.
-#' @param NThreads Number of available threads for H20
-#' @param MaxMem Amount of memory to dedicate to H20
+#' @param NThreads Number of available threads for H2O
+#' @param MaxMem Amount of memory to dedicate to H2O
 #' @param JavaOptions Modify to your machine if the default doesn't work
 #' @param FilesPath Set this to the folder where your models and model files are saved
-#' @param H20ShutDown TRUE to shutdown H20 after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
+#' @param H20ShutDown TRUE to shutdown H2O after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
 #' @import data.table
 #' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 #' @examples
@@ -9005,12 +9005,12 @@ AutoH2OScoring <- function(Features     = data,
       }
     } else if(tolower(ScoreMethod) == "standard") {
 
-      # H20 Startup function
+      # H2O Startup function
       startH2o <- function(){
         h2o::h2o.init(nthreads     = NThreads,
                       max_mem_size = MaxMem)
       }
-      # Check if H20 is running
+      # Check if H2O is running
       tryCatch(expr = {h2o::h2o.init(startH2O = FALSE)},
                error = function(e){startH2o()})
 
@@ -9163,7 +9163,7 @@ tokenizeH2O <- function(data) {
   tokenized.words
 }
 
-#' Automated word2vec data generation via H20
+#' Automated word2vec data generation via H2O
 #'
 #' This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 #' @author Adrian Antico
@@ -9174,10 +9174,10 @@ tokenizeH2O <- function(data) {
 #' @param model_path A string path to the location where you want the model and metadata stored
 #' @param vects The number of vectors to retain from the word2vec model
 #' @param SaveStopWords Set to TRUE to save the stop words used
-#' @param MinWords For H20 word2vec model
-#' @param WindowSize For H20 word2vec model
-#' @param Epochs For H20 word2vec model
-#' @param StopWords For H20 word2vec model
+#' @param MinWords For H2O word2vec model
+#' @param WindowSize For H2O word2vec model
+#' @param Epochs For H2O word2vec model
+#' @param StopWords For H2O word2vec model
 #' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
@@ -9440,13 +9440,13 @@ AutoWordFreq <- function(data,
 
 #' AutoH2OTextPrepScoring is for NLP scoring
 #'
-#' This function returns prepared tokenized data for H20 Word2VecModeler scoring
+#' This function returns prepared tokenized data for H2O Word2VecModeler scoring
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
 #' @param string The name of the string column to prepare
-#' @param MaxMem Amount of memory you want to let H20 utilize
-#' @param NThreads The number of threads you want to let H20 utilize
+#' @param MaxMem Amount of memory you want to let H2O utilize
+#' @param NThreads The number of threads you want to let H2O utilize
 #' @import data.table
 #' @export
 AutoH2OTextPrepScoring <- function(data,
