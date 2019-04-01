@@ -27,7 +27,7 @@ AutoKMeans(data, nthreads = 4, MaxMem = "14G", SaveModels = NULL,
 
 \item{glrmCols}{the column numbers for the glrm}
 
-\item{IgnoreConstCols}{tell H20 to ignore any columns that have zero variance}
+\item{IgnoreConstCols}{tell H2O to ignore any columns that have zero variance}
 
 \item{glrmFactors}{similar to the number of factors to return from PCA}
 

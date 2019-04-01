@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoH2OModeler}
 \alias{AutoH2OModeler}
-\title{An Automated Machine Learning Framework using H20}
+\title{An Automated Machine Learning Framework using H2O}
 \usage{
 AutoH2OModeler(Construct, max_memory, ratios, BL_Trees, nthreads,
   model_path, MaxRuntimeSeconds = 3600, MaxModels = 30,
@@ -11,7 +11,7 @@ AutoH2OModeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \arguments{
 \item{Construct}{Core instruction file for automation (see Details below for more information on this)}
 
-\item{max_memory}{The ceiling amount of memory H20 will utilize}
+\item{max_memory}{The ceiling amount of memory H2O will utilize}
 
 \item{ratios}{The percentage of train samples from source data (remainder goes to validation set)}
 
@@ -47,11 +47,11 @@ The Construct file must be a data.table and the columns need to be in the correc
 
 Let's go over the construct file, column by column. The Targets column is where you specify the column number of your target variable (in quotes, e.g. "c(1)").
 
-The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H20 docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
+The Distribution column is where you specify the distribution type for the modeling task. For classification use bernoulli, for multilabel use multinomial, for quantile use quantile, and for regression, you can choose from the list available in the H2O docs, such as gaussian, poisson, gamma, etc. It's not set up to handle tweedie distributions currently but I can add support if there is demand.
 
-The Loss column tells H20 which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
+The Loss column tells H2O which metric to use for the loss metrics. For regression, I typically use "mse", quantile regression, "mae", classification "auc", and multinomial "logloss". For deeplearning models, you need to use "quadratic", "absolute", and "crossentropy".
 
-The Quantile column tells H20 which quantile to use for quantile regression (in decimal form).
+The Quantile column tells H2O which quantile to use for quantile regression (in decimal form).
 
 The ModelName column is the name you wish to give your model as a prefix.
 

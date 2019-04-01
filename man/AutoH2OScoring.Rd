@@ -21,15 +21,15 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 
 \item{ClassVals}{Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.}
 
-\item{NThreads}{Number of available threads for H20}
+\item{NThreads}{Number of available threads for H2O}
 
-\item{MaxMem}{Amount of memory to dedicate to H20}
+\item{MaxMem}{Amount of memory to dedicate to H2O}
 
 \item{JavaOptions}{Modify to your machine if the default doesn't work}
 
 \item{FilesPath}{Set this to the folder where your models and model files are saved}
 
-\item{H20ShutDown}{TRUE to shutdown H20 after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.}
+\item{H20ShutDown}{TRUE to shutdown H2O after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.}
 }
 \value{
 Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.

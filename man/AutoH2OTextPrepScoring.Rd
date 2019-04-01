@@ -11,12 +11,12 @@ AutoH2OTextPrepScoring(data, string, MaxMem, NThreads)
 
 \item{string}{The name of the string column to prepare}
 
-\item{MaxMem}{Amount of memory you want to let H20 utilize}
+\item{MaxMem}{Amount of memory you want to let H2O utilize}
 
-\item{NThreads}{The number of threads you want to let H20 utilize}
+\item{NThreads}{The number of threads you want to let H2O utilize}
 }
 \description{
-This function returns prepared tokenized data for H20 Word2VecModeler scoring
+This function returns prepared tokenized data for H2O Word2VecModeler scoring
 }
 \seealso{
 Other Misc: \code{\link{AutoWordFreq}},

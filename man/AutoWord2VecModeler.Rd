@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoWord2VecModeler}
 \alias{AutoWord2VecModeler}
-\title{Automated word2vec data generation via H20}
+\title{Automated word2vec data generation via H2O}
 \usage{
 AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = getwd(), vects = 100,
@@ -23,13 +23,13 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 
 \item{SaveStopWords}{Set to TRUE to save the stop words used}
 
-\item{MinWords}{For H20 word2vec model}
+\item{MinWords}{For H2O word2vec model}
 
-\item{WindowSize}{For H20 word2vec model}
+\item{WindowSize}{For H2O word2vec model}
 
-\item{Epochs}{For H20 word2vec model}
+\item{Epochs}{For H2O word2vec model}
 
-\item{StopWords}{For H20 word2vec model}
+\item{StopWords}{For H2O word2vec model}
 
 \item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.}
 
