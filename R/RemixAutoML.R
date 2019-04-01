@@ -3502,22 +3502,22 @@ EvalPlot <- function(data,
 #' Builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
 #' @family Feature Engineering
-#' @param data The data source you want to run the function on
-#' @param lags The list of specific lags you want to have generated
-#' @param periods The number of periods to use for rolling stats
-#' @param statsFUNs List of functions for your rolling windows, such as mean, sd, min, max, quantile
-#' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
-#' @param targets The column(s) in which you will build your lags and rolling stats
-#' @param groupingVars Categorical variables you will build your lags and rolling stats by
-#' @param sortDateName String name of your core date column in your transaction data
-#' @param timeDiffTarget List a name in order to create time between events with assiciated lags and rolling features
-#' @param timeAgg Unit of time to aggregate by
-#' @param WindowingLag   Build moving stats off of target column(s) or one of their lags (1+)
-#' @param Type input "Lag" if you want features built on historical values; use "Lead" if you want features built on future values
-#' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
-#' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
+#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
+#' @param statsFUNs Vector that holds functions for your rolling stats, such as function(x) mean(x), function(x) sd(x), or function(x) quantile(x)
+#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
+#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
+#' @param sortDateName The column name of your date column used to sort events over time
+#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
+#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
+#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
+#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param Timer Set to TRUE if you percentage complete tracker printout
+#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @return data.table of original data plus newly created features
+#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @import data.table
 #' @examples
 #' N = 25116
@@ -4018,21 +4018,21 @@ GDL_Feature_Engineering <- function(data,
 #' Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
 #' @author Adrian Antico
 #' @family Feature Engineering
-#' @param data The data source you want to run the function on
-#' @param lags The list of specific lags you want to have generated
-#' @param periods The number of periods for the rolling stats
-#' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
-#' @param targets The column(s) in which you will build your lags and rolling stats
-#' @param groupingVars Categorical variables you will build your lags and rolling stats by
-#' @param sortDateName String name of your core date column in your transaction data
-#' @param timeDiffTarget List a name in order to create time between events with assiciated lags and rolling features
-#' @param timeAgg Unit of time to aggregate by
-#' @param WindowingLag   Build moving stats off of target column(s) or one of their lags (1+)
-#' @param Type input "Lag" if you want features built on historical values; use "Lead" if you want features built on future values
-#' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
-#' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
+#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
+#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
+#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
+#' @param sortDateName The column name of your date column used to sort events over time
+#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
+#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
+#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
+#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param Timer Set to TRUE if you percentage complete tracker printout
+#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @return data.table of original data plus newly created features
+#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @import data.table
 #' @examples
 #' N = 25116
@@ -4540,24 +4540,24 @@ DT_GDL_Feature_Engineering <- function(data,
 #' For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
 #' @family Feature Engineering
-#' @param data The data source you want to run the function on
-#' @param lags The list of specific lags you want to have generated
-#' @param periods The number of periods in the rolling statistics
-#' @param statsFUNs List of functions for your rolling windows, such as mean, sd, min, max, quantile
-#' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
-#' @param targets The column(s) in which you will build your lags and rolling stats
-#' @param groupingVars Categorical variables you will build your lags and rolling stats by
-#' @param sortDateName String name of your core date column in your transaction data
-#' @param timeDiffTarget List a name in order to create time between events with assiciated lags and rolling features
-#' @param timeAgg Unit of time to aggregate by
-#' @param WindowingLag   Build moving stats off of target column(s) or one of their lags (1+)
-#' @param Type input "Lag" if you want features built on historical values; use "Lead" if you want features built on future values
-#' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
-#' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
+#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param statsFUNs Vector of functions for your rolling windows, such as mean, sd, min, max, quantile
+#' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
+#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
+#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
+#' @param sortDateName The column name of your date column used to sort events over time
+#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
+#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
+#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
+#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param Timer Set to TRUE if you percentage complete tracker printout
+#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
-#' @return data.table of original data plus newly created features
+#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @import data.table
 #' @examples
 #' N = 25116
@@ -5076,24 +5076,24 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 #' @author Adrian Antico
 #' @family Feature Engineering
-#' @param data The data source you want to run the function on
-#' @param lags The list of specific lags you want to have generated
-#' @param periods The number of periods for the rolling stats
-#' @param statsFUNs List of functions for your rolling windows, such as mean, sd, min, max, quantile
-#' @param statsNames The corresponding names to append to your colnames created associated with statsFuns
-#' @param targets The column(s) in which you will build your lags and rolling stats
-#' @param groupingVars Categorical variables you will build your lags and rolling stats by
-#' @param sortDateName String name of your core date column in your transaction data
-#' @param timeDiffTarget List a name in order to create time between events with assiciated lags and rolling features
-#' @param timeAgg Unit of time to aggregate by
-#' @param WindowingLag   Build moving stats off of target column(s) or one of their lags (1+)
-#' @param Type input "Lag" if you want features built on historical values; use "Lead" if you want features built on future values
-#' @param Timer Set to TRUE if you want a time run for the operation; useful when there is grouping
-#' @param SkipCols Defaults to NULL; otherwise name the vector containing the names of columns to skip
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
+#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param statsFUNs Vector of functions for your rolling windows, such as mean, sd, min, max, quantile
+#' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
+#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
+#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
+#' @param sortDateName The column name of your date column used to sort events over time
+#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
+#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
+#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
+#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param Timer Set to TRUE if you percentage complete tracker printout
+#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
-#' @return data.table of original data plus newly created features
+#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @import data.table
 #' @examples
 #' N = 25116
