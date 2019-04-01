@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoRecommender}
 \alias{AutoRecommender}
-\title{Automatically build the best recommendere model.}
+\title{Automatically build the best recommendere model among models available.}
 \usage{
 AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
   RatingType = "TopN", RatingsKeep = 20,
@@ -26,10 +26,10 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 \item{ModelMetric}{Choose from "Precision", "Recall", "TPR", or "FPR"}
 }
 \value{
-The winning model
+The winning model used for scoring in the AutoRecommenderScoring function
 }
 \description{
-This function returns the winning model
+This function returns the winning model that you pass onto AutoRecommenderScoring
 }
 \examples{
 \dontrun{

@@ -5,7 +5,7 @@
 \title{Automated Word Frequency and Word Cloud Creation}
 \usage{
 AutoWordFreq(data, TextColName = "DESCR",
-  ClusterCol = "ClusterAllNoTarget", ClusterID = 0,
+  GroupColName = "ClusterAllNoTarget", GroupLevel = 0,
   RemoveEnglishStopwords = TRUE, Stemming = TRUE,
   StopWords = c("bla", "blab2"))
 }
@@ -14,9 +14,9 @@ AutoWordFreq(data, TextColName = "DESCR",
 
 \item{TextColName}{A string name for the column}
 
-\item{ClusterCol}{Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)}
+\item{GroupColName}{Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)}
 
-\item{ClusterID}{Must be set if ClusterCol is defined. Set to cluster ID (or factor level)}
+\item{GroupLevel}{Must be set if GroupColName is defined. Set to cluster ID (or factor level)}
 
 \item{RemoveEnglishStopwords}{Set to TRUE to remove English stop words, FALSE to ignore}
 
@@ -31,8 +31,8 @@ This function builds a word frequency table and a word cloud. It prepares data, 
 \dontrun{
 data <- WordFreq(data,
                  TextColName = "DESCR",
-                 ClusterCol = "ClusterAllNoTarget",
-                 ClusterID = 0,
+                 GroupColName = "ClusterAllNoTarget",
+                 GroupLevel = 0,
                  RemoveEnglishStopwords = TRUE,
                  Stemming = TRUE,
                  StopWords = c("bla1", "bla2")
