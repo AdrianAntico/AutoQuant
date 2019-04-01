@@ -37,6 +37,9 @@ Returns a list containing 1: A data.table object with a date column and the fore
 \description{
 AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.
 }
+\details{
+Step 1 is to build all the models and evaluate them on the number of HoldOutPeriods periods you specify. Step 2 is to pick the winner and rebuild the winning model on the full data set. Step 3 is to generate forecasts with the final model for FCPeriods that you specify.
+}
 \examples{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
   Target = stats::filter(rnorm(1000,
