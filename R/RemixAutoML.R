@@ -3222,11 +3222,11 @@ percRank <- function(x)
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
-#' @param PredColName Predicted values column names
-#' @param ActColName Target value column names
+#' @param PredictionColName Predicted values column names
+#' @param TargetColName Target value column names
 #' @param IndepVar Independent variable column names
-#' @param type calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
-#' @param bucket Number of buckets to partition the space on (0,1) for evaluation
+#' @param GraphType calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
+#' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
 #' @param Function Supply the function you wish to use for aggregation.
 #' @import data.table
@@ -3234,21 +3234,21 @@ percRank <- function(x)
 #' @examples
 #' \dontrun{
 #' ParDepCalPlots(data,
-#'                PredColName = "predict",
-#'                ActColName  = "target",
+#'                PredictionColName = "predict",
+#'                TargetColName  = "target",
 #'                IndepVar    = "Independent_Variable",
-#'                type        = "boxplot",
-#'                bucket      = 0.05,
+#'                GraphType        = "boxplot",
+#'                PercentileBucket = 0.05,
 #'                FactLevels  = 10,
 #'                Function    = function(x) mean(x, na.rm = TRUE))
 #'}
 #' @export
 ParDepCalPlots <- function(data,
-                           PredColName = c("PredictedValues"),
-                           ActColName  = c("ActualValues"),
+                           PredictionColName = c("PredictedValues"),
+                           TargetColName  = c("ActualValues"),
                            IndepVar    = c("Independent_Variable_Name"),
-                           type        = c("calibration"),
-                           bucket      = 0.05,
+                           GraphType        = c("calibration"),
+                           PercentileBucket = 0.05,
                            FactLevels  = 10,
                            Function    = function(x)
                              base::mean(x, na.rm = TRUE)) {
@@ -3259,30 +3259,30 @@ ParDepCalPlots <- function(data,
   preds2 <- data.table::as.data.table(data)
 
   # Subset columns
-  cols <- c(PredColName, ActColName, IndepVar)
+  cols <- c(PredictionColName, TargetColName, IndepVar)
   preds2 <- preds2[, ..cols]
 
   # Structure data
   data <- data[, ..cols]
-  data.table::setcolorder(data, c(PredColName, ActColName, IndepVar))
+  data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
 
   # If actual is in factor form, convert to numeric
-  if (!is.numeric(preds2[[ActColName]])) {
-    preds2[, eval(ActColName) := as.numeric(as.character(get(ActColName)))]
-    type <- "calibration"
+  if (!is.numeric(preds2[[TargetColName]])) {
+    preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
+    GraphType <- "calibration"
   }
 
   # Prepare for both calibration and boxplot
   if (is.numeric(preds2[[IndepVar]]) ||
       is.integer(preds2[[IndepVar]])) {
     preds2[, rank := 100 *
-             (round(percRank(preds2[[IndepVar]]) / bucket) * bucket)]
+             (round(percRank(preds2[[IndepVar]]) / PercentileBucket) * PercentileBucket)]
   } else {
-    type <- "FactorVar"
+    GraphType <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
     preds2 <-
-      preds2[, .(Function(get(ActColName)),
-                 Function(get(PredColName)),
+      preds2[, .(Function(get(TargetColName)),
+                 Function(get(PredictionColName)),
                  max(id)),
              by = get(IndepVar)][order(-V3)]
     if (nrow(preds2) > FactLevels) {
@@ -3303,13 +3303,13 @@ ParDepCalPlots <- function(data,
     data.table::setnames(
       preds3,
       old = c("get", "V1", "V2"),
-      new = c(IndepVar, ActColName, PredColName)
+      new = c(IndepVar, TargetColName, PredictionColName)
     )
-    preds3 <- preds3[order(-get(PredColName))]
+    preds3 <- preds3[order(-get(PredictionColName))]
   }
 
   # Build plots
-  if (type == "calibration") {
+  if (GraphType == "calibration") {
     # Aggregate by rank for calibration
     preds3 <-
       preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
@@ -3318,9 +3318,9 @@ ParDepCalPlots <- function(data,
     # Partial dependence calibration plot
     plot <-
       ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
-      ggplot2::geom_line(ggplot2::aes(y = preds3[[PredColName]],
+      ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]],
                                       color = "Predicted")) +
-      ggplot2::geom_line(ggplot2::aes(y = preds3[[ActColName]],
+      ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]],
                                       color = "Actuals")) +
       ggplot2::ylab("Actual / Predicted") +
       ggplot2::xlab(IndepVar) +
@@ -3331,17 +3331,17 @@ ParDepCalPlots <- function(data,
       ) +
       ChartTheme(Size = 15) +
       ggplot2::ggtitle("Partial Dependence Calibration Plot")
-  } else if (type == "boxplot") {
+  } else if (GraphType == "boxplot") {
     # Partial dependence boxplot
-    keep <- c("rank", ActColName, IndepVar)
+    keep <- c("rank", TargetColName, IndepVar)
     actual <- preds2[, ..keep]
     actual[, Type := "actual"]
-    data.table::setnames(actual, ActColName, "Output")
+    data.table::setnames(actual, TargetColName, "Output")
 
-    keep <- c("rank", PredColName, IndepVar)
+    keep <- c("rank", PredictionColName, IndepVar)
     predicted <- preds2[, ..keep]
     predicted[, Type := "predicted"]
-    data.table::setnames(predicted, PredColName, "Output")
+    data.table::setnames(predicted, PredictionColName, "Output")
 
     data <-
       data.table::rbindlist(list(actual, predicted))[order(rank)]
@@ -3361,16 +3361,16 @@ ParDepCalPlots <- function(data,
       ggplot2::xlab(eval(IndepVar)) +
       ggplot2::ylab("Actual / Predicted") +
       ChartTheme(Size = 15)
-  } else if (type == "FactorVar") {
-    keep <- c(IndepVar, ActColName)
+  } else if (GraphType == "FactorVar") {
+    keep <- c(IndepVar, TargetColName)
     actual <- preds3[, ..keep]
     actual[, Type := "actual"]
-    data.table::setnames(actual, ActColName, "Output")
+    data.table::setnames(actual, TargetColName, "Output")
 
-    keep <- c(IndepVar, PredColName)
+    keep <- c(IndepVar, PredictionColName)
     predicted <- preds3[, ..keep]
     predicted[, Type := "predicted"]
-    data.table::setnames(predicted, PredColName, "Output")
+    data.table::setnames(predicted, PredictionColName, "Output")
     data <-
       data.table::rbindlist(list(actual,
                                  predicted))[order(-Output)]
@@ -3398,28 +3398,28 @@ ParDepCalPlots <- function(data,
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
-#' @param PredColName String representation of column name with predicted values from model
-#' @param ActColName String representation of column name with actual values from model
-#' @param type Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
-#' @param bucket Number of buckets to partition the space on (0,1) for evaluation
+#' @param PredictionColName String representation of column name with predicted values from model
+#' @param TargetColName String representation of column name with actual values from model
+#' @param GraphType Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
+#' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param aggrfun The statistics function used in aggregation, listed as a function
 #' @import data.table
 #' @return Calibration plot or boxplot
 #' @examples
 #' \dontrun{
 #' EvalPlot(data,
-#'          PredColName = "predict",
-#'          ActColName  = "target",
-#'          type        = "calibration",
-#'          bucket      = 0.05,
+#'          PredictionColName = "predict",
+#'          TargetColName  = "target",
+#'          GraphType        = "calibration",
+#'          PercentileBucket      = 0.05,
 #'          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 #'}
 #' @export
 EvalPlot <- function(data,
-                     PredColName = c("PredictedValues"),
-                     ActColName  = c("ActualValues"),
-                     type        = c("calibration"),
-                     bucket      = 0.05,
+                     PredictionColName = c("PredictedValues"),
+                     TargetColName  = c("ActualValues"),
+                     GraphType        = c("calibration"),
+                     PercentileBucket = 0.05,
                      aggrfun     = function(x)
                        base::mean(x, na.rm = TRUE)) {
   # Turn data into data.table if not already
@@ -3427,24 +3427,24 @@ EvalPlot <- function(data,
     data <- data.table::as.data.table(data)
 
   # Structure data
-  cols <- c(eval(PredColName), eval(ActColName))
+  cols <- c(eval(PredictionColName), eval(TargetColName))
   data <- data[, ..cols]
-  data.table::setcolorder(data, c(PredColName, ActColName))
+  data.table::setcolorder(data, c(PredictionColName, TargetColName))
   data.table::setnames(data,
-                       c(PredColName, ActColName),
+                       c(PredictionColName, TargetColName),
                        c("preds", "acts"))
 
   # If actual is in factor form, convert to numeric
   if (!is.numeric(data[["acts"]])) {
     data[, acts := as.numeric(as.character(acts))]
-    type <- "calibration"
+    GraphType <- "calibration"
   }
 
   # Add a column that ranks predicted values
-  data[, rank := 100 * (round(percRank(data[[1]]) / bucket) * bucket)]
+  data[, rank := 100 * (round(percRank(data[[1]]) / PercentileBucket) * PercentileBucket)]
 
   # Plot
-  if (type == "boxplot") {
+  if (GraphType == "boxplot") {
     # Remove classification and non-event predicted values
     data[, rank := as.factor(rank)]
 
@@ -3630,7 +3630,7 @@ GDL_Feature_Engineering <- function(data,
                        lags[l], "_", t) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_", lags[l], "_", t) := data.table::shift(
-                            get(t), n = lags[l], type = "lag"),
+                            get(t), n = lags[l], GraphType = "lag"),
                  by = get(groupingVars[i])]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
@@ -8258,10 +8258,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration plot
         out1 <- EvalPlot(
           calibration,
-          PredColName = predName,
-          ActColName  = Construct[i, 1][[1]],
-          type        = "calibration",
-          bucket      = 0.05,
+          PredictionColName = predName,
+          TargetColName  = Construct[i, 1][[1]],
+          GraphType        = "calibration",
+          PercentileBucket      = 0.05,
           aggrfun     = function(x)
             quantile(x,
                      probs = Construct[i, 4][[1]],
@@ -8281,10 +8281,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration boxplot
         out2 <- EvalPlot(
           calibration,
-          PredColName = predName,
-          ActColName  = Construct[i, 1][[1]],
-          type        = "boxplot",
-          bucket      = 0.05
+          PredictionColName = predName,
+          TargetColName  = Construct[i, 1][[1]],
+          GraphType        = "boxplot",
+          PercentileBucket      = 0.05
         )
         out2 <- out2 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
@@ -8313,10 +8313,10 @@ AutoH2OModeler <- function(Construct,
 
         out1 <- EvalPlot(
           calibration,
-          PredColName = predName,
-          ActColName  = Construct[i, 1][[1]],
-          type        = "calibration",
-          bucket      = 0.05,
+          PredictionColName = predName,
+          TargetColName  = Construct[i, 1][[1]],
+          GraphType        = "calibration",
+          PercentileBucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
@@ -8350,10 +8350,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration plot
         out1 <- EvalPlot(
           calibration,
-          PredColName = predName,
-          ActColName  = Construct[i, 1][[1]],
-          type        = "calibration",
-          bucket      = 0.05,
+          PredictionColName = predName,
+          TargetColName  = Construct[i, 1][[1]],
+          GraphType        = "calibration",
+          PercentileBucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
@@ -8371,10 +8371,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration boxplot
         out2 <- EvalPlot(
           calibration,
-          PredColName = predName,
-          ActColName  = Construct[i, 1][[1]],
-          type        = "boxplot",
-          bucket      = 0.05
+          PredictionColName = predName,
+          TargetColName  = Construct[i, 1][[1]],
+          GraphType        = "boxplot",
+          PercentileBucket      = 0.05
         )
         out2 <- out2 + ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot ",
@@ -8453,10 +8453,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration plot
         out1 <- EvalPlot(
           xxx,
-          PredColName = "Preds",
-          ActColName  = "Act",
-          type        = "calibration",
-          bucket      = 0.05,
+          PredictionColName = "Preds",
+          TargetColName  = "Act",
+          GraphType        = "calibration",
+          PercentileBucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
@@ -8525,10 +8525,10 @@ AutoH2OModeler <- function(Construct,
         # Calibration plot
         out1 <- EvalPlot(
           xxx,
-          PredColName = "Preds",
-          ActColName  = "Act",
-          type        = "calibration",
-          bucket      = 0.05,
+          PredictionColName = "Preds",
+          TargetColName  = "Act",
+          GraphType        = "calibration",
+          PercentileBucket      = 0.05,
           aggrfun     = function(x)
             base::mean(x, na.rm = TRUE)
         )
@@ -8565,11 +8565,11 @@ AutoH2OModeler <- function(Construct,
             out1 <- tryCatch({
               ParDepCalPlots(
                 calib,
-                PredColName = predName,
-                ActColName  = Construct[i, 1][[1]],
+                PredictionColName = predName,
+                TargetColName  = Construct[i, 1][[1]],
                 IndepVar    = col,
-                type        = "calibration",
-                bucket      = 0.05,
+                GraphType        = "calibration",
+                PercentileBucket      = 0.05,
                 FactLevels  = 10,
                 Function    = function(x)
                   quantile(x,
@@ -8583,11 +8583,11 @@ AutoH2OModeler <- function(Construct,
             out1 <- tryCatch({
               ParDepCalPlots(
                 calib,
-                PredColName = predName,
-                ActColName  = Construct[i, 1][[1]],
+                PredictionColName = predName,
+                TargetColName  = Construct[i, 1][[1]],
                 IndepVar    = col,
-                type        = "calibration",
-                bucket      = 0.05,
+                GraphType        = "calibration",
+                PercentileBucket      = 0.05,
                 FactLevels  = 10,
                 Function    = function(x)
                   base::mean(x, na.rm = TRUE)
@@ -8616,11 +8616,11 @@ AutoH2OModeler <- function(Construct,
             boxplotr[[j]] <- tryCatch({
               ParDepCalPlots(
                 calib,
-                PredColName = predName,
-                ActColName  = Construct[i, 1][[1]],
+                PredictionColName = predName,
+                TargetColName  = Construct[i, 1][[1]],
                 IndepVar    = col,
-                type        = "boxplot",
-                bucket      = 0.05,
+                GraphType        = "boxplot",
+                PercentileBucket      = 0.05,
                 FactLevels  = 10
               )
             },
