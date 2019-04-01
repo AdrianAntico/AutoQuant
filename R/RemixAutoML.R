@@ -254,7 +254,7 @@ DummifyDT <- function(data,
   return(data)
 }
 
-#' H20MultinomialAUC computes the micro auc from a multinomial model
+#' H2OMultinomialAUC computes the micro auc from a multinomial model
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
@@ -269,7 +269,7 @@ DummifyDT <- function(data,
 #' auc_val <- H20MultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' }
 #' @return Micro AUC
-H20MultinomialAUC <-
+H2OMultinomialAUC <-
   function(validate,
            best_model,
            targetColNum = 1,
@@ -317,7 +317,7 @@ PrintObjectsSize <- function(N = 10) {
 
 #' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
 #'
-#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them.
+#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them. The anomalies are separated into those that are extreme on the positive end versus those that are on the negative end.
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
@@ -451,7 +451,7 @@ GenTSAnomVars <- function(data,
 
 #' ResidualOutliers is an automated time series outlier detection function
 #'
-#' ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima.
+#' ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima. It looks for five types of outliers: "AO" Additive outliter - a singular extreme outlier that surrounding values aren't affected by; "IO" Innovational outlier - Initial outlier with subsequent anomalous values; "LS" Level shift - An initial outlier with subsequent observations being shifted by some constant on average; "TC" Transient change - initial outlier with lingering effects that dissapate exponentially over time; "SLS" Seasonal level shift - similar to level shift but on a seasonal scale.
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
@@ -6057,7 +6057,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                TestData  = NULL)
 #'}
 #' @export
-AutoH20Modeler <- function(Construct,
+AutoH2OModeler <- function(Construct,
                            max_memory,
                            ratios,
                            BL_Trees,
@@ -8788,7 +8788,7 @@ AutoH20Modeler <- function(Construct,
 #'                        H20ShutDown  = rep(FALSE,N))
 #'}
 #' @export
-AutoH20Scoring <- function(Features     = data,
+AutoH2OScoring <- function(Features     = data,
                            GridTuneRow  = c(1:3),
                            ScoreMethod  = "Standard",
                            TargetType   = rep("multinomial",3),
@@ -9121,7 +9121,7 @@ AutoH20Scoring <- function(Features     = data,
 #' @param data The text data
 #' @import data.table
 #' @export
-tokenizeH20 <- function(data) {
+tokenizeH2O <- function(data) {
   data <- h2o::as.h2o(data, col.types = c("String"))
   tokenized <- h2o::h2o.tokenize(data, "\\\\W+")
   tokenized.lower <- h2o::h2o.tolower(tokenized)
@@ -9416,7 +9416,7 @@ AutoWordFreq <- function(data,
 #' @param NThreads The number of threads you want to let H20 utilize
 #' @import data.table
 #' @export
-AutoH20TextPrepScoring <- function(data, string, MaxMem, NThreads) {
+AutoH2OTextPrepScoring <- function(data, string, MaxMem, NThreads) {
   if(!is.data.table(data)) data <- data.table::as.data.table((data))
   data[, eval(string) := as.character(get(string))]
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
