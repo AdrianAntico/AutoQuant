@@ -9339,7 +9339,7 @@ AutoWordFreq <- function(data,
                          RemoveEnglishStopwords = TRUE,
                          Stemming    = TRUE,
                          StopWords   = c("bla",
-                                         "blab2")) {
+                                         "bla2")) {
   # Check data.table
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
