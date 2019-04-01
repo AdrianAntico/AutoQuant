@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoH2OTextPrepScoring}
 \alias{AutoH2OTextPrepScoring}
-\title{AutoH20TextPrepScoring is for NLP scoring}
+\title{AutoH2OTextPrepScoring is for NLP scoring}
 \usage{
 AutoH2OTextPrepScoring(data, string, MaxMem, NThreads)
 }

@@ -21,7 +21,7 @@ ResidualOutliers(data, DateColName = "DateTime",
 
 \item{maxN}{the largest lag or moving average (seasonal too) values for the arima fit}
 
-\item{cvar}{the t-stat value for tsoutliers}
+\item{tstat}{the t-stat value for tsoutliers}
 }
 \value{
 A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
