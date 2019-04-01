@@ -481,13 +481,13 @@ GenTSAnomVars <- function(data,
 #'                                                    sd = 20),
 #'                                              filter=rep(1,10),
 #'                                              circular=TRUE))]
-#' stuff    <- ResidualOutliers(data = data,
-#'                              DateColName = "DateTime",
-#'                              TargetColName = "Target",
-#'                              PredictedColName = NULL,
-#'                              TimeUnit = "day",
-#'                              maxN = 5,
-#'                              tstat = 4)
+#' stuff <- ResidualOutliers(data = data,
+#'                           DateColName = "DateTime",
+#'                           TargetColName = "Target",
+#'                           PredictedColName = NULL,
+#'                           TimeUnit = "day",
+#'                           maxN = 5,
+#'                           tstat = 4)
 #' data     <- stuff[[1]]
 #' model    <- stuff[[2]]
 #' outliers <- data[type != "<NA>"]
@@ -644,10 +644,12 @@ ResidualOutliers <- function(data,
 #' \dontrun{
 #' data <- data.table::as.data.table(iris)
 #' data <- AutoKMeans(data,
-#'                    GridTuneGLRM = TRUE,
-#'                    GridTuneKMeans = TRUE,
 #'                    nthreads = 8,
 #'                    MaxMem = "28G",
+#'                    SaveModels = NULL,
+#'                    PathFile = getwd(),
+#'                    GridTuneGLRM = TRUE,
+#'                    GridTuneKMeans = TRUE,
 #'                    glrmCols = 1:(ncol(data)-1),
 #'                    IgnoreConstCols = TRUE,
 #'                    glrmFactors = 2,
@@ -672,11 +674,13 @@ ResidualOutliers <- function(data,
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 AutoKMeans <- function(data,
-                       GridTuneGLRM    = TRUE,
-                       GridTuneKMeans  = TRUE,
                        nthreads        = 4,
                        MaxMem          = "14G",
-                       glrmCols        = 3:ncol(data),
+                       SaveModels      = NULL,
+                       PathFile        = getwd(),
+                       GridTuneGLRM    = TRUE,
+                       GridTuneKMeans  = TRUE,
+                       glrmCols        = c(1:5),
                        IgnoreConstCols = TRUE,
                        glrmFactors     = 5,
                        Loss            = "Absolute",
@@ -684,9 +688,7 @@ AutoKMeans <- function(data,
                        SVDMethod       = "Randomized",
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
-                       KMeansMetric    = "totss",
-                       SaveModels      = NULL,
-                       PathFile        = getwd()) {
+                       KMeansMetric    = "totss") {
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -950,9 +952,9 @@ AutoKMeans <- function(data,
 #'                    NumCores       = 4,
 #'                    SkipModels     = NULL,
 #'                    StepWise       = TRUE)
-#' ForecastData <- output[[1]]
-#' ModelEval    <- output[[2]]
-#' WinningModel <- output[[3]]
+#' ForecastData <- output$Forecast
+#' ModelEval    <- output$EvaluationMetrics
+#' WinningModel <- output$TimeSeriesModel
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
 #' @export
 AutoTS <- function(data,
@@ -2623,8 +2625,8 @@ RedYellowGreen <- function(data,
 #'                      tnProfit = 0,
 #'                      fpProfit = -1,
 #'                      fnProfit = -2)
-#' optimalThreshold <- data[[1]]
-#' allResults       <- data[[2]]
+#' optimalThreshold <- data$Thresholds
+#' allResults       <- data$EvaluationTable
 #' }
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
@@ -2677,7 +2679,7 @@ threshOptim <- function(data,
   results <- cbind(utilities, thresholds)[, c(-1, -3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
-  return(list(thresh, results))
+  return(list(Thresholds = thresh, EvaluationTable = results))
 }
 
 #' AutoNLS is a function for automatically building nls models
@@ -3220,10 +3222,10 @@ percRank <- function(x)
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
-#' @param PredColName String representation of the column name with predicted values from model
-#' @param ActColName String representation of the column name with actual values from model
-#' @param IndepVar String representation of the column name with the independent variable of choice
-#' @param type Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
+#' @param PredColName Predicted values column names
+#' @param ActColName Target value column names
+#' @param IndepVar Independent variable column names
+#' @param type calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
 #' @param bucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
 #' @param Function Supply the function you wish to use for aggregation.
@@ -8693,20 +8695,20 @@ AutoH2OModeler <- function(Construct,
 
 #' AutoH20Scoring is the complement of AutoH20Modeler.
 #'
-#' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
+#' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param Features This is a data.table of features for scoring.
-#' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score
-#' @param ScoreMethod "Standard" or "Mojo"
+#' @param GridTuneRow Numeric. The row numbers of grid_tuned_paths, KMeansModelFile, or StoreFile containing the model you wish to score
+#' @param ScoreMethod "Standard" or "Mojo": Mojo is available for supervised models; use standard for all others
 #' @param TargetType "Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
-#' @param ClassVals Choose from "p1", "Probs", "Label", or "All"
+#' @param ClassVals Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.
 #' @param NThreads Number of available threads for H20
 #' @param MaxMem Amount of memory to dedicate to H20
 #' @param JavaOptions Modify to your machine if the default doesn't work
-#' @param FilesPath Set this to the folder where your models are saved (and hence where your grid_tuned_paths.Rdata file resides)
-#' @param H20ShutDown TRUE to shutdown H20 after the run (do this if you are scoring once and not after that for a long time). Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your script
+#' @param FilesPath Set this to the folder where your models and model files are saved
+#' @param H20ShutDown TRUE to shutdown H20 after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
 #' @import data.table
 #' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 #' @examples
@@ -8780,7 +8782,7 @@ AutoH2OModeler <- function(Construct,
 #'                TestData  = NULL)
 #'
 #' N <- 3
-#' data <- AutoH20Scoring(Features     = data,
+#' data <- AutoH20Scoring(Features     = aa,
 #'                        GridTuneRow  = c(1:N),
 #'                        ScoreMethod  = "standard",
 #'                        TargetType   = rep("multinomial",N),
@@ -9189,7 +9191,9 @@ AutoWord2VecModeler <- function(data,
                                 Threads       = 6,
                                 MaxMemory     = "28G") {
   # Ensure data is a data.table
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
 
   # Create storage file
   N <- length(stringCol)
