@@ -4,23 +4,26 @@
 \alias{AutoKMeans}
 \title{AutoKMeans Automated row clustering for mixed column types}
 \usage{
-AutoKMeans(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
-  nthreads = 4, MaxMem = "14G", glrmCols = 3:ncol(data),
-  IgnoreConstCols = TRUE, glrmFactors = 5, Loss = "Absolute",
-  glrmMaxIters = 1000, SVDMethod = "Randomized",
-  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss",
-  SaveModels = NULL, PathFile = getwd())
+AutoKMeans(data, nthreads = 4, MaxMem = "14G", SaveModels = NULL,
+  PathFile = getwd(), GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
+  glrmCols = c(1:5), IgnoreConstCols = TRUE, glrmFactors = 5,
+  Loss = "Absolute", glrmMaxIters = 1000, SVDMethod = "Randomized",
+  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
 }
 \arguments{
 \item{data}{is the source time series data.table}
 
-\item{GridTuneGLRM}{If you want to grid tune the glrm model, set to TRUE, FALSE otherwise}
-
-\item{GridTuneKMeans}{If you want to grid tuen the KMeans model, set to TRUE, FALSE otherwise}
-
 \item{nthreads}{set based on number of threads your machine has available}
 
 \item{MaxMem}{set based on the amount of memory your machine has available}
+
+\item{SaveModels}{Set to "standard", "mojo", or NULL (default)}
+
+\item{PathFile}{Set to folder where you will keep the models}
+
+\item{GridTuneGLRM}{If you want to grid tune the glrm model, set to TRUE, FALSE otherwise}
+
+\item{GridTuneKMeans}{If you want to grid tuen the KMeans model, set to TRUE, FALSE otherwise}
 
 \item{glrmCols}{the column numbers for the glrm}
 
@@ -39,10 +42,6 @@ AutoKMeans(data, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
 \item{KMeansK}{number of factors to test out in k-means to find the optimal number}
 
 \item{KMeansMetric}{pick the metric to identify top model in grid tune c("totss","betweenss","withinss")}
-
-\item{SaveModels}{Set to "standard", "mojo", or NULL (default)}
-
-\item{PathFile}{Set to folder where you will keep the models}
 }
 \value{
 Original data.table with added column with cluster number identifier
@@ -54,10 +53,12 @@ AutoKMeans adds a column to your original data with a cluster number identifier.
 \dontrun{
 data <- data.table::as.data.table(iris)
 data <- AutoKMeans(data,
-                   GridTuneGLRM = TRUE,
-                   GridTuneKMeans = TRUE,
                    nthreads = 8,
                    MaxMem = "28G",
+                   SaveModels = NULL,
+                   PathFile = getwd(),
+                   GridTuneGLRM = TRUE,
+                   GridTuneKMeans = TRUE,
                    glrmCols = 1:(ncol(data)-1),
                    IgnoreConstCols = TRUE,
                    glrmFactors = 2,

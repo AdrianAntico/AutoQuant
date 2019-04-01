@@ -37,8 +37,8 @@ data <- threshOptim(data     = data,
                      tnProfit = 0,
                      fpProfit = -1,
                      fnProfit = -2)
-optimalThreshold <- data[[1]]
-allResults       <- data[[2]]
+optimalThreshold <- data$Thresholds
+allResults       <- data$EvaluationTable
 }
 }
 \seealso{

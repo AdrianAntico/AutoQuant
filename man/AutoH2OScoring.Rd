@@ -13,13 +13,13 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 \arguments{
 \item{Features}{This is a data.table of features for scoring.}
 
-\item{GridTuneRow}{Numeric. The row numbers of grid_tuned_paths or StoreFile containing the model you wish to score}
+\item{GridTuneRow}{Numeric. The row numbers of grid_tuned_paths, KMeansModelFile, or StoreFile containing the model you wish to score}
 
-\item{ScoreMethod}{"Standard" or "Mojo"}
+\item{ScoreMethod}{"Standard" or "Mojo": Mojo is available for supervised models; use standard for all others}
 
 \item{TargetType}{"Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.}
 
-\item{ClassVals}{Choose from "p1", "Probs", "Label", or "All"}
+\item{ClassVals}{Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.}
 
 \item{NThreads}{Number of available threads for H20}
 
@@ -27,15 +27,15 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 
 \item{JavaOptions}{Modify to your machine if the default doesn't work}
 
-\item{FilesPath}{Set this to the folder where your models are saved (and hence where your grid_tuned_paths.Rdata file resides)}
+\item{FilesPath}{Set this to the folder where your models and model files are saved}
 
-\item{H20ShutDown}{TRUE to shutdown H20 after the run (do this if you are scoring once and not after that for a long time). Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your script}
+\item{H20ShutDown}{TRUE to shutdown H20 after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.}
 }
 \value{
 Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 }
 \description{
-AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
+AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 }
 \examples{
 \dontrun{
@@ -108,7 +108,7 @@ AutoH20Modeler(Construct,
                TestData  = NULL)
 
 N <- 3
-data <- AutoH20Scoring(Features     = data,
+data <- AutoH20Scoring(Features     = aa,
                        GridTuneRow  = c(1:N),
                        ScoreMethod  = "standard",
                        TargetType   = rep("multinomial",N),

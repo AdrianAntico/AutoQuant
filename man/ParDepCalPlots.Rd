@@ -13,13 +13,13 @@ ParDepCalPlots(data, PredColName = c("PredictedValues"),
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
 
-\item{PredColName}{String representation of the column name with predicted values from model}
+\item{PredColName}{Predicted values column names}
 
-\item{ActColName}{String representation of the column name with actual values from model}
+\item{ActColName}{Target value column names}
 
-\item{IndepVar}{String representation of the column name with the independent variable of choice}
+\item{IndepVar}{Independent variable column names}
 
-\item{type}{Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation}
+\item{type}{calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation}
 
 \item{bucket}{Number of buckets to partition the space on (0,1) for evaluation}
 

@@ -57,9 +57,9 @@ output <-   AutoTS(data,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE)
-ForecastData <- output[[1]]
-ModelEval    <- output[[2]]
-WinningModel <- output[[3]]
+ForecastData <- output$Forecast
+ModelEval    <- output$EvaluationMetrics
+WinningModel <- output$TimeSeriesModel
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH2OModeler}},

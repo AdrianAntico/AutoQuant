@@ -43,13 +43,13 @@ data[, Predicted := as.numeric(stats::filter(rnorm(1000,
                                                    sd = 20),
                                              filter=rep(1,10),
                                              circular=TRUE))]
-stuff    <- ResidualOutliers(data = data,
-                             DateColName = "DateTime",
-                             TargetColName = "Target",
-                             PredictedColName = NULL,
-                             TimeUnit = "day",
-                             maxN = 5,
-                             tstat = 4)
+stuff <- ResidualOutliers(data = data,
+                          DateColName = "DateTime",
+                          TargetColName = "Target",
+                          PredictedColName = NULL,
+                          TimeUnit = "day",
+                          maxN = 5,
+                          tstat = 4)
 data     <- stuff[[1]]
 model    <- stuff[[2]]
 outliers <- data[type != "<NA>"]
