@@ -1,0 +1,52 @@
+AutoH20Modeler          An Automated Machine Learning Framework using
+                        H20
+AutoTS                  AutoTS is an automated time series modeling
+                        function
+ChartTheme              ChartTheme function is a ggplot theme generator
+                        for ggplots
+DT_GDL_Feature_Engineering
+                        An Automated Feature Engineering Function Using
+                        data.table frollmean
+DummifyDT               DummifyDT creates dummy variables for the
+                        selected columns.
+EvalPlot                Function automatically builds calibration plots
+                        for model evaluation
+FAST_GDL_Feature_Engineering
+                        An Fast Automated Feature Engineering Function
+GDL_Feature_Engineering
+                        An Automated Feature Engineering Function
+GLRM_KMeans_Col         GLRM_KMeans_Col Automated row clustering for
+                        mixed column types
+GenTSAnomVars           GenTSAnomVars is an automated z-score anomaly
+                        detection via GLM-like procedure
+ModelDataPrep           Final Data Preparation Function
+ParDepCalPlots          Function automatically builds partial
+                        dependence calibration plots for model
+                        evaluation
+PrintObjectsSize        PrintObjectsSize prints out the top N objects
+                        and their associated sizes, sorted by size
+RedYellowGreen          RedYellowGreen is for determining the optimal
+                        thresholds for binary classification when
+                        do-nothing is an option
+RemixTheme              RemixTheme function is a ggplot theme generator
+                        for ggplots
+ResidualOutliers        ResidualOutliers is an automated time series
+                        outlier detection function
+Scoring_GDL_Feature_Engineering
+                        An Automated Scoring Feature Engineering
+                        Function
+SimpleCap               SimpleCap function is for capitalizing the
+                        first letter of words
+Word2VecModel           Automated word2vec data generation via H20
+WordFreq                Automated Word Frequency and Word Cloud
+                        Creation
+multiplot               Multiplot is a function for combining multiple
+                        plots
+nlsModelFit             nlsModelFit is a function for automatically
+                        building nls models
+percRank                Percentile rank function
+tempDatesFun            tempDatesFun Convert Excel datetime char
+                        columns to Date columns
+threshOptim             Utility maximizing thresholds for binary
+                        classification
+tokenizeH20             For NLP work
