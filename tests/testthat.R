@@ -1,4 +1,4 @@
 library(testthat)
-library(RemixAML)
+library(RemixAutoML)
 
-test_check("RemixAML")
+test_check("RemixAutoML")

@@ -2,7 +2,7 @@ context("RemixAutoML")
 library(RemixAutoML)
 
 test_that("DummifyDT", {
-  # Test 1: number of columns for KeepBaseCols = F and OneHot = F
+  # Test 1: number of columns for KeepFactorCols = F and OneHot = F
   test <- data.table::data.table(Value = runif(100000),
                                  FactorCol = sample(
                                    x = c(
@@ -19,13 +19,14 @@ test_that("DummifyDT", {
   test <- DummifyDT(
     data = test,
     cols = "FactorCol",
-    KeepBaseCols = FALSE,
-    OneHot = FALSE
+    KeepFactorCols = FALSE,
+    OneHot = FALSE,
+    ClustScore = FALSE
   )
 
   expect_equal(ncol(test), 157)
 
-  # Test KeepBaseCols = T and OneHot = F
+  # Test KeepFactorCols = T and OneHot = F
   testy <- data.table::data.table(Value = runif(100000),
                                   FactorCol = sample(
                                     x = c(
@@ -43,13 +44,14 @@ test_that("DummifyDT", {
   testy <- DummifyDT(
     data = testy,
     cols = "FactorCol",
-    KeepBaseCols = TRUE,
-    OneHot = FALSE
+    KeepFactorCols = TRUE,
+    OneHot = FALSE,
+    ClustScore = FALSE
   )
 
   expect_equal(ncol(testy), 158)
 
-  # Test KeepBaseCols = T and OneHot = T
+  # Test KeepFactorCols = T and OneHot = T
   testz <- data.table::data.table(Value = runif(100000),
                                   FactorCol = sample(
                                     x = c(
@@ -67,13 +69,14 @@ test_that("DummifyDT", {
   testz <- DummifyDT(
     data = testz,
     cols = "FactorCol",
-    KeepBaseCols = TRUE,
-    OneHot = TRUE
+    KeepFactorCols = TRUE,
+    OneHot = TRUE,
+    ClustScore = FALSE
   )
 
   expect_equal(ncol(testz), 159)
 
-  # Test Factor Variables and KeepBaseCols = T and OneHot = T
+  # Test Factor Variables and KeepFactorCols = T and OneHot = T
   testz <- data.table::data.table(Value = runif(100000),
                                   FactorCol = as.factor(sample(
                                     x = c(
@@ -91,8 +94,9 @@ test_that("DummifyDT", {
   testz <- DummifyDT(
     data = testz,
     cols = "FactorCol",
-    KeepBaseCols = TRUE,
-    OneHot = TRUE
+    KeepFactorCols = TRUE,
+    OneHot = TRUE,
+    ClustScore = FALSE
   )
 
   expect_equal(ncol(testz), 159)
@@ -127,7 +131,7 @@ test_that("GenTSAnomVars", {
     High        = 1.96,
     Low         = -1.96,
     KeepAllCols = TRUE,
-    DataScaled  = FALSE
+    IsDataScaled  = FALSE
   )
   expect_equal(ncol(stuff), 10)
 
@@ -160,7 +164,7 @@ test_that("GenTSAnomVars", {
     High        = 1.96,
     Low         = -1.96,
     KeepAllCols = TRUE,
-    DataScaled  = FALSE
+    IsDataScaled  = FALSE
   )
   expect_equal(ncol(stuff), 11)
 
@@ -200,24 +204,37 @@ test_that("GenTSAnomVars", {
     High        = 1.96,
     Low         = -1.96,
     KeepAllCols = TRUE,
-    DataScaled  = FALSE
+    IsDataScaled  = FALSE
   )
   expect_equal(ncol(stuff), 12)
 })
 
 test_that("ResidualOutliers", {
   # Check to make sure stuff contains 3 items
-  data <-
-    data.table::data.table(a = seq(0, 10000, 1),
-                           predicted = sde::GBM(N = 10000) * 1000)[-1, ]
+  data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+                                 Target = as.numeric(stats::filter(rnorm(1000,
+                                                                         mean = 50,
+                                                                         sd = 20),
+                                                                   filter=rep(1,10),
+                                                                   circular=TRUE)))
+  data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+  data <- data[order(DateTime)]
+  data[, Predicted := as.numeric(stats::filter(rnorm(1000,
+                                                     mean = 50,
+                                                     sd = 20),
+                                               filter=rep(1,10),
+                                               circular=TRUE))]
   stuff    <- ResidualOutliers(data = data,
+                               DateColName = "DateTime",
+                               TargetColName = "Target",
+                               PredictedColName = NULL,
+                               TimeUnit = "day",
                                maxN = 5,
-                               cvar = 4)
-  data     <- stuff[[1]]
-  model    <- stuff[[2]]
-  resid    <- stuff[[3]]
+                               tstat = 2)
+  data     <- stuff$FullData
+  model    <- stuff$ARIMA_MODEL
   outliers <- data[type != "<NA>"]
-  expect_equal(length(stuff), 3)
+  expect_equal(length(stuff), 2)
 })
 
 test_that("AutoKMeans", {
@@ -236,7 +253,10 @@ test_that("AutoKMeans", {
     glrmMaxIters = 1000,
     SVDMethod = "Randomized",
     MaxRunTimeSecs = 3600,
-    KMeansK = 5
+    KMeansK = 5,
+    KMeansMetric = "totss",
+    SaveModels = NULL,
+    PathFile = getwd()
   )
   expect_equal(ncol(data), 6)
 
@@ -256,7 +276,10 @@ test_that("AutoKMeans", {
     glrmMaxIters = 1000,
     SVDMethod = "Randomized",
     MaxRunTimeSecs = 3600,
-    KMeansK = 5
+    KMeansK = 5,
+    KMeansMetric = "totss",
+    SaveModels = NULL,
+    PathFile = getwd()
   )
   expect_equal(ncol(data1), 6)
 })
@@ -377,17 +400,17 @@ test_that("threshOptim", {
 test_that("AutoNLS", {
   # Check function works
   data <-
-    data.table::data.table(Variable = seq(1, 500, 1),
-                           Target = rep(1, 500))
+    data.table::data.table(Target = seq(1, 500, 1),
+                           Variable = rep(1, 500))
   for (i in as.integer(1:500)) {
     if (i == 1) {
-      var <- data[i, "Variable"][[1]]
+      var <- data[i, "Target"][[1]]
       data.table::set(data,
                       i = i,
                       j = 2L,
                       value = var * (1 + runif(1) / 100))
     } else {
-      var <- data[i - 1, "Target"][[1]]
+      var <- data[i - 1, "Variable"][[1]]
       data.table::set(data,
                       i = i,
                       j = 2L,
@@ -410,7 +433,7 @@ test_that("AutoNLS", {
     data1,
     data11[[1]],
     by = "Variable",
-    all = TRUE
+    all = FALSE
   )
 
   # Plot graphs of predicted vs actual
