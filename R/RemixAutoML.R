@@ -695,11 +695,13 @@ AutoKMeans <- function(data,
   }
 
   # Set up Scoring File if SaveModels is not NULL
-  KMeansModelFile <- data.table::data.table(
-    Name = c("GLMR","AutoKMeans"),
-    FilePath1 = rep("bla",2),
-    FilePath2 = rep("bla",2)
-  )
+  if(!is.null(SaveModels)) {
+    KMeansModelFile <- data.table::data.table(
+      Name = c("GLMR","AutoKMeans"),
+      FilePath1 = rep("bla",2),
+      FilePath2 = rep("bla",2)
+    )
+  }
 
   # Build glmr model
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
@@ -800,12 +802,14 @@ AutoKMeans <- function(data,
     # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
-    save(Names, file = paste0(PathFile, "/Names.Rdata"))
-    set(KMeansModelFile,
-        i = 1L,
-        j = 3L,
-        value = paste0(PathFile, "/Names.Rdata"))
-    save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    if(!is.null(SaveModels)) {
+      save(Names, file = paste0(PathFile, "/Names.Rdata"))
+      set(KMeansModelFile,
+          i = 1L,
+          j = 3L,
+          value = paste0(PathFile, "/Names.Rdata"))
+      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    }
 
     # Define grid tune search scheme in a named list
     search_criteria  <-
@@ -845,12 +849,14 @@ AutoKMeans <- function(data,
     # GLRM output
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
-    save(Names, file = paste0(PathFile, "/Names.Rdata"))
-    set(KMeansModelFile,
-        i = 1L,
-        j = 3L,
-        value = paste0(PathFile, "/Names.Rdata"))
-    save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    if(!is.null(SaveModels)) {
+      save(Names, file = paste0(PathFile, "/Names.Rdata"))
+      set(KMeansModelFile,
+          i = 1L,
+          j = 3L,
+          value = paste0(PathFile, "/Names.Rdata"))
+      save(KMeansModelFile, file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    }
 
     # Train KMeans
     model <- h2o::h2o.kmeans(
