@@ -695,13 +695,11 @@ AutoKMeans <- function(data,
   }
 
   # Set up Scoring File if SaveModels is not NULL
-  if(!is.null(SaveModels)) {
-    KMeansModelFile <- data.table::data.table(
-      Name = c("GLMR","AutoKMeans"),
-      FilePath1 = rep("bla",2),
-      FilePath2 = rep("bla",2)
-    )
-  }
+  KMeansModelFile <- data.table::data.table(
+    Name = c("GLMR","AutoKMeans"),
+    FilePath1 = rep("bla",2),
+    FilePath2 = rep("bla",2)
+  )
 
   # Build glmr model
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
