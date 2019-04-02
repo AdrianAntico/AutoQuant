@@ -3636,7 +3636,7 @@ GDL_Feature_Engineering <- function(data,
                        lags[l], "_", t) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
                           "_LAG_", lags[l], "_", t) := data.table::shift(
-                            get(t), n = lags[l], Type = "lag"),
+                            get(t), n = lags[l], type = "lag"),
                  by = get(groupingVars[i])]
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
