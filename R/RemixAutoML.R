@@ -35,17 +35,12 @@ utils::globalVariables(
     "prophet",
     "pushViewport",
     "quantile",
-    "registerDoParallel",
     "removeNumbers",
     "removePunctuation",
     "removeWords",
     "residuals",
     "rnorm",
     "runif",
-    "scale_color_manual",
-    "scale_colour_manual",
-    "scale_fill_manual",
-    "scatterplot3d",
     "sd",
     "stemDocument",
     "stopCluster",
@@ -76,33 +71,17 @@ utils::globalVariables(
     "aes",
     "as.formula",
     "as_date",
-    "brewer.pal",
     "coefhat",
     "content_transformer",
     "ds",
-    "element_blank",
-    "element_line",
-    "element_rect",
-    "element_text",
     "f0point5",
     "f1",
     "f2",
     "fitted",
-    "foreach",
-    "geom_bar",
-    "geom_boxplot",
-    "geom_hline",
-    "geom_line",
-    "ggplot",
-    "ggsave",
-    "ggtitle",
-    "grid.layout",
-    "grid.newpage",
     "head",
     "i",
     "id",
     "lm",
-    "makePSOCKcluster",
     "margin",
     "meanResid",
     "monreg",
@@ -6753,6 +6732,7 @@ AutoH2OModeler <- function(Construct,
   # Loop through model building
   ######################################
 
+  tryCatch({
   for (i in as.integer(seq_len(nrow(Construct)))) {
     # No deeplearning loss functions as stopping metrics
     if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
@@ -8720,7 +8700,7 @@ AutoH2OModeler <- function(Construct,
         eval(parse(text = paste0("rm(", Construct[(i - 1), 7][[1]], ")")))
       }
     }
-  }
+  }}, error = function(x) h2o::h2o.shutdown(prompt = FALSE))
 }
 
 #' AutoH20Scoring is the complement of AutoH20Modeler.
