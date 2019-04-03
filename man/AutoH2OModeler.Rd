@@ -30,20 +30,28 @@ AutoH2OModeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{TestData}{Set to NULL or supply  a data.table for validation data}
 }
 \value{
-Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
+Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.
 }
 \description{
 Steps in the function include:
-1. Logic: Error checking in the modeling arguments from your Construction file
-2. ML: Build grid-tuned models and baseline models for comparison and checks which one performs better on validation data
-3. Evaluation: Collects the performance metrics for both
-4. Evaluation: Generates calibration plots (and boxplots for regression) for the winning model
-5. Evaluation: Generates partial dependence calibration plots (and boxplots for regression) for the winning model
-6. Evaluation: Generates variable importance tables and a table of non-important features
-7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
+See details below for information on using this function.
 }
 \details{
-The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a (0,1) of type "Factor." See the examples below for help with setting up the Construct file for various modeling target variable types. There are examples for regression, classification, multinomial, and quantile regression.
+1. Logic: Error checking in the modeling arguments from your Construction file
+
+2. ML: Build grid-tuned models and baseline models for comparison and checks which one performs better on validation data
+
+3. Evaluation: Collects the performance metrics for both
+
+4. Evaluation: Generates calibration plots (and boxplots for regression) for the winning model
+
+5. Evaluation: Generates partial dependence calibration plots (and boxplots for regression) for the winning model
+
+6. Evaluation: Generates variable importance tables and a table of non-important features
+
+7. Production: Creates a storage file containing: model name, model path, grid tune performance, baseline performance, and threshold (if classification) and stores that file in your model_path location
+
+The Construct file must be a data.table and the columns need to be in the correct order (see examples). Character columns must be converted to type "Factor". You must remove date columns or convert them to "Factor". For classification models, your target variable needs to be a (0,1) of type "Factor." See the examples below for help with setting up the Construct file for various modeling target variable types. There are examples for regression, classification, multinomial, and quantile regression. For help on which parameters to use, look up the r/h2o documentation. If you misspecify the construct file, it will produce an error and outputfile of what was wrong and suggestions for fixing the error.
 
 Let's go over the construct file, column by column. The Targets column is where you specify the column number of your target variable (in quotes, e.g. "c(1)").
 
