@@ -5810,7 +5810,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param MaxModels Number of models you'd like to have returned
 #' @param TrainData Set to NULL or supply a data.table for training data
 #' @param TestData Set to NULL or supply  a data.table for validation data
-#' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, etc.
+#' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.
 #' @import data.table
 #' @examples
 #' \dontrun{
