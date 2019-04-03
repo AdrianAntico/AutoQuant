@@ -5731,6 +5731,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' An Automated Machine Learning Framework using H2O
 #'
 #' Steps in the function include:
+#' See details below for information on using this function.
+#'
 #' 1. Logic: Error checking in the modeling arguments from your Construction file
 #'
 #' 2. ML: Build grid-tuned models and baseline models for comparison and checks which one performs better on validation data
