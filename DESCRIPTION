@@ -13,29 +13,11 @@ BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Contact: Adrian Antico
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,
-        prophet, tsoutliers, stringr, itertools, doParallel, parallel,
-        scatterplot3d, RColorBrewer, grid, monreg, tm, wordcloud,
-        foreach, pROC, doSNOW, recommenderlab
+Imports: data.table, zoo, h2o, lubridate, ggplot2, caTools, forecast,prophet, tsoutliers, stringr, itertools, doParallel, parallel,scatterplot3d, RColorBrewer, grid, monreg, tm, wordcloud,foreach, pROC, doSNOW, recommenderlab
 Suggests: testthat, sde, knitr, rmarkdown, methods
 VignetteBuilder: knitr
 Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Date: '2019-03-20'
-Views: MachineLearning, 
-        AutomatedSupervisedLearning, 
-        SupervisedLearning,
-        AutomatedUnsupervisedLearning,
-        UnsupervisedLearning,
-        Clustering,
-        AnomalyDetection,
-        FeatureEngineering,
-        VariableCreation,
-        ModelEvaluation, 
-        FeatureInterpretation, 
-        VariableInterpretation,
-        VariableImportance,
-        AutomatedTimeSeriesForecasting,
-        TimeSeries,
-        Forecasting
+Views: MachineLearning,AutomatedSupervisedLearning,SupervisedLearning,AutomatedUnsupervisedLearning,UnsupervisedLearning,Clustering,AnomalyDetection,FeatureEngineering,VariableCreation,ModelEvaluation,FeatureInterpretation,VariableInterpretation,VariableImportance,AutomatedTimeSeriesForecasting,TimeSeries,Forecasting
 
