@@ -9,6 +9,7 @@
   * XGBoost (for Linux)
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
+  
 **AutoH20Scoring**: Scoring models that were built with the AutoH20Modeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 **AutoTS**: Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), along with generating forecasts and evaluation metrics.
 * Models include:
