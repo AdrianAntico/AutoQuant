@@ -2,7 +2,7 @@
 
 # RemixAutoML
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via email.
-##### Supervised Learning Functions: 
+## Supervised Learning Functions: 
 ##### **AutoH2OModeler()**
 Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
 * Models include:
@@ -52,7 +52,7 @@ Automated collaborative filtering modeling where each model competes against eac
 ##### **AutoRecommenderScoring()**
 Automatically score a recommender model from AutoRecommender
 
-##### Unsupervised Learning Functions: 
+## Unsupervised Learning Functions: 
 ##### **GenTSAnomVars()**
 Generate time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 
@@ -61,7 +61,7 @@ Residual outliers from time series modeling. (Cross with Feature Engineering) Ut
 
 ##### **AutoKMeans()**: Generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
-##### Feature Engineering Functions: 
+## Feature Engineering Functions: 
 ##### **FAST_GDL_Feature_Engineering()**
 Fast generalized distributed lag feature engineering. Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set. 100% data.table except for rolling statistics.
 
@@ -83,7 +83,7 @@ Rapidly convert "inf" values to NA, convert character columns to factor columns,
 ##### **DummifyDT()** 
 Rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
 
-##### Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
+## Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 ##### **ParDepCalPlots()**
 Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 
@@ -96,7 +96,7 @@ Great for situations with asymmetric costs across the confusion matrix. Generate
 ##### **RedYellowGreen()**
 Computes optimal thresholds for binary classification models when "don't classify" is an option
 
-##### Utilities and Misc. Functions:
+## Utilities and Misc. Functions:
 ##### **AutoH2OTextPrepScoring()** 
 Prepares your data for scoring based on models built with Word2VecModel
 
