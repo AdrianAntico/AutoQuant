@@ -1,4 +1,4 @@
-AutoH20Modeler          An Automated Machine Learning Framework using
+AutoH2OModeler          An Automated Machine Learning Framework using
                         H20
 AutoTS                  AutoTS is an automated time series modeling
                         function
@@ -49,4 +49,4 @@ tempDatesFun            tempDatesFun Convert Excel datetime char
                         columns to Date columns
 threshOptim             Utility maximizing thresholds for binary
                         classification
-tokenizeH20             For NLP work
+tokenizeH2O             For NLP work
