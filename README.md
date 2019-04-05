@@ -1,7 +1,7 @@
 # RemixAutoML
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via email.
 ##### Supervised Learning Functions: 
-**AutoH20Modeler**: Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
+**AutoH2OModeler**: Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
 * Models include:
   * RandomForest (DRF)
   * GBM
@@ -10,7 +10,7 @@
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
   
-**AutoH20Scoring**: Scoring models that were built with the AutoH20Modeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
+**AutoH2OScoring**: Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 **AutoTS**: Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations), along with generating forecasts and evaluation metrics.
 * Models include:
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
@@ -63,9 +63,9 @@
 **RedYellowGreen** computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-**AutoH20TextPrepScoring** prepares your data for scoring based on models built with Word2VecModel
+**AutoH2OTextPrepScoring** prepares your data for scoring based on models built with Word2VecModel
 **RecomDataCreate** Turns your transactional data into a binary ratings matrix
-**tokenizeH20** Tokenize and H20 string column.
+**tokenizeH2O** Tokenize and H20 string column.
 **tempDatesFun** Special case for character conversion to date when importing from Excel.
 **RemixTheme** Fonts, colors, style for plots.
 **ChartTheme** Fonts, colors, style for plots.
