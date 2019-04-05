@@ -97,14 +97,35 @@ Great for situations with asymmetric costs across the confusion matrix. Generate
 Computes optimal thresholds for binary classification models when "don't classify" is an option
 
 ##### Utilities and Misc. Functions:
-**AutoH2OTextPrepScoring** prepares your data for scoring based on models built with Word2VecModel
-**RecomDataCreate** Turns your transactional data into a binary ratings matrix
-**tokenizeH2O** Tokenize and H20 string column.
-**tempDatesFun** Special case for character conversion to date when importing from Excel.
-**RemixTheme** Fonts, colors, style for plots.
-**ChartTheme** Fonts, colors, style for plots.
-**SimpleCap** Apply proper case to text.
-**percRank** Inner function for calibration plots and partial dependence plots. Computes PercentRank.
-**multiplot** Useful for displaying multiple plots in a single pane.
-**PrintObjectsSize** print out objects and their sizes that are in the envrionment
-**AutoWordFreq** creates a word frequency data.table and a word cloud
+##### **AutoH2OTextPrepScoring()** 
+Prepares your data for scoring based on models built with Word2VecModel
+
+##### **RecomDataCreate()** 
+Turns your transactional data into a binary ratings matrix
+
+##### **tokenizeH2O()** 
+Tokenize and H20 string column.
+
+##### **tempDatesFun()** 
+Special case for character conversion to date when importing from Excel.
+
+##### **RemixTheme()** 
+Fonts, colors, style for plots.
+
+##### **ChartTheme()** 
+Fonts, colors, style for plots.
+
+##### **SimpleCap()** 
+Apply proper case to text.
+
+##### **percRank()** 
+Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+
+##### **multiplot()** 
+Useful for displaying multiple plots in a single pane.
+
+##### **PrintObjectsSize()** 
+print out objects and their sizes that are in the envrionment
+
+##### **AutoWordFreq()** 
+creates a word frequency data.table and a word cloud
