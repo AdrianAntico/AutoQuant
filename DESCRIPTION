@@ -1,7 +1,6 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
 Version: 1.0
-Authors@R: c(person("Adrian","Antico",role=c("aut","cre","ctb"), email="adrianantico@gmail.com"),person("Douglas","Pestana", role="ctb", email="douglas.pestana@remix.institute.com"))
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5.0)
 SystemRequirements: Java (>= 7.0)
@@ -19,6 +18,5 @@ VignetteBuilder: knitr
 Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Date: '2019-03-20'
-Views:MachineLearning,AutomatedSupervisedLearning,SupervisedLearning,AutomatedUnsupervisedLearning,UnsupervisedLearning,Clustering,AnomalyDetection,FeatureEngineering,VariableCreation,ModelEvaluation,FeatureInterpretation,VariableInterpretation,VariableImportance,AutomatedTimeSeriesForecasting,TimeSeries,Forecasting
 NeedsCompilation: no
-Packaged: 2019-04-05 01:43:14 UTC; aantico
+Packaged: 2019-04-05
