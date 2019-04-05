@@ -263,7 +263,7 @@ test_that("AutoTS", {
     Lags           = 5,
     SLags          = 1,
     NumCores       = 4,
-    SkipModels     = c("NN","TBATS","PROPHET","SPLINE"),
+    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
     StepWise       = TRUE
   )
   x <- nrow(output[[1]])
@@ -434,8 +434,8 @@ test_that("GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x) mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -475,8 +475,8 @@ test_that("GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
@@ -514,8 +514,8 @@ test_that("GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- FAST_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c("mean"),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -547,8 +547,8 @@ test_that("GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
@@ -602,8 +602,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- DT_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = "GroupVariable",
@@ -642,8 +642,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
@@ -682,8 +682,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- DT_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = NULL,
@@ -712,8 +712,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
@@ -751,8 +751,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- FAST_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c("mean"),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -784,8 +784,8 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
@@ -838,8 +838,8 @@ test_that("FAST_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- FAST_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c("mean"),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -881,8 +881,8 @@ test_that("FAST_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 5, 1)),
-    periods        = c(3, 5, 10, 15, 20, 25),
+    lags           = c(seq(1, 2, 1)),
+    periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
