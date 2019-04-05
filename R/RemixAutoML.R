@@ -935,7 +935,7 @@ AutoKMeans <- function(data,
 #'                    Lags           = 5,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
-#'                    SkipModels     = NULL,
+#'                    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
 #'                    StepWise       = TRUE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
@@ -3515,8 +3515,8 @@ EvalPlot <- function(data,
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' data <- GDL_Feature_Engineering(data,
-#'            lags           = c(seq(1,5,1)),
-#'            periods        = c(3,5,10,15,20,25),
+#'            lags           = c(seq(1,2,1)),
+#'            periods        = c(3),
 #'            statsFUNs      = c(function(x) quantile(x, probs = 0.20, na.rm = TRUE),
 #'                               function(x) quantile(x, probs = 0.80, na.rm = TRUE),
 #'                               function(x) mean(x, na.rm = TRUE),
