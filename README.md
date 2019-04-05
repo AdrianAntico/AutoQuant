@@ -1,4 +1,4 @@
-![Remix](https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/RemixAutoML_Logo.png)
+![RemixAutoML_Logo](https://user-images.githubusercontent.com/42076988/55656390-94dc4b00-57ab-11e9-9e3f-06b049b796d5.png)
 
 # RemixAutoML
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via email.
