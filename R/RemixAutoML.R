@@ -316,7 +316,7 @@ PrintObjectsSize <- function(N = 10) {
 #' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(1000,
+#'   Target = stats::filter(rnorm(10000,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
