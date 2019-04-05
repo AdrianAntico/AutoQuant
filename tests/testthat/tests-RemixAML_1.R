@@ -237,53 +237,6 @@ test_that("ResidualOutliers", {
   expect_equal(length(stuff), 2)
 })
 
-test_that("AutoKMeans", {
-  # Check that GridTuneGLRM = T and GridTuneKMeans = T
-  data <- data.table::as.data.table(iris)
-  data <- AutoKMeans(
-    data,
-    GridTuneGLRM = FALSE,
-    GridTuneKMeans = FALSE,
-    nthreads = 8,
-    MaxMem = "28G",
-    glrmCols = 1:(ncol(data) - 1),
-    IgnoreConstCols = TRUE,
-    glrmFactors = 2,
-    Loss = "Absolute",
-    glrmMaxIters = 1000,
-    SVDMethod = "Randomized",
-    MaxRunTimeSecs = 3600,
-    KMeansK = 5,
-    KMeansMetric = "totss",
-    SaveModels = NULL,
-    PathFile = getwd()
-  )
-  expect_equal(ncol(data), 6)
-
-  #Check that GridTuneGLRM = F and GridTuneKMeans = F
-  data1 <- data.table::as.data.table(iris)
-  Sys.sleep(10)
-  data1 <- AutoKMeans(
-    data1,
-    GridTuneGLRM = FALSE,
-    GridTuneKMeans = FALSE,
-    nthreads = 8,
-    MaxMem = "28G",
-    glrmCols = 1:(ncol(data1) - 1),
-    IgnoreConstCols = TRUE,
-    glrmFactors = 2,
-    Loss = "Absolute",
-    glrmMaxIters = 1000,
-    SVDMethod = "Randomized",
-    MaxRunTimeSecs = 3600,
-    KMeansK = 5,
-    KMeansMetric = "totss",
-    SaveModels = NULL,
-    PathFile = getwd()
-  )
-  expect_equal(ncol(data1), 6)
-})
-
 test_that("AutoTS", {
   # Check function works
   data <- data.table::data.table(
@@ -951,3 +904,50 @@ test_that("FAST_GDL_Feature_Engineering", {
   y <- names(data1)
   expect_equal(x, y)
 })
+
+# test_that("AutoKMeans", {
+#   # Check that GridTuneGLRM = T and GridTuneKMeans = T
+#   data <- data.table::as.data.table(iris)
+#   data <- AutoKMeans(
+#     data,
+#     GridTuneGLRM = FALSE,
+#     GridTuneKMeans = FALSE,
+#     nthreads = 1,
+#     MaxMem = "8",
+#     glrmCols = 1:(ncol(data) - 1),
+#     IgnoreConstCols = TRUE,
+#     glrmFactors = 2,
+#     Loss = "Absolute",
+#     glrmMaxIters = 1000,
+#     SVDMethod = "Randomized",
+#     MaxRunTimeSecs = 3600,
+#     KMeansK = 5,
+#     KMeansMetric = "totss",
+#     SaveModels = NULL,
+#     PathFile = getwd()
+#   )
+#   expect_equal(ncol(data), 6)
+#
+#   #Check that GridTuneGLRM = F and GridTuneKMeans = F
+#   data1 <- data.table::as.data.table(iris)
+#   Sys.sleep(10)
+#   data1 <- AutoKMeans(
+#     data1,
+#     GridTuneGLRM = FALSE,
+#     GridTuneKMeans = FALSE,
+#     nthreads = 8,
+#     MaxMem = "28G",
+#     glrmCols = 1:(ncol(data1) - 1),
+#     IgnoreConstCols = TRUE,
+#     glrmFactors = 2,
+#     Loss = "Absolute",
+#     glrmMaxIters = 1000,
+#     SVDMethod = "Randomized",
+#     MaxRunTimeSecs = 3600,
+#     KMeansK = 5,
+#     KMeansMetric = "totss",
+#     SaveModels = NULL,
+#     PathFile = getwd()
+#   )
+#   expect_equal(ncol(data1), 6)
+# })
