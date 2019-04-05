@@ -58,7 +58,7 @@ output <-   AutoTS(data,
                    Lags           = 5,
                    SLags          = 1,
                    NumCores       = 4,
-                   SkipModels     = NULL,
+                   SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
                    StepWise       = TRUE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
