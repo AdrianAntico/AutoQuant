@@ -1,7 +1,21 @@
 AutoH2OModeler          An Automated Machine Learning Framework using
-                        H20
+                        H2O
+AutoH2OScoring          An automated H2O model scoring function
+AutoH2OTextPrepScoring  An automated text preparer for AutoH2OScoring
+AutoKMeans              An automated grid tuning dimensionality reduction
+                        and grid tuned KMeans clustering function
+AutoNLS                 AutoNLS is a function for automatically
+                        building nls models
+AutoRecommender         Automatically build out the best collaborative
+                        filtering models
+AutoRecommenderScoring  Automatically score the best model from the
+                        AutoRecommender function
 AutoTS                  AutoTS is an automated time series modeling
                         function
+AutoWord2VecModeler     Automated word2vec model building and data
+                        preparation function using H2O
+AutoWordFreq            Automatically build word frequency tables and
+                        word clouds
 ChartTheme              ChartTheme function is a ggplot theme generator
                         for ggplots
 DT_GDL_Feature_Engineering
@@ -15,8 +29,6 @@ FAST_GDL_Feature_Engineering
                         An Fast Automated Feature Engineering Function
 GDL_Feature_Engineering
                         An Automated Feature Engineering Function
-GLRM_KMeans_Col         GLRM_KMeans_Col Automated row clustering for
-                        mixed column types
 GenTSAnomVars           GenTSAnomVars is an automated z-score anomaly
                         detection via GLM-like procedure
 ModelDataPrep           Final Data Preparation Function
@@ -37,13 +49,10 @@ Scoring_GDL_Feature_Engineering
                         Function
 SimpleCap               SimpleCap function is for capitalizing the
                         first letter of words
-Word2VecModel           Automated word2vec data generation via H20
-WordFreq                Automated Word Frequency and Word Cloud
-                        Creation
+
 multiplot               Multiplot is a function for combining multiple
                         plots
-nlsModelFit             nlsModelFit is a function for automatically
-                        building nls models
+
 percRank                Percentile rank function
 tempDatesFun            tempDatesFun Convert Excel datetime char
                         columns to Date columns
