@@ -1,3 +1,5 @@
+![Remix](https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/RemixAutoML_Logo.png)
+
 # RemixAutoML
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via email.
 ##### Supervised Learning Functions: 
