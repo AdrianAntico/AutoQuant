@@ -17,6 +17,6 @@ Suggests: testthat, sde, knitr, rmarkdown, methods
 VignetteBuilder: knitr
 Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
-Date: '2019-03-20'
+Date: 2019-04-05
 NeedsCompilation: no
 Packaged: 2019-04-05
