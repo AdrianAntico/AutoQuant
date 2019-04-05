@@ -35,7 +35,7 @@ GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. 
 }
 \examples{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(1000,
+  Target = stats::filter(rnorm(10000,
                                mean = 50,
                                sd = 20),
                          filter=rep(1,10),
