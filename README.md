@@ -59,7 +59,7 @@ Generate time series anomaly variables. (Cross with Feature Engineering) Create 
 ##### **ResidualOutliers()**
 Residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
-##### **AutoKMeans()**: 
+##### **AutoKMeans()** 
 Generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
 ## Feature Engineering Functions: 
