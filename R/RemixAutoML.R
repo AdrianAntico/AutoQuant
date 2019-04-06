@@ -3311,7 +3311,7 @@ ParDepCalPlots <- function(data,
       ggplot2::xlab(IndepVar) +
       ggplot2::scale_colour_manual(
         "",
-        breaks = c("Actual", "Predicted"),
+        breaks = c("Actuals", "Predicted"),
         values = c("blue", "red")
       ) +
       ChartTheme(Size = 15) +
@@ -8795,7 +8795,7 @@ AutoH2OModeler <- function(Construct,
 #'                TestData  = NULL)
 #'
 #' N <- 3
-#' data <- AutoH20Scoring(Features     = aa,
+#' data <- AutoH2OScoring(Features     = aa,
 #'                        GridTuneRow  = c(1:N),
 #'                        ScoreMethod  = "standard",
 #'                        TargetType   = rep("multinomial",N),
@@ -9546,7 +9546,7 @@ RecomDataCreate <- function(data,
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
 #' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
 #' @param Ratio The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training
-#' @param RatingType Choose from “topNList”, “ratings”, “ratingMatrix”
+#' @param RatingType Choose from “TopN”, “ratings”, “ratingMatrix”
 #' @param RatingsKeep The total ratings you wish to return. Default is 20.
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
 #' @param ModelMetric Choose from "Precision", "Recall", "TPR", or "FPR"
@@ -9682,7 +9682,6 @@ AutoRecommender <- function(data,
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
 #' @param ProductColName Something like "StockCode"
-#' @param MetricColName Something like "TotalSales"
 #' @import data.table
 #' @import parallel
 #' @import foreach
@@ -9711,15 +9710,13 @@ AutoRecommender <- function(data,
 #'       SkipModels = "AssociationRules",
 #'       ModelMetric = "TPR"),
 #'   EntityColName = "CustomerID",
-#'   ProductColName = "StockCode",
-#'   MetricColName = "TotalSales")
+#'   ProductColName = "StockCode")
 #' }
 #' @export
 AutoRecommenderScoring <- function(data,
                                    WinningModel,
                                    EntityColName  = "CustomerID",
-                                   ProductColName = "StockCode",
-                                   MetricColName  = "TotalSales") {
+                                   ProductColName = "StockCode") {
 
   # Setup winning model and arguments
   if (WinningModel == "AR") {
