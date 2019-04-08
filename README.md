@@ -1,7 +1,12 @@
 ![RemixAutoML_Logo](https://user-images.githubusercontent.com/42076988/55656390-94dc4b00-57ab-11e9-9e3f-06b049b796d5.png)
 
 # RemixAutoML
-> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. See them in action at https://www.remyxcourses.com alternatively, you can contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via email.
+> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. To see them in action, check out our free tutorials at https://www.remyxcourses.com
+
+Also, be sure to visit our blog at https://www.remixinstitute.ai for the hot data science, machine learning, and AI content.
+
+You can also contact me via **LinkedIn** https://www.linkedin.com/in/adrian-antico/ for any questions about the package. You can also go into the Vignette folder to see more detail. If you want to be a contributer, contact me via LinkedIn email.
+
 ## Supervised Learning Functions: 
 ##### **AutoH2OModeler()**
 Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
