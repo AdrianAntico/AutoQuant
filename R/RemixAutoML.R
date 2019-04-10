@@ -1758,6 +1758,10 @@ AutoTS <- function(data,
       forecast::forecast(ARFIMA_model,
                          h = FCPeriods)$mean)]
 
+    # Generate plot
+    plot(forecast::forecast(ARFIMA_model,
+                            h = FCPeriods))
+
     # Store model
     model <- ARFIMA_model
 
@@ -1840,6 +1844,10 @@ AutoTS <- function(data,
       forecast::forecast(ARIMA_model,
                          h = FCPeriods)$mean)]
 
+    # Create plot
+    plot(forecast::forecast(ARIMA_model,
+                            h = FCPeriods))
+
     # Store model
     model <- ARIMA_model
 
@@ -1898,6 +1906,10 @@ AutoTS <- function(data,
       forecast::forecast(EXPSMOOTH_model,
                          h = FCPeriods)$mean)]
 
+    # Create plot
+    plot(forecast::forecast(EXPSMOOTH_model,
+                            h = FCPeriods))
+
     # Store model
     model <- EXPSMOOTH_model
 
@@ -1939,6 +1951,10 @@ AutoTS <- function(data,
       forecast::forecast(TBATS_model,
                          h = FCPeriods)$mean)]
 
+    # Create plot
+    plot(forecast::forecast(TBATS_model,
+                            h = FCPeriods))
+
     # Store model
     model <- TBATS_model
 
@@ -1960,6 +1976,10 @@ AutoTS <- function(data,
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(TSLM_model,h = FCPeriods)$mean)]
+
+    # Create plot
+    plot(forecast::forecast(TSLM_model,
+                            h = FCPeriods))
 
     # Store model
     model <- TSLM_model
@@ -2050,6 +2070,10 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
 
+    # Create plot
+    plot(forecast::forecast(NNETAR_model,
+                            h = FCPeriods))
+
     # Store model
     model <- NNETAR_model
 
@@ -2091,6 +2115,13 @@ AutoTS <- function(data,
       )[ds > MaxDate]
     FC_Data[, Forecast_PROPHET := data.table::as.data.table(predict(
       PROPHET_model,PROPHET_FC))[["yhat"]]]
+
+    # Create plot
+    z <- rbindlist(list(data,FC_Data))
+    ggplot2::ggplot(z, ggplot2::aes(x = z[[eval(DateName)]], y = z[[eval(TargetName)]])) +
+      ggplot2::geom_line() + ggplot2::geom_vline(xintercept = (max(data[[eval(DateName)]]))) +
+      ChartTheme(Size = 12) + ggplot2::ggtitle("PROPHET Forecast") +
+      ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TargetName))
 
     # Store model
     model <- PROPHET_model
