@@ -250,17 +250,6 @@ data.table::setnames(data1, names(data1), c("DateTime","Target"))
 data2 <- data.table::rbindlist(list(data[, Target := as.numeric(Target)],
                                     data1))
 
-# Plot time series data and forecast
-ggplot2::ggplot(data2, ggplot2::aes(x = DateTime, y = Target)) +
-  ggplot2::geom_line() + 
-  RemixAutoML::ChartTheme(Size = 10) +
-  ggplot2::geom_vline(ggplot2::aes(xintercept = maxDate),
-                      linetype = "dotted",
-                      color = "blue") +
-  ggplot2::ggtitle(paste0("Historical and FC - ", 
-                          output$EvaluationMetrics[1,1][[1]])) +
-  ggplot2::theme(legend.position="none")
-
 # Print the evaluation metric and model makeup
 knitr::kable(output$EvaluationMetrics)
 summary(output$TimeSeriesModel)
