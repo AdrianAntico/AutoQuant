@@ -1479,8 +1479,8 @@ AutoTS <- function(data,
         meanResid = rnorm(Lags * SLags),
         sdResid = rnorm(Lags * SLags)
       )
-    for (lags in 1:Lags) {
-      for (slags in 1:SLags) {
+    for (lags in seq_len(Lags)) {
+      for (slags in seq_len(SLags)) {
         k <- k + 1L
         print(k)
         NNETAR_model_temp <-
@@ -1590,9 +1590,9 @@ AutoTS <- function(data,
       ProphetTimeUnit <- TimeUnit
     }
 
-    max_date <- data_train[, max(DateTime)]
+    max_date <- data_train[, max(get(DateName))]
     dataProphet <- data.table::copy(data_train)
-    data.table::setnames(dataProphet, c("DateTime", "Target"), c("ds", "y"))
+    data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
 
     # 1)
     # Define TS Frequency
@@ -1969,8 +1969,8 @@ AutoTS <- function(data,
         meanResid = rnorm(Lags * SLags),
         sdResid = rnorm(Lags * SLags)
       )
-    for (lags in 1:Lags) {
-      for (slags in 1:SLags) {
+    for (lags in seq_len(Lags)) {
+      for (slags in seq_len(SLags)) {
         k <- k + 1L
         print(k)
         NNETAR_model_temp <-
@@ -2057,9 +2057,9 @@ AutoTS <- function(data,
       ProphetTimeUnit <- TimeUnit
     }
 
-    max_date <- data_train[, max(DateTime)]
+    max_date <- data_train[, max(get(DateName))]
     dataProphet <- data.table::copy(data_train)
-    data.table::setnames(dataProphet, c("DateTime",
+    data.table::setnames(dataProphet, c(eval(DateName),
                                         "Target"), c("ds", "y"))
 
     # 1)
