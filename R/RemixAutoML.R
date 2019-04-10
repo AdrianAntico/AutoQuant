@@ -1015,6 +1015,11 @@ AutoTS <- function(data,
     quarter, or year")
   }
 
+  # Coerce SLags if too large
+  if(freq * SLags > nrow(data_train)) {
+    SLags <- floor(nrow(data_train) / freq)
+  }
+
   # Convert data.tables to stats::ts objects
   dataTSTrain <-
     stats::ts(data = data_train,
