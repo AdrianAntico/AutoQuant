@@ -1759,8 +1759,8 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
     # Generate plot
-    plot(forecast::forecast(ARFIMA_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(ARFIMA_model,
+                                      h = FCPeriods))
 
     # Store model
     model <- ARFIMA_model
@@ -1845,8 +1845,8 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
     # Create plot
-    plot(forecast::forecast(ARIMA_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(ARIMA_model,
+                                      h = FCPeriods))
 
     # Store model
     model <- ARIMA_model
@@ -1907,8 +1907,8 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
     # Create plot
-    plot(forecast::forecast(EXPSMOOTH_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(EXPSMOOTH_model,
+                                      h = FCPeriods))
 
     # Store model
     model <- EXPSMOOTH_model
@@ -1952,8 +1952,8 @@ AutoTS <- function(data,
                          h = FCPeriods)$mean)]
 
     # Create plot
-    plot(forecast::forecast(TBATS_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(TBATS_model,
+                                          h = FCPeriods))
 
     # Store model
     model <- TBATS_model
@@ -1978,8 +1978,8 @@ AutoTS <- function(data,
       forecast::forecast(TSLM_model,h = FCPeriods)$mean)]
 
     # Create plot
-    plot(forecast::forecast(TSLM_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(TSLM_model,
+                                          h = FCPeriods))
 
     # Store model
     model <- TSLM_model
@@ -2071,8 +2071,8 @@ AutoTS <- function(data,
       forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
 
     # Create plot
-    plot(forecast::forecast(NNETAR_model,
-                            h = FCPeriods))
+    graphics::plot(forecast::forecast(NNETAR_model,
+                                          h = FCPeriods))
 
     # Store model
     model <- NNETAR_model
