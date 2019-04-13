@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoH2OScoring}
 \alias{AutoH2OScoring}
-\title{AutoH20Scoring is the complement of AutoH20Modeler.}
+\title{AutoH2OScoring is the complement of AutoH20Modeler.}
 \usage{
 AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
   ScoreMethod = "Standard", TargetType = rep("multinomial", 3),
@@ -35,7 +35,7 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 }
 \description{
-AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
+AutoH2OScoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 }
 \examples{
 \dontrun{
@@ -96,7 +96,7 @@ Construct <- data.table::data.table(Targets = rep("target",3),
                                     TargetEncoding  = rep(NA,3),
                                     SupplyData      = rep(FALSE,3))
 
-AutoH20Modeler(Construct,
+AutoH2OModeler(Construct,
                max_memory = "28G",
                ratios = 0.75,
                BL_Trees = 500,
@@ -108,7 +108,7 @@ AutoH20Modeler(Construct,
                TestData  = NULL)
 
 N <- 3
-data <- AutoH20Scoring(Features     = aa,
+data <- AutoH2OScoring(Features     = aa,
                        GridTuneRow  = c(1:N),
                        ScoreMethod  = "standard",
                        TargetType   = rep("multinomial",N),
