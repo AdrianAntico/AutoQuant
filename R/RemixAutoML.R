@@ -905,14 +905,14 @@ AutoKMeans <- function(data,
 #'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
-#' @param data is the source time series data.table
+#' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
 #' @param TargetName is the name of the dependent variable in your data.table
 #' @param DateName is the name of the date column in your data.table
 #' @param FCPeriods is the number of periods into the future you wish to forecast
 #' @param HoldOutPeriods is the number of periods to use for validation testing
 #' @param TimeUnit is the level of aggregation your dataset comes in
-#' @param Lags is the number of lags you wish to test in various models (same with moving averages)
-#' @param SLags is the number of seasonal lags you wish to test in various models (same with moving averages)
+#' @param Lags is the number of lags you wish to test in various models (same as moving averages)
+#' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
 #' @param NumCores is the number of cores available on your computer
 #' @param SkipModels Don't run specified models - e.g. exclude all models "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
@@ -931,7 +931,7 @@ AutoKMeans <- function(data,
 #'                    DateName       = "DateTime",
 #'                    FCPeriods      = 30,
 #'                    HoldOutPeriods = 30,
-#'                    TimeUnit       = c("hour","day","week","month","quarter","year"),
+#'                    TimeUnit       = c("hour","day","week","month","quarter","year","user-supplied"),
 #'                    Lags           = 5,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
