@@ -2455,108 +2455,72 @@ RedYellowGreen <- function(data,
         store   <- list()
         j <- 0
         base::options(warn = -1)
-        if (MidTierDoNothing) {
-          for (i in base::c(MidTierHighThresh)) {
-            j <- j + 1
-            tp      <-
-              base::sum(base::ifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 1 & data[[predTar]] >= i,
-                1,
-                0
-              ))
-            tn      <-
-              base::sum(base::ifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] <  i,
-                1,
-                0
-              ))
-            fp      <-
-              base::sum(base::ifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] >= i,
-                1,
-                0
-              ))
-            fn      <-
-              base::sum(base::ifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 1 & data[[predTar]] <  i,
-                1,
-                0
-              ))
-            none    <-
-              base::sum(base::ifelse(
-                data[[predTar]] <= MidTierHighThresh &
-                  data[[predTar]] >= MidTierLowThresh,
-                1,
-                0
-              ))
-            tpr     <-
-              base::ifelse((tp + fn) == 0, 0, tp / (tp + fn))
-            fpr     <-
-              base::ifelse((fp + tn) == 0, 0, fp / (fp + tn))
-            noneRate <- none / base::nrow(data)
-            utility <-
-              (1 - noneRate) * (
-                popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) +
-                  (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -fpr))
-              ) + noneRate * MidTierCost
-            store[[j]] <- base::c(i, utility)
-          }
-          all <- data.table::rbindlist(list(store))
-          utilities <- data.table::melt(all[2, ])
-          data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- data.table::melt(all[1, ])
-          data.table::setnames(thresholds, "value", "Thresholds")
-          results <- cbind(utilities, thresholds)[, c(-1, -3)]
-          thresh <-
-            results[Thresholds <= eval(MidTierLowThresh) |
-                      Thresholds >= eval(
-                        MidTierHighThresh)][order(-Utilities)][1,
-                                                               2][[1]]
-          options(warn = 1)
-          return(list(thresh, results))
-        } else {
-          for (i in seq(from = 0.01,
-                        to = 0.99,
-                        by = 0.01)) {
-            j <- j + 1
-            tp      <-
-              base::sum(ifelse(data[[actTar]] == 1 &
-                                 data[[predTar]] >= i, 1, 0))
-            tn      <-
-              base::sum(ifelse(data[[actTar]] == 0 &
-                                 data[[predTar]] <  i, 1, 0))
-            fp      <-
-              base::sum(ifelse(data[[actTar]] == 0 &
-                                 data[[predTar]] >= i, 1, 0))
-            fn      <-
-              base::sum(ifelse(data[[actTar]] == 1 &
-                                 data[[predTar]] <  i, 1, 0))
-            tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
-            fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
-            utility <-
-              popTrue * (tpProfit * tpr + fnProfit *
-                           (1 - tpr)) + (1 - popTrue) *
-              (fpProfit * fpr + tnProfit * (1 -fpr))
-            store[[j]] <- c(i, utility)
-          }
-          all <- data.table::rbindlist(list(store))
-          utilities <- data.table::melt(all[2, ])
-          data.table::setnames(utilities, "value", "Utilities")
-          thresholds <- data.table::melt(all[1, ])
-          data.table::setnames(thresholds, "value", "Thresholds")
-          results <- cbind(utilities, thresholds)[, c(-1, -3)]
-          thresh <- results[order(-Utilities)][1, 2][[1]]
-          options(warn = 1)
-          return(list(thresh, results))
+        for (i in base::c(MidTierHighThresh)) {
+          j <- j + 1
+          tp      <-
+            base::sum(base::ifelse(
+              !(data[[predTar]] < MidTierHighThresh &
+                  data[[predTar]] > MidTierLowThresh) &
+                data[[actTar]] == 1 & data[[predTar]] >= i,
+              1,
+              0
+            ))
+          tn      <-
+            base::sum(base::ifelse(
+              !(data[[predTar]] < MidTierHighThresh &
+                  data[[predTar]] > MidTierLowThresh) &
+                data[[actTar]] == 0 & data[[predTar]] <  i,
+              1,
+              0
+            ))
+          fp      <-
+            base::sum(base::ifelse(
+              !(data[[predTar]] < MidTierHighThresh &
+                  data[[predTar]] > MidTierLowThresh) &
+                data[[actTar]] == 0 & data[[predTar]] >= i,
+              1,
+              0
+            ))
+          fn      <-
+            base::sum(base::ifelse(
+              !(data[[predTar]] < MidTierHighThresh &
+                  data[[predTar]] > MidTierLowThresh) &
+                data[[actTar]] == 1 & data[[predTar]] <  i,
+              1,
+              0
+            ))
+          none    <-
+            base::sum(base::ifelse(
+              data[[predTar]] <= MidTierHighThresh &
+                data[[predTar]] >= MidTierLowThresh,
+              1,
+              0
+            ))
+          tpr     <-
+            base::ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+          fpr     <-
+            base::ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+          noneRate <- none / base::nrow(data)
+          utility <-
+            (1 - noneRate) * (
+              popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) +
+                (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 -fpr))
+            ) + noneRate * MidTierCost
+          store[[j]] <- base::c(i, utility)
         }
+        all <- data.table::rbindlist(list(store))
+        utilities <- data.table::melt(all[2, ])
+        data.table::setnames(utilities, "value", "Utilities")
+        thresholds <- data.table::melt(all[1, ])
+        data.table::setnames(thresholds, "value", "Thresholds")
+        results <- cbind(utilities, thresholds)[, c(-1, -3)]
+        thresh <-
+          results[Thresholds <= eval(MidTierLowThresh) |
+                    Thresholds >= eval(
+                      MidTierHighThresh)][order(-Utilities)][1,
+                                                             2][[1]]
+        options(warn = 1)
+        return(list(thresh, results))
       }
 
       # Run core function
@@ -8742,9 +8706,9 @@ AutoH2OModeler <- function(Construct,
   }}, error = function(x) h2o::h2o.shutdown(prompt = FALSE))
 }
 
-#' AutoH20Scoring is the complement of AutoH20Modeler.
+#' AutoH2OScoring is the complement of AutoH20Modeler.
 #'
-#' AutoH20Scoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
+#' AutoH2OScoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
@@ -8819,7 +8783,7 @@ AutoH2OModeler <- function(Construct,
 #'                                     TargetEncoding  = rep(NA,3),
 #'                                     SupplyData      = rep(FALSE,3))
 #'
-#' AutoH20Modeler(Construct,
+#' AutoH2OModeler(Construct,
 #'                max_memory = "28G",
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
