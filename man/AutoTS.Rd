@@ -9,7 +9,7 @@ AutoTS(data, TargetName = "Targets", DateName = "DateTime",
   SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE)
 }
 \arguments{
-\item{data}{is the source time series data.table}
+\item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
 
 \item{TargetName}{is the name of the dependent variable in your data.table}
 
@@ -21,9 +21,9 @@ AutoTS(data, TargetName = "Targets", DateName = "DateTime",
 
 \item{TimeUnit}{is the level of aggregation your dataset comes in}
 
-\item{Lags}{is the number of lags you wish to test in various models (same with moving averages)}
+\item{Lags}{is the number of lags you wish to test in various models (same as moving averages)}
 
-\item{SLags}{is the number of seasonal lags you wish to test in various models (same with moving averages)}
+\item{SLags}{is the number of seasonal lags you wish to test in various models (same as moving averages)}
 
 \item{NumCores}{is the number of cores available on your computer}
 
@@ -54,7 +54,7 @@ output <-   AutoTS(data,
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
-                   TimeUnit       = c("hour","day","week","month","quarter","year"),
+                   TimeUnit       = "day",
                    Lags           = 5,
                    SLags          = 1,
                    NumCores       = 4,
