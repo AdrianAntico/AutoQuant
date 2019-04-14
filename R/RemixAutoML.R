@@ -2111,7 +2111,7 @@ AutoTS <- function(data,
   }
 
   # Create plot
-  temp <- copy(FC_Data)
+  temp <- data.table::copy(FC_Data)
   data.table::setnames(data, c(eval(DateName)), "Date")
   Time <- data.table::rbindlist(list(data[, "Date"], temp[, "Date"]))
   z <- data.table::rbindlist(list(data[, Date := NULL], temp[, Date := NULL]), fill = TRUE)
