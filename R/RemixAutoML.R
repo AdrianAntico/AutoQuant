@@ -899,9 +899,22 @@ AutoKMeans <- function(data,
 
 #' AutoTS is an automated time series modeling function
 #'
-#' AutoTS builds the best time series models for each type, compares all types, selects the winner, and generates a forecast.
-#'
 #' Step 1 is to build all the models and evaluate them on the number of HoldOutPeriods periods you specify. Step 2 is to pick the winner and rebuild the winning model on the full data set. Step 3 is to generate forecasts with the final model for FCPeriods that you specify.
+#' AutoTS builds the best time series models for each type (using optimized box-cox transformations), compares all types, selects the winner, and generates a forecast.Models include:
+#'
+#' ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+#'
+#' ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
+#'
+#' ETS: Additive and Multiplicitive Exponential Smoothing and Holt Winters
+#'
+#' NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
+#'
+#' TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
+#'
+#' TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
+#'
+#' Facebook Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. Uses Facebook's open source Prophet model.
 #'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
