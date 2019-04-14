@@ -902,7 +902,7 @@ AutoKMeans <- function(data,
 #' Step 1 is to build all the models and evaluate them on the number of HoldOutPeriods periods you specify. Step 2 is to pick the winner and rebuild the winning model on the full data set. Step 3 is to generate forecasts with the final model for FCPeriods that you specify.
 #' AutoTS builds the best time series models for each type (using optimized box-cox transformations), compares all types, selects the winner, and generates a forecast.Models include:
 #'
-#' ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+#' ARFIMA: Auto Regressive Fractional Integrated Moving Average
 #'
 #' ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
 #'
