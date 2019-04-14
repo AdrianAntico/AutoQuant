@@ -2064,10 +2064,6 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
       forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
 
-    # Create plot
-    graphics::plot(forecast::forecast(NNETAR_model,
-                                          h = FCPeriods))
-
     # Store model
     model <- NNETAR_model
 
