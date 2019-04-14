@@ -4,7 +4,7 @@
 \alias{AutoTS}
 \title{AutoTS is an automated time series modeling function}
 \usage{
-AutoTS(data, TargetName = "Targets", DateName = "DateTime",
+AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
   SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE)
 }
@@ -39,7 +39,7 @@ Step 1 is to build all the models and evaluate them on the number of HoldOutPeri
 AutoTS builds the best time series models for each type (using optimized box-cox transformations), compares all types, selects the winner, and generates a forecast.Models include:
 }
 \details{
-ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+ARFIMA: Auto Regressive Fractional Integrated Moving Average
 
 ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
 
