@@ -956,7 +956,7 @@ AutoKMeans <- function(data,
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
 #' @export
 AutoTS <- function(data,
-                   TargetName     = "Targets",
+                   TargetName     = "Target",
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
@@ -971,8 +971,9 @@ AutoTS <- function(data,
   EvalList <- list()
 
   # Convert to data.table if not already
-  if (!data.table::is.data.table(data))
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
+  }
 
   # Check for min value of data
   MinVal <- data[, min(get(TargetName))]
@@ -1686,7 +1687,7 @@ AutoTS <- function(data,
     MeanPercError = base::mean(PercentError, na.rm = TRUE),
     MAPE = base::mean(AbsolutePercentError, na.rm = TRUE)
   ),
-  by = ModelName][order(MAPE)][, ID := 1:.N]
+  by = "ModelName"][order(MAPE)][, ID := 1:.N]
 
   # Grab Winning Model
   BestModel <- Eval[1, "ModelName"][[1]]
