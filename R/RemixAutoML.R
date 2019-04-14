@@ -953,7 +953,7 @@ AutoKMeans <- function(data,
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
-#' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The winning model for later use if desired.
+#' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model.
 #' @export
 AutoTS <- function(data,
                    TargetName     = "Target",
@@ -2141,7 +2141,8 @@ AutoTS <- function(data,
   # Return values
   return(list(Forecast = FC_Data,
               EvaluationMetrics = Eval,
-              TimeSeriesModel = model))
+              TimeSeriesModel = model,
+              ChampionModel = BestModel))
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns
