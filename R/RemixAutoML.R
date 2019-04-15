@@ -973,6 +973,10 @@ AutoTS <- function(data,
                    SkipModels     = NULL,
                    StepWise       = TRUE,
                    TSClean        = TRUE) {
+
+  # Turn off warnings
+  options(warn = -1)
+
   # Initialize collection variables
   i <- 0
   EvalList <- list()
@@ -4247,8 +4251,6 @@ AutoTS <- function(data,
   z <- data.table::rbindlist(list(data[, Date := NULL], temp[, Date := NULL]), fill = TRUE)
   z <- cbind(Time, z)
   z[, eval(TargetName) := as.numeric(get(TargetName))]
-
-  options(warn = -1)
   print(ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
           ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
           ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
