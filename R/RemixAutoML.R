@@ -954,7 +954,8 @@ AutoKMeans <- function(data,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
 #'                    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA","DSHW"),
-#'                    StepWise       = TRUE)
+#'                    StepWise       = TRUE,
+#'                    TSClean        = TRUE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
@@ -3598,8 +3599,8 @@ AutoTS <- function(data,
   }
 
   if (!("PROPHET" %in% toupper(SkipModels))) {
-    require(Rcpp)
-    # Prophet Model-------------
+    # require(Rcpp) needed this to run but causes package build to error out
+    # Prophet Model----
     print("PROPHET FITTING")
     if (TimeUnit == "hour") {
       ProphetTimeUnit <- 3600
