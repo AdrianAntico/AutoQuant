@@ -932,6 +932,7 @@ AutoKMeans <- function(data,
 #' @param NumCores is the number of cores available on your computer
 #' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
+#' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
 #' @import data.table
 #' @import Rcpp
 #' @examples
@@ -969,7 +970,8 @@ AutoTS <- function(data,
                    SLags          = 2,
                    NumCores       = 4,
                    SkipModels     = NULL,
-                   StepWise       = TRUE) {
+                   StepWise       = TRUE,
+                   TSClean        = TRUE) {
   # Initialize collection variables
   i <- 0
   EvalList <- list()
@@ -1045,12 +1047,39 @@ AutoTS <- function(data,
               start = data_train[, min(get(DateName))][[1]],
               frequency = freq)
 
+  # TSClean Version
+  if(TSClean) {
+    if(MinVal > 0) {
+      Target <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                  replace.missing = TRUE,
+                                  lambda = "auto")
+    } else {
+      Target <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                  replace.missing = TRUE,
+                                  lambda = NULL)
+    }
+  }
+
   # Model-Based Frequency
   SFreq <- forecast::findfrequency(as.matrix(data_train[,2]))
   dataTSTrain1 <-
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = SFreq)
+
+  # TSClean Version
+  if(TSClean) {
+    if(MinVal > 0) {
+      TargetMB <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                    replace.missing = TRUE,
+                                    lambda = "auto")
+    } else {
+      TargetMB <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                    replace.missing = TRUE,
+                                    lambda = NULL)
+    }
+  }
+
 
   # Begin model building
   if (!("DSHW" %in% toupper(SkipModels))) {
@@ -1098,6 +1127,51 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # Run for outlier removal and imputation
+      if(TSClean) {
+
+        # User-Supplied-Freq
+        DSHW_Model2 <-
+          tryCatch({forecast::dshw(
+            y = Target,
+            period1 = freq,
+            period2 = freq*2,
+            alpha = NULL,
+            beta = NULL,
+            gamma = NULL,
+            omega = NULL,
+            phi = NULL,
+            lambda = "auto",
+            biasadj = TRUE,
+            armethod = TRUE,
+            model = NULL
+          )
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        DSHW_Model3 <-
+          tryCatch({forecast::dshw(
+            y = TargetMB,
+            period1 = SFreq,
+            period2 = SFreq*2,
+            alpha = NULL,
+            beta = NULL,
+            gamma = NULL,
+            omega = NULL,
+            phi = NULL,
+            lambda = "auto",
+            biasadj = TRUE,
+            armethod = TRUE,
+            model = NULL
+          )
+          },
+          error = function(x)
+            "empty")
+      }
+
     } else {
 
       # User-Supplied-Freq
@@ -1139,6 +1213,50 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # tsclean: impute and replace outliers
+      if(TSClean) {
+
+        # User-Supplied-Freq
+        DSHW_Model2 <-
+          tryCatch({forecast::dshw(
+            y = Target,
+            period1 = freq,
+            period2 = freq*2,
+            alpha = NULL,
+            beta = NULL,
+            gamma = NULL,
+            omega = NULL,
+            phi = NULL,
+            lambda = NULL,
+            biasadj = FALSE,
+            armethod = TRUE,
+            model = NULL
+          )
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        DSHW_Model3 <-
+          tryCatch({forecast::dshw(
+            y = TargetMB,
+            period1 = SFreq,
+            period2 = SFreq*2,
+            alpha = NULL,
+            beta = NULL,
+            gamma = NULL,
+            omega = NULL,
+            phi = NULL,
+            lambda = NULL,
+            biasadj = FALSE,
+            armethod = TRUE,
+            model = NULL
+          )
+          },
+          error = function(x)
+            "empty")
+      }
     }
 
     # Collect Test Data for Model Comparison
@@ -1193,6 +1311,61 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_DSHW1
     }
+
+    # If TSClean is TRUE
+    if(TSClean) {
+      # 2: Model-Supplied-Freq
+      if (tolower(class(DSHW_Model2)) == "forecast") {
+        i <- i + 1
+        data_test_DSHW2 <- data.table::copy(data_test)
+        data_test_DSHW2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("DSHW_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(DSHW_Model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_DSHW2[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_DSHW2
+      }
+
+      # 2: Model-Supplied-Freq
+      if (tolower(class(DSHW_Model3)) == "forecast") {
+        i <- i + 1
+        data_test_DSHW3 <- data.table::copy(data_test)
+        data_test_DSHW3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("DSHW_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(DSHW_Model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_DSHW3[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_DSHW3
+      }
+    }
   }
 
   # ARFIMA Modeling
@@ -1240,6 +1413,48 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARFIMA_model2 <-
+            tryCatch({
+              forecast::arfima(
+                y = Target,
+                lambda = TRUE,
+                biasadj = TRUE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARFIMA_model3 <-
+            tryCatch({
+              forecast::arfima(
+                y = TargetMB,
+                lambda = TRUE,
+                biasadj = TRUE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
+
       } else {
 
         # User-Supplied-Freq
@@ -1279,6 +1494,47 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARFIMA_model2 <-
+            tryCatch({
+              forecast::arfima(
+                y = Target,
+                lambda = FALSE,
+                biasadj = FALSE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARFIMA_model3 <-
+            tryCatch({
+              forecast::arfima(
+                y = TargetMB,
+                lambda = FALSE,
+                biasadj = FALSE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     } else {
       if(MinVal > 0) {
@@ -1322,6 +1578,50 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARFIMA_model2 <-
+            tryCatch({
+              forecast::arfima(
+                y = Target,
+                lambda = TRUE,
+                biasadj = TRUE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARFIMA_model3 <-
+            tryCatch({
+              forecast::arfima(
+                y = TargetMB,
+                lambda = TRUE,
+                biasadj = TRUE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
+
       } else {
 
         # User-Supplied-Freq
@@ -1363,8 +1663,52 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARFIMA_model2 <-
+            tryCatch({
+              forecast::arfima(
+                y = Target,
+                lambda = FALSE,
+                biasadj = FALSE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARFIMA_model3 <-
+            tryCatch({
+              forecast::arfima(
+                y = TargetMB,
+                lambda = FALSE,
+                biasadj = FALSE,
+                max.p = Lags,
+                max.q = Lags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     }
+
 
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
@@ -1418,8 +1762,64 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_ARF1
     }
+
+    # TSClean Version
+    if(TSClean) {
+      # 2: User-Supplied-Freq
+      if (tolower(class(ARFIMA_model2)) == "fracdiff") {
+        i <- i + 1
+        data_test_ARF2 <- data.table::copy(data_test)
+        data_test_ARF2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARFIMA_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARFIMA_model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARF2[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARF2
+      }
+
+      # 2: Model-Supplied-Freq
+      if (tolower(class(ARFIMA_model3)) == "fracdiff") {
+        i <- i + 1
+        data_test_ARF3 <- data.table::copy(data_test)
+        data_test_ARF3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARFIMA_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARFIMA_model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARF3[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARF3
+      }
+    }
   }
 
+  # Arima
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
@@ -1468,6 +1868,51 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Verison
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARIMA_model2 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = Target,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = TRUE,
+                biasadj = TRUE,
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARIMA_model3 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = TargetMB,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = TRUE,
+                biasadj = TRUE,
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       } else {
 
         # User-Supplied-Freq
@@ -1511,6 +1956,51 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARIMA_model2 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = Target,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = FALSE,
+                biasadj = FALSE,
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARIMA_model3 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = TargetMB,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = FALSE,
+                biasadj = FALSE,
+                stepwise = StepWise,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     } else {
       if(MinVal > 0) {
@@ -1558,6 +2048,53 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARIMA_model2 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = Target,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = TRUE,
+                biasadj = TRUE,
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARIMA_model3 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = TargetMB,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = TRUE,
+                biasadj = TRUE,
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       } else {
 
         # User-Supplied-Freq
@@ -1603,6 +2140,53 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          # User-Supplied-Freq
+          ARIMA_model2 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = Target,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = FALSE,
+                biasadj = FALSE,
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+
+          # Model-Supplied-Freq
+          ARIMA_model3 <-
+            tryCatch({
+              forecast::auto.arima(
+                y = TargetMB,
+                max.p = Lags,
+                max.q = Lags,
+                max.P = SLags,
+                max.Q = SLags,
+                max.d = 1,
+                max.D = 1,
+                ic = "bic",
+                lambda = FALSE,
+                biasadj = FALSE,
+                stepwise = StepWise,
+                parallel = TRUE,
+                num.cores = NumCores
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     }
 
@@ -1658,6 +2242,61 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_ARI1
     }
+
+    # TSClean Version
+    if(TSClean) {
+      # 2: User-Supplied-Freq
+      if (tolower(class(ARIMA_model2)[1]) == "arima") {
+        i <- i + 1
+        data_test_ARI2 <- data.table::copy(data_test)
+        data_test_ARI2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARIMA_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARI2[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARI2
+      }
+
+      # Model-Supplied-Freq
+      if (tolower(class(ARIMA_model3)[1]) == "arima") {
+        i <- i + 1
+        data_test_ARI3 <- data.table::copy(data_test)
+        data_test_ARI3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARIMA_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARI3[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARI3
+      }
+    }
   }
 
   if (!("ETS" %in% toupper(SkipModels))) {
@@ -1679,6 +2318,20 @@ AutoTS <- function(data,
               lambda = TRUE,
               biasadj = TRUE
             )}, error = function(x) "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model2 <-
+            tryCatch({
+              forecast::ets(
+                y = Target,
+                model = "ZZN",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = TRUE,
+                biasadj = TRUE
+              )}, error = function(x) "empty")
+        }
       } else {
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
@@ -1691,6 +2344,20 @@ AutoTS <- function(data,
               lambda = FALSE,
               biasadj = FALSE
             )}, error = function(x) "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model2 <-
+            tryCatch({
+              forecast::ets(
+                y = Target,
+                model = "ZZN",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = FALSE,
+                biasadj = FALSE
+              )}, error = function(x) "empty")
+        }
       }
     } else {
       if(MinVal > 0) {
@@ -1707,6 +2374,23 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model2 <-
+            tryCatch({
+              forecast::ets(
+                y = Target,
+                model = "ZZZ",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = TRUE,
+                biasadj = TRUE
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       } else {
         EXPSMOOTH_model <-
           tryCatch({
@@ -1721,6 +2405,23 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model2 <-
+            tryCatch({
+              forecast::ets(
+                y = Target,
+                model = "ZZZ",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = FALSE,
+                biasadj = FALSE
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     }
 
@@ -1738,6 +2439,20 @@ AutoTS <- function(data,
               lambda = TRUE,
               biasadj = TRUE
             )}, error = function(x) "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model3 <-
+            tryCatch({
+              forecast::ets(
+                y = TargetMB,
+                model = "ZZN",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = TRUE,
+                biasadj = TRUE
+              )}, error = function(x) "empty")
+        }
       } else {
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model1 <-
@@ -1750,6 +2465,20 @@ AutoTS <- function(data,
               lambda = FALSE,
               biasadj = FALSE
             )}, error = function(x) "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model3 <-
+            tryCatch({
+              forecast::ets(
+                y = TargetMB,
+                model = "ZZN",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = FALSE,
+                biasadj = FALSE
+              )}, error = function(x) "empty")
+        }
       }
     } else {
       if(MinVal > 0) {
@@ -1766,6 +2495,23 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model3 <-
+            tryCatch({
+              forecast::ets(
+                y = TargetMB,
+                model = "ZZZ",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = TRUE,
+                biasadj = TRUE
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       } else {
         EXPSMOOTH_model1 <-
           tryCatch({
@@ -1780,6 +2526,23 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
+
+        # TSClean Version
+        if(TSClean) {
+          EXPSMOOTH_model3 <-
+            tryCatch({
+              forecast::ets(
+                y = TargetMB,
+                model = "ZZZ",
+                allow.multiplicative.trend = TRUE,
+                restrict = TRUE,
+                lambda = FALSE,
+                biasadj = FALSE
+              )
+            },
+            error = function(x)
+              "empty")
+        }
       }
     }
 
@@ -1810,7 +2573,7 @@ AutoTS <- function(data,
       EvalList[[i]] <- data_test_ETS
     }
 
-    # Model-Based-Freq
+    # 2: Model-Based-Freq
     if (tolower(class(EXPSMOOTH_model1)) == "ets") {
       i <- i + 1
       data_test_ETS1 <- data.table::copy(data_test)
@@ -1834,6 +2597,61 @@ AutoTS <- function(data,
 
       # Collect model filename
       EvalList[[i]] <- data_test_ETS1
+    }
+
+    # TSClean Version
+    if(TSClean) {
+      # 2: User-Supplied-Freq
+      if (tolower(class(EXPSMOOTH_model2)) == "ets") {
+        i <- i + 1
+        data_test_ETS2 <- data.table::copy(data_test)
+        data_test_ETS2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ETS", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(EXPSMOOTH_model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ETS2[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ETS2
+      }
+
+      # 2: Model-Based-Freq
+      if (tolower(class(EXPSMOOTH_model3)) == "ets") {
+        i <- i + 1
+        data_test_ETS3 <- data.table::copy(data_test)
+        data_test_ETS3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ETS_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(EXPSMOOTH_model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_ETS3[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ETS3
+      }
     }
   }
 
@@ -1882,6 +2700,49 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # TSClean Version
+      if(TSClean) {
+        # User-Supplied-Freq
+        TBATS_model2 <-
+          tryCatch({
+            forecast::tbats(
+              y               = Target,
+              use.arma.errors = TRUE,
+              lambda          = TRUE,
+              biasadj         = TRUE,
+              max.p           = Lags,
+              max.q           = Lags,
+              max.P           = SLags,
+              max.Q           = SLags,
+              max.d           = 1,
+              max.D           = 1,
+              num.cores       = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        TBATS_model3 <-
+          tryCatch({
+            forecast::tbats(
+              y               = TargetMB,
+              use.arma.errors = TRUE,
+              lambda          = TRUE,
+              biasadj         = TRUE,
+              max.p           = Lags,
+              max.q           = Lags,
+              max.P           = SLags,
+              max.Q           = SLags,
+              max.d           = 1,
+              max.D           = 1,
+              num.cores       = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     } else {
 
       # User-Supplied-Freq
@@ -1923,6 +2784,49 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # TSClean Version
+      if(TSClean) {
+        # User-Supplied-Freq
+        TBATS_model2 <-
+          tryCatch({
+            forecast::tbats(
+              y               = Target,
+              use.arma.errors = TRUE,
+              lambda          = FALSE,
+              biasadj         = FALSE,
+              max.p           = Lags,
+              max.q           = Lags,
+              max.P           = SLags,
+              max.Q           = SLags,
+              max.d           = 1,
+              max.D           = 1,
+              num.cores       = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        TBATS_model3 <-
+          tryCatch({
+            forecast::tbats(
+              y               = TargetMB,
+              use.arma.errors = TRUE,
+              lambda          = FALSE,
+              biasadj         = FALSE,
+              max.p           = Lags,
+              max.q           = Lags,
+              max.P           = SLags,
+              max.Q           = SLags,
+              max.d           = 1,
+              max.D           = 1,
+              num.cores       = NumCores
+            )
+          },
+          error = function(x)
+            "empty")
+      }
     }
 
     # User-Supplied-Freq
@@ -1982,6 +2886,67 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_TBATS1
     }
+
+    # TSClean Version
+    if(TSClean) {
+      # User-Supplied-Freq
+      if (class(TBATS_model2)[1] == "tbats" |
+          class(TBATS_model2)[1] == "bats") {
+        i <- i + 1
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TBATS2 <- data.table::copy(data_test)
+        data_test_TBATS2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TBATS_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(TBATS_model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_TBATS2[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TBATS2
+      }
+
+      # Model-Supplied-Freq
+      if (class(TBATS_model3)[1] == "tbats" |
+          class(TBATS_model3)[1] == "bats") {
+        i <- i + 1
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TBATS3 <- data.table::copy(data_test)
+        data_test_TBATS3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TBATS_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(TBATS_model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_TBATS3[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TBATS3
+      }
+    }
   }
 
   if (!("TSLM" %in% toupper(SkipModels))) {
@@ -2009,6 +2974,29 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # TSClean Version
+      if(TSClean) {
+        # User-Supplied-Freq
+        TSLM_model2 <-
+          tryCatch({
+            forecast::tslm(Target ~ trend + season,
+                           lambda = TRUE,
+                           biasadj = TRUE)
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        TSLM_model3 <-
+          tryCatch({
+            forecast::tslm(TargetMB ~ trend + season,
+                           lambda = TRUE,
+                           biasadj = TRUE)
+          },
+          error = function(x)
+            "empty")
+      }
     } else {
       # User-Supplied-Freq
       TSLM_model <-
@@ -2029,6 +3017,28 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # TSClean Version
+      if(TSClean) {
+        TSLM_model2 <-
+          tryCatch({
+            forecast::tslm(Target ~ trend + season,
+                           lambda = FALSE,
+                           biasadj = FALSE)
+          },
+          error = function(x)
+            "empty")
+
+        # Model-Supplied-Freq
+        TSLM_model3 <-
+          tryCatch({
+            forecast::tslm(TargetMB ~ trend + season,
+                           lambda = TRUE,
+                           biasadj = TRUE)
+          },
+          error = function(x)
+            "empty")
+      }
     }
 
     # User-Supplied-Freq
@@ -2083,6 +3093,63 @@ AutoTS <- function(data,
 
       # Collect model filename
       EvalList[[i]] <- data_test_TSLM1
+    }
+
+    # TSClean Version
+    if(TSClean) {
+      # User-Supplied-Freq
+      if (tolower(class(TSLM_model2)[1]) == "tslm") {
+        i <- i + 1
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TSLM2 <- data.table::copy(data_test)
+        data_test_TSLM2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TSLM_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(forecast::forecast(TSLM_model2,
+                                                  h = HoldOutPeriods)$mean)
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_TSLM2[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TSLM2
+      }
+
+      # Model-Supplied-Freq
+      if (tolower(class(TSLM_model3)[1]) == "tslm") {
+        i <- i + 1
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TSLM3 <- data.table::copy(data_test)
+        data_test_TSLM3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TSLM_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(forecast::forecast(TSLM_model3,
+                                                  h = HoldOutPeriods)$mean)
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_TSLM3[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TSLM3
+      }
     }
   }
 
@@ -2307,6 +3374,227 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_NN1
     }
+
+    # TSClean Version
+    if(TSClean) {
+      k <- 0L
+      temp <-
+        data.table::data.table(
+          Lag = rep(1L, Lags * SLags),
+          Slag = rep(1L, Lags * SLags),
+          meanResid = rnorm(Lags * SLags),
+          sdResid = rnorm(Lags * SLags)
+        )
+      for (lags in seq_len(Lags)) {
+        for (slags in seq_len(SLags)) {
+          k <- k + 1L
+          print(paste0("NNet 3 Iteration: ",k))
+          NNETAR_model_temp <-
+            tryCatch({
+              forecast::nnetar(
+                y = Target,
+                p = lags,
+                P = slags,
+                lambda = "auto"
+              )
+            }, error = function(x)
+              "error")
+
+          if (length(NNETAR_model_temp) == 1) {
+            data.table::set(temp,
+                            i = k,
+                            j = 1L,
+                            value = lags)
+            data.table::set(temp,
+                            i = k,
+                            j = 2L,
+                            value = slags)
+            data.table::set(temp,
+                            i = k,
+                            j = 3L,
+                            value = 999999999)
+            data.table::set(temp,
+                            i = k,
+                            j = 4L,
+                            value = 999999999)
+
+          } else {
+            data.table::set(temp,
+                            i = k,
+                            j = 1L,
+                            value = lags)
+            data.table::set(temp,
+                            i = k,
+                            j = 2L,
+                            value = slags)
+            data.table::set(
+              temp,
+              i = k,
+              j = 3L,
+              value = base::mean(abs(NNETAR_model_temp$residuals),
+                                 na.rm = TRUE)
+            )
+            data.table::set(
+              temp,
+              i = k,
+              j = 4L,
+              value = sd(NNETAR_model_temp$residuals,
+                         na.rm = TRUE)
+            )
+          }
+        }
+      }
+
+      # Identify best model and retrain it
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+      NNETAR_model2 <-
+        tryCatch({
+          forecast::nnetar(
+            y = Target,
+            p = LagNN,
+            P = SLagNN,
+            lambda = "auto"
+          )
+        },
+        error = function(x)
+          "empty")
+
+      # Collect Test Data for Model Comparison
+      # 2)
+      if (tolower(class(NNETAR_model2)) == "nnetar") {
+        i <- i + 1
+        data_test_NN2 <- data.table::copy(data_test)
+        data_test_NN2[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("NN_TSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_NN2[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_NN2
+      }
+
+      k <- 0L
+      temp <-
+        data.table::data.table(
+          Lag = rep(1L, Lags * SLags),
+          Slag = rep(1L, Lags * SLags),
+          meanResid = rnorm(Lags * SLags),
+          sdResid = rnorm(Lags * SLags)
+        )
+      for (lags in seq_len(Lags)) {
+        for (slags in seq_len(SLags)) {
+          k <- k + 1L
+          print(paste0("NNet 4 Iteration: ",k))
+          NNETAR_model_temp <-
+            tryCatch({
+              forecast::nnetar(
+                y = TargetMB,
+                p = lags,
+                P = slags,
+                lambda = "auto"
+              )
+            }, error = function(x)
+              "error")
+
+          if (length(NNETAR_model_temp) == 1) {
+            data.table::set(temp,
+                            i = k,
+                            j = 1L,
+                            value = lags)
+            data.table::set(temp,
+                            i = k,
+                            j = 2L,
+                            value = slags)
+            data.table::set(temp,
+                            i = k,
+                            j = 3L,
+                            value = 999999999)
+            data.table::set(temp,
+                            i = k,
+                            j = 4L,
+                            value = 999999999)
+
+          } else {
+            data.table::set(temp,
+                            i = k,
+                            j = 1L,
+                            value = lags)
+            data.table::set(temp,
+                            i = k,
+                            j = 2L,
+                            value = slags)
+            data.table::set(
+              temp,
+              i = k,
+              j = 3L,
+              value = base::mean(abs(NNETAR_model_temp$residuals),
+                                 na.rm = TRUE)
+            )
+            data.table::set(
+              temp,
+              i = k,
+              j = 4L,
+              value = sd(NNETAR_model_temp$residuals,
+                         na.rm = TRUE)
+            )
+          }
+        }
+      }
+
+      # Identify best model and retrain it
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+      NNETAR_model3 <-
+        tryCatch({
+          forecast::nnetar(
+            y = dataTSTrain1[, TargetName],
+            p = LagNN,
+            P = SLagNN,
+            lambda = "auto"
+          )
+        },
+        error = function(x)
+          "empty")
+
+      # Collect Test Data for Model Comparison
+      # 2)
+      if (tolower(class(NNETAR_model3)) == "nnetar") {
+        i <- i + 1
+        data_test_NN3 <- data.table::copy(data_test)
+        data_test_NN3[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("NN_ModelFreqTSC", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
+          )
+        )]
+
+        # Add Evaluation Columns
+        # 3)
+        data_test_NN3[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_NN3
+      }
+    }
   }
 
   if (!("PROPHET" %in% toupper(SkipModels))) {
@@ -2408,20 +3696,82 @@ AutoTS <- function(data,
   # Create Training data
   data_train <- data[seq_len(nrow(data))]
 
-  # Convert data.tables to stats::ts objects
+  # Create Full Training Data for Final Rebruild
   if(grepl("ModelFreq", BestModel)) {
-    # Model-Supplied-Freq
-    SFreq <- forecast::findfrequency(as.matrix(data_train[,2]))
-    dataTSTrain <-
-      stats::ts(data = data_train,
-                start = data_train[, min(get(DateName))][[1]],
-                frequency = SFreq)
+    if(grepl("TSC", BestModel)) {
+      if(MinVal > 0) {
+        # Model-Supplied-Freq
+        SFreq <- forecast::findfrequency(as.matrix(data_train[,2]))
+        dataTSTrain <-
+          stats::ts(data = data_train,
+                    start = data_train[, min(get(DateName))][[1]],
+                    frequency = SFreq)
+
+        # TSClean Version
+        dataTSTrain <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                         replace.missing = TRUE,
+                                         lambda = "auto")
+      } else {
+        # Model-Supplied-Freq
+        SFreq <- forecast::findfrequency(as.matrix(data_train[,2]))
+        dataTSTrain <-
+          stats::ts(data = data_train,
+                    start = data_train[, min(get(DateName))][[1]],
+                    frequency = SFreq)
+
+        # TSClean Version
+        dataTSTrain <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                         replace.missing = TRUE,
+                                         lambda = NULL)
+      }
+
+    } else {
+      # Model-Supplied-Freq
+      SFreq <- forecast::findfrequency(as.matrix(data_train[,2]))
+      dataTSTrain <-
+        stats::ts(data = data_train,
+                  start = data_train[, min(get(DateName))][[1]],
+                  frequency = SFreq)
+
+      # Only Target as Numeric Vector
+      dataTSTrain <- dataTSTrain[, TargetName]
+    }
+
   } else {
-    # User-Supplied-Freq
-    dataTSTrain <-
-      stats::ts(data = data_train,
-                start = data_train[, min(get(DateName))][[1]],
-                frequency = freq)
+    if(grepl("TSC", BestModel)) {
+      if(MinVal > 0) {
+        # User-Supplied-Freq
+        dataTSTrain <-
+          stats::ts(data = data_train,
+                    start = data_train[, min(get(DateName))][[1]],
+                    frequency = freq)
+
+        # TSClean Version
+        dataTSTrain <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                         replace.missing = TRUE,
+                                         lambda = "auto")
+      } else {
+        # User-Supplied-Freq
+        dataTSTrain <-
+          stats::ts(data = data_train,
+                    start = data_train[, min(get(DateName))][[1]],
+                    frequency = freq)
+
+        # TSClean Version
+        dataTSTrain <- forecast::tsclean(x = dataTSTrain[, TargetName],
+                                         replace.missing = TRUE,
+                                         lambda = NULL)
+      }
+    } else {
+      # User-Supplied-Freq
+      dataTSTrain <-
+        stats::ts(data = data_train,
+                  start = data_train[, min(get(DateName))][[1]],
+                  frequency = freq)
+
+      # Only Target as Numeric Vector
+      dataTSTrain <- dataTSTrain[, TargetName]
+    }
   }
 
   # Retrain best model
