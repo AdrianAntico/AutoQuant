@@ -1051,6 +1051,149 @@ AutoTS <- function(data,
               frequency = SFreq)
 
   # Begin model building
+  if (!("DSHW" %in% toupper(SkipModels))) {
+    # ARFIMA-------------
+    # 1)
+    print("DSHW FITTING")
+    if(MinVal > 0) {
+
+      # User-Supplied-Freq
+      DSHW_Model <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain[, TargetName],
+          period1 = freq,
+          period2 = freq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = "auto",
+          biasadj = TRUE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+
+      # Model-Supplied-Freq
+      DSHW_Model1 <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain1[, TargetName],
+          period1 = SFreq,
+          period2 = SFreq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = "auto",
+          biasadj = TRUE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+    } else {
+
+      # User-Supplied-Freq
+      DSHW_Model <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain[, TargetName],
+          period1 = freq,
+          period2 = freq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = NULL,
+          biasadj = FALSE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+
+      # Model-Supplied-Freq
+      DSHW_Model1 <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain1[, TargetName],
+          period1 = SFreq,
+          period2 = SFreq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = NULL,
+          biasadj = FALSE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+    }
+
+    # Collect Test Data for Model Comparison
+    # 2: User-Supplied-Freq
+    if (tolower(class(DSHW_Model)) == "forecast") {
+      i <- i + 1
+      data_test_DSHW <- data.table::copy(data_test)
+      data_test_DSHW[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("DSHW", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(DSHW_Model, h = HoldOutPeriods)$mean
+        )
+      )]
+
+      # Add Evaluation Columns
+      # 3)
+      data_test_DSHW[, ':=' (
+        Resid = Target - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
+
+      # Collect model filename
+      EvalList[[i]] <- data_test_DSHW
+    }
+
+    # 2: Model-Supplied-Freq
+    if (tolower(class(DSHW_Model1)) == "forecast") {
+      i <- i + 1
+      data_test_DSHW1 <- data.table::copy(data_test)
+      data_test_DSHW1[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("DSHW_ModelFreq", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(DSHW_Model1, h = HoldOutPeriods)$mean
+        )
+      )]
+
+      # Add Evaluation Columns
+      # 3)
+      data_test_DSHW1[, ':=' (
+        Resid = Target - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
+
+      # Collect model filename
+      EvalList[[i]] <- data_test_DSHW1
+    }
+  }
+
+  # ARFIMA Modeling
   if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
@@ -2280,7 +2423,56 @@ AutoTS <- function(data,
   }
 
   # Retrain best model
-  if (BestModel == "ARFIMA") {
+  if (BestModel == "DSHW") {
+    if(MinVal > 0) {
+      DSHW_Model <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain[, TargetName],
+          period1 = freq,
+          period2 = freq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = "auto",
+          biasadj = TRUE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+    } else {
+      DSHW_Model <-
+        tryCatch({forecast::dshw(
+          y = dataTSTrain[, TargetName],
+          period1 = freq,
+          period2 = freq*2,
+          alpha = NULL,
+          beta = NULL,
+          gamma = NULL,
+          omega = NULL,
+          phi = NULL,
+          lambda = NULL,
+          biasadj = FALSE,
+          armethod = TRUE,
+          model = NULL
+        )
+        },
+        error = function(x)
+          "empty")
+    }
+
+    # Forecast with new model
+    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
+      forecast::forecast(DSHW_model,
+                         h = FCPeriods)$mean)]
+
+    # Store model
+    model <- DSHW_model
+
+  } else if (BestModel == "ARFIMA") {
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -2350,10 +2542,8 @@ AutoTS <- function(data,
     # Store model
     model <- ARFIMA_model
 
-  } else if (BestModel == "ARFIMA_ModelFreq") {
-
-
   } else if (BestModel == "ARIMA") {
+
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -2646,6 +2836,7 @@ AutoTS <- function(data,
     model <- NNETAR_model
 
   } else if (BestModel == "PROPHET") {
+
     # Rebuild model on full data
     print("PROPHET FITTING")
     if (TimeUnit == "hour") {
@@ -2663,7 +2854,7 @@ AutoTS <- function(data,
     # Define TS Frequency
     if (TimeUnit == "day") {
       PROPHET_model <- prophet::prophet(df = dataProphet,
-                               daily.seasonality = TRUE)
+                                        daily.seasonality = TRUE)
     } else if (TimeUnit == "week") {
       PROPHET_model <-
         prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
@@ -2698,19 +2889,19 @@ AutoTS <- function(data,
 
   options(warn = -1)
   print(ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
-    ggplot2::geom_vline(xintercept = max(data_test[[eval(DateName)]],
-                                         na.rm = TRUE),
-                        color = "red",
-                        lty = "dotted",
-                        lwd = 1) +
-    RemixTheme() +
-    ggplot2::labs(title = paste0(FCPeriods,"-", TimeUnit, " Forecast for ", TargetName),
-                  subtitle = paste0("Champion Model: ", BestModel, " | Mean Absolute Percentage Error: ",
-                                    paste(round(min(Eval$MAPE),3) * 100, "%", sep = "")),
-                  caption = "Forecast generated by Remix Institute's RemixAutoML R package") +
-    ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TargetName)))
+          ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
+          ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
+          ggplot2::geom_vline(xintercept = max(data_test[[eval(DateName)]],
+                                               na.rm = TRUE),
+                              color = "red",
+                              lty = "dotted",
+                              lwd = 1) +
+          RemixTheme() +
+          ggplot2::labs(title = paste0(FCPeriods,"-", TimeUnit, " Forecast for ", TargetName),
+                        subtitle = paste0("Champion Model: ", BestModel, " | Mean Absolute Percentage Error: ",
+                                          paste(round(min(Eval$MAPE),3) * 100, "%", sep = "")),
+                        caption = "Forecast generated by Remix Institute's RemixAutoML R package") +
+          ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TargetName)))
   options(warn = 0)
 
   # Return values
