@@ -2425,7 +2425,11 @@ AutoTS <- function(data,
   }
 
   # Retrain best model
-  if (BestModel == "DSHW") {
+  if (BestModel == "DSHW" | BestModel == "DSHW_ModelFreq") {
+    print("FULL DATA DSHW FITTING")
+    if(BestModel == "DSHW_ModelFreq") {
+      freq <- SFreq
+    }
     if(MinVal > 0) {
       DSHW_Model <-
         tryCatch({forecast::dshw(
@@ -2468,13 +2472,14 @@ AutoTS <- function(data,
 
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(
-      forecast::forecast(DSHW_model,
+      forecast::forecast(DSHW_Model,
                          h = FCPeriods)$mean)]
 
     # Store model
-    model <- DSHW_model
+    model <- DSHW_Model
 
   } else if (BestModel == "ARFIMA") {
+    print("FULL DATA ARFIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -2545,7 +2550,7 @@ AutoTS <- function(data,
     model <- ARFIMA_model
 
   } else if (BestModel == "ARIMA") {
-
+    print("FULL DATA ARIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -2628,6 +2633,7 @@ AutoTS <- function(data,
     model <- ARIMA_model
 
   } else if (BestModel == "ETS") {
+    print("FULL DATA ETS FITTING")
     # Rebuild model on full data
     if (freq > 24) {
       if(MinVal > 0) {
@@ -2686,6 +2692,7 @@ AutoTS <- function(data,
     model <- EXPSMOOTH_model
 
   } else if (BestModel == "TBATS") {
+    print("FULL DATA TBATS FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
       TBATS_model <- forecast::tbats(
@@ -2727,6 +2734,7 @@ AutoTS <- function(data,
     model <- TBATS_model
 
   } else if (BestModel == "TSLM") {
+    print("FULL DATA TSLM FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
       TSLM_model <-
@@ -2749,6 +2757,7 @@ AutoTS <- function(data,
     model <- TSLM_model
 
   } else if (BestModel == "NN") {
+    print("FULL DATA NN FITTING")
     # Rebuild model on full data
     k <- 0L
     temp <-
@@ -2840,7 +2849,7 @@ AutoTS <- function(data,
   } else if (BestModel == "PROPHET") {
 
     # Rebuild model on full data
-    print("PROPHET FITTING")
+    print("FULL DATA PROPHET FITTING")
     if (TimeUnit == "hour") {
       ProphetTimeUnit <- 3600
     } else {
