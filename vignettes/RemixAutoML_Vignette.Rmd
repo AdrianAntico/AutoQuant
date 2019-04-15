@@ -145,7 +145,7 @@ This automated supervised learning function builds nonlinear regression models f
 
 ### Example of AutoNLS with Plot (simulated data)
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=7, fig.height=5}
 library(RemixAutoML)
@@ -215,10 +215,9 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 ```
 
-
 ### Example of AutoTS with Plot (simulated data)
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=8, fig.height=5}
 library(RemixAutoML)
@@ -258,7 +257,7 @@ The suite of functions in this category currently handle optimized row-clusterin
 
 ### Demo of **ResidualOutliers()**
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{R, fig.show='hold', fig.width=8, fig.height=8}
 # Run on (Target - Predicted)
@@ -413,7 +412,7 @@ The model evaluation graphs are calibration plots or calibration boxplots. The c
 
 ### Demo of **EvalPlot()** for calibration and boxplots
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=8, fig.height=8}
 library(RemixAutoML)
@@ -521,7 +520,7 @@ The cost sensitive optimizaition functions provide the user the ability to gener
 
 ### Demo of **ParDepCalPlots()** for calibration, boxplots, and barplots
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=8, fig.height=8}
 library(RemixAutoML)
@@ -607,7 +606,7 @@ RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 
 ### RedYellowGreen Output (simulated data)
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
@@ -647,7 +646,7 @@ The first three are used for building out lags and rolling statistics from targe
 
 ### DT_GDL_Feature_Engineering and Scoring_GDL_Feature_Engineering Demo (simulated data)
 
-Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold'}
 library(RemixAutoML)
