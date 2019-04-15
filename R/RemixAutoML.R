@@ -930,7 +930,7 @@ AutoKMeans <- function(data,
 #' @param Lags is the number of lags you wish to test in various models (same as moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
 #' @param NumCores is the number of cores available on your computer
-#' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"
+#' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
 #' @import data.table
@@ -953,7 +953,7 @@ AutoKMeans <- function(data,
 #'                    Lags           = 5,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
-#'                    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA","DSHW"),
+#'                    SkipModels     = c("NNET","TBATS","ETS",TSLM","ARFIMA","DSHW"),
 #'                    StepWise       = TRUE,
 #'                    TSClean        = TRUE)
 #' ForecastData <- output$Forecast
@@ -3602,84 +3602,6 @@ AutoTS <- function(data,
     }
   }
 
-  suppressMessages(if (!("PROPHET" %in% toupper(SkipModels))) {
-    # require(Rcpp) needed this to run but causes package build to error out
-    # Prophet Model----
-    print("PROPHET FITTING")
-    if (TimeUnit == "hour") {
-      ProphetTimeUnit <- 3600
-    } else {
-      ProphetTimeUnit <- TimeUnit
-    }
-
-    max_date <- max(data_train[[eval(DateName)]], na.rm = TRUE)
-    dataProphet <- data.table::copy(data_train)
-    data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
-
-    # 1)
-    # Define TS Frequency
-    if (tolower(TimeUnit) == "day") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, daily.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else if (tolower(TimeUnit) == "week") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else if (tolower(TimeUnit) == "year") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else {
-      PROPHET_model <- tryCatch({
-        prophet::prophet(df = dataProphet)
-      },
-      error = function(x)
-        "empty")
-    }
-
-    if (tolower(class(PROPHET_model)[1]) == "prophet") {
-      i <- i + 1
-      PROPHET_future <-
-        data.table::as.data.table(
-          prophet::make_future_dataframe(PROPHET_model,
-                                         periods = HoldOutPeriods,
-                                         freq = ProphetTimeUnit)
-        )[ds > max_date]
-
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_PROPHET <- data.table::copy(data_test)
-      data_test_PROPHET[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("PROPHET", HoldOutPeriods),
-        FC_Eval = data.table::as.data.table(predict(PROPHET_model,
-                                                    PROPHET_future))[["yhat"]]
-      )]
-      # Add Evaluation Columns
-      # 3)
-      data_test_PROPHET[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
-
-      # Collect model filename
-      EvalList[[i]] <- data_test_PROPHET
-    }
-  })
-
   # Model Collection----
   print("FIND WINNER")
   dataEval <- data.table::rbindlist(EvalList)
@@ -4200,48 +4122,6 @@ AutoTS <- function(data,
     # Store model
     model <- NNETAR_model
 
-  } else if (grepl(pattern = "PROPHET",BestModel)) {
-
-    # Rebuild model on full data
-    print("FULL DATA PROPHET FITTING")
-    if (TimeUnit == "hour") {
-      ProphetTimeUnit <- 3600
-    } else {
-      ProphetTimeUnit <- TimeUnit
-    }
-
-    max_date <- data_train[, max(get(DateName))]
-    dataProphet <- data.table::copy(data_train)
-    data.table::setnames(dataProphet, c(eval(DateName),
-                                        "Target"), c("ds", "y"))
-
-    # 1)
-    # Define TS Frequency
-    if (TimeUnit == "day") {
-      PROPHET_model <- prophet::prophet(df = dataProphet,
-                                        daily.seasonality = TRUE)
-    } else if (TimeUnit == "week") {
-      PROPHET_model <-
-        prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
-    } else if (TimeUnit == "year") {
-      PROPHET_model <-
-        prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
-    } else {
-      PROPHET_model <- prophet::prophet(df = dataProphet)
-    }
-
-    # Forecast with new model
-    PROPHET_FC <-
-      data.table::as.data.table(
-        prophet::make_future_dataframe(PROPHET_model,
-                                       periods = FCPeriods,
-                                       freq = ProphetTimeUnit)
-      )[ds > MaxDate]
-    FC_Data[, Forecast_PROPHET := data.table::as.data.table(predict(
-      PROPHET_model,PROPHET_FC))[["yhat"]]]
-
-    # Store model
-    model <- PROPHET_model
   }
 
   # Create plot
