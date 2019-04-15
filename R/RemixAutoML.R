@@ -3602,83 +3602,83 @@ AutoTS <- function(data,
     }
   }
 
-  if (!("PROPHET" %in% toupper(SkipModels))) {
-    # require(Rcpp) needed this to run but causes package build to error out
-    # Prophet Model----
-    print("PROPHET FITTING")
-    if (TimeUnit == "hour") {
-      ProphetTimeUnit <- 3600
-    } else {
-      ProphetTimeUnit <- TimeUnit
-    }
-
-    max_date <- max(data_train[[eval(DateName)]], na.rm = TRUE)
-    dataProphet <- data.table::copy(data_train)
-    data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
-
-    # 1)
-    # Define TS Frequency
-    if (tolower(TimeUnit) == "day") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, daily.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else if (tolower(TimeUnit) == "week") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else if (tolower(TimeUnit) == "year") {
-      PROPHET_model <-
-        tryCatch({
-          prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
-        },
-        error = function(x)
-          "empty")
-    } else {
-      PROPHET_model <- tryCatch({
-        prophet::prophet(df = dataProphet)
-      },
-      error = function(x)
-        "empty")
-    }
-
-    if (tolower(class(PROPHET_model)[1]) == "prophet") {
-      i <- i + 1
-      PROPHET_future <-
-        data.table::as.data.table(
-          prophet::make_future_dataframe(PROPHET_model,
-                                         periods = HoldOutPeriods,
-                                         freq = ProphetTimeUnit)
-        )[ds > max_date]
-
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_PROPHET <- data.table::copy(data_test)
-      data_test_PROPHET[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("PROPHET", HoldOutPeriods),
-        FC_Eval = data.table::as.data.table(predict(PROPHET_model,
-                                                    PROPHET_future))[["yhat"]]
-      )]
-      # Add Evaluation Columns
-      # 3)
-      data_test_PROPHET[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
-
-      # Collect model filename
-      EvalList[[i]] <- data_test_PROPHET
-    }
-  }
+  # if (!("PROPHET" %in% toupper(SkipModels))) {
+  #   # require(Rcpp) needed this to run but causes package build to error out
+  #   # Prophet Model----
+  #   print("PROPHET FITTING")
+  #   if (TimeUnit == "hour") {
+  #     ProphetTimeUnit <- 3600
+  #   } else {
+  #     ProphetTimeUnit <- TimeUnit
+  #   }
+  #
+  #   max_date <- max(data_train[[eval(DateName)]], na.rm = TRUE)
+  #   dataProphet <- data.table::copy(data_train)
+  #   data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
+  #
+  #   # 1)
+  #   # Define TS Frequency
+  #   if (tolower(TimeUnit) == "day") {
+  #     PROPHET_model <-
+  #       tryCatch({
+  #         prophet::prophet(df = dataProphet, daily.seasonality = TRUE)
+  #       },
+  #       error = function(x)
+  #         "empty")
+  #   } else if (tolower(TimeUnit) == "week") {
+  #     PROPHET_model <-
+  #       tryCatch({
+  #         prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
+  #       },
+  #       error = function(x)
+  #         "empty")
+  #   } else if (tolower(TimeUnit) == "year") {
+  #     PROPHET_model <-
+  #       tryCatch({
+  #         prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
+  #       },
+  #       error = function(x)
+  #         "empty")
+  #   } else {
+  #     PROPHET_model <- tryCatch({
+  #       prophet::prophet(df = dataProphet)
+  #     },
+  #     error = function(x)
+  #       "empty")
+  #   }
+  #
+  #   if (tolower(class(PROPHET_model)[1]) == "prophet") {
+  #     i <- i + 1
+  #     PROPHET_future <-
+  #       data.table::as.data.table(
+  #         prophet::make_future_dataframe(PROPHET_model,
+  #                                        periods = HoldOutPeriods,
+  #                                        freq = ProphetTimeUnit)
+  #       )[ds > max_date]
+  #
+  #     # Collect Test Data for Model Comparison
+  #     # 2)
+  #     data_test_PROPHET <- data.table::copy(data_test)
+  #     data_test_PROPHET[, ':=' (
+  #       Target = as.numeric(Target),
+  #       ModelName = rep("PROPHET", HoldOutPeriods),
+  #       FC_Eval = data.table::as.data.table(predict(PROPHET_model,
+  #                                                   PROPHET_future))[["yhat"]]
+  #     )]
+  #     # Add Evaluation Columns
+  #     # 3)
+  #     data_test_PROPHET[, ':=' (
+  #       Resid = get(TargetName) - FC_Eval,
+  #       PercentError = get(TargetName) / (FC_Eval +
+  #                                           1) - 1,
+  #       AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+  #                                                       1) - 1)
+  #     )]
+  #
+  #     # Collect model filename
+  #     EvalList[[i]] <- data_test_PROPHET
+  #   }
+  # }
 
   # Model Collection----
   print("FIND WINNER")
@@ -3779,7 +3779,7 @@ AutoTS <- function(data,
   }
 
   # Retrain best model
-  if (BestModel == "DSHW" | BestModel == "DSHW_ModelFreq") {
+  if (grepl(pattern = "DSHW",BestModel)) {
     print("FULL DATA DSHW FITTING")
     if(BestModel == "DSHW_ModelFreq") {
       freq <- SFreq
@@ -3832,7 +3832,7 @@ AutoTS <- function(data,
     # Store model
     model <- DSHW_Model
 
-  } else if (BestModel == "ARFIMA") {
+  } else if (grepl(pattern = "ARFIMA",BestModel)) {
     print("FULL DATA ARFIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
@@ -3903,7 +3903,7 @@ AutoTS <- function(data,
     # Store model
     model <- ARFIMA_model
 
-  } else if (BestModel == "ARIMA") {
+  } else if (grepl(pattern = "ARIMA",BestModel)) {
     print("FULL DATA ARIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
@@ -3986,7 +3986,7 @@ AutoTS <- function(data,
     # Store model
     model <- ARIMA_model
 
-  } else if (BestModel == "ETS") {
+  } else if (grepl(pattern = "ETS",BestModel)) {
     print("FULL DATA ETS FITTING")
     # Rebuild model on full data
     if (freq > 24) {
@@ -4045,7 +4045,7 @@ AutoTS <- function(data,
     # Store model
     model <- EXPSMOOTH_model
 
-  } else if (BestModel == "TBATS") {
+  } else if (grepl(pattern = "TBATS",BestModel)) {
     print("FULL DATA TBATS FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
@@ -4087,7 +4087,7 @@ AutoTS <- function(data,
     # Store model
     model <- TBATS_model
 
-  } else if (BestModel == "TSLM") {
+  } else if (grepl(pattern = "TSLM",BestModel)) {
     print("FULL DATA TSLM FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
@@ -4110,7 +4110,7 @@ AutoTS <- function(data,
     # Store model
     model <- TSLM_model
 
-  } else if (BestModel == "NN") {
+  } else if (grepl(pattern = "NN",BestModel)) {
     print("FULL DATA NN FITTING")
     # Rebuild model on full data
     k <- 0L
@@ -4200,7 +4200,7 @@ AutoTS <- function(data,
     # Store model
     model <- NNETAR_model
 
-  } else if (BestModel == "PROPHET") {
+  } else if (grepl(pattern = "PROPHET",BestModel)) {
 
     # Rebuild model on full data
     print("FULL DATA PROPHET FITTING")
