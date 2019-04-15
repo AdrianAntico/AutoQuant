@@ -3736,7 +3736,6 @@ AutoTS <- function(data,
       # Only Target as Numeric Vector
       dataTSTrain <- dataTSTrain[, TargetName]
     }
-
   } else {
     if(grepl("TSC", BestModel)) {
       if(MinVal > 0) {
@@ -3783,7 +3782,7 @@ AutoTS <- function(data,
     if(MinVal > 0) {
       DSHW_Model <-
         tryCatch({forecast::dshw(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           period1 = freq,
           period2 = freq*2,
           alpha = NULL,
@@ -3802,7 +3801,7 @@ AutoTS <- function(data,
     } else {
       DSHW_Model <-
         tryCatch({forecast::dshw(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           period1 = freq,
           period2 = freq*2,
           alpha = NULL,
@@ -3834,7 +3833,7 @@ AutoTS <- function(data,
     if (StepWise) {
       if(MinVal > 0) {
         ARFIMA_model <- forecast::arfima(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           lambda = TRUE,
           biasadj = TRUE,
           max.p = Lags,
@@ -3847,7 +3846,7 @@ AutoTS <- function(data,
         )
       } else {
         ARFIMA_model <- forecast::arfima(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           lambda = FALSE,
           biasadj = FALSE,
           max.p = Lags,
@@ -3862,7 +3861,7 @@ AutoTS <- function(data,
     } else {
       if(MinVal > 0) {
         ARFIMA_model <- forecast::arfima(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           lambda = TRUE,
           biasadj = TRUE,
           max.p = Lags,
@@ -3876,7 +3875,7 @@ AutoTS <- function(data,
         )
       } else {
         ARFIMA_model <- forecast::arfima(
-          y = dataTSTrain[, TargetName],
+          y = dataTSTrain,
           lambda = FALSE,
           biasadj = FALSE,
           max.p = Lags,
@@ -3906,7 +3905,7 @@ AutoTS <- function(data,
       if(MinVal > 0) {
         ARIMA_model <-
           forecast::auto.arima(
-            y     = dataTSTrain[, TargetName],
+            y     = dataTSTrain,
             max.p = Lags,
             max.q = Lags,
             max.P = SLags,
@@ -3922,7 +3921,7 @@ AutoTS <- function(data,
       } else {
         ARIMA_model <-
           forecast::auto.arima(
-            y     = dataTSTrain[, TargetName],
+            y     = dataTSTrain,
             max.p = Lags,
             max.q = Lags,
             max.P = SLags,
@@ -3940,7 +3939,7 @@ AutoTS <- function(data,
       if(MinVal > 0) {
         ARIMA_model <-
           forecast::auto.arima(
-            y     = dataTSTrain[, TargetName],
+            y     = dataTSTrain,
             max.p = Lags,
             max.q = Lags,
             max.P = SLags,
@@ -3957,7 +3956,7 @@ AutoTS <- function(data,
       } else {
         ARIMA_model <-
           forecast::auto.arima(
-            y     = dataTSTrain[, TargetName],
+            y     = dataTSTrain,
             max.p = Lags,
             max.q = Lags,
             max.P = SLags,
@@ -3990,7 +3989,7 @@ AutoTS <- function(data,
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
           forecast::ets(
-            y                          = dataTSTrain[, TargetName],
+            y                          = dataTSTrain,
             model                      = "ZZN",
             allow.multiplicative.trend = TRUE,
             restrict                   = TRUE,
@@ -4001,7 +4000,7 @@ AutoTS <- function(data,
         # when > 24, model's third letter has to be N for none
         EXPSMOOTH_model <-
           forecast::ets(
-            y                          = dataTSTrain[, TargetName],
+            y                          = dataTSTrain,
             model                      = "ZZN",
             allow.multiplicative.trend = TRUE,
             restrict                   = TRUE,
@@ -4013,7 +4012,7 @@ AutoTS <- function(data,
       if(MinVal > 0) {
         EXPSMOOTH_model <-
           forecast::ets(
-            y                          = dataTSTrain[, TargetName],
+            y                          = dataTSTrain,
             model                      = "ZZZ",
             allow.multiplicative.trend = TRUE,
             restrict                   = TRUE,
@@ -4023,7 +4022,7 @@ AutoTS <- function(data,
       } else {
         EXPSMOOTH_model <-
           forecast::ets(
-            y                          = dataTSTrain[, TargetName],
+            y                          = dataTSTrain,
             model                      = "ZZZ",
             allow.multiplicative.trend = TRUE,
             restrict                   = TRUE,
@@ -4046,7 +4045,7 @@ AutoTS <- function(data,
     if(MinVal > 0) {
       # Rebuild model on full data
       TBATS_model <- forecast::tbats(
-        y = dataTSTrain[, TargetName],
+        y = dataTSTrain,
         use.arma.errors = TRUE,
         lambda = TRUE,
         biasadj = TRUE,
@@ -4061,7 +4060,7 @@ AutoTS <- function(data,
     } else {
       # Rebuild model on full data
       TBATS_model <- forecast::tbats(
-        y = dataTSTrain[, TargetName],
+        y = dataTSTrain,
         use.arma.errors = TRUE,
         lambda = FALSE,
         biasadj = FALSE,
@@ -4088,13 +4087,13 @@ AutoTS <- function(data,
     if(MinVal > 0) {
       # Rebuild model on full data
       TSLM_model <-
-        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+        forecast::tslm(dataTSTrain ~ trend + season,
                        lambda = TRUE,
                        biasadj = TRUE)
     } else {
       # Rebuild model on full data
       TSLM_model <-
-        forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
+        forecast::tslm(dataTSTrain ~ trend + season,
                        lambda = FALSE,
                        biasadj = FALSE)
     }
@@ -4124,7 +4123,7 @@ AutoTS <- function(data,
         NNETAR_model_temp <-
           tryCatch({
             forecast::nnetar(
-              y = dataTSTrain[, TargetName],
+              y = dataTSTrain,
               p = lags,
               P = slags,
               lambda = "auto"
@@ -4182,7 +4181,7 @@ AutoTS <- function(data,
     SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model <-
       tryCatch({
-        forecast::nnetar(y = dataTSTrain[, TargetName],
+        forecast::nnetar(y = dataTSTrain,
                          p = LagNN,
                          P = SLagNN)
       },
