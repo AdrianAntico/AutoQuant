@@ -2041,6 +2041,115 @@ AutoTS <- function(data,
       # Collect model filename
       EvalList[[i]] <- data_test_NN
     }
+
+    k <- 0L
+    temp <-
+      data.table::data.table(
+        Lag = rep(1L, Lags * SLags),
+        Slag = rep(1L, Lags * SLags),
+        meanResid = rnorm(Lags * SLags),
+        sdResid = rnorm(Lags * SLags)
+      )
+    for (lags in seq_len(Lags)) {
+      for (slags in seq_len(SLags)) {
+        k <- k + 1L
+        print(k)
+        NNETAR_model_temp <-
+          tryCatch({
+            forecast::nnetar(
+              y = dataTSTrain1[, TargetName],
+              p = lags,
+              P = slags,
+              lambda = "auto"
+            )
+          }, error = function(x)
+            "error")
+
+        if (length(NNETAR_model_temp) == 1) {
+          data.table::set(temp,
+                          i = k,
+                          j = 1L,
+                          value = lags)
+          data.table::set(temp,
+                          i = k,
+                          j = 2L,
+                          value = slags)
+          data.table::set(temp,
+                          i = k,
+                          j = 3L,
+                          value = 999999999)
+          data.table::set(temp,
+                          i = k,
+                          j = 4L,
+                          value = 999999999)
+
+        } else {
+          data.table::set(temp,
+                          i = k,
+                          j = 1L,
+                          value = lags)
+          data.table::set(temp,
+                          i = k,
+                          j = 2L,
+                          value = slags)
+          data.table::set(
+            temp,
+            i = k,
+            j = 3L,
+            value = base::mean(abs(NNETAR_model_temp$residuals),
+                               na.rm = TRUE)
+          )
+          data.table::set(
+            temp,
+            i = k,
+            j = 4L,
+            value = sd(NNETAR_model_temp$residuals,
+                       na.rm = TRUE)
+          )
+        }
+      }
+    }
+
+    # Identify best model and retrain it
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    NNETAR_model1 <-
+      tryCatch({
+        forecast::nnetar(
+          y = dataTSTrain1[, TargetName],
+          p = LagNN,
+          P = SLagNN,
+          lambda = "auto"
+        )
+      },
+      error = function(x)
+        "empty")
+
+    # Collect Test Data for Model Comparison
+    # 2)
+    if (tolower(class(NNETAR_model1)) == "nnetar") {
+      i <- i + 1
+      data_test_NN1 <- data.table::copy(data_test)
+      data_test_NN1[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("NN_ModelFreq", HoldOutPeriods),
+        FC_Eval = as.numeric(
+          forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
+        )
+      )]
+
+      # Add Evaluation Columns
+      # 3)
+      data_test_NN1[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
+
+      # Collect model filename
+      EvalList[[i]] <- data_test_NN1
+    }
   }
 
   if (!("PROPHET" %in% toupper(SkipModels))) {
