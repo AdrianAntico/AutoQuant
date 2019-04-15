@@ -37,8 +37,7 @@ Automated time series modeling function. Automatically finds the best model fit 
   * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-  * Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects
-
+ 
 ##### **AutoNLS()**
 Automated nonlinear regression modeling. Automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
 * Models included:
