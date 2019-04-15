@@ -27,7 +27,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{NumCores}{is the number of cores available on your computer}
 
-\item{SkipModels}{Don't run specified models - e.g. exclude all models "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"}
+\item{SkipModels}{Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"}
 
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 }
@@ -39,6 +39,8 @@ Step 1 is to build all the models and evaluate them on the number of HoldOutPeri
 AutoTS builds the best time series models for each type, using optimized box-cox transformations and using a user-supplied frequency for the ts data conversion along with a model-based frequency for the ts data conversion, compares all types, selects the winner, and generates a forecast.Models include:
 }
 \details{
+DSHW: Double Seasonal Holt Winters
+
 ARFIMA: Auto Regressive Fractional Integrated Moving Average
 
 ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
@@ -71,7 +73,7 @@ output <-   AutoTS(data,
                    Lags           = 5,
                    SLags          = 1,
                    NumCores       = 4,
-                   SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
+                   SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA","DSHW"),
                    StepWise       = TRUE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
