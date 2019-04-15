@@ -34,16 +34,16 @@ The **RemixAutoML** package (*Remix Automated Machine Learning*) is designed to 
 The two core packages RemixAutoML relies on are H2O and data.table. There are other packages used, for example, the forecast package, but H2O and data.table are used the most. I use data.table for data wrangling of all internal functions due to its ability to handle big data with minimal memory and the speed at which their functions process data. I chose to use H2O and their machine learning algorithms because of their high quality results, flexibility of use, ease of operationalization, and ability to manage big data. I use these functions routinely for machine learning projects and they continue to outperform every other package / software I test them against. Many of the other R packages for modeling or data manipulation have slow run times and fail once I get going with bigger data. As a simple example, sometimes I do a one-hot encoding for testing out keras models and I can just run my DummifyDT function to create those. I've tried out a few others with fast runtimes but they fail on bigger data, mess up the column ordering, and don't offer the flexibility of creating one-hot encoding features versus standard dichotomized features.
 
 ### **Machine learning methodology**
-The package is designed to give your models to the best chance at being the most accurate for your machine learning tasks. There are functions in here to help you get the most out of your data for the models to take advantage of. There are three types of features you need to manage for machine learning: numeric, factor, and text data. The functions in here will help you squeeze as much information out of your data set as is possible. Then you feed those data sets into the best machine learning algorithms where you can automatically grid-tune and let them compete against each other. 
+The package is designed to give your models to the best chance at being the most accurate for your machine learning tasks. There are functions in here to help you get the most out of your data for the models to take advantage of. There are three types of features you need to manage for machine learning: numeric, factor, and text data. The functions in here will help you squeeze as much information out of your data set as possible. Then you feed those data sets into the best machine learning algorithms where you can automatically grid-tune and let them compete against each other. 
 
 ### **Handling numerical features**
 The typical challenge with numerical data is modeling nonlinear relationships. The models used handle that aspect so you don't have to worry about it. Interactions of numerical data are also handled internally as tree-based models and deep learning do well at capturing those relationships. The areas of numerical data typically missed relates to the effect of numerical features across time. The existence of a specific value can have impacts over time. Trends in the features and target are also predictive of future events. The length of history you account for also matters. The _GDL_ functions will let you generate lags from the target variable and other numeric features, along with rolling statistics on the target variable and other numerical features. You can also specify to return information about the numerical time between records and generate their lags and rolling statistics on the target and other numerical features. 
 
 ### **Handling categorical features**
-In other modeling frameworks, such as Python, you need to convert your categorical features into dummy variables. This means you need to take care of that coding task along with managing that in a production environment. With this package, categorical features are handled internally within the modeling function **AutoH20Modeler()**. Turning your categorical features into dummy variables in problematic for high cardinality factor variables. There are other approaches and the AutoH20Modeler will actually test out the other methods to see which ones offer the best performance. So you don't have to deal with the coding and management of factor variables and you get better performance.
+In other modeling frameworks, such as Python, you need to convert your categorical features into dummy variables. This means you need to take care of that coding task along with managing that in a production environment. With this package, categorical features are handled internally within the modeling function **AutoH2OModeler()**. Turning your categorical features into dummy variables in problematic for high cardinality factor variables. There are other approaches and the AutoH20Modeler will actually test out the other methods to see which ones offer the best performance. So you don't have to deal with the coding and management of factor variables and you get better performance.
 
 ### **Handling text data**
-We are living in a world now where text data is becoming more readily available. Now, you can simply run the **AutoWord2VecModeler()** function to build models for all your text columns, save the models, and recreate them on the fly with the **AutoH20Scoring()** function in your production setting.
+We are living in a world now where text data is becoming more readily available. Now, you can simply run the **AutoWord2VecModeler()** function to build models for all your text columns, save the models, and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
 
 ### **Machine learning algorithms**
 I've seen several packages and automated machine learning software that brags about all the models they have available. However, when you've been doing this work as long as I have, you eventually realize that most of the models out there aren't competitive. In fact, H2O was smart not to go after all the possible algorithms out there and instead focused on enhancing the models with a track record of being the best for regression, quantile regression, classification, and multinomial classification. The grid-tuning capabilities are exellent for squeezing that last drop of gain out of your machine learning project. Most of the gains with come from the feature engineering but you won't be able to squeeze more gains out of other package models. On top of that, you can manage the amount of memory and threads you are willing to use for your machine learning tasks and when you work in a shared environment, that can come in handy. 
@@ -54,9 +54,9 @@ Once you have your models developed, you or a boss may want to see what features
 ### **Operationalizing models with ease**
 The scoring process in machine learning is typically straightforward. We have an all-purpose scoring function to score all your supervised machine learning models, text models, and clustering models, regardless of type (mojo or standard model files). 
 
-##### How to install H20
-Follow this link to install H20 if it isn't on your machine already.
-[Install H20](http://h2o-release.s3.amazonaws.com/h2o/rel-xu/3/index.html)
+##### How to install H2O
+Follow this link to install H2O if it isn't on your machine already.
+[Install H2O](http://h2o-release.s3.amazonaws.com/h2o/rel-xu/3/index.html)
 
 ##### There are seven categories of functions (currently) in this library I'll go over:
 - Automated Supervised Learning
@@ -70,15 +70,15 @@ Follow this link to install H20 if it isn't on your machine already.
 ## **Automated Supervised Learning Functions**
 
 ##### Functions include:
-- `AutoH20Modeler()`
-- `AutoH20Scoring()`
+- `AutoH2OModeler()`
+- `AutoH2OScoring()`
 - `AutoTS()`
 - `AutoRecommender()`
 - `AutoRecommenderScoring()`
 - `AutoNLS()`
 
-#### **AutoH20Modeler()**
-The supervised learning functions handle multiple tasks internally. The **AutoH20Modeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting.
+#### **AutoH2OModeler()**
+The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting.
 
 ##### The models available include:
 - Gradient Boosting Machines
@@ -90,10 +90,10 @@ The supervised learning functions handle multiple tasks internally. The **AutoH2
 
 For Windows users (Mac?), XGBoost is not available and therefore neither is LightGBM (XGBoost and LightGBM are not utlized in AutoML model selection with Windows).
 
-#### **AutoH20Scoring()**
-This function is the complement of the **AutoH20Modeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH20Scoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH20Modeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH20Scoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. 
+#### **AutoH2OScoring()**
+This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH20Scoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. 
 
-##### In total, the **AutoH20Scoring** function can score
+##### In total, the **AutoH2OScoring** function can score
 - Regression models
 - Quantile regression Models
 - Binary classification Models
@@ -104,16 +104,16 @@ This function is the complement of the **AutoH20Modeler**, **AutoKMeans**, and *
 - Word2vec models
 
 #### **AutoTS()**
-Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. 
+Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. 
 
 ##### The competing models include:
+- DSHW (Double Seasonal Holt Winters)
 - ARFIMA (Autoregressive Fractional Integrated Moving Average)
 - ARIMA (Autoregressive Integrated Moving Average)
 - ETS (Exponential Smoothing and Holt Winters)
 - TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components)
 - TSLM (Time Series Linear Model)
 - NN (Autoregressive Neural Network)
-- Facebook Prophet
 
 #### **AutoRecommender()**
 This function builds out several variations of collaborative filtering models on a binary ratings matrix. To automatically build the binary ratings matrix, see **RecomDataCreate**.
@@ -147,7 +147,7 @@ This automated supervised learning function builds nonlinear regression models f
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
-```{r, fig.show='hold', fig.width=6, fig.height=5}
+```{r, fig.show='hold', fig.width=7, fig.height=5}
 library(RemixAutoML)
 
 # Create Growth Data
@@ -220,35 +220,28 @@ data11$EvaluationMetrics
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=modeling-tools-library-walkthrough**
 
-```{r, fig.show='hold', fig.width=6, fig.height=5}
+```{r, fig.show='hold', fig.width=8, fig.height=5}
 library(RemixAutoML)
 
-# Create autocorrelated time series data
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                               Target = (10 + arima.sim(model = list(2,0,2), 
-                                                        n = 1000)))
-data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
-data <- data[order(DateTime)]
+# Load Walmart data
+data <- data.table::fread(file = "./WalmartStore1Dept1.csv")
+
+# Names of data columns
+names(data)
 
 # Build models and generate forecasts
 output <- RemixAutoML::AutoTS(data,
-                              TargetName     = "Target",
-                              DateName       = "DateTime",
+                              TargetName     = "Weekly_Sales",
+                              DateName       = "Date",
                               FCPeriods      = 120,
-                              HoldOutPeriods = 30,
-                              TimeUnit       = "day",
+                              HoldOutPeriods = 12,
+                              TimeUnit       = "week",
                               Lags           = 5,
                               SLags          = 1,
                               NumCores       = 4,
                               SkipModels     = NULL,
-                              StepWise       = TRUE)
-
-# Collect output and prepare for plotting
-data1 <- output$Forecast
-maxDate <- data[, max(DateTime)]
-data.table::setnames(data1, names(data1), c("DateTime","Target"))
-data2 <- data.table::rbindlist(list(data[, Target := as.numeric(Target)],
-                                    data1))
+                              StepWise       = TRUE,
+                              TSClean        = TRUE)
 
 # Print the evaluation metric and model makeup
 knitr::kable(output$EvaluationMetrics)
@@ -256,7 +249,7 @@ summary(output$TimeSeriesModel)
 ```
 
 ## **Automated Unsupervised Learning Functions**
-The suite of functions in this category currently handle optimized row-clustering and anomaly detection. For the row-clustering, we utilize H2O's Generalized Low Rank Model and their KMeans algorithm, with hyper-parameter tuning for both. The function automatically adds the clusters to your data and can save the models for scoring new data with the **AutoH20Scoring** function. We have a few others currently in development and will release those when they are complete. The anomaly detection functions we have currently are for time series applications. We have a control chart methodology version that lets you build upper and lower confidence bounds by up to two grouping variables along with a time series modeling version. The clustering function and the control chart method function update your data set that you feed in with new columns that store the clusterID or anomaly information. The time series function updates your data, supplies you with the final time series model built, and a data.table that only contains anomalies.
+The suite of functions in this category currently handle optimized row-clustering and anomaly detection. For the row-clustering, we utilize H2O's Generalized Low Rank Model and their KMeans algorithm, with hyper-parameter tuning for both. The function automatically adds the clusters to your data and can save the models for scoring new data with the **AutoH2OScoring** function. We have a few others currently in development and will release those when they are complete. The anomaly detection functions we have currently are for time series applications. We have a control chart methodology version that lets you build upper and lower confidence bounds by up to two grouping variables along with a time series modeling version. The clustering function and the control chart method function update your data set that you feed in with new columns that store the clusterID or anomaly information. The time series function updates your data, supplies you with the final time series model built, and a data.table that only contains anomalies.
 
 ##### Functions include:
 - `GenTSAnomVars()`
@@ -748,12 +741,12 @@ knitr::kable(
 - `ModelDataPrep()`
 - `DummifyDT()`
 
-The **AutoWord2VecModeler** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH20Modeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
+The **AutoWord2VecModeler** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH2OModeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
 
 ## **Miscellaneous Functions**
 ##### Functions include:
 - `AutoWordFreq()`
-- `AutoH20TextPrepScoring()`
+- `AutoH2OTextPrepScoring()`
 - `RecomDataCreate()`
 - `ChartTheme()`
 - `RemixTheme()`
@@ -761,5 +754,5 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 - `PrintObjectsSize()`
 - `percRank()`
 
-The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH20TextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH20Scoring** function but you can utilize it outside for other purposes. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **RecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
+The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **RecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
 
