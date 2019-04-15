@@ -1264,108 +1264,124 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(DSHW_Model)) == "forecast") {
-      i <- i + 1
-      data_test_DSHW <- data.table::copy(data_test)
-      data_test_DSHW[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("DSHW", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(DSHW_Model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_DSHW <- data.table::copy(data_test)
+        data_test_DSHW[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("DSHW", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(DSHW_Model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_DSHW[, ':=' (
-        Resid = Target - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_DSHW[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_DSHW
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_DSHW
+      }, error = function(x) "skip")
     }
 
     # 2: Model-Supplied-Freq
     if (tolower(class(DSHW_Model1)) == "forecast") {
-      i <- i + 1
-      data_test_DSHW1 <- data.table::copy(data_test)
-      data_test_DSHW1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("DSHW_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(DSHW_Model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_DSHW1 <- data.table::copy(data_test)
+        data_test_DSHW1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("DSHW_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(DSHW_Model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_DSHW1[, ':=' (
-        Resid = Target - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_DSHW1[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_DSHW1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_DSHW1
+      }, error = function(x) "skip")
     }
 
     # If TSClean is TRUE
     if(TSClean) {
       # 2: Model-Supplied-Freq
       if (tolower(class(DSHW_Model2)) == "forecast") {
-        i <- i + 1
-        data_test_DSHW2 <- data.table::copy(data_test)
-        data_test_DSHW2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("DSHW_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(DSHW_Model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_DSHW2 <- data.table::copy(data_test)
+          data_test_DSHW2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("DSHW_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(DSHW_Model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_DSHW2[, ':=' (
-          Resid = Target - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_DSHW2[, ':=' (
+            Resid = Target - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_DSHW2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_DSHW2
+        }, error = function(x) "skip")
       }
 
       # 2: Model-Supplied-Freq
       if (tolower(class(DSHW_Model3)) == "forecast") {
-        i <- i + 1
-        data_test_DSHW3 <- data.table::copy(data_test)
-        data_test_DSHW3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("DSHW_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(DSHW_Model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_DSHW3 <- data.table::copy(data_test)
+          data_test_DSHW3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("DSHW_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(DSHW_Model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_DSHW3[, ':=' (
-          Resid = Target - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_DSHW3[, ':=' (
+            Resid = Target - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_DSHW3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_DSHW3
+        })
       }
     }
   }
@@ -1715,108 +1731,124 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(ARFIMA_model)) == "fracdiff") {
-      i <- i + 1
-      data_test_ARF <- data.table::copy(data_test)
-      data_test_ARF[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ARFIMA", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ARF <- data.table::copy(data_test)
+        data_test_ARF[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARFIMA", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ARF[, ':=' (
-        Resid = Target - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARF[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ARF
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARF
+      }, error = function(x) "skip")
     }
 
     # 2: Model-Supplied-Freq
     if (tolower(class(ARFIMA_model1)) == "fracdiff") {
-      i <- i + 1
-      data_test_ARF1 <- data.table::copy(data_test)
-      data_test_ARF1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ARFIMA_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(ARFIMA_model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ARF1 <- data.table::copy(data_test)
+        data_test_ARF1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARFIMA_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARFIMA_model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ARF1[, ':=' (
-        Resid = Target - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARF1[, ':=' (
+          Resid = Target - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ARF1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARF1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
     if(TSClean) {
       # 2: User-Supplied-Freq
       if (tolower(class(ARFIMA_model2)) == "fracdiff") {
-        i <- i + 1
-        data_test_ARF2 <- data.table::copy(data_test)
-        data_test_ARF2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ARFIMA_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(ARFIMA_model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ARF2 <- data.table::copy(data_test)
+          data_test_ARF2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARFIMA_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(ARFIMA_model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ARF2[, ':=' (
-          Resid = Target - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ARF2[, ':=' (
+            Resid = Target - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ARF2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ARF2
+        }, error = function(x) "skip")
       }
 
       # 2: Model-Supplied-Freq
       if (tolower(class(ARFIMA_model3)) == "fracdiff") {
-        i <- i + 1
-        data_test_ARF3 <- data.table::copy(data_test)
-        data_test_ARF3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ARFIMA_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(ARFIMA_model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ARF3 <- data.table::copy(data_test)
+          data_test_ARF3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARFIMA_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(ARFIMA_model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ARF3[, ':=' (
-          Resid = Target - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ARF3[, ':=' (
+            Resid = Target - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ARF3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ARF3
+        }, error = function(x) "skip")
       }
     }
   }
@@ -2195,108 +2227,124 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(ARIMA_model)[1]) == "arima") {
-      i <- i + 1
-      data_test_ARI <- data.table::copy(data_test)
-      data_test_ARI[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ARIMA", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ARI <- data.table::copy(data_test)
+        data_test_ARI[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARIMA", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ARI[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARI[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ARI
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARI
+      }, error = function(x) "skip")
     }
 
     # Model-Supplied-Freq
     if (tolower(class(ARIMA_model1)[1]) == "arima") {
-      i <- i + 1
-      data_test_ARI1 <- data.table::copy(data_test)
-      data_test_ARI1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ARIMA_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ARI1 <- data.table::copy(data_test)
+        data_test_ARI1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ARIMA_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ARI1[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ARI1[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ARI1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ARI1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
     if(TSClean) {
       # 2: User-Supplied-Freq
       if (tolower(class(ARIMA_model2)[1]) == "arima") {
-        i <- i + 1
-        data_test_ARI2 <- data.table::copy(data_test)
-        data_test_ARI2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ARIMA_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ARI2 <- data.table::copy(data_test)
+          data_test_ARI2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARIMA_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ARI2[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ARI2[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ARI2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ARI2
+        }, error = function(x) "skip")
       }
 
       # Model-Supplied-Freq
       if (tolower(class(ARIMA_model3)[1]) == "arima") {
-        i <- i + 1
-        data_test_ARI3 <- data.table::copy(data_test)
-        data_test_ARI3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ARIMA_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ARI3 <- data.table::copy(data_test)
+          data_test_ARI3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARIMA_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ARI3[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ARI3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ARI3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ARI3
+        }, error = function(x) "skip")
       }
     }
   }
@@ -2551,108 +2599,124 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(EXPSMOOTH_model)) == "ets") {
-      i <- i + 1
-      data_test_ETS <- data.table::copy(data_test)
-      data_test_ETS[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ETS", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ETS <- data.table::copy(data_test)
+        data_test_ETS[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ETS", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ETS[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ETS[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ETS
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ETS
+      }, error = function(x) "skip")
     }
 
     # 2: Model-Based-Freq
     if (tolower(class(EXPSMOOTH_model1)) == "ets") {
-      i <- i + 1
-      data_test_ETS1 <- data.table::copy(data_test)
-      data_test_ETS1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("ETS_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(EXPSMOOTH_model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_ETS1 <- data.table::copy(data_test)
+        data_test_ETS1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("ETS_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(EXPSMOOTH_model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_ETS1[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_ETS1[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_ETS1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_ETS1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
     if(TSClean) {
       # 2: User-Supplied-Freq
       if (tolower(class(EXPSMOOTH_model2)) == "ets") {
-        i <- i + 1
-        data_test_ETS2 <- data.table::copy(data_test)
-        data_test_ETS2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ETS", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(EXPSMOOTH_model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ETS2 <- data.table::copy(data_test)
+          data_test_ETS2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ETS", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(EXPSMOOTH_model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ETS2[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ETS2[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ETS2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ETS2
+        }, error = function(x) "skip")
       }
 
       # 2: Model-Based-Freq
       if (tolower(class(EXPSMOOTH_model3)) == "ets") {
-        i <- i + 1
-        data_test_ETS3 <- data.table::copy(data_test)
-        data_test_ETS3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ETS_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(EXPSMOOTH_model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_ETS3 <- data.table::copy(data_test)
+          data_test_ETS3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ETS_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(EXPSMOOTH_model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_ETS3[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_ETS3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_ETS3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_ETS3
+        }, error = function(x) "skip")
       }
     }
   }
@@ -2834,59 +2898,67 @@ AutoTS <- function(data,
     # User-Supplied-Freq
     if (class(TBATS_model)[1] == "tbats" |
         class(TBATS_model)[1] == "bats") {
-      i <- i + 1
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_TBATS <- data.table::copy(data_test)
-      data_test_TBATS[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("TBATS", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TBATS <- data.table::copy(data_test)
+        data_test_TBATS[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TBATS", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_TBATS[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_TBATS[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_TBATS
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TBATS
+      }, error = function(x) "skip")
     }
 
     # Model-Supplied-Freq
     if (class(TBATS_model1)[1] == "tbats" |
         class(TBATS_model1)[1] == "bats") {
-      i <- i + 1
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_TBATS1 <- data.table::copy(data_test)
-      data_test_TBATS1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("TBATS_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(TBATS_model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TBATS1 <- data.table::copy(data_test)
+        data_test_TBATS1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TBATS_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(TBATS_model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_TBATS1[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_TBATS1[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_TBATS1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TBATS1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
@@ -2894,59 +2966,67 @@ AutoTS <- function(data,
       # User-Supplied-Freq
       if (class(TBATS_model2)[1] == "tbats" |
           class(TBATS_model2)[1] == "bats") {
-        i <- i + 1
-        # Collect Test Data for Model Comparison
-        # 2)
-        data_test_TBATS2 <- data.table::copy(data_test)
-        data_test_TBATS2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("TBATS_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(TBATS_model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          # Collect Test Data for Model Comparison
+          # 2)
+          data_test_TBATS2 <- data.table::copy(data_test)
+          data_test_TBATS2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("TBATS_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(TBATS_model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_TBATS2[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_TBATS2[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_TBATS2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_TBATS2
+        }, error = function(x) "skip")
       }
 
       # Model-Supplied-Freq
       if (class(TBATS_model3)[1] == "tbats" |
           class(TBATS_model3)[1] == "bats") {
-        i <- i + 1
-        # Collect Test Data for Model Comparison
-        # 2)
-        data_test_TBATS3 <- data.table::copy(data_test)
-        data_test_TBATS3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("TBATS_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(TBATS_model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          # Collect Test Data for Model Comparison
+          # 2)
+          data_test_TBATS3 <- data.table::copy(data_test)
+          data_test_TBATS3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("TBATS_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(TBATS_model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_TBATS3[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_TBATS3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_TBATS3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_TBATS3
+        }, error = function(x) "skip")
       }
     }
   }
@@ -3045,112 +3125,128 @@ AutoTS <- function(data,
 
     # User-Supplied-Freq
     if (tolower(class(TSLM_model)[1]) == "tslm") {
-      i <- i + 1
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_TSLM <- data.table::copy(data_test)
-      data_test_TSLM[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("TSLM", HoldOutPeriods),
-        FC_Eval = as.numeric(forecast::forecast(TSLM_model,
-                                                h = HoldOutPeriods)$mean)
-      )]
+      tryCatch({
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TSLM <- data.table::copy(data_test)
+        data_test_TSLM[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TSLM", HoldOutPeriods),
+          FC_Eval = as.numeric(forecast::forecast(TSLM_model,
+                                                  h = HoldOutPeriods)$mean)
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_TSLM[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_TSLM[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_TSLM
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TSLM
+      }, error = function(x) "skip")
     }
 
     # Model-Supplied-Freq
     if (tolower(class(TSLM_model1)[1]) == "tslm") {
-      i <- i + 1
-      # Collect Test Data for Model Comparison
-      # 2)
-      data_test_TSLM1 <- data.table::copy(data_test)
-      data_test_TSLM1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("TSLM_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(forecast::forecast(TSLM_model1,
-                                                h = HoldOutPeriods)$mean)
-      )]
+      tryCatch({
+        # Collect Test Data for Model Comparison
+        # 2)
+        data_test_TSLM1 <- data.table::copy(data_test)
+        data_test_TSLM1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("TSLM_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(forecast::forecast(TSLM_model1,
+                                                  h = HoldOutPeriods)$mean)
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_TSLM1[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval +
-                                            1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_TSLM1[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval +
+                                              1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_TSLM1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_TSLM1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
     if(TSClean) {
       # User-Supplied-Freq
       if (tolower(class(TSLM_model2)[1]) == "tslm") {
-        i <- i + 1
-        # Collect Test Data for Model Comparison
-        # 2)
-        data_test_TSLM2 <- data.table::copy(data_test)
-        data_test_TSLM2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("TSLM_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(forecast::forecast(TSLM_model2,
-                                                  h = HoldOutPeriods)$mean)
-        )]
+        tryCatch({
+          # Collect Test Data for Model Comparison
+          # 2)
+          data_test_TSLM2 <- data.table::copy(data_test)
+          data_test_TSLM2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("TSLM_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(forecast::forecast(TSLM_model2,
+                                                    h = HoldOutPeriods)$mean)
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_TSLM2[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_TSLM2[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_TSLM2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_TSLM2
+        }, error = function(x) "skip")
       }
 
       # Model-Supplied-Freq
       if (tolower(class(TSLM_model3)[1]) == "tslm") {
-        i <- i + 1
-        # Collect Test Data for Model Comparison
-        # 2)
-        data_test_TSLM3 <- data.table::copy(data_test)
-        data_test_TSLM3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("TSLM_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(forecast::forecast(TSLM_model3,
-                                                  h = HoldOutPeriods)$mean)
-        )]
+        tryCatch({
+          # Collect Test Data for Model Comparison
+          # 2)
+          data_test_TSLM3 <- data.table::copy(data_test)
+          data_test_TSLM3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("TSLM_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(forecast::forecast(TSLM_model3,
+                                                    h = HoldOutPeriods)$mean)
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_TSLM3[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval +
-                                              1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_TSLM3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_TSLM3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_TSLM3
+        }, error = function(x) "skip")
       }
     }
   }
@@ -3245,27 +3341,31 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2)
     if (tolower(class(NNETAR_model)) == "nnetar") {
-      i <- i + 1
-      data_test_NN <- data.table::copy(data_test)
-      data_test_NN[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("NN", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_NN <- data.table::copy(data_test)
+        data_test_NN[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("NN", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_NN[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_NN[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_NN
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_NN
+      }, error = function(x) "skip")
     }
 
     k <- 0L
@@ -3354,27 +3454,31 @@ AutoTS <- function(data,
     # Collect Test Data for Model Comparison
     # 2)
     if (tolower(class(NNETAR_model1)) == "nnetar") {
-      i <- i + 1
-      data_test_NN1 <- data.table::copy(data_test)
-      data_test_NN1[, ':=' (
-        Target = as.numeric(Target),
-        ModelName = rep("NN_ModelFreq", HoldOutPeriods),
-        FC_Eval = as.numeric(
-          forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
-        )
-      )]
+      tryCatch({
+        data_test_NN1 <- data.table::copy(data_test)
+        data_test_NN1[, ':=' (
+          Target = as.numeric(Target),
+          ModelName = rep("NN_ModelFreq", HoldOutPeriods),
+          FC_Eval = as.numeric(
+            forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
+          )
+        )]
 
-      # Add Evaluation Columns
-      # 3)
-      data_test_NN1[, ':=' (
-        Resid = get(TargetName) - FC_Eval,
-        PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                        1) - 1)
-      )]
+        # Add Evaluation Columns
+        # 3)
+        data_test_NN1[, ':=' (
+          Resid = get(TargetName) - FC_Eval,
+          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                          1) - 1)
+        )]
 
-      # Collect model filename
-      EvalList[[i]] <- data_test_NN1
+        # Increment
+        i <- i + 1
+
+        # Collect model filename
+        EvalList[[i]] <- data_test_NN1
+      }, error = function(x) "skip")
     }
 
     # TSClean Version
@@ -3465,27 +3569,31 @@ AutoTS <- function(data,
       # Collect Test Data for Model Comparison
       # 2)
       if (tolower(class(NNETAR_model2)) == "nnetar") {
-        i <- i + 1
-        data_test_NN2 <- data.table::copy(data_test)
-        data_test_NN2[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("NN_TSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_NN2 <- data.table::copy(data_test)
+          data_test_NN2[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("NN_TSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_NN2[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_NN2[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_NN2
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_NN2
+        }, error = function(x) "skip")
       }
 
       k <- 0L
@@ -3574,27 +3682,31 @@ AutoTS <- function(data,
       # Collect Test Data for Model Comparison
       # 2)
       if (tolower(class(NNETAR_model3)) == "nnetar") {
-        i <- i + 1
-        data_test_NN3 <- data.table::copy(data_test)
-        data_test_NN3[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("NN_ModelFreqTSC", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
-          )
-        )]
+        tryCatch({
+          data_test_NN3 <- data.table::copy(data_test)
+          data_test_NN3[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("NN_ModelFreqTSC", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
+            )
+          )]
 
-        # Add Evaluation Columns
-        # 3)
-        data_test_NN3[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
-        )]
+          # Add Evaluation Columns
+          # 3)
+          data_test_NN3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1)
+          )]
 
-        # Collect model filename
-        EvalList[[i]] <- data_test_NN3
+          # Increment
+          i <- i + 1
+
+          # Collect model filename
+          EvalList[[i]] <- data_test_NN3
+        }, error = function(x) "skip")
       }
     }
   }
