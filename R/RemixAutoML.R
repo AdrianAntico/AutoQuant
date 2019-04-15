@@ -934,7 +934,6 @@ AutoKMeans <- function(data,
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
 #' @import data.table
-#' @import Rcpp
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
@@ -953,7 +952,7 @@ AutoKMeans <- function(data,
 #'                    Lags           = 5,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
-#'                    SkipModels     = c("NNET","TBATS","ETS",TSLM","ARFIMA","DSHW"),
+#'                    SkipModels     = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
 #'                    StepWise       = TRUE,
 #'                    TSClean        = TRUE)
 #' ForecastData <- output$Forecast
