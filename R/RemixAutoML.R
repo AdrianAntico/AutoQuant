@@ -2874,7 +2874,7 @@ AutoTS <- function(data,
                                        periods = FCPeriods,
                                        freq = ProphetTimeUnit)
       )[ds > MaxDate]
-    FC_Data[, Forecast_PROPHET := data.table::as.data.table(prophet::predict(
+    FC_Data[, Forecast_PROPHET := data.table::as.data.table(predict(
       PROPHET_model,PROPHET_FC))[["yhat"]]]
 
     # Store model
