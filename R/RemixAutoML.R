@@ -3602,83 +3602,83 @@ AutoTS <- function(data,
     }
   }
 
-  # if (!("PROPHET" %in% toupper(SkipModels))) {
-  #   # require(Rcpp) needed this to run but causes package build to error out
-  #   # Prophet Model----
-  #   print("PROPHET FITTING")
-  #   if (TimeUnit == "hour") {
-  #     ProphetTimeUnit <- 3600
-  #   } else {
-  #     ProphetTimeUnit <- TimeUnit
-  #   }
-  #
-  #   max_date <- max(data_train[[eval(DateName)]], na.rm = TRUE)
-  #   dataProphet <- data.table::copy(data_train)
-  #   data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
-  #
-  #   # 1)
-  #   # Define TS Frequency
-  #   if (tolower(TimeUnit) == "day") {
-  #     PROPHET_model <-
-  #       tryCatch({
-  #         prophet::prophet(df = dataProphet, daily.seasonality = TRUE)
-  #       },
-  #       error = function(x)
-  #         "empty")
-  #   } else if (tolower(TimeUnit) == "week") {
-  #     PROPHET_model <-
-  #       tryCatch({
-  #         prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
-  #       },
-  #       error = function(x)
-  #         "empty")
-  #   } else if (tolower(TimeUnit) == "year") {
-  #     PROPHET_model <-
-  #       tryCatch({
-  #         prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
-  #       },
-  #       error = function(x)
-  #         "empty")
-  #   } else {
-  #     PROPHET_model <- tryCatch({
-  #       prophet::prophet(df = dataProphet)
-  #     },
-  #     error = function(x)
-  #       "empty")
-  #   }
-  #
-  #   if (tolower(class(PROPHET_model)[1]) == "prophet") {
-  #     i <- i + 1
-  #     PROPHET_future <-
-  #       data.table::as.data.table(
-  #         prophet::make_future_dataframe(PROPHET_model,
-  #                                        periods = HoldOutPeriods,
-  #                                        freq = ProphetTimeUnit)
-  #       )[ds > max_date]
-  #
-  #     # Collect Test Data for Model Comparison
-  #     # 2)
-  #     data_test_PROPHET <- data.table::copy(data_test)
-  #     data_test_PROPHET[, ':=' (
-  #       Target = as.numeric(Target),
-  #       ModelName = rep("PROPHET", HoldOutPeriods),
-  #       FC_Eval = data.table::as.data.table(predict(PROPHET_model,
-  #                                                   PROPHET_future))[["yhat"]]
-  #     )]
-  #     # Add Evaluation Columns
-  #     # 3)
-  #     data_test_PROPHET[, ':=' (
-  #       Resid = get(TargetName) - FC_Eval,
-  #       PercentError = get(TargetName) / (FC_Eval +
-  #                                           1) - 1,
-  #       AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-  #                                                       1) - 1)
-  #     )]
-  #
-  #     # Collect model filename
-  #     EvalList[[i]] <- data_test_PROPHET
-  #   }
-  # }
+  suppressMessages(if (!("PROPHET" %in% toupper(SkipModels))) {
+    # require(Rcpp) needed this to run but causes package build to error out
+    # Prophet Model----
+    print("PROPHET FITTING")
+    if (TimeUnit == "hour") {
+      ProphetTimeUnit <- 3600
+    } else {
+      ProphetTimeUnit <- TimeUnit
+    }
+
+    max_date <- max(data_train[[eval(DateName)]], na.rm = TRUE)
+    dataProphet <- data.table::copy(data_train)
+    data.table::setnames(dataProphet, c(eval(DateName), "Target"), c("ds", "y"))
+
+    # 1)
+    # Define TS Frequency
+    if (tolower(TimeUnit) == "day") {
+      PROPHET_model <-
+        tryCatch({
+          prophet::prophet(df = dataProphet, daily.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else if (tolower(TimeUnit) == "week") {
+      PROPHET_model <-
+        tryCatch({
+          prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else if (tolower(TimeUnit) == "year") {
+      PROPHET_model <-
+        tryCatch({
+          prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
+        },
+        error = function(x)
+          "empty")
+    } else {
+      PROPHET_model <- tryCatch({
+        prophet::prophet(df = dataProphet)
+      },
+      error = function(x)
+        "empty")
+    }
+
+    if (tolower(class(PROPHET_model)[1]) == "prophet") {
+      i <- i + 1
+      PROPHET_future <-
+        data.table::as.data.table(
+          prophet::make_future_dataframe(PROPHET_model,
+                                         periods = HoldOutPeriods,
+                                         freq = ProphetTimeUnit)
+        )[ds > max_date]
+
+      # Collect Test Data for Model Comparison
+      # 2)
+      data_test_PROPHET <- data.table::copy(data_test)
+      data_test_PROPHET[, ':=' (
+        Target = as.numeric(Target),
+        ModelName = rep("PROPHET", HoldOutPeriods),
+        FC_Eval = data.table::as.data.table(predict(PROPHET_model,
+                                                    PROPHET_future))[["yhat"]]
+      )]
+      # Add Evaluation Columns
+      # 3)
+      data_test_PROPHET[, ':=' (
+        Resid = get(TargetName) - FC_Eval,
+        PercentError = get(TargetName) / (FC_Eval +
+                                            1) - 1,
+        AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                        1) - 1)
+      )]
+
+      # Collect model filename
+      EvalList[[i]] <- data_test_PROPHET
+    }
+  })
 
   # Model Collection----
   print("FIND WINNER")
