@@ -1071,11 +1071,11 @@ AutoTS <- function(data,
   # TSClean Version
   if(TSClean) {
     if(MinVal > 0) {
-      TargetMB <- forecast::tsclean(x = dataTSTrain[, TargetName],
+      TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
                                     lambda = "auto")
     } else {
-      TargetMB <- forecast::tsclean(x = dataTSTrain[, TargetName],
+      TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
                                     lambda = NULL)
     }
