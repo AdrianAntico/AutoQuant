@@ -2662,16 +2662,16 @@ AutoTS <- function(data,
     # 1)
     # Define TS Frequency
     if (TimeUnit == "day") {
-      PROPHET_model <- prophet(df = dataProphet,
+      PROPHET_model <- prophet::prophet(df = dataProphet,
                                daily.seasonality = TRUE)
     } else if (TimeUnit == "week") {
       PROPHET_model <-
-        prophet(df = dataProphet, weekly.seasonality = TRUE)
+        prophet::prophet(df = dataProphet, weekly.seasonality = TRUE)
     } else if (TimeUnit == "year") {
       PROPHET_model <-
-        prophet(df = dataProphet, yearly.seasonality = TRUE)
+        prophet::prophet(df = dataProphet, yearly.seasonality = TRUE)
     } else {
-      PROPHET_model <- prophet(df = dataProphet)
+      PROPHET_model <- prophet::prophet(df = dataProphet)
     }
 
     # Forecast with new model
@@ -2681,7 +2681,7 @@ AutoTS <- function(data,
                                        periods = FCPeriods,
                                        freq = ProphetTimeUnit)
       )[ds > MaxDate]
-    FC_Data[, Forecast_PROPHET := data.table::as.data.table(predict(
+    FC_Data[, Forecast_PROPHET := data.table::as.data.table(prophet::predict(
       PROPHET_model,PROPHET_FC))[["yhat"]]]
 
     # Store model
