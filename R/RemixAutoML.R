@@ -1853,7 +1853,18 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
+
+      # Model-Supplied-Freq
+      TSLM_model1 <-
+        tryCatch({
+          forecast::tslm(dataTSTrain1[, TargetName] ~ trend + season,
+                         lambda = TRUE,
+                         biasadj = TRUE)
+        },
+        error = function(x)
+          "empty")
     } else {
+      # User-Supplied-Freq
       TSLM_model <-
         tryCatch({
           forecast::tslm(dataTSTrain[, TargetName] ~ trend + season,
