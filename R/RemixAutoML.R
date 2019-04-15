@@ -917,8 +917,6 @@ AutoKMeans <- function(data,
 #'
 #' TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 #'
-#' Facebook Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. Uses Facebook's open source Prophet model.
-#'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
 #' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
