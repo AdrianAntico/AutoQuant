@@ -1381,7 +1381,7 @@ AutoTS <- function(data,
 
           # Collect model filename
           EvalList[[i]] <- data_test_DSHW3
-        })
+        }, error = function(x) "skip")
       }
     }
   }
