@@ -77,7 +77,8 @@ output <-   AutoTS(data,
                    SLags          = 1,
                    NumCores       = 4,
                    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA","DSHW"),
-                   StepWise       = TRUE)
+                   StepWise       = TRUE,
+                   TSClean        = TRUE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel
