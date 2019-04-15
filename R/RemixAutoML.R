@@ -3717,9 +3717,9 @@ AutoTS <- function(data,
 
   # Model Evaluation
   Eval <- dataEval[, .(
-    MeanResid = base::mean(Resid, na.rm = TRUE),
-    MeanPercError = base::mean(PercentError, na.rm = TRUE),
-    MAPE = base::mean(AbsolutePercentError, na.rm = TRUE)
+    MeanResid = round(base::mean(Resid, na.rm = TRUE),2),
+    MeanPercError = round(base::mean(PercentError, na.rm = TRUE),5),
+    MAPE = round(base::mean(AbsolutePercentError, na.rm = TRUE),5)
   ),
   by = "ModelName"][order(MAPE)][, ID := 1:.N]
 
