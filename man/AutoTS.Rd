@@ -28,7 +28,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{NumCores}{is the number of cores available on your computer}
 
-\item{SkipModels}{Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"}
+\item{SkipModels}{Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"}
 
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 
@@ -57,31 +57,6 @@ TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA
 TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 
 Facebook Prophet: Additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. Uses Facebook's open source Prophet model.
-}
-\examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(1000,
-                               mean = 50,
-                               sd = 20),
-                         filter=rep(1,10),
-                         circular=TRUE))
-data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
-data <- data[order(DateTime)]
-output <-   AutoTS(data,
-                   TargetName     = "Target",
-                   DateName       = "DateTime",
-                   FCPeriods      = 30,
-                   HoldOutPeriods = 30,
-                   TimeUnit       = "day",
-                   Lags           = 5,
-                   SLags          = 1,
-                   NumCores       = 4,
-                   SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA","DSHW"),
-                   StepWise       = TRUE,
-                   TSClean        = TRUE)
-ForecastData <- output$Forecast
-ModelEval    <- output$EvaluationMetrics
-WinningModel <- output$TimeSeriesModel
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH2OModeler}},
