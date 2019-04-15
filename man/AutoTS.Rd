@@ -6,7 +6,8 @@
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
-  SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE)
+  SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE,
+  TSClean = TRUE)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -30,6 +31,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{SkipModels}{Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM" "PROPHET"}
 
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
+
+\item{TSClean}{Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set}
 }
 \value{
 Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model.
