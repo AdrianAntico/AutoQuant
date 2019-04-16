@@ -933,6 +933,7 @@ AutoKMeans <- function(data,
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
 #' @import data.table
 #' @examples
+#' \dontrun{
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
@@ -956,6 +957,7 @@ AutoKMeans <- function(data,
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
+#' }
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model.
 #' @export
 AutoTS <- function(data,
