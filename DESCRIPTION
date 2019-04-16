@@ -1,6 +1,6 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 1.0.1
+Version: 1.1.0
 Description: Automate and ensure high quality output for most of your machine learning and data science tasks. We have high quality functions that run at efficient speed with minimal memory constraints. The library contains functions for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing.
 Depends: R (>= 3.5.0)
 SystemRequirements: Java (>= 7.0)
@@ -12,7 +12,7 @@ BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Contact: Adrian Antico
 LazyData: true
 RoxygenNote: 6.1.1
-Imports:data.table,h2o,foreach,parallel,doParallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,prophet,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics
+Imports:data.table,h2o,foreach,parallel,doParallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics
 Suggests: testthat, sde, knitr, rmarkdown, methods
 VignetteBuilder: knitr
 Author: Adrian Antico
