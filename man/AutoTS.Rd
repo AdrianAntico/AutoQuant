@@ -57,6 +57,7 @@ TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA
 TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 }
 \examples{
+\dontrun{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
   Target = stats::filter(rnorm(1000,
                                mean = 50,
@@ -80,6 +81,7 @@ output <-   AutoTS(data,
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel
+}
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoH2OModeler}},
