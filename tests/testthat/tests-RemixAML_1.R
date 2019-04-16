@@ -237,39 +237,6 @@ test_that("ResidualOutliers", {
   expect_equal(length(stuff), 2)
 })
 
-test_that("AutoTS", {
-  # Check function works
-  data <- data.table::data.table(
-    DateTime = as.Date(Sys.time()),
-    Target = stats::filter(
-      rnorm(1000,
-            mean = 50,
-            sd = 20),
-      filter = rep(1, 10),
-      circular = TRUE
-    )
-  )
-  data[, temp := seq(1:1000)][,
-                              DateTime := DateTime - temp][,
-                                                           temp := NULL]
-  data <- data[order(DateTime)]
-  output <-   AutoTS(
-    data,
-    TargetName     = "Target",
-    DateName       = "DateTime",
-    FCPeriods      = 30,
-    HoldOutPeriods = 30,
-    TimeUnit       = "day",
-    Lags           = 5,
-    SLags          = 1,
-    NumCores       = 4,
-    SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
-    StepWise       = TRUE
-  )
-  x <- nrow(output[[1]])
-  expect_equal(x, 30)
-})
-
 test_that("SimpleCap", {
   # Check function works
   x <- "adrian"
@@ -402,175 +369,6 @@ test_that("AutoNLS", {
   expect_match(class(p)[1], "gg")
 })
 
-test_that("GDL_Feature_Engineering", {
-  # GDL and Scoring
-
-  # Grouping Case
-  N <- 25116
-  data <-
-    data.table::data.table(
-      GroupVariable = sample(x = c(
-        letters,
-        LETTERS,
-        paste0(letters, letters),
-        paste0(LETTERS, LETTERS),
-        paste0(letters, LETTERS),
-        paste0(LETTERS, letters)
-      )),
-      DateTime = base::as.Date(Sys.time()),
-      Target = stats::filter(
-        rnorm(N,
-              mean = 50,
-              sd = 20),
-        filter = rep(1, 10),
-        circular = TRUE
-      )
-    )
-  data[, temp := seq(1:161),
-       by = "GroupVariable"][,
-                             DateTime := DateTime - temp][
-                               ,temp := NULL
-                               ]
-  data <- data[order(DateTime)]
-  data <- GDL_Feature_Engineering(
-    data,
-    lags           = c(seq(1, 2, 1)),
-    periods        = c(3),
-    statsFUNs      = c(function(x) mean(x, na.rm = TRUE)),
-    statsNames     = c("MA"),
-    targets        = c("Target"),
-    groupingVars   = "GroupVariable",
-    sortDateName   = "DateTime",
-    timeDiffTarget = c("Time_Gap"),
-    timeAgg        = c("days"),
-    WindowingLag   = 1,
-    Type           = "Lag",
-    Timer          = TRUE,
-    SkipCols       = FALSE,
-    SimpleImpute   = TRUE
-  )
-
-  N <- 25116
-  data1 <-
-    data.table::data.table(
-      GroupVariable = sample(x = c(
-        letters,
-        LETTERS,
-        paste0(letters, letters),
-        paste0(LETTERS, LETTERS),
-        paste0(letters, LETTERS),
-        paste0(LETTERS, letters)
-      )),
-      DateTime = base::as.Date(Sys.time()),
-      Target = stats::filter(
-        rnorm(N,
-              mean = 50,
-              sd = 20),
-        filter = rep(1, 10),
-        circular = TRUE
-      )
-    )
-  data1[, temp := seq(1:161),
-        by = "GroupVariable"][, DateTime := DateTime - temp]
-  data1 <- data1[order(DateTime)]
-  data1 <- Scoring_GDL_Feature_Engineering(
-    data1,
-    lags           = c(seq(1, 2, 1)),
-    periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
-    statsNames     = c("MA"),
-    targets        = c("Target"),
-    groupingVars   = c("GroupVariable"),
-    sortDateName   = c("DateTime"),
-    timeDiffTarget = c("Time_Gap"),
-    timeAgg        = "days",
-    WindowingLag   = 1,
-    Type           = "Lag",
-    Timer          = TRUE,
-    SkipCols       = FALSE,
-    SimpleImpute   = TRUE,
-    AscRowByGroup  = "temp",
-    RecordsKeep    = 1
-  )
-
-  x <- names(data)
-  y <- names(data1[, temp := NULL])
-  expect_equal(x, y)
-
-  # Non Grouping Case
-  N <- 25116
-  data <- data.table::data.table(
-    DateTime = as.Date(Sys.time()),
-    Target = stats::filter(
-      rnorm(N,
-            mean = 50,
-            sd = 20),
-      filter = rep(1, 10),
-      circular = TRUE
-    )
-  )
-  data[, temp := seq(1:N)][, DateTime := DateTime - temp]
-  data <- data[order(DateTime)]
-  data <- FAST_GDL_Feature_Engineering(
-    data,
-    lags           = c(seq(1, 2, 1)),
-    periods        = c(3),
-    statsFUNs      = c("mean"),
-    statsNames     = c("MA"),
-    targets        = c("Target"),
-    groupingVars   = NULL,
-    sortDateName   = "DateTime",
-    timeDiffTarget = c("Time_Gap"),
-    timeAgg        = c("days"),
-    WindowingLag   = 1,
-    Type           = "Lag",
-    Timer          = TRUE,
-    SkipCols       = FALSE,
-    SimpleImpute   = TRUE,
-    AscRowByGroup = "temp",
-    RecordsKeep = 100
-  )
-
-  N <- 25116
-  data1 <- data.table::data.table(
-    DateTime = as.Date(Sys.time()),
-    Target = stats::filter(
-      rnorm(25116,
-            mean = 50,
-            sd = 20),
-      filter = rep(1, 10),
-      circular = TRUE
-    )
-  )
-  data1[, temp := seq(1:N)][, DateTime := DateTime - temp]
-  data1 <- data1[order(DateTime)]
-  data1 <- Scoring_GDL_Feature_Engineering(
-    data1,
-    lags           = c(seq(1, 2, 1)),
-    periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
-    statsNames     = c("MA"),
-    targets        = c("Target"),
-    groupingVars   = NULL,
-    sortDateName   = c("DateTime"),
-    timeDiffTarget = c("Time_Gap"),
-    timeAgg        = "days",
-    WindowingLag   = 1,
-    Type           = "Lag",
-    Timer          = TRUE,
-    SkipCols       = FALSE,
-    SimpleImpute   = TRUE,
-    AscRowByGroup  = "temp",
-    RecordsKeep    = 1
-  )
-
-  x <- names(data)
-  y <- names(data1)
-  expect_equal(x, y)
-})
-
 test_that("DT_GDL_Feature_Engineering", {
   # DT and Scoring
 
@@ -602,7 +400,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- DT_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -642,7 +440,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
@@ -682,7 +480,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- DT_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsNames     = c("MA"),
     targets        = c("Target"),
@@ -712,7 +510,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
@@ -751,7 +549,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data <- data[order(DateTime)]
   data <- FAST_GDL_Feature_Engineering(
     data,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsFUNs      = c("mean"),
     statsNames     = c("MA"),
@@ -784,7 +582,7 @@ test_that("DT_GDL_Feature_Engineering", {
   data1 <- data1[order(DateTime)]
   data1 <- Scoring_GDL_Feature_Engineering(
     data1,
-    lags           = c(seq(1, 2, 1)),
+    lags           = c(seq(1, 1, 1)),
     periods        = c(3),
     statsFUNs      = c(function(x)
       mean(x, na.rm = TRUE)),
@@ -904,6 +702,208 @@ test_that("FAST_GDL_Feature_Engineering", {
   y <- names(data1)
   expect_equal(x, y)
 })
+
+# test_that("GDL_Feature_Engineering", {
+#   # GDL and Scoring
+#
+#   # Grouping Case
+#   N <- 25116
+#   data <-
+#     data.table::data.table(
+#       GroupVariable = sample(x = c(
+#         letters,
+#         LETTERS,
+#         paste0(letters, letters),
+#         paste0(LETTERS, LETTERS),
+#         paste0(letters, LETTERS),
+#         paste0(LETTERS, letters)
+#       )),
+#       DateTime = base::as.Date(Sys.time()),
+#       Target = stats::filter(
+#         rnorm(N,
+#               mean = 50,
+#               sd = 20),
+#         filter = rep(1, 10),
+#         circular = TRUE
+#       )
+#     )
+#   data[, temp := seq(1:161),
+#        by = "GroupVariable"][,
+#                              DateTime := DateTime - temp][
+#                                ,temp := NULL
+#                                ]
+#   data <- data[order(DateTime)]
+#   data <- GDL_Feature_Engineering(
+#     data,
+#     lags           = c(seq(1, 2, 1)),
+#     periods        = c(3),
+#     statsFUNs      = c(function(x) mean(x, na.rm = TRUE)),
+#     statsNames     = c("MA"),
+#     targets        = c("Target"),
+#     groupingVars   = "GroupVariable",
+#     sortDateName   = "DateTime",
+#     timeDiffTarget = c("Time_Gap"),
+#     timeAgg        = c("days"),
+#     WindowingLag   = 1,
+#     Type           = "Lag",
+#     Timer          = TRUE,
+#     SkipCols       = FALSE,
+#     SimpleImpute   = TRUE
+#   )
+#
+#   N <- 25116
+#   data1 <-
+#     data.table::data.table(
+#       GroupVariable = sample(x = c(
+#         letters,
+#         LETTERS,
+#         paste0(letters, letters),
+#         paste0(LETTERS, LETTERS),
+#         paste0(letters, LETTERS),
+#         paste0(LETTERS, letters)
+#       )),
+#       DateTime = base::as.Date(Sys.time()),
+#       Target = stats::filter(
+#         rnorm(N,
+#               mean = 50,
+#               sd = 20),
+#         filter = rep(1, 10),
+#         circular = TRUE
+#       )
+#     )
+#   data1[, temp := seq(1:161),
+#         by = "GroupVariable"][, DateTime := DateTime - temp]
+#   data1 <- data1[order(DateTime)]
+#   data1 <- Scoring_GDL_Feature_Engineering(
+#     data1,
+#     lags           = c(seq(1, 2, 1)),
+#     periods        = c(3),
+#     statsFUNs      = c(function(x)
+#       mean(x, na.rm = TRUE)),
+#     statsNames     = c("MA"),
+#     targets        = c("Target"),
+#     groupingVars   = c("GroupVariable"),
+#     sortDateName   = c("DateTime"),
+#     timeDiffTarget = c("Time_Gap"),
+#     timeAgg        = "days",
+#     WindowingLag   = 1,
+#     Type           = "Lag",
+#     Timer          = TRUE,
+#     SkipCols       = FALSE,
+#     SimpleImpute   = TRUE,
+#     AscRowByGroup  = "temp",
+#     RecordsKeep    = 1
+#   )
+#
+#   x <- names(data)
+#   y <- names(data1[, temp := NULL])
+#   expect_equal(x, y)
+#
+#   # Non Grouping Case
+#   N <- 25116
+#   data <- data.table::data.table(
+#     DateTime = as.Date(Sys.time()),
+#     Target = stats::filter(
+#       rnorm(N,
+#             mean = 50,
+#             sd = 20),
+#       filter = rep(1, 10),
+#       circular = TRUE
+#     )
+#   )
+#   data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#   data <- data[order(DateTime)]
+#   data <- FAST_GDL_Feature_Engineering(
+#     data,
+#     lags           = c(seq(1, 2, 1)),
+#     periods        = c(3),
+#     statsFUNs      = c("mean"),
+#     statsNames     = c("MA"),
+#     targets        = c("Target"),
+#     groupingVars   = NULL,
+#     sortDateName   = "DateTime",
+#     timeDiffTarget = c("Time_Gap"),
+#     timeAgg        = c("days"),
+#     WindowingLag   = 1,
+#     Type           = "Lag",
+#     Timer          = TRUE,
+#     SkipCols       = FALSE,
+#     SimpleImpute   = TRUE,
+#     AscRowByGroup = "temp",
+#     RecordsKeep = 100
+#   )
+#
+#   N <- 25116
+#   data1 <- data.table::data.table(
+#     DateTime = as.Date(Sys.time()),
+#     Target = stats::filter(
+#       rnorm(25116,
+#             mean = 50,
+#             sd = 20),
+#       filter = rep(1, 10),
+#       circular = TRUE
+#     )
+#   )
+#   data1[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#   data1 <- data1[order(DateTime)]
+#   data1 <- Scoring_GDL_Feature_Engineering(
+#     data1,
+#     lags           = c(seq(1, 2, 1)),
+#     periods        = c(3),
+#     statsFUNs      = c(function(x)
+#       mean(x, na.rm = TRUE)),
+#     statsNames     = c("MA"),
+#     targets        = c("Target"),
+#     groupingVars   = NULL,
+#     sortDateName   = c("DateTime"),
+#     timeDiffTarget = c("Time_Gap"),
+#     timeAgg        = "days",
+#     WindowingLag   = 1,
+#     Type           = "Lag",
+#     Timer          = TRUE,
+#     SkipCols       = FALSE,
+#     SimpleImpute   = TRUE,
+#     AscRowByGroup  = "temp",
+#     RecordsKeep    = 1
+#   )
+#
+#   x <- names(data)
+#   y <- names(data1)
+#   expect_equal(x, y)
+# })
+
+# test_that("AutoTS", {
+#   # Check function works
+#   data <- data.table::data.table(
+#     DateTime = as.Date(Sys.time()),
+#     Target = stats::filter(
+#       rnorm(1000,
+#             mean = 50,
+#             sd = 20),
+#       filter = rep(1, 10),
+#       circular = TRUE
+#     )
+#   )
+#   data[, temp := seq(1:1000)][,
+#                               DateTime := DateTime - temp][,
+#                                                            temp := NULL]
+#   data <- data[order(DateTime)]
+#   output <-   AutoTS(
+#     data,
+#     TargetName     = "Target",
+#     DateName       = "DateTime",
+#     FCPeriods      = 30,
+#     HoldOutPeriods = 30,
+#     TimeUnit       = "day",
+#     Lags           = 5,
+#     SLags          = 1,
+#     NumCores       = 4,
+#     SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
+#     StepWise       = TRUE
+#   )
+#   x <- nrow(output[[1]])
+#   expect_equal(x, 30)
+# })
 
 # test_that("AutoKMeans", {
 #   # Check that GridTuneGLRM = T and GridTuneKMeans = T
