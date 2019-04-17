@@ -18,7 +18,7 @@ You can also contact me via <a href="https://www.linkedin.com/in/adrian-antico/"
 
 ## Supervised Learning Functions: 
 ##### **AutoH2OModeler()**
-Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for one-hot-encoding.
+Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
 * Models include:
   * RandomForest (DRF)
   * GBM
