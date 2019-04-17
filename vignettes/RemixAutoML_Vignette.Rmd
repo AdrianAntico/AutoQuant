@@ -91,7 +91,7 @@ The supervised learning functions handle multiple tasks internally. The **AutoH2
 For Windows users (Mac?), XGBoost is not available and therefore neither is LightGBM (XGBoost and LightGBM are not utlized in AutoML model selection with Windows).
 
 #### **AutoH2OScoring()**
-This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH20Scoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. 
+This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH2OScoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. 
 
 ##### In total, the **AutoH2OScoring** function can score
 - Regression models
@@ -143,7 +143,7 @@ This automated supervised learning function builds nonlinear regression models f
 - Weibull
 - Polynomial regression or monotonic regression
 
-### Example of AutoNLS with Plot (simulated data)
+### Example of **AutoNLS()**
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
@@ -215,7 +215,7 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 ```
 
-### Example of AutoTS with Plot (simulated data)
+### Example of **AutoTS()**
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
@@ -410,7 +410,7 @@ The model evaluation graphs are calibration plots or calibration boxplots. The c
 ##### Functions include:
 - `EvalPlot()`
 
-### Demo of **EvalPlot()** for calibration and boxplots
+### Demo of **EvalPlot()**
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
@@ -627,7 +627,7 @@ Correl <- 0.70
     FalsePositiveCost = -3,
     FalseNegativeCost = -2,
     MidTierCost       = -0.5, 
-    Cores = 1
+    Cores             = 1
   )
   
   knitr::kable(data[order(-Utility)][1:10])
@@ -734,6 +734,8 @@ knitr::kable(
           ScoringData_Names = sort(names(ScoringData[, temp := NULL])))))
   
 ```
+
+## **Automated Feature Engineering Functions** (Continued)
 
 ##### Functions include:
 - `AutoWord2VecModeler()`
