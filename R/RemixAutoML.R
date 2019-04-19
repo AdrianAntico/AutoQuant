@@ -183,7 +183,7 @@ DummifyDT <- function(data,
     # Store original column size
     size <- ncol(data)
     Names <- setdiff(names(data),col)
-    inds <- unique(data[[eval(col)]])
+    inds <- data.table::fsort(unique(data[[eval(col)]]))
     data.table::alloc.col(data,
                           ncol(data) + length(inds))
     if (is.factor(data[[eval(col)]])) {
