@@ -10711,16 +10711,16 @@ AutoH2OModeler <- function(Construct,
             if (exists("Thresh")) {
               out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
             }
-            calibr[[j]] <- out1
+            calibr[[paste0(col)]] <- out1
           } else {
-            calibr[[j]] <- out1
+            calibr[[paste0(col)]] <- out1
           }
 
           # Expected value regression
           if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
                                                      "bernoulli"))) {
-            boxplotr[[j]] <- tryCatch({
+            boxplotr[[paste0(col)]] <- tryCatch({
               ParDepCalPlots(
                 calib,
                 PredictionColName = predName,
