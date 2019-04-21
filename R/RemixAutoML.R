@@ -5486,8 +5486,7 @@ ParDepCalPlots <- function(data,
                         ggplot2::aes(fill = Type)) +
       ggplot2::scale_fill_manual(values = c("red",
                                             "blue")) +
-      ggplot2::ggtitle("Partial Dependence
-                       Calibration Barplot") +
+      ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
       ggplot2::xlab(eval(IndepVar)) +
       ggplot2::ylab("Actual / Predicted") +
       ChartTheme(Size = 15)
