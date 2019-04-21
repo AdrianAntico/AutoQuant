@@ -5425,7 +5425,7 @@ ParDepCalPlots <- function(data,
                                       color = "Predicted")) +
       ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]],
                                       color = "Actuals")) +
-      ggplot2::ylab("Actual / Predicted") +
+      ggplot2::ylab("Actual | Predicted") +
       ggplot2::xlab(IndepVar) +
       ggplot2::scale_colour_manual(
         "",
@@ -5462,7 +5462,7 @@ ParDepCalPlots <- function(data,
       ggplot2::scale_fill_manual(values = c("red", "blue")) +
       ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
       ggplot2::xlab(eval(IndepVar)) +
-      ggplot2::ylab("Actual / Predicted") +
+      ggplot2::ylab("Actual | Predicted") +
       ChartTheme(Size = 15)
   } else if (GraphType == "FactorVar") {
     keep <- c(IndepVar, TargetColName)
@@ -5488,7 +5488,7 @@ ParDepCalPlots <- function(data,
                                             "blue")) +
       ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
       ggplot2::xlab(eval(IndepVar)) +
-      ggplot2::ylab("Actual / Predicted") +
+      ggplot2::ylab("Actual | Predicted") +
       ChartTheme(Size = 15)
   }
   return(plot)
