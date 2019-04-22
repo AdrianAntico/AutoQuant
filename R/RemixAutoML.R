@@ -11663,7 +11663,7 @@ RecomDataCreate <- function(data,
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
 #' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
 #' @param Ratio The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training
-#' @param RatingType Choose from âTopNâ, âratingsâ, âratingMatrixâ
+#' @param RatingType Choose from "TopN", "ratings", "ratingMatrix"
 #' @param RatingsKeep The total ratings you wish to return. Default is 20.
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
 #' @param ModelMetric Choose from "Precision", "Recall", "TPR", or "FPR"
