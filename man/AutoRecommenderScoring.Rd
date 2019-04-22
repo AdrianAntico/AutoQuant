@@ -5,7 +5,7 @@
 \title{The AutoRecomScoring function scores recommender models from AutoRecommender()}
 \usage{
 AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
-  ProductColName = "StockCode", MetricColName = "TotalSales")
+  ProductColName = "StockCode")
 }
 \arguments{
 \item{data}{The binary ratings matrix from RecomDataCreate()}
@@ -15,8 +15,6 @@ AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
 \item{EntityColName}{Typically your customer ID}
 
 \item{ProductColName}{Something like "StockCode"}
-
-\item{MetricColName}{Something like "TotalSales"}
 }
 \value{
 Returns the prediction data
@@ -47,8 +45,7 @@ Results <- AutoRecommenderScoring(
       SkipModels = "AssociationRules",
       ModelMetric = "TPR"),
   EntityColName = "CustomerID",
-  ProductColName = "StockCode",
-  MetricColName = "TotalSales")
+  ProductColName = "StockCode")
 }
 }
 \seealso{

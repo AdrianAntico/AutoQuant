@@ -17,7 +17,7 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 
 \item{Ratio}{The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training}
 
-\item{RatingType}{Choose from “topNList”, “ratings”, “ratingMatrix”}
+\item{RatingType}{Choose from "TopN", "ratings", "ratingMatrix"}
 
 \item{RatingsKeep}{The total ratings you wish to return. Default is 20.}
 
