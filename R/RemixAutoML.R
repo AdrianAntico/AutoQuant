@@ -5393,7 +5393,7 @@ ChartTheme <- function(Size = 12) {
 #' @param x X is your variable of interest
 #' @examples
 #' data <- data.table::data.table(A = runif(100))
-#' data[, Rank := percRank(x)]
+#' data[, Rank := percRank(A)]
 #' #' @return vector of percentile ranks
 #' @export
 percRank <- function(x)
@@ -11570,15 +11570,23 @@ AutoWord2VecModeler <- function(data,
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
-#' \dontrun{
-#' data <- WordFreq(data,
-#'                  TextColName = "DESCR",
-#'                  GroupColName = "ClusterAllNoTarget",
-#'                  GroupLevel = 0,
-#'                  RemoveEnglishStopwords = TRUE,
-#'                  Stemming = TRUE,
-#'                  StopWords = c("bla1", "bla2")
-#'}
+#' data <- data.table::data.table(
+#' DESCR = c("Bla, Bla, Bla, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2,
+#'            Wah, Wah, Wah, Wah, Wah, Wah, Wah, spa, spa, spa, window,
+#'            window, window, window, window, window, window, window, window,
+#'            computer, computer, computer, computer, computer, computer,
+#'            Data, Data, Data, Data, Data, Data, Data, science, science,
+#'            science, science, science, science, science, science, science,
+#'            science, science, science, science, science, science, science,
+#'            science, science, science, science, science, games, games,
+#'            games, games, games, games, games, games, games, games"))
+#' data <- AutoWordFreq(data,
+#'                      TextColName = "DESCR",
+#'                      GroupColName = NULL,
+#'                      GroupLevel = NULL,
+#'                      RemoveEnglishStopwords = FALSE,
+#'                      Stemming = FALSE,
+#'                      StopWords = c("Bla"))
 #' @export
 AutoWordFreq <- function(data,
                          TextColName = "DESCR",
@@ -11712,17 +11720,20 @@ AutoH2OTextPrepScoring <- function(data,
 #' @param MetricColName This is the column name in quotes that represents the column name for the metric, such as total sales
 #' @return A BinaryRatingsMatrix
 #' @examples
-#' \dontrun{
+#' data <- data.table::data.table(CustomerID = c(1,1,2,2,3,3),
+#'                                StockCode = c("A","B","A","A","B","A"),
+#'                                TotalSales = c(2,3,4,5,1,2))
 #' RatingsMatrix <- RecomDataCreate(data,
 #'                                  EntityColName = "CustomerID",
 #'                                  ProductColName = "StockCode",
-#'                                  MetricColName = "TotalSales")
-#' }
+#'                                  MetricColName = "TotalSales",
+#'                                  ReturnMatrix = TRUE)
 #' @export
 RecomDataCreate <- function(data,
                             EntityColName  = "CustomerID",
                             ProductColName = "StockCode",
-                            MetricColName  = "TotalSales") {
+                            MetricColName  = "TotalSales",
+                            ReturnMatrix   = FALSE) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
@@ -11782,8 +11793,13 @@ RecomDataCreate <- function(data,
   row.names(train_data_matrix) <- train_data_rownames
 
   # Return binary rating matrix
-  return(methods::as(object = train_data_matrix,
-            Class = "binaryRatingMatrix"))
+  if(ReturnMatrix) {
+    return(recommenderlab::coerce(from = train_data_matrix,
+                                  to = "BinaryRatingsMatrix"))
+  } else {
+    return(methods::as(object = train_data_matrix,
+                       Class = "binaryRatingMatrix"))
+  }
 }
 
 #' Automatically build the best recommendere model among models available.
@@ -12031,4 +12047,3 @@ AutoRecommenderScoring <- function(data,
 
   return(results)
 }
-
