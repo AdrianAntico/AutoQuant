@@ -16,6 +16,8 @@ RecomDataCreate(data, EntityColName = "CustomerID",
 \item{ProductColName}{This is the column name in quotes that represents the column name for the product, such as SKU}
 
 \item{MetricColName}{This is the column name in quotes that represents the column name for the metric, such as total sales}
+
+\item{ReturnMatrix}{Set to FALSE to coerce the object (desired route) or TRUE to return a matrix}
 }
 \value{
 A BinaryRatingsMatrix
