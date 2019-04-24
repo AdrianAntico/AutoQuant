@@ -18,7 +18,6 @@ RoxygenNote: 6.1.1
 Imports: data.table,foreach,doParallel,h2o,parallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics
 Suggests: testthat, sde, knitr, rmarkdown, methods
 VignetteBuilder: knitr
-Author: Adrian Antico
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Date: 2019-04-05
 NeedsCompilation: no
