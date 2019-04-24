@@ -5,7 +5,8 @@
 \title{Convert transactional data.table to a binary ratings matrix}
 \usage{
 RecomDataCreate(data, EntityColName = "CustomerID",
-  ProductColName = "StockCode", MetricColName = "TotalSales")
+  ProductColName = "StockCode", MetricColName = "TotalSales",
+  ReturnMatrix = FALSE)
 }
 \arguments{
 \item{data}{This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).}
@@ -23,12 +24,14 @@ A BinaryRatingsMatrix
 Convert transactional data.table to a binary ratings matrix
 }
 \examples{
-\dontrun{
+data <- data.table::data.table(CustomerID = c(1,1,2,2,3,3),
+                               StockCode = c("A","B","A","A","B","A"),
+                               TotalSales = c(2,3,4,5,1,2))
 RatingsMatrix <- RecomDataCreate(data,
                                  EntityColName = "CustomerID",
                                  ProductColName = "StockCode",
-                                 MetricColName = "TotalSales")
-}
+                                 MetricColName = "TotalSales",
+                                 ReturnMatrix = TRUE)
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},

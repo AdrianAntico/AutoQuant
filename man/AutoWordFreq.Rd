@@ -28,15 +28,23 @@ AutoWordFreq(data, TextColName = "DESCR",
 This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 }
 \examples{
-\dontrun{
-data <- WordFreq(data,
-                 TextColName = "DESCR",
-                 GroupColName = "ClusterAllNoTarget",
-                 GroupLevel = 0,
-                 RemoveEnglishStopwords = TRUE,
-                 Stemming = TRUE,
-                 StopWords = c("bla1", "bla2")
-}
+data <- data.table::data.table(
+DESCR = c("Bla, Bla, Bla, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2,
+           Wah, Wah, Wah, Wah, Wah, Wah, Wah, spa, spa, spa, window,
+           window, window, window, window, window, window, window, window,
+           computer, computer, computer, computer, computer, computer,
+           Data, Data, Data, Data, Data, Data, Data, science, science,
+           science, science, science, science, science, science, science,
+           science, science, science, science, science, science, science,
+           science, science, science, science, science, games, games,
+           games, games, games, games, games, games, games, games"))
+data <- AutoWordFreq(data,
+                     TextColName = "DESCR",
+                     GroupColName = NULL,
+                     GroupLevel = NULL,
+                     RemoveEnglishStopwords = FALSE,
+                     Stemming = FALSE,
+                     StopWords = c("Bla"))
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},

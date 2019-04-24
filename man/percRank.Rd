@@ -14,7 +14,7 @@ This function computes percentile ranks for each row in your data like Excel's P
 }
 \examples{
 data <- data.table::data.table(A = runif(100))
-data[, Rank := percRank(x)]
+data[, Rank := percRank(A)]
 #' @return vector of percentile ranks
 }
 \seealso{
