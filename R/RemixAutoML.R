@@ -11718,6 +11718,7 @@ AutoH2OTextPrepScoring <- function(data,
 #' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
 #' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU
 #' @param MetricColName This is the column name in quotes that represents the column name for the metric, such as total sales
+#' @param ReturnMatrix Set to FALSE to coerce the object (desired route) or TRUE to return a matrix
 #' @return A BinaryRatingsMatrix
 #' @examples
 #' data <- data.table::data.table(CustomerID = c(1,1,2,2,3,3),
