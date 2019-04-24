@@ -2,9 +2,30 @@
 
 # Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
+":=" <- NULL
+"fwrite" <- NULL
+"setnames" <- NULL
+"is.data.table" <- NULL
+"as.data.table" <- NULL
+"set" <- NULL
+"data.table" <- NULL
+".N" <- NULL
+"%chin%" <- NULL
+"setcolorder" <- NULL
+".SD" <- NULL
+
 utils::globalVariables(
   names = c(
     "test",
+    ":=",
+    "fwrite",
+    "setnames",
+    "is.data.table",
+    "as.data.table",
+    ".N",
+    "%chin%",
+    "setcolorder",
+    ".SD",
     "SFreq",
     "BinaryRatingsMatrix",
     "Residuals",
@@ -145,7 +166,7 @@ utils::globalVariables(
 #' @param KeepFactorCols set to TRUE to keep the original columns used in the dichotomization process
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
-#' @import data.table
+#' @importFrom data.table %chin% set setcolorder := .N fwrite setnames is.data.table data.table .SD
 #' @examples
 #' test <- data.table::data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
@@ -168,6 +189,10 @@ DummifyDT <- function(data,
                       KeepFactorCols = FALSE,
                       OneHot         = TRUE,
                       ClustScore     = FALSE) {
+
+  # Require data.table
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -247,7 +272,6 @@ DummifyDT <- function(data,
 #' @param best_model the model object you wish to test
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' auc_val <- H2OMultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
@@ -258,6 +282,9 @@ H2OMultinomialAUC <-
            best_model,
            targetColNum = 1,
            targetName   = "TargetVar") {
+
+  # Require data.table
+  requireNamespace('data.table', quietly = FALSE)
   xx <-
     data.table::as.data.table(h2o::h2o.cbind(
       validate[, targetColNum],
@@ -285,7 +312,6 @@ H2OMultinomialAUC <-
 #' @author Adrian Antico
 #' @family Misc
 #' @param N The number of objects to display
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' PrintObjectsSize(N = 10)
@@ -314,7 +340,7 @@ PrintObjectsSize <- function(N = 10) {
 #' @param LowThreshold this is the threshold on the low end
 #' @param KeepAllCols set to TRUE to remove the intermediate features
 #' @param IsDataScaled set to TRUE if you already scaled your data
-#' @import data.table
+
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(10000,
@@ -346,6 +372,10 @@ GenTSAnomVars <- function(data,
                           LowThreshold  = -1.96,
                           KeepAllCols = FALSE,
                           IsDataScaled  = TRUE) {
+
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -446,7 +476,6 @@ GenTSAnomVars <- function(data,
 #' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param tstat the t-stat value for tsoutliers
-#' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'                                Target = as.numeric(stats::filter(rnorm(1000,
@@ -480,6 +509,9 @@ ResidualOutliers <- function(data,
                              TimeUnit = "day",
                              maxN = 5,
                              tstat = 2) {
+
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
 
   # Define TS Frequency
   if (tolower(TimeUnit) == "hour") {
@@ -619,7 +651,6 @@ ResidualOutliers <- function(data,
 #' @param KMeansMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
 #' @param SaveModels Set to "standard", "mojo", or NULL (default)
 #' @param PathFile Set to folder where you will keep the models
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' data <- data.table::as.data.table(iris)
@@ -669,6 +700,10 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
+
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -931,33 +966,30 @@ AutoKMeans <- function(data,
 #' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
-#' @import data.table
 #' @examples
-#' \dontrun{
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(1000,
+#'   Target = stats::filter(rnorm(100,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
 #'                          circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
 #'                    TargetName     = "Target",
 #'                    DateName       = "DateTime",
-#'                    FCPeriods      = 30,
-#'                    HoldOutPeriods = 30,
+#'                    FCPeriods      = 1,
+#'                    HoldOutPeriods = 1,
 #'                    TimeUnit       = "day",
-#'                    Lags           = 5,
+#'                    Lags           = 1,
 #'                    SLags          = 1,
 #'                    NumCores       = 4,
 #'                    SkipModels     = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
 #'                    StepWise       = TRUE,
-#'                    TSClean        = TRUE)
+#'                    TSClean        = FALSE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
-#' }
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model.
 #' @export
 AutoTS <- function(data,
@@ -972,6 +1004,9 @@ AutoTS <- function(data,
                    SkipModels     = NULL,
                    StepWise       = TRUE,
                    TSClean        = TRUE) {
+
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
 
   # Turn off warnings
   options(warn = -1)
@@ -4272,15 +4307,14 @@ AutoTS <- function(data,
 #' @author Adrian Antico
 #' @family Misc
 #' @param x The column of interest
-#' @import data.table
 #' @examples
-#' \dontrun{
+#' Cdata <- data.table::data.table(DAY_DATE = "2018-01-01 8:53")
 #' Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
-#' Cdata[, DAY_DATE := base::as.Date(DAY_DATE, "%m/%d/%Y")]
-#' }
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 tempDatesFun <- base::Vectorize(function(x) {
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
   data.table::tstrsplit(x, " ")[[1]][1]
 })
 
@@ -4291,13 +4325,14 @@ tempDatesFun <- base::Vectorize(function(x) {
 #' @author Adrian Antico
 #' @family Misc
 #' @param x Column of interest
-#' @import data.table
 #' @examples
 #' x <- "adrian"
 #' x <- SimpleCap(x)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 SimpleCap <- function(x) {
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
   s <- data.table::tstrsplit(x, " ")[[1]]
   paste(
     base::toupper(base::substring(s, 1, 1)),
@@ -4313,7 +4348,6 @@ SimpleCap <- function(x) {
 #'
 #' @author Douglas Pestana
 #' @family Misc
-#' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
@@ -4366,7 +4400,6 @@ RemixTheme <- function() {
 #' @param data This is your source data you'd like to modify
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
-#' @import data.table
 #' @examples
 #' data <- data.table::data.table(Value = runif(100000),
 #'                                FactorCol = as.character(sample(x = c(letters,
@@ -4389,6 +4422,10 @@ ModelDataPrep <- function(data,
                           CharToFactor = TRUE,
                           MissFactor   = "0",
                           MissNum      = -1) {
+
+  # Ensure data.table is available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -4447,21 +4484,24 @@ ModelDataPrep <- function(data,
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
 #' @param Cores Number of cores on your machine
 #' @param Precision Set the decimal number to increment by between 0 and 1
-#' @import data.table
 #' @import foreach
-#' @import doParallel
-#' @import parallel
 #' @examples
-#' \dontrun{
+#' data <- data.table::data.table(Target = runif(10))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(10)]
+#' data[, Predict := log(pnorm(0.85 * x1 +
+#'                               sqrt(1-0.85^2) * qnorm(x2)))]
+#' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data <- RedYellowGreen(data,
-#'                         PredictColNumber  = 1,
-#'                         ActualColNumber   = 2,
-#'                         TruePositiveCost  = 0,
-#'                         TrueNegativeCost  = 0,
-#'                         FalsePositiveCost = -1,
-#'                         FalseNegativeCost = -2,
-#'                         MidTierCost       = -0.5)
-#' }
+#'                        PredictColNumber  = 2,
+#'                        ActualColNumber   = 1,
+#'                        TruePositiveCost  = 0,
+#'                        TrueNegativeCost  = 0,
+#'                        FalsePositiveCost = -1,
+#'                        FalseNegativeCost = -2,
+#'                        MidTierCost = -0.5,
+#'                        Precision = 0.5,
+#'                        Cores = 1)
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(data,
@@ -4474,6 +4514,13 @@ RedYellowGreen <- function(data,
                            MidTierCost       = -2,
                            Cores             = 8,
                            Precision         = 0.01) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+  requireNamespace('foreach', quietly = FALSE)
+  requireNamespace('doParallel', quietly = FALSE)
+  requireNamespace('parallel', quietly = FALSE)
+
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -4718,19 +4765,22 @@ RedYellowGreen <- function(data,
 #' @param tnProfit This is the utility for generating a true negative prediction
 #' @param fpProfit This is the cost of generating a false positive prediction
 #' @param fnProfit This is the cost of generating a false negative prediction
-#' @import data.table
 #' @examples
-#' \dontrun{
+#' data <- data.table::data.table(Target = runif(10))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(10)]
+#' data[, Predict := log(pnorm(0.85 * x1 +
+#'                               sqrt(1-0.85^2) * qnorm(x2)))]
+#' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data <- threshOptim(data     = data,
-#'                      actTar   = "target",
-#'                      predTar  = "p1",
-#'                      tpProfit = 0,
-#'                      tnProfit = 0,
-#'                      fpProfit = -1,
-#'                      fnProfit = -2)
+#'                     actTar   = "Target",
+#'                     predTar  = "Predict",
+#'                     tpProfit = 0,
+#'                     tnProfit = 0,
+#'                     fpProfit = -1,
+#'                     fnProfit = -2)
 #' optimalThreshold <- data$Thresholds
-#' allResults       <- data$EvaluationTable
-#' }
+#' allResults <- data$EvaluationTable
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,
@@ -4740,9 +4790,14 @@ threshOptim <- function(data,
                         tnProfit = 0,
                         fpProfit = -1,
                         fnProfit = -2) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
-  if (!data.table::is.data.table(data))
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
+  }
 
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -4795,7 +4850,6 @@ threshOptim <- function(data,
 #' @param y Y is the target variable name in quotes
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
-#' @import data.table
 #' @examples
 #' # Create Growth Data
 #' data <-
@@ -4864,6 +4918,10 @@ AutoNLS <- function(data,
                     y,
                     x,
                     monotonic = TRUE) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Begin
   DATA <- data
   nls_collection <-
@@ -5166,11 +5224,32 @@ AutoNLS <- function(data,
 #' @param cols This is the number of columns in your multiplot
 #' @param layout Leave NULL
 #' @param ... Passthrough arguments
-#' @import data.table
 #' @examples
-#' \dontrun{
-#' multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
-#' }
+#' Correl <- 0.85
+#' data <- data.table::data.table(Target = runif(100))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(100)]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Predict := (pnorm(Correl * x1 +
+#'                            sqrt(1-Correl^2) * qnorm(x2)))]
+#' p1 <- RemixAutoML::ParDepCalPlots(data,
+#'                                   PredictionColName = "Predict",
+#'                                   TargetColName = "Target",
+#'                                   IndepVar = "Independent_Variable1",
+#'                                   GraphType = "calibration",
+#'                                   PercentileBucket = 0.20,
+#'                                   FactLevels = 10,
+#'                                   Function = function(x) mean(x, na.rm = TRUE))
+#' p2 <- RemixAutoML::ParDepCalPlots(data,
+#'                                   PredictionColName = "Predict",
+#'                                   TargetColName = "Target",
+#'                                   IndepVar = "Independent_Variable1",
+#'                                   GraphType = "boxplot",
+#'                                   PercentileBucket = 0.20,
+#'                                   FactLevels = 10,
+#'                                   Function = function(x) mean(x, na.rm = TRUE))
+#' RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
 #' @return Multiple ggplots on a single image
 #' @export
 multiplot <-
@@ -5178,6 +5257,10 @@ multiplot <-
            plotlist = NULL,
            cols     = 2,
            layout   = NULL) {
+
+    # Ensure packages are available
+    requireNamespace('data.table', quietly = FALSE)
+
     plots <- c(list(...), plotlist)
 
     numPlots <- length(plots)
@@ -5218,7 +5301,6 @@ multiplot <-
 #' @author Adrian Antico
 #' @family Misc
 #' @param Size The size of the axis labels and title
-#' @import data.table
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
@@ -5309,17 +5391,15 @@ ChartTheme <- function(Size = 12) {
 #' @author Adrian Antico
 #' @family Misc
 #' @param x X is your variable of interest
-#' @import data.table
 #' @examples
-#' \dontrun{
-#' percRank(x)
-#' }
-#' @return vector of percentile ranks
+#' data <- data.table::data.table(A = runif(100))
+#' data[, Rank := percRank(x)]
+#' #' @return vector of percentile ranks
 #' @export
 percRank <- function(x)
   trunc(rank(x)) / length(x)
 
-#' Function automatically builds partial dependence calibration plots for model evaluation
+#' ParDepCalPlots automatically builds partial dependence calibration plots for model evaluation
 #'
 #' This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 #' @author Adrian Antico
@@ -5332,19 +5412,25 @@ percRank <- function(x)
 #' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
 #' @param Function Supply the function you wish to use for aggregation.
-#' @import data.table
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
-#' \dontrun{
-#' ParDepCalPlots(data,
-#'                PredictionColName = "predict",
-#'                TargetColName  = "target",
-#'                IndepVar    = "Independent_Variable",
-#'                GraphType        = "boxplot",
-#'                PercentileBucket = 0.05,
-#'                FactLevels  = 10,
-#'                Function    = function(x) mean(x, na.rm = TRUE))
-#'}
+#' Correl <- 0.85
+#' data <- data.table::data.table(Target = runif(100))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(100)]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Predict := (pnorm(Correl * x1 +
+#'                            sqrt(1-Correl^2) * qnorm(x2)))]
+#' p1 <- RemixAutoML::ParDepCalPlots(data,
+#'                                   PredictionColName = "Predict",
+#'                                   TargetColName = "Target",
+#'                                   IndepVar = "Independent_Variable1",
+#'                                   GraphType = "calibration",
+#'                                   PercentileBucket = 0.20,
+#'                                   FactLevels = 10,
+#'                                   Function = function(x) mean(x, na.rm = TRUE))
+#' p1
 #' @export
 ParDepCalPlots <- function(data,
                            PredictionColName = c("PredictedValues"),
@@ -5355,6 +5441,10 @@ ParDepCalPlots <- function(data,
                            FactLevels  = 10,
                            Function    = function(x)
                              base::mean(x, na.rm = TRUE)) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Turn off ggplot2 warnings
   options(warn = -1)
 
@@ -5494,7 +5584,7 @@ ParDepCalPlots <- function(data,
   return(plot)
 }
 
-#' Function automatically builds calibration plots for model evaluation
+#' EvalPlot automatically builds calibration plots for model evaluation
 #'
 #' This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 #' @author Adrian Antico
@@ -5505,17 +5595,22 @@ ParDepCalPlots <- function(data,
 #' @param GraphType Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
 #' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param aggrfun The statistics function used in aggregation, listed as a function
-#' @import data.table
 #' @return Calibration plot or boxplot
 #' @examples
-#' \dontrun{
+#' Correl <- 0.85
+#' data <- data.table::data.table(Target = runif(100))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(100)]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Predict := (pnorm(Correl * x1 +
+#'                            sqrt(1-Correl^2) * qnorm(x2)))]
 #' EvalPlot(data,
-#'          PredictionColName = "predict",
-#'          TargetColName  = "target",
-#'          GraphType        = "calibration",
-#'          PercentileBucket      = 0.05,
-#'          aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
-#'}
+#'          PredictionColName = "Predict",
+#'          TargetColName = "Target",
+#'          GraphType = "calibration",
+#'          PercentileBucket = 0.05,
+#'          aggrfun = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 #' @export
 EvalPlot <- function(data,
                      PredictionColName = c("PredictedValues"),
@@ -5524,6 +5619,10 @@ EvalPlot <- function(data,
                      PercentileBucket = 0.05,
                      aggrfun     = function(x)
                        base::mean(x, na.rm = TRUE)) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Turn data into data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -5620,7 +5719,6 @@ EvalPlot <- function(data,
 #' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
-#' @import data.table
 #' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -5679,6 +5777,10 @@ GDL_Feature_Engineering <- function(data,
                                     Timer          = TRUE,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -6130,7 +6232,6 @@ GDL_Feature_Engineering <- function(data,
 #' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
-#' @import data.table
 #' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -6171,6 +6272,10 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Timer          = TRUE,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -6655,7 +6760,6 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
-#' @import data.table
 #' @examples
 #' N = 25116
 #' data1 <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -6702,6 +6806,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             SimpleImpute   = TRUE,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -7191,7 +7299,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
-#' @import data.table
 #' @examples
 #' N = 25116
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -7252,6 +7359,10 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          SimpleImpute   = TRUE,
                                          AscRowByGroup  = c("temp"),
                                          RecordsKeep    = 1) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
@@ -7923,7 +8034,6 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param TrainData Set to NULL or supply a data.table for training data
 #' @param TestData Set to NULL or supply  a data.table for validation data
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' # Classification Example
@@ -8202,6 +8312,9 @@ AutoH2OModeler <- function(Construct,
                            MaxModels         = 30,
                            TrainData         = NULL,
                            TestData          = NULL) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
 
   ######################################
   # Error handling and prevention
@@ -10839,7 +10952,6 @@ AutoH2OModeler <- function(Construct,
 #' @param JavaOptions Modify to your machine if the default doesn't work
 #' @param FilesPath Set this to the folder where your models and model files are saved
 #' @param H20ShutDown TRUE to shutdown H2O after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
-#' @import data.table
 #' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 #' @examples
 #' \dontrun{
@@ -10934,6 +11046,9 @@ AutoH2OScoring <- function(Features     = data,
                            JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
                            FilesPath    = getwd(),
                            H20ShutDown  = rep(FALSE,3)) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
 
   # Only run text or other models types
   if(any(tolower(TargetType) %in% "clustering") &
@@ -11255,9 +11370,10 @@ AutoH2OScoring <- function(Features     = data,
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
-#' @import data.table
 #' @export
 tokenizeH2O <- function(data) {
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
   data <- h2o::as.h2o(data, col.types = c("String"))
   tokenized <- h2o::h2o.tokenize(data, "\\\\W+")
   tokenized.lower <- h2o::h2o.tolower(tokenized)
@@ -11287,7 +11403,6 @@ tokenizeH2O <- function(data) {
 #' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' data <- Word2VecModel(data,
@@ -11320,6 +11435,10 @@ AutoWord2VecModeler <- function(data,
                                 SaveModel     = "standard",
                                 Threads       = 6,
                                 MaxMemory     = "28G") {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Ensure data is a data.table
   if(!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -11450,7 +11569,6 @@ AutoWord2VecModeler <- function(data,
 #' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
-#' @import data.table
 #' @examples
 #' \dontrun{
 #' data <- WordFreq(data,
@@ -11470,8 +11588,14 @@ AutoWordFreq <- function(data,
                          Stemming = TRUE,
                          StopWords = c("bla",
                                        "bla2")) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
   # Check data.table
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
 
   # Ensure stringCol is character (not factor)
   if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
@@ -11553,13 +11677,18 @@ AutoWordFreq <- function(data,
 #' @param string The name of the string column to prepare
 #' @param MaxMem Amount of memory you want to let H2O utilize
 #' @param NThreads The number of threads you want to let H2O utilize
-#' @import data.table
 #' @export
 AutoH2OTextPrepScoring <- function(data,
                                    string,
                                    MaxMem,
                                    NThreads) {
-  if(!is.data.table(data)) data <- data.table::as.data.table((data))
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+
+  if(!is.data.table(data)) {
+    data <- data.table::as.data.table((data))
+  }
   data[, eval(string) := as.character(get(string))]
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
 
@@ -11594,6 +11723,9 @@ RecomDataCreate <- function(data,
                             EntityColName  = "CustomerID",
                             ProductColName = "StockCode",
                             MetricColName  = "TotalSales") {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
 
   # Ensure data is data.table
   if(!data.table::is.data.table(data)) {
@@ -11688,6 +11820,9 @@ AutoRecommender <- function(data,
                             RatingsKeep = 20,
                             SkipModels  = "AssociationRules",
                             ModelMetric = "TPR") {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
 
   # Ensure data is proper
   if(class(data)[1] != "binaryRatingMatrix") {
@@ -11799,10 +11934,6 @@ AutoRecommender <- function(data,
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
 #' @param ProductColName Something like "StockCode"
-#' @import data.table
-#' @import parallel
-#' @import foreach
-#' @import doParallel
 #' @return Returns the prediction data
 #' @examples
 #' \dontrun{
@@ -11834,6 +11965,12 @@ AutoRecommenderScoring <- function(data,
                                    WinningModel,
                                    EntityColName  = "CustomerID",
                                    ProductColName = "StockCode") {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = FALSE)
+  requireNamespace('parallel', quietly = FALSE)
+  requireNamespace('foreach', quietly = FALSE)
+  requireNamespace('doParallel', quietly = FALSE)
 
   # Setup winning model and arguments
   if (WinningModel == "AR") {
@@ -11894,3 +12031,4 @@ AutoRecommenderScoring <- function(data,
 
   return(results)
 }
+
