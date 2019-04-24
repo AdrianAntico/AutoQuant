@@ -37,16 +37,22 @@ A data table with all evaluated strategies, parameters, and utilities, along wit
 This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
 }
 \examples{
-\dontrun{
+data <- data.table::data.table(Target = runif(10))
+data[, x1 := qnorm(Target)]
+data[, x2 := runif(10)]
+data[, Predict := log(pnorm(0.85 * x1 +
+                              sqrt(1-0.85^2) * qnorm(x2)))]
+data[, ':=' (x1 = NULL, x2 = NULL)]
 data <- RedYellowGreen(data,
-                        PredictColNumber  = 1,
-                        ActualColNumber   = 2,
-                        TruePositiveCost  = 0,
-                        TrueNegativeCost  = 0,
-                        FalsePositiveCost = -1,
-                        FalseNegativeCost = -2,
-                        MidTierCost       = -0.5)
-}
+                       PredictColNumber  = 2,
+                       ActualColNumber   = 1,
+                       TruePositiveCost  = 0,
+                       TrueNegativeCost  = 0,
+                       FalsePositiveCost = -1,
+                       FalseNegativeCost = -2,
+                       MidTierCost = -0.5,
+                       Precision = 0.5,
+                       Cores = 1)
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},

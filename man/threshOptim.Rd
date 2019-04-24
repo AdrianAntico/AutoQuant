@@ -29,17 +29,21 @@ Optimal threshold and corresponding utilities for the range of thresholds tested
 This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
-\dontrun{
+data <- data.table::data.table(Target = runif(10))
+data[, x1 := qnorm(Target)]
+data[, x2 := runif(10)]
+data[, Predict := log(pnorm(0.85 * x1 +
+                              sqrt(1-0.85^2) * qnorm(x2)))]
+data[, ':=' (x1 = NULL, x2 = NULL)]
 data <- threshOptim(data     = data,
-                     actTar   = "target",
-                     predTar  = "p1",
-                     tpProfit = 0,
-                     tnProfit = 0,
-                     fpProfit = -1,
-                     fnProfit = -2)
+                    actTar   = "Target",
+                    predTar  = "Predict",
+                    tpProfit = 0,
+                    tnProfit = 0,
+                    fpProfit = -1,
+                    fnProfit = -2)
 optimalThreshold <- data$Thresholds
-allResults       <- data$EvaluationTable
-}
+allResults <- data$EvaluationTable
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},

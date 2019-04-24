@@ -29,14 +29,20 @@ Calibration plot or boxplot
 This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-\dontrun{
+Correl <- 0.85
+data <- data.table::data.table(Target = runif(100))
+data[, x1 := qnorm(Target)]
+data[, x2 := runif(100)]
+data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+                                            sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Predict := (pnorm(Correl * x1 +
+                           sqrt(1-Correl^2) * qnorm(x2)))]
 EvalPlot(data,
-         PredictionColName = "predict",
-         TargetColName  = "target",
-         GraphType        = "calibration",
-         PercentileBucket      = 0.05,
-         aggrfun     = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
-}
+         PredictionColName = "Predict",
+         TargetColName = "Target",
+         GraphType = "calibration",
+         PercentileBucket = 0.05,
+         aggrfun = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{ParDepCalPlots}},
