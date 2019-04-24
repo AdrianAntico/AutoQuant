@@ -2,26 +2,26 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{ParDepCalPlots}
 \alias{ParDepCalPlots}
-\title{Function automatically builds partial dependence calibration plots for model evaluation}
+\title{ParDepCalPlots automatically builds partial dependence calibration plots for model evaluation}
 \usage{
-ParDepCalPlots(data, PredColName = c("PredictedValues"),
-  ActColName = c("ActualValues"),
-  IndepVar = c("Independent_Variable_Name"), type = c("calibration"),
-  bucket = 0.05, FactLevels = 10, Function = function(x)
-  base::mean(x, na.rm = TRUE))
+ParDepCalPlots(data, PredictionColName = c("PredictedValues"),
+  TargetColName = c("ActualValues"),
+  IndepVar = c("Independent_Variable_Name"),
+  GraphType = c("calibration"), PercentileBucket = 0.05,
+  FactLevels = 10, Function = function(x) base::mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
 
-\item{PredColName}{Predicted values column names}
+\item{PredictionColName}{Predicted values column names}
 
-\item{ActColName}{Target value column names}
+\item{TargetColName}{Target value column names}
 
 \item{IndepVar}{Independent variable column names}
 
-\item{type}{calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation}
+\item{GraphType}{calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation}
 
-\item{bucket}{Number of buckets to partition the space on (0,1) for evaluation}
+\item{PercentileBucket}{Number of buckets to partition the space on (0,1) for evaluation}
 
 \item{FactLevels}{The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")}
 
@@ -36,11 +36,11 @@ This function automatically builds partial dependence calibration plots and part
 \examples{
 \dontrun{
 ParDepCalPlots(data,
-               PredColName = "predict",
-               ActColName  = "target",
+               PredictionColName = "predict",
+               TargetColName  = "target",
                IndepVar    = "Independent_Variable",
-               type        = "boxplot",
-               bucket      = 0.05,
+               GraphType        = "boxplot",
+               PercentileBucket = 0.05,
                FactLevels  = 10,
                Function    = function(x) mean(x, na.rm = TRUE))
 }
