@@ -4475,8 +4475,8 @@ ModelDataPrep <- function(data,
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data data is the data table with your predicted and actual values from a classification model
-#' @param PredictColNumber The column number where the actual target variable is located (in binary form)
-#' @param ActualColNumber The column number where the predicted values are located
+#' @param PredictColNumber The column number where the predicted target variable is located (in binary form)
+#' @param ActualColNumber The column number where the actual values are located
 #' @param TruePositiveCost This is the utility for generating a true positive prediction
 #' @param TrueNegativeCost This is the utility for generating a true negative prediction
 #' @param FalsePositiveCost This is the cost of generating a false positive prediction
