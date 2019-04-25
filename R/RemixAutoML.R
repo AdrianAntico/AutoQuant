@@ -11370,6 +11370,9 @@ AutoH2OScoring <- function(Features     = data,
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
+#' \donttest{
+#' temp <- tokenizeH2O(data[["StringColumn"]])          
+#' }
 #' @export
 tokenizeH2O <- function(data) {
   # Ensure packages are available
