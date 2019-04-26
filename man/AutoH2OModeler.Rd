@@ -4,9 +4,10 @@
 \alias{AutoH2OModeler}
 \title{An Automated Machine Learning Framework using H2O}
 \usage{
-AutoH2OModeler(Construct, max_memory, ratios, BL_Trees, nthreads,
-  model_path, MaxRuntimeSeconds = 3600, MaxModels = 30,
-  TrainData = NULL, TestData = NULL)
+AutoH2OModeler(Construct, max_memory = "28G", ratios = 0.8,
+  BL_Trees = 500, nthreads = 1, model_path = getwd(),
+  MaxRuntimeSeconds = 3600, MaxModels = 30, TrainData = NULL,
+  TestData = NULL, SaveToFile = FALSE, ReturnObjects = TRUE)
 }
 \arguments{
 \item{Construct}{Core instruction file for automation (see Details below for more information on this)}
@@ -28,6 +29,10 @@ AutoH2OModeler(Construct, max_memory, ratios, BL_Trees, nthreads,
 \item{TrainData}{Set to NULL or supply a data.table for training data}
 
 \item{TestData}{Set to NULL or supply  a data.table for validation data}
+
+\item{SaveToFile}{Set to TRUE to save models and output to model_path}
+
+\item{ReturnObjects}{Set to TRUE to return objects from functioin}
 }
 \value{
 Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.

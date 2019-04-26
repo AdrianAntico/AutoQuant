@@ -8,7 +8,8 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
   ScoreMethod = "Standard", TargetType = rep("multinomial", 3),
   ClassVals = rep("probs", 3), NThreads = 6, MaxMem = "28G",
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
-  FilesPath = getwd(), H20ShutDown = rep(FALSE, 3))
+  SaveToFile = TRUE, FilesPath = getwd(), H20ShutDown = rep(FALSE,
+  3))
 }
 \arguments{
 \item{Features}{This is a data.table of features for scoring.}
@@ -26,6 +27,8 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 \item{MaxMem}{Amount of memory to dedicate to H2O}
 
 \item{JavaOptions}{Modify to your machine if the default doesn't work}
+
+\item{SaveToFile}{Set to TRUE if you want your model scores saved to file.}
 
 \item{FilesPath}{Set this to the folder where your models and model files are saved}
 
