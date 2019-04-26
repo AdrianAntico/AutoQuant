@@ -11054,6 +11054,9 @@ AutoH2OModeler <- function(Construct,
       }
     }
   }}, error = function(x) h2o::h2o.shutdown(prompt = FALSE))
+  if(ReturnObjects) {
+    return(list(Construct = Construct, GridTunedPaths = grid_tuned_paths))
+  }
 }
 
 #' AutoH2OScoring is the complement of AutoH20Modeler.
