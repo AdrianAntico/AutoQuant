@@ -12992,6 +12992,11 @@ AutoCatBoostRegression <- function(data,
       if(!(ReturnModelObjects %in% c(TRUE,FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
       if(!(SaveModelObjects %in% c(TRUE,FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
 
+      # Regression Convert CatFeatures to 1-indexed----
+      if(!is.null(CatFeatures)) {
+        CatFeatures <- c((CatFeatures[1]+1):(CatFeatures[length(CatFeatures)]+1))
+      }
+
       # Regression Subset Columns Needed----
       if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) &
          (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
