@@ -12402,7 +12402,7 @@ AutoCatBoostClassifier <- function(data,
 
       # Binary Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]+1):(CatFeatures[length(CatFeatures)]+1))
+        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
       }
 
       # Binary Target Name Storage----
@@ -12994,7 +12994,7 @@ AutoCatBoostRegression <- function(data,
 
       # Regression Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]+1):(CatFeatures[length(CatFeatures)]+1))
+        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
       }
 
       # Regression Subset Columns Needed----
