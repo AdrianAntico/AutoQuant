@@ -5394,7 +5394,7 @@ ChartTheme <- function(Size = 12) {
 #' @examples
 #' data <- data.table::data.table(A = runif(100))
 #' data[, Rank := percRank(A)]
-#' #' @return vector of percentile ranks
+#' @return vector of percentile ranks
 #' @export
 percRank <- function(x)
   trunc(rank(x)) / length(x)
@@ -5591,7 +5591,7 @@ ParDepCalPlots <- function(data,
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
 #' @param PredictionColName String representation of column name with predicted values from model
-#' @param TargetColName String representation of column name with actual values from model
+#' @param TargetColName String representation of column name with target values from model
 #' @param GraphType Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
 #' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param aggrfun The statistics function used in aggregation, listed as a function
@@ -11552,6 +11552,7 @@ tokenizeH2O <- function(data) {
 #' @param SaveModel Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.
 #' @param Threads Number of available threads you want to dedicate to model building
 #' @param MaxMemory Amount of memory you want to dedicate to model building
+#' @param SaveOutput Set to TRUE to save your models to file
 #' @examples
 #' \dontrun{
 #' data <- Word2VecModel(data,
@@ -11583,7 +11584,8 @@ AutoWord2VecModeler <- function(data,
                                 StopWords     = NULL,
                                 SaveModel     = "standard",
                                 Threads       = 6,
-                                MaxMemory     = "28G") {
+                                MaxMemory     = "28G",
+                                SaveOutput    = FALSE) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
@@ -11636,45 +11638,47 @@ AutoWord2VecModeler <- function(data,
     )
 
     # Save model
-    if (tolower(SaveModel) == "standard") {
-      w2vPath <-
-        h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 1L,
-                      value = string)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 2L,
-                      value = w2vPath)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 3L,
-                      value = "NA")
-      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
-    } else {
-      w2vPath <-
-        h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
-      h2o::h2o.download_mojo(
-        model = w2v.model,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = string
-      )
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 1L,
-                      value = string)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 2L,
-                      value = w2vPath)
-      data.table::set(StoreFile,
-                      i = i,
-                      j = 3L,
-                      value = paste0(model_path, "/", string))
-      save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+    if(SaveOutput) {
+      if (tolower(SaveModel) == "standard") {
+        w2vPath <-
+          h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 1L,
+                        value = string)
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 2L,
+                        value = w2vPath)
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 3L,
+                        value = "NA")
+        save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+      } else {
+        w2vPath <-
+          h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+        h2o::h2o.download_mojo(
+          model = w2v.model,
+          path = model_path,
+          get_genmodel_jar = TRUE,
+          genmodel_path = model_path,
+          genmodel_name = string
+        )
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 1L,
+                        value = string)
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 2L,
+                        value = w2vPath)
+        data.table::set(StoreFile,
+                        i = i,
+                        j = 3L,
+                        value = paste0(model_path, "/", string))
+        save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+      }
     }
 
     # Score model
