@@ -12,6 +12,11 @@ tokenizeH2O(data)
 \description{
 This function tokenizes text data
 }
+\examples{
+\donttest{
+data <- tokenizeH2O(data = data[["StringColumn"]])
+}
+}
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
   \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
