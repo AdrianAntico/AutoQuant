@@ -41,7 +41,7 @@ Returns a list of predicted values. Each list element contains the predicted val
 AutoH2OScoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 }
 \examples{
-\dontrun{
+\donttest{
 # Multinomial Example
 Correl <- 0.85
 aa <- data.table::data.table(target = runif(1000))
@@ -124,8 +124,9 @@ data <- AutoH2OScoring(Features     = aa,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OModeler}},
-  \code{\link{AutoNLS}},
+Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2OModeler}}, \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
 }

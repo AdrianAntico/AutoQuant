@@ -32,7 +32,7 @@ The winning model used for scoring in the AutoRecommenderScoring function
 This function returns the winning model that you pass onto AutoRecommenderScoring
 }
 \examples{
-\dontrun{
+\donttest{
 WinningModel <- AutoRecommender(RatingsMatrix,
                                 Partition = "Split",
                                 KFolds = 2,
@@ -44,7 +44,9 @@ WinningModel <- AutoRecommender(RatingsMatrix,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OModeler}},
+Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}}, \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoTS}}

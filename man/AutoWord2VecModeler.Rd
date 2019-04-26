@@ -43,7 +43,7 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
-\dontrun{
+\donttest{
 data <- Word2VecModel(data,
                       stringCol     = c("Text_Col1",
                                         "Text_Col2"),

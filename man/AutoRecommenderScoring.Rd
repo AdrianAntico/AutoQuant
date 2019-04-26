@@ -23,7 +23,7 @@ Returns the prediction data
 This function will take your ratings matrix and model and score your data in parallel.
 }
 \examples{
-\dontrun{
+\donttest{
 # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(RecomDataCreate(TransactionData)))
 Results <- AutoRecommenderScoring(
   data = RecomDataCreate(
@@ -49,7 +49,9 @@ Results <- AutoRecommenderScoring(
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OModeler}},
+Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}}, \code{\link{AutoNLS}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
 }

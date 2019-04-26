@@ -18,6 +18,14 @@ AutoH2OTextPrepScoring(data, string, MaxMem, NThreads)
 \description{
 This function returns prepared tokenized data for H2O Word2VecModeler scoring
 }
+\examples{
+\donttest{
+data <- AutoH2OTextPrepScoring(data = x,
+                               string = "text_column",
+                               MaxMem = "28G",
+                               NThreads = 8)
+}
+}
 \seealso{
 Other Misc: \code{\link{AutoWordFreq}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},

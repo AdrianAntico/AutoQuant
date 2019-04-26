@@ -18,6 +18,8 @@ This function computes percentile ranks for each row in your data like Excel's P
 \examples{
 data <- data.table::data.table(A = runif(100))
 data[, Rank := percRank(A)]
+data <- data.table::data.table(A = runif(100))
+data[, Percentile := percRank(A)]
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},

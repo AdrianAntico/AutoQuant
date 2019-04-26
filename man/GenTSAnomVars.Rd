@@ -44,15 +44,15 @@ data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 x <- data.table::as.data.table(sde::GBM(N=10000)*1000)
 data[, predicted := x[-1,]]
-stuff    <- GenTSAnomVars(data,
-                          ValueCol    = "Target",
-                          GroupVar1   = NULL,
-                          GroupVar2   = NULL,
-                          DateVar     = "DateTime",
-                          HighThreshold        = 1.96,
-                          LowThreshold         = -1.96,
-                          KeepAllCols = TRUE,
-                          IsDataScaled  = FALSE)
+stuff <- GenTSAnomVars(data,
+                       ValueCol = "Target",
+                       GroupVar1 = NULL,
+                       GroupVar2 = NULL,
+                       DateVar = "DateTime",
+                       HighThreshold = 1.96,
+                       LowThreshold = -1.96,
+                       KeepAllCols = TRUE,
+                       IsDataScaled  = FALSE)
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{AutoKMeans}},

@@ -50,7 +50,7 @@ Original data.table with added column with cluster number identifier
 AutoKMeans adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 }
 \examples{
-\dontrun{
+\donttest{
 data <- data.table::as.data.table(iris)
 data <- AutoKMeans(data,
                    nthreads = 8,
