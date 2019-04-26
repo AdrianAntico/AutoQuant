@@ -15,10 +15,11 @@ BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Contact: Adrian Antico
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: data.table,foreach,doParallel,h2o,parallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics
-Suggests: testthat, sde, knitr, rmarkdown, methods
+Imports: data.table,foreach,doParallel,h2o,parallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics,ROCR
+Suggests: testthat,sde,knitr,rmarkdown,methods,catboost
 VignetteBuilder: knitr
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Date: 2019-04-05
 NeedsCompilation: no
-Packaged: 2019-04-05
+Packaged: 2019-04-26
+Remotes: catboost/catboost/R-package
