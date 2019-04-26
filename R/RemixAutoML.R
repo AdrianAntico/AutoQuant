@@ -4475,8 +4475,8 @@ ModelDataPrep <- function(data,
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data data is the data table with your predicted and actual values from a classification model
-#' @param PredictColNumber The column number where the predicted target variable is located (in binary form)
-#' @param ActualColNumber The column number where the actual values are located
+#' @param PredictColNumber The column number where the actual target variable is located (in binary form)
+#' @param ActualColNumber The column number where the predicted values are located
 #' @param TruePositiveCost This is the utility for generating a true positive prediction
 #' @param TrueNegativeCost This is the utility for generating a true negative prediction
 #' @param FalsePositiveCost This is the cost of generating a false positive prediction
@@ -8033,6 +8033,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param MaxModels Number of models you'd like to have returned
 #' @param TrainData Set to NULL or supply a data.table for training data
 #' @param TestData Set to NULL or supply  a data.table for validation data
+#' @param SaveToFile Set to TRUE to save models and output to model_path
+#' @param ReturnObjects Set to TRUE to return objects from functioin
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.
 #' @examples
 #' \dontrun{
@@ -8303,15 +8305,17 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'}
 #' @export
 AutoH2OModeler <- function(Construct,
-                           max_memory,
-                           ratios,
-                           BL_Trees,
-                           nthreads,
-                           model_path,
+                           max_memory        = "28G",
+                           ratios            = 0.80,
+                           BL_Trees          = 500,
+                           nthreads          = 1,
+                           model_path        = getwd(),
                            MaxRuntimeSeconds = 3600,
                            MaxModels         = 30,
                            TrainData         = NULL,
-                           TestData          = NULL) {
+                           TestData          = NULL,
+                           SaveToFile        = FALSE,
+                           ReturnObjects     = TRUE) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
@@ -8934,17 +8938,33 @@ AutoH2OModeler <- function(Construct,
   ErrorCollection <- ErrorCollection[Row != -720]
   if (nrow(ErrorCollection) >= 1) {
     ErrorCollectionLog <- ErrorCollection
-    save(ErrorCollectionLog,
-         file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
-    stop(
+    if(SaveToFile == TRUE & ReturnObjects == TRUE) {
+      print(
+        "Your model construction file has errors and
+        an error log has been returned and saved to model_path"
+      )
+      save(ErrorCollectionLog,
+           file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
+      return(ErrorCollectionLog)
+    } else if(SaveToFile == TRUE & ReturnObjects == FALSE) {
+      save(ErrorCollectionLog,
+           file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
+      stop("Your model construction file has errors and
+            an error log has been saved to your model_path"
+      )
+    } else if(SaveToFile == FALSE & ReturnObjects == TRUE) {
       print(
         "Your model construction file has errors and
         an error log has
-        been stored globally as 'ErrorCollectionLog'"
+        been returned"
       )
-    )
-  } else {
-    save(Construct, file = paste0(model_path, "/Construct.Rdata"))
+      return(ErrorCollectionLog)
+    } else {
+      stop(
+        "Your model construction file has errors and
+        an error log errors. Set ReturnObjects to TRUE to see ErrorLog"
+      )
+    }
   }
 
   # Clear table
@@ -9095,12 +9115,14 @@ AutoH2OModeler <- function(Construct,
           noise_level = 0
         )
 
-        save(x,
-             file = paste0(model_path,
-                           "/" ,
-                           Construct[i, "Targets"][[1]],
-                           "_", col,
-                           ".Rdata"))
+        if(SaveToFile == TRUE) {
+          save(x,
+               file = paste0(model_path,
+                             "/" ,
+                             Construct[i, "Targets"][[1]],
+                             "_", col,
+                             ".Rdata"))
+        }
       }
 
       # Modify feature reference
@@ -9760,8 +9782,10 @@ AutoH2OModeler <- function(Construct,
             j = 2L,
             value = save_model
           )
-          save(grid_tuned_paths,
-               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if(SaveToFile == TRUE) {
+            save(grid_tuned_paths,
+                 file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          }
         } else {
           save_model <-
             h2o::h2o.saveMojo(object = best_model,
@@ -9786,30 +9810,36 @@ AutoH2OModeler <- function(Construct,
             j = 6L,
             value = paste0(model_path, "\\", Construct[i, 5][[1]])
           )
-          save(grid_tuned_paths,
-               file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if(SaveToFile == TRUE) {
+            save(grid_tuned_paths,
+                 file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          }
         }
       }
 
       # Save VarImp and VarNOTImp
       if (best_model@algorithm != "stackedensemble") {
         VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
-        save(VIMP,
-             file = paste0(model_path,
-                           "/VarImp_",
-                           Construct[i, 5][[1]],
-                           ".Rdata"))
+        if(SaveToFile == TRUE) {
+          save(VIMP,
+               file = paste0(model_path,
+                             "/VarImp_",
+                             Construct[i, 5][[1]],
+                             ".Rdata"))
+        }
         if (tolower(best_model@algorithm) != "glm") {
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
         } else {
           NIF <- NULL
         }
         if (length(NIF) > 0) {
-          save(NIF,
-               file = paste0(model_path,
-                             "/VarNOTImp_",
-                             Construct[i, 5][[1]],
-                             ".Rdata"))
+          if(SaveToFile == TRUE) {
+            save(NIF,
+                 file = paste0(model_path,
+                               "/VarNOTImp_",
+                               Construct[i, 5][[1]],
+                               ".Rdata"))
+          }
         }
       } else {
         data.table::set(Construct,
@@ -9823,11 +9853,13 @@ AutoH2OModeler <- function(Construct,
       if (Construct[i, 14][[1]] == "All") {
         predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
         PredsPD <- data.table::as.data.table(predsPD)
-        data.table::fwrite(PredsPD,
-                           file = paste0(model_path,
-                                         "/",
-                                         Construct[i, 5][[1]],
-                                         "_PredsAll.csv"))
+        if(SaveToFile == TRUE) {
+          data.table::fwrite(PredsPD,
+                             file = paste0(model_path,
+                                           "/",
+                                           Construct[i, 5][[1]],
+                                           "_PredsAll.csv"))
+        }
       } else if (Construct[i, 14][[1]] == "Train") {
         predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
       } else if (Construct[i, 14][[1]] == "Validate") {
@@ -9857,8 +9889,10 @@ AutoH2OModeler <- function(Construct,
                 j = 2L,
                 value = save_model
               )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             } else {
               save_model <-
                 h2o::h2o.saveMojo(object = best_model,
@@ -9883,26 +9917,32 @@ AutoH2OModeler <- function(Construct,
                 j = 6L,
                 value = paste0(model_path, "\\", Construct[i, 5][[1]])
               )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             }
           }
 
           # Save VarImp and VarNOTImp
           VIMP <-
             data.table::as.data.table(h2o::h2o.varimp(best_model))
-          save(VIMP,
-               file = paste0(model_path,
-                             "/VarImp_",
-                             Construct[i, 5][[1]],
-                             ".Rdata"))
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-          if (length(NIF) > 0) {
-            save(NIF,
+          if(SaveToFile == TRUE) {
+            save(VIMP,
                  file = paste0(model_path,
-                               "/VarNOTImp_",
+                               "/VarImp_",
                                Construct[i, 5][[1]],
                                ".Rdata"))
+          }
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+          if (length(NIF) > 0) {
+            if(SaveToFile == TRUE) {
+              save(NIF,
+                   file = paste0(model_path,
+                                 "/VarNOTImp_",
+                                 Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
           }
 
           # Gather predicted values
@@ -9911,11 +9951,13 @@ AutoH2OModeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
             PredsPD <- as.data.table(predsPD)
-            data.table::fwrite(PredsPD,
-                               file = paste0(model_path,
-                                             "/",
-                                             Construct[i, 5][[1]],
-                                             "_PredsAll.csv"))
+            if(SaveToFile == TRUE) {
+              data.table::fwrite(PredsPD,
+                                 file = paste0(model_path,
+                                               "/",
+                                               Construct[i, 5][[1]],
+                                               "_PredsAll.csv"))
+            }
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -9925,64 +9967,76 @@ AutoH2OModeler <- function(Construct,
           # Save model
           if (Construct[i, 21][[1]] == TRUE) {
             if (grid_tuned_paths[i, 2][[1]] != "a")
-              file.remove(grid_tuned_paths[i, 2][[1]])
+              if(SaveToFile == TRUE) {
+                file.remove(grid_tuned_paths[i, 2][[1]])
+              }
             if (tolower(Construct[i, 22][[1]]) == "standard") {
-              save_model <-
-                h2o::h2o.saveModel(object = bl_model,
-                                   path = model_path,
-                                   force = TRUE)
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveModel(object = bl_model,
+                                     path = model_path,
+                                     force = TRUE)
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                if(SaveToFile == TRUE) {
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
+              }
             } else {
-              save_model <-
-                h2o::h2o.saveMojo(object = bl_model,
-                                  path = model_path,
-                                  force = TRUE)
-              h2o::h2o.download_mojo(
-                model = bl_model,
-                path = model_path,
-                get_genmodel_jar = TRUE,
-                genmodel_path = model_path,
-                genmodel_name = Construct[i, 5][[1]]
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 6L,
-                value = paste0(model_path, "\\", Construct[i, 5][[1]])
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveMojo(object = bl_model,
+                                    path = model_path,
+                                    force = TRUE)
+                h2o::h2o.download_mojo(
+                  model = bl_model,
+                  path = model_path,
+                  get_genmodel_jar = TRUE,
+                  genmodel_path = model_path,
+                  genmodel_name = Construct[i, 5][[1]]
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 6L,
+                  value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                )
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             }
           }
 
           # Save VarImp
           VIMP <-
             data.table::as.data.table(h2o::h2o.varimp(bl_model))
-          save(VIMP,
-               file = paste0(model_path,
-                             "/VarImp_",
-                             Construct[i, 5][[1]],
-                             ".Rdata"))
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-          if (length(NIF) > 0) {
-            save(NIF,
+          if(SaveToFile == TRUE) {
+            save(VIMP,
                  file = paste0(model_path,
-                               "/VarNOTImp_",
+                               "/VarImp_",
                                Construct[i, 5][[1]],
                                ".Rdata"))
+          }
+          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+          if (length(NIF) > 0) {
+            if(SaveToFile == TRUE) {
+              save(NIF,
+                   file = paste0(model_path,
+                                 "/VarNOTImp_",
+                                 Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
           }
 
           # Gather predicted values
@@ -9991,10 +10045,12 @@ AutoH2OModeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
             PredsPD <- data.table::as.data.table(predsPD)
-            data.table::fwrite(PredsPD,
-                               file = paste0(model_path,
-                                             "/", Construct[i, 5][[1]],
-                                             "_PredsAll.csv"))
+            if(SaveToFile == TRUE) {
+              data.table::fwrite(PredsPD,
+                                 file = paste0(model_path,
+                                               "/", Construct[i, 5][[1]],
+                                               "_PredsAll.csv"))
+            }
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -10006,46 +10062,52 @@ AutoH2OModeler <- function(Construct,
           # Save model
           if (Construct[i, 21][[1]] == TRUE) {
             if (grid_tuned_paths[i, 2][[1]] != "a")
-              file.remove(grid_tuned_paths[i, 2][[1]])
+              if(SaveToFile == TRUE) {
+                file.remove(grid_tuned_paths[i, 2][[1]])
+              }
             if (tolower(Construct[i, 22][[1]]) == "standard") {
-              save_model <-
-                h2o::h2o.saveModel(object = best_model,
-                                   path = model_path,
-                                   force = TRUE)
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveModel(object = best_model,
+                                     path = model_path,
+                                     force = TRUE)
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             } else {
-              save_model <-
-                h2o::h2o.saveMojo(object = best_model,
-                                  path = model_path,
-                                  force = TRUE)
-              h2o::h2o.download_mojo(
-                model = best_model,
-                path = model_path,
-                get_genmodel_jar = TRUE,
-                genmodel_path = model_path,
-                genmodel_name = Construct[i, 5][[1]]
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 6L,
-                value = paste0(model_path, "\\", Construct[i, 5][[1]])
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveMojo(object = best_model,
+                                    path = model_path,
+                                    force = TRUE)
+                h2o::h2o.download_mojo(
+                  model = best_model,
+                  path = model_path,
+                  get_genmodel_jar = TRUE,
+                  genmodel_path = model_path,
+                  genmodel_name = Construct[i, 5][[1]]
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 6L,
+                  value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                )
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             }
           }
 
@@ -10106,16 +10168,20 @@ AutoH2OModeler <- function(Construct,
           # Save VarImp
           VIMP <-
             data.table::as.data.table(h2o::h2o.varimp(best_model))
-          save(VIMP,
-               file = paste0(model_path,
-                             "/VarImp_", Construct[i, 5][[1]],
-                             ".Rdata"))
+          if(SaveToFile == TRUE) {
+            save(VIMP,
+                 file = paste0(model_path,
+                               "/VarImp_", Construct[i, 5][[1]],
+                               ".Rdata"))
+          }
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF,
-                 file = paste0(model_path,
-                               "/VarNOTImp_", Construct[i, 5][[1]],
-                               ".Rdata"))
+            if(SaveToFile == TRUE) {
+              save(NIF,
+                   file = paste0(model_path,
+                                 "/VarNOTImp_", Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
           }
 
           # Gather predicted values
@@ -10124,10 +10190,12 @@ AutoH2OModeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
-            data.table::fwrite(PredsPD,
-                               file = paste0(model_path,
-                                             "/", Construct[i, 5][[1]],
-                                             "_PredsAll.csv"))
+            if(SaveToFile == TRUE) {
+              data.table::fwrite(PredsPD,
+                                 file = paste0(model_path,
+                                               "/", Construct[i, 5][[1]],
+                                               "_PredsAll.csv"))
+            }
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 3]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -10137,46 +10205,52 @@ AutoH2OModeler <- function(Construct,
           # Save model
           if (Construct[i, 21][[1]] == TRUE) {
             if (grid_tuned_paths[i, 2][[1]] != "a")
-              file.remove(grid_tuned_paths[i, 2][[1]])
+              if(SaveToFile == TRUE) {
+                file.remove(grid_tuned_paths[i, 2][[1]])
+              }
             if (tolower(Construct[i, 22][[1]]) == "standard") {
-              save_model <-
-                h2o::h2o.saveModel(object = bl_model,
-                                   path = model_path,
-                                   force = TRUE)
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveModel(object = bl_model,
+                                     path = model_path,
+                                     force = TRUE)
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             } else {
-              save_model <-
-                h2o::h2o.saveMojo(object = bl_model,
-                                  path = model_path,
-                                  force = TRUE)
-              h2o::h2o.download_mojo(
-                model = bl_model,
-                path = model_path,
-                get_genmodel_jar = TRUE,
-                genmodel_path = model_path,
-                genmodel_name = Construct[i, 5][[1]]
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 6L,
-                value = paste0(model_path, "\\", Construct[i, 5][[1]])
-              )
-              save(grid_tuned_paths,
-                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              if(SaveToFile == TRUE) {
+                save_model <-
+                  h2o::h2o.saveMojo(object = bl_model,
+                                    path = model_path,
+                                    force = TRUE)
+                h2o::h2o.download_mojo(
+                  model = bl_model,
+                  path = model_path,
+                  get_genmodel_jar = TRUE,
+                  genmodel_path = model_path,
+                  genmodel_name = Construct[i, 5][[1]]
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 2L,
+                  value = save_model
+                )
+                data.table::set(
+                  grid_tuned_paths,
+                  i = i,
+                  j = 6L,
+                  value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                )
+                save(grid_tuned_paths,
+                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+              }
             }
           }
 
@@ -10234,16 +10308,20 @@ AutoH2OModeler <- function(Construct,
           # Save VarImp
           VIMP <-
             data.table::as.data.table(h2o::h2o.varimp(bl_model))
-          save(VIMP,
-               file = paste0(model_path,
-                             "/VarImp_", Construct[i, 5][[1]],
-                             ".Rdata"))
+          if(SaveToFile == TRUE) {
+            save(VIMP,
+                 file = paste0(model_path,
+                               "/VarImp_", Construct[i, 5][[1]],
+                               ".Rdata"))
+          }
           NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
           if (length(NIF) > 0) {
-            save(NIF,
-                 file = paste0(model_path,
-                               "/VarNOTImp_", Construct[i, 5][[1]],
-                               ".Rdata"))
+            if(SaveToFile == TRUE) {
+              save(NIF,
+                   file = paste0(model_path,
+                                 "/VarNOTImp_", Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
           }
 
           # Gather predicted values
@@ -10252,11 +10330,13 @@ AutoH2OModeler <- function(Construct,
           if (Construct[i, 14][[1]] == "All") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
             PredsPD <- data.table::as.data.table(predsPD)
-            data.table::fwrite(PredsPD,
-                               file = paste0(model_path,
-                                             "/",
-                                             Construct[i, 5][[1]],
-                                             "_PredsAll.csv"))
+            if(SaveToFile == TRUE) {
+              data.table::fwrite(PredsPD,
+                                 file = paste0(model_path,
+                                               "/",
+                                               Construct[i, 5][[1]],
+                                               "_PredsAll.csv"))
+            }
           } else if (Construct[i, 14][[1]] == "Train") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
           } else if (Construct[i, 14][[1]] == "Validate") {
@@ -10268,48 +10348,54 @@ AutoH2OModeler <- function(Construct,
       # Save model
       if (Construct[i, 21][[1]] == TRUE) {
         if (grid_tuned_paths[i, 2][[1]] != "a")
-          file.remove(grid_tuned_paths[i, 2][[1]])
+          if(SaveToFile == TRUE) {
+            file.remove(grid_tuned_paths[i, 2][[1]])
+          }
         if (tolower(Construct[i, 22][[1]]) == "standard") {
-          save_model <-
-            h2o::h2o.saveModel(object = bl_model,
-                               path = model_path,
-                               force = TRUE)
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 2L,
-            value = save_model
-          )
-          save(grid_tuned_paths,
-               file = paste0(model_path,
-                             "/grid_tuned_paths.Rdata"))
+          if(SaveToFile == TRUE) {
+            save_model <-
+              h2o::h2o.saveModel(object = bl_model,
+                                 path = model_path,
+                                 force = TRUE)
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 2L,
+              value = save_model
+            )
+            save(grid_tuned_paths,
+                 file = paste0(model_path,
+                               "/grid_tuned_paths.Rdata"))
+          }
         } else {
-          save_model <-
-            h2o::h2o.saveMojo(object = bl_model,
-                              path = model_path,
-                              force = TRUE)
-          h2o::h2o.download_mojo(
-            model = bl_model,
-            path = model_path,
-            get_genmodel_jar = TRUE,
-            genmodel_path = model_path,
-            genmodel_name = Construct[i, 5][[1]]
-          )
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 2L,
-            value = save_model
-          )
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 6L,
-            value = paste0(model_path, "\\", Construct[i, 5][[1]])
-          )
-          save(grid_tuned_paths,
-               file = paste0(model_path,
-                             "/grid_tuned_paths.Rdata"))
+          if(SaveToFile == TRUE) {
+            save_model <-
+              h2o::h2o.saveMojo(object = bl_model,
+                                path = model_path,
+                                force = TRUE)
+            h2o::h2o.download_mojo(
+              model = bl_model,
+              path = model_path,
+              get_genmodel_jar = TRUE,
+              genmodel_path = model_path,
+              genmodel_name = Construct[i, 5][[1]]
+            )
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 2L,
+              value = save_model
+            )
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 6L,
+              value = paste0(model_path, "\\", Construct[i, 5][[1]])
+            )
+            save(grid_tuned_paths,
+                 file = paste0(model_path,
+                               "/grid_tuned_paths.Rdata"))
+          }
         }
       }
 
@@ -10368,10 +10454,12 @@ AutoH2OModeler <- function(Construct,
         if (tolower(Construct[i, 14][[1]]) == "all") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
           PredsPD <- data.table::as.data.table(predsPD)
-          fwrite(PredsPD,
-                 file = paste0(model_path,
-                               "/", Construct[i, 5][[1]],
-                               "_PredsAll.csv"))
+          if(SaveToFile == TRUE) {
+            fwrite(PredsPD,
+                   file = paste0(model_path,
+                                 "/", Construct[i, 5][[1]],
+                                 "_PredsAll.csv"))
+          }
         } else if (tolower(Construct[i, 14][[1]]) == "train") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
         } else if (tolower(Construct[i, 14][[1]]) == "validate") {
@@ -10383,11 +10471,13 @@ AutoH2OModeler <- function(Construct,
         if (tolower(Construct[i, 14][[1]]) == "all") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
           PredsPD <- data.table::as.data.table(predsPD)
-          data.table::fwrite(PredsPD,
-                             file = paste0(model_path,
-                                           "/",
-                                           Construct[i, 5][[1]],
-                                           "_PredsAll.csv"))
+          if(SaveToFile == TRUE) {
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/",
+                                             Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
+          }
         } else if (tolower(Construct[i, 14][[1]]) == "train") {
           predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
         } else if (tolower(Construct[i, 14][[1]]) == "validate") {
@@ -10397,18 +10487,22 @@ AutoH2OModeler <- function(Construct,
 
       # Save VarImp
       VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
-      save(VIMP,
-           file = paste0(model_path,
-                         "/VarImp_",
-                         Construct[i, 5][[1]],
-                         ".Rdata"))
-      NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-      if (length(NIF) > 0) {
-        save(NIF,
+      if(SaveToFile == TRUE) {
+        save(VIMP,
              file = paste0(model_path,
-                           "/VarNOTImp_",
+                           "/VarImp_",
                            Construct[i, 5][[1]],
                            ".Rdata"))
+      }
+      NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+      if (length(NIF) > 0) {
+        if(SaveToFile == TRUE) {
+          save(NIF,
+               file = paste0(model_path,
+                             "/VarNOTImp_",
+                             Construct[i, 5][[1]],
+                             ".Rdata"))
+        }
       }
     }
 
@@ -10441,20 +10535,24 @@ AutoH2OModeler <- function(Construct,
         calib <- as.data.table(h2o::h2o.cbind(predsPD, validate))
       }
       if (Construct[i, 12][[1]]) {
-        save(calibEval,
-             file = paste0(model_path,
-                           "/", Construct[i, 5][[1]],
-                           "_Validation.Rdata"))
+        if(SaveToFile == TRUE) {
+          save(calibEval,
+               file = paste0(model_path,
+                             "/", Construct[i, 5][[1]],
+                             "_Validation.Rdata"))
+        }
       }
     } else {
       if (Construct[i, 12][[1]]) {
         calibEval <-
           data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        save(calibEval,
-             file = paste0(model_path,
-                           "/",
-                           Construct[i, 5][[1]],
-                           "_Validation.Rdata"))
+        if(SaveToFile == TRUE) {
+          save(calibEval,
+               file = paste0(model_path,
+                             "/",
+                             Construct[i, 5][[1]],
+                             "_Validation.Rdata"))
+        }
       }
     }
     predName <- names(calibration[, 1])
@@ -10492,10 +10590,12 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
         )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
 
         # Calibration boxplot
         out2 <- EvalPlot(
@@ -10511,10 +10611,12 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
         )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalBP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalBP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
       } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                       "binomial",
                                                       "bernoulli")) {
@@ -10549,10 +10651,12 @@ AutoH2OModeler <- function(Construct,
         if (exists("Thresh")) {
           out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
         }
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
       } else {
 
         # Store best metric
@@ -10582,10 +10686,12 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
         )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
 
         # Calibration boxplot
         out2 <- EvalPlot(
@@ -10601,10 +10707,12 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
         )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalBP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalBP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
       }
     } else {
       # Multinomial case
@@ -10618,10 +10726,12 @@ AutoH2OModeler <- function(Construct,
         if (Construct[i, 12][[1]]) {
           calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
                                                             preds))
-          save(calib, file = paste0(model_path,
-                                    "/",
-                                    Construct[i, 5][[1]],
-                                    "_Validation.Rdata"))
+          if(SaveToFile == TRUE) {
+            save(calib, file = paste0(model_path,
+                                      "/",
+                                      Construct[i, 5][[1]],
+                                      "_Validation.Rdata"))
+          }
         }
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
@@ -10685,10 +10795,12 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
         )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]],
-                               ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalP_",
+                                 Construct[i, 5][[1]],
+                                 ".png"))
+        }
 
       } else {
         predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
@@ -10699,10 +10811,12 @@ AutoH2OModeler <- function(Construct,
         if (Construct[i, 12][[1]]) {
           calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
                                                             preds))
-          save(calib, file = paste0(model_path,
-                                    "/",
-                                    Construct[i, 5][[1]],
-                                    "_Validation.Rdata"))
+          if(SaveToFile == TRUE) {
+            save(calib, file = paste0(model_path,
+                                      "/",
+                                      Construct[i, 5][[1]],
+                                      "_Validation.Rdata"))
+          }
         }
         N <- (ncol(xx) - 2)
         data <- eval(parse(text = Construct[i, 7][[1]]))
@@ -10757,9 +10871,11 @@ AutoH2OModeler <- function(Construct,
                  ": ",
                  round(val,4))
           )
-        ggplot2::ggsave(paste0(model_path,
-                               "/CalP_",
-                               Construct[i, 5][[1]], ".png"))
+        if(SaveToFile == TRUE) {
+          ggplot2::ggsave(paste0(model_path,
+                                 "/CalP_",
+                                 Construct[i, 5][[1]], ".png"))
+        }
       }
 
       # Store micro auc
@@ -10852,26 +10968,30 @@ AutoH2OModeler <- function(Construct,
         if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                    "binomial",
                                                    "bernoulli"))) {
-          save(
-            boxplotr,
-            file = paste0(
-              model_path,
-              "/",
-              Construct[i, 5][[1]],
-              "_ParDepCalBoxPlots.Rdata"
+          if(SaveToFile == TRUE) {
+            save(
+              boxplotr,
+              file = paste0(
+                model_path,
+                "/",
+                Construct[i, 5][[1]],
+                "_ParDepCalBoxPlots.Rdata"
+              )
             )
-          )
+          }
+          save(calibr,
+               file = paste0(model_path,
+                             "/", Construct[i, 5][[1]],
+                             "_ParDepCalPlots.Rdata"))
         }
-        save(calibr,
-             file = paste0(model_path,
-                           "/", Construct[i, 5][[1]],
-                           "_ParDepCalPlots.Rdata"))
       }
     }
 
     # Save grid_tuned_paths
-    save(grid_tuned_paths,
-         file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+    if(SaveToFile == TRUE) {
+      save(grid_tuned_paths,
+           file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+    }
 
     # Clear H2O environment between runs
     h2o::h2o.rm(data_h2o)
@@ -10950,6 +11070,7 @@ AutoH2OModeler <- function(Construct,
 #' @param NThreads Number of available threads for H2O
 #' @param MaxMem Amount of memory to dedicate to H2O
 #' @param JavaOptions Modify to your machine if the default doesn't work
+#' @param SaveToFile Set to TRUE if you want your model scores saved to file.
 #' @param FilesPath Set this to the folder where your models and model files are saved
 #' @param H20ShutDown TRUE to shutdown H2O after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
 #' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
@@ -11044,6 +11165,7 @@ AutoH2OScoring <- function(Features     = data,
                            NThreads     = 6,
                            MaxMem       = "28G",
                            JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+                           SaveToFile   = TRUE,
                            FilesPath    = getwd(),
                            H20ShutDown  = rep(FALSE,3)) {
 
@@ -11104,7 +11226,9 @@ AutoH2OScoring <- function(Features     = data,
     if(tolower(ScoreMethod) == "mojo") {
       if(tolower(TargetType[i]) == "multinomial") {
         if(tolower(ClassVals[i]) == c("probs")) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11113,7 +11237,9 @@ AutoH2OScoring <- function(Features     = data,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,-1])
         } else if(tolower(ClassVals[i]) == "label") {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11123,7 +11249,9 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE)[,1])
           data.table::setnames(Scores, "predict","Class")
         } else if (tolower(ClassVals[i]) == "all") {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11137,7 +11265,9 @@ AutoH2OScoring <- function(Features     = data,
         }
       } else if(tolower(TargetType[i]) == "classification") {
         if(tolower(ClassVals[i]) == c("p1")) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11146,7 +11276,9 @@ AutoH2OScoring <- function(Features     = data,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)[,3])
         } else if(tolower(ClassVals[i]) == c("probs")) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11165,7 +11297,9 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE)[,1])
           data.table::setnames(Scores, "predict","Class")
         } else if(tolower(ClassVals[i]) == "all") {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
             h2o::h2o.mojo_predict_csv(
               input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11178,7 +11312,9 @@ AutoH2OScoring <- function(Features     = data,
           stop("ClassVals can only be Probs, Label or All")
         }
       } else if(tolower(TargetType[i]) == "regression") {
-        data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        if(SaveToFile) {
+          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        }
         Scores <- data.table::as.data.table(
           h2o::h2o.mojo_predict_csv(
             input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11190,7 +11326,9 @@ AutoH2OScoring <- function(Features     = data,
         keep <- StoreFile[i,1][[1]]
         temp <- AutoH2OTextPrepScoring(data = Features[, ..keep],
                                        string = StoreFile[i,1][[1]])
-        data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        if(SaveToFile) {
+          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        }
         Scores <- data.table::as.data.table(
           h2o::h2o.mojo_predict_csv(
             input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11199,7 +11337,9 @@ AutoH2OScoring <- function(Features     = data,
             genmodel_jar_path = StoreFile[i,3][[1]],
             verbose = FALSE))
       } else if(tolower(TargetType[i]) == "multioutcome") {
-        data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        if(SaveToFile) {
+          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+        }
         Counts <- as.numeric(
           as.character(
             h2o::h2o.mojo_predict_csv(
@@ -11208,7 +11348,9 @@ AutoH2OScoring <- function(Features     = data,
               java_options = JavaOptions,
               genmodel_jar_path = grid_tuned_paths[i,6][[1]],
               verbose = FALSE)))
-        data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+        if(SaveToFile) {
+          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+        }
         Temp <- data.table::as.data.table(
           h2o::h2o.mojo_predict_csv(
             input_csv_path = file.path(FilesPath,'Features.csv'),
@@ -11370,9 +11512,6 @@ AutoH2OScoring <- function(Features     = data,
 #' @author Adrian Antico
 #' @family Misc
 #' @param data The text data
-#' \donttest{
-#' temp <- tokenizeH2O(data[["StringColumn"]])          
-#' }
 #' @export
 tokenizeH2O <- function(data) {
   # Ensure packages are available
