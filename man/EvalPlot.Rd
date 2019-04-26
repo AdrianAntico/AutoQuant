@@ -14,7 +14,7 @@ EvalPlot(data, PredictionColName = c("PredictedValues"),
 
 \item{PredictionColName}{String representation of column name with predicted values from model}
 
-\item{TargetColName}{String representation of column name with actual values from model}
+\item{TargetColName}{String representation of column name with target values from model}
 
 \item{GraphType}{Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation}
 

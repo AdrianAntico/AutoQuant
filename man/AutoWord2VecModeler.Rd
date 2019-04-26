@@ -8,7 +8,7 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = getwd(), vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
   Epochs = 25, StopWords = NULL, SaveModel = "standard",
-  Threads = 6, MaxMemory = "28G")
+  Threads = 6, MaxMemory = "28G", SaveOutput = FALSE)
 }
 \arguments{
 \item{data}{Source data table to merge vects onto}
@@ -36,6 +36,8 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 \item{Threads}{Number of available threads you want to dedicate to model building}
 
 \item{MaxMemory}{Amount of memory you want to dedicate to model building}
+
+\item{SaveOutput}{Set to TRUE to save your models to file}
 }
 \description{
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset

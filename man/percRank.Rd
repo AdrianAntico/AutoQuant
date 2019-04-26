@@ -9,13 +9,15 @@ percRank(x)
 \arguments{
 \item{x}{X is your variable of interest}
 }
+\value{
+vector of percentile ranks
+}
 \description{
 This function computes percentile ranks for each row in your data like Excel's PERCENT_RANK
 }
 \examples{
 data <- data.table::data.table(A = runif(100))
 data[, Rank := percRank(A)]
-#' @return vector of percentile ranks
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
