@@ -12,9 +12,9 @@ RedYellowGreen(data, PredictColNumber = 2, ActualColNumber = 1,
 \arguments{
 \item{data}{data is the data table with your predicted and actual values from a classification model}
 
-\item{PredictColNumber}{The column number where the actual target variable is located (in binary form)}
+\item{PredictColNumber}{The column number where the prediction variable is located (in binary form)}
 
-\item{ActualColNumber}{The column number where the predicted values are located}
+\item{ActualColNumber}{The column number where the target variable is located}
 
 \item{TruePositiveCost}{This is the utility for generating a true positive prediction}
 

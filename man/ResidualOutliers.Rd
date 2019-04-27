@@ -15,7 +15,7 @@ ResidualOutliers(data, DateColName = "DateTime",
 
 \item{TargetColName}{The name of your target variable column}
 
-\item{PredictedColName}{The name of your predicted value. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.}
+\item{PredictedColName}{The name of your predicted value column. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.}
 
 \item{TimeUnit}{The time unit of your date column: hour, day, week, month, quarter, year}
 

@@ -12,7 +12,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
 
-\item{TargetName}{is the name of the dependent variable in your data.table}
+\item{TargetName}{is the name of the target variable in your data.table}
 
 \item{DateName}{is the name of the date column in your data.table}
 
