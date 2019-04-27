@@ -5,7 +5,7 @@
 \title{AutoKMeans Automated row clustering for mixed column types}
 \usage{
 AutoKMeans(data, nthreads = 4, MaxMem = "14G", SaveModels = NULL,
-  PathFile = getwd(), GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
+  PathFile = NULL, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
   glrmCols = c(1:5), IgnoreConstCols = TRUE, glrmFactors = 5,
   Loss = "Absolute", glrmMaxIters = 1000, SVDMethod = "Randomized",
   MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
@@ -56,7 +56,7 @@ data <- AutoKMeans(data,
                    nthreads = 8,
                    MaxMem = "28G",
                    SaveModels = NULL,
-                   PathFile = getwd(),
+                   PathFile = NULL,
                    GridTuneGLRM = TRUE,
                    GridTuneKMeans = TRUE,
                    glrmCols = 1:(ncol(data)-1),
@@ -66,7 +66,8 @@ data <- AutoKMeans(data,
                    glrmMaxIters = 1000,
                    SVDMethod = "Randomized",
                    MaxRunTimeSecs = 3600,
-                   KMeansK = 5)
+                   KMeansK = 5,
+                   KMeansMetric = "totss")
 unique(data[["Species"]])
 unique(data[["ClusterID"]])
 temp <- data[, mean(ClusterID), by = "Species"]

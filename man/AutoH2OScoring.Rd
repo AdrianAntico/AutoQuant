@@ -8,8 +8,7 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
   ScoreMethod = "Standard", TargetType = rep("multinomial", 3),
   ClassVals = rep("probs", 3), NThreads = 6, MaxMem = "28G",
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
-  SaveToFile = TRUE, FilesPath = getwd(), H20ShutDown = rep(FALSE,
-  3))
+  SaveToFile = FALSE, FilesPath = NULL, H20ShutDown = rep(FALSE, 3))
 }
 \arguments{
 \item{Features}{This is a data.table of features for scoring.}
@@ -104,11 +103,13 @@ AutoH2OModeler(Construct,
                ratios = 0.75,
                BL_Trees = 500,
                nthreads = 5,
-               model_path = getwd(),
+               model_path = NULL,
                MaxRuntimeSeconds = 3600,
                MaxModels = 30,
                TrainData = NULL,
-               TestData  = NULL)
+               TestData  = NULL,
+               SaveToFile = FALSE,
+               ReturnObjects = TRUE)
 
 N <- 3
 data <- AutoH2OScoring(Features     = aa,
@@ -119,7 +120,8 @@ data <- AutoH2OScoring(Features     = aa,
                        NThreads     = 6,
                        MaxMem       = "28G",
                        JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-                       FilesPath    = getwd(),
+                       SaveToFile   = FALSE,
+                       FilesPath    = NULL,
                        H20ShutDown  = rep(FALSE,N))
 }
 }

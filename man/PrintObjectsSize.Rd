@@ -10,13 +10,13 @@ PrintObjectsSize(N = 10)
 \item{N}{The number of objects to display}
 }
 \value{
-The objects in your environment and their sizes
+A print to your console of the sizes of the objects in your environment
 }
 \description{
 PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 }
 \examples{
-\dontrun{
+\donttest{
 PrintObjectsSize(N = 10)
 }
 }

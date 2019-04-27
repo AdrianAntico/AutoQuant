@@ -5,7 +5,7 @@
 \title{Automated word2vec data generation via H2O}
 \usage{
 AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
-  KeepStringCol = FALSE, model_path = getwd(), vects = 100,
+  KeepStringCol = FALSE, model_path = NULL, vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
   Epochs = 25, StopWords = NULL, SaveModel = "standard",
   Threads = 6, MaxMemory = "28G", SaveOutput = FALSE)
@@ -44,20 +44,20 @@ This function allows you to automatically build a word2vec model and merge the d
 }
 \examples{
 \donttest{
-data <- Word2VecModel(data,
-                      stringCol     = c("Text_Col1",
-                                        "Text_Col2"),
-                      KeepStringCol = FALSE,
-                      model_path    = getwd(),
-                      vects         = 100,
-                      SaveStopWords = FALSE,
-                      MinWords      = 1,
-                      WindowSize    = 1,
-                      Epochs        = 25,
-                      StopWords     = NULL,
-                      SaveModel     = "standard",
-                      Threads       = 6,
-                      MaxMemory     = "28G")
+data <- AutoWord2VecModeler(data,
+                            stringCol = c("Text_Col1",
+                                          "Text_Col2"),
+                            KeepStringCol = FALSE,
+                            model_path = NULL,
+                            vects = 100,
+                            SaveStopWords = FALSE,
+                            MinWords = 1,
+                            WindowSize = 1,
+                            Epochs = 25,
+                            StopWords = NULL,
+                            SaveModel = "standard",
+                            Threads = 6,
+                            MaxMemory = "28G")
 }
 }
 \seealso{

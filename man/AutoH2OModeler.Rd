@@ -5,7 +5,7 @@
 \title{An Automated Machine Learning Framework using H2O}
 \usage{
 AutoH2OModeler(Construct, max_memory = "28G", ratios = 0.8,
-  BL_Trees = 500, nthreads = 1, model_path = getwd(),
+  BL_Trees = 500, nthreads = 1, model_path = NULL,
   MaxRuntimeSeconds = 3600, MaxModels = 30, TrainData = NULL,
   TestData = NULL, SaveToFile = FALSE, ReturnObjects = TRUE)
 }
@@ -171,11 +171,13 @@ AutoH2OModeler(Construct,
                ratios = 0.75,
                BL_Trees = 500,
                nthreads = 5,
-               model_path = getwd(),
+               model_path = NULL,
                MaxRuntimeSeconds = 3600,
                MaxModels = 30,
                TrainData = NULL,
-               TestData  = NULL)
+               TestData  = NULL,
+               SaveToFile = FALSE,
+               ReturnObjects = TRUE)
 
 # Multinomial Example
 Correl <- 0.85
@@ -239,11 +241,13 @@ AutoH2OModeler(Construct,
                ratios = 0.75,
                BL_Trees = 500,
                nthreads = 5,
-               model_path = getwd(),
+               model_path = NULL,
                MaxRuntimeSeconds = 3600,
                MaxModels = 30,
                TrainData = NULL,
-               TestData  = NULL)
+               TestData  = NULL,
+               SaveToFile = FALSE,
+               ReturnObjects = TRUE)
 
 # Regression Example
 Correl <- 0.85
@@ -305,11 +309,13 @@ AutoH2OModeler(Construct,
                ratios = 0.75,
                BL_Trees = 500,
                nthreads = 5,
-               model_path = getwd(),
+               model_path = NULL,
                MaxRuntimeSeconds = 3600,
                MaxModels = 30,
                TrainData = NULL,
-               TestData  = NULL)
+               TestData  = NULL,
+               SaveToFile = FALSE,
+               ReturnObjects = TRUE)
 
 # Quantile Regression Example
 Correl <- 0.85
@@ -369,11 +375,13 @@ AutoH2OModeler(Construct,
                ratios = 0.75,
                BL_Trees = 500,
                nthreads = 5,
-               model_path = getwd(),
+               model_path = NULL,
                MaxRuntimeSeconds = 3600,
                MaxModels = 30,
                TrainData = NULL,
-               TestData  = NULL)
+               TestData  = NULL,
+               SaveToFile = FALSE,
+               ReturnObjects = TRUE)
 }
 }
 \seealso{

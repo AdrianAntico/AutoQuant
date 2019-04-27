@@ -21,7 +21,7 @@ AutoCatBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{CatFeatures}{A vector of ZERO INDEXED column numbers of your categorical features.}
+\item{CatFeatures}{A vector of column numbers of your categorical features.}
 
 \item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
@@ -50,10 +50,10 @@ AutoCatBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 }
 \value{
-Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
+Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
 }
 \description{
-AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 }
 \examples{
 \donttest{
@@ -100,7 +100,7 @@ TestModel <- AutoCatBoostRegression(data,
                                     grid_eval_metric = "r2",
                                     Trees = 50,
                                     GridTune = FALSE,
-                                    model_path = getwd(),
+                                    model_path = NULL,
                                     ModelID = "ModelTest",
                                     NumOfParDepPlots = 3,
                                     ReturnModelObjects = TRUE,
