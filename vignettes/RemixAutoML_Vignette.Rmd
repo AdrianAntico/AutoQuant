@@ -46,7 +46,7 @@ In other modeling frameworks, such as Python, you need to convert your categoric
 We are living in a world now where text data is becoming more readily available. Now, you can simply run the **AutoWord2VecModeler()** function to build models for all your text columns, save the models, and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
 
 ### **Machine learning algorithms**
-I've seen several packages and automated machine learning software that brags about all the models they have available. However, when you've been doing this work as long as I have, you eventually realize that most of the models out there aren't competitive. In fact, H2O was smart not to go after all the possible algorithms out there and instead focused on enhancing the models with a track record of being the best for regression, quantile regression, classification, and multinomial classification. The grid-tuning capabilities are exellent for squeezing that last drop of gain out of your machine learning project. Most of the gains with come from the feature engineering but you won't be able to squeeze more gains out of other package models. On top of that, you can manage the amount of memory and threads you are willing to use for your machine learning tasks and when you work in a shared environment, that can come in handy. 
+I've seen several packages and automated machine learning software that brags about all the models they have available. However, when you've been doing this work as long as I have, you eventually realize that most of the models out there aren't competitive. In fact, H2O was smart not to go after all the possible algorithms out there and instead focused on enhancing the models with a track record of being the best for regression, quantile regression, classification, and multinomial classification. The grid-tuning capabilities are exellent for squeezing that last drop of gain out of your machine learning project. Most of the gains with come from the feature engineering but you won't be able to squeeze more gains out of other package models. On top of that, you can manage the amount of memory and threads you are willing to use for your machine learning tasks and when you work in a shared environment, that can come in handy. Besides H2O, we have a few automated catboost models available as well. One for classification tasks and one for regression tasks (which includes quantile regression). Catboost has the added benefit of being able to train using a GPU and the performance gains are quite significant. The accuracies are also the most competitive I've seen thus far. 
 
 ### **Interpreting your models**
 Once you have your models developed, you or a boss may want to see what features are most important and their relationship to the target variable. The functions available are also run internally to build out partial dependence calibration plots. These show you the modeled predicted relationship along with the empirical relationship in the same graph to show the end user how accurate the relationship is what the relationship is (even for categorical variables). Variable importance tables are also available to view along with evaluation calibration plots and boxplots.  
@@ -70,6 +70,8 @@ Follow this link to install H2O if it isn't on your machine already.
 ## **Automated Supervised Learning Functions**
 
 ##### Functions include:
+- `AutoCatBoostClassifier()`
+- `AutoCatBoostRegression()`
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
@@ -222,8 +224,39 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 ```{r, fig.show='hold', fig.width=8, fig.height=5}
 library(RemixAutoML)
 
-# Load Walmart data
-data <- data.table::fread(file = "./WalmartStore1Dept1.csv")
+# From WalMart data in vignette folder: Store 1 and Department 1
+dates <- c("2010-02-05","2010-02-12","2010-02-19","2010-02-26","2010-03-05","2010-03-12","2010-03-19","2010-03-26","2010-04-02",
+           "2010-04-09","2010-04-16","2010-04-23","2010-04-30","2010-05-07","2010-05-14","2010-05-21","2010-05-28","2010-06-04",
+           "2010-06-11","2010-06-18","2010-06-25","2010-07-02","2010-07-09","2010-07-16","2010-07-23","2010-07-30","2010-08-06",
+           "2010-08-13","2010-08-20","2010-08-27","2010-09-03","2010-09-10","2010-09-17","2010-09-24","2010-10-01","2010-10-08",
+           "2010-10-15","2010-10-22","2010-10-29","2010-11-05","2010-11-12","2010-11-19","2010-11-26","2010-12-03","2010-12-10",
+           "2010-12-17","2010-12-24","2010-12-31","2011-01-07","2011-01-14","2011-01-21","2011-01-28","2011-02-04","2011-02-11",
+           "2011-02-18","2011-02-25","2011-03-04","2011-03-11","2011-03-18","2011-03-25","2011-04-01","2011-04-08","2011-04-15",
+           "2011-04-22","2011-04-29","2011-05-06","2011-05-13","2011-05-20","2011-05-27","2011-06-03","2011-06-10","2011-06-17",
+           "2011-06-24","2011-07-01","2011-07-08","2011-07-15","2011-07-22","2011-07-29","2011-08-05","2011-08-12","2011-08-19",
+           "2011-08-26","2011-09-02","2011-09-09","2011-09-16","2011-09-23","2011-09-30","2011-10-07","2011-10-14","2011-10-21",
+           "2011-10-28","2011-11-04","2011-11-11","2011-11-18","2011-11-25","2011-12-02","2011-12-09","2011-12-16","2011-12-23",
+           "2011-12-30","2012-01-06","2012-01-13","2012-01-20","2012-01-27","2012-02-03","2012-02-10","2012-02-17","2012-02-24",
+           "2012-03-02","2012-03-09","2012-03-16","2012-03-23","2012-03-30","2012-04-06","2012-04-13","2012-04-20","2012-04-27",
+           "2012-05-04","2012-05-11","2012-05-18","2012-05-25","2012-06-01","2012-06-08","2012-06-15","2012-06-22","2012-06-29",
+           "2012-07-06","2012-07-13","2012-07-20","2012-07-27","2012-08-03","2012-08-10","2012-08-17","2012-08-24","2012-08-31",
+           "2012-09-07","2012-09-14","2012-09-21","2012-09-28","2012-10-05","2012-10-12","2012-10-19","2012-10-26")
+
+weekly_sales <- c(24924.50,46039.49,41595.55,19403.54,21827.90,21043.39,22136.64,26229.21,57258.43,42960.91,17596.96,16145.35,
+                  16555.11,17413.94,18926.74,14773.04,15580.43,17558.09,16637.62,16216.27,16328.72,16333.14,17688.76,17150.84,
+                  15360.45,15381.82,17508.41,15536.40,15740.13,15793.87,16241.78,18194.74,19354.23,18122.52,20094.19,23388.03,
+                  26978.34,25543.04,38640.93,34238.88,19549.39,19552.84,18820.29,22517.56,31497.65,44912.86,55931.23,19124.58,
+                  15984.24,17359.70,17341.47,18461.18,21665.76,37887.17,46845.87,19363.83,20327.61,21280.40,20334.23,20881.10,
+                  20398.09,23873.79,28762.37,50510.31,41512.39,20138.19,17235.15,15136.78,15741.60,16434.15,15883.52,14978.09, 
+                  15682.81,15363.50,16148.87,15654.85,15766.60,15922.41,15295.55,14539.79,14689.24,14537.37,15277.27,17746.68,
+                  18535.48,17859.30,18337.68,20797.58,23077.55,23351.80,31579.90,39886.06,18689.54,19050.66,20911.25,25293.49,
+                  33305.92,45773.03,46788.75,23350.88,16567.69,16894.40,18365.10,18378.16,23510.49,36988.49,54060.10,20124.22,
+                  20113.03,21140.07,22366.88,22107.70,28952.86,57592.12,34684.21,16976.19,16347.60,17147.44,18164.20,18517.79,
+                  16963.55,16065.49,17666.00,17558.82,16633.41,15722.82,17823.37,16566.18,16348.06,15731.18,16628.31,16119.92,
+                  17330.70,16286.40,16680.24,18322.37,19616.22,19251.50,18947.81,21904.47,22764.01,24185.27,27390.81)
+
+# Convert to data.table
+data <- data.table::data.table(Date = dates, Weekly_Sales = weekly_sales)
 
 # Names of data columns
 names(data)
