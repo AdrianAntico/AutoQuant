@@ -300,7 +300,7 @@ H2OMultinomialAUC <-
   function(validate,
            best_model,
            targetColNum = 1,
-           targetName   = "TargetVar") {
+           targetName = "TargetVar") {
 
   # Require data.table
   requireNamespace('data.table', quietly = FALSE)
@@ -332,10 +332,10 @@ H2OMultinomialAUC <-
 #' @family Misc
 #' @param N The number of objects to display
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' PrintObjectsSize(N = 10)
 #' }
-#' @return The objects in your environment and their sizes
+#' @return A print to your console of the sizes of the objects in your environment
 #' @export
 PrintObjectsSize <- function(N = 10) {
   m <- length(ls())
@@ -545,7 +545,7 @@ ResidualOutliers <- function(data,
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
   } else {
-    return("TimeUnit is not in hour, day, week, month,
+    warning("TimeUnit is not in hour, day, week, month,
     quarter, or year")
   }
 
@@ -676,7 +676,7 @@ ResidualOutliers <- function(data,
 #'                    nthreads = 8,
 #'                    MaxMem = "28G",
 #'                    SaveModels = NULL,
-#'                    PathFile = getwd(),
+#'                    PathFile = NULL,
 #'                    GridTuneGLRM = TRUE,
 #'                    GridTuneKMeans = TRUE,
 #'                    glrmCols = 1:(ncol(data)-1),
@@ -686,7 +686,8 @@ ResidualOutliers <- function(data,
 #'                    glrmMaxIters = 1000,
 #'                    SVDMethod = "Randomized",
 #'                    MaxRunTimeSecs = 3600,
-#'                    KMeansK = 5)
+#'                    KMeansK = 5,
+#'                    KMeansMetric = "totss")
 #' unique(data[["Species"]])
 #' unique(data[["ClusterID"]])
 #' temp <- data[, mean(ClusterID), by = "Species"]
@@ -706,7 +707,7 @@ AutoKMeans <- function(data,
                        nthreads        = 4,
                        MaxMem          = "14G",
                        SaveModels      = NULL,
-                       PathFile        = getwd(),
+                       PathFile        = NULL,
                        GridTuneGLRM    = TRUE,
                        GridTuneKMeans  = TRUE,
                        glrmCols        = c(1:5),
@@ -984,6 +985,7 @@ AutoKMeans <- function(data,
 #' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
+#' @param PrintUpdates Set to TRUE for a print to console of function progress
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(100,
@@ -1021,7 +1023,8 @@ AutoTS <- function(data,
                    NumCores       = 4,
                    SkipModels     = NULL,
                    StepWise       = TRUE,
-                   TSClean        = TRUE) {
+                   TSClean        = TRUE,
+                   PrintUpdates   = FALSE) {
 
   # Ensure data.table is available
   requireNamespace('data.table', quietly = FALSE)
@@ -1142,7 +1145,7 @@ AutoTS <- function(data,
   if (!("DSHW" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
-    print("DSHW FITTING")
+    if(PrintUpdates) message("DSHW FITTING")
     if(MinVal > 0) {
 
       # User-Supplied-Freq
@@ -1445,7 +1448,7 @@ AutoTS <- function(data,
   if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
-    print("ARFIMA FITTING")
+    if(PrintUpdates) message("ARFIMA FITTING")
     if (StepWise) {
       if(MinVal > 0) {
 
@@ -1912,7 +1915,7 @@ AutoTS <- function(data,
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
-    print("ARIMA FITTING")
+    if(PrintUpdates) message("ARIMA FITTING")
     if (StepWise) {
       if(MinVal > 0) {
 
@@ -2407,7 +2410,7 @@ AutoTS <- function(data,
   if (!("ETS" %in% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
-    print("ETS FITTING")
+    if(PrintUpdates) message("ETS FITTING")
 
     # User-Supplied-Freq
     if (freq > 24) {
@@ -2779,7 +2782,7 @@ AutoTS <- function(data,
   if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
-    print("TBATS FITTING")
+    if(PrintUpdates) message("TBATS FITTING")
     if(MinVal > 0) {
 
       # User-Supplied-Freq
@@ -3089,7 +3092,7 @@ AutoTS <- function(data,
   if (!("TSLM" %in% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
-    print("TSLM FITTING")
+    if(PrintUpdates) message("TSLM FITTING")
     if(MinVal > 0) {
 
       # User-Supplied-Freq
@@ -3309,7 +3312,7 @@ AutoTS <- function(data,
   if (!("NNET" %in% toupper(SkipModels))) {
     # Neural Network-------------
     # 1)
-    print("NNet FITTING")
+    if(PrintUpdates) message("NNet FITTING")
     k <- 0L
     temp <-
       data.table::data.table(
@@ -3321,7 +3324,7 @@ AutoTS <- function(data,
     for (lags in seq_len(Lags)) {
       for (slags in seq_len(SLags)) {
         k <- k + 1L
-        print(paste0("NNet Iteration: ",k))
+        if(PrintUpdates) print(paste0("NNet Iteration: ",k))
         NNETAR_model_temp <-
           tryCatch({
             forecast::nnetar(
@@ -3434,7 +3437,7 @@ AutoTS <- function(data,
     for (lags in seq_len(Lags)) {
       for (slags in seq_len(SLags)) {
         k <- k + 1L
-        print(paste0("NNet 2 Iteration: ",k))
+        if(PrintUpdates) print(paste0("NNet 2 Iteration: ",k))
         NNETAR_model_temp <-
           tryCatch({
             forecast::nnetar(
@@ -3549,7 +3552,7 @@ AutoTS <- function(data,
       for (lags in seq_len(Lags)) {
         for (slags in seq_len(SLags)) {
           k <- k + 1L
-          print(paste0("NNet 3 Iteration: ",k))
+          if(PrintUpdates) print(paste0("NNet 3 Iteration: ",k))
           NNETAR_model_temp <-
             tryCatch({
               forecast::nnetar(
@@ -3662,7 +3665,7 @@ AutoTS <- function(data,
       for (lags in seq_len(Lags)) {
         for (slags in seq_len(SLags)) {
           k <- k + 1L
-          print(paste0("NNet 4 Iteration: ",k))
+          if(PrintUpdates) print(paste0("NNet 4 Iteration: ",k))
           NNETAR_model_temp <-
             tryCatch({
               forecast::nnetar(
@@ -3767,7 +3770,7 @@ AutoTS <- function(data,
   }
 
   # Model Collection----
-  print("FIND WINNER")
+  if(PrintUpdates) message("FIND WINNER")
   dataEval <- data.table::rbindlist(EvalList)
 
   # Model Evaluation
@@ -3782,7 +3785,7 @@ AutoTS <- function(data,
   BestModel <- Eval[1, "ModelName"][[1]]
 
   # Generate Forecasts----
-  print("GENERATE FORECASTS")
+  if(PrintUpdates) message("GENERATE FORECASTS")
 
   # Create Training data
   data_train <- data[seq_len(nrow(data))]
@@ -3866,7 +3869,7 @@ AutoTS <- function(data,
 
   # Retrain best model
   if (grepl(pattern = "DSHW",BestModel)) {
-    print("FULL DATA DSHW FITTING")
+    if(PrintUpdates) message("FULL DATA DSHW FITTING")
     if(BestModel == "DSHW_ModelFreq") {
       freq <- SFreq
     }
@@ -3919,7 +3922,7 @@ AutoTS <- function(data,
     model <- DSHW_Model
 
   } else if (grepl(pattern = "ARFIMA",BestModel)) {
-    print("FULL DATA ARFIMA FITTING")
+    if(PrintUpdates) message("FULL DATA ARFIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -3990,7 +3993,7 @@ AutoTS <- function(data,
     model <- ARFIMA_model
 
   } else if (grepl(pattern = "ARIMA",BestModel)) {
-    print("FULL DATA ARIMA FITTING")
+    if(PrintUpdates) message("FULL DATA ARIMA FITTING")
     # Rebuild model on full data
     if (StepWise) {
       if(MinVal > 0) {
@@ -4073,7 +4076,7 @@ AutoTS <- function(data,
     model <- ARIMA_model
 
   } else if (grepl(pattern = "ETS",BestModel)) {
-    print("FULL DATA ETS FITTING")
+    if(PrintUpdates) message("FULL DATA ETS FITTING")
     # Rebuild model on full data
     if (freq > 24) {
       if(MinVal > 0) {
@@ -4132,7 +4135,7 @@ AutoTS <- function(data,
     model <- EXPSMOOTH_model
 
   } else if (grepl(pattern = "TBATS",BestModel)) {
-    print("FULL DATA TBATS FITTING")
+    if(PrintUpdates) message("FULL DATA TBATS FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
       TBATS_model <- forecast::tbats(
@@ -4174,7 +4177,7 @@ AutoTS <- function(data,
     model <- TBATS_model
 
   } else if (grepl(pattern = "TSLM",BestModel)) {
-    print("FULL DATA TSLM FITTING")
+    if(PrintUpdates) message("FULL DATA TSLM FITTING")
     if(MinVal > 0) {
       # Rebuild model on full data
       TSLM_model <-
@@ -4197,7 +4200,7 @@ AutoTS <- function(data,
     model <- TSLM_model
 
   } else if (grepl(pattern = "NN",BestModel)) {
-    print("FULL DATA NN FITTING")
+    if(PrintUpdates) message("FULL DATA NN FITTING")
     # Rebuild model on full data
     k <- 0L
     temp <-
@@ -4210,7 +4213,7 @@ AutoTS <- function(data,
     for (lags in seq_len(Lags)) {
       for (slags in seq_len(SLags)) {
         k <- k + 1L
-        print(k)
+        if(PrintUpdates) print(k)
         NNETAR_model_temp <-
           tryCatch({
             forecast::nnetar(
@@ -8121,11 +8124,13 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
 #'                nthreads = 5,
-#'                model_path = getwd(),
+#'                model_path = NULL,
 #'                MaxRuntimeSeconds = 3600,
 #'                MaxModels = 30,
 #'                TrainData = NULL,
-#'                TestData  = NULL)
+#'                TestData  = NULL,
+#'                SaveToFile = FALSE,
+#'                ReturnObjects = TRUE)
 #'
 #' # Multinomial Example
 #' Correl <- 0.85
@@ -8189,11 +8194,13 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
 #'                nthreads = 5,
-#'                model_path = getwd(),
+#'                model_path = NULL,
 #'                MaxRuntimeSeconds = 3600,
 #'                MaxModels = 30,
 #'                TrainData = NULL,
-#'                TestData  = NULL)
+#'                TestData  = NULL,
+#'                SaveToFile = FALSE,
+#'                ReturnObjects = TRUE)
 #'
 #' # Regression Example
 #' Correl <- 0.85
@@ -8255,11 +8262,13 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
 #'                nthreads = 5,
-#'                model_path = getwd(),
+#'                model_path = NULL,
 #'                MaxRuntimeSeconds = 3600,
 #'                MaxModels = 30,
 #'                TrainData = NULL,
-#'                TestData  = NULL)
+#'                TestData  = NULL,
+#'                SaveToFile = FALSE,
+#'                ReturnObjects = TRUE)
 #'
 #' # Quantile Regression Example
 #' Correl <- 0.85
@@ -8319,11 +8328,13 @@ FAST_GDL_Feature_Engineering <- function(data,
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
 #'                nthreads = 5,
-#'                model_path = getwd(),
+#'                model_path = NULL,
 #'                MaxRuntimeSeconds = 3600,
 #'                MaxModels = 30,
 #'                TrainData = NULL,
-#'                TestData  = NULL)
+#'                TestData  = NULL,
+#'                SaveToFile = FALSE,
+#'                ReturnObjects = TRUE)
 #'}
 #' @export
 AutoH2OModeler <- function(Construct,
@@ -8331,7 +8342,7 @@ AutoH2OModeler <- function(Construct,
                            ratios            = 0.80,
                            BL_Trees          = 500,
                            nthreads          = 1,
-                           model_path        = getwd(),
+                           model_path        = NULL,
                            MaxRuntimeSeconds = 3600,
                            MaxModels         = 30,
                            TrainData         = NULL,
@@ -8961,7 +8972,7 @@ AutoH2OModeler <- function(Construct,
   if (nrow(ErrorCollection) >= 1) {
     ErrorCollectionLog <- ErrorCollection
     if(SaveToFile == TRUE & ReturnObjects == TRUE) {
-      print(
+      message(
         "Your model construction file has errors and
         an error log has been returned and saved to model_path"
       )
@@ -8971,18 +8982,18 @@ AutoH2OModeler <- function(Construct,
     } else if(SaveToFile == TRUE & ReturnObjects == FALSE) {
       save(ErrorCollectionLog,
            file = paste0(model_path, "/ErrorCollectionLog.Rdata"))
-      stop("Your model construction file has errors and
+      warning("Your model construction file has errors and
             an error log has been saved to your model_path"
       )
     } else if(SaveToFile == FALSE & ReturnObjects == TRUE) {
-      print(
+      message(
         "Your model construction file has errors and
         an error log has
         been returned"
       )
       return(ErrorCollectionLog)
     } else {
-      stop(
+      warning(
         "Your model construction file has errors and
         an error log errors. Set ReturnObjects to TRUE to see ErrorLog"
       )
@@ -9356,7 +9367,7 @@ AutoH2OModeler <- function(Construct,
           )
         }
       } else if (tolower(Construct[i, 6][[1]]) == "automl") {
-        print("automl is preset with tuning parameters")
+        message("automl is preset with tuning parameters")
       } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
         if (tolower(
           Construct[i, 3][[1]] %in% c(
@@ -11163,11 +11174,13 @@ AutoH2OModeler <- function(Construct,
 #'                ratios = 0.75,
 #'                BL_Trees = 500,
 #'                nthreads = 5,
-#'                model_path = getwd(),
+#'                model_path = NULL,
 #'                MaxRuntimeSeconds = 3600,
 #'                MaxModels = 30,
 #'                TrainData = NULL,
-#'                TestData  = NULL)
+#'                TestData  = NULL,
+#'                SaveToFile = FALSE,
+#'                ReturnObjects = TRUE)
 #'
 #' N <- 3
 #' data <- AutoH2OScoring(Features     = aa,
@@ -11178,7 +11191,8 @@ AutoH2OModeler <- function(Construct,
 #'                        NThreads     = 6,
 #'                        MaxMem       = "28G",
 #'                        JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-#'                        FilesPath    = getwd(),
+#'                        SaveToFile   = FALSE,
+#'                        FilesPath    = NULL,
 #'                        H20ShutDown  = rep(FALSE,N))
 #'}
 #' @export
@@ -11190,345 +11204,348 @@ AutoH2OScoring <- function(Features     = data,
                            NThreads     = 6,
                            MaxMem       = "28G",
                            JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-                           SaveToFile   = TRUE,
-                           FilesPath    = getwd(),
+                           SaveToFile   = FALSE,
+                           FilesPath    = NULL,
                            H20ShutDown  = rep(FALSE,3)) {
 
-  # Ensure packages are available
-  requireNamespace('data.table', quietly = FALSE)
+  # If FilesPath is NULL, skip function
+  if(is.null(FilesPath)) {
+    # Ensure packages are available
+    requireNamespace('data.table', quietly = FALSE)
 
-  # Only run text or other models types
-  if(any(tolower(TargetType) %in% "clustering") &
-     any(tolower(TargetType) %in% "text") &
-     any(tolower(TargetType) %in% c("regression",
-                                    "classification",
-                                    "multinomial",
-                                    "multioutcome"))) {
-    stop("Run either text models, supervised models,
+    # Only run text or other models types
+    if(any(tolower(TargetType) %in% "clustering") &
+       any(tolower(TargetType) %in% "text") &
+       any(tolower(TargetType) %in% c("regression",
+                                      "classification",
+                                      "multinomial",
+                                      "multioutcome"))) {
+      warning("Run either text models, supervised models,
          or unsupervised models, but only one")
-  }
+    }
 
-  # Import grid_tuned_paths or StoreFile
-  if(any(tolower(TargetType) %in% c("regression",
-                                    "classification",
-                                    "multinomial",
-                                    "multioutcome"))) {
-    load(paste0(FilesPath, "/grid_tuned_paths.Rdata"))
-  } else if (any(tolower(TargetType) %in% "text")) {
-    load(paste0(FilesPath, "/StoreFile.Rdata"))
-  } else if (any(tolower(TargetType) %in% "clustering")) {
-    load(paste0(FilesPath, "/KMeansModelFile.Rdata"))
-  } else {
-    stop("TargetType not a valid option")
-  }
+    # Import grid_tuned_paths or StoreFile
+    if(any(tolower(TargetType) %in% c("regression",
+                                      "classification",
+                                      "multinomial",
+                                      "multioutcome"))) {
+      load(paste0(FilesPath, "/grid_tuned_paths.Rdata"))
+    } else if (any(tolower(TargetType) %in% "text")) {
+      load(paste0(FilesPath, "/StoreFile.Rdata"))
+    } else if (any(tolower(TargetType) %in% "clustering")) {
+      load(paste0(FilesPath, "/KMeansModelFile.Rdata"))
+    } else {
+      warning("TargetType not a valid option")
+    }
 
-  # Ensure GridTuneRow is not out of bounds
-  if(any(tolower(TargetType) %in% c("regression",
-                                    "classification",
-                                    "multinomial",
-                                    "multioutcome"))) {
-    if(nrow(grid_tuned_paths) < max(GridTuneRow)) {
-      stop("GridTuneRow is greater than
+    # Ensure GridTuneRow is not out of bounds
+    if(any(tolower(TargetType) %in% c("regression",
+                                      "classification",
+                                      "multinomial",
+                                      "multioutcome"))) {
+      if(nrow(grid_tuned_paths) < max(GridTuneRow)) {
+        warning("GridTuneRow is greater than
           the number of rows in grid_tuned_paths")
-    }
-  } else if (any(tolower(TargetType) %in% "text")) {
-    if(nrow(StoreFile) < max(GridTuneRow)) {
-      stop("GridTuneRow is greater than
+      }
+    } else if (any(tolower(TargetType) %in% "text")) {
+      if(nrow(StoreFile) < max(GridTuneRow)) {
+        warning("GridTuneRow is greater than
           the number of rows in StoreFile")
-    }
-  } else if(any(tolower(TargetType) %in% "clustering")) {
-    if(nrow(KMeansModelFile) < max(GridTuneRow)) {
-      stop("GridTuneRow is greater than
+      }
+    } else if(any(tolower(TargetType) %in% "clustering")) {
+      if(nrow(KMeansModelFile) < max(GridTuneRow)) {
+        warning("GridTuneRow is greater than
             the number of rows in KMeansModelFile")
+      }
+    } else {
+      warning("TargetType not a valid option")
     }
-  } else {
-    stop("TargetType not a valid option")
-  }
 
-  ScoresList <- list()
-  for(i in as.integer(seq_along(GridTuneRow))) {
-    # Scoring
-    if(tolower(ScoreMethod) == "mojo") {
-      if(tolower(TargetType[i]) == "multinomial") {
-        if(tolower(ClassVals[i]) == c("probs")) {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)[,-1])
-        } else if(tolower(ClassVals[i]) == "label") {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)[,1])
-          data.table::setnames(Scores, "predict","Class")
-        } else if (tolower(ClassVals[i]) == "all") {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE))
-          data.table::setnames(Scores, "predict","Class")
-        } else {
-          stop("ClassVals can only be Probs, Label or All")
-        }
-      } else if(tolower(TargetType[i]) == "classification") {
-        if(tolower(ClassVals[i]) == c("p1")) {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)[,3])
-        } else if(tolower(ClassVals[i]) == c("probs")) {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)[,-1])
-        } else if(tolower(ClassVals[i]) == "label") {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)[,1])
-          data.table::setnames(Scores, "predict","Class")
-        } else if(tolower(ClassVals[i]) == "all") {
-          if(SaveToFile) {
-            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-          }
-          Scores <- data.table::as.data.table(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE))
-          data.table::setnames(Scores, "predict","Class")
-        } else {
-          stop("ClassVals can only be Probs, Label or All")
-        }
-      } else if(tolower(TargetType[i]) == "regression") {
-        if(SaveToFile) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-        }
-        Scores <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_csv(
-            input_csv_path = file.path(FilesPath,'Features.csv'),
-            mojo_zip_path = grid_tuned_paths[i,2][[1]],
-            java_options = JavaOptions,
-            genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-            verbose = FALSE))
-      } else if(tolower(TargetType[i]) == "text") {
-        keep <- StoreFile[i,1][[1]]
-        temp <- AutoH2OTextPrepScoring(data = Features[, ..keep],
-                                       string = StoreFile[i,1][[1]])
-        if(SaveToFile) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-        }
-        Scores <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_csv(
-            input_csv_path = file.path(FilesPath,'Features.csv'),
-            mojo_zip_path = StoreFile[i,2][[1]],
-            java_options = JavaOptions,
-            genmodel_jar_path = StoreFile[i,3][[1]],
-            verbose = FALSE))
-      } else if(tolower(TargetType[i]) == "multioutcome") {
-        if(SaveToFile) {
-          data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
-        }
-        Counts <- as.numeric(
-          as.character(
-            h2o::h2o.mojo_predict_csv(
-              input_csv_path = file.path(FilesPath,'Features.csv'),
-              mojo_zip_path = grid_tuned_paths[i,2][[1]],
-              java_options = JavaOptions,
-              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-              verbose = FALSE)))
-        if(SaveToFile) {
-          data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
-        }
-        Temp <- data.table::as.data.table(
-          h2o::h2o.mojo_predict_csv(
-            input_csv_path = file.path(FilesPath,'Features.csv'),
-            mojo_zip_path = grid_tuned_paths[i,2][[1]],
-            java_options = JavaOptions,
-            genmodel_jar_path = grid_tuned_paths[i,6][[1]],
-            verbose = FALSE))
-        Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
-        Scores <- paste0(Vals, collapse = " ")
-        preds$ModelName[i] <- grid_tuned_paths[i,1][[1]]
-        preds$Scores[i] <- Scores
-      } else {
-        stop("TargetType is not Multinomial,
-          Classification, Regression, or Text")
-      }
-    } else if(tolower(ScoreMethod) == "standard") {
-
-      # H2O Startup function
-      startH2o <- function(){
-        h2o::h2o.init(nthreads     = NThreads,
-                      max_mem_size = MaxMem)
-      }
-      # Check if H2O is running
-      tryCatch(expr = {h2o::h2o.init(startH2O = FALSE)},
-               error = function(e){startH2o()})
-
-      # Load model
-      if(tolower(TargetType[i]) == "text") {
-        model <- h2o::h2o.loadModel(path = StoreFile[i,Path])
-      } else if (TargetType[i] != "clustering"){
-        model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
-      } else {
-        KMeans <- h2o::h2o.loadModel(path = KMeansModelFile[i+1,FilePath1])
-      }
-      # Load Features
-      if(i == 1 && tolower(TargetType[i]) != "text") {
-        if(tolower(TargetType[i]) == "clustering") {
-          x <- c()
-          z <- 0
-          for(nam in names(Features)) {
-            if(is.factor(Features[1,get(nam)]) |
-               is.character(Features[1,get(nam)])) {
-              z <- z + 1
-              x[z] <- nam
+    ScoresList <- list()
+    for(i in as.integer(seq_along(GridTuneRow))) {
+      # Scoring
+      if(tolower(ScoreMethod) == "mojo") {
+        if(tolower(TargetType[i]) == "multinomial") {
+          if(tolower(ClassVals[i]) == c("probs")) {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
             }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)[,-1])
+          } else if(tolower(ClassVals[i]) == "label") {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)[,1])
+            data.table::setnames(Scores, "predict","Class")
+          } else if (tolower(ClassVals[i]) == "all") {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE))
+            data.table::setnames(Scores, "predict","Class")
+          } else {
+            warning("ClassVals can only be Probs, Label or All")
           }
-          features <- data.table::copy(Features)
-          features <- DummifyDT(features,
-                                cols = x,
-                                KeepFactorCols = FALSE,
-                                OneHot = FALSE,
-                                ClustScore = TRUE)
-          features <- h2o::as.h2o(features)
-        } else {
-          features <- h2o::as.h2o(Features)
-        }
-      }
-      if(tolower(TargetType[i]) == "multinomial") {
-        if(tolower(ClassVals[i]) == "probs") {
+        } else if(tolower(TargetType[i]) == "classification") {
+          if(tolower(ClassVals[i]) == c("p1")) {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)[,3])
+          } else if(tolower(ClassVals[i]) == c("probs")) {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)[,-1])
+          } else if(tolower(ClassVals[i]) == "label") {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)[,1])
+            data.table::setnames(Scores, "predict","Class")
+          } else if(tolower(ClassVals[i]) == "all") {
+            if(SaveToFile) {
+              data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+            }
+            Scores <- data.table::as.data.table(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE))
+            data.table::setnames(Scores, "predict","Class")
+          } else {
+            warning("ClassVals can only be Probs, Label or All")
+          }
+        } else if(tolower(TargetType[i]) == "regression") {
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
           Scores <- data.table::as.data.table(
-            h2o::h2o.predict(model,
-                             newdata = features)[,-1])
-        } else if(tolower(ClassVals[i]) == "label") {
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = file.path(FilesPath,'Features.csv'),
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE))
+        } else if(tolower(TargetType[i]) == "text") {
+          keep <- StoreFile[i,1][[1]]
+          temp <- AutoH2OTextPrepScoring(data = Features[, ..keep],
+                                         string = StoreFile[i,1][[1]])
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
+          Scores <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = file.path(FilesPath,'Features.csv'),
+              mojo_zip_path = StoreFile[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = StoreFile[i,3][[1]],
+              verbose = FALSE))
+        } else if(tolower(TargetType[i]) == "multioutcome") {
+          if(SaveToFile) {
+            data.table::fwrite(Features, file.path(FilesPath,'Features.csv'))
+          }
+          Counts <- as.numeric(
+            as.character(
+              h2o::h2o.mojo_predict_csv(
+                input_csv_path = file.path(FilesPath,'Features.csv'),
+                mojo_zip_path = grid_tuned_paths[i,2][[1]],
+                java_options = JavaOptions,
+                genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+                verbose = FALSE)))
+          if(SaveToFile) {
+            data.table::fwrite(Features, paste0(FilesPath,"/Features.csv"))
+          }
+          Temp <- data.table::as.data.table(
+            h2o::h2o.mojo_predict_csv(
+              input_csv_path = file.path(FilesPath,'Features.csv'),
+              mojo_zip_path = grid_tuned_paths[i,2][[1]],
+              java_options = JavaOptions,
+              genmodel_jar_path = grid_tuned_paths[i,6][[1]],
+              verbose = FALSE))
+          Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
+          Scores <- paste0(Vals, collapse = " ")
+          preds$ModelName[i] <- grid_tuned_paths[i,1][[1]]
+          preds$Scores[i] <- Scores
+        } else {
+          warning("TargetType is not Multinomial,
+          Classification, Regression, or Text")
+        }
+      } else if(tolower(ScoreMethod) == "standard") {
+
+        # H2O Startup function
+        startH2o <- function(){
+          h2o::h2o.init(nthreads     = NThreads,
+                        max_mem_size = MaxMem)
+        }
+        # Check if H2O is running
+        tryCatch(expr = {h2o::h2o.init(startH2O = FALSE)},
+                 error = function(e){startH2o()})
+
+        # Load model
+        if(tolower(TargetType[i]) == "text") {
+          model <- h2o::h2o.loadModel(path = StoreFile[i,Path])
+        } else if (TargetType[i] != "clustering"){
+          model <- h2o::h2o.loadModel(path = grid_tuned_paths[i,Path])
+        } else {
+          KMeans <- h2o::h2o.loadModel(path = KMeansModelFile[i+1,FilePath1])
+        }
+        # Load Features
+        if(i == 1 && tolower(TargetType[i]) != "text") {
+          if(tolower(TargetType[i]) == "clustering") {
+            x <- c()
+            z <- 0
+            for(nam in names(Features)) {
+              if(is.factor(Features[1,get(nam)]) |
+                 is.character(Features[1,get(nam)])) {
+                z <- z + 1
+                x[z] <- nam
+              }
+            }
+            features <- data.table::copy(Features)
+            features <- DummifyDT(features,
+                                  cols = x,
+                                  KeepFactorCols = FALSE,
+                                  OneHot = FALSE,
+                                  ClustScore = TRUE)
+            features <- h2o::as.h2o(features)
+          } else {
+            features <- h2o::as.h2o(Features)
+          }
+        }
+        if(tolower(TargetType[i]) == "multinomial") {
+          if(tolower(ClassVals[i]) == "probs") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features)[,-1])
+          } else if(tolower(ClassVals[i]) == "label") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features)[,1])
+            data.table::setnames(Scores, "predict","Class")
+          } else if(tolower(ClassVals[i]) == "all") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features))
+            data.table::setnames(Scores, "predict","Class")
+          } else {
+            warning("ClassVals can only be Probs, Label, or All")
+          }
+        } else if(tolower(TargetType[i]) == "classification") {
+          if(tolower(ClassVals[i]) == "p1") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features)[,3])
+          } else if(tolower(ClassVals[i]) == "probs") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features)[,-1])
+          } else if(tolower(ClassVals[i]) == "label") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features)[,1])
+            data.table::setnames(Scores, "predict","Class")
+          } else if(tolower(ClassVals[i]) == "all") {
+            Scores <- data.table::as.data.table(
+              h2o::h2o.predict(model,
+                               newdata = features))
+            data.table::setnames(Scores, "predict","Class")
+          } else {
+            warning("ClassVals can only be Probs, Label, or All")
+          }
+        } else if(tolower(TargetType[i]) == "regression") {
           Scores <- data.table::as.data.table(
             h2o::h2o.predict(model,
                              newdata = features)[,1])
-          data.table::setnames(Scores, "predict","Class")
-        } else if(tolower(ClassVals[i]) == "all") {
+        } else if(tolower(TargetType[i]) == c("text")) {
+          name <- StoreFile[i, ModelName][[1]]
+          data <- AutoH2OTextPrepScoring(data = Features,
+                                         string = name,
+                                         NThreads = NThreads,
+                                         MaxMem = MaxMem)
           Scores <- data.table::as.data.table(
+            h2o::h2o.transform(model,
+                               words = data,
+                               aggregate_method = "AVERAGE"))
+          setnames(Scores, names(Scores), paste0(name,
+                                                 "_",
+                                                 names(Scores)))
+          Features <- cbind(Features[, paste0(name) := NULL], Scores)
+        } else if(tolower(TargetType[i]) == "multioutcome") {
+          Counts <- data.table::as.data.table(
+            h2o::h2o.predict(model,
+                             newdata = features)[1,1])
+          Temp <- data.table::as.data.table(
             h2o::h2o.predict(model,
                              newdata = features))
-          data.table::setnames(Scores, "predict","Class")
+          Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
+          Scores <- paste0(Vals, collapse = " ")
+        } else if(tolower(TargetType[i]) == "clustering") {
+          load(file = KMeansModelFile[i,FilePath1][[1]])
+          load(file = KMeansModelFile[i,FilePath2][[1]])
+          NewGLRM <- h2o::h2o.glrm(training_frame = features, init = "User", user_y = fitY)
+          x_raw <- h2o::h2o.getFrame(NewGLRM@model$representation_name)
+          Scores <- data.table::as.data.table(
+            h2o::h2o.predict(object = KMeans,
+                             newdata = x_raw))
+          Scores <- cbind(data.table::as.data.table(
+            Scores),
+            Features)
         } else {
-          stop("ClassVals can only be Probs, Label, or All")
-        }
-      } else if(tolower(TargetType[i]) == "classification") {
-        if(tolower(ClassVals[i]) == "p1") {
-          Scores <- data.table::as.data.table(
-            h2o::h2o.predict(model,
-                             newdata = features)[,3])
-        } else if(tolower(ClassVals[i]) == "probs") {
-          Scores <- data.table::as.data.table(
-            h2o::h2o.predict(model,
-                             newdata = features)[,-1])
-        } else if(tolower(ClassVals[i]) == "label") {
-          Scores <- data.table::as.data.table(
-            h2o::h2o.predict(model,
-                             newdata = features)[,1])
-          data.table::setnames(Scores, "predict","Class")
-        } else if(tolower(ClassVals[i]) == "all") {
-          Scores <- data.table::as.data.table(
-            h2o::h2o.predict(model,
-                             newdata = features))
-          data.table::setnames(Scores, "predict","Class")
-        } else {
-          stop("ClassVals can only be Probs, Label, or All")
-        }
-      } else if(tolower(TargetType[i]) == "regression") {
-        Scores <- data.table::as.data.table(
-          h2o::h2o.predict(model,
-                           newdata = features)[,1])
-      } else if(tolower(TargetType[i]) == c("text")) {
-        name <- StoreFile[i, ModelName][[1]]
-        data <- AutoH2OTextPrepScoring(data = Features,
-                                       string = name,
-                                       NThreads = NThreads,
-                                       MaxMem = MaxMem)
-        Scores <- data.table::as.data.table(
-          h2o::h2o.transform(model,
-                             words = data,
-                             aggregate_method = "AVERAGE"))
-        setnames(Scores, names(Scores), paste0(name,
-                                               "_",
-                                               names(Scores)))
-        Features <- cbind(Features[, paste0(name) := NULL], Scores)
-      } else if(tolower(TargetType[i]) == "multioutcome") {
-        Counts <- data.table::as.data.table(
-          h2o::h2o.predict(model,
-                           newdata = features)[1,1])
-        Temp <- data.table::as.data.table(
-          h2o::h2o.predict(model,
-                           newdata = features))
-        Vals <- names(sort(Temp[1,2:ncol(Temp)], decreasing = TRUE))
-        Scores <- paste0(Vals, collapse = " ")
-      } else if(tolower(TargetType[i]) == "clustering") {
-        load(file = KMeansModelFile[i,FilePath1][[1]])
-        load(file = KMeansModelFile[i,FilePath2][[1]])
-        NewGLRM <- h2o::h2o.glrm(training_frame = features, init = "User", user_y = fitY)
-        x_raw <- h2o::h2o.getFrame(NewGLRM@model$representation_name)
-        Scores <- data.table::as.data.table(
-          h2o::h2o.predict(object = KMeans,
-                           newdata = x_raw))
-        Scores <- cbind(data.table::as.data.table(
-          Scores),
-          Features)
-      } else {
-        stop("TargetType is not Multinomial,
+          warning("TargetType is not Multinomial,
           Classification, Regression, Text, Multioutcome,
           or Clustering.")
+        }
+      } else {
+        warning("ScoreMethod must be Standard or Mojo")
       }
-    } else {
-      stop("ScoreMethod must be Standard or Mojo")
+      if(H20ShutDown[i] && tolower(ScoreMethod) == "standard") {
+        h2o::h2o.shutdown(prompt = FALSE)
+      }
+      if(any(tolower(TargetType) == "text")) {
+        ScoresList <- Features
+      } else {
+        ScoresList[[i]] <- Scores
+      }
     }
-    if(H20ShutDown[i] && tolower(ScoreMethod) == "standard") {
-      h2o::h2o.shutdown(prompt = FALSE)
-    }
-    if(any(tolower(TargetType) == "text")) {
-      ScoresList <- Features
-    } else {
-      ScoresList[[i]] <- Scores
-    }
+    return(ScoresList)
   }
-  return(ScoresList)
 }
 
 #' For NLP work
@@ -11577,27 +11594,27 @@ tokenizeH2O <- function(data) {
 #' @param SaveOutput Set to TRUE to save your models to file
 #' @examples
 #' \donttest{
-#' data <- Word2VecModel(data,
-#'                       stringCol     = c("Text_Col1",
-#'                                         "Text_Col2"),
-#'                       KeepStringCol = FALSE,
-#'                       model_path    = getwd(),
-#'                       vects         = 100,
-#'                       SaveStopWords = FALSE,
-#'                       MinWords      = 1,
-#'                       WindowSize    = 1,
-#'                       Epochs        = 25,
-#'                       StopWords     = NULL,
-#'                       SaveModel     = "standard",
-#'                       Threads       = 6,
-#'                       MaxMemory     = "28G")
+#' data <- AutoWord2VecModeler(data,
+#'                             stringCol = c("Text_Col1",
+#'                                           "Text_Col2"),
+#'                             KeepStringCol = FALSE,
+#'                             model_path = NULL,
+#'                             vects = 100,
+#'                             SaveStopWords = FALSE,
+#'                             MinWords = 1,
+#'                             WindowSize = 1,
+#'                             Epochs = 25,
+#'                             StopWords = NULL,
+#'                             SaveModel = "standard",
+#'                             Threads = 6,
+#'                             MaxMemory = "28G")
 #'}
 #' @export
 AutoWord2VecModeler <- function(data,
                                 stringCol     = c("Text_Col1",
                                                   "Text_Col2"),
                                 KeepStringCol = FALSE,
-                                model_path    = getwd(),
+                                model_path    = NULL,
                                 vects         = 100,
                                 SaveStopWords = FALSE,
                                 MinWords      = 1,
@@ -12025,7 +12042,7 @@ AutoRecommender <- function(data,
 
   # Ensure data is proper
   if(class(data)[1] != "binaryRatingMatrix") {
-    stop("data must be of class binaryRatingMatrix")
+    warning("data must be of class binaryRatingMatrix")
   }
 
   # Ensure KFolds is correct
@@ -12035,7 +12052,7 @@ AutoRecommender <- function(data,
 
   # Ensure Ratio is proper
   if(abs(Ratio) > 1 | Ratio == 0) {
-    stop("Ratio must be a decimal between 0 and 1.
+    warning("Ratio must be a decimal between 0 and 1.
          Default is 0.75")
   }
 
@@ -12058,7 +12075,7 @@ AutoRecommender <- function(data,
   } else if(tolower(ModelMetric) == "fpr") {
     ModelMetric <- "FPR"
   } else {
-    stop("ModelMetric not in list of usable metrics")
+    warning("ModelMetric not in list of usable metrics")
   }
 
   # Evaluation setup
@@ -12096,7 +12113,7 @@ AutoRecommender <- function(data,
     algorithms[["RandomItems"]] <- NULL
   }
   if(length(algorithms) == 0) {
-    stop("You must have at least one algorithm to run")
+    warning("You must have at least one algorithm to run")
   }
 
   # evauluate predicted ratings from each algorithm
@@ -12307,7 +12324,7 @@ AutoRecommenderScoring <- function(data,
 #'                                     grid_eval_metric = "auc",
 #'                                     Trees = 50,
 #'                                     GridTune = FALSE,
-#'                                     model_path = getwd(),
+#'                                     model_path = NULL,
 #'                                     ModelID = "ModelTest",
 #'                                     NumOfParDepPlots = 15,
 #'                                     ReturnModelObjects = TRUE,
@@ -12335,18 +12352,18 @@ AutoCatBoostClassifier <- function(data,
 
   # Dont run if model_path is null
   if(is.null(model_path)) {
-    stop("Need a model_path defined to run this function")
+    warning("Need a model_path defined to run this function")
   } else {
 
     # Ensure packages are available
     requireNamespace('data.table', quietly = TRUE)
     if(!requireNamespace('catboost', quietly = TRUE)) {
-      return(print("catboost needs to be installed. See documentation"))
+      warning("catboost needs to be installed. See documentation")
     } else {
 
       # Binary Check Arguments----
-      if(!(abs(TrainSplitRatio) <= 0.99)) stop("TrainSplitRatio needs to be less than or equal to 0.99")
-      if(!(tolower(task_type) %chin% c("gpu","cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
+      if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
+      if(!(tolower(task_type) %chin% c("gpu","cpu"))) warning("task_type needs to be either 'GPU' or 'CPU'")
       if(!(tolower(eval_metric) %chin% c("logloss","crossentropy",
                                          "precision","recall",
                                          "f1","balancedaccuracy",
@@ -12356,7 +12373,7 @@ AutoCatBoostClassifier <- function(data,
                                          "hingeloss","hammingloss",
                                          "zerooneloss","kappa",
                                          "wkappa","loglikelihoodofprediction"))) {
-        stop("eval_metric not in c('Logloss','CrossEntropy',
+        warning("eval_metric not in c('Logloss','CrossEntropy',
                               'Precision','Recall',
                               'F1','BalancedAccuracy',
                               'BalancedErrorRate','MCC',
@@ -12367,19 +12384,29 @@ AutoCatBoostClassifier <- function(data,
                               'WKappa','LogLikelihoodOfPrediction')")
 
       }
-      if(Trees < 1) stop("Trees must be greater than 1")
-      if(!GridTune %in% c(TRUE,FALSE)) stop("GridTune needs to be TRUE or FALSE")
+      if(Trees < 1) warning("Trees must be greater than 1")
+      if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
       if(!(tolower(grid_eval_metric) %chin% c("accuracy","auc","tpr","fnr","fpr","tnr","prbe","f","odds","chisq"))) {
-        stop("grid_eval_metric not in c('accuracy','auc','tpr','fnr','fpr','tnr','prbe','f','odds','chisq')")
+        warning("grid_eval_metric not in c('accuracy','auc','tpr','fnr','fpr','tnr','prbe','f','odds','chisq')")
       }
       if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
-        stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
+        warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
       }
-      if(!is.character(model_path)) stop("model_path needs to be a character type")
-      if(!is.character(ModelID)) stop("ModelID needs to be a character type")
-      if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
-      if(!(ReturnModelObjects %in% c(TRUE,FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-      if(!(SaveModelObjects %in% c(TRUE,FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+      if(!is.character(ModelID)) warning("ModelID needs to be a character type")
+      if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
+      if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
+      if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
+
+      # Binary Ensure data is a data.table----
+      if(!data.table::is.data.table(data)) {
+        data <- data.table::as.data.table(data)
+      }
+
+      # Binary Convert CatFeatures to 1-indexed----
+      if(!is.null(CatFeatures)) {
+        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
+      }
 
       # Binary Subset Columns Needed----
       if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
@@ -12398,11 +12425,6 @@ AutoCatBoostClassifier <- function(data,
       } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
         keep <- c(FeatureColNames, TargetColumnName)
         data <- data[, ..keep]
-      }
-
-      # Binary Convert CatFeatures to 1-indexed----
-      if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
       }
 
       # Binary Target Name Storage----
@@ -12794,33 +12816,11 @@ AutoCatBoostClassifier <- function(data,
           j <- j + 1
           ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
         }, error = function(x) "skip")
-
-        if(length(unique(data[[VariableImportance[i, Variable]]])) > 2) {
-          tryCatch({
-            Out1 <- ParDepCalPlots(
-              data = ValidationData,
-              PredictionColName = "p1",
-              TargetColName = "Target",
-              IndepVar = VariableImportance[i, Variable],
-              GraphType = "boxplot",
-              PercentileBucket = 0.05,
-              FactLevels = 10,
-              Function = function(x) mean(x, na.rm = TRUE))
-
-            k <- k + 1
-            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
-          }, error = function(x) "skip")
-        }
       }
 
       # Binary Save ParDepPlots to file----
       if(SaveModelObjects) {
         save(ParDepPlots, file = paste0(model_path,"/", ModelID,"_ParDepPlots.R"))
-      }
-
-      # Binary Save ParDepBoxPlots to file----
-      if(SaveModelObjects) {
-        save(ParDepBoxPlots, file = paste0(model_path,"/", ModelID,"_ParDepBoxPlots.R"))
       }
 
       # Binary Save GridCollect and catboostGridList----
@@ -12865,14 +12865,14 @@ AutoCatBoostClassifier <- function(data,
 
 #' AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system
 #'
-#' AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
 #' @param TestData If you want to supply your own data for testing (column names and column ordering must be the same as data)
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param CatFeatures A vector of ZERO INDEXED column numbers of your categorical features.
+#' @param CatFeatures A vector of column numbers of your categorical features.
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
@@ -12931,13 +12931,13 @@ AutoCatBoostClassifier <- function(data,
 #'                                     grid_eval_metric = "r2",
 #'                                     Trees = 50,
 #'                                     GridTune = FALSE,
-#'                                     model_path = getwd(),
+#'                                     model_path = NULL,
 #'                                     ModelID = "ModelTest",
 #'                                     NumOfParDepPlots = 3,
 #'                                     ReturnModelObjects = TRUE,
 #'                                     SaveModelObjects = FALSE)
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
 #' @export
 AutoCatBoostRegression <- function(data,
                                    TestData = NULL,
@@ -12960,37 +12960,42 @@ AutoCatBoostRegression <- function(data,
 
   # If Model Path is null, dont run
   if(is.null(model_path)) {
-    stop("Cannot run without a pathfile to drop notes")
+    warning("Cannot run without a pathfile to drop notes")
   } else {
 
     # Ensure packages are available
     requireNamespace('data.table', quietly = TRUE)
     if(!requireNamespace('catboost', quietly = TRUE)) {
-      return(print("catboost needs to be installed. See documentation"))
+      return(warning("catboost needs to be installed. See documentation"))
     } else {
 
       # Regression Check Arguments----
-      if(!(abs(TrainSplitRatio) <= 0.99)) stop("TrainSplitRatio needs to be less than or equal to 0.99")
-      if(!(tolower(task_type) %chin% c("gpu","cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
+      if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
+      if(!(tolower(task_type) %chin% c("gpu","cpu"))) warning("task_type needs to be either 'GPU' or 'CPU'")
       if(!(tolower(eval_metric) %chin% c("rmse","mae","mape","poisson","quantile","loglinquantile",
                                          "lq","numerrors","smape","r2","msle","medianabsoluteerror"))) {
-        stop("eval_metric not in c(RMSE,MAE,MAPE,Poisson,Quantile,
+        warning("eval_metric not in c(RMSE,MAE,MAPE,Poisson,Quantile,
              LogLinQuantile,Lq,NumErrors,SMAPE,R2,MSLE,MedianAbsoluteError)")
 
       }
-      if(Trees < 1) stop("Trees must be greater than 1")
-      if(!GridTune %in% c(TRUE,FALSE)) stop("GridTune needs to be TRUE or FALSE")
+      if(Trees < 1) warning("Trees must be greater than 1")
+      if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
       if(!(tolower(grid_eval_metric) %chin% c("poisson","mae","mape","mse","msle","kl","cs","r2"))) {
-        stop("grid_eval_metric not in c('poisson','mae','mape','mse','msle','kl','cs','r2')")
+        warning("grid_eval_metric not in c('poisson','mae','mape','mse','msle','kl','cs','r2')")
       }
       if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
-        stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
+        warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
       }
-      if(!is.character(model_path)) stop("model_path needs to be a character type")
-      if(!is.character(ModelID)) stop("ModelID needs to be a character type")
-      if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
-      if(!(ReturnModelObjects %in% c(TRUE,FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-      if(!(SaveModelObjects %in% c(TRUE,FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+      if(!is.character(ModelID)) warning("ModelID needs to be a character type")
+      if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
+      if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
+      if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
+
+      # Regression Ensure data is a data.table----
+      if(!data.table::is.data.table(data)) {
+        data <- data.table::as.data.table(data)
+      }
 
       # Regression Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
@@ -13058,7 +13063,7 @@ AutoCatBoostRegression <- function(data,
       # Regression eval_metric checks
       if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0 |
                                               min(TestTarget) < 0)) {
-        stop("eval_metric Poisson requires positive values for Target")
+        warning("eval_metric Poisson requires positive values for Target")
       }
 
       # Regression Initialize Catboost Data Conversion----
