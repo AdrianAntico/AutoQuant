@@ -490,7 +490,7 @@ GenTSAnomVars <- function(data,
 #' @param data the source residuals data.table
 #' @param DateColName The name of your data column to use in reference to the target variable
 #' @param TargetColName The name of your target variable column
-#' @param PredictedColName The name of your predicted value. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
+#' @param PredictedColName The name of your predicted value column. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
 #' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
 #' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
 #' @param tstat the t-stat value for tsoutliers
@@ -974,7 +974,7 @@ AutoKMeans <- function(data,
 #' @author Adrian Antico and Douglas Pestana
 #' @family Supervised Learning
 #' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
-#' @param TargetName is the name of the dependent variable in your data.table
+#' @param TargetName is the name of the target variable in your data.table
 #' @param DateName is the name of the date column in your data.table
 #' @param FCPeriods is the number of periods into the future you wish to forecast
 #' @param HoldOutPeriods is the number of periods to use for validation testing
@@ -4496,8 +4496,8 @@ ModelDataPrep <- function(data,
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data data is the data table with your predicted and actual values from a classification model
-#' @param PredictColNumber The column number where the actual target variable is located (in binary form)
-#' @param ActualColNumber The column number where the predicted values are located
+#' @param PredictColNumber The column number where the prediction variable is located (in binary form)
+#' @param ActualColNumber The column number where the target variable is located
 #' @param TruePositiveCost This is the utility for generating a true positive prediction
 #' @param TrueNegativeCost This is the utility for generating a true negative prediction
 #' @param FalsePositiveCost This is the cost of generating a false positive prediction
