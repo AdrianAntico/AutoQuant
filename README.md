@@ -17,6 +17,12 @@ Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" targe
 You can also contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see more detail. If you want to be a contributer, contact me via LinkedIn email.
 
 ## Supervised Learning Functions: 
+##### **AutoCatBoostClassifier()**
+AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
+##### **AutoCatBoostRegression()**
+AutoCatBoostRegression is an automated modeling function that runs a variety of steps for classical expected value regression along with quantile regression. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
 ##### **AutoH2OModeler()**
 Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
 * Models include:
