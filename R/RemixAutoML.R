@@ -11763,9 +11763,10 @@ AutoWord2VecModeler <- function(data,
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
 #' data <- data.table::data.table(
-#' DESCR = c("Bla, Bla, Bla, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2, Bla2,
-#'            Wah, Wah, Wah, Wah, Wah, Wah, Wah, spa, spa, spa, window,
-#'            window, window, window, window, window, window, window, window,
+#' DESCR = c("Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe,
+#'            Ligges, Ligges, Ligges, Ligges, Ligges, Ligges, Ligges,
+#'            sucks, sucks, sucks, sucks, sucks, sucks, smug, smug, smug, smug,
+#'            smug, smug, smug, smug, smug, smug, smug, smug, smug, smug, smug,
 #'            computer, computer, computer, computer, computer, computer,
 #'            Data, Data, Data, Data, Data, Data, Data, science, science,
 #'            science, science, science, science, science, science, science,
