@@ -29,16 +29,16 @@ This function builds a word frequency table and a word cloud. It prepares data, 
 }
 \examples{
 data <- data.table::data.table(
-DESCR = c("Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe, Uwe,
-           Ligges, Ligges, Ligges, Ligges, Ligges, Ligges, Ligges,
-           sucks, sucks, sucks, sucks, sucks, sucks, smug, smug, smug, smug,
+DESCR = c("Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru,
+           Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Gru, Gru, Gru,
+           bears, bears, bears, bears, bears, bears, smug, smug, smug, smug,
            smug, smug, smug, smug, smug, smug, smug, smug, smug, smug, smug,
-           computer, computer, computer, computer, computer, computer,
-           Data, Data, Data, Data, Data, Data, Data, science, science,
-           science, science, science, science, science, science, science,
-           science, science, science, science, science, science, science,
-           science, science, science, science, science, games, games,
-           games, games, games, games, games, games, games, games"))
+           eats, eats, eats, eats, eats, eats, beats, beats, beats, beats,
+           beats, beats, beats, beats, beats, beats, beats, science, science,
+           Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt,
+           Schrute, Schrute, Schrute, Schrute, Schrute, Schrute, Schrute,
+           James, James, James, James, James, James, James, James, James, James,
+           Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert"))
 data <- AutoWordFreq(data,
                      TextColName = "DESCR",
                      GroupColName = NULL,
