@@ -13041,6 +13041,9 @@ AutoCatBoostRegression <- function(data,
                                          ,ModelID,"_ColNames.csv"))
       }
 
+      # Regression Get Min Value of Target Data----
+      MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
+
       # Regression Data Partition----
       if(is.null(TestData)) {
         dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
@@ -13152,8 +13155,10 @@ AutoCatBoostRegression <- function(data,
 
           # Regression Grid Evaluation Metrics----
           if(tolower(grid_eval_metric) == "poisson") {
-            calibEval[, Metric := Predicted - Target * log(Predicted + 1)]
-            Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            if(MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
+              calibEval[, Metric := Predicted - Target * log(Predicted + 1)]
+              Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(grid_eval_metric) == "mae") {
             calibEval[, Metric := abs(Target - Predicted)]
             Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
@@ -13164,11 +13169,15 @@ AutoCatBoostRegression <- function(data,
             calibEval[, Metric := (Target - Predicted)^2]
             Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
           } else if(tolower(grid_eval_metric) == "msle") {
-            calibEval[, Metric := (log(Target + 1) - log(Predicted + 1))^2]
-            Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            if(MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
+              calibEval[, Metric := (log(Target + 1) - log(Predicted + 1))^2]
+              Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(grid_eval_metric) == "kl") {
-            calibEval[, Metric := Target * log((Target + 1) / (Predicted + 1))]
-            Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            if(MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
+              calibEval[, Metric := Target * log((Target + 1) / (Predicted + 1))]
+              Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(grid_eval_metric) == "cs") {
             calibEval[, ':=' (Metric1 = Target * Predicted,
                               Metric2 = Target^2,
@@ -13250,7 +13259,7 @@ AutoCatBoostRegression <- function(data,
         cbind(Target = TestTarget, dataTest, Predict = predict))
 
       # Regression r2 via sqrt of correlation
-      r_squared <- sqrt(ValidationData[, stats::cor(Target, Predict)])
+      r_squared <- ValidationData[, stats::cor(Target, Predict)]^2
 
       # Save Validation Data to File----
       if(SaveModelObjects) {
@@ -13314,8 +13323,10 @@ AutoCatBoostRegression <- function(data,
         tryCatch({
           # Regression Grid Evaluation Metrics----
           if(tolower(metric) == "poisson") {
-            ValidationData[, Metric := Predict - Target * log(Predict + 1)]
-            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+            if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+              ValidationData[, Metric := Predict - Target * log(Predict + 1)]
+              Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(metric) == "mae") {
             ValidationData[, Metric := abs(Target - Predict)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
@@ -13326,12 +13337,16 @@ AutoCatBoostRegression <- function(data,
             ValidationData[, Metric := (Target - Predict)^2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           } else if(tolower(metric) == "msle") {
-            ValidationData[, Metric := (log(Target + 1) - log(Predict + 1))^2]
-            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+            if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+              ValidationData[, Metric := (log(Target + 1) - log(Predict + 1))^2]
+              Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(metric) == "kl") {
-            ValidationData[, Metric := Target * log((Target + 1) /
+            if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+              ValidationData[, Metric := Target * log((Target + 1) /
                                                       (Predict + 1))]
-            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+              Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+            }
           } else if(tolower(metric) == "cs") {
             ValidationData[, ':=' (Metric1 = Target * Predict,
                                    Metric2 = Target^2,
@@ -13393,23 +13408,20 @@ AutoCatBoostRegression <- function(data,
           j <- j + 1
           ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
         }, error = function(x) "skip")
+        tryCatch({
+          Out1 <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = "Target",
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "boxplot",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x) mean(x, na.rm = TRUE))
 
-        if(length(unique(data[[VariableImportance[i, Variable]]])) > 2) {
-          tryCatch({
-            Out1 <- ParDepCalPlots(
-              data = ValidationData,
-              PredictionColName = "p1",
-              TargetColName = "Target",
-              IndepVar = VariableImportance[i, Variable],
-              GraphType = "boxplot",
-              PercentileBucket = 0.05,
-              FactLevels = 10,
-              Function = function(x) mean(x, na.rm = TRUE))
-
-            k <- k + 1
-            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
-          }, error = function(x) "skip")
-        }
+          k <- k + 1
+          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+        }, error = function(x) "skip")
       }
 
       # Regression Save ParDepPlots to file----
