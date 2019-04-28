@@ -12778,7 +12778,7 @@ AutoCatBoostClassifier <- function(data,
       }
       data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
       x <- x[1,]
-      EvaluationMetrics <- rbindlist(list(EvaluationMetrics,x))
+      EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics,x))
 
       # Save EvaluationMetrics to File
       EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
