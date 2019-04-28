@@ -13259,7 +13259,7 @@ AutoCatBoostRegression <- function(data,
         cbind(Target = TestTarget, dataTest, Predict = predict))
 
       # Regression r2 via sqrt of correlation
-      r_squared <- ValidationData[, stats::cor(Target, Predict)]^2
+      r_squared <- (ValidationData[, stats::cor(Target, Predict)])^2
 
       # Save Validation Data to File----
       if(SaveModelObjects) {
