@@ -57,7 +57,8 @@ data <- AutoWord2VecModeler(data,
                             StopWords = NULL,
                             SaveModel = "standard",
                             Threads = 6,
-                            MaxMemory = "28G")
+                            MaxMemory = "28G",
+                            SaveOutput = TRUE)
 }
 }
 \seealso{
