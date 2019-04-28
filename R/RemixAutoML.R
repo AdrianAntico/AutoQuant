@@ -11607,7 +11607,8 @@ tokenizeH2O <- function(data) {
 #'                             StopWords = NULL,
 #'                             SaveModel = "standard",
 #'                             Threads = 6,
-#'                             MaxMemory = "28G")
+#'                             MaxMemory = "28G",
+#'                             SaveOutput = TRUE)
 #'}
 #' @export
 AutoWord2VecModeler <- function(data,
@@ -11730,7 +11731,6 @@ AutoWord2VecModeler <- function(data,
     data <- data.table::data.table(cbind(data, all_vecs))
 
     # Remove string cols
-    data[, ':=' (TEMP = NULL)]
     if (!KeepStringCol) {
       data[, eval(string) := NULL]
     }
