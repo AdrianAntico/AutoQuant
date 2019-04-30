@@ -12521,9 +12521,15 @@ AutoCatBoostClassifier <- function(data,
                                             params     = base_params)
           
           # Binary Grid Score Model----
-          predict <- catboost::catboost.predict(model = model,
-                                                pool = TestPool,
-                                                prediction_type = "Probability")
+          if(!is.null(TestData)) {
+            predict <- catboost::catboost.predict(model = model,
+                                                  pool = FinalTestPool,
+                                                  prediction_type = "Probability")            
+          } else {
+            predict <- catboost::catboost.predict(model = model,
+                                                  pool = TestPool,
+                                                  prediction_type = "Probability")
+          }
           
           # Binary Grid Validation Data----
           calibEval <- data.table::as.data.table(
@@ -13155,9 +13161,15 @@ AutoCatBoostRegression <- function(data,
                                             params     = base_params)
 
           # Regression Grid Score Model----
-          predict <- catboost::catboost.predict(model = model,
-                                                pool = TestPool,
-                                                prediction_type = "RawFormulaVal")
+          if(!is.null(TestData)) {
+            predict <- catboost::catboost.predict(model = model,
+                                                  pool = FinalTestPool,
+                                                  prediction_type = "RawFormulaVal")            
+          } else {
+            predict <- catboost::catboost.predict(model = model,
+                                                  pool = TestPool,
+                                                  prediction_type = "RawFormulaVal")
+          }
 
           # Regression Grid Validation Data----
           calibEval <- data.table::as.data.table(
