@@ -22,6 +22,8 @@ utils::globalVariables(
     ":=",
     "fwrite",
     "setnames",
+    "NewLevels",
+    "OriginalLevels",
     "Metric1",
     "Metric2",
     "Metric3",
@@ -4537,7 +4539,7 @@ RedYellowGreen <- function(data,
                            MidTierCost       = -2,
                            Cores             = 8,
                            Precision         = 0.01,
-                           Boundaries        = c(0.05,0.50)) {
+                           Boundaries        = c(0.05,0.75)) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
