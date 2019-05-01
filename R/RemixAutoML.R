@@ -12440,7 +12440,9 @@ AutoCatBoostClassifier <- function(data,
 
       # Binary Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
+        for(i in seq_len(length(CatFeatures))) {
+          CatFeatures[i] <- CatFeatures[i] - 1
+        }
       }
 
       # Binary Subset Columns Needed----
@@ -13069,7 +13071,9 @@ AutoCatBoostRegression <- function(data,
 
       # Regression Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
+        for(i in seq_len(length(CatFeatures))) {
+          CatFeatures[i] <- CatFeatures[i] - 1
+        }
       }
 
       # Regression Subset Columns Needed----
@@ -13730,7 +13734,9 @@ AutoCatBoostMultiClass <- function(data,
 
       # MultiClass Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
-        CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
+        for(i in seq_len(length(CatFeatures))) {
+          CatFeatures[i] <- CatFeatures[i] - 1
+        }
       }
 
       # MultiClass data Subset Columns Needed----
@@ -14101,7 +14107,7 @@ AutoCatBoostMultiClass <- function(data,
                                                       "_GridCollect.csv"))
       }
 
-      # Binary Return Model Objects----
+      # MultiClass Return Model Objects----
       if(GridTune) {
         if(ReturnModelObjects) {
           return(
