@@ -13786,6 +13786,18 @@ AutoCatBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
 
+      # MultiClass Obtain Unique Target Levels
+      temp <- data.table::rbindlist(list(data,TestData))
+      TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName)]])))
+      data.table::setnames(TargetLevels, "V1","OriginalLevels")
+      TargetLevels[, NewLevels := 1:.N]
+      if(SaveModelObjects) {
+        data.table::fwrite(TargetLevels, file = paste0(model_path,
+                                                       "/",
+                                                       ModelID,
+                                                       "_TargetLevels.csv"))
+      }
+
       # MultiClass Convert Target to Numeric Factor
       data <- merge(data, TargetLevels,
                     by.x = eval(TargetColumnName),
@@ -13799,18 +13811,6 @@ AutoCatBoostMultiClass <- function(data,
                         all = FALSE)
       TestData[, paste0(TargetColumnName) := NewLevels]
       TestData[, NewLevels := NULL]
-
-      # MultiClass Obtain Unique Target Levels
-      temp <- data.table::rbindlist(list(data,test))
-      TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName)]])))
-      data.table::setnames(TargetLevels, "V1","OriginalLevels")
-      TargetLevels[, NewLevels := 1:.N]
-      if(SaveModelObjects) {
-        data.table::fwrite(TargetLevels, file = paste0(model_path,
-                                                       "/",
-                                                       ModelID,
-                                                       "_TargetLevels.csv"))
-      }
 
       # MultiClass Target Name Storage----
       if(is.character(TargetColumnName)) {
