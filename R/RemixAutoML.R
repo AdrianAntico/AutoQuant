@@ -25,6 +25,7 @@ utils::globalVariables(
     "NewLevels",
     "OriginalLevels",
     "Metric1",
+    "TargetNewLevels",
     "Metric2",
     "Metric3",
     "Predict",
