@@ -13725,7 +13725,7 @@ AutoCatBoostMultiClass <- function(data,
                     by.y = "OriginalLevels",
                     all = FALSE)
       TestData[, paste0(TargetColumnName) := NewLevels]
-      test[, NewLevels := NULL]
+      TestData[, NewLevels := NULL]
 
       # MultiClass Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
