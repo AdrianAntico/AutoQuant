@@ -12350,18 +12350,18 @@ AutoCatBoostClassifier <- function(data,
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE) {
-  
+
   # Dont run if model_path is null
   if(is.null(model_path)) {
     warning("Need a model_path defined to run this function")
   } else {
-    
+
     # Ensure packages are available
     requireNamespace('data.table', quietly = TRUE)
     if(!requireNamespace('catboost', quietly = TRUE)) {
       warning("catboost needs to be installed. See documentation")
     } else {
-      
+
       # Binary Check Arguments----
       if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
       if(!(tolower(task_type) %chin% c("gpu","cpu"))) warning("task_type needs to be either 'GPU' or 'CPU'")
@@ -12383,7 +12383,7 @@ AutoCatBoostClassifier <- function(data,
                               'HingeLoss','HammingLoss',
                               'ZeroOneLoss','Kappa',
                               'WKappa','LogLikelihoodOfPrediction')")
-        
+
       }
       if(Trees < 1) warning("Trees must be greater than 1")
       if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
@@ -12398,17 +12398,17 @@ AutoCatBoostClassifier <- function(data,
       if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
       if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
       if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
-      
+
       # Binary Ensure data is a data.table----
       if(!data.table::is.data.table(data)) {
         data <- data.table::as.data.table(data)
       }
-      
+
       # Binary Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
         CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
       }
-      
+
       # Binary Subset Columns Needed----
       if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
         keep1 <- names(data)[c(FeatureColNames)]
@@ -12427,34 +12427,34 @@ AutoCatBoostClassifier <- function(data,
         keep <- c(FeatureColNames, TargetColumnName)
         data <- data[, ..keep]
       }
-      
+
       # Binary Target Name Storage----
       if(is.character(TargetColumnName)) {
         Target <- TargetColumnName
       } else {
         Target <- names(data)[TargetColumnName]
       }
-      
+
       # Binary Save Names of data----
       Names <- data.table::as.data.table(names(data))
       data.table::setnames(Names, "V1", "ColNames")
       if(SaveModelObjects) {
         data.table::fwrite(Names, paste0(model_path, "/",ModelID,"_ColNames.csv"))
       }
-      
+
       # Binary Data Partition----
       dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
       dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
       dataTrain[, RANDOMNUMER := NULL]
       dataTest[, RANDOMNUMER := NULL]
-      
+
       # Binary Subset Target Variables----
       TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
       TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
       if(!is.null(TestData)) {
         FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
       }
-      
+
       # Binary Initialize Catboost Data Conversion----
       if(!is.null(CatFeatures)) {
         if(!is.null(TestData)) {
@@ -12472,17 +12472,17 @@ AutoCatBoostClassifier <- function(data,
           FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
         } else {
           TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-          TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)          
+          TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
         }
       }
 
       # Binary Grid Tune or Not Check----
       if(GridTune) {
-        
+
         # Binary Grid Create data.table To Store Results----
         GridCollect <- data.table::data.table(ParamRow = 1:(MaxModelsInGrid + 1),
                                               EvalStat = rep(9999999, MaxModelsInGrid + 1))
-        
+
         # Binary Grid Define Hyper Parameters----
         catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,0.01,0.02,0.03,0.04,0.05),
                                            learning_rate = c(0.01,0.02,0.03,0.04,0.05),
@@ -12490,16 +12490,16 @@ AutoCatBoostClassifier <- function(data,
                                            depth = c(4:12))
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
-        
+
         # Binary AUC List----
         AUC_List <- list()
-        
+
         # Binary Grid Tuning Main Loop----
         for(i in as.integer(seq_len(MaxModelsInGrid + 1))) {
-          
+
           # Print i
           print(i)
-          
+
           # Binary Grid Define Base Parameters----
           base_params <- list(iterations           = Trees,
                               loss_function        = 'CrossEntropy',
@@ -12508,33 +12508,38 @@ AutoCatBoostClassifier <- function(data,
                               best_model_min_trees = 10,
                               metric_period        = 10,
                               task_type            = task_type)
-          
+
           # Binary Grid Merge Model Parameters----
           # Have first model be the baseline model
           if(i != 1) {
             base_params <- c(as.list(catboostGridList[i,]), base_params)
           }
-          
+
           # Binary Grid Train Model----
           model <- catboost::catboost.train(learn_pool = TrainPool,
                                             test_pool  = TestPool,
                                             params     = base_params)
-          
+
           # Binary Grid Score Model----
           if(!is.null(TestData)) {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = FinalTestPool,
-                                                  prediction_type = "Probability")            
+                                                  prediction_type = "Probability")
           } else {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = TestPool,
                                                   prediction_type = "Probability")
           }
-          
+
           # Binary Grid Validation Data----
-          calibEval <- data.table::as.data.table(
-            cbind(Target = TestTarget, p1 = predict))
-          
+          if(!is.null(TestData)) {
+            calibEval <- data.table::as.data.table(
+              cbind(Target = FinalTestTarget, p1 = predict))
+          } else {
+            calibEval <- data.table::as.data.table(
+              cbind(Target = TestTarget, p1 = predict))
+          }
+
           # Binary Grid Evaluation Metrics for Each Grid----
           if(tolower(grid_eval_metric) == "accuracy") {
             j <- 0
@@ -12578,7 +12583,7 @@ AutoCatBoostClassifier <- function(data,
               }
             }
           }
-          
+
           # Binary AUC Object Create----
           AUC_Metrics <- pROC::roc(response = calibEval[["Target"]],
                                    predictor = calibEval[["p1"]],
@@ -12586,13 +12591,13 @@ AutoCatBoostClassifier <- function(data,
                                    algorithm = 3,
                                    auc = TRUE,
                                    ci = TRUE)
-          
+
           # Binary AUC Conversion to data.table----
           AUC_List[[i]] <- data.table::data.table(
             ModelNumber = i,
             Sensitivity = as.numeric(AUC_Metrics$sensitivities+0.0001),
             Specificity = as.numeric(AUC_Metrics$specificities+0.0001))
-          
+
           # Collect Metrics and Corresponding Grids
           # Store Output Information
           if(tolower(grid_eval_metric) == "accuracy") {
@@ -12608,7 +12613,7 @@ AutoCatBoostClassifier <- function(data,
           }
         }
       }
-      
+
       # Binary Define Final Model Parameters----
       if(GridTune) {
         if(grid_eval_metric %chin% c("accuracy","auc","tpr","tnr","prbe","f","odds")) {
@@ -12639,44 +12644,44 @@ AutoCatBoostClassifier <- function(data,
                             metric_period        = 10,
                             task_type            = task_type)
       }
-      
+
       # Binary Train Final Model----
       model <- catboost::catboost.train(learn_pool = TrainPool,
                                         test_pool  = TestPool,
                                         params     = base_params)
-      
+
       # Binary Save Model----
       if(SaveModelObjects) {
         setwd(model_path)
         catboost::catboost.save_model(model = model, model_path = paste0(ModelID))
       }
-      
+
       # Binary Score Final Test Data----
       if(!is.null(TestData)) {
         predict <- catboost::catboost.predict(model = model,
                                               pool = FinalTestPool,
-                                              prediction_type = "Probability")        
+                                              prediction_type = "Probability")
       } else {
         predict <- catboost::catboost.predict(model = model,
                                               pool = TestPool,
                                               prediction_type = "Probability")
       }
-      
+
       # Binary Validation Data----
       if(!is.null(TestData)) {
         ValidationData <- data.table::as.data.table(
-        cbind(Target = TestTarget, TestData, p1 = predict))
+          cbind(Target = TestTarget, TestData, p1 = predict))
       } else {
         ValidationData <- data.table::as.data.table(
-          cbind(Target = TestTarget, dataTest, p1 = predict))  
+          cbind(Target = TestTarget, dataTest, p1 = predict))
       }
-            
+
       # Save Validation Data to File----
       if(SaveModelObjects) {
         data.table::fwrite(ValidationData,
                            file = paste0(model_path,"/", ModelID,"_ValidationData.csv"))
       }
-      
+
       # Binary AUC Object Create----
       AUC_Metrics <- pROC::roc(response = ValidationData[["Target"]],
                                predictor = ValidationData[["p1"]],
@@ -12684,19 +12689,19 @@ AutoCatBoostClassifier <- function(data,
                                algorithm = 3,
                                auc = TRUE,
                                ci = TRUE)
-      
+
       # Binary AUC Conversion to data.table----
       AUC_Data <- data.table::data.table(
         ModelNumber = 0,
         Sensitivity = AUC_Metrics$sensitivities,
         Specificity = AUC_Metrics$specificities)
-      
+
       # Binary Rbind AUC
       if(GridTune == TRUE & MaxModelsInGrid <= 15) {
         temp <- data.table::rbindlist(AUC_List)
         AUC_Data <- data.table::rbindlist(list(temp,AUC_Data))
         AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-        
+
         # Binary Plot ROC Curve----
         ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity,
                                                            group = ModelNumber,
@@ -12707,7 +12712,7 @@ AutoCatBoostClassifier <- function(data,
                                   100 * round(AUC_Metrics$auc,3),"%")) +
           ChartTheme() + ggplot2::xlab("Specificity") +
           ggplot2::ylab("Sensitivity")
-        
+
       } else {
         ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
           ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
@@ -12717,12 +12722,12 @@ AutoCatBoostClassifier <- function(data,
           ChartTheme() + ggplot2::xlab("Specificity") +
           ggplot2::ylab("Sensitivity")
       }
-      
+
       # Save plot to file
       if(SaveModelObjects) {
         ggplot2::ggsave(paste0(model_path,"/", ModelID,"_ROC_Plot.png"))
       }
-      
+
       # Binary Evaluation Calibration Plot----
       EvaluationPlot <- EvalPlot(data = ValidationData,
                                  PredictionColName = "p1",
@@ -12730,18 +12735,18 @@ AutoCatBoostClassifier <- function(data,
                                  GraphType = "calibration",
                                  PercentileBucket = 0.05,
                                  aggrfun = function(x) mean(x, na.rm = TRUE))
-      
+
       # Add Number of Trees to Title
       EvaluationPlot <- EvaluationPlot +
         ggplot2::ggtitle(
           paste0("Calibration Evaluation Plot: AUC = ",
                  round(AUC_Metrics$auc,3)))
-      
+
       # Save plot to file
       if(SaveModelObjects) {
         ggplot2::ggsave(paste0(model_path,"/", ModelID,"_EvaluationPlot.png"))
       }
-      
+
       # Evaluation Metrics at Optimial Threshold----
       x <- ROCR::prediction(predictions = ValidationData[["p1"]],
                             labels = ValidationData[["Target"]])
@@ -12781,7 +12786,7 @@ AutoCatBoostClassifier <- function(data,
               Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1,]
             }
           }
-          
+
           # Store Output Information
           if(any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
                  nrow(data.table::as.data.table(y@x.values)) <= 1)) {
@@ -12793,7 +12798,7 @@ AutoCatBoostClassifier <- function(data,
           }
         }, error = function(x) "skip")
       }
-      
+
       # Binary Accuracy Threshold and Metric----
       j <- 0
       x <- data.table(Metric = "Accuracy", MetricValue = 5.0, Threshold = seq(0.01,0.99,0.001))
@@ -12805,14 +12810,14 @@ AutoCatBoostClassifier <- function(data,
       data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
       x <- x[1,]
       EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics,x))
-      
+
       # Save EvaluationMetrics to File
       EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
       if(SaveModelObjects) {
         data.table::fwrite(EvaluationMetrics,
                            file = paste0(model_path,"/", ModelID,"_EvaluationMetrics.csv"))
       }
-      
+
       # Binary Variable Importance----
       temp <- catboost::catboost.get_feature_importance(model)
       VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
@@ -12822,7 +12827,7 @@ AutoCatBoostClassifier <- function(data,
       if(SaveModelObjects) {
         data.table::fwrite(VariableImportance, file = paste0(model_path,"/", ModelID,"_VariableImportance.csv"))
       }
-      
+
       # Binary Partial Dependence----
       ParDepPlots <- list()
       j <- 0
@@ -12839,23 +12844,23 @@ AutoCatBoostClassifier <- function(data,
             PercentileBucket = 0.05,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
-          
+
           j <- j + 1
           ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
         }, error = function(x) "skip")
       }
-      
+
       # Binary Save ParDepPlots to file----
       if(SaveModelObjects) {
         save(ParDepPlots, file = paste0(model_path,"/", ModelID,"_ParDepPlots.R"))
       }
-      
+
       # Binary Save GridCollect and catboostGridList----
       if(SaveModelObjects & GridTune == TRUE) {
         data.table::fwrite(catboostGridList, file = paste0(model_path,"/",ModelID, "_/catboostGridList.csv"))
         data.table::fwrite(GridCollect, file = paste0(model_path,"/",ModelID, "_/GridCollect.csv"))
       }
-      
+
       # Binary Return Model Objects----
       if(GridTune) {
         if(ReturnModelObjects) {
@@ -13075,7 +13080,7 @@ AutoCatBoostRegression <- function(data,
       dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
       dataTrain[, RANDOMNUMER := NULL]
       dataTest[, RANDOMNUMER := NULL]
-      
+
       # Regression Subset Target Variables----
       TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
       TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
@@ -13106,7 +13111,7 @@ AutoCatBoostRegression <- function(data,
           FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
         } else {
           TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-          TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)          
+          TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
         }
       }
 
@@ -13169,7 +13174,7 @@ AutoCatBoostRegression <- function(data,
           if(!is.null(TestData)) {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = FinalTestPool,
-                                                  prediction_type = "RawFormulaVal")            
+                                                  prediction_type = "RawFormulaVal")
           } else {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = TestPool,
@@ -13177,8 +13182,14 @@ AutoCatBoostRegression <- function(data,
           }
 
           # Regression Grid Validation Data----
-          calibEval <- data.table::as.data.table(
-            cbind(Target = TestTarget, Predicted = predict))
+          # Binary Grid Validation Data----
+          if(!is.null(TestData)) {
+            calibEval <- data.table::as.data.table(
+              cbind(Target = FinalTestTarget, Predicted = predict))
+          } else {
+            calibEval <- data.table::as.data.table(
+              cbind(Target = TestTarget, Predicted = predict))
+          }
 
           # Regression Metric Collection Table----
           GridCollect <- data.table::data.table(ParamRow = 1:(1 + MaxModelsInGrid),
@@ -13288,19 +13299,19 @@ AutoCatBoostRegression <- function(data,
       } else {
         predict <- catboost::catboost.predict(model = model,
                                               pool = TestPool,
-                                              prediction_type = "RawFormulaVal")        
+                                              prediction_type = "RawFormulaVal")
       }
-      
+
 
       # Regression Validation Data----
       if(!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(
-        cbind(Target = TestTarget, TestData, Predict = predict))
+        ValidationData <- data.table::as.data.table(
+          cbind(Target = TestTarget, TestData, Predict = predict))
       } else {
         ValidationData <- data.table::as.data.table(
-        cbind(Target = TestTarget, dataTest, Predict = predict))
+          cbind(Target = TestTarget, dataTest, Predict = predict))
       }
-      
+
       # Regression r2 via sqrt of correlation
       r_squared <- (ValidationData[, stats::cor(Target, Predict)])^2
 
@@ -13387,7 +13398,7 @@ AutoCatBoostRegression <- function(data,
           } else if(tolower(metric) == "kl") {
             if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
               ValidationData[, Metric := Target * log((Target + 1) /
-                                                      (Predict + 1))]
+                                                        (Predict + 1))]
               Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
             }
           } else if(tolower(metric) == "cs") {
