@@ -25,7 +25,7 @@ utils::globalVariables(
     "NewLevels",
     "OriginalLevels",
     "Metric1",
-    "TargetNewLevels",
+    "TargetLevels",
     "Metric2",
     "Metric3",
     "Predict",
@@ -13722,9 +13722,9 @@ AutoCatBoostMultiClass <- function(data,
       data[, paste0(TargetColumnName) := NewLevels]
       data[, NewLevels := NULL]
       TestData <- merge(test, TargetLevels,
-                    by.x = eval(TargetColumnName),
-                    by.y = "OriginalLevels",
-                    all = FALSE)
+                        by.x = eval(TargetColumnName),
+                        by.y = "OriginalLevels",
+                        all = FALSE)
       TestData[, paste0(TargetColumnName) := NewLevels]
       TestData[, NewLevels := NULL]
 
@@ -13887,12 +13887,12 @@ AutoCatBoostMultiClass <- function(data,
             calibEval <- data.table::as.data.table(
               cbind(Target = TestTarget, predict))
           }
-          ValidationData <- merge(calibEval, TargetNewLevels,
+          ValidationData <- merge(calibEval, TargetLevels,
                                   by.x = "V2",
                                   by.y = "NewLevels",
                                   all = FALSE)
           ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(ValidationData, TargetNewLevels,
+          ValidationData <- merge(ValidationData, TargetLevels,
                                   by.x = "Target",
                                   by.y = "NewLevels",
                                   all = FALSE)
@@ -14012,12 +14012,12 @@ AutoCatBoostMultiClass <- function(data,
         calibEval <- data.table::as.data.table(
           cbind(Target = TestTarget, predict))
       }
-      ValidationData <- merge(calibEval, TargetNewLevels,
+      ValidationData <- merge(calibEval, TargetLevels,
                               by.x = "V2",
                               by.y = "NewLevels",
                               all = FALSE)
       ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-      ValidationData <- merge(ValidationData, TargetNewLevels,
+      ValidationData <- merge(ValidationData, TargetLevels,
                               by.x = "Target",
                               by.y = "NewLevels",
                               all = FALSE)
