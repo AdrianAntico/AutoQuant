@@ -85,7 +85,10 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OModeler}},
+Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostMultiClass}},
+  \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}}

@@ -15,7 +15,7 @@ AutoCatBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{TestData}{If you want to supply your own data for testing (column names and column ordering must be the same as data)}
+\item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
 
@@ -109,6 +109,7 @@ TestModel <- AutoCatBoostRegression(data,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}}, \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
