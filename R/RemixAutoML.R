@@ -4505,6 +4505,7 @@ ModelDataPrep <- function(data,
 #' @param MidTierCost This is the cost of doing nothing (or whatever it means to not classify in your case)
 #' @param Cores Number of cores on your machine
 #' @param Precision Set the decimal number to increment by between 0 and 1
+#' @param Boundaries Supply a vector of two values c(lower bound, upper bound) where the first value is the smallest threshold you want to test and the second value is the largest value you want to test. Note, if your results are at the boundaries you supplied, you should extent the boundary that was reached until the values is within both revised boundaries.
 #' @import foreach
 #' @examples
 #' data <- data.table::data.table(Target = runif(10))
@@ -4522,7 +4523,8 @@ ModelDataPrep <- function(data,
 #'                        FalseNegativeCost = -2,
 #'                        MidTierCost = -0.5,
 #'                        Precision = 0.5,
-#'                        Cores = 1)
+#'                        Cores = 1,
+#'                        Boundaries = c(0.05,0.75))
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(data,
@@ -4534,7 +4536,8 @@ RedYellowGreen <- function(data,
                            FalseNegativeCost = -50,
                            MidTierCost       = -2,
                            Cores             = 8,
-                           Precision         = 0.01) {
+                           Precision         = 0.01,
+                           Boundaries        = c(0.05,0.50)) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
@@ -4545,6 +4548,19 @@ RedYellowGreen <- function(data,
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
+
+  # Ensure arguments are valid
+  if(is.character(TruePositiveCost))  warning("TruePositiveCost must be numeric")
+  if(is.character(TrueNegativeCost))  warning("TruePositiveCost must be numeric")
+  if(is.character(FalsePositiveCost)) warning("TruePositiveCost must be numeric")
+  if(is.character(FalseNegativeCost)) warning("TruePositiveCost must be numeric")
+  if(is.character(MidTierCost))       warning("TruePositiveCost must be numeric")
+  if(Precision < 0 | Precision > 0.5)
+    warning("Precision should be a decimal value greater than 0 and less than 0.5")
+  if(min(Boundaries) < 0 | max(Boundaries) > 0.5)
+    warning("Boundaries should be a decimal value greater than 0 and less than 0.5")
+  if(Boundaries[1] > Boundaries[2])
+    warning("The first Boundaries element should be less than the second element")
 
   # Set up evaluation table
   analysisTable <- data.table::data.table(
@@ -4559,8 +4575,8 @@ RedYellowGreen <- function(data,
 
   # Do nothing possibilities
   temp     <-
-    data.table::CJ(MTLT = seq(0.0, 1.0, Precision),
-                   MTHT = seq(0.0, 1.0, Precision))[MTHT > MTLT]
+    data.table::CJ(MTLT = seq(Boundaries[1], Boundaries[2], Precision),
+                   MTHT = seq(Boundaries[1], Boundaries[2], Precision))[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
 
@@ -4641,7 +4657,7 @@ RedYellowGreen <- function(data,
         store   <- list()
         j <- 0
         base::options(warn = -1)
-        for (i in base::c(MidTierHighThresh)) {
+        for (i in c(MidTierHighThresh)) {
           j <- j + 1
           tp      <-
             base::sum(base::ifelse(
