@@ -13702,31 +13702,37 @@ AutoCatBoostMultiClass <- function(data,
       }
 
       # MultiClass Obtain Unique Target Levels
-      TargetLevels <- sort(unique(data[[eval(TargetColumnName)]]))
+      temp <- data.table::rbindlist(list(data,test))
+      TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName)]])))
+      data.table::setnames(TargetLevels, "V1","OriginalLevels")
+      TargetLevels[, NewLevels := 1:.N]
+      if(SaveModelObjects) {
+        data.table::fwrite(TargetLevels, file = paste0(model_path,
+                                                       "/",
+                                                       ModelID,
+                                                       "_TargetLevels.csv"))
+      }
 
       # MultiClass Convert Target to Numeric Factor
-      data[, eval(TargetColumnName) := as.numeric(factor(get(TargetColumnName)))]
-      TargetNewLevels <- data.table::data.table(OriginalLevels = TargetLevels)
-      TargetNewLevels[, NewLevels := 1:.N]
-
-      # MultiClass Save Target Levels
-      if(SaveModelObjects) {
-        data.table::fwrite(TargetNewLevels, file = paste0(model_path,
-                                                          "/_TargetLevels.csv"))
-      }
-
-      # MultiClass Update TestData Target Levels
-      if(!is.null(TestData)) {
-        TestData <- merge(TestData, TargetNewLevels, by.x = eval(TargetColumnName), by.y = "OriginalLevels", all = FALSE)
-      }
-      TestData[, paste0(eval(TargetColumnName)) := NewLevels][, NewLevels := NULL]
+      data <- merge(data, TargetLevels,
+                    by.x = eval(TargetColumnName),
+                    by.y = "OriginalLevels",
+                    all = FALSE)
+      data[, paste0(TargetColumnName) := NewLevels]
+      data[, NewLevels := NULL]
+      TestData <- merge(test, TargetLevels,
+                    by.x = eval(TargetColumnName),
+                    by.y = "OriginalLevels",
+                    all = FALSE)
+      TestData[, paste0(TargetColumnName) := NewLevels]
+      test[, NewLevels := NULL]
 
       # MultiClass Convert CatFeatures to 1-indexed----
       if(!is.null(CatFeatures)) {
         CatFeatures <- c((CatFeatures[1]-1):(CatFeatures[length(CatFeatures)]-1))
       }
 
-      # MultiClass Subset Columns Needed----
+      # MultiClass data Subset Columns Needed----
       if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep2 <- names(data)[c(TargetColumnName)]
@@ -13743,6 +13749,25 @@ AutoCatBoostMultiClass <- function(data,
       } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
         keep <- c(FeatureColNames, TargetColumnName)
         data <- data[, ..keep]
+      }
+
+      # MultiClass TestData Subset Columns Needed----
+      if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep2 <- names(TestData)[c(TargetColumnName)]
+        keep <- c(keep1, keep2)
+        TestData <- TestData[, ..keep]
+      } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
+        keep2 <- names(TestData)[c(TargetColumnName)]
+        keep <- c(FeatureColNames, keep2)
+        TestData <- TestData[, ..keep]
+      } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(TargetColumnName, keep1)
+        TestData <- TestData[, ..keep]
+      } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
+        keep <- c(FeatureColNames, TargetColumnName)
+        TestData <- TestData[, ..keep]
       }
 
       # MultiClass Target Name Storage----
