@@ -13819,6 +13819,10 @@ AutoCatBoostMultiClass <- function(data,
         Target <- names(data)[TargetColumnName]
       }
 
+      # Reorder Colnames
+      data.table::setcolorder(data, c(2:ncol(data),1))
+      data.table::setcolorder(TestData, c(2:ncol(data),1))
+
       # MultiClass Save Names of data----
       Names <- data.table::as.data.table(names(data))
       data.table::setnames(Names, "V1", "ColNames")
