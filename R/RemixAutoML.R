@@ -12674,7 +12674,7 @@ AutoCatBoostClassifier <- function(data,
       # Binary Validation Data----
       if(!is.null(TestData)) {
         ValidationData <- data.table::as.data.table(
-          cbind(Target = TestTarget, TestData, p1 = predict))
+          cbind(Target = FinalTestTarget, TestData, p1 = predict))
       } else {
         ValidationData <- data.table::as.data.table(
           cbind(Target = TestTarget, dataTest, p1 = predict))
@@ -13314,7 +13314,7 @@ AutoCatBoostRegression <- function(data,
       # Regression Validation Data----
       if(!is.null(TestData)) {
         ValidationData <- data.table::as.data.table(
-          cbind(Target = TestTarget, TestData, Predict = predict))
+          cbind(Target = FinalTestTarget, TestData, Predict = predict))
       } else {
         ValidationData <- data.table::as.data.table(
           cbind(Target = TestTarget, dataTest, Predict = predict))
