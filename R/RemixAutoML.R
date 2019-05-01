@@ -13837,10 +13837,10 @@ AutoCatBoostMultiClass <- function(data,
       dataTest[, RANDOMNUMER := NULL]
 
       # MultiClass Subset Target Variables----
-      TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
-      TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
+      TrainTarget <- tryCatch({dataTrain[, as.numeric(get(Target))]}, error = function(x) dataTrain[, as.numeric(eval(Target))])
+      TestTarget <- tryCatch({dataTest[, as.numeric(get(Target))]}, error = function(x) dataTest[, as.numeric(eval(Target))])
       if(!is.null(TestData)) {
-        FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
+        FinalTestTarget <- tryCatch({TestData[, as.numeric(get(Target))]}, error = function(x) TestData[, as.numeric(eval(Target))])
       }
 
       # MultiClass Initialize Catboost Data Conversion----
@@ -13945,7 +13945,7 @@ AutoCatBoostMultiClass <- function(data,
 
           # MultiClass Update Names for Predicted Value Columns
           k <- 2
-          for(name in TargetLevels) {
+          for(name in as.character(TargetLevels[[1]])) {
             k <- k + 1
             data.table::setnames(ValidationData, paste0("V",k), name)
           }
