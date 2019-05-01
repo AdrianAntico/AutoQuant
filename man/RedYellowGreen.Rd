@@ -7,7 +7,7 @@
 RedYellowGreen(data, PredictColNumber = 2, ActualColNumber = 1,
   TruePositiveCost = 0, TrueNegativeCost = 0,
   FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
-  Cores = 8, Precision = 0.01, Boundaries = c(0.05, 0.5))
+  Cores = 8, Precision = 0.01, Boundaries = c(0.05, 0.75))
 }
 \arguments{
 \item{data}{data is the data table with your predicted and actual values from a classification model}
