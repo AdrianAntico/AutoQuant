@@ -7,7 +7,7 @@
 RedYellowGreen(data, PredictColNumber = 2, ActualColNumber = 1,
   TruePositiveCost = 0, TrueNegativeCost = 0,
   FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
-  Cores = 8, Precision = 0.01)
+  Cores = 8, Precision = 0.01, Boundaries = c(0.05, 0.5))
 }
 \arguments{
 \item{data}{data is the data table with your predicted and actual values from a classification model}
@@ -29,6 +29,8 @@ RedYellowGreen(data, PredictColNumber = 2, ActualColNumber = 1,
 \item{Cores}{Number of cores on your machine}
 
 \item{Precision}{Set the decimal number to increment by between 0 and 1}
+
+\item{Boundaries}{Supply a vector of two values c(lower bound, upper bound) where the first value is the smallest threshold you want to test and the second value is the largest value you want to test. Note, if your results are at the boundaries you supplied, you should extent the boundary that was reached until the values is within both revised boundaries.}
 }
 \value{
 A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
@@ -52,7 +54,8 @@ data <- RedYellowGreen(data,
                        FalseNegativeCost = -2,
                        MidTierCost = -0.5,
                        Precision = 0.5,
-                       Cores = 1)
+                       Cores = 1,
+                       Boundaries = c(0.05,0.75))
 }
 \seealso{
 Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
