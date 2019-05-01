@@ -12524,11 +12524,13 @@ AutoCatBoostClassifier <- function(data,
           if(!is.null(TestData)) {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = FinalTestPool,
-                                                  prediction_type = "Probability")
+                                                  prediction_type = "Probability",
+                                                  thread_count = -1)
           } else {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = TestPool,
-                                                  prediction_type = "Probability")
+                                                  prediction_type = "Probability",
+                                                  thread_count = -1)
           }
 
           # Binary Grid Validation Data----
@@ -12660,11 +12662,13 @@ AutoCatBoostClassifier <- function(data,
       if(!is.null(TestData)) {
         predict <- catboost::catboost.predict(model = model,
                                               pool = FinalTestPool,
-                                              prediction_type = "Probability")
+                                              prediction_type = "Probability",
+                                              thread_count = -1)
       } else {
         predict <- catboost::catboost.predict(model = model,
                                               pool = TestPool,
-                                              prediction_type = "Probability")
+                                              prediction_type = "Probability",
+                                              thread_count = -1)
       }
 
       # Binary Validation Data----
@@ -13174,11 +13178,13 @@ AutoCatBoostRegression <- function(data,
           if(!is.null(TestData)) {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = FinalTestPool,
-                                                  prediction_type = "RawFormulaVal")
+                                                  prediction_type = "RawFormulaVal",
+                                                  thread_count = -1)
           } else {
             predict <- catboost::catboost.predict(model = model,
                                                   pool = TestPool,
-                                                  prediction_type = "RawFormulaVal")
+                                                  prediction_type = "RawFormulaVal",
+                                                  thread_count = -1)
           }
 
           # Regression Grid Validation Data----
@@ -13295,11 +13301,13 @@ AutoCatBoostRegression <- function(data,
       if(!is.null(TestData)) {
         predict <- catboost::catboost.predict(model = model,
                                               pool = FinalTestPool,
-                                              prediction_type = "RawFormulaVal")
+                                              prediction_type = "RawFormulaVal",
+                                              thread_count = -1)
       } else {
         predict <- catboost::catboost.predict(model = model,
                                               pool = TestPool,
-                                              prediction_type = "RawFormulaVal")
+                                              prediction_type = "RawFormulaVal",
+                                              thread_count = -1)
       }
 
 
