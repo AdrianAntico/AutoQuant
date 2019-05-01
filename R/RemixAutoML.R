@@ -12539,10 +12539,13 @@ AutoCatBoostClassifier <- function(data,
                                               EvalStat = rep(9999999, MaxModelsInGrid + 1))
 
         # Binary Grid Define Hyper Parameters----
-        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,0.01,0.02,0.03,0.04,0.05),
+        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,1,2,3),
                                            learning_rate = c(0.01,0.02,0.03,0.04,0.05),
                                            bootstrap_type = c("Poisson","Bayesian","Bernoulli","No"),
                                            depth = c(4:12))
+        if(tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
@@ -12675,7 +12678,31 @@ AutoCatBoostClassifier <- function(data,
       if(GridTune) {
         if(grid_eval_metric %chin% c("accuracy","auc","tpr","tnr","prbe","f","odds")) {
           BestGrid <- GridCollect[order(-EvalStat)][1,ParamRow]
-          BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+          if(BestGrid == 1) {
+            BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+            Base_params <- list(iterations           = Trees,
+                                learning_rate        = 0.01,
+                                depth                = 10,
+                                loss_function        = eval_metric,
+                                eval_metric          = eval_metric,
+                                use_best_model       = TRUE,
+                                best_model_min_trees = 10,
+                                metric_period        = 10,
+                                task_type            = task_type)
+
+          } else {
+            BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+            Base_params <- list(iterations           = Trees,
+                                learning_rate        = 0.01,
+                                depth                = 10,
+                                loss_function        = eval_metric,
+                                eval_metric          = eval_metric,
+                                use_best_model       = TRUE,
+                                best_model_min_trees = 10,
+                                metric_period        = 10,
+                                task_type            = task_type)
+            base_params <- c(as.list(catboostGridList[BestGrid,]), Base_params)
+          }
         } else {
           BestGrid <- GridCollect[order(EvalStat)][1,ParamRow]
           BestThresh <- GridCollect[order(EvalStat)][1,EvalStat]
@@ -13200,13 +13227,16 @@ AutoCatBoostRegression <- function(data,
                                               EvalStat = rep(9999999, MaxModelsInGrid + 1))
 
         # Regression Grid Define Hyper Parameters----
-        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,0.01,0.02,0.03,0.04,0.05),
+        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,1,2,3),
                                            learning_rate = c(0.01,0.02,0.03,0.04,0.05),
                                            bootstrap_type = c("Poisson",
                                                               "Bayesian",
                                                               "Bernoulli",
                                                               "No"),
                                            depth = c(4:12))
+        if(tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
@@ -13330,7 +13360,31 @@ AutoCatBoostRegression <- function(data,
       if(GridTune) {
         if(grid_eval_metric %chin% c("auc","tpr","tnr","prbe","f","odds")) {
           BestGrid <- GridCollect[order(-EvalStat)][1,ParamRow]
-          BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+          if(BestGrid == 1) {
+            BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+            Base_params <- list(iterations           = Trees,
+                                learning_rate        = 0.01,
+                                depth                = 10,
+                                loss_function        = eval_metric,
+                                eval_metric          = eval_metric,
+                                use_best_model       = TRUE,
+                                best_model_min_trees = 10,
+                                metric_period        = 10,
+                                task_type            = task_type)
+
+          } else {
+            BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+            Base_params <- list(iterations           = Trees,
+                                learning_rate        = 0.01,
+                                depth                = 10,
+                                loss_function        = eval_metric,
+                                eval_metric          = eval_metric,
+                                use_best_model       = TRUE,
+                                best_model_min_trees = 10,
+                                metric_period        = 10,
+                                task_type            = task_type)
+            base_params <- c(as.list(catboostGridList[BestGrid,]), Base_params)
+          }
         } else {
           BestGrid <- GridCollect[order(EvalStat)][1,ParamRow]
           BestThresh <- GridCollect[order(EvalStat)][1,EvalStat]
@@ -13872,10 +13926,13 @@ AutoCatBoostMultiClass <- function(data,
                                               EvalStat = rep(9999999, MaxModelsInGrid + 1))
 
         # MultiClass Grid Define Hyper Parameters----
-        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,0.01,0.02,0.03,0.04,0.05),
+        catboostGridList <- data.table::CJ(l2_leaf_reg = c(0,1,2,3),
                                            learning_rate = c(0.01,0.02,0.03,0.04,0.05),
                                            bootstrap_type = c("Poisson","Bayesian","Bernoulli","No"),
                                            depth = c(4:12))
+        if(tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
@@ -13997,17 +14054,31 @@ AutoCatBoostMultiClass <- function(data,
       # MultiClass Define Final Model Parameters----
       if(GridTune) {
         BestGrid <- GridCollect[order(-EvalStat)][1,ParamRow]
-        BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
-        Base_params <- list(iterations           = Trees,
-                            learning_rate        = 0.01,
-                            depth                = 10,
-                            loss_function        = eval_metric,
-                            eval_metric          = eval_metric,
-                            use_best_model       = TRUE,
-                            best_model_min_trees = 10,
-                            metric_period        = 10,
-                            task_type            = task_type)
-        base_params <- c(as.list(catboostGridList[BestGrid,]), Base_params)
+        if(BestGrid == 1) {
+          BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+          Base_params <- list(iterations           = Trees,
+                              learning_rate        = 0.01,
+                              depth                = 10,
+                              loss_function        = eval_metric,
+                              eval_metric          = eval_metric,
+                              use_best_model       = TRUE,
+                              best_model_min_trees = 10,
+                              metric_period        = 10,
+                              task_type            = task_type)
+
+        } else {
+          BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
+          Base_params <- list(iterations           = Trees,
+                              learning_rate        = 0.01,
+                              depth                = 10,
+                              loss_function        = eval_metric,
+                              eval_metric          = eval_metric,
+                              use_best_model       = TRUE,
+                              best_model_min_trees = 10,
+                              metric_period        = 10,
+                              task_type            = task_type)
+          base_params <- c(as.list(catboostGridList[BestGrid,]), Base_params)
+        }
       } else {
         base_params <- list(iterations           = Trees,
                             learning_rate        = 0.01,
@@ -14072,7 +14143,7 @@ AutoCatBoostMultiClass <- function(data,
 
       # MultiClass Update Names for Predicted Value Columns
       k <- 2
-      for(name in TargetLevels) {
+      for(name in as.character(TargetLevels[[1]])) {
         k <- k + 1
         data.table::setnames(ValidationData, paste0("V",k), name)
       }
