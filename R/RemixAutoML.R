@@ -13906,89 +13906,91 @@ AutoCatBoostMultiClass <- function(data,
                                             params     = base_params)
 
           # MultiClass Grid Score Model----
-          if(!is.null(TestData)) {
-            predict <- cbind(
-              1 + catboost::catboost.predict(model = model,
-                                             pool = FinalTestPool,
+          tryCatch({
+            if(!is.null(TestData)) {
+              predict <- cbind(
+                1 + catboost::catboost.predict(model = model,
+                                               pool = FinalTestPool,
+                                               prediction_type = "Class"),
+                catboost::catboost.predict(model = model,
+                                           pool = FinalTestPool,
+                                           prediction_type = "Probability"))
+            } else {
+              predict <- cbind(
+                1+catboost::catboost.predict(model = model,
+                                             pool = TestPool,
                                              prediction_type = "Class"),
-              catboost::catboost.predict(model = model,
-                                         pool = FinalTestPool,
-                                         prediction_type = "Probability"))
-          } else {
-            predict <- cbind(
-              1+catboost::catboost.predict(model = model,
+                catboost::catboost.predict(model = model,
                                            pool = TestPool,
-                                           prediction_type = "Class"),
-              catboost::catboost.predict(model = model,
-                                         pool = TestPool,
-                                         prediction_type = "Probability"))
-          }
-
-          # MultiClass Grid Validation Data----
-          if(!is.null(TestData)) {
-            calibEval <- data.table::as.data.table(
-              cbind(Target = FinalTestTarget, predict))
-          } else {
-            calibEval <- data.table::as.data.table(
-              cbind(Target = TestTarget, predict))
-          }
-          ValidationData <- merge(calibEval, TargetLevels,
-                                  by.x = "V2",
-                                  by.y = "NewLevels",
-                                  all = FALSE)
-          ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(ValidationData, TargetLevels,
-                                  by.x = "Target",
-                                  by.y = "NewLevels",
-                                  all = FALSE)
-          ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-
-          # MultiClass Update Names for Predicted Value Columns
-          k <- 2
-          for(name in as.character(TargetLevels[[1]])) {
-            k <- k + 1
-            data.table::setnames(ValidationData, paste0("V",k), name)
-          }
-          data.table::setnames(ValidationData, "V2","Predict")
-          data.table::set(ValidationData,
-                          j = "Target",
-                          value = as.character(ValidationData[["Target"]]))
-          data.table::set(ValidationData,
-                          j = "Predict",
-                          value = as.character(ValidationData[["Predict"]]))
-
-          # MultiClass Metric----
-          if(tolower(grid_eval_metric) == "accuracy") {
-            Metric <- ValidationData[, mean(ifelse(as.character(Target) ==
-                                                     as.character(Predict),
-                                                   1,
-                                                   0),
-                                            na.rm = TRUE)]
-          } else {
-            # MultiClass Metric for MicroAUC----
-            ValidationData[, vals := 0.5]
-            z <- ncol(ValidationData)
-            col <- "Target"
-            for (l in seq_len(nrow(ValidationData))) {
-              cols <- ValidationData[l, get(col)][[1]]
-              valss <- ValidationData[l, ..cols][[1]]
-              data.table::set(ValidationData,
-                              i = l,
-                              j = z,
-                              value = valss)
+                                           prediction_type = "Probability"))
             }
-            Metric <- round(as.numeric(noquote(
-              stringr::str_extract(
-                pROC::multiclass.roc(ValidationData[["Target"]], ValidationData[["vals"]])$auc,
-                "\\d+\\.*\\d*"
-              )
-            )), 4)
-          }
 
-          # Collect Metrics and Corresponding Grids
-          # Store Output Information
-          data.table::set(GridCollect, i = i, j = 1L, value = i)
-          data.table::set(GridCollect, i = i, j = 2L, value = Metric)
+            # MultiClass Grid Validation Data----
+            if(!is.null(TestData)) {
+              calibEval <- data.table::as.data.table(
+                cbind(Target = FinalTestTarget, predict))
+            } else {
+              calibEval <- data.table::as.data.table(
+                cbind(Target = TestTarget, predict))
+            }
+            ValidationData <- merge(calibEval, TargetLevels,
+                                    by.x = "V2",
+                                    by.y = "NewLevels",
+                                    all = FALSE)
+            ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
+            ValidationData <- merge(ValidationData, TargetLevels,
+                                    by.x = "Target",
+                                    by.y = "NewLevels",
+                                    all = FALSE)
+            ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
+
+            # MultiClass Update Names for Predicted Value Columns
+            k <- 2
+            for(name in as.character(TargetLevels[[1]])) {
+              k <- k + 1
+              data.table::setnames(ValidationData, paste0("V",k), name)
+            }
+            data.table::setnames(ValidationData, "V2","Predict")
+            data.table::set(ValidationData,
+                            j = "Target",
+                            value = as.character(ValidationData[["Target"]]))
+            data.table::set(ValidationData,
+                            j = "Predict",
+                            value = as.character(ValidationData[["Predict"]]))
+
+            # MultiClass Metric----
+            if(tolower(grid_eval_metric) == "accuracy") {
+              Metric <- ValidationData[, mean(ifelse(as.character(Target) ==
+                                                       as.character(Predict),
+                                                     1,
+                                                     0),
+                                              na.rm = TRUE)]
+            } else {
+              # MultiClass Metric for MicroAUC----
+              ValidationData[, vals := 0.5]
+              z <- ncol(ValidationData)
+              col <- "Target"
+              for (l in seq_len(nrow(ValidationData))) {
+                cols <- ValidationData[l, get(col)][[1]]
+                valss <- ValidationData[l, ..cols][[1]]
+                data.table::set(ValidationData,
+                                i = l,
+                                j = z,
+                                value = valss)
+              }
+              Metric <- round(as.numeric(noquote(
+                stringr::str_extract(
+                  pROC::multiclass.roc(ValidationData[["Target"]], ValidationData[["vals"]])$auc,
+                  "\\d+\\.*\\d*"
+                )
+              )), 4)
+            }
+
+            # Collect Metrics and Corresponding Grids
+            # Store Output Information
+            data.table::set(GridCollect, i = i, j = 1L, value = i)
+            data.table::set(GridCollect, i = i, j = 2L, value = Metric)
+          }, error = function(x) "skip")
         }
       }
 
