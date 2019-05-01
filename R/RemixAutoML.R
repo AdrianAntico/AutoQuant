@@ -13629,7 +13629,7 @@ AutoCatBoostRegression <- function(data,
 #'                 ifelse(Independent_Variable2 < 0.6,  "C",
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' TestModel <- AutoCatBoostClassifier(data,
+#' TestModel <- AutoCatBoostMultiClass(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
