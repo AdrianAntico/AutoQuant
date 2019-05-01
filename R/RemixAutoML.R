@@ -4661,39 +4661,54 @@ RedYellowGreen <- function(data,
         base::options(warn = -1)
         for (i in c(MidTierHighThresh)) {
           j <- j + 1
-          tp      <-
-            base::sum(base::ifelse(
-              !(data[[predTar]] < MidTierHighThresh &
-                  data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 1 & data[[predTar]] >= i,
-              1,
-              0
-            ))
-          tn      <-
-            base::sum(base::ifelse(
-              !(data[[predTar]] < MidTierHighThresh &
-                  data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 0 & data[[predTar]] <  i,
-              1,
-              0
-            ))
-          fp      <-
-            base::sum(base::ifelse(
-              !(data[[predTar]] < MidTierHighThresh &
-                  data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 0 & data[[predTar]] >= i,
-              1,
-              0
-            ))
-          fn      <-
-            base::sum(base::ifelse(
-              !(data[[predTar]] < MidTierHighThresh &
-                  data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 1 & data[[predTar]] <  i,
-              1,
-              0
-            ))
-          none    <-
+            if(tpProfit != 0) {
+              tp <- base::sum(base::ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 1 & data[[predTar]] >= i,
+                1,
+                0
+              ))
+            } else {
+              tp <- 0
+            }
+          if(tnProfit != 0) {
+            tn <-
+              base::sum(base::ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 0 & data[[predTar]] <  i,
+                1,
+                0
+              ))
+          } else {
+            tn <- 0
+          }
+          if(fpProfit != 0) {
+            fp <-
+              base::sum(base::ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 0 & data[[predTar]] >= i,
+                1,
+                0
+              ))
+          } else {
+            fp <- 0
+          }
+          if(fnProfit != 0) {
+            fn <-
+              base::sum(base::ifelse(
+                !(data[[predTar]] < MidTierHighThresh &
+                    data[[predTar]] > MidTierLowThresh) &
+                  data[[actTar]] == 1 & data[[predTar]] <  i,
+                1,
+                0
+              ))
+          } else {
+            fp <- 0
+          }
+          none <-
             base::sum(base::ifelse(
               data[[predTar]] <= MidTierHighThresh &
                 data[[predTar]] >= MidTierLowThresh,
