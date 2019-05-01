@@ -12663,9 +12663,14 @@ AutoCatBoostClassifier <- function(data,
       }
       
       # Binary Validation Data----
-      ValidationData <- data.table::as.data.table(
-        cbind(Target = TestTarget, FinalTestPool, p1 = predict))
-      
+      if(!is.null(TestData)) {
+        ValidationData <- data.table::as.data.table(
+        cbind(Target = TestTarget, TestData, p1 = predict))
+      } else {
+        ValidationData <- data.table::as.data.table(
+          cbind(Target = TestTarget, dataTest, p1 = predict))  
+      }
+            
       # Save Validation Data to File----
       if(SaveModelObjects) {
         data.table::fwrite(ValidationData,
