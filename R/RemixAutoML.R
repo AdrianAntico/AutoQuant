@@ -12879,8 +12879,8 @@ AutoCatBoostClassifier <- function(data,
 
       # Binary Save GridCollect and catboostGridList----
       if(SaveModelObjects & GridTune == TRUE) {
-        data.table::fwrite(catboostGridList, file = paste0(model_path,"/",ModelID, "_/catboostGridList.csv"))
-        data.table::fwrite(GridCollect, file = paste0(model_path,"/",ModelID, "_/GridCollect.csv"))
+        data.table::fwrite(catboostGridList, file = paste0(model_path,"/",ModelID, "_catboostGridList.csv"))
+        data.table::fwrite(GridCollect, file = paste0(model_path,"/",ModelID, "_GridCollect.csv"))
       }
 
       # Binary Return Model Objects----
@@ -13517,9 +13517,13 @@ AutoCatBoostRegression <- function(data,
       # Regression Save GridCollect and catboostGridList----
       if(SaveModelObjects & GridTune == TRUE) {
         data.table::fwrite(catboostGridList, file = paste0(model_path,
-                                                           "/catboostGridList.csv"))
+                                                           "/",
+                                                           ModelID,
+                                                           "_catboostGridList.csv"))
         data.table::fwrite(GridCollect, file = paste0(model_path,
-                                                      "/GridCollect.csv"))
+                                                      "/",
+                                                      ModelID,
+                                                      "_GridCollect.csv"))
       }
 
       # Regression Return Model Objects----
@@ -14046,8 +14050,14 @@ AutoCatBoostMultiClass <- function(data,
 
       # MultiClass Save GridCollect and catboostGridList----
       if(SaveModelObjects & GridTune == TRUE) {
-        data.table::fwrite(catboostGridList, file = paste0(model_path,"/",ModelID, "_catboostGridList.csv"))
-        data.table::fwrite(GridCollect, file = paste0(model_path,"/",ModelID, "_GridCollect.csv"))
+        data.table::fwrite(catboostGridList, file = paste0(model_path,
+                                                           "/",
+                                                           ModelID,
+                                                           "_catboostGridList.csv"))
+        data.table::fwrite(GridCollect, file = paste0(model_path,
+                                                      "/",
+                                                      ModelID,
+                                                      "_GridCollect.csv"))
       }
 
       # Binary Return Model Objects----
