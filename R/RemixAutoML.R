@@ -13770,6 +13770,11 @@ AutoCatBoostMultiClass <- function(data,
     if(!requireNamespace('catboost', quietly = TRUE)) {
       warning("catboost needs to be installed. See documentation")
     } else {
+      
+      # MultiClass Get Target Name----
+      if(is.numeric(TargetColumnName)) {
+        TargetColumnName <- names(data)[TargetColumnName]
+      }
 
       # MultiClass Check Arguments----
       if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
