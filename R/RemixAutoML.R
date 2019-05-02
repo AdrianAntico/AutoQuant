@@ -10645,51 +10645,51 @@ AutoH2OModeler <- function(Construct,
           }
           
           # Calibration plot
-          out1 <- EvalPlot(
-            calibration,
-            PredictionColName = predName,
-            TargetColName  = Construct[i, 1][[1]],
-            GraphType        = "calibration",
-            PercentileBucket      = 0.05,
-            aggrfun     = function(x)
-              quantile(x,
-                       probs = Construct[i, 4][[1]],
-                       na.rm = TRUE)
-          )
-          out1 <- out1 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(Construct[i,3][[1]]),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out1,
-                            paste0(model_path,
-                                   "/CalP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out1 <- EvalPlot(
+              calibration,
+              PredictionColName = predName,
+              TargetColName  = Construct[i, 1][[1]],
+              GraphType        = "calibration",
+              PercentileBucket      = 0.05,
+              aggrfun     = function(x)
+                quantile(x,
+                         probs = Construct[i, 4][[1]],
+                         na.rm = TRUE)
+            )
+            out1 <- out1 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(Construct[i,3][[1]]),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(paste0(model_path,
+                                     "/CalP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
           
           # Calibration boxplot
-          out2 <- EvalPlot(
-            calibration,
-            PredictionColName = predName,
-            TargetColName  = Construct[i, 1][[1]],
-            GraphType        = "boxplot",
-            PercentileBucket      = 0.05
-          )
-          out2 <- out2 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(Construct[i,3][[1]]),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out2, 
-                            paste0(model_path,
-                                   "/CalBP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out2 <- EvalPlot(
+              calibration,
+              PredictionColName = predName,
+              TargetColName  = Construct[i, 1][[1]],
+              GraphType        = "boxplot",
+              PercentileBucket      = 0.05
+            )
+            out2 <- out2 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(Construct[i,3][[1]]),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(paste0(model_path,
+                                     "/CalBP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
         } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                         "binomial",
@@ -10706,31 +10706,32 @@ AutoH2OModeler <- function(Construct,
             val <- dd
           }
           
-          out1 <- EvalPlot(
-            calibration,
-            PredictionColName = predName,
-            TargetColName  = Construct[i, 1][[1]],
-            GraphType        = "calibration",
-            PercentileBucket      = 0.05,
-            aggrfun     = function(x)
-              base::mean(x, na.rm = TRUE)
-          )
-          out1 <- out1 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(Construct[i,3][[1]]),
-                   ": ",
-                   round(val,4))
-          )
-          
-          if (exists("Thresh")) {
-            out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
-          }
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out1, 
-                            paste0(model_path,
-                                   "/CalP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out1 <- EvalPlot(
+              calibration,
+              PredictionColName = predName,
+              TargetColName  = Construct[i, 1][[1]],
+              GraphType        = "calibration",
+              PercentileBucket      = 0.05,
+              aggrfun     = function(x)
+                base::mean(x, na.rm = TRUE)
+            )
+            out1 <- out1 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(Construct[i,3][[1]]),
+                     ": ",
+                     round(val,4))
+            )
+            
+            if (exists("Thresh")) {
+              out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
+            }
+            
+              ggplot2::ggsave(plot = out1, 
+                              paste0(model_path,
+                                     "/CalP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
         } else {
           
@@ -10746,49 +10747,51 @@ AutoH2OModeler <- function(Construct,
           }
           
           # Calibration plot
-          out1 <- EvalPlot(
-            calibration,
-            PredictionColName = predName,
-            TargetColName  = Construct[i, 1][[1]],
-            GraphType        = "calibration",
-            PercentileBucket      = 0.05,
-            aggrfun     = function(x)
-              base::mean(x, na.rm = TRUE)
-          )
-          out1 <- out1 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(Construct[i,3][[1]]),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out1, 
-                            paste0(model_path,
-                                   "/CalP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out1 <- EvalPlot(
+              calibration,
+              PredictionColName = predName,
+              TargetColName  = Construct[i, 1][[1]],
+              GraphType        = "calibration",
+              PercentileBucket      = 0.05,
+              aggrfun     = function(x)
+                base::mean(x, na.rm = TRUE)
+            )
+            out1 <- out1 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(Construct[i,3][[1]]),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(plot = out1, 
+                              paste0(model_path,
+                                     "/CalP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
           
           # Calibration boxplot
-          out2 <- EvalPlot(
-            calibration,
-            PredictionColName = predName,
-            TargetColName  = Construct[i, 1][[1]],
-            GraphType        = "boxplot",
-            PercentileBucket      = 0.05
-          )
-          out2 <- out2 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(Construct[i,3][[1]]),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out2, 
-                            paste0(model_path,
-                                   "/CalBP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out2 <- EvalPlot(
+              calibration,
+              PredictionColName = predName,
+              TargetColName  = Construct[i, 1][[1]],
+              GraphType        = "boxplot",
+              PercentileBucket      = 0.05
+            )
+            out2 <- out2 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(Construct[i,3][[1]]),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(plot = out2, 
+                              paste0(model_path,
+                                     "/CalBP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
         }
       } else {
@@ -10857,27 +10860,28 @@ AutoH2OModeler <- function(Construct,
           data.table::set(grid_tuned_paths, i = i, j = 4L, value = temp)
           
           # Calibration plot
-          out1 <- EvalPlot(
-            xxx,
-            PredictionColName = "Preds",
-            TargetColName  = "Act",
-            GraphType        = "calibration",
-            PercentileBucket      = 0.05,
-            aggrfun     = function(x)
-              base::mean(x, na.rm = TRUE)
-          )
-          out1 <- out1 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(multinomialMetric),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out1,
-                            paste0(model_path,
-                                   "/CalP_",
-                                   Construct[i, 5][[1]],
-                                   ".png"))
+            out1 <- EvalPlot(
+              xxx,
+              PredictionColName = "Preds",
+              TargetColName  = "Act",
+              GraphType        = "calibration",
+              PercentileBucket      = 0.05,
+              aggrfun     = function(x)
+                base::mean(x, na.rm = TRUE)
+            )
+            out1 <- out1 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(multinomialMetric),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(plot = out1,
+                              paste0(model_path,
+                                     "/CalP_",
+                                     Construct[i, 5][[1]],
+                                     ".png"))
           }
           
         } else {
@@ -10934,26 +10938,27 @@ AutoH2OModeler <- function(Construct,
           }
           
           # Calibration plot
-          out1 <- EvalPlot(
-            xxx,
-            PredictionColName = "Preds",
-            TargetColName  = "Act",
-            GraphType        = "calibration",
-            PercentileBucket      = 0.05,
-            aggrfun     = function(x)
-              base::mean(x, na.rm = TRUE)
-          )
-          out1 <- out1 + ggplot2::ggtitle(
-            paste0("Calibration Evaluation Plot ",
-                   toupper(multinomialMetric),
-                   ": ",
-                   round(val,4))
-          )
           if(SaveToFile == TRUE) {
-            ggplot2::ggsave(plot = out1,
-                            paste0(model_path,
-                                   "/CalP_",
-                                   Construct[i, 5][[1]], ".png"))
+            out1 <- EvalPlot(
+              xxx,
+              PredictionColName = "Preds",
+              TargetColName  = "Act",
+              GraphType        = "calibration",
+              PercentileBucket      = 0.05,
+              aggrfun     = function(x)
+                base::mean(x, na.rm = TRUE)
+            )
+            out1 <- out1 + ggplot2::ggtitle(
+              paste0("Calibration Evaluation Plot ",
+                     toupper(multinomialMetric),
+                     ": ",
+                     round(val,4))
+            )
+            
+              ggplot2::ggsave(plot = out1,
+                              paste0(model_path,
+                                     "/CalP_",
+                                     Construct[i, 5][[1]], ".png"))
           }
         }
         
@@ -11137,6 +11142,7 @@ AutoH2OModeler <- function(Construct,
     return(list(Construct = Construct, GridTunedPaths = grid_tuned_paths))
   }
 }
+
 
 #' AutoH2OScoring is the complement of AutoH20Modeler.
 #'
