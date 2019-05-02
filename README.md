@@ -4,17 +4,21 @@
 # Install the package in R via:
 ```
 # Depending on the development state (future versions, etc.) you can install by pasting the below into your R session:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE) 
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE)
+```
 or
+```
 devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
 ```
 
-# RemixAutoML
+# RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. To see them in action, check out our free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a>.
 
 Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" target="_blank">RemixInstitute.ai</a> for data science, machine learning, and AI content.
 
 You can also contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see more detail. If you want to be a contributer, contact me via LinkedIn email.
+
+Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
 ## Supervised Learning Functions: 
 ##### **AutoCatBoostClassifier()**
