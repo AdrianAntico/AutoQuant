@@ -9835,7 +9835,7 @@ AutoH2OModeler <- function(Construct,
       # Check to see if Distribution is multinomial
       # Proceed
       
-      if (tolower(Construct[i, 6][[1]] == "automl")) {
+      if (tolower(Construct[i, 6][[1]]) == "automl") {
         if (Construct[i, 21][[1]] == TRUE) {
           if (grid_tuned_paths[i, 2][[1]] != "a")
             file.remove(grid_tuned_paths[i, 2][[1]])
@@ -10664,10 +10664,10 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(paste0(model_path,
-                                     "/CalP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
           
           # Calibration boxplot
@@ -10686,10 +10686,10 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(paste0(model_path,
-                                     "/CalBP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalBP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
         } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                         "binomial",
@@ -10727,11 +10727,11 @@ AutoH2OModeler <- function(Construct,
               out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
             }
             
-              ggplot2::ggsave(plot = out1, 
-                              paste0(model_path,
-                                     "/CalP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(plot = out1, 
+                            paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
         } else {
           
@@ -10764,11 +10764,11 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(plot = out1, 
-                              paste0(model_path,
-                                     "/CalP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(plot = out1, 
+                            paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
           
           # Calibration boxplot
@@ -10787,11 +10787,11 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(plot = out2, 
-                              paste0(model_path,
-                                     "/CalBP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(plot = out2, 
+                            paste0(model_path,
+                                   "/CalBP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
         }
       } else {
@@ -10877,11 +10877,11 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(plot = out1,
-                              paste0(model_path,
-                                     "/CalP_",
-                                     Construct[i, 5][[1]],
-                                     ".png"))
+            ggplot2::ggsave(plot = out1,
+                            paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
           
         } else {
@@ -10955,10 +10955,10 @@ AutoH2OModeler <- function(Construct,
                      round(val,4))
             )
             
-              ggplot2::ggsave(plot = out1,
-                              paste0(model_path,
-                                     "/CalP_",
-                                     Construct[i, 5][[1]], ".png"))
+            ggplot2::ggsave(plot = out1,
+                            paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]], ".png"))
           }
         }
         
