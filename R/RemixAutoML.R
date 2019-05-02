@@ -24,6 +24,7 @@ utils::globalVariables(
     "setnames",
     "NewLevels",
     "OriginalLevels",
+    "bootstrap_type",
     "Metric1",
     "TargetLevels",
     "Metric2",
