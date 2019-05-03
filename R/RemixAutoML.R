@@ -401,7 +401,7 @@ ProblematicFeatures <- function(data,
 
   # LowVarianceFeatures Run----
   a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)},
-                error = function(x) NA)
+                error = function(x) NULL)
   if(!is.na(a)) {
     z <- z + 1
     collect[[z]] <- a
@@ -409,7 +409,7 @@ ProblematicFeatures <- function(data,
 
   # HighCardinalityFeatures Run----
   b <- tryCatch({HighCardinalityFeatures(data, CharUniqThresh = CharUniqThresh)},
-                error = function(x) NA)
+                error = function(x) NULL)
   if(!is.na(b)) {
     z <- z + 1
     collect[[z]] <- b
@@ -417,7 +417,7 @@ ProblematicFeatures <- function(data,
 
   # HighMissingCountFeatures Run----
   c <- tryCatch({HighMissingCountFeatures(data, NA_Rate = NA_Rate)},
-                error = function(x) NA)
+                error = function(x) NULL)
   if(!is.na(c)) {
     z <- z + 1
     collect[[z]] <- c
@@ -425,7 +425,7 @@ ProblematicFeatures <- function(data,
 
   # HighZeroCountFeatures Run----
   d <- tryCatch({HighZeroCountFeatures(data, Zero_Rate = Zero_Rate)},
-                error = function(x) NA)
+                error = function(x) NULL)
   if(!is.na(d)) {
     z <- z + 1
     collect[[z]] <- d
@@ -433,7 +433,7 @@ ProblematicFeatures <- function(data,
 
   # HighSkewFeatures Run----
   e <- tryCatch({HighSkewFeatures(data, HighSkewThresh = HighSkewThresh)},
-                error = function(x) NA)
+                error = function(x) NULL)
   if(!is.na(e)) {
     z <- z + 1
     collect[[z]] <- e
@@ -441,7 +441,7 @@ ProblematicFeatures <- function(data,
 
   # Combine Outputs
   if(length(collect) == 0) {
-    return(NA)
+    return(NULL)
   } else if (length(collect) == 1) {
     return(collect[[1]])
   } else {
