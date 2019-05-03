@@ -222,6 +222,7 @@ ProblematicFeatures <- function(data,
   keep <- names(data)[ColumnNumbers]
   data <- data[, ..keep]
 
+  # Define Functions for Calculations----
   LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
 
     # Skip Option----
@@ -240,11 +241,16 @@ ProblematicFeatures <- function(data,
         NumNearZeroVariance[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
       }
     }
-    a <- data.table::as.data.table(melt(NumNearZeroVariance))
-    if(dim(a)[1] != 0) {
-      setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
-      setcolorder(a, c(2,1))
-      return(a)
+
+    if(exists("NumNearZeroVariance")) {
+      a <- tryCatch({data.table::as.data.table(melt(NumNearZeroVariance))}, error = function(x) NA)
+      if(dim(a)[1] != 0) {
+        setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
+        setcolorder(a, c(2,1))
+        return(a)
+      } else {
+        return(NA)
+      }
     } else {
       return(NA)
     }
@@ -267,11 +273,15 @@ ProblematicFeatures <- function(data,
         CharUniqueTooHigh[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
       }
     }
-    a <- data.table::as.data.table(melt(CharUniqueTooHigh))
-    if(dim(a)[1] != 0) {
-      setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
-      setcolorder(a, c(2,1))
-      return(a)
+    if(exists("CharUniqueTooHigh")) {
+      a <- tryCatch({data.table::as.data.table(melt(CharUniqueTooHigh))}, error = function(x) NA)
+      if(dim(a)[1] != 0) {
+        setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
+        setcolorder(a, c(2,1))
+        return(a)
+      } else {
+        return(NA)
+      }
     } else {
       return(NA)
     }
@@ -294,11 +304,15 @@ ProblematicFeatures <- function(data,
         LargeNAs[names(data)[i]] <- round(sum(is.na(data[[i]])) / xx,4)
       }
     }
-    a <- data.table::as.data.table(melt(LargeNAs))
-    if(dim(a)[1] != 0) {
-      setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
-      setcolorder(a, c(2,1))
-      return(a)
+    if(exists("LargeNAs")) {
+      a <- tryCatch({data.table::as.data.table(melt(LargeNAs))}, error = function(x) NA)
+      if(dim(a)[1] != 0) {
+        setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
+        setcolorder(a, c(2,1))
+        return(a)
+      } else {
+        return(NA)
+      }
     } else {
       return(NA)
     }
@@ -318,11 +332,15 @@ ProblematicFeatures <- function(data,
         LargeZeros[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
       }
     }
-    a <- data.table::as.data.table(melt(LargeZeros))
-    if(dim(a)[1] != 0) {
-      setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
-      setcolorder(a, c(2,1))
-      return(a)
+    if(exists("LargeZeros")) {
+      a <- tryCatch({data.table::as.data.table(melt(LargeZeros))}, error = function(x) NA)
+      if(dim(a)[1] != 0) {
+        setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
+        setcolorder(a, c(2,1))
+        return(a)
+      } else {
+        return(NA)
+      }
     } else {
       return(NA)
     }
@@ -333,7 +351,9 @@ ProblematicFeatures <- function(data,
     if(is.null(HighSkewThresh)) return(NA)
 
     # Ensure argument is valid----
-    if(!is.numeric(HighSkewThresh)) warning("HighSkewThresh should a numeric value")
+    if(!is.numeric(HighSkewThresh) | !is.integer(HighSkewThresh)) {
+      warning("HighSkewThresh should a numeric value")
+    }
 
     # Get Row Count----
     xx <- data[, .N]
@@ -341,8 +361,8 @@ ProblematicFeatures <- function(data,
     # Begin process----
     HighSkew <- list()
     for (i in seq_len(ncol(data))) {
-      if(is.numeric(data[[i]])) {
-        if(min(data[[i]], na.rm = TRUE) < 0) {
+      if(is.numeric(data[[i]]) | is.integer(data[[i]])) {
+        if(min(data[[i]], na.rm = TRUE) < 0 & is.numeric(data[[i]])) {
           x <- sort(x = data[[i]], na.last = TRUE, decreasing = TRUE)
         } else {
           x <- data.table::fsort(x = data[[i]], na.last = TRUE, decreasing = TRUE)
@@ -357,11 +377,15 @@ ProblematicFeatures <- function(data,
         }
       }
     }
-    a <- data.table::as.data.table(melt(HighSkew))
-    if(dim(a)[1] != 0) {
-      setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
-      setcolorder(a, c(2,1))
-      return(a)
+    if(exists("HighSkew")) {
+      a <- tryCatch({data.table::as.data.table(melt(HighSkew))}, error = function(x) NA)
+      if(dim(a)[1] != 0) {
+        setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
+        setcolorder(a, c(2,1))
+        return(a)
+      } else {
+        return(NA)
+      }
     } else {
       return(NA)
     }
