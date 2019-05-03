@@ -351,7 +351,7 @@ ProblematicFeatures <- function(data,
     if(is.null(HighSkewThresh)) return(NA)
 
     # Ensure argument is valid----
-    if(!is.numeric(HighSkewThresh) | !is.integer(HighSkewThresh)) {
+    if(!is.numeric(HighSkewThresh) & !is.integer(HighSkewThresh)) {
       warning("HighSkewThresh should a numeric value")
     }
 
