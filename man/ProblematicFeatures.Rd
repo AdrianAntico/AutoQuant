@@ -13,15 +13,15 @@ ProblematicFeatures(data, ColumnNumbers = c(1:10),
 
 \item{ColumnNumbers}{A vector with the column numbers you wish to analyze}
 
-\item{NearZeroVarThresh}{Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.}
+\item{NearZeroVarThresh}{Set to NULL to not run NearZeroVar(). Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.}
 
-\item{CharUniqThresh}{Checks to see if the percentage of unique levels / groups in your categorical feature is greater than the value you supply. If it is, the feature name is returned with the percentage unique value.}
+\item{CharUniqThresh}{Set to NULL to not run CharUniqthresh(). Checks to see if the percentage of unique levels / groups in your categorical feature is greater than the value you supply. If it is, the feature name is returned with the percentage unique value.}
 
-\item{NA_Rate}{Checks to see if the percentage of NA's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of NA values.}
+\item{NA_Rate}{Set to NULL to not run NA_Rate(). Checks to see if the percentage of NA's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of NA values.}
 
-\item{Zero_Rate}{Checks to see if the percentage of zero's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of zero values.}
+\item{Zero_Rate}{Set to NULL to not run Zero_Rate(). Checks to see if the percentage of zero's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of zero values.}
 
-\item{HighSkewThresh}{Checks for numeric columns whose ratio of the sum of the top 5th percentile of values to the bottom 95th percentile of values is greater than the value you supply. If true, the column name and value is returned.}
+\item{HighSkewThresh}{Set to NULL to not run HighSkew(). Checks for numeric columns whose ratio of the sum of the top 5th percentile of values to the bottom 95th percentile of values is greater than the value you supply. If true, the column name and value is returned.}
 }
 \value{
 data table with new dummy variables columns and optionally removes base columns
