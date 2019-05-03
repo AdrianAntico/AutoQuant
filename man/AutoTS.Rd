@@ -7,7 +7,7 @@
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
   SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE,
-  TSClean = TRUE, PrintUpdates = FALSE)
+  TSClean = TRUE, ModelFreq = TRUE, PrintUpdates = FALSE)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -33,6 +33,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{StepWise}{Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.}
 
 \item{TSClean}{Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set}
+
+\item{ModelFreq}{Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically}
 
 \item{PrintUpdates}{Set to TRUE for a print to console of function progress}
 }
