@@ -87,7 +87,8 @@ Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
   \code{\link{DummifyDT}},
   \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},
-  \code{\link{ModelDataPrep}}
+  \code{\link{ModelDataPrep}},
+  \code{\link{ProblematicFeatures}}
 }
 \author{
 Adrian Antico
