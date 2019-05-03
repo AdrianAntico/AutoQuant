@@ -335,7 +335,7 @@ ProblematicFeatures <- function(data,
     LargeZeros <- list()
     for (i in seq_len(ncol(data))) {
       if(is.numeric(data[[i]]) & data[get(names(data)[i]) == 0, .N] / xx > Zero_Rate) {
-        LargeZeros[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
+        LargeZeros[names(data)[i]] <- round(data[get(names(data)[i]) == 0, .N] / xx,4)
       }
     }
     if(exists("LargeZeros")) {
