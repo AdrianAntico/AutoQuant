@@ -291,7 +291,7 @@ ProblematicFeatures <- function(data,
     LargeNAs <- list()
     for (i in seq_len(ncol(data))) {
       if(sum(is.na(data[[i]]) / xx) > NA_Rate) {
-        LargeNAs[names(data)[i]] <- round(is.na(data[[i]]) / xx,4)
+        LargeNAs[names(data)[i]] <- round(sum(is.na(data[[i]])) / xx,4)
       }
     }
     a <- data.table::as.data.table(melt(LargeNAs))
