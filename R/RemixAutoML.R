@@ -215,6 +215,9 @@ ProblematicFeatures <- function(data,
                                 Zero_Rate = 0.20,
                                 HighSkewThresh = 10) {
 
+  # Require data.table
+  requireNamespace('data.table', quietly = FALSE)
+
   # Convert to data.table----
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
 
@@ -243,10 +246,11 @@ ProblematicFeatures <- function(data,
     }
 
     if(exists("NumNearZeroVariance")) {
-      a <- tryCatch({data.table::as.data.table(melt(NumNearZeroVariance))}, error = function(x) NA)
+      a <- tryCatch({data.table::as.data.table(data.table::melt(NumNearZeroVariance))},
+                    error = function(x) NA)
       if(dim(a)[1] != 0) {
-        setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
-        setcolorder(a, c(2,1))
+        data.table:: setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
+        data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
         return(NA)
@@ -274,10 +278,11 @@ ProblematicFeatures <- function(data,
       }
     }
     if(exists("CharUniqueTooHigh")) {
-      a <- tryCatch({data.table::as.data.table(melt(CharUniqueTooHigh))}, error = function(x) NA)
+      a <- tryCatch({data.table::as.data.table(data.table::melt(CharUniqueTooHigh))},
+                    error = function(x) NA)
       if(dim(a)[1] != 0) {
-        setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
-        setcolorder(a, c(2,1))
+        data.table::setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
+        data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
         return(NA)
@@ -305,10 +310,11 @@ ProblematicFeatures <- function(data,
       }
     }
     if(exists("LargeNAs")) {
-      a <- tryCatch({data.table::as.data.table(melt(LargeNAs))}, error = function(x) NA)
+      a <- tryCatch({data.table::as.data.table(data.table::melt(LargeNAs))},
+                    error = function(x) NA)
       if(dim(a)[1] != 0) {
-        setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
-        setcolorder(a, c(2,1))
+        data.table::setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
+        data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
         return(NA)
@@ -333,10 +339,11 @@ ProblematicFeatures <- function(data,
       }
     }
     if(exists("LargeZeros")) {
-      a <- tryCatch({data.table::as.data.table(melt(LargeZeros))}, error = function(x) NA)
+      a <- tryCatch({data.table::as.data.table(data.table::melt(LargeZeros))},
+                    error = function(x) NA)
       if(dim(a)[1] != 0) {
-        setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
-        setcolorder(a, c(2,1))
+        data.table::setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
+        data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
         return(NA)
@@ -374,10 +381,11 @@ ProblematicFeatures <- function(data,
       }
     }
     if(exists("HighSkew")) {
-      a <- tryCatch({data.table::as.data.table(melt(HighSkew))}, error = function(x) NA)
+      a <- tryCatch({data.table::as.data.table(data.table::melt(HighSkew))},
+                    error = function(x) NA)
       if(dim(a)[1] != 0) {
-        setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
-        setcolorder(a, c(2,1))
+        data.table::setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
+        data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
         return(NA)
