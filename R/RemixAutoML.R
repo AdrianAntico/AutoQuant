@@ -341,7 +341,7 @@ ProblematicFeatures <- function(data,
     # Begin process----
     HighSkew <- list()
     for (i in seq_len(ncol(data))) {
-      if((is.numeric(data[[i]]) | is.integer(data[[i]]))) {
+      if(is.numeric(data[[i]]) {
         if(min(data[[i]], na.rm = TRUE) < 0) {
           x <- sort(x = data[[i]], na.last = TRUE, decreasing = TRUE)
         } else {
