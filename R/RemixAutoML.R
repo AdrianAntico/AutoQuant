@@ -186,11 +186,11 @@ utils::globalVariables(
 #' @family Feature Engineering
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
-#' @param NearZeroVarThresh Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.
-#' @param CharUniqThresh Checks to see if the percentage of unique levels / groups in your categorical feature is greater than the value you supply. If it is, the feature name is returned with the percentage unique value.
-#' @param NA_Rate Checks to see if the percentage of NA's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of NA values.
-#' @param Zero_Rate Checks to see if the percentage of zero's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of zero values.
-#' @param HighSkewThresh Checks for numeric columns whose ratio of the sum of the top 5th percentile of values to the bottom 95th percentile of values is greater than the value you supply. If true, the column name and value is returned.
+#' @param NearZeroVarThresh Set to NULL to not run NearZeroVar(). Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.
+#' @param CharUniqThresh Set to NULL to not run CharUniqthresh(). Checks to see if the percentage of unique levels / groups in your categorical feature is greater than the value you supply. If it is, the feature name is returned with the percentage unique value.
+#' @param NA_Rate Set to NULL to not run NA_Rate(). Checks to see if the percentage of NA's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of NA values.
+#' @param Zero_Rate Set to NULL to not run Zero_Rate(). Checks to see if the percentage of zero's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of zero values.
+#' @param HighSkewThresh Set to NULL to not run HighSkew(). Checks for numeric columns whose ratio of the sum of the top 5th percentile of values to the bottom 95th percentile of values is greater than the value you supply. If true, the column name and value is returned.
 #' @examples
 #' test <- data.table::data.table(RandomNum = runif(1000))
 #' test[, NearZeroVarEx := ifelse(runif(1000) > 0.99, runif(1), 1)]
