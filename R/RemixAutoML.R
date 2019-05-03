@@ -178,6 +178,257 @@ utils::globalVariables(
   )
 )
 
+#' ProblematicFeatures identifies problematic features for machine learning
+#'
+#' ProblematicFeatures identifies problematic features for machine learning and outputs a data.table of the feature names in the first column and the metrics they failed to pass in the columns.
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @param data The data.table with the columns you wish to have analyzed
+#' @param ColumnNumbers A vector with the column numbers you wish to analyze
+#' @param NearZeroVarThresh Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.
+#' @param CharUniqThresh Checks to see if the percentage of unique levels / groups in your categorical feature is greater than the value you supply. If it is, the feature name is returned with the percentage unique value.
+#' @param NA_Rate Checks to see if the percentage of NA's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of NA values.
+#' @param Zero_Rate Checks to see if the percentage of zero's in your features is greater than the value you supply. If it is, the feature name is returned with the percentage of zero values.
+#' @param HighSkewThresh Checks for numeric columns whose ratio of the sum of the top 5th percentile of values to the bottom 95th percentile of values is greater than the value you supply. If true, the column name and value is returned.
+#' @examples
+#' test <- data.table::data.table(RandomNum = runif(1000))
+#' test[, NearZeroVarEx := ifelse(runif(1000) > 0.99, runif(1), 1)]
+#' test[, CharUniqueEx := as.factor(ifelse(RandomNum < 0.95, sample(letters, size = 1), "FFF"))]
+#' test[, NA_RateEx := ifelse(RandomNum < 0.95, NA, "A")]
+#' test[, ZeroRateEx := ifelse(RandomNum < 0.95, 0, runif(1))]
+#' test[, HighSkewThreshEx := ifelse(RandomNum > 0.96, 100000, 1)]
+#' ProblematicFeatures(test,
+#'                     ColumnNumbers = 2:ncol(test),
+#'                     NearZeroVarThresh = 0.05,
+#'                     CharUniqThresh = 0.50,
+#'                     NA_Rate = 0.20,
+#'                     Zero_Rate = 0.20,
+#'                     HighSkewThresh = 10)
+#' @return data table with new dummy variables columns and optionally removes base columns
+#' @export
+ProblematicFeatures <- function(data,
+                                ColumnNumbers = c(1:10),
+                                NearZeroVarThresh = 0.05,
+                                CharUniqThresh = 0.50,
+                                NA_Rate = 0.20,
+                                Zero_Rate = 0.20,
+                                HighSkewThresh = 10) {
+
+  # Convert to data.table----
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+
+  # Subset columns of interest----
+  keep <- names(data)[ColumnNumbers]
+  data <- data[, ..keep]
+
+  LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
+
+    # Skip Option----
+    if(is.null(NearZeroVarThresh)) return(NA)
+
+    # Ensure argument is valid----
+    if(NearZeroVarThresh > 1) warning("NearZeroVarThresh should be between zero and one")
+
+    # Get Row Count----
+    xx <- data[, .N]
+
+    # Begin process----
+    NumNearZeroVariance <- list()
+    for (i in seq_len(ncol(data))) {
+      if(is.numeric(data[[i]]) & length(unique(data[[i]])) / xx < NearZeroVarThresh) {
+        NumNearZeroVariance[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
+      }
+    }
+    a <- data.table::as.data.table(melt(NumNearZeroVariance))
+    if(dim(a)[1] != 0) {
+      setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
+      setcolorder(a, c(2,1))
+      return(a)
+    } else {
+      return(NA)
+    }
+  }
+  HighCardinalityFeatures <- function(data, CharUniqThresh = 0.50) {
+
+    # Skip Option----
+    if(is.null(CharUniqThresh)) return(NA)
+
+    # Ensure argument is valid----
+    if(CharUniqThresh > 1) warning("CharUniqThresh should be between zero and one")
+
+    # Get Row Count----
+    xx <- data[, .N]
+
+    # Begin process----
+    CharUniqueTooHigh <- list()
+    for (i in seq_len(ncol(data))) {
+      if((is.character(data[[i]]) | is.factor(data[[i]])) & length(unique(data[[i]])) / xx > CharUniqThresh) {
+        CharUniqueTooHigh[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
+      }
+    }
+    a <- data.table::as.data.table(melt(CharUniqueTooHigh))
+    if(dim(a)[1] != 0) {
+      setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
+      setcolorder(a, c(2,1))
+      return(a)
+    } else {
+      return(NA)
+    }
+  }
+  HighMissingCountFeatures <- function(data, NA_Rate = 0.20) {
+
+    # Skip Option----
+    if(is.null(NA_Rate)) return(NA)
+
+    # Ensure argument is valid----
+    if(NA_Rate > 1) warning("HighSkewThresh should be between zero and one")
+
+    # Get Row Count----
+    xx <- data[, .N]
+
+    # Begin process----
+    LargeNAs <- list()
+    for (i in seq_len(ncol(data))) {
+      if(sum(is.na(data[[i]]) / xx) > NA_Rate) {
+        LargeNAs[names(data)[i]] <- round(is.na(data[[i]]) / xx,4)
+      }
+    }
+    a <- data.table::as.data.table(melt(LargeNAs))
+    if(dim(a)[1] != 0) {
+      setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
+      setcolorder(a, c(2,1))
+      return(a)
+    } else {
+      return(NA)
+    }
+  }
+  HighZeroCountFeatures <- function(data, Zero_Rate = 0.20) {
+
+    # Skip Option----
+    if(is.null(Zero_Rate)) return(NA)
+
+    # Get Row Count----
+    xx <- data[, .N]
+
+    # Begin process----
+    LargeZeros <- list()
+    for (i in seq_len(ncol(data))) {
+      if(is.numeric(data[[i]]) & data[get(names(data)[i]) == 0, .N] / xx > Zero_Rate) {
+        LargeZeros[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
+      }
+    }
+    a <- data.table::as.data.table(melt(LargeZeros))
+    if(dim(a)[1] != 0) {
+      setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
+      setcolorder(a, c(2,1))
+      return(a)
+    } else {
+      return(NA)
+    }
+  }
+  HighSkewFeatures <- function(data, HighSkewThresh = 10) {
+
+    # Skip Option----
+    if(is.null(HighSkewThresh)) return(NA)
+
+    # Ensure argument is valid----
+    if(!is.numeric(HighSkewThresh)) warning("HighSkewThresh should a numeric value")
+
+    # Get Row Count----
+    xx <- data[, .N]
+
+    # Begin process----
+    HighSkew <- list()
+    for (i in seq_len(ncol(data))) {
+      if((is.numeric(data[[i]]) | is.integer(data[[i]]))) {
+        if(min(data[[i]], na.rm = TRUE) < 0) {
+          x <- sort(x = data[[i]], na.last = TRUE, decreasing = TRUE)
+        } else {
+          x <- data.table::fsort(x = data[[i]], na.last = TRUE, decreasing = TRUE)
+        }
+        if(!(max(data[[i]], na.rm = TRUE) == 0 &
+             min(data[[i]], na.rm = TRUE) == 0)) {
+          if(sum(x[1:(length(x)*(1-0.95))], na.rm = TRUE) /
+             sum(x[(length(x)*(1-0.95)):xx], na.rm = TRUE) > HighSkewThresh) {
+            HighSkew[names(data)[i]] <- round(sum(x[1:length(x)*0.05], na.rm = TRUE) /
+                                                sum(x[(floor(length(x)*(0.95))+1):length(x)], na.rm = TRUE),4)
+          }
+        }
+      }
+    }
+    a <- data.table::as.data.table(melt(HighSkew))
+    if(dim(a)[1] != 0) {
+      setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
+      setcolorder(a, c(2,1))
+      return(a)
+    } else {
+      return(NA)
+    }
+  }
+
+  # Initalize collection
+  collect <- list()
+  z <- 0
+
+  # LowVarianceFeatures Run----
+  a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)},
+                error = function(x) NA)
+  if(!is.na(a)) {
+    z <- z + 1
+    collect[[z]] <- a
+  }
+
+  # HighCardinalityFeatures Run----
+  b <- tryCatch({HighCardinalityFeatures(data, CharUniqThresh = CharUniqThresh)},
+                error = function(x) NA)
+  if(!is.na(b)) {
+    z <- z + 1
+    collect[[z]] <- b
+  }
+
+  # HighMissingCountFeatures Run----
+  c <- tryCatch({HighMissingCountFeatures(data, NA_Rate = NA_Rate)},
+                error = function(x) NA)
+  if(!is.na(c)) {
+    z <- z + 1
+    collect[[z]] <- c
+  }
+
+  # HighZeroCountFeatures Run----
+  d <- tryCatch({HighZeroCountFeatures(data, Zero_Rate = Zero_Rate)},
+                error = function(x) NA)
+  if(!is.na(d)) {
+    z <- z + 1
+    collect[[z]] <- d
+  }
+
+  # HighSkewFeatures Run----
+  e <- tryCatch({HighSkewFeatures(data, HighSkewThresh = HighSkewThresh)},
+                error = function(x) NA)
+  if(!is.na(e)) {
+    z <- z + 1
+    collect[[z]] <- e
+  }
+
+  # Combine Outputs
+  if(length(collect) == 0) {
+    return(NA)
+  } else if (length(collect) == 1) {
+    return(collect[[1]])
+  } else {
+    for(x in seq_len(length(collect))) {
+      if(x == 1) {
+        val <- collect[[x]]
+      } else {
+        temp <- collect[[x]]
+        val <- merge(val, temp, by = "ColName", all = TRUE)
+      }
+    }
+    return(val)
+  }
+}
+
 #' DummifyDT creates dummy variables for the selected columns.
 #'
 #' DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
