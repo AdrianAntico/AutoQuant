@@ -1011,7 +1011,9 @@ AutoKMeans <- function(data,
 #'                    NumCores       = 4,
 #'                    SkipModels     = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
 #'                    StepWise       = TRUE,
-#'                    TSClean        = FALSE)
+#'                    TSClean        = FALSE,
+#'                    ModelFreq      = TRUE,
+#'                    PrintUpdates   = FALSE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
