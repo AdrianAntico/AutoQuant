@@ -43,8 +43,10 @@ Automated machine learning. Automatically build any number of models along with 
 ##### **AutoH2OScoring()**
 Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 
-##### **AutoTS()**
-Automated time series modeling function. Automatically finds the best model fit from the suite of models below (using optimized box-cox transformations and tests both user-supplied time series frequency and model-based time series frequency), along with generating forecasts and evaluation metrics.
+##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
+
+Automated time series modeling function. Automatically finds the most accurate time series model from the list of models below (using optimized box-cox transformations and tests both user-supplied time series frequency and model-based time series frequency). The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
+
 * Models include:
   * DSHW: Double Seasonal Holt Winters
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
