@@ -58,6 +58,13 @@ The scoring process in machine learning is typically straightforward. We have an
 Follow this link to install H2O if it isn't on your machine already.
 [Install H2O](http://h2o-release.s3.amazonaws.com/h2o/rel-xu/3/index.html)
 
+##### How to install catboost
+```{r eval=FALSE}
+devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+```
+
+[Review catboost](https://catboost.ai/docs/concepts/about.html)
+
 ##### There are seven categories of functions (currently) in this library I'll go over:
 - Automated Supervised Learning
 - Automated Unsupervised Learning
@@ -71,13 +78,31 @@ Follow this link to install H2O if it isn't on your machine already.
 
 ##### Functions include:
 - `AutoCatBoostClassifier()`
+- `AutoCatBoostMultiClass()`
 - `AutoCatBoostRegression()`
+- `AutoH2oGBMRegression()`
+- `AutoH2oDRFRegression()`
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
 - `AutoRecommender()`
 - `AutoRecommenderScoring()`
 - `AutoNLS()`
+
+#### **AutoCatBoostClassifier()** 
+AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
+
+#### **AutoCatBoostRegression()**
+AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
+
+#### **AutoCatBoostMultiClass()**
+AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
+
+#### **AutoH2oGBMRegression()**
+AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
+#### **AutoH2oDRFRegression()**
+AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 
 #### **AutoH2OModeler()**
 The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting.
@@ -273,7 +298,8 @@ output <- RemixAutoML::AutoTS(data,
                               NumCores       = 4,
                               SkipModels     = NULL,
                               StepWise       = TRUE,
-                              TSClean        = TRUE)
+                              TSClean        = TRUE, 
+                              PrintUpdates   = TRUE)
 
 # Print the evaluation metric and model makeup
 knitr::kable(output$EvaluationMetrics)
@@ -644,15 +670,15 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 ```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
 Correl <- 0.70
-  aa <- data.table::data.table(target = runif(1000))
-  aa[, x1 := qnorm(target)]
-  aa[, x2 := runif(1000)]
-  aa[, predict := pnorm(Correl * x1 +
+  data <- data.table::data.table(target = runif(1000))
+  data[, x1 := qnorm(target)]
+  data[, x2 := runif(1000)]
+  data[, predict := pnorm(Correl * x1 +
                         sqrt(1 - Correl ^2) *
                         qnorm(x2))]
-  aa[, target := as.numeric(ifelse(target < 0.5, 0, 1))]
+  data[, target := as.numeric(ifelse(target < 0.5, 0, 1))]
   data <- RemixAutoML::RedYellowGreen(
-    aa,
+    data,
     PredictColNumber  = 4,
     ActualColNumber   = 1,
     TruePositiveCost  = 0,
@@ -660,7 +686,8 @@ Correl <- 0.70
     FalsePositiveCost = -3,
     FalseNegativeCost = -2,
     MidTierCost       = -0.5, 
-    Cores             = 1
+    Cores             = 1,
+    Boundaries        = c(0.05,0.95)
   )
   
   knitr::kable(data[order(-Utility)][1:10])
@@ -790,3 +817,31 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 
 The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **RecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
 
+```{r, fig.show='hold'}
+
+# Create Some Data
+data <- data.table::data.table(
+DESCR = c("Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru,
+            Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Gru, Gru, Gru,
+            bears, bears, bears, bears, bears, bears, smug, smug, smug, smug,
+            smug, smug, smug, smug, smug, smug, smug, smug, smug, smug, smug,
+            eats, eats, eats, eats, eats, eats, beats, beats, beats, beats,
+            beats, beats, beats, beats, beats, beats, beats, science, science,
+            Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt,
+            Schrute, Schrute, Schrute, Schrute, Schrute, Schrute, Schrute,
+            James, James, James, James, James, James, James, James, James, James,
+            Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert"))
+
+# Run function
+data <- AutoWordFreq(data,
+                    TextColName = "DESCR",
+                    GroupColName = NULL,
+                    GroupLevel = NULL,
+                    RemoveEnglishStopwords = FALSE,
+                    Stemming = FALSE,
+                    StopWords = c("Bla"))
+
+# View word frequency table
+print(data)
+
+```
