@@ -14732,6 +14732,11 @@ AutoH2oGBMRegression <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Regression ModelDataPrep----
+    data <- ModelDataPrep(data = data,
+                          Impute = FALSE,
+                          CharToFactor = TRUE)
+
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -15436,6 +15441,11 @@ AutoH2oDRFRegression <- function(data,
     if(!data.table::is.data.table(data)) {
       data <- data.table::as.data.table(data)
     }
+
+    # Regression ModelDataPrep----
+    data <- ModelDataPrep(data = data,
+                          Impute = FALSE,
+                          CharToFactor = TRUE)
 
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
