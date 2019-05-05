@@ -116,6 +116,7 @@ TestModel <- AutoCatBoostClassifier(data,
 \seealso{
 Other Supervised Learning: \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2ODRFRegression}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oGBMRegression}},
