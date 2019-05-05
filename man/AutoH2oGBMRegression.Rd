@@ -90,8 +90,8 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoH2oGBMRegression(data,
                                   TestData = NULL,
-                                  TargetColumnName = NULL,
-                                  FeatureColNames = NULL,
+                                  TargetColumnName = "Target",
+                                  FeatureColNames = 2:ncol(data),
                                   Alpha = NULL,
                                   Distribution = "poisson",
                                   eval_metric = "RMSE",
