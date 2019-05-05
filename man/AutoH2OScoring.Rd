@@ -129,7 +129,9 @@ data <- AutoH2OScoring(Features     = aa,
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2OModeler}}, \code{\link{AutoNLS}},
+  \code{\link{AutoH2OModeler}},
+  \code{\link{AutoH2oGBMRegression}},
+  \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
 }
