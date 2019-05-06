@@ -177,3 +177,6 @@ print out objects and their sizes that are in the envrionment
 
 ##### **AutoWordFreq()** 
 creates a word frequency data.table and a word cloud
+
+##### **ProblematicFeatures()**
+Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
