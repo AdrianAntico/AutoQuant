@@ -19,6 +19,9 @@
 utils::globalVariables(
   names = c(
     "test",
+    "RelativeImportance",
+    "ScaledImportance",
+    "Percentage",
     ":=",
     "fwrite",
     "setnames",
@@ -402,7 +405,7 @@ ProblematicFeatures <- function(data,
   # LowVarianceFeatures Run----
   a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)},
                 error = function(x) NULL)
-  if(!is.null(a)) {
+  if(!is.na(a)) {
     z <- z + 1
     collect[[z]] <- a
   }
@@ -410,7 +413,7 @@ ProblematicFeatures <- function(data,
   # HighCardinalityFeatures Run----
   b <- tryCatch({HighCardinalityFeatures(data, CharUniqThresh = CharUniqThresh)},
                 error = function(x) NULL)
-  if(!is.null(b)) {
+  if(!is.na(b)) {
     z <- z + 1
     collect[[z]] <- b
   }
@@ -418,7 +421,7 @@ ProblematicFeatures <- function(data,
   # HighMissingCountFeatures Run----
   c <- tryCatch({HighMissingCountFeatures(data, NA_Rate = NA_Rate)},
                 error = function(x) NULL)
-  if(!is.null(c)) {
+  if(!is.na(c)) {
     z <- z + 1
     collect[[z]] <- c
   }
@@ -426,7 +429,7 @@ ProblematicFeatures <- function(data,
   # HighZeroCountFeatures Run----
   d <- tryCatch({HighZeroCountFeatures(data, Zero_Rate = Zero_Rate)},
                 error = function(x) NULL)
-  if(!is.null(d)) {
+  if(!is.na(d)) {
     z <- z + 1
     collect[[z]] <- d
   }
@@ -434,7 +437,7 @@ ProblematicFeatures <- function(data,
   # HighSkewFeatures Run----
   e <- tryCatch({HighSkewFeatures(data, HighSkewThresh = HighSkewThresh)},
                 error = function(x) NULL)
-  if(!is.null(e)) {
+  if(!is.na(e)) {
     z <- z + 1
     collect[[z]] <- e
   }
