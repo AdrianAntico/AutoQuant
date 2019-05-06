@@ -17424,10 +17424,45 @@ AutoH2oGBMMultiClass <- function(data,
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(
         cbind(TestData, Predict))
+      data.table::setnames(ValidationData, "predict", "Predict")
     } else {
       ValidationData <- data.table::as.data.table(
         cbind(dataTest, Predict))
+      data.table::setnames(ValidationData, "predict", "Predict")
     }
+
+    # MultiClass Metrics Accuracy----
+    MetricAcc <- ValidationData[, mean(ifelse(as.character(Target) ==
+                                                as.character(Predict),
+                                              1,
+                                              0),
+                                       na.rm = TRUE)]
+
+    # MultiClass Metrics MicroAUC----
+    ValidationData[, vals := 0.5]
+    z <- ncol(ValidationData)
+    col <- Target
+    for (l in seq_len(nrow(ValidationData))) {
+      cols <- ValidationData[l, get(col)][[1]]
+      valss <- ValidationData[l, ..cols][[1]]
+      data.table::set(ValidationData,
+                      i = l,
+                      j = z,
+                      value = valss)
+    }
+    MetricAUC <- round(as.numeric(noquote(
+      stringr::str_extract(
+        pROC::multiclass.roc(ValidationData[[eval(TargetColumnName)]],
+                             ValidationData[["vals"]])$auc,
+        "\\d+\\.*\\d*"
+      )
+    )), 4)
+
+    # MultiClass Evaluation Metrics Table----
+    EvaluationMetrics <- data.table::data.table(
+      Metric = c("Accuracy", "MicroAUC","temp"),
+      Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
+    data.table::set(EvaluationMetrics, i = 3, j = 1, value = paste0(eval_metric))
 
     # MultiClass Change Prediction Name----
     data.table::setnames(ValidationData, "predict", "Predict")
@@ -17455,7 +17490,8 @@ AutoH2oGBMMultiClass <- function(data,
       return(
         list(Model = FinalModel,
              ValidationData = ValidationData,
-             EvaluationMetrics = ConfusionMatrix,
+             ConfusionMatrix = ConfusionMatrix,
+             EvaluationMetrics = EvaluationMetrics,
              VariableImportance = VariableImportance))
     }
   }
@@ -17871,10 +17907,45 @@ AutoH2oDRFMultiClass <- function(data,
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(
         cbind(TestData, Predict))
+      data.table::setnames(ValidationData, "predict", "Predict")
     } else {
       ValidationData <- data.table::as.data.table(
         cbind(dataTest, Predict))
+      data.table::setnames(ValidationData, "predict", "Predict")
     }
+
+    # MultiClass Metrics Accuracy----
+    MetricAcc <- ValidationData[, mean(ifelse(as.character(Target) ==
+                                                as.character(Predict),
+                                              1,
+                                              0),
+                                       na.rm = TRUE)]
+
+    # MultiClass Metrics MicroAUC----
+    ValidationData[, vals := 0.5]
+    z <- ncol(ValidationData)
+    col <- Target
+    for (l in seq_len(nrow(ValidationData))) {
+      cols <- ValidationData[l, get(col)][[1]]
+      valss <- ValidationData[l, ..cols][[1]]
+      data.table::set(ValidationData,
+                      i = l,
+                      j = z,
+                      value = valss)
+    }
+    MetricAUC <- round(as.numeric(noquote(
+      stringr::str_extract(
+        pROC::multiclass.roc(ValidationData[[eval(TargetColumnName)]],
+                             ValidationData[["vals"]])$auc,
+        "\\d+\\.*\\d*"
+      )
+    )), 4)
+
+    # MultiClass Evaluation Metrics Table----
+    EvaluationMetrics <- data.table::data.table(
+      Metric = c("Accuracy", "MicroAUC","temp"),
+      Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
+    data.table::set(EvaluationMetrics, i = 3, j = 1, value = paste0(eval_metric))
 
     # MultiClass Change Prediction Name----
     data.table::setnames(ValidationData, "predict", "Predict")
@@ -17902,7 +17973,8 @@ AutoH2oDRFMultiClass <- function(data,
       return(
         list(Model = FinalModel,
              ValidationData = ValidationData,
-             EvaluationMetrics = ConfusionMatrix,
+             ConfusionMatrix = ConfusionMatrix,
+             EvaluationMetrics = EvaluationMetrics,
              VariableImportance = VariableImportance))
     }
   }
