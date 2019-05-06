@@ -78,6 +78,8 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 
 ##### Functions include:
 - `AutoCatBoostClassifier()`
+- `AutoH2oGBMClassifier()`
+- `AutoH2oDRFClassifier()`
 - `AutoCatBoostMultiClass()`
 - `AutoCatBoostRegression()`
 - `AutoH2oGBMRegression()`
@@ -104,71 +106,29 @@ AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and
 #### **AutoH2oDRFRegression()**
 AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 
+#### **AutoH2oDRFClassifier()**
+AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
+#### **AutoH2oGBMClassifier()**
+AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
 #### **AutoH2OModeler()**
-The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting.
-
-##### The models available include:
-- Gradient Boosting Machines
-- LightGBM (Linux only)
-- Distributed Random Forest
-- XGBoost (Linux only)
-- Deeplearning
-- AutoML (for Windows users XGBoost and LightGBM are not available)
-
-For Windows users (Mac?), XGBoost is not available and therefore neither is LightGBM (XGBoost and LightGBM are not utlized in AutoML model selection with Windows).
+The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
 
 #### **AutoH2OScoring()**
-This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH2OScoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. 
-
-##### In total, the **AutoH2OScoring** function can score
-- Regression models
-- Quantile regression Models
-- Binary classification Models
-- Multinomial classification Models
-- Multioutcome multinomial classification models
-- Generalized low rank dimensionality reduction models 
-- KMeans clustering models
-- Word2vec models
+This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH2OScoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. In total, the **AutoH2OScoring** function can score: Regression models, Quantile regression Models, Binary classification Models, Multinomial classification Models, Multioutcome multinomial classification models, Generalized low rank dimensionality reduction models, KMeans clustering models, and Word2vec models. 
 
 #### **AutoTS()**
-Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. 
-
-##### The competing models include:
-- DSHW (Double Seasonal Holt Winters)
-- ARFIMA (Autoregressive Fractional Integrated Moving Average)
-- ARIMA (Autoregressive Integrated Moving Average)
-- ETS (Exponential Smoothing and Holt Winters)
-- TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components)
-- TSLM (Time Series Linear Model)
-- NN (Autoregressive Neural Network)
+Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. The competing models include: DSHW (Double Seasonal Holt Winters), ARFIMA (Autoregressive Fractional Integrated Moving Average), ARIMA (Autoregressive Integrated Moving Average), ETS (Exponential Smoothing and Holt Winters), TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components), TSLM (Time Series Linear Model), NN (Autoregressive Neural Network). 
 
 #### **AutoRecommender()**
-This function builds out several variations of collaborative filtering models on a binary ratings matrix. To automatically build the binary ratings matrix, see **RecomDataCreate**.
-
-##### The competing models include:
-- RandomItems
-- PopularItems
-- UserBasedCF
-- ItemBasedCF
-- AssociationRules
+This function builds out several variations of collaborative filtering models on a binary ratings matrix. To automatically build the binary ratings matrix, see **RecomDataCreate**. The competing models include: RandomItems, PopularItems, UserBasedCF, ItemBasedCF, AssociationRules.
 
 #### **AutoRecommenderScoring()**
 This function will automatically score your winning model. Simply feed in your data and the winning model returned from the **AutoRecommender** function and this function will generate a table of several recommended products (by rank) for each entity.
 
 #### **AutoNLS()**
-This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table.
-
-##### The competing models include:
-- Asymptotic
-- Asymptotic through origin
-- Asymptotic with offset
-- Bi-exponential
-- Four parameter logistic
-- Three parameter logistic
-- Gompertz
-- Michal Menton
-- Weibull
-- Polynomial regression or monotonic regression
+This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table. The competing models include: Asymptotic, Asymptotic through origin, Asymptotic with offset, Bi-exponential, Four parameter logistic, Three parameter logistic, Gompertz, Michal Menton, Weibull, Polynomial regression or monotonic regression.
 
 ### Example of **AutoNLS()**
 
@@ -468,6 +428,9 @@ The model evaluation graphs are calibration plots or calibration boxplots. The c
 
 ##### Functions include:
 - `EvalPlot()`
+- `ParDepCalPlots()`
+- `threshOptim()`
+- `RedYellowGreen()`
 
 ### Demo of **EvalPlot()**
 
@@ -572,12 +535,9 @@ RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 
 The feature interpretation function graphs are very similar in nature to the model evaluation graphs. They display partial dependence calibration line plots, partial dependence calibration boxplots, and partial dependence calibration bar plots (for factor variables with the ability to limit the number of factors shown with the remainder grouped into "other"). The line graph version is for numerical features and have the ability to aggregate by quantile for quantile regression. 
 
-##### Functions include:
-- `ParDepCalPlots()`
-
 The cost sensitive optimizaition functions provide the user the ability to generate utility-optimized thresholds for classification tasks. There are two of these functions: one for generating a single threshold based on the values supplied to your cost confusion matrix outcomes and the second one provides two thresholds, where your final predicted classification could be (0|1) and "do something else". With the latter function, you would also need to supply a cost to the "do something else" option.
 
-### Demo of **ParDepCalPlots()** for calibration, boxplots, and barplots
+### Demo of **ParDepCalPlots()**
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
@@ -659,11 +619,7 @@ p4 <- p4 + ggplot2::ggtitle("Partial Dependence Calibration p4") +
 RemixAutoML::multiplot(plotlist = list(p1,p2,p3,p4), cols = 2)
 ```
 
-##### Functions include:
-- `threshOptim()`
-- `RedYellowGreen()`
-
-### RedYellowGreen Output (simulated data)
+###  Demo of **RedYellowGreen()**
 
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
@@ -701,6 +657,9 @@ This suite of functions are what will take your models to the next level. The co
 - `DT_GDL_Feature_Engineering()`
 - `FAST_GDL_Feature_Engineering()`
 - `Scoring_GDL_Feature_Engineering()`
+- `AutoWord2VecModeler()`
+- `ModelDataPrep()`
+- `DummifyDT()`
 
 The first three are used for building out lags and rolling statistics from target variables (numeric type; including classification models (0|1) and multinomial models with a little bit of work) and numeric features over your entire data set (no aggregation is done) with the option for creating the rolling statistics on the main variable or the lag1 version of the main variable. You can also compute time between records (by group) and add their lags and rolling statistics as well (really useful for transactional data). They can be generated using a single grouping variable (for multiple grouping variables you can concatenate them) and you can feed in a list of grouping variables to generate them by. The first function (**GDL_**) has the largest variety of rolling statics options but runs the slowest. The second function (**DT_GDL_**) runs the fastest but only generates moving averages. The third function (**FAST_GDL_**) is used for cases where you don't need to generate the features across the entire data set. Suppose you have a limited number of target variable instance but a rich history of data. You can use the FAST_GDL_ version to create lags and rolling statistics for N number of records previous to each target instance (i.e. not the entire historical data set). The fourth function (**Scoring_GDL_**) is for use in a production setting where you need to generate single instances of the feature set quickly. You basically feed in the same arguments as you used for the other versions and out the other end is the same set of features, identically named.
 
@@ -795,13 +754,6 @@ knitr::kable(
   
 ```
 
-## **Automated Feature Engineering Functions** (Continued)
-
-##### Functions include:
-- `AutoWord2VecModeler()`
-- `ModelDataPrep()`
-- `DummifyDT()`
-
 The **AutoWord2VecModeler** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH2OModeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
 
 ## **Miscellaneous Functions**
@@ -814,6 +766,7 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 - `multiplot()`
 - `PrintObjectsSize()`
 - `percRank()`
+- `ProblematicFeatures()`
 
 The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **RecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
 
