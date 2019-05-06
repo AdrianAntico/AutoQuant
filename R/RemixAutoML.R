@@ -585,29 +585,29 @@ H2OMultinomialAUC <-
            targetColNum = 1,
            targetName = "TargetVar") {
 
-  # Require data.table
-  requireNamespace('data.table', quietly = FALSE)
-  xx <-
-    data.table::as.data.table(h2o::h2o.cbind(
-      validate[, targetColNum],
-      h2o::h2o.predict(best_model,
-                       newdata = validate)))
-  xx[, predict := as.character(predict)]
-  xx[, vals := 0.5]
-  z <- ncol(xx)
-  col <- targetName
-  for (l in seq_len(nrow(xx))) {
-    cols <- xx[l, get(col)][[1]]
-    valss <- xx[l, ..cols][[1]]
-    data.table::set(xx, l, j = z, value = valss)
+    # Require data.table
+    requireNamespace('data.table', quietly = FALSE)
+    xx <-
+      data.table::as.data.table(h2o::h2o.cbind(
+        validate[, targetColNum],
+        h2o::h2o.predict(best_model,
+                         newdata = validate)))
+    xx[, predict := as.character(predict)]
+    xx[, vals := 0.5]
+    z <- ncol(xx)
+    col <- targetName
+    for (l in seq_len(nrow(xx))) {
+      cols <- xx[l, get(col)][[1]]
+      valss <- xx[l, ..cols][[1]]
+      data.table::set(xx, l, j = z, value = valss)
+    }
+    return(round(as.numeric(noquote(
+      stringr::str_extract(
+        pROC::multiclass.roc(xx$target, xx$vals)$auc,
+        "\\d+\\.*\\d*"
+      )
+    )), 4))
   }
-  return(round(as.numeric(noquote(
-    stringr::str_extract(
-      pROC::multiclass.roc(xx$target, xx$vals)$auc,
-      "\\d+\\.*\\d*"
-    )
-  )), 4))
-}
 
 #' PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 #'
@@ -4750,30 +4750,30 @@ SimpleCap <- function(x) {
 #' @export
 RemixTheme <- function() {
   ggplot2::theme(axis.title = ggplot2::element_text(size = 11),
-        axis.text = ggplot2::element_text(size = 11),
-        legend.background = ggplot2::element_blank(),
-        legend.key = ggplot2::element_blank(),
-        legend.text = ggplot2::element_text(color = "#1c1c1c",
-                                   size = 11),
-        legend.title = ggplot2::element_blank(),
-        legend.justification = 0,
-        legend.position = "top",
-        plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
-        panel.background = ggplot2::element_rect(fill= "#E7E7E7"),
-        panel.grid.major.x = ggplot2::element_blank(),
-        panel.grid.minor.x = ggplot2::element_blank(),
-        panel.grid.major.y = ggplot2::element_line(color = "white"),
-        panel.grid.minor.y = ggplot2::element_line(color = "white"),
-        plot.title = ggplot2::element_text(color = "#1c1c1c",
-                                  size = 28,
-                                  hjust = 0,
-                                  face = "bold"),
-        plot.subtitle = ggplot2::element_text(color = "#1c1c1c",
-                                     size = 16,
-                                     hjust = 0),
-        plot.caption = ggplot2::element_text(size = 9,
-                                    hjust = 0,
-                                    face = "italic") )
+                 axis.text = ggplot2::element_text(size = 11),
+                 legend.background = ggplot2::element_blank(),
+                 legend.key = ggplot2::element_blank(),
+                 legend.text = ggplot2::element_text(color = "#1c1c1c",
+                                                     size = 11),
+                 legend.title = ggplot2::element_blank(),
+                 legend.justification = 0,
+                 legend.position = "top",
+                 plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
+                 panel.background = ggplot2::element_rect(fill= "#E7E7E7"),
+                 panel.grid.major.x = ggplot2::element_blank(),
+                 panel.grid.minor.x = ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_line(color = "white"),
+                 panel.grid.minor.y = ggplot2::element_line(color = "white"),
+                 plot.title = ggplot2::element_text(color = "#1c1c1c",
+                                                    size = 28,
+                                                    hjust = 0,
+                                                    face = "bold"),
+                 plot.subtitle = ggplot2::element_text(color = "#1c1c1c",
+                                                       size = 16,
+                                                       hjust = 0),
+                 plot.caption = ggplot2::element_text(size = 9,
+                                                      hjust = 0,
+                                                      face = "italic") )
 }
 
 #' Final Data Preparation Function
@@ -5025,17 +5025,17 @@ RedYellowGreen <- function(data,
         base::options(warn = -1)
         for (i in c(MidTierHighThresh)) {
           j <- j + 1
-            if(tpProfit != 0) {
-              tp <- base::sum(base::ifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 1 & data[[predTar]] >= i,
-                1,
-                0
-              ))
-            } else {
-              tp <- 0
-            }
+          if(tpProfit != 0) {
+            tp <- base::sum(base::ifelse(
+              !(data[[predTar]] < MidTierHighThresh &
+                  data[[predTar]] > MidTierLowThresh) &
+                data[[actTar]] == 1 & data[[predTar]] >= i,
+              1,
+              0
+            ))
+          } else {
+            tp <- 0
+          }
           if(tnProfit != 0) {
             tn <-
               base::sum(base::ifelse(
@@ -9416,670 +9416,697 @@ AutoH2OModeler <- function(Construct,
   ######################################
 
   tryCatch({
-  for (i in as.integer(seq_len(nrow(Construct)))) {
-    # No deeplearning loss functions as stopping metrics
-    if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
-      if (tolower(Construct[i, 2][[1]]) == "multinomial") {
-        StoppingMetric <- "logloss"
-      } else {
-        StoppingMetric <- "auc"
-      }
-    } else {
-      if (tolower(Construct[i, 3][[1]]) %in% c("quadratic",
-                                               "huber")) {
-        StoppingMetric <- "mse"
-      } else if (tolower(
-        Construct[i, 3][[1]]) %in% c("absolute",
-                                     "quantile")) {
-        StoppingMetric <- "mae"
-      } else {
-        StoppingMetric <- Construct[i, 3][[1]]
-      }
-    }
-
-    # Define grid tune search scheme in a named list
-    search_criteria  <-
-      list(
-        strategy             = "RandomDiscrete",
-        max_runtime_secs     = MaxRuntimeSeconds,
-        max_models           = MaxModels,
-        seed                 = 1234,
-        stopping_rounds      = 10,
-        stopping_metric      = StoppingMetric,
-        stopping_tolerance   = 1e-3
-      )
-
-    # Set up H2O environment instance
-    Sys.sleep(10)
-    h2o::h2o.init(
-      nthreads = nthreads,
-      max_mem_size = max_memory,
-      enable_assertions = FALSE
-    )
-
-    # Define data sets
-    if (Construct[i, "SupplyData"][[1]]) {
-      train        <- h2o::as.h2o(TrainData)
-      validate     <- h2o::as.h2o(TestData)
-      data_h2o     <- h2o::as.h2o(data.table::rbindlist(
-        list(TrainData,
-             TestData)))
-    } else {
-      data_h2o     <-
-        eval(parse(text = paste0("h2o::as.h2o(",
-                                 Construct[i, 7][[1]], ")")))
-      data_train   <- h2o::h2o.splitFrame(data_h2o,
-                                          ratios = ratios)
-      train        <- data_train[[1]]
-      validate     <- data_train[[2]]
-    }
-
-    # Define targets
-    target         <-
-      eval(parse(text = paste0(Construct[i, 8][[1]])))
-    features       <-
-      eval(parse(text = paste0(Construct[i, 9][[1]])))
-    XGB            <- h2o::h2o.xgboost.available()
-    if (XGB) {
-      if (tolower(Construct[i, 2][[1]]) != "quantile") {
-        ModelExclude   <- NULL
-      } else {
-        ModelExclude   <- c("XGBoost", "GLM", "DRF")
-      }
-    } else {
-      if (tolower(Construct[i, 2][[1]]) != "quantile") {
-        ModelExclude   <- c("XGBoost")
-      } else {
-        ModelExclude   <- c("XGBoost", "GLM", "DRF")
-      }
-    }
-
-    if(tolower(Construct[i,6][[1]]) == "deeplearning") {
-      N              <- length(features)
-      P5             <- 2 ^ (-1 / 5)
-      P4             <- 2 ^ (-1 / 4)
-      P3             <- 2 ^ (-1 / 3)
-    }
-    data.table::set(grid_tuned_paths,
-                    i = i,
-                    j = 1L,
-                    value = Construct[i, 5][[1]])
-
-    ######################################
-    # Target Encoding
-    ######################################
-
-    if (!is.na(Construct[i, "TargetEncoding"][[1]])) {
-      TEncode <- eval(
-        parse(
-          text = Construct[i, "TargetEncoding"][[1]]))
-      cols <- names(train)[TEncode]
-      train[, Construct[i, "Targets"][[1]]] <-
-        as.numeric(train[, Construct[i, "Targets"][[1]]])
-      validate[, Construct[i, "Targets"][[1]]] <-
-        as.numeric(validate[, Construct[i, "Targets"][[1]]])
-      for (col in cols) {
-        x     <- h2o::h2o.target_encode_create(
-          data = train,
-          x = list(col),
-          y = Construct[i, "Targets"][[1]])
-        # Apply to training data
-        train <- h2o::h2o.target_encode_apply(
-          train,
-          x = list(col),
-          y = Construct[i, "Targets"][[1]],
-          target_encode_map = x,
-          holdout_type = "None",
-          blended_avg = TRUE,
-          noise_level = 0
-        )
-
-        # Apply to validation data
-        validate <- h2o::h2o.target_encode_apply(
-          validate,
-          x = list(col),
-          y = Construct[i, "Targets"][[1]],
-          target_encode_map = x,
-          holdout_type = "None",
-          blended_avg = TRUE,
-          noise_level = 0
-        )
-
-        if(SaveToFile == TRUE) {
-          save(x,
-               file = paste0(model_path,
-                             "/" ,
-                             Construct[i, "Targets"][[1]],
-                             "_", col,
-                             ".Rdata"))
-        }
-      }
-
-      # Modify feature reference
-      features <-
-        c((min(features) + length(eval(
-          parse(text = paste0(Construct[i, 24][[1]]))
-        ))):max(features), (max(target) + 1):(max(target) +
-                                                length(eval(
-                                                  parse(text = paste0(Construct[i, 24][[1]]))
-                                                ))))
-
-      # Turn target columns back to factor
-      train[, Construct[i, "Targets"][[1]]] <-
-        as.factor(train[, Construct[i, "Targets"][[1]]])
-      validate[, Construct[i, "Targets"][[1]]] <-
-        as.factor(validate[, Construct[i, "Targets"][[1]]])
-      data.table::set(Construct,
-                      i = i,
-                      j = "PD_Data",
-                      value = "Validate")
-    }
-
-    ######################################
-    # Hyperparameters
-    ######################################
-
-    if (Construct[i, 11][[1]]) {
-      if (tolower(Construct[i, 6][[1]]) == "gbm") {
-        if (tolower(
-          Construct[i, 3][[1]] %in% c(
-            "auc",
-            "logloss",
-            "auto",
-            "lift_top_group",
-            "misclassification",
-            "mean_per_class_error"
-          )
-        )) {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            balance_classes                  = c(TRUE, FALSE),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            nbins                            = 2 ^ seq(4, 10, 1),
-            nbins_cats                       = 2 ^ seq(4, 12, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
-            histogram_type                   = c("UniformAdaptive",
-                                                 "QuantilesGlobal",
-                                                 "RoundRobin")
-          )
-        } else {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            nbins                            = 2 ^ seq(4, 10, 1),
-            nbins_cats                       = 2 ^ seq(4, 12, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
-            histogram_type                   = c("UniformAdaptive",
-                                                 "QuantilesGlobal",
-                                                 "RoundRobin")
-          )
-        }
-
-      } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-        if (tolower(Construct[i, 3][[1]] %in% c("automatic",
-                                                "crossentropy"))) {
-          hyper_params <-
-            list(
-              activation = c(
-                "Rectifier",
-                "Maxout",
-                "Tanh",
-                "RectifierWithDropout",
-                "MaxoutWithDropout",
-                "TanhWithDropout"
-              ),
-              hidden              = list(
-                c(
-                  floor(N * P5),
-                  floor(N * P5 * P5),
-                  floor(N * P5 * P5 * P5),
-                  floor(N * P5 * P5 * P5 * P5),
-                  floor(N * P5 * P5 * P5 * P5 * P5)
-                ),
-                c(
-                  floor(N * P4),
-                  floor(N * P4 * P4),
-                  floor(N * P4 * P4 * P4),
-                  floor(N * P4 * P4 * P4 * P4)
-                ),
-                c(floor(N * P3), floor(N *
-                                         P3 * P3),
-                  floor(N * P3 * P3 * P3))
-              ),
-              balance_classes     = c(TRUE, FALSE),
-              epochs              = c(50, 100, 200),
-              l1                  = c(0, 0.00001, 0.0001),
-              l2                  = c(0, 0.00001, 0.0001),
-              rate                = c(0, 0.01, 0.005, 0.001),
-              rate_annealing      = c(1e-8, 1e-7, 1e-6),
-              rho                 = c(0.9, 0.95, 0.99, 0.999),
-              epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
-              momentum_start      = c(0, 0.5),
-              momentum_stable     = c(0.99, 0.5, 0),
-              input_dropout_ratio = c(0, 0.1, 0.2),
-              max_w2              = c(10, 100, 1000, 3.4028235e+38)
-            )
-        } else {
-          hyper_params <-
-            list(
-              activation = c(
-                "Rectifier",
-                "Maxout",
-                "Tanh",
-                "RectifierWithDropout",
-                "MaxoutWithDropout",
-                "TanhWithDropout"
-              ),
-              hidden              = list(
-                c(
-                  floor(N * P5),
-                  floor(N * P5 * P5),
-                  floor(N * P5 * P5 * P5),
-                  floor(N * P5 * P5 * P5 * P5),
-                  floor(N * P5 * P5 * P5 * P5 * P5)
-                ),
-                c(
-                  floor(N * P4),
-                  floor(N * P4 * P4),
-                  floor(N * P4 * P4 * P4),
-                  floor(N * P4 * P4 * P4 * P4)
-                ),
-                c(floor(N * P3), floor(N *
-                                         P3 * P3),
-                  floor(N * P3 * P3 * P3))
-              ),
-              epochs              = c(50, 100, 200),
-              l1                  = c(0, 0.00001, 0.0001),
-              l2                  = c(0, 0.00001, 0.0001),
-              rate                = c(0, 0.01, 0.005, 0.001),
-              rate_annealing      = c(1e-8, 1e-7, 1e-6),
-              rho                 = c(0.9, 0.95, 0.99, 0.999),
-              epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
-              momentum_start      = c(0, 0.5),
-              momentum_stable     = c(0.99, 0.5, 0),
-              input_dropout_ratio = c(0, 0.1, 0.2),
-              max_w2              = c(10, 100, 1000, 3.4028235e+38)
-            )
-        }
-      } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
-        if (tolower(
-          Construct[i, 3][[1]] %in% c(
-            "auc",
-            "logloss",
-            "auto",
-            "lift_top_group",
-            "misclassification",
-            "mean_per_class_error"
-          )
-        )) {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            balance_classes                  = c(TRUE, FALSE),
-            ntrees                           = c(500, 750, 1000),
-            mtries                           = -1,
-            sample_rate                      = seq(0.2, 1, 0.05),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
-            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            nbins                            = 2 ^ seq(4, 10, 1),
-            nbins_cats                       = 2 ^ seq(4, 12, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
-            histogram_type                   = c("UniformAdaptive",
-                                                 "QuantilesGlobal",
-                                                 "RoundRobin")
-          )
-        } else {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            ntrees                           = c(500, 750, 1000),
-            mtries                           = -1,
-            sample_rate                      = seq(0.2, 1, 0.05),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
-            col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            nbins                            = 2 ^ seq(4, 10, 1),
-            nbins_cats                       = 2 ^ seq(4, 12, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
-            histogram_type                   = c("UniformAdaptive",
-                                                 "QuantilesGlobal",
-                                                 "RoundRobin")
-          )
-        }
-      } else if (tolower(Construct[i, 6][[1]]) == "automl") {
-        message("automl is preset with tuning parameters")
-      } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
-        if (tolower(
-          Construct[i, 3][[1]] %in% c(
-            "auc",
-            "logloss",
-            "auto",
-            "lift_top_group",
-            "misclassification",
-            "mean_per_class_error"
-          )
-        )) {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            tree_method                      = c("hist", "AUTO"),
-            grow_policy                      = c("lossguide", "depthwise"),
-            balance_classes                  = c(TRUE, FALSE),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            reg_lambda                       = c(0.001, 0.01, 0.05),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
-          )
-        } else {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            reg_lambda                       = c(0.001, 0.01, 0.05),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
-          )
-        }
-      } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
-        if (tolower(
-          Construct[i, 3][[1]] %in% c(
-            "auc",
-            "logloss",
-            "auto",
-            "lift_top_group",
-            "misclassification",
-            "mean_per_class_error"
-          )
-        )) {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            tree_method                      = c("hist"),
-            grow_policy                      = c("lossguide"),
-            balance_classes                  = c(TRUE, FALSE),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            reg_lambda                       = c(0.001, 0.01, 0.05),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
-          )
-        } else {
-          hyper_params <- list(
-            max_depth                        = seq(5, 8, 1),
-            ntrees                           = c(500, 750, 1000),
-            sample_rate                      = seq(0.5, 1, 0.01),
-            col_sample_rate                  = seq(0.2, 1, 0.01),
-            col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
-            reg_lambda                       = c(0.001, 0.01, 0.05),
-            min_rows                         = 2 ^ seq(0, log2(eval(
-              parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
-            ) * ratios[1]) - 1, 1),
-            min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
-          )
-        }
-      }
-    }
-
-    ######################################
-    # Grid Tune Models
-    ######################################
-
-    # Check to see if GridTune is TRUE
-    # Check to see if Distribution is quantile
-    # Select model
-
-    # Grid tuned model build
-    if (Construct[i, 11][[1]]) {
-      if (tolower(Construct[i, 2][[1]]) == "quantile") {
-        if (tolower(Construct[i, 6][[1]]) == "gbm") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            distribution         = Construct[i, 2][[1]],
-            quantile_alpha       = Construct[i, 4][[1]],
-            learn_rate           = 0.05,
-            learn_rate_annealing = 0.99,
-            max_runtime_secs     = MaxRuntimeSeconds,
-            stopping_rounds      = 5,
-            stopping_tolerance   = 1e-4,
-            stopping_metric      = StoppingMetric,
-            score_tree_interval  = 10,
-            seed                 = 1234
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            distribution         = Construct[i, 2][[1]],
-            quantile_alpha       = Construct[i, 4][[1]],
-            seed                 = 42
-          )
-        }
-      } else {
-        if (tolower(Construct[i, 6][[1]]) == "gbm") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            distribution         = Construct[i, 2][[1]],
-            learn_rate           = 0.05,
-            learn_rate_annealing = 0.99,
-            max_runtime_secs     = MaxRuntimeSeconds,
-            stopping_rounds      = 5,
-            stopping_tolerance   = 1e-4,
-            stopping_metric      = StoppingMetric,
-            score_tree_interval  = 10,
-            seed                 = 1234
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            distribution         = Construct[i, 2][[1]],
-            seed                 = 42
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            max_runtime_secs     = MaxRuntimeSeconds,
-            stopping_rounds      = 5,
-            stopping_tolerance   = 1e-4,
-            stopping_metric      = StoppingMetric,
-            score_tree_interval  = 10,
-            seed                 = 1234
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "automl") {
-          aml <- h2o::h2o.automl(
-            x                  = features,
-            y                  = target,
-            training_frame     = train,
-            validation_frame   = validate,
-            max_models         = MaxModels,
-            max_runtime_secs   = MaxRuntimeSeconds,
-            stopping_metric    = StoppingMetric,
-            stopping_tolerance = 1e-4,
-            stopping_rounds    = 10,
-            project_name       = "TestAML",
-            exclude_algos      = ModelExclude,
-            sort_metric        = StoppingMetric
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            categorical_encoding = "Enum",
-            distribution         = Construct[i, 2][[1]],
-            learn_rate           = 0.05,
-            max_runtime_secs     = MaxRuntimeSeconds,
-            stopping_rounds      = 5,
-            stopping_tolerance   = 1e-4,
-            stopping_metric      = StoppingMetric,
-            score_tree_interval  = 10,
-            seed                 = 1234
-          )
-        } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
-          grid <- h2o::h2o.grid(
-            hyper_params         = hyper_params,
-            search_criteria      = search_criteria,
-            algorithm            = Construct[i, 6][[1]],
-            grid_id              = Construct[i, 5][[1]],
-            x                    = features,
-            y                    = target,
-            training_frame       = train,
-            validation_frame     = validate,
-            categorical_encoding = "Enum",
-            distribution         = Construct[i, 2][[1]],
-            learn_rate           = 0.05,
-            max_runtime_secs     = MaxRuntimeSeconds,
-            stopping_rounds      = 5,
-            stopping_tolerance   = 1e-4,
-            stopping_metric      = StoppingMetric,
-            score_tree_interval  = 10,
-            seed                 = 1234
-          )
-        }
-      }
-
-      # Store all models built sorted by metric
-      if (tolower(Construct[i, 6][[1]]) == "automl") {
-        Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
-      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                                      "binomial",
-                                                      "bernoulli",
-                                                      "multinomial")) {
-        Decreasing <- TRUE
-        Grid_Out   <-
-          h2o::h2o.getGrid(
-            grid_id = Construct[i, 5][[1]],
-            sort_by = StoppingMetric,
-            decreasing = Decreasing
-          )
-      } else {
-        Decreasing <- FALSE
-        Grid_Out   <-
-          h2o::h2o.getGrid(
-            grid_id = Construct[i, 5][[1]],
-            sort_by = StoppingMetric,
-            decreasing = Decreasing
-          )
-      }
-
-      # Store best model
-      if (tolower(Construct[i, 6][[1]]) == "automl") {
-        best_model <- Grid_Out@leader
-      } else {
-        best_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
-      }
-
-      # Collect accuracy metric on validation data
+    for (i in as.integer(seq_len(nrow(Construct)))) {
+      # No deeplearning loss functions as stopping metrics
       if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
         if (tolower(Construct[i, 2][[1]]) == "multinomial") {
-          cc <-
-            h2o::h2o.logloss(h2o::h2o.performance(best_model, valid = TRUE))
+          StoppingMetric <- "logloss"
         } else {
-          cc <- h2o::h2o.auc(h2o::h2o.performance(best_model, valid = TRUE))
+          StoppingMetric <- "auc"
         }
-      } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
-        cc <- h2o::h2o.mae(h2o::h2o.performance(best_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
-        cc <- h2o::h2o.mse(h2o::h2o.performance(best_model, valid = TRUE))
       } else {
-        cc <-
-          eval(parse(
-            text = paste0(
-              "h2o::h2o.",
-              tolower(StoppingMetric),
-              "(h2o::h2o.performance(best_model, valid = TRUE))"
-            )
-          ))
+        if (tolower(Construct[i, 3][[1]]) %in% c("quadratic",
+                                                 "huber")) {
+          StoppingMetric <- "mse"
+        } else if (tolower(
+          Construct[i, 3][[1]]) %in% c("absolute",
+                                       "quantile")) {
+          StoppingMetric <- "mae"
+        } else {
+          StoppingMetric <- Construct[i, 3][[1]]
+        }
       }
-      # Store results in metadata file
+
+      # Define grid tune search scheme in a named list
+      search_criteria  <-
+        list(
+          strategy             = "RandomDiscrete",
+          max_runtime_secs     = MaxRuntimeSeconds,
+          max_models           = MaxModels,
+          seed                 = 1234,
+          stopping_rounds      = 10,
+          stopping_metric      = StoppingMetric,
+          stopping_tolerance   = 1e-3
+        )
+
+      # Set up H2O environment instance
+      Sys.sleep(10)
+      h2o::h2o.init(
+        nthreads = nthreads,
+        max_mem_size = max_memory,
+        enable_assertions = FALSE
+      )
+
+      # Define data sets
+      if (Construct[i, "SupplyData"][[1]]) {
+        train        <- h2o::as.h2o(TrainData)
+        validate     <- h2o::as.h2o(TestData)
+        data_h2o     <- h2o::as.h2o(data.table::rbindlist(
+          list(TrainData,
+               TestData)))
+      } else {
+        data_h2o     <-
+          eval(parse(text = paste0("h2o::as.h2o(",
+                                   Construct[i, 7][[1]], ")")))
+        data_train   <- h2o::h2o.splitFrame(data_h2o,
+                                            ratios = ratios)
+        train        <- data_train[[1]]
+        validate     <- data_train[[2]]
+      }
+
+      # Define targets
+      target         <-
+        eval(parse(text = paste0(Construct[i, 8][[1]])))
+      features       <-
+        eval(parse(text = paste0(Construct[i, 9][[1]])))
+      XGB            <- h2o::h2o.xgboost.available()
+      if (XGB) {
+        if (tolower(Construct[i, 2][[1]]) != "quantile") {
+          ModelExclude   <- NULL
+        } else {
+          ModelExclude   <- c("XGBoost", "GLM", "DRF")
+        }
+      } else {
+        if (tolower(Construct[i, 2][[1]]) != "quantile") {
+          ModelExclude   <- c("XGBoost")
+        } else {
+          ModelExclude   <- c("XGBoost", "GLM", "DRF")
+        }
+      }
+
+      if(tolower(Construct[i,6][[1]]) == "deeplearning") {
+        N              <- length(features)
+        P5             <- 2 ^ (-1 / 5)
+        P4             <- 2 ^ (-1 / 4)
+        P3             <- 2 ^ (-1 / 3)
+      }
       data.table::set(grid_tuned_paths,
                       i = i,
-                      j = 3L,
-                      value = cc)
-    }
+                      j = 1L,
+                      value = Construct[i, 5][[1]])
 
-    ######################################
-    # Baseline Models
-    ######################################
+      ######################################
+      # Target Encoding
+      ######################################
 
-    # Check to see if quantile is selected
-    # Choose model
-    if (tolower(Construct[i, 6][[1]]) != "automl") {
-      if (tolower(Construct[i, 2][[1]]) == "quantile") {
+      if (!is.na(Construct[i, "TargetEncoding"][[1]])) {
+        TEncode <- eval(
+          parse(
+            text = Construct[i, "TargetEncoding"][[1]]))
+        cols <- names(train)[TEncode]
+        train[, Construct[i, "Targets"][[1]]] <-
+          as.numeric(train[, Construct[i, "Targets"][[1]]])
+        validate[, Construct[i, "Targets"][[1]]] <-
+          as.numeric(validate[, Construct[i, "Targets"][[1]]])
+        for (col in cols) {
+          x     <- h2o::h2o.target_encode_create(
+            data = train,
+            x = list(col),
+            y = Construct[i, "Targets"][[1]])
+          # Apply to training data
+          train <- h2o::h2o.target_encode_apply(
+            train,
+            x = list(col),
+            y = Construct[i, "Targets"][[1]],
+            target_encode_map = x,
+            holdout_type = "None",
+            blended_avg = TRUE,
+            noise_level = 0
+          )
+
+          # Apply to validation data
+          validate <- h2o::h2o.target_encode_apply(
+            validate,
+            x = list(col),
+            y = Construct[i, "Targets"][[1]],
+            target_encode_map = x,
+            holdout_type = "None",
+            blended_avg = TRUE,
+            noise_level = 0
+          )
+
+          if(SaveToFile == TRUE) {
+            save(x,
+                 file = paste0(model_path,
+                               "/" ,
+                               Construct[i, "Targets"][[1]],
+                               "_", col,
+                               ".Rdata"))
+          }
+        }
+
+        # Modify feature reference
+        features <-
+          c((min(features) + length(eval(
+            parse(text = paste0(Construct[i, 24][[1]]))
+          ))):max(features), (max(target) + 1):(max(target) +
+                                                  length(eval(
+                                                    parse(text = paste0(Construct[i, 24][[1]]))
+                                                  ))))
+
+        # Turn target columns back to factor
+        train[, Construct[i, "Targets"][[1]]] <-
+          as.factor(train[, Construct[i, "Targets"][[1]]])
+        validate[, Construct[i, "Targets"][[1]]] <-
+          as.factor(validate[, Construct[i, "Targets"][[1]]])
+        data.table::set(Construct,
+                        i = i,
+                        j = "PD_Data",
+                        value = "Validate")
+      }
+
+      ######################################
+      # Hyperparameters
+      ######################################
+
+      if (Construct[i, 11][[1]]) {
         if (tolower(Construct[i, 6][[1]]) == "gbm") {
+          if (tolower(
+            Construct[i, 3][[1]] %in% c(
+              "auc",
+              "logloss",
+              "auto",
+              "lift_top_group",
+              "misclassification",
+              "mean_per_class_error"
+            )
+          )) {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              balance_classes                  = c(TRUE, FALSE),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              nbins                            = 2 ^ seq(4, 10, 1),
+              nbins_cats                       = 2 ^ seq(4, 12, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+              histogram_type                   = c("UniformAdaptive",
+                                                   "QuantilesGlobal",
+                                                   "RoundRobin")
+            )
+          } else {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              nbins                            = 2 ^ seq(4, 10, 1),
+              nbins_cats                       = 2 ^ seq(4, 12, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+              histogram_type                   = c("UniformAdaptive",
+                                                   "QuantilesGlobal",
+                                                   "RoundRobin")
+            )
+          }
+
+        } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+          if (tolower(Construct[i, 3][[1]] %in% c("automatic",
+                                                  "crossentropy"))) {
+            hyper_params <-
+              list(
+                activation = c(
+                  "Rectifier",
+                  "Maxout",
+                  "Tanh",
+                  "RectifierWithDropout",
+                  "MaxoutWithDropout",
+                  "TanhWithDropout"
+                ),
+                hidden              = list(
+                  c(
+                    floor(N * P5),
+                    floor(N * P5 * P5),
+                    floor(N * P5 * P5 * P5),
+                    floor(N * P5 * P5 * P5 * P5),
+                    floor(N * P5 * P5 * P5 * P5 * P5)
+                  ),
+                  c(
+                    floor(N * P4),
+                    floor(N * P4 * P4),
+                    floor(N * P4 * P4 * P4),
+                    floor(N * P4 * P4 * P4 * P4)
+                  ),
+                  c(floor(N * P3), floor(N *
+                                           P3 * P3),
+                    floor(N * P3 * P3 * P3))
+                ),
+                balance_classes     = c(TRUE, FALSE),
+                epochs              = c(50, 100, 200),
+                l1                  = c(0, 0.00001, 0.0001),
+                l2                  = c(0, 0.00001, 0.0001),
+                rate                = c(0, 0.01, 0.005, 0.001),
+                rate_annealing      = c(1e-8, 1e-7, 1e-6),
+                rho                 = c(0.9, 0.95, 0.99, 0.999),
+                epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
+                momentum_start      = c(0, 0.5),
+                momentum_stable     = c(0.99, 0.5, 0),
+                input_dropout_ratio = c(0, 0.1, 0.2),
+                max_w2              = c(10, 100, 1000, 3.4028235e+38)
+              )
+          } else {
+            hyper_params <-
+              list(
+                activation = c(
+                  "Rectifier",
+                  "Maxout",
+                  "Tanh",
+                  "RectifierWithDropout",
+                  "MaxoutWithDropout",
+                  "TanhWithDropout"
+                ),
+                hidden              = list(
+                  c(
+                    floor(N * P5),
+                    floor(N * P5 * P5),
+                    floor(N * P5 * P5 * P5),
+                    floor(N * P5 * P5 * P5 * P5),
+                    floor(N * P5 * P5 * P5 * P5 * P5)
+                  ),
+                  c(
+                    floor(N * P4),
+                    floor(N * P4 * P4),
+                    floor(N * P4 * P4 * P4),
+                    floor(N * P4 * P4 * P4 * P4)
+                  ),
+                  c(floor(N * P3), floor(N *
+                                           P3 * P3),
+                    floor(N * P3 * P3 * P3))
+                ),
+                epochs              = c(50, 100, 200),
+                l1                  = c(0, 0.00001, 0.0001),
+                l2                  = c(0, 0.00001, 0.0001),
+                rate                = c(0, 0.01, 0.005, 0.001),
+                rate_annealing      = c(1e-8, 1e-7, 1e-6),
+                rho                 = c(0.9, 0.95, 0.99, 0.999),
+                epsilon             = c(1e-10, 1e-8, 1e-6, 1e-4),
+                momentum_start      = c(0, 0.5),
+                momentum_stable     = c(0.99, 0.5, 0),
+                input_dropout_ratio = c(0, 0.1, 0.2),
+                max_w2              = c(10, 100, 1000, 3.4028235e+38)
+              )
+          }
+        } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+          if (tolower(
+            Construct[i, 3][[1]] %in% c(
+              "auc",
+              "logloss",
+              "auto",
+              "lift_top_group",
+              "misclassification",
+              "mean_per_class_error"
+            )
+          )) {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              balance_classes                  = c(TRUE, FALSE),
+              ntrees                           = c(500, 750, 1000),
+              mtries                           = -1,
+              sample_rate                      = seq(0.2, 1, 0.05),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
+              col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              nbins                            = 2 ^ seq(4, 10, 1),
+              nbins_cats                       = 2 ^ seq(4, 12, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+              histogram_type                   = c("UniformAdaptive",
+                                                   "QuantilesGlobal",
+                                                   "RoundRobin")
+            )
+          } else {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              ntrees                           = c(500, 750, 1000),
+              mtries                           = -1,
+              sample_rate                      = seq(0.2, 1, 0.05),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.05),
+              col_sample_rate_change_per_level = seq(0.9, 1.1, 0.01),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              nbins                            = 2 ^ seq(4, 10, 1),
+              nbins_cats                       = 2 ^ seq(4, 12, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4),
+              histogram_type                   = c("UniformAdaptive",
+                                                   "QuantilesGlobal",
+                                                   "RoundRobin")
+            )
+          }
+        } else if (tolower(Construct[i, 6][[1]]) == "automl") {
+          message("automl is preset with tuning parameters")
+        } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+          if (tolower(
+            Construct[i, 3][[1]] %in% c(
+              "auc",
+              "logloss",
+              "auto",
+              "lift_top_group",
+              "misclassification",
+              "mean_per_class_error"
+            )
+          )) {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              tree_method                      = c("hist", "AUTO"),
+              grow_policy                      = c("lossguide", "depthwise"),
+              balance_classes                  = c(TRUE, FALSE),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              reg_lambda                       = c(0.001, 0.01, 0.05),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+            )
+          } else {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              reg_lambda                       = c(0.001, 0.01, 0.05),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+            )
+          }
+        } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+          if (tolower(
+            Construct[i, 3][[1]] %in% c(
+              "auc",
+              "logloss",
+              "auto",
+              "lift_top_group",
+              "misclassification",
+              "mean_per_class_error"
+            )
+          )) {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              tree_method                      = c("hist"),
+              grow_policy                      = c("lossguide"),
+              balance_classes                  = c(TRUE, FALSE),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              reg_lambda                       = c(0.001, 0.01, 0.05),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+            )
+          } else {
+            hyper_params <- list(
+              max_depth                        = seq(5, 8, 1),
+              ntrees                           = c(500, 750, 1000),
+              sample_rate                      = seq(0.5, 1, 0.01),
+              col_sample_rate                  = seq(0.2, 1, 0.01),
+              col_sample_rate_per_tree         = seq(0.2, 1, 0.01),
+              reg_lambda                       = c(0.001, 0.01, 0.05),
+              min_rows                         = 2 ^ seq(0, log2(eval(
+                parse(text = paste0("nrow(", Construct[i, 7][[1]], ")"))
+              ) * ratios[1]) - 1, 1),
+              min_split_improvement            = c(0, 1e-8, 1e-6, 1e-4)
+            )
+          }
+        }
+      }
+
+      ######################################
+      # Grid Tune Models
+      ######################################
+
+      # Check to see if GridTune is TRUE
+      # Check to see if Distribution is quantile
+      # Select model
+
+      # Grid tuned model build
+      if (Construct[i, 11][[1]]) {
+        if (tolower(Construct[i, 2][[1]]) == "quantile") {
+          if (tolower(Construct[i, 6][[1]]) == "gbm") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              distribution         = Construct[i, 2][[1]],
+              quantile_alpha       = Construct[i, 4][[1]],
+              learn_rate           = 0.05,
+              learn_rate_annealing = 0.99,
+              max_runtime_secs     = MaxRuntimeSeconds,
+              stopping_rounds      = 5,
+              stopping_tolerance   = 1e-4,
+              stopping_metric      = StoppingMetric,
+              score_tree_interval  = 10,
+              seed                 = 1234
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              distribution         = Construct[i, 2][[1]],
+              quantile_alpha       = Construct[i, 4][[1]],
+              seed                 = 42
+            )
+          }
+        } else {
+          if (tolower(Construct[i, 6][[1]]) == "gbm") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              distribution         = Construct[i, 2][[1]],
+              learn_rate           = 0.05,
+              learn_rate_annealing = 0.99,
+              max_runtime_secs     = MaxRuntimeSeconds,
+              stopping_rounds      = 5,
+              stopping_tolerance   = 1e-4,
+              stopping_metric      = StoppingMetric,
+              score_tree_interval  = 10,
+              seed                 = 1234
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              distribution         = Construct[i, 2][[1]],
+              seed                 = 42
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              max_runtime_secs     = MaxRuntimeSeconds,
+              stopping_rounds      = 5,
+              stopping_tolerance   = 1e-4,
+              stopping_metric      = StoppingMetric,
+              score_tree_interval  = 10,
+              seed                 = 1234
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "automl") {
+            aml <- h2o::h2o.automl(
+              x                  = features,
+              y                  = target,
+              training_frame     = train,
+              validation_frame   = validate,
+              max_models         = MaxModels,
+              max_runtime_secs   = MaxRuntimeSeconds,
+              stopping_metric    = StoppingMetric,
+              stopping_tolerance = 1e-4,
+              stopping_rounds    = 10,
+              project_name       = "TestAML",
+              exclude_algos      = ModelExclude,
+              sort_metric        = StoppingMetric
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              categorical_encoding = "Enum",
+              distribution         = Construct[i, 2][[1]],
+              learn_rate           = 0.05,
+              max_runtime_secs     = MaxRuntimeSeconds,
+              stopping_rounds      = 5,
+              stopping_tolerance   = 1e-4,
+              stopping_metric      = StoppingMetric,
+              score_tree_interval  = 10,
+              seed                 = 1234
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+            grid <- h2o::h2o.grid(
+              hyper_params         = hyper_params,
+              search_criteria      = search_criteria,
+              algorithm            = Construct[i, 6][[1]],
+              grid_id              = Construct[i, 5][[1]],
+              x                    = features,
+              y                    = target,
+              training_frame       = train,
+              validation_frame     = validate,
+              categorical_encoding = "Enum",
+              distribution         = Construct[i, 2][[1]],
+              learn_rate           = 0.05,
+              max_runtime_secs     = MaxRuntimeSeconds,
+              stopping_rounds      = 5,
+              stopping_tolerance   = 1e-4,
+              stopping_metric      = StoppingMetric,
+              score_tree_interval  = 10,
+              seed                 = 1234
+            )
+          }
+        }
+
+        # Store all models built sorted by metric
+        if (tolower(Construct[i, 6][[1]]) == "automl") {
+          Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
+        } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                        "binomial",
+                                                        "bernoulli",
+                                                        "multinomial")) {
+          Decreasing <- TRUE
+          Grid_Out   <-
+            h2o::h2o.getGrid(
+              grid_id = Construct[i, 5][[1]],
+              sort_by = StoppingMetric,
+              decreasing = Decreasing
+            )
+        } else {
+          Decreasing <- FALSE
+          Grid_Out   <-
+            h2o::h2o.getGrid(
+              grid_id = Construct[i, 5][[1]],
+              sort_by = StoppingMetric,
+              decreasing = Decreasing
+            )
+        }
+
+        # Store best model
+        if (tolower(Construct[i, 6][[1]]) == "automl") {
+          best_model <- Grid_Out@leader
+        } else {
+          best_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
+        }
+
+        # Collect accuracy metric on validation data
+        if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
+          if (tolower(Construct[i, 2][[1]]) == "multinomial") {
+            cc <-
+              h2o::h2o.logloss(h2o::h2o.performance(best_model, valid = TRUE))
+          } else {
+            cc <- h2o::h2o.auc(h2o::h2o.performance(best_model, valid = TRUE))
+          }
+        } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
+          cc <- h2o::h2o.mae(h2o::h2o.performance(best_model, valid = TRUE))
+        } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
+          cc <- h2o::h2o.mse(h2o::h2o.performance(best_model, valid = TRUE))
+        } else {
+          cc <-
+            eval(parse(
+              text = paste0(
+                "h2o::h2o.",
+                tolower(StoppingMetric),
+                "(h2o::h2o.performance(best_model, valid = TRUE))"
+              )
+            ))
+        }
+        # Store results in metadata file
+        data.table::set(grid_tuned_paths,
+                        i = i,
+                        j = 3L,
+                        value = cc)
+      }
+
+      ######################################
+      # Baseline Models
+      ######################################
+
+      # Check to see if quantile is selected
+      # Choose model
+      if (tolower(Construct[i, 6][[1]]) != "automl") {
+        if (tolower(Construct[i, 2][[1]]) == "quantile") {
+          if (tolower(Construct[i, 6][[1]]) == "gbm") {
+            bl_model <- h2o::h2o.gbm(
+              x                = features,
+              y                = target,
+              training_frame   = train,
+              validation_frame = validate,
+              distribution     = Construct[i, 2][[1]],
+              quantile_alpha   = Construct[i, 4][[1]],
+              model_id         = paste0("BL_GBM_", Construct[i, 5][[1]]),
+              ntrees           = BL_Trees
+            )
+          } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
+            bl_model <- h2o::h2o.deeplearning(
+              x                = features,
+              y                = target,
+              hidden           = c(
+                floor(N * P4),
+                floor(N * P4 * P4),
+                floor(N * P4 * P4 * P4),
+                floor(N * P4 * P4 * P4 * P4)
+              ),
+              training_frame   = train,
+              validation_frame = validate,
+              distribution     = Construct[i, 2][[1]],
+              model_id         = paste0("BL_DL_", Construct[i, 5][[1]]),
+              quantile_alpha   = Construct[i, 4][[1]]
+            )
+          }
+        } else if (tolower(Construct[i, 6][[1]]) == "gbm") {
           bl_model <- h2o::h2o.gbm(
             x                = features,
             y                = target,
             training_frame   = train,
             validation_frame = validate,
             distribution     = Construct[i, 2][[1]],
-            quantile_alpha   = Construct[i, 4][[1]],
             model_id         = paste0("BL_GBM_", Construct[i, 5][[1]]),
             ntrees           = BL_Trees
           )
@@ -10095,268 +10122,134 @@ AutoH2OModeler <- function(Construct,
             ),
             training_frame   = train,
             validation_frame = validate,
-            distribution     = Construct[i, 2][[1]],
             model_id         = paste0("BL_DL_", Construct[i, 5][[1]]),
-            quantile_alpha   = Construct[i, 4][[1]]
+            distribution     = Construct[i, 2][[1]]
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
+          bl_model <- h2o::h2o.randomForest(
+            x                = features,
+            y                = target,
+            training_frame   = train,
+            validation_frame = validate,
+            model_id         = paste0("BL_RF_", Construct[i, 5][[1]]),
+            ntrees           = BL_Trees
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
+          bl_model <- h2o::h2o.xgboost(
+            x                = features,
+            y                = target,
+            training_frame   = train,
+            validation_frame = validate,
+            categorical_encoding = "Enum",
+            distribution     = Construct[i, 2][[1]],
+            model_id         = paste0("BL_XG_", Construct[i, 5][[1]]),
+            ntrees           = BL_Trees
+          )
+        } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
+          bl_model <- h2o::h2o.xgboost(
+            x                = features,
+            y                = target,
+            training_frame   = train,
+            validation_frame = validate,
+            categorical_encoding = "Enum",
+            distribution     = Construct[i, 2][[1]],
+            tree_method      = "hist",
+            grow_policy      = "lossguide",
+            model_id         = paste0("BL_lgbm_", Construct[i, 5][[1]]),
+            ntrees           = BL_Trees
           )
         }
-      } else if (tolower(Construct[i, 6][[1]]) == "gbm") {
-        bl_model <- h2o::h2o.gbm(
-          x                = features,
-          y                = target,
-          training_frame   = train,
-          validation_frame = validate,
-          distribution     = Construct[i, 2][[1]],
-          model_id         = paste0("BL_GBM_", Construct[i, 5][[1]]),
-          ntrees           = BL_Trees
-        )
-      } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
-        bl_model <- h2o::h2o.deeplearning(
-          x                = features,
-          y                = target,
-          hidden           = c(
-            floor(N * P4),
-            floor(N * P4 * P4),
-            floor(N * P4 * P4 * P4),
-            floor(N * P4 * P4 * P4 * P4)
-          ),
-          training_frame   = train,
-          validation_frame = validate,
-          model_id         = paste0("BL_DL_", Construct[i, 5][[1]]),
-          distribution     = Construct[i, 2][[1]]
-        )
-      } else if (tolower(Construct[i, 6][[1]]) == "randomforest") {
-        bl_model <- h2o::h2o.randomForest(
-          x                = features,
-          y                = target,
-          training_frame   = train,
-          validation_frame = validate,
-          model_id         = paste0("BL_RF_", Construct[i, 5][[1]]),
-          ntrees           = BL_Trees
-        )
-      } else if (tolower(Construct[i, 6][[1]]) == "xgboost") {
-        bl_model <- h2o::h2o.xgboost(
-          x                = features,
-          y                = target,
-          training_frame   = train,
-          validation_frame = validate,
-          categorical_encoding = "Enum",
-          distribution     = Construct[i, 2][[1]],
-          model_id         = paste0("BL_XG_", Construct[i, 5][[1]]),
-          ntrees           = BL_Trees
-        )
-      } else if (tolower(Construct[i, 6][[1]]) == "lightgbm") {
-        bl_model <- h2o::h2o.xgboost(
-          x                = features,
-          y                = target,
-          training_frame   = train,
-          validation_frame = validate,
-          categorical_encoding = "Enum",
-          distribution     = Construct[i, 2][[1]],
-          tree_method      = "hist",
-          grow_policy      = "lossguide",
-          model_id         = paste0("BL_lgbm_", Construct[i, 5][[1]]),
-          ntrees           = BL_Trees
-        )
-      }
 
-      # Collect accuracy metric on validation data
-      if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
-        if (tolower(Construct[i, 2][[1]]) == "multinomial") {
-          dd <- h2o::h2o.logloss(h2o::h2o.performance(bl_model, valid = TRUE))
-        } else {
-          dd <- h2o::h2o.auc(h2o::h2o.performance(bl_model, valid = TRUE))
-        }
-      } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
-        dd <- h2o::h2o.mae(h2o::h2o.performance(bl_model, valid = TRUE))
-      } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
-        dd <- h2o::h2o.mse(h2o::h2o.performance(bl_model, valid = TRUE))
-      } else {
-        dd <-
-          eval(parse(
-            text = paste0(
-              "h2o::h2o.",
-              tolower(StoppingMetric),
-              "(h2o::h2o.performance(bl_model, valid = TRUE))"
-            )
-          ))
-      }
-
-      # Store results in metadata file
-      data.table::set(grid_tuned_paths,
-                      i = i,
-                      j = 4L,
-                      value = dd)
-    }
-
-    ######################################
-    # Model Evaluation & Saving
-    ######################################
-
-    # Check to see if GridTune is TRUE
-    # Check to see if Distribution is multinomial
-    # Proceed
-
-    if (tolower(Construct[i, 6][[1]]) == "automl") {
-      if (Construct[i, 21][[1]] == TRUE) {
-        if (grid_tuned_paths[i, 2][[1]] != "a")
-          file.remove(grid_tuned_paths[i, 2][[1]])
-        if (tolower(Construct[i, 22][[1]]) == "standard") {
-          save_model <-
-            h2o::h2o.saveModel(object = best_model,
-                               path = model_path,
-                               force = TRUE)
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 2L,
-            value = save_model
-          )
-          if(SaveToFile == TRUE) {
-            save(grid_tuned_paths,
-                 file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+        # Collect accuracy metric on validation data
+        if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
+          if (tolower(Construct[i, 2][[1]]) == "multinomial") {
+            dd <- h2o::h2o.logloss(h2o::h2o.performance(bl_model, valid = TRUE))
+          } else {
+            dd <- h2o::h2o.auc(h2o::h2o.performance(bl_model, valid = TRUE))
           }
+        } else if (tolower(Construct[i, 3][[1]]) == "absolute") {
+          dd <- h2o::h2o.mae(h2o::h2o.performance(bl_model, valid = TRUE))
+        } else if (tolower(Construct[i, 3][[1]]) %in% c("quadratic", "huber")) {
+          dd <- h2o::h2o.mse(h2o::h2o.performance(bl_model, valid = TRUE))
         } else {
-          save_model <-
-            h2o::h2o.saveMojo(object = best_model,
-                              path = model_path,
-                              force = TRUE)
-          h2o::h2o.download_mojo(
-            model = best_model,
-            path = model_path,
-            get_genmodel_jar = TRUE,
-            genmodel_path = model_path,
-            genmodel_name = Construct[i, 5][[1]]
-          )
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 2L,
-            value = save_model
-          )
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 6L,
-            value = paste0(model_path, "\\", Construct[i, 5][[1]])
-          )
-          if(SaveToFile == TRUE) {
-            save(grid_tuned_paths,
-                 file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-          }
+          dd <-
+            eval(parse(
+              text = paste0(
+                "h2o::h2o.",
+                tolower(StoppingMetric),
+                "(h2o::h2o.performance(bl_model, valid = TRUE))"
+              )
+            ))
         }
-      }
 
-      # Save VarImp and VarNOTImp
-      if (best_model@algorithm != "stackedensemble") {
-        VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
-        if(SaveToFile == TRUE) {
-          save(VIMP,
-               file = paste0(model_path,
-                             "/VarImp_",
-                             Construct[i, 5][[1]],
-                             ".Rdata"))
-        }
-        if (tolower(best_model@algorithm) != "glm") {
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-        } else {
-          NIF <- NULL
-        }
-        if (length(NIF) > 0) {
-          if(SaveToFile == TRUE) {
-            save(NIF,
-                 file = paste0(model_path,
-                               "/VarNOTImp_",
-                               Construct[i, 5][[1]],
-                               ".Rdata"))
-          }
-        }
-      } else {
-        data.table::set(Construct,
+        # Store results in metadata file
+        data.table::set(grid_tuned_paths,
                         i = i,
-                        j = 13L,
-                        value = 0)
+                        j = 4L,
+                        value = dd)
       }
 
-      # Gather predicted values
-      preds <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
-      if (Construct[i, 14][[1]] == "All") {
-        predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
-        PredsPD <- data.table::as.data.table(predsPD)
-        if(SaveToFile == TRUE) {
-          data.table::fwrite(PredsPD,
-                             file = paste0(model_path,
-                                           "/",
-                                           Construct[i, 5][[1]],
-                                           "_PredsAll.csv"))
-        }
-      } else if (Construct[i, 14][[1]] == "Train") {
-        predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
-      } else if (Construct[i, 14][[1]] == "Validate") {
-        predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
-      }
-    }
+      ######################################
+      # Model Evaluation & Saving
+      ######################################
 
-    if (Construct[i, 11][[1]] == TRUE &
-        tolower(Construct[i, 6][[1]]) != "automl") {
-      if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                                 "binomial",
-                                                 "bernoulli")) |
-          tolower(Construct[i, 3][[1]]) == "logloss") {
-        if (cc < dd) {
-          # Save model
-          if (Construct[i, 21][[1]] == TRUE) {
-            if (grid_tuned_paths[i, 2][[1]] != "a")
-              file.remove(grid_tuned_paths[i, 2][[1]])
-            if (tolower(Construct[i, 22][[1]]) == "standard") {
-              save_model <-
-                h2o::h2o.saveModel(object = best_model,
-                                   path = model_path,
-                                   force = TRUE)
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              if(SaveToFile == TRUE) {
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-              }
-            } else {
-              save_model <-
-                h2o::h2o.saveMojo(object = best_model,
-                                  path = model_path,
-                                  force = TRUE)
-              h2o::h2o.download_mojo(
-                model = best_model,
-                path = model_path,
-                get_genmodel_jar = TRUE,
-                genmodel_path = model_path,
-                genmodel_name = Construct[i, 5][[1]]
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 2L,
-                value = save_model
-              )
-              data.table::set(
-                grid_tuned_paths,
-                i = i,
-                j = 6L,
-                value = paste0(model_path, "\\", Construct[i, 5][[1]])
-              )
-              if(SaveToFile == TRUE) {
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-              }
+      # Check to see if GridTune is TRUE
+      # Check to see if Distribution is multinomial
+      # Proceed
+
+      if (tolower(Construct[i, 6][[1]]) == "automl") {
+        if (Construct[i, 21][[1]] == TRUE) {
+          if (grid_tuned_paths[i, 2][[1]] != "a")
+            file.remove(grid_tuned_paths[i, 2][[1]])
+          if (tolower(Construct[i, 22][[1]]) == "standard") {
+            save_model <-
+              h2o::h2o.saveModel(object = best_model,
+                                 path = model_path,
+                                 force = TRUE)
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 2L,
+              value = save_model
+            )
+            if(SaveToFile == TRUE) {
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+            }
+          } else {
+            save_model <-
+              h2o::h2o.saveMojo(object = best_model,
+                                path = model_path,
+                                force = TRUE)
+            h2o::h2o.download_mojo(
+              model = best_model,
+              path = model_path,
+              get_genmodel_jar = TRUE,
+              genmodel_path = model_path,
+              genmodel_name = Construct[i, 5][[1]]
+            )
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 2L,
+              value = save_model
+            )
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 6L,
+              value = paste0(model_path, "\\", Construct[i, 5][[1]])
+            )
+            if(SaveToFile == TRUE) {
+              save(grid_tuned_paths,
+                   file = paste0(model_path, "/grid_tuned_paths.Rdata"))
             }
           }
+        }
 
-          # Save VarImp and VarNOTImp
-          VIMP <-
-            data.table::as.data.table(h2o::h2o.varimp(best_model))
+        # Save VarImp and VarNOTImp
+        if (best_model@algorithm != "stackedensemble") {
+          VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
           if(SaveToFile == TRUE) {
             save(VIMP,
                  file = paste0(model_path,
@@ -10364,7 +10257,11 @@ AutoH2OModeler <- function(Construct,
                                Construct[i, 5][[1]],
                                ".Rdata"))
           }
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+          if (tolower(best_model@algorithm) != "glm") {
+            NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+          } else {
+            NIF <- NULL
+          }
           if (length(NIF) > 0) {
             if(SaveToFile == TRUE) {
               save(NIF,
@@ -10374,36 +10271,46 @@ AutoH2OModeler <- function(Construct,
                                  ".Rdata"))
             }
           }
-
-          # Gather predicted values
-          preds <-
-            h2o::h2o.predict(best_model, newdata = validate)[, 1]
-          if (Construct[i, 14][[1]] == "All") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
-            PredsPD <- as.data.table(predsPD)
-            if(SaveToFile == TRUE) {
-              data.table::fwrite(PredsPD,
-                                 file = paste0(model_path,
-                                               "/",
-                                               Construct[i, 5][[1]],
-                                               "_PredsAll.csv"))
-            }
-          } else if (Construct[i, 14][[1]] == "Train") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
-          } else if (Construct[i, 14][[1]] == "Validate") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
-          }
         } else {
-          # Save model
-          if (Construct[i, 21][[1]] == TRUE) {
-            if (grid_tuned_paths[i, 2][[1]] != "a")
-              if(SaveToFile == TRUE) {
+          data.table::set(Construct,
+                          i = i,
+                          j = 13L,
+                          value = 0)
+        }
+
+        # Gather predicted values
+        preds <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
+        if (Construct[i, 14][[1]] == "All") {
+          predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
+          PredsPD <- data.table::as.data.table(predsPD)
+          if(SaveToFile == TRUE) {
+            data.table::fwrite(PredsPD,
+                               file = paste0(model_path,
+                                             "/",
+                                             Construct[i, 5][[1]],
+                                             "_PredsAll.csv"))
+          }
+        } else if (Construct[i, 14][[1]] == "Train") {
+          predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
+        } else if (Construct[i, 14][[1]] == "Validate") {
+          predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
+        }
+      }
+
+      if (Construct[i, 11][[1]] == TRUE &
+          tolower(Construct[i, 6][[1]]) != "automl") {
+        if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                   "binomial",
+                                                   "bernoulli")) |
+            tolower(Construct[i, 3][[1]]) == "logloss") {
+          if (cc < dd) {
+            # Save model
+            if (Construct[i, 21][[1]] == TRUE) {
+              if (grid_tuned_paths[i, 2][[1]] != "a")
                 file.remove(grid_tuned_paths[i, 2][[1]])
-              }
-            if (tolower(Construct[i, 22][[1]]) == "standard") {
-              if(SaveToFile == TRUE) {
+              if (tolower(Construct[i, 22][[1]]) == "standard") {
                 save_model <-
-                  h2o::h2o.saveModel(object = bl_model,
+                  h2o::h2o.saveModel(object = best_model,
                                      path = model_path,
                                      force = TRUE)
                 data.table::set(
@@ -10416,102 +10323,7 @@ AutoH2OModeler <- function(Construct,
                   save(grid_tuned_paths,
                        file = paste0(model_path, "/grid_tuned_paths.Rdata"))
                 }
-              }
-            } else {
-              if(SaveToFile == TRUE) {
-                save_model <-
-                  h2o::h2o.saveMojo(object = bl_model,
-                                    path = model_path,
-                                    force = TRUE)
-                h2o::h2o.download_mojo(
-                  model = bl_model,
-                  path = model_path,
-                  get_genmodel_jar = TRUE,
-                  genmodel_path = model_path,
-                  genmodel_name = Construct[i, 5][[1]]
-                )
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 2L,
-                  value = save_model
-                )
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 6L,
-                  value = paste0(model_path, "\\", Construct[i, 5][[1]])
-                )
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-              }
-            }
-          }
-
-          # Save VarImp
-          VIMP <-
-            data.table::as.data.table(h2o::h2o.varimp(bl_model))
-          if(SaveToFile == TRUE) {
-            save(VIMP,
-                 file = paste0(model_path,
-                               "/VarImp_",
-                               Construct[i, 5][[1]],
-                               ".Rdata"))
-          }
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-          if (length(NIF) > 0) {
-            if(SaveToFile == TRUE) {
-              save(NIF,
-                   file = paste0(model_path,
-                                 "/VarNOTImp_",
-                                 Construct[i, 5][[1]],
-                                 ".Rdata"))
-            }
-          }
-
-          # Gather predicted values
-          preds <-
-            h2o::h2o.predict(bl_model, newdata = validate)[, 1]
-          if (Construct[i, 14][[1]] == "All") {
-            predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
-            PredsPD <- data.table::as.data.table(predsPD)
-            if(SaveToFile == TRUE) {
-              data.table::fwrite(PredsPD,
-                                 file = paste0(model_path,
-                                               "/", Construct[i, 5][[1]],
-                                               "_PredsAll.csv"))
-            }
-          } else if (Construct[i, 14][[1]] == "Train") {
-            predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
-          } else if (Construct[i, 14][[1]] == "Validate") {
-            predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
-          }
-        }
-      } else {
-        if (cc > dd) {
-          # Save model
-          if (Construct[i, 21][[1]] == TRUE) {
-            if (grid_tuned_paths[i, 2][[1]] != "a")
-              if(SaveToFile == TRUE) {
-                file.remove(grid_tuned_paths[i, 2][[1]])
-              }
-            if (tolower(Construct[i, 22][[1]]) == "standard") {
-              if(SaveToFile == TRUE) {
-                save_model <-
-                  h2o::h2o.saveModel(object = best_model,
-                                     path = model_path,
-                                     force = TRUE)
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 2L,
-                  value = save_model
-                )
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-              }
-            } else {
-              if(SaveToFile == TRUE) {
+              } else {
                 save_model <-
                   h2o::h2o.saveMojo(object = best_model,
                                     path = model_path,
@@ -10535,156 +10347,492 @@ AutoH2OModeler <- function(Construct,
                   j = 6L,
                   value = paste0(model_path, "\\", Construct[i, 5][[1]])
                 )
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                if(SaveToFile == TRUE) {
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
               }
             }
-          }
 
-          # Store threshold
-          store_results <-
-            data.table::data.table(
-              best_model@model$training_metrics@metrics$thresholds_and_metric_scores
-            )
-          if (tolower(Construct[i, 15][[1]]) == "f1" ||
-              is.null(Construct[i, 15][[1]])) {
-            Thresh <-
-              tryCatch({
-                store_results[order(-f1)][1, 1][[1]]
-              }, error = function(x)
-                1)
-            Label  <- "f1"
-          } else if (tolower(Construct[i, 15][[1]]) == "f2") {
-            Thresh <-
-              tryCatch({
-                store_results[order(-f2)][1, 1][[1]]
-              }, error = function(x)
-                1)
-            Label  <- "f2"
-          } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
-            Thresh <-
-              tryCatch({
-                store_results[order(-f0point5)][1, 1][[1]]
-              }, error = function(x)
-                1)
-            Label <- "f0point5"
-          } else if (tolower(Construct[i, 15][[1]]) == "cs") {
-            predsPDD <- h2o::h2o.predict(bl_model,
-                                         newdata = data_h2o)[, 3]
-            data    <-
-              data.table::as.data.table(h2o::h2o.cbind(data_h2o,
-                                                       predsPDD))
-            data[, eval(Construct[i, 1][[1]]) := as.numeric(
-              as.character(get(Construct[i, 1][[1]])))]
-            temp  <- threshOptim(
-              data     = data,
-              actTar   = Construct[i, 1][[1]],
-              predTar  = 'p1',
-              tpProfit = Construct[i, 17][[1]],
-              tnProfit = Construct[i, 18][[1]],
-              fpProfit = Construct[i, 19][[1]],
-              fnProfit = Construct[i, 20][[1]]
-            )
-            Thresh <- temp[[1]]
-            Label <- "CS"
-          }
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 5L,
-            value = Thresh
-          )
-
-          # Save VarImp
-          VIMP <-
-            data.table::as.data.table(h2o::h2o.varimp(best_model))
-          if(SaveToFile == TRUE) {
-            save(VIMP,
-                 file = paste0(model_path,
-                               "/VarImp_", Construct[i, 5][[1]],
-                               ".Rdata"))
-          }
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-          if (length(NIF) > 0) {
+            # Save VarImp and VarNOTImp
+            VIMP <-
+              data.table::as.data.table(h2o::h2o.varimp(best_model))
             if(SaveToFile == TRUE) {
-              save(NIF,
+              save(VIMP,
                    file = paste0(model_path,
-                                 "/VarNOTImp_", Construct[i, 5][[1]],
+                                 "/VarImp_",
+                                 Construct[i, 5][[1]],
                                  ".Rdata"))
             }
-          }
-
-          # Gather predicted values
-          preds <-
-            h2o::h2o.predict(best_model, newdata = validate)[, 3]
-          if (Construct[i, 14][[1]] == "All") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 3]
-            PredsPD <- data.table::as.data.table(predsPD)
-            if(SaveToFile == TRUE) {
-              data.table::fwrite(PredsPD,
-                                 file = paste0(model_path,
-                                               "/", Construct[i, 5][[1]],
-                                               "_PredsAll.csv"))
+            NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+            if (length(NIF) > 0) {
+              if(SaveToFile == TRUE) {
+                save(NIF,
+                     file = paste0(model_path,
+                                   "/VarNOTImp_",
+                                   Construct[i, 5][[1]],
+                                   ".Rdata"))
+              }
             }
-          } else if (Construct[i, 14][[1]] == "Train") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 3]
-          } else if (Construct[i, 14][[1]] == "Validate") {
-            predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 3]
+
+            # Gather predicted values
+            preds <-
+              h2o::h2o.predict(best_model, newdata = validate)[, 1]
+            if (Construct[i, 14][[1]] == "All") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 1]
+              PredsPD <- as.data.table(predsPD)
+              if(SaveToFile == TRUE) {
+                data.table::fwrite(PredsPD,
+                                   file = paste0(model_path,
+                                                 "/",
+                                                 Construct[i, 5][[1]],
+                                                 "_PredsAll.csv"))
+              }
+            } else if (Construct[i, 14][[1]] == "Train") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 1]
+            } else if (Construct[i, 14][[1]] == "Validate") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
+            }
+          } else {
+            # Save model
+            if (Construct[i, 21][[1]] == TRUE) {
+              if (grid_tuned_paths[i, 2][[1]] != "a")
+                if(SaveToFile == TRUE) {
+                  file.remove(grid_tuned_paths[i, 2][[1]])
+                }
+              if (tolower(Construct[i, 22][[1]]) == "standard") {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveModel(object = bl_model,
+                                       path = model_path,
+                                       force = TRUE)
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  if(SaveToFile == TRUE) {
+                    save(grid_tuned_paths,
+                         file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                  }
+                }
+              } else {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveMojo(object = bl_model,
+                                      path = model_path,
+                                      force = TRUE)
+                  h2o::h2o.download_mojo(
+                    model = bl_model,
+                    path = model_path,
+                    get_genmodel_jar = TRUE,
+                    genmodel_path = model_path,
+                    genmodel_name = Construct[i, 5][[1]]
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 6L,
+                    value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                  )
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
+              }
+            }
+
+            # Save VarImp
+            VIMP <-
+              data.table::as.data.table(h2o::h2o.varimp(bl_model))
+            if(SaveToFile == TRUE) {
+              save(VIMP,
+                   file = paste0(model_path,
+                                 "/VarImp_",
+                                 Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
+            NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+            if (length(NIF) > 0) {
+              if(SaveToFile == TRUE) {
+                save(NIF,
+                     file = paste0(model_path,
+                                   "/VarNOTImp_",
+                                   Construct[i, 5][[1]],
+                                   ".Rdata"))
+              }
+            }
+
+            # Gather predicted values
+            preds <-
+              h2o::h2o.predict(bl_model, newdata = validate)[, 1]
+            if (Construct[i, 14][[1]] == "All") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
+              PredsPD <- data.table::as.data.table(predsPD)
+              if(SaveToFile == TRUE) {
+                data.table::fwrite(PredsPD,
+                                   file = paste0(model_path,
+                                                 "/", Construct[i, 5][[1]],
+                                                 "_PredsAll.csv"))
+              }
+            } else if (Construct[i, 14][[1]] == "Train") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
+            } else if (Construct[i, 14][[1]] == "Validate") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
+            }
           }
         } else {
-          # Save model
-          if (Construct[i, 21][[1]] == TRUE) {
-            if (grid_tuned_paths[i, 2][[1]] != "a")
-              if(SaveToFile == TRUE) {
-                file.remove(grid_tuned_paths[i, 2][[1]])
-              }
-            if (tolower(Construct[i, 22][[1]]) == "standard") {
-              if(SaveToFile == TRUE) {
-                save_model <-
-                  h2o::h2o.saveModel(object = bl_model,
-                                     path = model_path,
-                                     force = TRUE)
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 2L,
-                  value = save_model
-                )
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-              }
-            } else {
-              if(SaveToFile == TRUE) {
-                save_model <-
-                  h2o::h2o.saveMojo(object = bl_model,
-                                    path = model_path,
-                                    force = TRUE)
-                h2o::h2o.download_mojo(
-                  model = bl_model,
-                  path = model_path,
-                  get_genmodel_jar = TRUE,
-                  genmodel_path = model_path,
-                  genmodel_name = Construct[i, 5][[1]]
-                )
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 2L,
-                  value = save_model
-                )
-                data.table::set(
-                  grid_tuned_paths,
-                  i = i,
-                  j = 6L,
-                  value = paste0(model_path, "\\", Construct[i, 5][[1]])
-                )
-                save(grid_tuned_paths,
-                     file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+          if (cc > dd) {
+            # Save model
+            if (Construct[i, 21][[1]] == TRUE) {
+              if (grid_tuned_paths[i, 2][[1]] != "a")
+                if(SaveToFile == TRUE) {
+                  file.remove(grid_tuned_paths[i, 2][[1]])
+                }
+              if (tolower(Construct[i, 22][[1]]) == "standard") {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveModel(object = best_model,
+                                       path = model_path,
+                                       force = TRUE)
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
+              } else {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveMojo(object = best_model,
+                                      path = model_path,
+                                      force = TRUE)
+                  h2o::h2o.download_mojo(
+                    model = best_model,
+                    path = model_path,
+                    get_genmodel_jar = TRUE,
+                    genmodel_path = model_path,
+                    genmodel_name = Construct[i, 5][[1]]
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 6L,
+                    value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                  )
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
               }
             }
-          }
 
-          # Store threshold
+            # Store threshold
+            store_results <-
+              data.table::data.table(
+                best_model@model$training_metrics@metrics$thresholds_and_metric_scores
+              )
+            if (tolower(Construct[i, 15][[1]]) == "f1" ||
+                is.null(Construct[i, 15][[1]])) {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f1)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label  <- "f1"
+            } else if (tolower(Construct[i, 15][[1]]) == "f2") {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f2)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label  <- "f2"
+            } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f0point5)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label <- "f0point5"
+            } else if (tolower(Construct[i, 15][[1]]) == "cs") {
+              predsPDD <- h2o::h2o.predict(bl_model,
+                                           newdata = data_h2o)[, 3]
+              data    <-
+                data.table::as.data.table(h2o::h2o.cbind(data_h2o,
+                                                         predsPDD))
+              data[, eval(Construct[i, 1][[1]]) := as.numeric(
+                as.character(get(Construct[i, 1][[1]])))]
+              temp  <- threshOptim(
+                data     = data,
+                actTar   = Construct[i, 1][[1]],
+                predTar  = 'p1',
+                tpProfit = Construct[i, 17][[1]],
+                tnProfit = Construct[i, 18][[1]],
+                fpProfit = Construct[i, 19][[1]],
+                fnProfit = Construct[i, 20][[1]]
+              )
+              Thresh <- temp[[1]]
+              Label <- "CS"
+            }
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 5L,
+              value = Thresh
+            )
+
+            # Save VarImp
+            VIMP <-
+              data.table::as.data.table(h2o::h2o.varimp(best_model))
+            if(SaveToFile == TRUE) {
+              save(VIMP,
+                   file = paste0(model_path,
+                                 "/VarImp_", Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
+            NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+            if (length(NIF) > 0) {
+              if(SaveToFile == TRUE) {
+                save(NIF,
+                     file = paste0(model_path,
+                                   "/VarNOTImp_", Construct[i, 5][[1]],
+                                   ".Rdata"))
+              }
+            }
+
+            # Gather predicted values
+            preds <-
+              h2o::h2o.predict(best_model, newdata = validate)[, 3]
+            if (Construct[i, 14][[1]] == "All") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = data_h2o)[, 3]
+              PredsPD <- data.table::as.data.table(predsPD)
+              if(SaveToFile == TRUE) {
+                data.table::fwrite(PredsPD,
+                                   file = paste0(model_path,
+                                                 "/", Construct[i, 5][[1]],
+                                                 "_PredsAll.csv"))
+              }
+            } else if (Construct[i, 14][[1]] == "Train") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = train)[, 3]
+            } else if (Construct[i, 14][[1]] == "Validate") {
+              predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 3]
+            }
+          } else {
+            # Save model
+            if (Construct[i, 21][[1]] == TRUE) {
+              if (grid_tuned_paths[i, 2][[1]] != "a")
+                if(SaveToFile == TRUE) {
+                  file.remove(grid_tuned_paths[i, 2][[1]])
+                }
+              if (tolower(Construct[i, 22][[1]]) == "standard") {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveModel(object = bl_model,
+                                       path = model_path,
+                                       force = TRUE)
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
+              } else {
+                if(SaveToFile == TRUE) {
+                  save_model <-
+                    h2o::h2o.saveMojo(object = bl_model,
+                                      path = model_path,
+                                      force = TRUE)
+                  h2o::h2o.download_mojo(
+                    model = bl_model,
+                    path = model_path,
+                    get_genmodel_jar = TRUE,
+                    genmodel_path = model_path,
+                    genmodel_name = Construct[i, 5][[1]]
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 2L,
+                    value = save_model
+                  )
+                  data.table::set(
+                    grid_tuned_paths,
+                    i = i,
+                    j = 6L,
+                    value = paste0(model_path, "\\", Construct[i, 5][[1]])
+                  )
+                  save(grid_tuned_paths,
+                       file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+                }
+              }
+            }
+
+            # Store threshold
+            store_results <-
+              data.table::data.table(
+                bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
+            if (tolower(Construct[i, 15][[1]]) == "f1" ||
+                is.null(Construct[i, 15][[1]])) {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f1)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label  <- "f1"
+            } else if (tolower(Construct[i, 15][[1]]) == "f2") {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f2)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label  <- "f2"
+            } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
+              Thresh <-
+                tryCatch({
+                  store_results[order(-f0point5)][1, 1][[1]]
+                }, error = function(x)
+                  1)
+              Label <- "f0point5"
+            } else if (tolower(Construct[i, 15][[1]]) == "CS") {
+              predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
+              data    <-
+                data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
+              data[, eval(Construct[i, 1][[1]]) := as.numeric(
+                as.character(get(Construct[i, 1][[1]])))]
+              temp  <- threshOptim(
+                data     = data,
+                actTar   = Construct[i, 1][[1]],
+                predTar  = 'p1',
+                tpProfit = Construct[i, 17][[1]],
+                tnProfit = Construct[i, 18][[1]],
+                fpProfit = Construct[i, 19][[1]],
+                fnProfit = Construct[i, 20][[1]]
+              )
+              Thresh <- temp[[1]]
+              Label <- "CS"
+            }
+            data.table::set(
+              grid_tuned_paths,
+              i = i,
+              j = 5L,
+              value = Thresh
+            )
+
+            # Save VarImp
+            VIMP <-
+              data.table::as.data.table(h2o::h2o.varimp(bl_model))
+            if(SaveToFile == TRUE) {
+              save(VIMP,
+                   file = paste0(model_path,
+                                 "/VarImp_", Construct[i, 5][[1]],
+                                 ".Rdata"))
+            }
+            NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+            if (length(NIF) > 0) {
+              if(SaveToFile == TRUE) {
+                save(NIF,
+                     file = paste0(model_path,
+                                   "/VarNOTImp_", Construct[i, 5][[1]],
+                                   ".Rdata"))
+              }
+            }
+
+            # Gather predicted values
+            preds <-
+              h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+            if (Construct[i, 14][[1]] == "All") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
+              PredsPD <- data.table::as.data.table(predsPD)
+              if(SaveToFile == TRUE) {
+                data.table::fwrite(PredsPD,
+                                   file = paste0(model_path,
+                                                 "/",
+                                                 Construct[i, 5][[1]],
+                                                 "_PredsAll.csv"))
+              }
+            } else if (Construct[i, 14][[1]] == "Train") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
+            } else if (Construct[i, 14][[1]] == "Validate") {
+              predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+            }
+          }
+        }
+      } else if (tolower(Construct[i, 6][[1]]) != "automl") {
+        # Save model
+        if (Construct[i, 21][[1]] == TRUE) {
+          if (grid_tuned_paths[i, 2][[1]] != "a")
+            if(SaveToFile == TRUE) {
+              file.remove(grid_tuned_paths[i, 2][[1]])
+            }
+          if (tolower(Construct[i, 22][[1]]) == "standard") {
+            if(SaveToFile == TRUE) {
+              save_model <-
+                h2o::h2o.saveModel(object = bl_model,
+                                   path = model_path,
+                                   force = TRUE)
+              data.table::set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path,
+                                 "/grid_tuned_paths.Rdata"))
+            }
+          } else {
+            if(SaveToFile == TRUE) {
+              save_model <-
+                h2o::h2o.saveMojo(object = bl_model,
+                                  path = model_path,
+                                  force = TRUE)
+              h2o::h2o.download_mojo(
+                model = bl_model,
+                path = model_path,
+                get_genmodel_jar = TRUE,
+                genmodel_path = model_path,
+                genmodel_name = Construct[i, 5][[1]]
+              )
+              data.table::set(
+                grid_tuned_paths,
+                i = i,
+                j = 2L,
+                value = save_model
+              )
+              data.table::set(
+                grid_tuned_paths,
+                i = i,
+                j = 6L,
+                value = paste0(model_path, "\\", Construct[i, 5][[1]])
+              )
+              save(grid_tuned_paths,
+                   file = paste0(model_path,
+                                 "/grid_tuned_paths.Rdata"))
+            }
+          }
+        }
+
+        # Store threshold for binary classification
+        if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                 "binomial",
+                                                 "bernoulli")) {
           store_results <-
             data.table::data.table(
               bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
@@ -10710,7 +10858,7 @@ AutoH2OModeler <- function(Construct,
               }, error = function(x)
                 1)
             Label <- "f0point5"
-          } else if (tolower(Construct[i, 15][[1]]) == "CS") {
+          } else if (tolower(Construct[i, 15][[1]]) == "cs") {
             predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
             data    <-
               data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
@@ -10728,37 +10876,30 @@ AutoH2OModeler <- function(Construct,
             Thresh <- temp[[1]]
             Label <- "CS"
           }
-          data.table::set(
-            grid_tuned_paths,
-            i = i,
-            j = 5L,
-            value = Thresh
-          )
-
-          # Save VarImp
-          VIMP <-
-            data.table::as.data.table(h2o::h2o.varimp(bl_model))
-          if(SaveToFile == TRUE) {
-            save(VIMP,
-                 file = paste0(model_path,
-                               "/VarImp_", Construct[i, 5][[1]],
-                               ".Rdata"))
-          }
-          NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-          if (length(NIF) > 0) {
-            if(SaveToFile == TRUE) {
-              save(NIF,
-                   file = paste0(model_path,
-                                 "/VarNOTImp_", Construct[i, 5][[1]],
-                                 ".Rdata"))
-            }
-          }
-
-          # Gather predicted values
-          preds <-
-            h2o::h2o.predict(bl_model, newdata = validate)[, 3]
-          if (Construct[i, 14][[1]] == "All") {
+          data.table::set(grid_tuned_paths,
+                          i = i,
+                          j = 5L,
+                          value = Thresh)
+          preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+          if (tolower(Construct[i, 14][[1]]) == "all") {
             predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
+            PredsPD <- data.table::as.data.table(predsPD)
+            if(SaveToFile == TRUE) {
+              fwrite(PredsPD,
+                     file = paste0(model_path,
+                                   "/", Construct[i, 5][[1]],
+                                   "_PredsAll.csv"))
+            }
+          } else if (tolower(Construct[i, 14][[1]]) == "train") {
+            predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
+          } else if (tolower(Construct[i, 14][[1]]) == "validate") {
+            predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+          }
+        } else {
+          # Store predicted values against validate data for calibration plot
+          preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
+          if (tolower(Construct[i, 14][[1]]) == "all") {
+            predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
             PredsPD <- data.table::as.data.table(predsPD)
             if(SaveToFile == TRUE) {
               data.table::fwrite(PredsPD,
@@ -10767,723 +10908,582 @@ AutoH2OModeler <- function(Construct,
                                                Construct[i, 5][[1]],
                                                "_PredsAll.csv"))
             }
-          } else if (Construct[i, 14][[1]] == "Train") {
-            predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
-          } else if (Construct[i, 14][[1]] == "Validate") {
-            predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
+          } else if (tolower(Construct[i, 14][[1]]) == "train") {
+            predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
+          } else if (tolower(Construct[i, 14][[1]]) == "validate") {
+            predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
           }
         }
-      }
-    } else if (tolower(Construct[i, 6][[1]]) != "automl") {
-      # Save model
-      if (Construct[i, 21][[1]] == TRUE) {
-        if (grid_tuned_paths[i, 2][[1]] != "a")
-          if(SaveToFile == TRUE) {
-            file.remove(grid_tuned_paths[i, 2][[1]])
-          }
-        if (tolower(Construct[i, 22][[1]]) == "standard") {
-          if(SaveToFile == TRUE) {
-            save_model <-
-              h2o::h2o.saveModel(object = bl_model,
-                                 path = model_path,
-                                 force = TRUE)
-            data.table::set(
-              grid_tuned_paths,
-              i = i,
-              j = 2L,
-              value = save_model
-            )
-            save(grid_tuned_paths,
-                 file = paste0(model_path,
-                               "/grid_tuned_paths.Rdata"))
-          }
-        } else {
-          if(SaveToFile == TRUE) {
-            save_model <-
-              h2o::h2o.saveMojo(object = bl_model,
-                                path = model_path,
-                                force = TRUE)
-            h2o::h2o.download_mojo(
-              model = bl_model,
-              path = model_path,
-              get_genmodel_jar = TRUE,
-              genmodel_path = model_path,
-              genmodel_name = Construct[i, 5][[1]]
-            )
-            data.table::set(
-              grid_tuned_paths,
-              i = i,
-              j = 2L,
-              value = save_model
-            )
-            data.table::set(
-              grid_tuned_paths,
-              i = i,
-              j = 6L,
-              value = paste0(model_path, "\\", Construct[i, 5][[1]])
-            )
-            save(grid_tuned_paths,
-                 file = paste0(model_path,
-                               "/grid_tuned_paths.Rdata"))
-          }
-        }
-      }
 
-      # Store threshold for binary classification
-      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                               "binomial",
-                                               "bernoulli")) {
-        store_results <-
-          data.table::data.table(
-            bl_model@model$training_metrics@metrics$thresholds_and_metric_scores)
-        if (tolower(Construct[i, 15][[1]]) == "f1" ||
-            is.null(Construct[i, 15][[1]])) {
-          Thresh <-
-            tryCatch({
-              store_results[order(-f1)][1, 1][[1]]
-            }, error = function(x)
-              1)
-          Label  <- "f1"
-        } else if (tolower(Construct[i, 15][[1]]) == "f2") {
-          Thresh <-
-            tryCatch({
-              store_results[order(-f2)][1, 1][[1]]
-            }, error = function(x)
-              1)
-          Label  <- "f2"
-        } else if (tolower(Construct[i, 15][[1]]) == "f0point5") {
-          Thresh <-
-            tryCatch({
-              store_results[order(-f0point5)][1, 1][[1]]
-            }, error = function(x)
-              1)
-          Label <- "f0point5"
-        } else if (tolower(Construct[i, 15][[1]]) == "cs") {
-          predsPDD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
-          data    <-
-            data.table::as.data.table(h2o::h2o.cbind(data_h2o, predsPDD))
-          data[, eval(Construct[i, 1][[1]]) := as.numeric(
-            as.character(get(Construct[i, 1][[1]])))]
-          temp  <- threshOptim(
-            data     = data,
-            actTar   = Construct[i, 1][[1]],
-            predTar  = 'p1',
-            tpProfit = Construct[i, 17][[1]],
-            tnProfit = Construct[i, 18][[1]],
-            fpProfit = Construct[i, 19][[1]],
-            fnProfit = Construct[i, 20][[1]]
-          )
-          Thresh <- temp[[1]]
-          Label <- "CS"
-        }
-        data.table::set(grid_tuned_paths,
-                        i = i,
-                        j = 5L,
-                        value = Thresh)
-        preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
-        if (tolower(Construct[i, 14][[1]]) == "all") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 3]
-          PredsPD <- data.table::as.data.table(predsPD)
-          if(SaveToFile == TRUE) {
-            fwrite(PredsPD,
-                   file = paste0(model_path,
-                                 "/", Construct[i, 5][[1]],
-                                 "_PredsAll.csv"))
-          }
-        } else if (tolower(Construct[i, 14][[1]]) == "train") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 3]
-        } else if (tolower(Construct[i, 14][[1]]) == "validate") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 3]
-        }
-      } else {
-        # Store predicted values against validate data for calibration plot
-        preds <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
-        if (tolower(Construct[i, 14][[1]]) == "all") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = data_h2o)[, 1]
-          PredsPD <- data.table::as.data.table(predsPD)
-          if(SaveToFile == TRUE) {
-            data.table::fwrite(PredsPD,
-                               file = paste0(model_path,
-                                             "/",
-                                             Construct[i, 5][[1]],
-                                             "_PredsAll.csv"))
-          }
-        } else if (tolower(Construct[i, 14][[1]]) == "train") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = train)[, 1]
-        } else if (tolower(Construct[i, 14][[1]]) == "validate") {
-          predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
-        }
-      }
-
-      # Save VarImp
-      VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
-      if(SaveToFile == TRUE) {
-        save(VIMP,
-             file = paste0(model_path,
-                           "/VarImp_",
-                           Construct[i, 5][[1]],
-                           ".Rdata"))
-      }
-      NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
-      if (length(NIF) > 0) {
+        # Save VarImp
+        VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
         if(SaveToFile == TRUE) {
-          save(NIF,
+          save(VIMP,
                file = paste0(model_path,
-                             "/VarNOTImp_",
+                             "/VarImp_",
                              Construct[i, 5][[1]],
                              ".Rdata"))
         }
-      }
-    }
-
-    ######################################
-    # Model Evaluation Plots
-    ######################################
-
-    # Generate plots
-    col <- Construct[i, 1][[1]]
-    calibration <-
-      data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
-    if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                             "binomial",
-                                             "bernoulli")) {
-      calibration[, eval(col) := as.numeric(as.character(get(col)))]
-    }
-    if (Construct[i, 13][[1]] >= 1) {
-      if (tolower(Construct[i, 14][[1]]) == "all") {
-        calibEval <-
-          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        calib <-
-          data.table::as.data.table(h2o::h2o.cbind(predsPD, data_h2o))
-      } else if (tolower(Construct[i, 14][[1]]) == "train") {
-        calibEval <-
-          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        calib <- as.data.table(h2o::h2o.cbind(predsPD, train))
-      } else if (tolower(Construct[i, 14][[1]]) == "validate") {
-        calibEval <-
-          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        calib <- as.data.table(h2o::h2o.cbind(predsPD, validate))
-      }
-      if (Construct[i, 12][[1]]) {
-        if(SaveToFile == TRUE) {
-          save(calibEval,
-               file = paste0(model_path,
-                             "/", Construct[i, 5][[1]],
-                             "_Validation.Rdata"))
-        }
-      }
-    } else {
-      if (Construct[i, 12][[1]]) {
-        calibEval <-
-          data.table::as.data.table(h2o::h2o.cbind(preds, validate))
-        if(SaveToFile == TRUE) {
-          save(calibEval,
-               file = paste0(model_path,
-                             "/",
-                             Construct[i, 5][[1]],
-                             "_Validation.Rdata"))
-        }
-      }
-    }
-    predName <- names(calibration[, 1])
-
-    # Generate evaluation plots
-    if (tolower(Construct[i, 2][[1]]) != "multinomial") {
-      if (tolower(Construct[i, 2][[1]]) == "quantile") {
-
-        # Store best metric
-        if(Construct[i,11][[1]]) {
-          if(cc < dd) {
-            val <- cc
-          } else {
-            val <- dd
+        NIF <- VIMP[percentage < Construct[i, 16][[1]], 1][[1]]
+        if (length(NIF) > 0) {
+          if(SaveToFile == TRUE) {
+            save(NIF,
+                 file = paste0(model_path,
+                               "/VarNOTImp_",
+                               Construct[i, 5][[1]],
+                               ".Rdata"))
           }
-        } else {
-          val <- dd
         }
+      }
 
-        # Calibration plot
-        out1 <- EvalPlot(
-          calibration,
-          PredictionColName = predName,
-          TargetColName  = Construct[i, 1][[1]],
-          GraphType        = "calibration",
-          PercentileBucket      = 0.05,
-          aggrfun     = function(x)
-            quantile(x,
-                     probs = Construct[i, 4][[1]],
-                     na.rm = TRUE)
-        )
-        out1 <- out1 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(Construct[i,3][[1]]),
-                 ": ",
-                 round(val,4))
-        )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
+      ######################################
+      # Model Evaluation Plots
+      ######################################
+
+      # Generate plots
+      col <- Construct[i, 1][[1]]
+      calibration <-
+        data.table::as.data.table(h2o::h2o.cbind(preds, validate[, col]))
+      if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                               "binomial",
+                                               "bernoulli")) {
+        calibration[, eval(col) := as.numeric(as.character(get(col)))]
+      }
+      if (Construct[i, 13][[1]] >= 1) {
+        if (tolower(Construct[i, 14][[1]]) == "all") {
+          calibEval <-
+            data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+          calib <-
+            data.table::as.data.table(h2o::h2o.cbind(predsPD, data_h2o))
+        } else if (tolower(Construct[i, 14][[1]]) == "train") {
+          calibEval <-
+            data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+          calib <- as.data.table(h2o::h2o.cbind(predsPD, train))
+        } else if (tolower(Construct[i, 14][[1]]) == "validate") {
+          calibEval <-
+            data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+          calib <- as.data.table(h2o::h2o.cbind(predsPD, validate))
         }
-
-        # Calibration boxplot
-        out2 <- EvalPlot(
-          calibration,
-          PredictionColName = predName,
-          TargetColName  = Construct[i, 1][[1]],
-          GraphType        = "boxplot",
-          PercentileBucket      = 0.05
-        )
-        out2 <- out2 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(Construct[i,3][[1]]),
-                 ": ",
-                 round(val,4))
-        )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalBP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
-        }
-      } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                                      "binomial",
-                                                      "bernoulli")) {
-
-        # Store best metric
-        if(Construct[i,11][[1]]) {
-          if(cc < dd) {
-            val <- cc
-          } else {
-            val <- dd
+        if (Construct[i, 12][[1]]) {
+          if(SaveToFile == TRUE) {
+            save(calibEval,
+                 file = paste0(model_path,
+                               "/", Construct[i, 5][[1]],
+                               "_Validation.Rdata"))
           }
-        } else {
-          val <- dd
-        }
-
-        out1 <- EvalPlot(
-          calibration,
-          PredictionColName = predName,
-          TargetColName  = Construct[i, 1][[1]],
-          GraphType        = "calibration",
-          PercentileBucket      = 0.05,
-          aggrfun     = function(x)
-            base::mean(x, na.rm = TRUE)
-        )
-        out1 <- out1 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(Construct[i,3][[1]]),
-                 ": ",
-                 round(val,4))
-        )
-
-        if (exists("Thresh")) {
-          out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
-        }
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
         }
       } else {
+        if (Construct[i, 12][[1]]) {
+          calibEval <-
+            data.table::as.data.table(h2o::h2o.cbind(preds, validate))
+          if(SaveToFile == TRUE) {
+            save(calibEval,
+                 file = paste0(model_path,
+                               "/",
+                               Construct[i, 5][[1]],
+                               "_Validation.Rdata"))
+          }
+        }
+      }
+      predName <- names(calibration[, 1])
 
-        # Store best metric
-        if(Construct[i,11][[1]]) {
-          if(cc < dd) {
-            val <- cc
+      # Generate evaluation plots
+      if (tolower(Construct[i, 2][[1]]) != "multinomial") {
+        if (tolower(Construct[i, 2][[1]]) == "quantile") {
+
+          # Store best metric
+          if(Construct[i,11][[1]]) {
+            if(cc < dd) {
+              val <- cc
+            } else {
+              val <- dd
+            }
           } else {
             val <- dd
           }
-        } else {
-          val <- dd
-        }
 
-        # Calibration plot
-        out1 <- EvalPlot(
-          calibration,
-          PredictionColName = predName,
-          TargetColName  = Construct[i, 1][[1]],
-          GraphType        = "calibration",
-          PercentileBucket      = 0.05,
-          aggrfun     = function(x)
-            base::mean(x, na.rm = TRUE)
-        )
-        out1 <- out1 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(Construct[i,3][[1]]),
-                 ": ",
-                 round(val,4))
-        )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
-        }
-
-        # Calibration boxplot
-        out2 <- EvalPlot(
-          calibration,
-          PredictionColName = predName,
-          TargetColName  = Construct[i, 1][[1]],
-          GraphType        = "boxplot",
-          PercentileBucket      = 0.05
-        )
-        out2 <- out2 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(Construct[i,3][[1]]),
-                 ": ",
-                 round(val,4))
-        )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalBP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
-        }
-      }
-    } else {
-      # Multinomial case
-      # Stack each level's predicted values and actual values
-      if (Construct[i, 11][[1]] && cc <= dd) {
-        predsMulti <- h2o::h2o.predict(best_model, newdata = validate)
-        col <- Construct[i, 1][[1]]
-        xx <-
-          data.table::as.data.table(h2o::h2o.cbind(validate[, col],
-                                                   predsMulti))
-        if (Construct[i, 12][[1]]) {
-          calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
-                                                            preds))
+          # Calibration plot
+          out1 <- EvalPlot(
+            calibration,
+            PredictionColName = predName,
+            TargetColName  = Construct[i, 1][[1]],
+            GraphType        = "calibration",
+            PercentileBucket      = 0.05,
+            aggrfun     = function(x)
+              quantile(x,
+                       probs = Construct[i, 4][[1]],
+                       na.rm = TRUE)
+          )
+          out1 <- out1 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(Construct[i,3][[1]]),
+                   ": ",
+                   round(val,4))
+          )
           if(SaveToFile == TRUE) {
-            save(calib, file = paste0(model_path,
-                                      "/",
-                                      Construct[i, 5][[1]],
-                                      "_Validation.Rdata"))
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
+          }
+
+          # Calibration boxplot
+          out2 <- EvalPlot(
+            calibration,
+            PredictionColName = predName,
+            TargetColName  = Construct[i, 1][[1]],
+            GraphType        = "boxplot",
+            PercentileBucket      = 0.05
+          )
+          out2 <- out2 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(Construct[i,3][[1]]),
+                   ": ",
+                   round(val,4))
+          )
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalBP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
+          }
+        } else if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                        "binomial",
+                                                        "bernoulli")) {
+
+          # Store best metric
+          if(Construct[i,11][[1]]) {
+            if(cc < dd) {
+              val <- cc
+            } else {
+              val <- dd
+            }
+          } else {
+            val <- dd
+          }
+
+          out1 <- EvalPlot(
+            calibration,
+            PredictionColName = predName,
+            TargetColName  = Construct[i, 1][[1]],
+            GraphType        = "calibration",
+            PercentileBucket      = 0.05,
+            aggrfun     = function(x)
+              base::mean(x, na.rm = TRUE)
+          )
+          out1 <- out1 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(Construct[i,3][[1]]),
+                   ": ",
+                   round(val,4))
+          )
+
+          if (exists("Thresh")) {
+            out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
+          }
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
+          }
+        } else {
+
+          # Store best metric
+          if(Construct[i,11][[1]]) {
+            if(cc < dd) {
+              val <- cc
+            } else {
+              val <- dd
+            }
+          } else {
+            val <- dd
+          }
+
+          # Calibration plot
+          out1 <- EvalPlot(
+            calibration,
+            PredictionColName = predName,
+            TargetColName  = Construct[i, 1][[1]],
+            GraphType        = "calibration",
+            PercentileBucket      = 0.05,
+            aggrfun     = function(x)
+              base::mean(x, na.rm = TRUE)
+          )
+          out1 <- out1 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(Construct[i,3][[1]]),
+                   ": ",
+                   round(val,4))
+          )
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
+          }
+
+          # Calibration boxplot
+          out2 <- EvalPlot(
+            calibration,
+            PredictionColName = predName,
+            TargetColName  = Construct[i, 1][[1]],
+            GraphType        = "boxplot",
+            PercentileBucket      = 0.05
+          )
+          out2 <- out2 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(Construct[i,3][[1]]),
+                   ": ",
+                   round(val,4))
+          )
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalBP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
           }
         }
-        N <- (ncol(xx) - 2)
-        data <- eval(parse(text = Construct[i, 7][[1]]))
-        for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
-        }
-        RemoveCols <- names(xx)[1:2]
-        KeepCols   <- names(xx)[3:length(names(xx))]
-        xx[, (RemoveCols) := NULL]
-        store <- list()
-        for (k in 1:N) {
-          j <- k + N
-          temp <- cbind(xx[, ..k], xx[, ..j])
-          data.table::setnames(temp, KeepCols[k], "Preds")
-          data.table::setnames(temp, KeepCols[j], "Act")
-          store[[k]] <- temp
-        }
-        xxx <- data.table::rbindlist(store)
+      } else {
+        # Multinomial case
+        # Stack each level's predicted values and actual values
+        if (Construct[i, 11][[1]] && cc <= dd) {
+          predsMulti <- h2o::h2o.predict(best_model, newdata = validate)
+          col <- Construct[i, 1][[1]]
+          xx <-
+            data.table::as.data.table(h2o::h2o.cbind(validate[, col],
+                                                     predsMulti))
+          if (Construct[i, 12][[1]]) {
+            calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
+                                                              preds))
+            if(SaveToFile == TRUE) {
+              save(calib, file = paste0(model_path,
+                                        "/",
+                                        Construct[i, 5][[1]],
+                                        "_Validation.Rdata"))
+            }
+          }
+          N <- (ncol(xx) - 2)
+          data <- eval(parse(text = Construct[i, 7][[1]]))
+          for (lev in levels(data[[Construct[i, 1][[1]]]])) {
+            xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+          }
+          RemoveCols <- names(xx)[1:2]
+          KeepCols   <- names(xx)[3:length(names(xx))]
+          xx[, (RemoveCols) := NULL]
+          store <- list()
+          for (k in 1:N) {
+            j <- k + N
+            temp <- cbind(xx[, ..k], xx[, ..j])
+            data.table::setnames(temp, KeepCols[k], "Preds")
+            data.table::setnames(temp, KeepCols[j], "Act")
+            store[[k]] <- temp
+          }
+          xxx <- data.table::rbindlist(store)
 
-        # Multinomial metric
-        if(multinomialMetric == "auc") {
-          val <- H2OMultinomialAUC(validate,
-                                   best_model,
-                                   targetColNum = 1,
-                                   targetName = Construct[i,1][[1]])
+          # Multinomial metric
+          if(multinomialMetric == "auc") {
+            val <- H2OMultinomialAUC(validate,
+                                     best_model,
+                                     targetColNum = 1,
+                                     targetName = Construct[i,1][[1]])
+          } else {
+            xx <- data.table::as.data.table(h2o::h2o.cbind(
+              validate[, 1],
+              h2o::h2o.predict(best_model,
+                               newdata = validate)[,1]))
+            names(xx)
+            val <- mean(
+              xx[, Accuracy := as.numeric(
+                ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+              na.rm = TRUE)
+          }
+
+          # Store baseline val
+          temp <- H2OMultinomialAUC(validate,
+                                    best_model,
+                                    targetColNum = 1,
+                                    targetName = Construct[i,1][[1]])
+
+          # Store micro auc
+          data.table::set(grid_tuned_paths, i = i, j = 3L, value = val)
+          data.table::set(grid_tuned_paths, i = i, j = 4L, value = temp)
+
+          # Calibration plot
+          out1 <- EvalPlot(
+            xxx,
+            PredictionColName = "Preds",
+            TargetColName  = "Act",
+            GraphType        = "calibration",
+            PercentileBucket      = 0.05,
+            aggrfun     = function(x)
+              base::mean(x, na.rm = TRUE)
+          )
+          out1 <- out1 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(multinomialMetric),
+                   ": ",
+                   round(val,4))
+          )
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]],
+                                   ".png"))
+          }
+
         } else {
-          xx <- data.table::as.data.table(h2o::h2o.cbind(
-            validate[, 1],
-            h2o::h2o.predict(best_model,
-                             newdata = validate)[,1]))
-          names(xx)
-          val <- mean(
-            xx[, Accuracy := as.numeric(
-              ifelse(get(Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
-            na.rm = TRUE)
-        }
+          predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
+          col <- Construct[i, 1][[1]]
+          xx <-
+            data.table::as.data.table(h2o::h2o.cbind(validate[, col],
+                                                     predsMulti))
+          if (Construct[i, 12][[1]]) {
+            calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
+                                                              preds))
+            if(SaveToFile == TRUE) {
+              save(calib, file = paste0(model_path,
+                                        "/",
+                                        Construct[i, 5][[1]],
+                                        "_Validation.Rdata"))
+            }
+          }
+          N <- (ncol(xx) - 2)
+          data <- eval(parse(text = Construct[i, 7][[1]]))
+          for (lev in levels(data[[Construct[i, 1][[1]]]])) {
+            xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+          }
+          RemoveCols <- names(xx)[1:2]
+          KeepCols   <- names(xx)[3:length(names(xx))]
+          xx[, (RemoveCols) := NULL]
+          store <- list()
+          for (k in seq_len(N)) {
+            j <- k + N
+            temp <- cbind(xx[, ..k], xx[, ..j])
+            data.table::setnames(temp, KeepCols[k], "Preds")
+            data.table::setnames(temp, KeepCols[j], "Act")
+            store[[k]] <- temp
+          }
+          xxx <- data.table::rbindlist(store)
 
-        # Store baseline val
-        temp <- H2OMultinomialAUC(validate,
-                                 best_model,
-                                 targetColNum = 1,
-                                 targetName = Construct[i,1][[1]])
+          # Multinomial metric
+          if(multinomialMetric == "auc") {
+            val <- H2OMultinomialAUC(validate,
+                                     bl_model,
+                                     targetColNum = 1,
+                                     targetName = Construct[i,1][[1]])
+          } else {
+            xx <- data.table::as.data.table(h2o::h2o.cbind(
+              validate[, 1],
+              h2o::h2o.predict(bl_model,
+                               newdata = validate)[,1]))
+            names(xx)
+            val <- mean(xx[, Accuracy := as.numeric(
+              ifelse(
+                get(
+                  Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
+              na.rm = TRUE)
+          }
+
+          # Calibration plot
+          out1 <- EvalPlot(
+            xxx,
+            PredictionColName = "Preds",
+            TargetColName  = "Act",
+            GraphType        = "calibration",
+            PercentileBucket      = 0.05,
+            aggrfun     = function(x)
+              base::mean(x, na.rm = TRUE)
+          )
+          out1 <- out1 + ggplot2::ggtitle(
+            paste0("Calibration Evaluation Plot ",
+                   toupper(multinomialMetric),
+                   ": ",
+                   round(val,4))
+          )
+          if(SaveToFile == TRUE) {
+            ggplot2::ggsave(paste0(model_path,
+                                   "/CalP_",
+                                   Construct[i, 5][[1]], ".png"))
+          }
+        }
 
         # Store micro auc
-        data.table::set(grid_tuned_paths, i = i, j = 3L, value = val)
-        data.table::set(grid_tuned_paths, i = i, j = 4L, value = temp)
-
-        # Calibration plot
-        out1 <- EvalPlot(
-          xxx,
-          PredictionColName = "Preds",
-          TargetColName  = "Act",
-          GraphType        = "calibration",
-          PercentileBucket      = 0.05,
-          aggrfun     = function(x)
-            base::mean(x, na.rm = TRUE)
-        )
-        out1 <- out1 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(multinomialMetric),
-                 ": ",
-                 round(val,4))
-        )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalP_",
-                                 Construct[i, 5][[1]],
-                                 ".png"))
-        }
-
-      } else {
-        predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
-        col <- Construct[i, 1][[1]]
-        xx <-
-          data.table::as.data.table(h2o::h2o.cbind(validate[, col],
-                                                   predsMulti))
-        if (Construct[i, 12][[1]]) {
-          calib <- data.table::as.data.table(h2o::h2o.cbind(validate,
-                                                            preds))
-          if(SaveToFile == TRUE) {
-            save(calib, file = paste0(model_path,
-                                      "/",
-                                      Construct[i, 5][[1]],
-                                      "_Validation.Rdata"))
-          }
-        }
-        N <- (ncol(xx) - 2)
-        data <- eval(parse(text = Construct[i, 7][[1]]))
-        for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-          xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
-        }
-        RemoveCols <- names(xx)[1:2]
-        KeepCols   <- names(xx)[3:length(names(xx))]
-        xx[, (RemoveCols) := NULL]
-        store <- list()
-        for (k in seq_len(N)) {
-          j <- k + N
-          temp <- cbind(xx[, ..k], xx[, ..j])
-          data.table::setnames(temp, KeepCols[k], "Preds")
-          data.table::setnames(temp, KeepCols[j], "Act")
-          store[[k]] <- temp
-        }
-        xxx <- data.table::rbindlist(store)
-
-        # Multinomial metric
-        if(multinomialMetric == "auc") {
-          val <- H2OMultinomialAUC(validate,
-                                   bl_model,
-                                   targetColNum = 1,
-                                   targetName = Construct[i,1][[1]])
-        } else {
-          xx <- data.table::as.data.table(h2o::h2o.cbind(
-            validate[, 1],
-            h2o::h2o.predict(bl_model,
-                             newdata = validate)[,1]))
-          names(xx)
-          val <- mean(xx[, Accuracy := as.numeric(
-            ifelse(
-              get(
-                Construct[i,1][[1]]) == predict, 1, 0))][["Accuracy"]],
-            na.rm = TRUE)
-        }
-
-        # Calibration plot
-        out1 <- EvalPlot(
-          xxx,
-          PredictionColName = "Preds",
-          TargetColName  = "Act",
-          GraphType        = "calibration",
-          PercentileBucket      = 0.05,
-          aggrfun     = function(x)
-            base::mean(x, na.rm = TRUE)
-        )
-        out1 <- out1 + ggplot2::ggtitle(
-          paste0("Calibration Evaluation Plot ",
-                 toupper(multinomialMetric),
-                 ": ",
-                 round(val,4))
-          )
-        if(SaveToFile == TRUE) {
-          ggplot2::ggsave(paste0(model_path,
-                                 "/CalP_",
-                                 Construct[i, 5][[1]], ".png"))
-        }
+        data.table::set(grid_tuned_paths, i = i, j = 4L, value = val)
       }
 
-      # Store micro auc
-      data.table::set(grid_tuned_paths, i = i, j = 4L, value = val)
-    }
+      #######################################
+      # Partial dependence calibration plots
+      #######################################
 
-    #######################################
-    # Partial dependence calibration plots
-    #######################################
-
-    if (Construct[i, 13][[1]] >= 1) {
-      VIMP <- VIMP[!is.na(VIMP[, 2][[1]])]
-      rows <- nrow(VIMP)
-      cols <- VIMP[1:min(Construct[i, 13][[1]], rows), 1][[1]]
-      calibr <- list()
-      boxplotr <- list()
-      j <- 0
-      if (!(tolower(Construct[i, 2][[1]]) %in% c("multinomial"))) {
-        for (col in cols) {
-          j <- j + 1
-          if (tolower(Construct[i, 2][[1]]) == "quantile") {
-            out1 <- tryCatch({
-              ParDepCalPlots(
-                calib,
-                PredictionColName = predName,
-                TargetColName  = Construct[i, 1][[1]],
-                IndepVar    = col,
-                GraphType        = "calibration",
-                PercentileBucket      = 0.05,
-                FactLevels  = 10,
-                Function    = function(x)
-                  quantile(x,
-                           probs = Construct[i, 4][[1]],
-                           na.rm = TRUE)
-              )
-            },
-            error = function(x)
-              "skip")
-          } else {
-            out1 <- tryCatch({
-              ParDepCalPlots(
-                calib,
-                PredictionColName = predName,
-                TargetColName  = Construct[i, 1][[1]],
-                IndepVar    = col,
-                GraphType        = "calibration",
-                PercentileBucket      = 0.05,
-                FactLevels  = 10,
-                Function    = function(x)
-                  base::mean(x, na.rm = TRUE)
-              )
-            },
-            error = function(x)
-              "skip")
-          }
-
-          # Add threshold line to charts
-          if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                                   "binomial",
-                                                   "bernoulli")) {
-            if (exists("Thresh")) {
-              out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
+      if (Construct[i, 13][[1]] >= 1) {
+        VIMP <- VIMP[!is.na(VIMP[, 2][[1]])]
+        rows <- nrow(VIMP)
+        cols <- VIMP[1:min(Construct[i, 13][[1]], rows), 1][[1]]
+        calibr <- list()
+        boxplotr <- list()
+        j <- 0
+        if (!(tolower(Construct[i, 2][[1]]) %in% c("multinomial"))) {
+          for (col in cols) {
+            j <- j + 1
+            if (tolower(Construct[i, 2][[1]]) == "quantile") {
+              out1 <- tryCatch({
+                ParDepCalPlots(
+                  calib,
+                  PredictionColName = predName,
+                  TargetColName  = Construct[i, 1][[1]],
+                  IndepVar    = col,
+                  GraphType        = "calibration",
+                  PercentileBucket      = 0.05,
+                  FactLevels  = 10,
+                  Function    = function(x)
+                    quantile(x,
+                             probs = Construct[i, 4][[1]],
+                             na.rm = TRUE)
+                )
+              },
+              error = function(x)
+                "skip")
+            } else {
+              out1 <- tryCatch({
+                ParDepCalPlots(
+                  calib,
+                  PredictionColName = predName,
+                  TargetColName  = Construct[i, 1][[1]],
+                  IndepVar    = col,
+                  GraphType        = "calibration",
+                  PercentileBucket      = 0.05,
+                  FactLevels  = 10,
+                  Function    = function(x)
+                    base::mean(x, na.rm = TRUE)
+                )
+              },
+              error = function(x)
+                "skip")
             }
-            calibr[[paste0(col)]] <- out1
-          } else {
-            calibr[[paste0(col)]] <- out1
+
+            # Add threshold line to charts
+            if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                     "binomial",
+                                                     "bernoulli")) {
+              if (exists("Thresh")) {
+                out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
+              }
+              calibr[[paste0(col)]] <- out1
+            } else {
+              calibr[[paste0(col)]] <- out1
+            }
+
+            # Expected value regression
+            if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
+                                                       "binomial",
+                                                       "bernoulli"))) {
+              boxplotr[[paste0(col)]] <- tryCatch({
+                ParDepCalPlots(
+                  calib,
+                  PredictionColName = predName,
+                  TargetColName  = Construct[i, 1][[1]],
+                  IndepVar    = col,
+                  GraphType        = "boxplot",
+                  PercentileBucket      = 0.05,
+                  FactLevels  = 10
+                )
+              },
+              error = function(x)
+                "skip")
+            }
           }
 
-          # Expected value regression
+          # Save output
           if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
                                                      "bernoulli"))) {
-            boxplotr[[paste0(col)]] <- tryCatch({
-              ParDepCalPlots(
-                calib,
-                PredictionColName = predName,
-                TargetColName  = Construct[i, 1][[1]],
-                IndepVar    = col,
-                GraphType        = "boxplot",
-                PercentileBucket      = 0.05,
-                FactLevels  = 10
+            if(SaveToFile == TRUE) {
+              save(
+                boxplotr,
+                file = paste0(
+                  model_path,
+                  "/",
+                  Construct[i, 5][[1]],
+                  "_ParDepCalBoxPlots.Rdata"
+                )
               )
-            },
-            error = function(x)
-              "skip")
+            }
+            save(calibr,
+                 file = paste0(model_path,
+                               "/", Construct[i, 5][[1]],
+                               "_ParDepCalPlots.Rdata"))
           }
         }
+      }
 
-        # Save output
-        if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
-                                                   "binomial",
-                                                   "bernoulli"))) {
-          if(SaveToFile == TRUE) {
-            save(
-              boxplotr,
-              file = paste0(
-                model_path,
-                "/",
-                Construct[i, 5][[1]],
-                "_ParDepCalBoxPlots.Rdata"
-              )
-            )
-          }
-          save(calibr,
-               file = paste0(model_path,
-                             "/", Construct[i, 5][[1]],
-                             "_ParDepCalPlots.Rdata"))
+      # Save grid_tuned_paths
+      if(SaveToFile == TRUE) {
+        save(grid_tuned_paths,
+             file = paste0(model_path, "/grid_tuned_paths.Rdata"))
+      }
+
+      # Clear H2O environment between runs
+      h2o::h2o.rm(data_h2o)
+      if(!Construct[i,SupplyData][[1]]) {
+        h2o::h2o.rm(data_train)
+      }
+      h2o::h2o.rm(train)
+      h2o::h2o.rm(validate)
+      if (Construct[i, 11][[1]]) {
+        h2o::h2o.rm(best_model)
+      }
+      if (Construct[i, 6][[1]] != "automl") {
+        h2o::h2o.rm(bl_model)
+      }
+      h2o::h2o.rm(preds)
+      h2o::h2o.shutdown(prompt = FALSE)
+
+      # Clear R environment between runs
+      if (Construct[i, 11][[1]]) {
+        if (Construct[i, 2][[1]] != "multinomial" &
+            Construct[i, 21][[1]] == TRUE) {
+          rm(
+            grid,
+            Grid_Out,
+            cc,
+            dd,
+            VIMP,
+            calibration,
+            features,
+            target,
+            save_model
+          )
+        } else {
+          rm(grid,
+             Grid_Out,
+             cc,
+             dd,
+             VIMP,
+             features,
+             target,
+             predsMulti)
+        }
+      } else {
+        if (Construct[i, 2][[1]] != "multinomial") {
+          rm(dd,
+             VIMP,
+             calibration,
+             features,
+             target,
+             save_model)
+        } else {
+          rm(dd, VIMP, features, target)
         }
       }
-    }
 
-    # Save grid_tuned_paths
-    if(SaveToFile == TRUE) {
-      save(grid_tuned_paths,
-           file = paste0(model_path, "/grid_tuned_paths.Rdata"))
-    }
-
-    # Clear H2O environment between runs
-    h2o::h2o.rm(data_h2o)
-    if(!Construct[i,SupplyData][[1]]) {
-      h2o::h2o.rm(data_train)
-    }
-    h2o::h2o.rm(train)
-    h2o::h2o.rm(validate)
-    if (Construct[i, 11][[1]]) {
-      h2o::h2o.rm(best_model)
-    }
-    if (Construct[i, 6][[1]] != "automl") {
-      h2o::h2o.rm(bl_model)
-    }
-    h2o::h2o.rm(preds)
-    h2o::h2o.shutdown(prompt = FALSE)
-
-    # Clear R environment between runs
-    if (Construct[i, 11][[1]]) {
-      if (Construct[i, 2][[1]] != "multinomial" &
-          Construct[i, 21][[1]] == TRUE) {
-        rm(
-          grid,
-          Grid_Out,
-          cc,
-          dd,
-          VIMP,
-          calibration,
-          features,
-          target,
-          save_model
-        )
-      } else {
-        rm(grid,
-           Grid_Out,
-           cc,
-           dd,
-           VIMP,
-           features,
-           target,
-           predsMulti)
+      # Remove data if no longer needed
+      if (i > 1) {
+        if (Construct[i, 7][[1]] != Construct[(i - 1), 7][[1]]) {
+          eval(parse(text = paste0("rm(", Construct[(i - 1), 7][[1]], ")")))
+        }
       }
-    } else {
-      if (Construct[i, 2][[1]] != "multinomial") {
-        rm(dd,
-           VIMP,
-           calibration,
-           features,
-           target,
-           save_model)
-      } else {
-        rm(dd, VIMP, features, target)
-      }
-    }
-
-    # Remove data if no longer needed
-    if (i > 1) {
-      if (Construct[i, 7][[1]] != Construct[(i - 1), 7][[1]]) {
-        eval(parse(text = paste0("rm(", Construct[(i - 1), 7][[1]], ")")))
-      }
-    }
-  }}, error = function(x) h2o::h2o.shutdown(prompt = FALSE))
+    }}, error = function(x) h2o::h2o.shutdown(prompt = FALSE))
   if(ReturnObjects) {
     return(list(Construct = Construct, GridTunedPaths = grid_tuned_paths))
   }
@@ -16308,12 +16308,6 @@ AutoH2oDRFClassifier <- function(data,
     # Binary Variable Importance----
     VariableImportance <- data.table::as.data.table(
       h2o::h2o.varimp(object = FinalModel))
-    if(SaveModelObjects) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,"_VariableImportance.csv"))
-    }
 
     # Binary Format Variable Importance Table----
     data.table::setnames(VariableImportance,
@@ -16326,6 +16320,14 @@ AutoH2oDRFClassifier <- function(data,
       ScaledImportance = round(ScaledImportance, 4),
       Percentage = round(Percentage, 4)
     )]
+
+    # Binary Save Variable Importance----
+    if(SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,"_VariableImportance.csv"))
+    }
 
     # Binary H2O Shutdown----
     h2o::h2o.shutdown(prompt = FALSE)
@@ -16853,12 +16855,6 @@ AutoH2oGBMClassifier <- function(data,
     # Binary Variable Importance----
     VariableImportance <- data.table::as.data.table(
       h2o::h2o.varimp(object = FinalModel))
-    if(SaveModelObjects) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,"_VariableImportance.csv"))
-    }
 
     # Binary Format Variable Importance Table----
     data.table::setnames(VariableImportance,
@@ -16871,6 +16867,14 @@ AutoH2oGBMClassifier <- function(data,
       ScaledImportance = round(ScaledImportance, 4),
       Percentage = round(Percentage, 4)
     )]
+
+    # Binary Save Variable Importance----
+    if(SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,"_VariableImportance.csv"))
+    }
 
     # Binary H2O Shutdown----
     h2o::h2o.shutdown(prompt = FALSE)
@@ -17004,6 +17008,902 @@ AutoH2oGBMClassifier <- function(data,
              EvaluationMetrics = FinalThresholdTable,
              VariableImportance = VariableImportance,
              PartialDependencePlots = ParDepPlots))
+    }
+  }
+}
+
+#' AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation
+#'
+#' AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' @author Adrian Antico
+#' @family Supervised Learning
+#' @param data This is your data set for training and testing your model
+#' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
+#' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
+#' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
+#' @param Trees The maximum number of trees you want in your models
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
+#' @param model_path A character string of your path file to where you want your output saved
+#' @param ModelID A character string to name your model and output
+#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
+#' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @examples
+#' \donttest{
+#' Correl <- 0.85
+#' N <- 1000
+#' data <- data.table::data.table(Target = runif(N))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(N)]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
+#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable11 := as.factor(
+#'   ifelse(Independent_Variable2 < 0.20, "A",
+#'          ifelse(Independent_Variable2 < 0.40, "B",
+#'                 ifelse(Independent_Variable2 < 0.6,  "C",
+#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data[, ':=' (x1 = NULL, x2 = NULL)]
+#' TestModel <- AutoH2oGBMMultiClass(data,
+#'                                   TestData = NULL,
+#'                                   TargetColumnName = "Target",
+#'                                   FeatureColNames = 2:ncol(data),
+#'                                   Alpha = NULL,
+#'                                   eval_metric = "RMSE",
+#'                                   TrainSplitRatio = 0.80,
+#'                                   Trees = 50,
+#'                                   GridTune = FALSE,
+#'                                   MaxMem = "32G",
+#'                                   MaxModelsInGrid = 10,
+#'                                   model_path = NULL,
+#'                                   ModelID = "FirstModel",
+#'                                   NumOfParDepPlots = 3,
+#'                                   ReturnModelObjects = TRUE,
+#'                                   SaveModelObjects = FALSE,
+#'                                   IfSaveModel = "mojo")
+#' }
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @export
+AutoH2oGBMMultiClass <- function(data,
+                                 TestData = NULL,
+                                 TargetColumnName = NULL,
+                                 FeatureColNames = NULL,
+                                 eval_metric = "RMSE",
+                                 TrainSplitRatio = 0.80,
+                                 Trees = 50,
+                                 GridTune = FALSE,
+                                 MaxMem = "32G",
+                                 MaxModelsInGrid = 2,
+                                 model_path = NULL,
+                                 ModelID = "FirstModel",
+                                 NumOfParDepPlots = 3,
+                                 ReturnModelObjects = TRUE,
+                                 SaveModelObjects = FALSE,
+                                 IfSaveModel = "mojo") {
+
+  # MultiClass Ensure Packages are Available----
+  requireNamespace('data.table', quietly = TRUE)
+  if(!requireNamespace('h2o', quietly = TRUE)) {
+    return(warning("h2o needs to be installed. See documentation"))
+  } else {
+
+    # MultiClass Check Arguments----
+    if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
+    if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
+      warning("eval_metric not in AUC, logloss")
+
+    }
+    if(Trees < 1) warning("Trees must be greater than 1")
+    if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
+    if(MaxModelsInGrid < 1 & GridTune == TRUE) {
+      warning("MaxModelsInGrid needs to be at least 1")
+    }
+    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.character(ModelID)) warning("ModelID needs to be a character type")
+    if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
+    if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
+    if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
+    if(!(tolower(eval_metric) == "auc")) {
+      eval_metric <- tolower(eval_metric)
+    } else {
+      eval_metric <- toupper(eval_metric)
+    }
+    if(tolower(eval_metric) %chin% c("auc")) {
+      Decreasing <- TRUE
+    } else {
+      Decreasing <- FALSE
+    }
+
+    # MultiClass Ensure data is a data.table----
+    if(!data.table::is.data.table(data)) {
+      data <- data.table::as.data.table(data)
+    }
+
+    # MultiClass ModelDataPrep----
+    data <- ModelDataPrep(data = data,
+                          Impute = FALSE,
+                          CharToFactor = TRUE)
+
+    # MultiClass Target Name Storage----
+    if(is.character(TargetColumnName)) {
+      Target <- TargetColumnName
+    } else {
+      Target <- names(data)[TargetColumnName]
+    }
+
+    # MultiClass Ensure Target Is a Factor Type----
+    if(!is.factor(data[[eval(TargetColumnName)]])) {
+      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    }
+
+    # MultiClass Data Partition----
+    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
+      order(RANDOMNUMER)][
+        1:(nrow(data)*TrainSplitRatio)]
+    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
+    dataTrain[, RANDOMNUMER := NULL]
+    dataTest[, RANDOMNUMER := NULL]
+
+    # MultiClass Grid Tune Check----
+    if(GridTune) {
+
+      # MultiClass Start Up H2O----
+      h2o::h2o.init(
+        max_mem_size = MaxMem,
+        enable_assertions = FALSE)
+
+      # MultiClass Define data sets----
+      datatrain    <- h2o::as.h2o(dataTrain)
+      datavalidate <- h2o::as.h2o(dataTest)
+
+      # MultiClass Grid Tune Search Criteria----
+      search_criteria  <- list(
+        strategy             = "RandomDiscrete",
+        max_runtime_secs     = 3600*24*7,
+        max_models           = MaxModelsInGrid,
+        seed                 = 1234,
+        stopping_rounds      = 10,
+        stopping_metric      = eval_metric,
+        stopping_tolerance   = 1e-3)
+
+      # MultiClass Grid Parameters----
+      hyper_params <- list(
+        max_depth                        = c(6,9,12),
+        balance_classes                  = c(TRUE,FALSE),
+        sample_rate                      = c(0.5,0.75,1.0),
+        col_sample_rate_per_tree         = c(0.5,0.75,1.0),
+        col_sample_rate_change_per_level = c(0.9, 1.0, 1.1),
+        min_rows                         = c(1,5),
+        nbins                            = c(10,20,30),
+        nbins_cats                       = c(64,256,512),
+        histogram_type                   = c("UniformAdaptive",
+                                             "QuantilesGlobal",
+                                             "RoundRobin"))
+
+      # MultiClass Grid Train Model----
+      grid <- h2o::h2o.grid(
+        hyper_params         = hyper_params,
+        search_criteria      = search_criteria,
+        is_supervised        = TRUE,
+        algorithm            = "gbm",
+        distribution         = "multinomial",
+        grid_id              = paste0(ModelID,"_Grid"),
+        x                    = FeatureColNames,
+        y                    = TargetColumnName,
+        ntrees               = Trees,
+        training_frame       = datatrain,
+        validation_frame     = datavalidate,
+        max_runtime_secs     = 3600*24*7,
+        stopping_rounds      = 10,
+        stopping_tolerance   = 1e-3,
+        stopping_metric      = eval_metric,
+        score_tree_interval  = 10,
+        seed                 = 1234)
+
+      # MultiClass Get Best Model----
+      Grid_Out   <- h2o::h2o.getGrid(
+        grid_id = paste0(ModelID,"_Grid"),
+        sort_by = eval_metric,
+        decreasing = Decreasing)
+
+      # MultiClass Collect Best Grid Model----
+      grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
+    }
+
+    # MultiClass Start Up H2O----
+    if(!GridTune) {
+      h2o::h2o.init(
+        max_mem_size = MaxMem,
+        enable_assertions = FALSE)
+
+      # MultiClass Define data sets----
+      datatrain    <- h2o::as.h2o(dataTrain)
+      datavalidate <- h2o::as.h2o(dataTest)
+    }
+
+    # MultiClass Build Baseline Model----
+    base_model <- h2o::h2o.gbm(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      distribution     = "multinomial",
+      training_frame   = datatrain,
+      validation_frame = datavalidate,
+      model_id         = ModelID,
+      ntrees           = Trees)
+
+    # MultiClass Get Metrics----
+    if(GridTune) {
+      if(!is.null(TestData)) {
+        datatest        <-  h2o::as.h2o(TestData)
+        GridMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+      } else {
+        GridMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+      }
+    } else {
+      if(!is.null(TestData)) {
+        datatest    <- h2o::as.h2o(TestData)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+      } else {
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+      }
+    }
+
+    # MultiClass Evaluate Metrics----
+    if(GridTune) {
+      if(tolower(eval_metric) == "logloss") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetrics@metrics$logloss
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm$table)
+        }
+      } else if(tolower(eval_metric) == "r2") {
+        BaseMetric <- BaseMetrics@metrics$r2
+        GridMetric <- GridMetrics@metrics$r2
+        if(GridMetric > BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm)
+        }
+      } else if(tolower(eval_metric) == "rmse") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm)
+        }
+      } else if(tolower(eval_metric) == "mse") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm$table)
+        }
+      }
+    } else {
+      if(tolower(eval_metric) == "logloss") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$logloss
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "r2") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$r2
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "rmse") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$RMSE
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "mse") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$MSE
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      }
+    }
+
+    # MultiClass Save Final Model----
+    if(SaveModelObjects) {
+      if(tolower(IfSaveModel) == "mojo") {
+        SaveModel <- h2o::h2o.saveMojo(
+          object = FinalModel,
+          path = model_path,
+          force = TRUE)
+        h2o::h2o.download_mojo(
+          model = FinalModel,
+          path = model_path,
+          get_genmodel_jar = TRUE,
+          genmodel_path = model_path,
+          genmodel_name = ModelID)
+      } else {
+        SaveModel <- h2o::h2o.saveModel(
+          object = FinalModel,
+          path = model_path,
+          force = TRUE)
+      }
+    }
+
+    # MultiClass Score Final Test Data----
+    if(!is.null(TestData)) {
+      Predict <- data.table::as.data.table(
+        h2o::h2o.predict(object = FinalModel,
+                         newdata = datatest))
+    } else {
+      Predict <- data.table::as.data.table(
+        h2o::h2o.predict(object = FinalModel,
+                         newdata = datavalidate))
+    }
+
+    # MultiClass Variable Importance----
+    VariableImportance <- data.table::as.data.table(
+      h2o::h2o.varimp(object = FinalModel))
+
+    # MultiClass Format Variable Importance Table----
+    data.table::setnames(VariableImportance,
+                         c("variable","relative_importance",
+                           "scaled_importance","percentage"),
+                         c("Variable","RelativeImportance",
+                           "ScaledImportance","Percentage"))
+    VariableImportance[, ':=' (
+      RelativeImportance = round(RelativeImportance, 4),
+      ScaledImportance = round(ScaledImportance, 4),
+      Percentage = round(Percentage, 4)
+    )]
+
+    # MultiClass Save Variable Importance----
+    if(SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,"_VariableImportance.csv"))
+    }
+
+    # MultiClass H2O Shutdown----
+    h2o::h2o.shutdown(prompt = FALSE)
+
+    # MultiClass Create Validation Data----
+    if(!is.null(TestData)) {
+      ValidationData <- data.table::as.data.table(
+        cbind(TestData, Predict))
+    } else {
+      ValidationData <- data.table::as.data.table(
+        cbind(dataTest, Predict))
+    }
+
+    # MultiClass Change Prediction Name----
+    data.table::setnames(ValidationData, "predict", "Predict")
+
+    # MultiClass Save Validation Data to File----
+    if(SaveModelObjects) {
+      data.table::fwrite(ValidationData,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    }
+
+    # MultiClass Save ConfusionMatrix to File----
+    if(SaveModelObjects) {
+      data.table::fwrite(ConfusionMatrix,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_EvaluationMetrics.csv"))
+    }
+
+    # MultiClass Return Objects----
+    if(ReturnModelObjects) {
+      return(
+        list(Model = FinalModel,
+             ValidationData = ValidationData,
+             EvaluationMetrics = ConfusionMatrix,
+             VariableImportance = VariableImportance))
+    }
+  }
+}
+
+#' AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation
+#'
+#' AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' @author Adrian Antico
+#' @family Supervised Learning
+#' @param data This is your data set for training and testing your model
+#' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
+#' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
+#' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
+#' @param Trees The maximum number of trees you want in your models
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
+#' @param model_path A character string of your path file to where you want your output saved
+#' @param ModelID A character string to name your model and output
+#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
+#' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @examples
+#' \donttest{
+#' Correl <- 0.85
+#' N <- 1000
+#' data <- data.table::data.table(Target = runif(N))
+#' data[, x1 := qnorm(Target)]
+#' data[, x2 := runif(N)]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
+#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
+#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable11 := as.factor(
+#'   ifelse(Independent_Variable2 < 0.20, "A",
+#'          ifelse(Independent_Variable2 < 0.40, "B",
+#'                 ifelse(Independent_Variable2 < 0.6,  "C",
+#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data[, ':=' (x1 = NULL, x2 = NULL)]
+#' TestModel <- AutoH2oGBMMultiClass(data,
+#'                                   TestData = NULL,
+#'                                   TargetColumnName = "Target",
+#'                                   FeatureColNames = 2:ncol(data),
+#'                                   Alpha = NULL,
+#'                                   eval_metric = "RMSE",
+#'                                   TrainSplitRatio = 0.80,
+#'                                   Trees = 50,
+#'                                   GridTune = FALSE,
+#'                                   MaxMem = "32G",
+#'                                   MaxModelsInGrid = 10,
+#'                                   model_path = NULL,
+#'                                   ModelID = "FirstModel",
+#'                                   NumOfParDepPlots = 3,
+#'                                   ReturnModelObjects = TRUE,
+#'                                   SaveModelObjects = FALSE,
+#'                                   IfSaveModel = "mojo")
+#' }
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @export
+AutoH2oDRFMultiClass <- function(data,
+                                 TestData = NULL,
+                                 TargetColumnName = NULL,
+                                 FeatureColNames = NULL,
+                                 eval_metric = "RMSE",
+                                 TrainSplitRatio = 0.80,
+                                 Trees = 50,
+                                 GridTune = FALSE,
+                                 MaxMem = "32G",
+                                 MaxModelsInGrid = 2,
+                                 model_path = NULL,
+                                 ModelID = "FirstModel",
+                                 NumOfParDepPlots = 3,
+                                 ReturnModelObjects = TRUE,
+                                 SaveModelObjects = FALSE,
+                                 IfSaveModel = "mojo") {
+
+  # MultiClass Ensure Packages are Available----
+  requireNamespace('data.table', quietly = TRUE)
+  if(!requireNamespace('h2o', quietly = TRUE)) {
+    return(warning("h2o needs to be installed. See documentation"))
+  } else {
+
+    # MultiClass Check Arguments----
+    if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
+    if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
+      warning("eval_metric not in AUC, logloss")
+
+    }
+    if(Trees < 1) warning("Trees must be greater than 1")
+    if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
+    if(MaxModelsInGrid < 1 & GridTune == TRUE) {
+      warning("MaxModelsInGrid needs to be at least 1")
+    }
+    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.character(ModelID)) warning("ModelID needs to be a character type")
+    if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
+    if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
+    if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
+    if(!(tolower(eval_metric) == "auc")) {
+      eval_metric <- tolower(eval_metric)
+    } else {
+      eval_metric <- toupper(eval_metric)
+    }
+    if(tolower(eval_metric) %chin% c("auc")) {
+      Decreasing <- TRUE
+    } else {
+      Decreasing <- FALSE
+    }
+
+    # MultiClass Ensure data is a data.table----
+    if(!data.table::is.data.table(data)) {
+      data <- data.table::as.data.table(data)
+    }
+
+    # MultiClass ModelDataPrep----
+    data <- ModelDataPrep(data = data,
+                          Impute = FALSE,
+                          CharToFactor = TRUE)
+
+    # MultiClass Target Name Storage----
+    if(is.character(TargetColumnName)) {
+      Target <- TargetColumnName
+    } else {
+      Target <- names(data)[TargetColumnName]
+    }
+
+    # MultiClass Ensure Target Is a Factor Type----
+    if(!is.factor(data[[eval(TargetColumnName)]])) {
+      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    }
+
+    # MultiClass Data Partition----
+    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
+      order(RANDOMNUMER)][
+        1:(nrow(data)*TrainSplitRatio)]
+    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
+    dataTrain[, RANDOMNUMER := NULL]
+    dataTest[, RANDOMNUMER := NULL]
+
+    # MultiClass Grid Tune Check----
+    if(GridTune) {
+
+      # MultiClass Start Up H2O----
+      h2o::h2o.init(
+        max_mem_size = MaxMem,
+        enable_assertions = FALSE)
+
+      # MultiClass Define data sets----
+      datatrain    <- h2o::as.h2o(dataTrain)
+      datavalidate <- h2o::as.h2o(dataTest)
+
+      # MultiClass Grid Tune Search Criteria----
+      search_criteria  <- list(
+        strategy             = "RandomDiscrete",
+        max_runtime_secs     = 3600*24*7,
+        max_models           = MaxModelsInGrid,
+        seed                 = 1234,
+        stopping_rounds      = 10,
+        stopping_metric      = eval_metric,
+        stopping_tolerance   = 1e-3)
+
+      # MultiClass Grid Parameters----
+      hyper_params <- list(
+        max_depth                        = c(6,9,12),
+        balance_classes                  = c(TRUE,FALSE),
+        sample_rate                      = c(0.5,0.75,1.0),
+        col_sample_rate_per_tree         = c(0.5,0.75,1.0),
+        col_sample_rate_change_per_level = c(0.9, 1.0, 1.1),
+        min_rows                         = c(1,5),
+        nbins                            = c(10,20,30),
+        nbins_cats                       = c(64,256,512),
+        histogram_type                   = c("UniformAdaptive",
+                                             "QuantilesGlobal",
+                                             "RoundRobin"))
+
+      # MultiClass Grid Train Model----
+      grid <- h2o::h2o.grid(
+        hyper_params         = hyper_params,
+        search_criteria      = search_criteria,
+        is_supervised        = TRUE,
+        algorithm            = "randomForest",
+        grid_id              = paste0(ModelID,"_Grid"),
+        x                    = FeatureColNames,
+        y                    = TargetColumnName,
+        ntrees               = Trees,
+        training_frame       = datatrain,
+        validation_frame     = datavalidate,
+        max_runtime_secs     = 3600*24*7,
+        stopping_rounds      = 10,
+        stopping_tolerance   = 1e-3,
+        stopping_metric      = eval_metric,
+        score_tree_interval  = 10,
+        seed                 = 1234)
+
+      # MultiClass Get Best Model----
+      Grid_Out   <- h2o::h2o.getGrid(
+        grid_id = paste0(ModelID,"_Grid"),
+        sort_by = eval_metric,
+        decreasing = Decreasing)
+
+      # MultiClass Collect Best Grid Model----
+      grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
+    }
+
+    # MultiClass Start Up H2O----
+    if(!GridTune) {
+      h2o::h2o.init(
+        max_mem_size = MaxMem,
+        enable_assertions = FALSE)
+
+      # MultiClass Define data sets----
+      datatrain    <- h2o::as.h2o(dataTrain)
+      datavalidate <- h2o::as.h2o(dataTest)
+    }
+
+    # MultiClass Build Baseline Model----
+    base_model <- h2o::h2o.randomForest(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      training_frame   = datatrain,
+      validation_frame = datavalidate,
+      model_id         = ModelID,
+      ntrees           = Trees)
+
+    # MultiClass Get Metrics----
+    if(GridTune) {
+      if(!is.null(TestData)) {
+        datatest        <-  h2o::as.h2o(TestData)
+        GridMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+      } else {
+        GridMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+      }
+    } else {
+      if(!is.null(TestData)) {
+        datatest    <- h2o::as.h2o(TestData)
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datatest)
+      } else {
+        BaseMetrics <- h2o::h2o.performance(model = base_model,
+                                            newdata = datavalidate)
+      }
+    }
+
+    # MultiClass Evaluate Metrics----
+    if(GridTune) {
+      if(tolower(eval_metric) == "logloss") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetrics@metrics$logloss
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm$table)
+        }
+      } else if(tolower(eval_metric) == "r2") {
+        BaseMetric <- BaseMetrics@metrics$r2
+        GridMetric <- GridMetrics@metrics$r2
+        if(GridMetric > BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm)
+        }
+      } else if(tolower(eval_metric) == "rmse") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm)
+        }
+      } else if(tolower(eval_metric) == "mse") {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        GridMetric <- GridMetrics@metrics$logloss
+        if(GridMetric < BaseMetric) {
+          FinalModel <- grid_model
+          EvalMetric <- GridMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            GridMetrics@metrics$cm$table)
+        } else {
+          FinalModel <- base_model
+          EvalMetric <- BaseMetric
+          ConfusionMatrix <- data.table::as.data.table(
+            BaseMetrics@metrics$cm$table)
+        }
+      }
+    } else {
+      if(tolower(eval_metric) == "logloss") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$logloss
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "r2") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$r2
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "rmse") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$RMSE
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      } else if(tolower(eval_metric) == "mse") {
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$MSE
+        ConfusionMatrix <- data.table::as.data.table(
+          BaseMetrics@metrics$cm$table)
+      }
+    }
+
+    # MultiClass Save Final Model----
+    if(SaveModelObjects) {
+      if(tolower(IfSaveModel) == "mojo") {
+        SaveModel <- h2o::h2o.saveMojo(
+          object = FinalModel,
+          path = model_path,
+          force = TRUE)
+        h2o::h2o.download_mojo(
+          model = FinalModel,
+          path = model_path,
+          get_genmodel_jar = TRUE,
+          genmodel_path = model_path,
+          genmodel_name = ModelID)
+      } else {
+        SaveModel <- h2o::h2o.saveModel(
+          object = FinalModel,
+          path = model_path,
+          force = TRUE)
+      }
+    }
+
+    # MultiClass Score Final Test Data----
+    if(!is.null(TestData)) {
+      Predict <- data.table::as.data.table(
+        h2o::h2o.predict(object = FinalModel,
+                         newdata = datatest))
+    } else {
+      Predict <- data.table::as.data.table(
+        h2o::h2o.predict(object = FinalModel,
+                         newdata = datavalidate))
+    }
+
+    # MultiClass Variable Importance----
+    VariableImportance <- data.table::as.data.table(
+      h2o::h2o.varimp(object = FinalModel))
+
+    # MultiClass Format Variable Importance Table----
+    data.table::setnames(VariableImportance,
+                         c("variable","relative_importance",
+                           "scaled_importance","percentage"),
+                         c("Variable","RelativeImportance",
+                           "ScaledImportance","Percentage"))
+    VariableImportance[, ':=' (
+      RelativeImportance = round(RelativeImportance, 4),
+      ScaledImportance = round(ScaledImportance, 4),
+      Percentage = round(Percentage, 4)
+    )]
+
+    # MultiClass Save Variable Importance----
+    if(SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,"_VariableImportance.csv"))
+    }
+
+    # MultiClass H2O Shutdown----
+    h2o::h2o.shutdown(prompt = FALSE)
+
+    # MultiClass Create Validation Data----
+    if(!is.null(TestData)) {
+      ValidationData <- data.table::as.data.table(
+        cbind(TestData, Predict))
+    } else {
+      ValidationData <- data.table::as.data.table(
+        cbind(dataTest, Predict))
+    }
+
+    # MultiClass Change Prediction Name----
+    data.table::setnames(ValidationData, "predict", "Predict")
+
+    # MultiClass Save Validation Data to File----
+    if(SaveModelObjects) {
+      data.table::fwrite(ValidationData,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    }
+
+    # MultiClass Save ConfusionMatrix to File----
+    if(SaveModelObjects) {
+      data.table::fwrite(ConfusionMatrix,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_EvaluationMetrics.csv"))
+    }
+
+    # MultiClass Return Objects----
+    if(ReturnModelObjects) {
+      return(
+        list(Model = FinalModel,
+             ValidationData = ValidationData,
+             EvaluationMetrics = ConfusionMatrix,
+             VariableImportance = VariableImportance))
     }
   }
 }
