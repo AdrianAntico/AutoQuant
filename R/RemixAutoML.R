@@ -15920,9 +15920,9 @@ AutoH2oDRFRegression <- function(data,
   }
 }
 
-#' AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation
+#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
@@ -15974,12 +15974,12 @@ AutoH2oDRFRegression <- function(data,
 #'                 ifelse(Independent_Variable2 < 0.6,  "C",
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' TestModel <- AutoH2oDRFRegression(data,
+#' TestModel <- AutoH2oDRFClassifier(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
 #'                                   Alpha = NULL,
-#'                                   eval_metric = "RMSE",
+#'                                   eval_metric = "auc",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
 #'                                   GridTune = FALSE,
