@@ -16,7 +16,7 @@ Contact: Adrian Antico
 LazyData: true
 RoxygenNote: 6.1.1
 Imports: data.table,foreach,doParallel,h2o,parallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics,ROCR
-Suggests: devtools,testthat,sde,knitr,rmarkdown,methods,catboost
+Suggests: devtools,testthat,sde,knitr,rmarkdown,methods
 Additional_repositories: https://github.com/catboost/catboost/tree/master/catboost/R-package
 VignetteBuilder: knitr
 Maintainer: Adrian Antico <adrianantico@gmail.com>
