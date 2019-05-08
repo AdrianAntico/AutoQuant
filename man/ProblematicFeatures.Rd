@@ -4,7 +4,7 @@
 \alias{ProblematicFeatures}
 \title{ProblematicFeatures identifies problematic features for machine learning}
 \usage{
-ProblematicFeatures(data, ColumnNumbers = c(1:10),
+ProblematicFeatures(data, ColumnNumbers = c(1:ncol(data)),
   NearZeroVarThresh = 0.05, CharUniqThresh = 0.5, NA_Rate = 0.2,
   Zero_Rate = 0.2, HighSkewThresh = 10)
 }
