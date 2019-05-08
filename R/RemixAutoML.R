@@ -214,7 +214,7 @@ utils::globalVariables(
 #' @return data table with new dummy variables columns and optionally removes base columns
 #' @export
 ProblematicFeatures <- function(data,
-                                ColumnNumbers = c(1:10),
+                                ColumnNumbers = c(1:ncol(data)),
                                 NearZeroVarThresh = 0.05,
                                 CharUniqThresh = 0.50,
                                 NA_Rate = 0.20,
@@ -251,7 +251,7 @@ ProblematicFeatures <- function(data,
       }
     }
 
-    if(exists("NumNearZeroVariance")) {
+    if(length(NumNearZeroVariance) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(NumNearZeroVariance))},
                     error = function(x) NA)
       if(dim(a)[1] != 0) {
@@ -283,7 +283,7 @@ ProblematicFeatures <- function(data,
         CharUniqueTooHigh[names(data)[i]] <- round(length(unique(data[[i]])) / xx,4)
       }
     }
-    if(exists("CharUniqueTooHigh")) {
+    if(length(CharUniqueTooHigh) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(CharUniqueTooHigh))},
                     error = function(x) NA)
       if(dim(a)[1] != 0) {
@@ -315,7 +315,7 @@ ProblematicFeatures <- function(data,
         LargeNAs[names(data)[i]] <- round(sum(is.na(data[[i]])) / xx,4)
       }
     }
-    if(exists("LargeNAs")) {
+    if(length(LargeNAs) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(LargeNAs))},
                     error = function(x) NA)
       if(dim(a)[1] != 0) {
@@ -344,7 +344,7 @@ ProblematicFeatures <- function(data,
         LargeZeros[names(data)[i]] <- round(data[get(names(data)[i]) == 0, .N] / xx,4)
       }
     }
-    if(exists("LargeZeros")) {
+    if(length(LargeZeros) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(LargeZeros))},
                     error = function(x) NA)
       if(dim(a)[1] != 0) {
@@ -386,7 +386,7 @@ ProblematicFeatures <- function(data,
         }
       }
     }
-    if(exists("HighSkew")) {
+    if(length(HighSkew) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(HighSkew))},
                     error = function(x) NA)
       if(dim(a)[1] != 0) {
@@ -408,7 +408,7 @@ ProblematicFeatures <- function(data,
   # LowVarianceFeatures Run----
   a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)},
                 error = function(x) NULL)
-  if(!is.na(a)) {
+  if(!is.null(a)) {
     z <- z + 1
     collect[[z]] <- a
   }
@@ -416,7 +416,7 @@ ProblematicFeatures <- function(data,
   # HighCardinalityFeatures Run----
   b <- tryCatch({HighCardinalityFeatures(data, CharUniqThresh = CharUniqThresh)},
                 error = function(x) NULL)
-  if(!is.na(b)) {
+  if(!is.null(b)) {
     z <- z + 1
     collect[[z]] <- b
   }
@@ -424,7 +424,7 @@ ProblematicFeatures <- function(data,
   # HighMissingCountFeatures Run----
   c <- tryCatch({HighMissingCountFeatures(data, NA_Rate = NA_Rate)},
                 error = function(x) NULL)
-  if(!is.na(c)) {
+  if(!is.null(c)) {
     z <- z + 1
     collect[[z]] <- c
   }
@@ -432,7 +432,7 @@ ProblematicFeatures <- function(data,
   # HighZeroCountFeatures Run----
   d <- tryCatch({HighZeroCountFeatures(data, Zero_Rate = Zero_Rate)},
                 error = function(x) NULL)
-  if(!is.na(d)) {
+  if(!is.null(d)) {
     z <- z + 1
     collect[[z]] <- d
   }
@@ -440,7 +440,7 @@ ProblematicFeatures <- function(data,
   # HighSkewFeatures Run----
   e <- tryCatch({HighSkewFeatures(data, HighSkewThresh = HighSkewThresh)},
                 error = function(x) NULL)
-  if(!is.na(e)) {
+  if(!is.null(e)) {
     z <- z + 1
     collect[[z]] <- e
   }
