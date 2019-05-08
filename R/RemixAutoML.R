@@ -15141,7 +15141,7 @@ AutoH2oGBMRegression <- function(data,
     # Regression Evaluation BoxPlot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
-                                  TargetColName = "Target",
+                                  TargetColName = TargetColumnName,
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -15781,7 +15781,7 @@ AutoH2oDRFRegression <- function(data,
     # Regression Evaluation BoxPlot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
-                                  TargetColName = "Target",
+                                  TargetColName = TargetColumnName,
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
