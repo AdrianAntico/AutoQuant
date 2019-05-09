@@ -63,13 +63,13 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 
-Automated time series modeling function. Automatically finds the most accurate time series model from the list of models below (using optimized box-cox transformations and tests both user-supplied time series frequency and model-based time series frequency). The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
+Automated time series modeling function. Automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations and tests both user-supplied time series frequency and model-based time series frequency). The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
 
-* Models include:
-  * DSHW: Double Seasonal Holt Winters
+* Automated Time Series Models include:
+  * DSHW: Double Seasonal Holt-Winters
   * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
-  * ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-  * ETS: Additive and Multiplicitive Exponential Smoothing and Holt Winters
+  * ARIMA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
+  * ETS: Additive and Multiplicative Exponential Smoothing and Holt-Winters
   * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
