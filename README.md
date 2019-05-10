@@ -67,7 +67,7 @@ Automated time series modeling function. Automatically finds the most accurate t
 
 * Automated Time Series Models include:
   * DSHW: Double Seasonal Holt-Winters
-  * ARIFIMA: Auto Regressive Fractional Integrated Moving Average
+  * ARFIMA: Auto Regressive Fractional Integrated Moving Average
   * ARIMA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
   * ETS: Additive and Multiplicative Exponential Smoothing and Holt-Winters
   * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
