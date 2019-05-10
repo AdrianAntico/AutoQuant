@@ -15184,40 +15184,40 @@ AutoH2oGBMRegression <- function(data,
         # Regression Grid Evaluation Metrics----
         if(tolower(metric) == "poisson") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Predict - Target * log(Predict + 1)]
+            ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "mae") {
-          ValidationData[, Metric := abs(Target - Predict)]
+          ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mape") {
-          ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
+          ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (Target + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mse") {
-          ValidationData[, Metric := (Target - Predict)^2]
+          ValidationData[, Metric := (get(TargetColumnName) - Predict)^2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "msle") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := (log(Target + 1) - log(Predict + 1))^2]
+            ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1))^2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "kl") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Target * log((Target + 1) /
-                                                      (Predict + 1))]
+            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
+                                                                     (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "cs") {
-          ValidationData[, ':=' (Metric1 = Target * Predict,
-                                 Metric2 = Target^2,
+          ValidationData[, ':=' (Metric1 = get(TargetColumnName) * Predict,
+                                 Metric2 = get(TargetColumnName)^2,
                                  Metric3 = Predict^2)]
           Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (
             sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (Target - mean(Target))^2,
-                                 Metric2 = (Target - Predict)^2)]
+          ValidationData[, ':=' (Metric1 = (get(TargetColumnName) - mean(Target))^2,
+                                 Metric2 = (get(TargetColumnName) - Predict)^2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
             ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
@@ -15653,7 +15653,7 @@ AutoH2oDRFRegression <- function(data,
 
     # Regression Pick Winner----
     if(GridTune) {
-      if(GridModelEval > BaseModelEval) {
+      if(GridModelEval < BaseModelEval) {
         FinalModel <- grid_model
       } else {
         FinalModel <- base_model
@@ -15824,40 +15824,40 @@ AutoH2oDRFRegression <- function(data,
         # Regression Grid Evaluation Metrics----
         if(tolower(metric) == "poisson") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Predict - Target * log(Predict + 1)]
+            ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "mae") {
-          ValidationData[, Metric := abs(Target - Predict)]
+          ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mape") {
-          ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
+          ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (Target + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mse") {
-          ValidationData[, Metric := (Target - Predict)^2]
+          ValidationData[, Metric := (get(TargetColumnName) - Predict)^2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "msle") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := (log(Target + 1) - log(Predict + 1))^2]
+            ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1))^2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "kl") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Target * log((Target + 1) /
-                                                      (Predict + 1))]
+            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
+                                                                     (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "cs") {
-          ValidationData[, ':=' (Metric1 = Target * Predict,
-                                 Metric2 = Target^2,
+          ValidationData[, ':=' (Metric1 = get(TargetColumnName) * Predict,
+                                 Metric2 = get(TargetColumnName)^2,
                                  Metric3 = Predict^2)]
           Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (
             sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (Target - mean(Target))^2,
-                                 Metric2 = (Target - Predict)^2)]
+          ValidationData[, ':=' (Metric1 = (get(TargetColumnName) - mean(Target))^2,
+                                 Metric2 = (get(TargetColumnName) - Predict)^2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
             ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
