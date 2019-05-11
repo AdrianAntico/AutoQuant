@@ -14761,8 +14761,8 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
+    data[, RANDOMNUMER := runif(nrow(data))]
+    dataTrain <- data[order(RANDOMNUMER)][
         1:(nrow(data)*TrainSplitRatio)]
     dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
     dataTrain[, RANDOMNUMER := NULL]
@@ -15477,9 +15477,9 @@ AutoH2oDRFRegression <- function(data,
     MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
+    data[, RANDOMNUMER := runif(nrow(data))]
+    dataTrain <- data[order(RANDOMNUMER)][
+      1:(nrow(data)*TrainSplitRatio)]
     dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
     dataTrain[, RANDOMNUMER := NULL]
     dataTest[, RANDOMNUMER := NULL]
@@ -16100,9 +16100,9 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
+    data[, RANDOMNUMER := runif(nrow(data))]
+    dataTrain <- data[order(RANDOMNUMER)][
+      1:(nrow(data)*TrainSplitRatio)]
     dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
     dataTrain[, RANDOMNUMER := NULL]
     dataTest[, RANDOMNUMER := NULL]
@@ -17209,13 +17209,13 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
+    data[, RANDOMNUMER := runif(nrow(data))]
+    dataTrain <- data[order(RANDOMNUMER)][
+      1:(nrow(data)*TrainSplitRatio)]
     dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
     dataTrain[, RANDOMNUMER := NULL]
     dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMER := NULL]
+    data[, RANDOMNUMBER := NULL]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -17705,13 +17705,13 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
+    data[, RANDOMNUMER := runif(nrow(data))]
+    dataTrain <- data[order(RANDOMNUMER)][
+      1:(nrow(data)*TrainSplitRatio)]
     dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
     dataTrain[, RANDOMNUMER := NULL]
     dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMER := NULL]
+    data[, RANDOMNUMBER := NULL]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
