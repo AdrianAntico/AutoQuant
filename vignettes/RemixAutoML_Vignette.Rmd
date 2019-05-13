@@ -37,16 +37,18 @@ The two core packages RemixAutoML relies on are H2O and data.table. There are ot
 The package is designed to give your models to the best chance at being the most accurate for your machine learning tasks. There are functions in here to help you get the most out of your data for the models to take advantage of. There are three types of features you need to manage for machine learning: numeric, factor, and text data. The functions in here will help you squeeze as much information out of your data set as possible. Then you feed those data sets into the best machine learning algorithms where you can automatically grid-tune and let them compete against each other. 
 
 ### **Handling numerical features**
-The typical challenge with numerical data is modeling nonlinear relationships. The models used handle that aspect so you don't have to worry about it. Interactions of numerical data are also handled internally as tree-based models and deep learning do well at capturing those relationships. The areas of numerical data typically missed relates to the effect of numerical features across time. The existence of a specific value can have impacts over time. Trends in the features and target are also predictive of future events. The length of history you account for also matters. The _GDL_ functions will let you generate lags from the target variable and other numeric features, along with rolling statistics on the target variable and other numerical features. You can also specify to return information about the numerical time between records and generate their lags and rolling statistics on the target and other numerical features. 
+Numerical features can hide relationships in a variety of ways and it's our goal as modeling professionals (or researchers) to capture as many of those relationships as we can (or enough to provide a sufficient return on investment). We have linear and nonlinear relationships, linear and nonlinear interactions, along with threshold effects. Those are what I call column-based model effects. Nowadays, you don't really have to bother with any of those when using tree-based ensembles (boosting and bagging) as those relationships can be captured without the need to manual create features to account for their peculiarities. However, there is still a significant amount of potential information to be extracted from your data if you don't account for time-based effects. In the business world, many applications require modeling data that is collected across time (think transactional data). With time series data (or panel data), where data is collected (or manipulated to be) across equally spaced time periods (hourly, daily, etc.), you tend to look at lags and moving averages of your target variable for predicting the present and future events. Well, why aren't we using the same type of features in our transaction data? That's where we offer our '_GDL_' suite of functions. They are designed to create lags and rolling statistics off of numeric target variables and numeric independent variables, by groups. They can also generate lags and rolling statistics off of the time between events, by groups. This is what I call row-based model effects. Any nonlinearities and interactions will be captured by the tree-based ensembles. 
+
+Taking this a step further, there is a concept out there called target encoding. What's done, essentially, is that the mean of the target is used as a replacement for factor levels, thus converting your factor variables into numeric variables. I generally have two problems with this. For one thing, there is inherent forward leak because you are using all values across time to predict values that occur historically. Second, it fails to account for all the other information in your data to be used in the transformation process. If you used the '_GDL_' suite of functions, you can do your target encoding without any forward leak (they are forced to prevent this), but you will also be able to utilize various window sizes (opposed to full history) to capture recent trends or cyclical effects, and do the same thing based on your independent various that have effects distributed across time.
 
 ### **Handling categorical features**
-In other modeling frameworks, such as Python, you need to convert your categorical features into dummy variables. This means you need to take care of that coding task along with managing that in a production environment. With this package, categorical features are handled internally within the modeling function **AutoH2OModeler()**. Turning your categorical features into dummy variables in problematic for high cardinality factor variables. There are other approaches and the AutoH20Modeler will actually test out the other methods to see which ones offer the best performance. So you don't have to deal with the coding and management of factor variables and you get better performance.
+In other modeling frameworks, such as Python, you need to convert your categorical features into dummy variables. This means you need to take care of that coding task along with managing that in a production environment. With this package, categorical features are handled internally within the automated modeling functions. Turning your categorical features into dummy variables is problematic for high cardinality factor variables. There are other approaches and the automated modeling functions will actually test out the other methods to see which ones offer the best performance. So you don't have to deal with the coding and management of factor variables and you get better performance. Of course, if you're working with time-based data, I would recommend using the '_GDL_' suite of functions to convert your factor variables to numeric to prevent forward leak and to not miss out on all that sweet information to be gained!
 
 ### **Handling text data**
-We are living in a world now where text data is becoming more readily available. Now, you can simply run the **AutoWord2VecModeler()** function to build models for all your text columns, save the models, and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
+We are living in a world now where text data is becoming more readily available and your machine learning models aren't suited to handle them without first managing them. With this package, you can simply run the **AutoWord2VecModeler()** function, which builds skip-gram models, for all your text columns, thus replacing your text data with numerical vectors suitable for modeling. The function will save the models and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
 
 ### **Machine learning algorithms**
-I've seen several packages and automated machine learning software that brags about all the models they have available. However, when you've been doing this work as long as I have, you eventually realize that most of the models out there aren't competitive. In fact, H2O was smart not to go after all the possible algorithms out there and instead focused on enhancing the models with a track record of being the best for regression, quantile regression, classification, and multinomial classification. The grid-tuning capabilities are exellent for squeezing that last drop of gain out of your machine learning project. Most of the gains with come from the feature engineering but you won't be able to squeeze more gains out of other package models. On top of that, you can manage the amount of memory and threads you are willing to use for your machine learning tasks and when you work in a shared environment, that can come in handy. Besides H2O, we have a few automated catboost models available as well. One for classification tasks and one for regression tasks (which includes quantile regression). Catboost has the added benefit of being able to train using a GPU and the performance gains are quite significant. The accuracies are also the most competitive I've seen thus far. 
+The machine learning algorithms available have been demonstrated to provide optimial performance on a wide-range of business use-cases over the years. They are all intended to remove the coding aspects behind tuning, evaluation, and interpretation, along with consistent output for comparison amongst them. 
 
 ### **Interpreting your models**
 Once you have your models developed, you or a boss may want to see what features are most important and their relationship to the target variable. The functions available are also run internally to build out partial dependence calibration plots. These show you the modeled predicted relationship along with the empirical relationship in the same graph to show the end user how accurate the relationship is what the relationship is (even for categorical variables). Variable importance tables are also available to view along with evaluation calibration plots and boxplots.  
@@ -70,8 +72,8 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - Automated Unsupervised Learning
 - Automated Model Evaluation 
 - Automated Feature Interpretation
-- Automated Cost Sensitive Optimization
 - Automated Feature Engineering
+- Automated Cost Sensitive Optimization
 - A Few Miscellaneous Functions
 
 ## **Automated Supervised Learning Functions**
@@ -81,9 +83,12 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoH2oGBMClassifier()`
 - `AutoH2oDRFClassifier()`
 - `AutoCatBoostMultiClass()`
+- `AutoH2oGBMMultiClass()`
+- `AutoH2oDRFMultiClass()`
 - `AutoCatBoostRegression()`
 - `AutoH2oGBMRegression()`
 - `AutoH2oDRFRegression()`
+- `AutoXGBoostRegression()`
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
@@ -112,6 +117,15 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 #### **AutoH2oGBMClassifier()**
 AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 
+#### **AutoH2oGBMMultiClass()**
+AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
+
+#### **AutoH2oDRFMultiClass()**
+AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
+
+#### **AutoXGBoostRegression()**
+AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid arguments, grid results, and column names used in model fitting.
+
 #### **AutoH2OModeler()**
 The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
 
@@ -129,6 +143,98 @@ This function will automatically score your winning model. Simply feed in your d
 
 #### **AutoNLS()**
 This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table. The competing models include: Asymptotic, Asymptotic through origin, Asymptotic with offset, Bi-exponential, Four parameter logistic, Three parameter logistic, Gompertz, Michal Menton, Weibull, Polynomial regression or monotonic regression.
+
+### Example of **AutoXGBoostRegression()**
+
+Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
+
+```{r, fig.show='hold', fig.width=6, fig.height=4}
+library(RemixAutoML)
+
+# Create Simulated Data to Demonstrate Modeling
+Correl <- 0.85
+N <- 10000
+data <- data.table::data.table(Target = runif(N))
+data[, x1 := qnorm(Target)]
+data[, x2 := runif(N)]
+data[, Independent_Variable1 := log(pnorm(Correl * x1 +
+                                            sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable2 := (pnorm(Correl * x1 +
+                                         sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
+                                            sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
+                                                sqrt(1-Correl^2) * qnorm(x2))))]
+data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
+                                             sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable6 := (pnorm(Correl * x1 +
+                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+data[, Independent_Variable7 := (pnorm(Correl * x1 +
+                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+data[, Independent_Variable8 := (pnorm(Correl * x1 +
+                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+data[, Independent_Variable9 := (pnorm(Correl * x1 +
+                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
+data[, Independent_Variable10 := (pnorm(Correl * x1 +
+                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
+data[, Independent_Variable11 := as.factor(
+  ifelse(Independent_Variable2 < 0.20, "A",
+         ifelse(Independent_Variable2 < 0.40, "B",
+                ifelse(Independent_Variable2 < 0.6,  "C",
+                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data[, ':=' (x1 = NULL, x2 = NULL)]
+
+# Create Train and Test Data
+data <- data.table::rbindlist(list(data,data))
+test <- data[5001:10000]
+data <- data[1:5000]
+
+# Build Models
+TestModel <- RemixAutoML::AutoXGBoostRegression(data,
+                                   TestData = test,
+                                   TargetColumnName = 1,
+                                   FeatureColNames = 2:12,
+                                   CatFeatures = 12,
+                                   TrainSplitRatio = 0.80,
+                                   eval_metric = "RMSE",
+                                   Trees = 50,
+                                   GridTune = TRUE,
+                                   grid_eval_metric = "mae",
+                                   MaxModelsInGrid = 10,
+                                   NThreads = 8,
+                                   TreeMethod = "hist",
+                                   model_path = NULL,
+                                   ModelID = "FirstModel",
+                                   NumOfParDepPlots = 3,
+                                   Verbose = 0,
+                                   ReturnModelObjects = TRUE,
+                                   SaveModelObjects = FALSE)
+
+# Evaluation metrics
+TestModel$EvaluationMetrics
+
+# Variable Importance
+TestModel$VariableImportance
+
+# Grid List of Arguments Tested
+TestModel$GridList
+
+# Metrics from Grid Tuning
+TestModel$GridMetrics
+
+# Evaluation Calibration Plot
+TestModel$EvaluationPlot
+
+# Evaluation Calibration BoxPlot
+TestModel$EvaluationBoxPlot
+
+# Partial Dependence Calibration Plot
+TestModel$PartialDependencePlots$Independent_Variable1
+
+# Partial Dependence Calibration BoxPlot
+TestModel$PartialDependenceBoxPlots$Independent_Variable1
+
+```
 
 ### Example of **AutoNLS()**
 
@@ -210,35 +316,49 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 library(RemixAutoML)
 
 # From WalMart data in vignette folder: Store 1 and Department 1
-dates <- c("2010-02-05","2010-02-12","2010-02-19","2010-02-26","2010-03-05","2010-03-12","2010-03-19","2010-03-26","2010-04-02",
-           "2010-04-09","2010-04-16","2010-04-23","2010-04-30","2010-05-07","2010-05-14","2010-05-21","2010-05-28","2010-06-04",
-           "2010-06-11","2010-06-18","2010-06-25","2010-07-02","2010-07-09","2010-07-16","2010-07-23","2010-07-30","2010-08-06",
-           "2010-08-13","2010-08-20","2010-08-27","2010-09-03","2010-09-10","2010-09-17","2010-09-24","2010-10-01","2010-10-08",
-           "2010-10-15","2010-10-22","2010-10-29","2010-11-05","2010-11-12","2010-11-19","2010-11-26","2010-12-03","2010-12-10",
-           "2010-12-17","2010-12-24","2010-12-31","2011-01-07","2011-01-14","2011-01-21","2011-01-28","2011-02-04","2011-02-11",
-           "2011-02-18","2011-02-25","2011-03-04","2011-03-11","2011-03-18","2011-03-25","2011-04-01","2011-04-08","2011-04-15",
-           "2011-04-22","2011-04-29","2011-05-06","2011-05-13","2011-05-20","2011-05-27","2011-06-03","2011-06-10","2011-06-17",
-           "2011-06-24","2011-07-01","2011-07-08","2011-07-15","2011-07-22","2011-07-29","2011-08-05","2011-08-12","2011-08-19",
-           "2011-08-26","2011-09-02","2011-09-09","2011-09-16","2011-09-23","2011-09-30","2011-10-07","2011-10-14","2011-10-21",
-           "2011-10-28","2011-11-04","2011-11-11","2011-11-18","2011-11-25","2011-12-02","2011-12-09","2011-12-16","2011-12-23",
-           "2011-12-30","2012-01-06","2012-01-13","2012-01-20","2012-01-27","2012-02-03","2012-02-10","2012-02-17","2012-02-24",
-           "2012-03-02","2012-03-09","2012-03-16","2012-03-23","2012-03-30","2012-04-06","2012-04-13","2012-04-20","2012-04-27",
-           "2012-05-04","2012-05-11","2012-05-18","2012-05-25","2012-06-01","2012-06-08","2012-06-15","2012-06-22","2012-06-29",
-           "2012-07-06","2012-07-13","2012-07-20","2012-07-27","2012-08-03","2012-08-10","2012-08-17","2012-08-24","2012-08-31",
-           "2012-09-07","2012-09-14","2012-09-21","2012-09-28","2012-10-05","2012-10-12","2012-10-19","2012-10-26")
+dates <- c("2010-02-05","2010-02-12","2010-02-19","2010-02-26","2010-03-05","2010-03-12",
+           "2010-03-19","2010-03-26","2010-04-02","2010-04-09","2010-04-16","2010-04-23",
+           "2010-04-30","2010-05-07","2010-05-14","2010-05-21","2010-05-28","2010-06-04",
+           "2010-06-11","2010-06-18","2010-06-25","2010-07-02","2010-07-09","2010-07-16",
+           "2010-07-23","2010-07-30","2010-08-06","2010-08-13","2010-08-20","2010-08-27",
+           "2010-09-03","2010-09-10","2010-09-17","2010-09-24","2010-10-01","2010-10-08",
+           "2010-10-15","2010-10-22","2010-10-29","2010-11-05","2010-11-12","2010-11-19",
+           "2010-11-26","2010-12-03","2010-12-10","2010-12-17","2010-12-24","2010-12-31",
+           "2011-01-07","2011-01-14","2011-01-21","2011-01-28","2011-02-04","2011-02-11",
+           "2011-02-18","2011-02-25","2011-03-04","2011-03-11","2011-03-18","2011-03-25",
+           "2011-04-01","2011-04-08","2011-04-15","2011-04-22","2011-04-29","2011-05-06",
+           "2011-05-13","2011-05-20","2011-05-27","2011-06-03","2011-06-10","2011-06-17",
+           "2011-06-24","2011-07-01","2011-07-08","2011-07-15","2011-07-22","2011-07-29",
+           "2011-08-05","2011-08-12","2011-08-19","2011-08-26","2011-09-02","2011-09-09",
+           "2011-09-16","2011-09-23","2011-09-30","2011-10-07","2011-10-14","2011-10-21",
+           "2011-10-28","2011-11-04","2011-11-11","2011-11-18","2011-11-25","2011-12-02",
+           "2011-12-09","2011-12-16","2011-12-23","2011-12-30","2012-01-06","2012-01-13",
+           "2012-01-20","2012-01-27","2012-02-03","2012-02-10","2012-02-17","2012-02-24",
+           "2012-03-02","2012-03-09","2012-03-16","2012-03-23","2012-03-30","2012-04-06",
+           "2012-04-13","2012-04-20","2012-04-27","2012-05-04","2012-05-11","2012-05-18",
+           "2012-05-25","2012-06-01","2012-06-08","2012-06-15","2012-06-22","2012-06-29",
+           "2012-07-06","2012-07-13","2012-07-20","2012-07-27","2012-08-03","2012-08-10",
+           "2012-08-17","2012-08-24","2012-08-31","2012-09-07","2012-09-14","2012-09-21",
+           "2012-09-28","2012-10-05","2012-10-12","2012-10-19","2012-10-26")
 
-weekly_sales <- c(24924.50,46039.49,41595.55,19403.54,21827.90,21043.39,22136.64,26229.21,57258.43,42960.91,17596.96,16145.35,
-                  16555.11,17413.94,18926.74,14773.04,15580.43,17558.09,16637.62,16216.27,16328.72,16333.14,17688.76,17150.84,
-                  15360.45,15381.82,17508.41,15536.40,15740.13,15793.87,16241.78,18194.74,19354.23,18122.52,20094.19,23388.03,
-                  26978.34,25543.04,38640.93,34238.88,19549.39,19552.84,18820.29,22517.56,31497.65,44912.86,55931.23,19124.58,
-                  15984.24,17359.70,17341.47,18461.18,21665.76,37887.17,46845.87,19363.83,20327.61,21280.40,20334.23,20881.10,
-                  20398.09,23873.79,28762.37,50510.31,41512.39,20138.19,17235.15,15136.78,15741.60,16434.15,15883.52,14978.09, 
-                  15682.81,15363.50,16148.87,15654.85,15766.60,15922.41,15295.55,14539.79,14689.24,14537.37,15277.27,17746.68,
-                  18535.48,17859.30,18337.68,20797.58,23077.55,23351.80,31579.90,39886.06,18689.54,19050.66,20911.25,25293.49,
-                  33305.92,45773.03,46788.75,23350.88,16567.69,16894.40,18365.10,18378.16,23510.49,36988.49,54060.10,20124.22,
-                  20113.03,21140.07,22366.88,22107.70,28952.86,57592.12,34684.21,16976.19,16347.60,17147.44,18164.20,18517.79,
-                  16963.55,16065.49,17666.00,17558.82,16633.41,15722.82,17823.37,16566.18,16348.06,15731.18,16628.31,16119.92,
-                  17330.70,16286.40,16680.24,18322.37,19616.22,19251.50,18947.81,21904.47,22764.01,24185.27,27390.81)
+weekly_sales <- c(24924.50,46039.49,41595.55,19403.54,21827.90,21043.39,22136.64,26229.21,
+                  57258.43,42960.91,17596.96,16145.35,16555.11,17413.94,18926.74,14773.04,
+                  15580.43,17558.09,16637.62,16216.27,16328.72,16333.14,17688.76,17150.84,
+                  15360.45,15381.82,17508.41,15536.40,15740.13,15793.87,16241.78,18194.74,
+                  19354.23,18122.52,20094.19,23388.03,26978.34,25543.04,38640.93,34238.88,
+                  19549.39,19552.84,18820.29,22517.56,31497.65,44912.86,55931.23,19124.58,
+                  15984.24,17359.70,17341.47,18461.18,21665.76,37887.17,46845.87,19363.83,
+                  20327.61,21280.40,20334.23,20881.10,20398.09,23873.79,28762.37,50510.31,
+                  41512.39,20138.19,17235.15,15136.78,15741.60,16434.15,15883.52,14978.09,
+                  15682.81,15363.50,16148.87,15654.85,15766.60,15922.41,15295.55,14539.79,
+                  14689.24,14537.37,15277.27,17746.68,18535.48,17859.30,18337.68,20797.58,
+                  23077.55,23351.80,31579.90,39886.06,18689.54,19050.66,20911.25,25293.49,
+                  33305.92,45773.03,46788.75,23350.88,16567.69,16894.40,18365.10,18378.16,
+                  23510.49,36988.49,54060.10,20124.22,20113.03,21140.07,22366.88,22107.70,
+                  28952.86,57592.12,34684.21,16976.19,16347.60,17147.44,18164.20,18517.79,
+                  16963.55,16065.49,17666.00,17558.82,16633.41,15722.82,17823.37,16566.18,
+                  16348.06,15731.18,16628.31,16119.92,17330.70,16286.40,16680.24,18322.37,
+                  19616.22,19251.50,18947.81,21904.47,22764.01,24185.27,27390.81)
 
 # Convert to data.table
 data <- data.table::data.table(Date = dates, Weekly_Sales = weekly_sales)
