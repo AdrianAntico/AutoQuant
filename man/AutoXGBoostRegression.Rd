@@ -2,14 +2,14 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoXGBoostRegression}
 \alias{AutoXGBoostRegression}
-\title{AutoXGBoostRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, CatFeatures = NULL, TrainSplitRatio = 0.8,
   eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", TreeMethod = "hist",
   MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ModelID = "FirstModel", NumOfParDepPlots = 3, Verbose = 0,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
 }
 \arguments{
@@ -40,6 +40,8 @@ AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 \item{ModelID}{A character string to name your model and output}
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
+
+\item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
