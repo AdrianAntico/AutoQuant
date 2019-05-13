@@ -25,11 +25,13 @@ AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"}
 
 \item{Trees}{The maximum number of trees you want in your models}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{grid_eval_metric}{Choose from "poisson","mae","mape","mse","msle","kl","cs","r2"}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
@@ -123,7 +125,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
+  \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
+  \code{\link{AutoXGBoostClassifier}}
 }
 \author{
 Adrian Antico
