@@ -126,7 +126,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
+  \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
+  \code{\link{AutoXGBoostRegression}}
 }
 \author{
 Adrian Antico

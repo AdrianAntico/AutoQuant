@@ -97,7 +97,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}, \code{\link{AutoTS}}
+  \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
+  \code{\link{AutoXGBoostRegression}}
 }
 \author{
 Adrian Antico

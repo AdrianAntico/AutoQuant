@@ -101,7 +101,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}
+  \code{\link{AutoRecommender}},
+  \code{\link{AutoXGBoostRegression}}
 }
 \author{
 Adrian Antico and Douglas Pestana
