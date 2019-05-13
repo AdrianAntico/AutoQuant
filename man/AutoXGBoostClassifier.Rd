@@ -25,11 +25,13 @@ AutoXGBoostClassifier(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
 
 \item{Trees}{The maximum number of trees you want in your models}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{grid_eval_metric}{Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
