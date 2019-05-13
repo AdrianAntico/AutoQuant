@@ -1,24 +1,77 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Authors@R: c(
-  person("Adrian","Antico",role=c("aut","cre"), email="adrianantico@gmail.com"),
-  person("Douglas","Pestana", role="aut", email="douglas.pestana@remix.institute"))
 Version: 1.2.1
-Description: Automates and ensures high quality output for most of your machine learning and data science tasks. The package contains high quality functions that run at efficient speed with minimal memory constraints for supervised learning, unsupervised learning, feature engineering, model evaluation and interpretation, along with some helper functions for graphing. AutoCatBoostClassifier and AutoCatBoostRegression have a dependency to the catboost package which isn't part of the CRAN repository at the time of this writing. The link to the catboost URL to download the package for use is in the Additional_repositories field below, which has the installation instructions. You need to install that package to make use of the AutoCatBoost_ functions. 
-Depends: R (>= 3.5.0)
-SystemRequirements: Java (>= 7.0)
+Date: 2019-05-01
+Authors@R: 
+    c(person(given = "Adrian",
+             family = "Antico",
+             role = c("aut", "cre"),
+             email = "adrianantico@gmail.com"),
+      person(given = "Douglas",
+             family = "Pestana",
+             role = "aut",
+             email = "douglas.pestana@remix.institute"))
+Maintainer: Adrian Antico <adrianantico@gmail.com>
+Description: Automates and ensures high quality output for most
+    of your machine learning and data science tasks. The package contains
+    high quality functions that run at efficient speed with minimal memory
+    constraints for supervised learning, unsupervised learning, feature
+    engineering, model evaluation and interpretation, along with some
+    helper functions for graphing. AutoCatBoostClassifier and
+    AutoCatBoostRegression have a dependency to the catboost package which
+    isn't part of the CRAN repository at the time of this writing. The
+    link to the catboost URL to download the package for use is in the
+    Additional_repositories field below, which has the installation
+    instructions. You need to install that package to make use of the
+    AutoCatBoost_ functions.
 License: MPL-2.0
-Encoding: UTF-8
-Language: en-US
 URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    base,
+    catboost,
+    caTools,
+    data.table,
+    doParallel,
+    foreach,
+    forecast,
+    ggplot2,
+    grid,
+    h2o,
+    xgboost,
+    itertools,
+    lubridate,
+    methods,
+    monreg,
+    parallel,
+    pROC,
+    RColorBrewer,
+    recommenderlab,
+    ROCR,
+    scatterplot3d,
+    stats,
+    stringr,
+    tm,
+    tsoutliers,
+    utils,
+    wordcloud,
+    zoo
+Suggests: 
+    knitr,
+    rmarkdown,
+    sde,
+    testthat
+VignetteBuilder: 
+    knitr
+Additional_repositories: 
+    https://github.com/catboost/catboost/tree/master/catboost/R-package
 Contact: Adrian Antico
+Encoding: UTF-8
+Language: en-US
 LazyData: true
-RoxygenNote: 6.1.1
-Imports: data.table,foreach,doParallel,h2o,parallel,itertools,recommenderlab,ggplot2,forecast,tsoutliers,lubridate,zoo,caTools,pROC,scatterplot3d,RColorBrewer,grid,monreg,stringr,tm,wordcloud,graphics,ROCR
-Suggests: devtools,testthat,sde,knitr,rmarkdown,methods
-VignetteBuilder: knitr
-Maintainer: Adrian Antico <adrianantico@gmail.com>
-Date: 2019-05-01
 NeedsCompilation: no
 Packaged: 2019-05-01
+RoxygenNote: 6.1.1
+SystemRequirements: Java (>= 7.0)
