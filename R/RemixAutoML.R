@@ -12791,7 +12791,9 @@ AutoCatBoostClassifier <- function(data,
     if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -13462,7 +13464,9 @@ AutoCatBoostRegression <- function(data,
     if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -14133,7 +14137,9 @@ AutoCatBoostMultiClass <- function(data,
     if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
     if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
@@ -14705,7 +14711,9 @@ AutoH2oGBMRegression <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -15418,7 +15426,9 @@ AutoH2oDRFRegression <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -16024,7 +16034,9 @@ AutoH2oGBMClassifier <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -16582,7 +16594,9 @@ AutoH2oDRFClassifier <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -17138,7 +17152,9 @@ AutoH2oGBMMultiClass <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -17634,7 +17650,9 @@ AutoH2oDRFMultiClass <- function(data,
     if(MaxModelsInGrid < 1 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -18039,6 +18057,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @examples
@@ -18114,6 +18133,7 @@ AutoXGBoostRegression <- function(data,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
                                   NumOfParDepPlots = 3,
+                                  Verbose = 0,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE) {
 
@@ -18139,7 +18159,9 @@ AutoXGBoostRegression <- function(data,
     if(MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
       warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
     }
-    if(!is.character(model_path)) warning("model_path needs to be a character type")
+    if(!is.null(model_path)) {
+      if(!is.character(model_path)) warning("model_path needs to be a character type")
+    }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
@@ -18301,11 +18323,21 @@ AutoXGBoostRegression <- function(data,
         }
 
         # Regression Grid Train Model----
-        model <- xgboost::xgb.train(params = base_params,
-                                    data = datatrain,
-                                    watchlist = EvalSets,
-                                    nrounds = Trees,
-                                    early_stopping_rounds = 10)
+        if(Verbose == 0) {
+          model <- xgboost::xgb.train(params = base_params,
+                                      data = datatrain,
+                                      watchlist = EvalSets,
+                                      nrounds = Trees,
+                                      verbose = Verbose,
+                                      early_stopping_rounds = 10)
+        } else {
+          model <- xgboost::xgb.train(params = base_params,
+                                      data = datatrain,
+                                      watchlist = EvalSets,
+                                      nrounds = Trees,
+                                      early_stopping_rounds = 10)
+        }
+
 
         # Regression Grid Score Model----
         if(!is.null(TestData)) {
@@ -18415,11 +18447,20 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Train Final Model----
-    model <- xgboost::xgb.train(params = base_params,
-                                data = datatrain,
-                                watchlist = EvalSets,
-                                nrounds = Trees,
-                                early_stopping_rounds = 10)
+    if(Verbose == 0) {
+      model <- xgboost::xgb.train(params = base_params,
+                                  data = datatrain,
+                                  watchlist = EvalSets,
+                                  nrounds = Trees,
+                                  verbose = Verbose,
+                                  early_stopping_rounds = 10)
+    } else {
+      model <- xgboost::xgb.train(params = base_params,
+                                  data = datatrain,
+                                  watchlist = EvalSets,
+                                  nrounds = Trees,
+                                  early_stopping_rounds = 10)
+    }
 
     # Regression Save Model----
     if(SaveModelObjects) {
