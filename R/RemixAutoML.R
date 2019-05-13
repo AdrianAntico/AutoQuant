@@ -18629,6 +18629,12 @@ AutoXGBoostRegression <- function(data,
                                                     "_GridCollect.csv"))
     }
 
+    # Regression Remove Extraneous Variables----
+    ValidationData[, ':=' (Metric = NULL,
+                           Metric1 = NULL,
+                           Metric2 = NULL,
+                           Metric3 = NULL)]
+
     # Regression Return Model Objects----
     if(GridTune) {
       if(ReturnModelObjects) {
