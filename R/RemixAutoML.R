@@ -13186,7 +13186,7 @@ AutoCatBoostClassifier <- function(data,
       # Binary Evaluation Calibration Plot----
       EvaluationPlot <- EvalPlot(data = ValidationData,
                                  PredictionColName = "p1",
-                                 TargetColName = "Target",
+                                 TargetColName = Target,
                                  GraphType = "calibration",
                                  PercentileBucket = 0.05,
                                  aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -13293,7 +13293,7 @@ AutoCatBoostClassifier <- function(data,
           Out <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "p1",
-            TargetColName = "Target",
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "calibration",
             PercentileBucket = 0.05,
@@ -13669,10 +13669,6 @@ AutoCatBoostRegression <- function(data,
               cbind(Target = TestTarget, Predicted = predict))
           }
 
-          # Regression Metric Collection Table----
-          GridCollect <- data.table::data.table(ParamRow = 1:(1 + MaxModelsInGrid),
-                                                EvalStat = rep("a", MaxModelsInGrid + 1))
-
           # Regression Grid Evaluation Metrics----
           if(tolower(grid_eval_metric) == "poisson") {
             if(MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
@@ -13727,7 +13723,7 @@ AutoCatBoostRegression <- function(data,
 
       # Regression Define Final Model Parameters----
       if(GridTune) {
-        if(grid_eval_metric %chin% c("auc","tpr","tnr","prbe","f","odds")) {
+        if(grid_eval_metric %chin% c("poisson","mae","mape","mse","msle","kl","cs","r2")) {
           BestGrid <- GridCollect[order(-EvalStat)][1,ParamRow]
           if(BestGrid == 1) {
             BestThresh <- GridCollect[order(-EvalStat)][1,EvalStat]
@@ -13830,7 +13826,7 @@ AutoCatBoostRegression <- function(data,
       # Regression Evaluation Calibration Plot----
       EvaluationPlot <- EvalPlot(data = ValidationData,
                                  PredictionColName = "Predict",
-                                 TargetColName = "Target",
+                                 TargetColName = Target,
                                  GraphType = "calibration",
                                  PercentileBucket = 0.05,
                                  aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -13851,7 +13847,7 @@ AutoCatBoostRegression <- function(data,
       # Regression Evaluation Calibration Plot----
       EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                     PredictionColName = "Predict",
-                                    TargetColName = "Target",
+                                    TargetColName = Target,
                                     GraphType = "boxplot",
                                     PercentileBucket = 0.05,
                                     aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -13956,7 +13952,7 @@ AutoCatBoostRegression <- function(data,
           Out <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = "Target",
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "calibration",
             PercentileBucket = 0.05,
@@ -13970,7 +13966,7 @@ AutoCatBoostRegression <- function(data,
           Out1 <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = "Target",
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "boxplot",
             PercentileBucket = 0.05,
@@ -15097,7 +15093,7 @@ AutoH2oGBMRegression <- function(data,
     if(!is.null(Alpha)) {
       EvaluationPlot <- EvalPlot(data = ValidationData,
                                  PredictionColName = "Predict",
-                                 TargetColName = TargetColumnName,
+                                 TargetColName = Target,
                                  GraphType = "calibration",
                                  PercentileBucket = 0.05,
                                  aggrfun = function(x) quantile(x,
@@ -15106,7 +15102,7 @@ AutoH2oGBMRegression <- function(data,
     } else {
       EvaluationPlot <- EvalPlot(data = ValidationData,
                                  PredictionColName = "Predict",
-                                 TargetColName = TargetColumnName,
+                                 TargetColName = Target,
                                  GraphType = "calibration",
                                  PercentileBucket = 0.05,
                                  aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -15141,7 +15137,7 @@ AutoH2oGBMRegression <- function(data,
     # Regression Evaluation BoxPlot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
-                                  TargetColName = TargetColumnName,
+                                  TargetColName = Target,
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -15247,7 +15243,7 @@ AutoH2oGBMRegression <- function(data,
           Out <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = TargetColumnName,
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "calibration",
             PercentileBucket = 0.05,
@@ -15263,7 +15259,7 @@ AutoH2oGBMRegression <- function(data,
           Out1 <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = TargetColumnName,
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "boxplot",
             PercentileBucket = 0.05,
@@ -15280,7 +15276,7 @@ AutoH2oGBMRegression <- function(data,
           Out <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = TargetColumnName,
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "calibration",
             PercentileBucket = 0.05,
@@ -15294,7 +15290,7 @@ AutoH2oGBMRegression <- function(data,
           Out1 <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = TargetColumnName,
+            TargetColName = Target,
             IndepVar = VariableImportance[i, Variable],
             GraphType = "boxplot",
             PercentileBucket = 0.05,
@@ -15747,7 +15743,7 @@ AutoH2oDRFRegression <- function(data,
     # Regression Evaluation Calibration Plot----
     EvaluationPlot <- EvalPlot(data = ValidationData,
                                PredictionColName = "Predict",
-                               TargetColName = TargetColumnName,
+                               TargetColName = Target,
                                GraphType = "calibration",
                                PercentileBucket = 0.05,
                                aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -15781,7 +15777,7 @@ AutoH2oDRFRegression <- function(data,
     # Regression Evaluation BoxPlot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
-                                  TargetColName = TargetColumnName,
+                                  TargetColName = Target,
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -15886,7 +15882,7 @@ AutoH2oDRFRegression <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "Predict",
-          TargetColName = TargetColumnName,
+          TargetColName = Target,
           IndepVar = VariableImportance[i, Variable],
           GraphType = "calibration",
           PercentileBucket = 0.05,
@@ -15900,7 +15896,7 @@ AutoH2oDRFRegression <- function(data,
         Out1 <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "Predict",
-          TargetColName = TargetColumnName,
+          TargetColName = Target,
           IndepVar = VariableImportance[i, Variable],
           GraphType = "boxplot",
           PercentileBucket = 0.05,
@@ -16387,7 +16383,7 @@ AutoH2oGBMClassifier <- function(data,
     # Binary Evaluation Calibration Plot----
     EvaluationPlot <- EvalPlot(data = ValidationData,
                                PredictionColName = "p1",
-                               TargetColName = TargetColumnName,
+                               TargetColName = Target,
                                GraphType = "calibration",
                                PercentileBucket = 0.05,
                                aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -16465,7 +16461,7 @@ AutoH2oGBMClassifier <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "p1",
-          TargetColName = TargetColumnName,
+          TargetColName = Target,
           IndepVar = VariableImportance[i, Variable],
           GraphType = "calibration",
           PercentileBucket = 0.05,
@@ -16943,7 +16939,7 @@ AutoH2oDRFClassifier <- function(data,
     # Binary Evaluation Calibration Plot----
     EvaluationPlot <- EvalPlot(data = ValidationData,
                                PredictionColName = "p1",
-                               TargetColName = TargetColumnName,
+                               TargetColName = Target,
                                GraphType = "calibration",
                                PercentileBucket = 0.05,
                                aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -17021,7 +17017,7 @@ AutoH2oDRFClassifier <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "p1",
-          TargetColName = TargetColumnName,
+          TargetColName = Target,
           IndepVar = VariableImportance[i, Variable],
           GraphType = "calibration",
           PercentileBucket = 0.05,
