@@ -65,8 +65,6 @@ Suggests:
     testthat
 VignetteBuilder: 
     knitr
-Additional_repositories: 
-    https://github.com/catboost/catboost/tree/master/catboost/R-package
 Contact: Adrian Antico
 Encoding: UTF-8
 Language: en-US
