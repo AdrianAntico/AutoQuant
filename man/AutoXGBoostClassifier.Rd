@@ -33,6 +33,8 @@ AutoXGBoostClassifier(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{grid_eval_metric}{Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
 
+\item{TreeMethod}{Choose from "hist", "gpu_hist"}
+
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
