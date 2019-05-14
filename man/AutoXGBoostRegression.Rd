@@ -17,7 +17,7 @@ AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
-\item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
+\item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
@@ -126,7 +126,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostClassifier}}
+  \code{\link{AutoXGBoostClassifier}},
+  \code{\link{AutoXGBoostMultiClass}}
 }
 \author{
 Adrian Antico

@@ -127,6 +127,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
+  \code{\link{AutoXGBoostMultiClass}},
   \code{\link{AutoXGBoostRegression}}
 }
 \author{

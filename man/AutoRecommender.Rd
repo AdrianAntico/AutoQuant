@@ -59,6 +59,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoTS}},
   \code{\link{AutoXGBoostClassifier}},
+  \code{\link{AutoXGBoostMultiClass}},
   \code{\link{AutoXGBoostRegression}}
 }
 \author{
