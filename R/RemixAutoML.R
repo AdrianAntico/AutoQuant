@@ -26,9 +26,12 @@ utils::globalVariables(
     "Value",
     "p0",
     ":=",
+    "catboostGridList",
     "fwrite",
     "setnames",
     "Gain",
+    "RANDOMNUMBER",
+    "Frequency",
     "Cover",
     "MinVal",
     "Feature",
@@ -18680,9 +18683,9 @@ AutoXGBoostRegression <- function(data,
       save(ParDepBoxPlots, file = paste0(model_path,"/", ModelID,"_ParDepBoxPlots.R"))
     }
 
-    # Regression Save GridCollect and catboostGridList----
+    # Regression Save GridCollect and GridList----
     if(SaveModelObjects & GridTune == TRUE) {
-      data.table::fwrite(catboostGridList, file = paste0(model_path,
+      data.table::fwrite(grid_params, file = paste0(model_path,
                                                          "/",
                                                          ModelID,
                                                          "_grid_params.csv"))
@@ -19395,7 +19398,7 @@ AutoXGBoostClassifier <- function(data,
       save(ParDepPlots, file = paste0(model_path,"/", ModelID,"_ParDepPlots.R"))
     }
 
-    # Binary Save GridCollect and catboostGridList----
+    # Binary Save GridCollect and GridList----
     if(SaveModelObjects & GridTune == TRUE) {
       data.table::fwrite(grid_params, file = paste0(model_path,"/",ModelID, "_grid_params.csv"))
       data.table::fwrite(GridCollect, file = paste0(model_path,"/",ModelID, "_GridCollect.csv"))
@@ -19448,6 +19451,7 @@ AutoXGBoostClassifier <- function(data,
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
+#' @param grid_eval_metric Set to "accuracy" (only option currently)
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
