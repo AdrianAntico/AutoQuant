@@ -45,6 +45,9 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 ##### **AutoCatBoostMultiClass()**
 AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting.
 
+##### **AutoXGBoostMultiClass()**
+AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting.
+
 ##### **AutoH2oGBMMultiClass()**
 AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
 
