@@ -242,7 +242,7 @@ ProblematicFeatures <- function(data,
   LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
 
     # Skip Option----
-    if(is.null(NearZeroVarThresh)) return(NA)
+    if(is.null(NearZeroVarThresh)) return(NULL)
 
     # Ensure argument is valid----
     if(NearZeroVarThresh > 1) warning("NearZeroVarThresh should be between zero and one")
@@ -260,22 +260,22 @@ ProblematicFeatures <- function(data,
 
     if(length(NumNearZeroVariance) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(NumNearZeroVariance))},
-                    error = function(x) NA)
+                    error = function(x) NULL)
       if(dim(a)[1] != 0) {
         data.table:: setnames(a, c("L1","value"), c("ColName","LowVarianceFeatures"))
         data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
-        return(NA)
+        return(NULL)
       }
     } else {
-      return(NA)
+      return(NULL)
     }
   }
   HighCardinalityFeatures <- function(data, CharUniqThresh = 0.50) {
 
     # Skip Option----
-    if(is.null(CharUniqThresh)) return(NA)
+    if(is.null(CharUniqThresh)) return(NULL)
 
     # Ensure argument is valid----
     if(CharUniqThresh > 1) warning("CharUniqThresh should be between zero and one")
@@ -292,22 +292,22 @@ ProblematicFeatures <- function(data,
     }
     if(length(CharUniqueTooHigh) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(CharUniqueTooHigh))},
-                    error = function(x) NA)
+                    error = function(x) NULL)
       if(dim(a)[1] != 0) {
         data.table::setnames(a, c("L1","value"), c("ColName","HighCardinalityFeatures"))
         data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
-        return(NA)
+        return(NULL)
       }
     } else {
-      return(NA)
+      return(NULL)
     }
   }
   HighMissingCountFeatures <- function(data, NA_Rate = 0.20) {
 
     # Skip Option----
-    if(is.null(NA_Rate)) return(NA)
+    if(is.null(NA_Rate)) return(NULL)
 
     # Ensure argument is valid----
     if(NA_Rate > 1) warning("HighSkewThresh should be between zero and one")
@@ -324,22 +324,22 @@ ProblematicFeatures <- function(data,
     }
     if(length(LargeNAs) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(LargeNAs))},
-                    error = function(x) NA)
+                    error = function(x) NULL)
       if(dim(a)[1] != 0) {
         data.table::setnames(a, c("L1","value"), c("ColName","HighMissingCountFeatures"))
         data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
-        return(NA)
+        return(NULL)
       }
     } else {
-      return(NA)
+      return(NULL)
     }
   }
   HighZeroCountFeatures <- function(data, Zero_Rate = 0.20) {
 
     # Skip Option----
-    if(is.null(Zero_Rate)) return(NA)
+    if(is.null(Zero_Rate)) return(NULL)
 
     # Get Row Count----
     xx <- data[, .N]
@@ -353,22 +353,22 @@ ProblematicFeatures <- function(data,
     }
     if(length(LargeZeros) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(LargeZeros))},
-                    error = function(x) NA)
+                    error = function(x) NULL)
       if(dim(a)[1] != 0) {
         data.table::setnames(a, c("L1","value"), c("ColName","HighZeroCountFeatures"))
         data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
-        return(NA)
+        return(NULL)
       }
     } else {
-      return(NA)
+      return(NULL)
     }
   }
   HighSkewFeatures <- function(data, HighSkewThresh = 10) {
 
     # Skip Option----
-    if(is.null(HighSkewThresh)) return(NA)
+    if(is.null(HighSkewThresh)) return(NULL)
 
     # Ensure argument is valid----
     if(!is.numeric(HighSkewThresh) & !is.integer(HighSkewThresh)) {
@@ -395,16 +395,16 @@ ProblematicFeatures <- function(data,
     }
     if(length(HighSkew) > 0) {
       a <- tryCatch({data.table::as.data.table(data.table::melt(HighSkew))},
-                    error = function(x) NA)
+                    error = function(x) NULL)
       if(dim(a)[1] != 0) {
         data.table::setnames(a, c("L1","value"), c("ColName","HighSkewFeatures"))
         data.table::setcolorder(a, c(2,1))
         return(a)
       } else {
-        return(NA)
+        return(NULL)
       }
     } else {
-      return(NA)
+      return(NULL)
     }
   }
 
