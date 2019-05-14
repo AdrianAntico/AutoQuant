@@ -31,7 +31,6 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     base,
-    catboost,
     caTools,
     data.table,
     doParallel,
@@ -60,6 +59,7 @@ Imports:
     zoo
 Suggests: 
     knitr,
+    catboost,
     rmarkdown,
     sde,
     testthat
