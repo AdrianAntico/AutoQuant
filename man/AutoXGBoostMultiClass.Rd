@@ -31,6 +31,8 @@ AutoXGBoostMultiClass(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
+\item{grid_eval_metric}{Set to "accuracy" (only option currently)}
+
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
