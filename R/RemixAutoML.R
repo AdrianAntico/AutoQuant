@@ -28,6 +28,10 @@ utils::globalVariables(
     ":=",
     "fwrite",
     "setnames",
+    "Gain",
+    "Cover",
+    "MinVal",
+    "Feature",
     "NewLevels",
     "OriginalLevels",
     "bootstrap_type",
@@ -18054,6 +18058,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param grid_eval_metric Choose from "poisson","mae","mape","mse","msle","kl","cs","r2"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
+#' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
@@ -18741,6 +18746,7 @@ AutoXGBoostRegression <- function(data,
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
+#' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param grid_eval_metric Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
@@ -19441,6 +19447,7 @@ AutoXGBoostClassifier <- function(data,
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
+#' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
