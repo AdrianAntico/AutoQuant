@@ -12741,7 +12741,7 @@ AutoRecommenderScoring <- function(data,
 #'                                     ReturnModelObjects = TRUE,
 #'                                     SaveModelObjects = FALSE)
 #' }
-#' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_GridList
+#' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_GridCollect, and _ModelID_GridList
 #' @export
 AutoCatBoostClassifier <- function(data,
                                    TestData = NULL,
@@ -15933,7 +15933,7 @@ AutoH2oDRFRegression <- function(data,
 
 #' AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
@@ -16003,7 +16003,7 @@ AutoH2oDRFRegression <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
 #' @export
 AutoH2oGBMClassifier <- function(data,
                                  TestData = NULL,
@@ -16489,7 +16489,7 @@ AutoH2oGBMClassifier <- function(data,
 
 #' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
@@ -16559,7 +16559,7 @@ AutoH2oGBMClassifier <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
 #' @export
 AutoH2oDRFClassifier <- function(data,
                                  TestData = NULL,
@@ -17607,7 +17607,7 @@ AutoH2oGBMMultiClass <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, and _ModelID_EvaluationMetrics.csv
 #' @export
 AutoH2oDRFMultiClass <- function(data,
                                  TestData = NULL,
@@ -19418,7 +19418,7 @@ AutoXGBoostClassifier <- function(data,
 
 #' AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation
 #'
-#' AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
