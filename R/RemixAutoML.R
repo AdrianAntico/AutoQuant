@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 "rbindlist" <- NULL
 ":=" <- NULL
@@ -13665,7 +13665,7 @@ AutoCatBoostRegression <- function(data,
               sqrt(calibEval[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(grid_eval_metric) == "r2") {
-          Metric <- (calibEval[, stats::cor(Target, Predict)])^2
+          Metric <- (calibEval[, stats::cor(Target, Predicted)])^2
         }
 
         # Regression Metrics Collection----
