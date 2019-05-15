@@ -12871,10 +12871,9 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -14246,10 +14245,9 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, as.numeric(get(Target))]}, error = function(x) dataTrain[, as.numeric(eval(Target))])
@@ -16097,13 +16095,9 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    data[, RANDOMNUMER := runif(nrow(data))]
-    dataTrain <- data[order(RANDOMNUMER)][
-      1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -16657,13 +16651,9 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][
-      order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -17210,13 +17200,9 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    data[, RANDOMNUMER := runif(nrow(data))]
-    dataTrain <- data[order(RANDOMNUMER)][
-      1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -17708,13 +17694,9 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    data[, RANDOMNUMER := runif(nrow(data))]
-    dataTrain <- data[order(RANDOMNUMER)][
-      1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -18936,11 +18918,10 @@ AutoXGBoostClassifier <- function(data,
                                        ,ModelID,"_ColNames.csv"))
     }
 
-    # Binary Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    # MultiClass Data Partition----
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -19545,8 +19526,8 @@ AutoXGBoostMultiClass <- function(data,
 
     # MultiClass Check Arguments----
     if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
-    if(!(tolower(grid_eval_metric) %chin% c("accuracy","auc","tpr","fnr","fpr","tnr","prbe","f","odds","chisq"))) {
-      warning("grid_eval_metric not in c('accuracy','auc','tpr','fnr','fpr','tnr','prbe','f','odds','chisq')")
+    if(!(tolower(grid_eval_metric) %chin% c("accuracy"))) {
+      warning("grid_eval_metric not accuracy")
     }
     if(Trees < 1) warning("Trees must be greater than 1")
     if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
@@ -19669,10 +19650,9 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
