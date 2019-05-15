@@ -15073,7 +15073,7 @@ AutoH2oGBMRegression <- function(data,
     data.table::setnames(ValidationData, "predict", "Predict")
 
     # Regression Get R2----
-    r_squared <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]])^2
+    r_squared <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
 
     # Regression Save Validation Data to File----
     if(SaveModelObjects) {
@@ -15175,40 +15175,40 @@ AutoH2oGBMRegression <- function(data,
         # Regression Grid Evaluation Metrics----
         if(tolower(metric) == "poisson") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+            ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "mae") {
-          ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
+          ValidationData[, Metric := abs(get(Target) - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mape") {
-          ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (Target + 1))]
+          ValidationData[, Metric := abs((get(Target) - Predict) / (Target + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mse") {
-          ValidationData[, Metric := (get(TargetColumnName) - Predict)^2]
+          ValidationData[, Metric := (get(Target) - Predict)^2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "msle") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1))^2]
+            ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1))^2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "kl") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
+            ValidationData[, Metric := get(Target) * log((get(Target) + 1) /
                                                                      (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "cs") {
-          ValidationData[, ':=' (Metric1 = get(TargetColumnName) * Predict,
-                                 Metric2 = get(TargetColumnName)^2,
+          ValidationData[, ':=' (Metric1 = get(Target) * Predict,
+                                 Metric2 = get(Target)^2,
                                  Metric3 = Predict^2)]
           Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (
             sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (get(TargetColumnName) - mean(Target))^2,
-                                 Metric2 = (get(TargetColumnName) - Predict)^2)]
+          ValidationData[, ':=' (Metric1 = (get(Target) - mean(Target))^2,
+                                 Metric2 = (get(Target) - Predict)^2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
             ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
@@ -15726,7 +15726,7 @@ AutoH2oDRFRegression <- function(data,
     data.table::setnames(ValidationData, "predict", "Predict")
 
     # Regression Get R2----
-    r_squared <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]])^2
+    r_squared <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
 
     # Regression Save Validation Data to File----
     if(SaveModelObjects) {
@@ -15817,40 +15817,40 @@ AutoH2oDRFRegression <- function(data,
         # Regression Grid Evaluation Metrics----
         if(tolower(metric) == "poisson") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+            ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "mae") {
-          ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
+          ValidationData[, Metric := abs(get(Target) - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mape") {
-          ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (Target + 1))]
+          ValidationData[, Metric := abs((get(Target) - Predict) / (Target + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mse") {
-          ValidationData[, Metric := (get(TargetColumnName) - Predict)^2]
+          ValidationData[, Metric := (get(Target) - Predict)^2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "msle") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1))^2]
+            ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1))^2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "kl") {
           if(MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
+            ValidationData[, Metric := get(Target) * log((get(Target) + 1) /
                                                                      (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if(tolower(metric) == "cs") {
-          ValidationData[, ':=' (Metric1 = get(TargetColumnName) * Predict,
-                                 Metric2 = get(TargetColumnName)^2,
+          ValidationData[, ':=' (Metric1 = get(Target) * Predict,
+                                 Metric2 = get(Target)^2,
                                  Metric3 = Predict^2)]
           Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (
             sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (get(TargetColumnName) - mean(Target))^2,
-                                 Metric2 = (get(TargetColumnName) - Predict)^2)]
+          ValidationData[, ':=' (Metric1 = (get(Target) - mean(Target))^2,
+                                 Metric2 = (get(Target) - Predict)^2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
             ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
@@ -16091,7 +16091,7 @@ AutoH2oGBMClassifier <- function(data,
 
     # Binary Ensure Target Is a Factor Type----
     if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+      data[, eval(TargetColumnName) := as.factor(get(Target))]
     }
 
     # Binary Data Partition----
@@ -16641,13 +16641,13 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Get Min Value of Target Data----
-    MinVal <- min(as.numeric(data[[eval(TargetColumnName)]]), na.rm = TRUE)
-    MaxVal <- max(as.numeric(data[[eval(TargetColumnName)]]), na.rm = TRUE)
+    MinVal <- min(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
+    MaxVal <- max(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
     if(MaxVal - MinVal > 1) warning("Target Variable is not binary")
 
     # Binary Ensure Target Is a Factor Type----
     if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+      data[, eval(Target) := as.factor(get(Target))]
     }
 
     # Binary Data Partition----
@@ -17196,7 +17196,7 @@ AutoH2oGBMMultiClass <- function(data,
 
     # MultiClass Ensure Target Is a Factor Type----
     if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+      data[, eval(TargetColumnName) := as.factor(get(Target))]
     }
 
     # MultiClass Data Partition----
@@ -17690,7 +17690,7 @@ AutoH2oDRFMultiClass <- function(data,
 
     # MultiClass Ensure Target Is a Factor Type----
     if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+      data[, eval(TargetColumnName) := as.factor(get(Target))]
     }
 
     # MultiClass Data Partition----
