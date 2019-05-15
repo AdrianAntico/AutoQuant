@@ -12826,40 +12826,22 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       data <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
 
     # Binary TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
 
@@ -13498,40 +13480,22 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       data <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
 
     # Regression TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
 
@@ -13545,13 +13509,12 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression Get Min Value of Target Data----
-    MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
+    MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -13702,10 +13665,7 @@ AutoCatBoostRegression <- function(data,
               sqrt(calibEval[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(grid_eval_metric) == "r2") {
-          calibEval[, ':=' (Metric1 = (Target - mean(Target))^2,
-                            Metric2 = (Target - Predicted)^2)]
-          Metric <- 1 - calibEval[, sum(Metric2, na.rm = TRUE)] /
-            calibEval[, sum(Metric1, na.rm = TRUE)]
+          Metric <- (calibEval[, stats::cor(Target, Predict)])^2
         }
 
         # Regression Metrics Collection----
@@ -13918,6 +13878,9 @@ AutoCatBoostRegression <- function(data,
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
       }, error = function(x) "skip")
     }
+
+    # Remove Cols
+    ValidationData[, ':=' (Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
 
     # Save EvaluationMetrics to File
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
@@ -14742,7 +14705,7 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Get Min Value of Target Data----
-    MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
+    MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Proper Distribution Check----
     if(MinVal < 0 & tolower(Distribution) == "poisson") {
@@ -14752,13 +14715,9 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    data[, RANDOMNUMER := runif(nrow(data))]
-    dataTrain <- data[order(RANDOMNUMER)][
-        1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -15207,15 +15166,15 @@ AutoH2oGBMRegression <- function(data,
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (get(Target) - mean(Target))^2,
-                                 Metric2 = (get(Target) - Predict)^2)]
-          Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
-            ValidationData[, sum(Metric1, na.rm = TRUE)]
+          Metric <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric,4))
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
       }, error = function(x) "skip")
     }
+
+    # Remove Features
+    ValidationData[, ':=' (Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
 
     # Regression Save EvaluationMetrics to File----
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
@@ -15467,16 +15426,12 @@ AutoH2oDRFRegression <- function(data,
     }
 
     # Regression Get Min Value of Target Data----
-    MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
+    MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    data[, RANDOMNUMER := runif(nrow(data))]
-    dataTrain <- data[order(RANDOMNUMER)][
-      1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
-    data[, RANDOMNUMBER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -15849,10 +15804,7 @@ AutoH2oDRFRegression <- function(data,
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (get(Target) - mean(Target))^2,
-                                 Metric2 = (get(Target) - Predict)^2)]
-          Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
-            ValidationData[, sum(Metric1, na.rm = TRUE)]
+          Metric <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric,4))
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
@@ -16085,13 +16037,13 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Get Min Value of Target Data----
-    MinVal <- min(as.numeric(data[[eval(TargetColumnName)]]), na.rm = TRUE)
-    MaxVal <- max(as.numeric(data[[eval(TargetColumnName)]]), na.rm = TRUE)
+    MinVal <- min(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
+    MaxVal <- max(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
     if(MaxVal - MinVal > 1) warning("Target Variable is not binary")
 
     # Binary Ensure Target Is a Factor Type----
-    if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(Target))]
+    if(!is.factor(data[[eval(Target)]])) {
+      data[, eval(Target) := as.factor(get(Target))]
     }
 
     # Binary Data Partition----
@@ -16409,7 +16361,7 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary AUC Object Create----
-    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(TargetColumnName)]],
+    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
                              predictor = ValidationData[["p1"]],
                              na.rm = TRUE,
                              algorithm = 3,
@@ -16646,7 +16598,7 @@ AutoH2oDRFClassifier <- function(data,
     if(MaxVal - MinVal > 1) warning("Target Variable is not binary")
 
     # Binary Ensure Target Is a Factor Type----
-    if(!is.factor(data[[eval(TargetColumnName)]])) {
+    if(!is.factor(data[[eval(Target)]])) {
       data[, eval(Target) := as.factor(get(Target))]
     }
 
@@ -16963,7 +16915,7 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary AUC Object Create----
-    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(TargetColumnName)]],
+    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
                              predictor = ValidationData[["p1"]],
                              na.rm = TRUE,
                              algorithm = 3,
@@ -17195,8 +17147,8 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Ensure Target Is a Factor Type----
-    if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(Target))]
+    if(!is.factor(data[[eval(Target)]])) {
+      data[, eval(Target) := as.factor(get(Target))]
     }
 
     # MultiClass Data Partition----
@@ -17490,7 +17442,7 @@ AutoH2oGBMMultiClass <- function(data,
     }
     MetricAUC <- round(as.numeric(noquote(
       stringr::str_extract(
-        pROC::multiclass.roc(ValidationData[[eval(TargetColumnName)]],
+        pROC::multiclass.roc(ValidationData[[eval(Target)]],
                              ValidationData[["vals"]])$auc,
         "\\d+\\.*\\d*"
       )
@@ -17689,8 +17641,8 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Ensure Target Is a Factor Type----
-    if(!is.factor(data[[eval(TargetColumnName)]])) {
-      data[, eval(TargetColumnName) := as.factor(get(Target))]
+    if(!is.factor(data[[eval(Target)]])) {
+      data[, eval(Target) := as.factor(get(Target))]
     }
 
     # MultiClass Data Partition----
@@ -17982,7 +17934,7 @@ AutoH2oDRFMultiClass <- function(data,
     }
     MetricAUC <- round(as.numeric(noquote(
       stringr::str_extract(
-        pROC::multiclass.roc(ValidationData[[eval(TargetColumnName)]],
+        pROC::multiclass.roc(ValidationData[[eval(Target)]],
                              ValidationData[["vals"]])$auc,
         "\\d+\\.*\\d*"
       )
@@ -18169,40 +18121,22 @@ AutoXGBoostRegression <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Regression data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       data <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
 
     # Regression TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
 
@@ -18230,10 +18164,9 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Data Partition----
-    dataTrain <- data[, RANDOMNUMER := runif(nrow(data))][order(RANDOMNUMER)][1:(nrow(data)*TrainSplitRatio)]
-    dataTest <- data[(nrow(data) * TrainSplitRatio + 1):nrow(data)]
-    dataTrain[, RANDOMNUMER := NULL]
-    dataTest[, RANDOMNUMER := NULL]
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -18375,10 +18308,7 @@ AutoXGBoostRegression <- function(data,
               sqrt(calibEval[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(grid_eval_metric) == "r2") {
-          calibEval[, ':=' (Metric1 = (Target - mean(Target))^2,
-                            Metric2 = (Target - Predicted)^2)]
-          Metric <- 1 - calibEval[, sum(Metric2, na.rm = TRUE)] /
-            calibEval[, sum(Metric1, na.rm = TRUE)]
+          Metric <- (calibEval[, stats::cor(get(Target), Predict)][[1]])^2
         }
 
         # Regression Metrics Collection----
@@ -18588,10 +18518,7 @@ AutoXGBoostRegression <- function(data,
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (Target - mean(Target))^2,
-                                 Metric2 = (Target - Predict)^2)]
-          Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
-            ValidationData[, sum(Metric1, na.rm = TRUE)]
+          Metric <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric,4))
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
@@ -18858,40 +18785,22 @@ AutoXGBoostClassifier <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Binary data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       data <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
 
     # Binary TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
 
@@ -19561,7 +19470,7 @@ AutoXGBoostMultiClass <- function(data,
 
     # MultiClass Obtain Unique Target Levels
     temp <- data.table::rbindlist(list(data,TestData))
-    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName)]])))
+    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(Target)]])))
     data.table::setnames(TargetLevels, "V1","OriginalLevels")
     TargetLevels[, NewLevels := 0:(.N-1)]
     if(SaveModelObjects) {
@@ -19589,40 +19498,22 @@ AutoXGBoostMultiClass <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # MultiClass data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       data <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      data <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
 
     # MultiClass TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
 
