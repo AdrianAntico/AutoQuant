@@ -1,6 +1,6 @@
 .datatable.aware <- TRUE
 
-# Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
+Sys.setenv(R_GSCMD = "C:\\Program Files (x86)\\gs\\gs9.26\\bin\\gswin32c.exe")
 
 "rbindlist" <- NULL
 ":=" <- NULL
@@ -13512,7 +13512,7 @@ AutoCatBoostRegression <- function(data,
     MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
     dataTrain <- data[x]
     dataTest <- data[-x]
 
@@ -14715,7 +14715,7 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
     dataTrain <- data[x]
     dataTest <- data[-x]
 
@@ -15429,7 +15429,7 @@ AutoH2oDRFRegression <- function(data,
     MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
     dataTrain <- data[x]
     dataTest <- data[-x]
 
@@ -18164,7 +18164,7 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]$V1
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
     dataTrain <- data[x]
     dataTest <- data[-x]
 
