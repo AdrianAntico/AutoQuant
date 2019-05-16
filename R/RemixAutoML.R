@@ -18079,18 +18079,18 @@ AutoXGBoostRegression <- function(data,
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE) {
-
+  
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if(!requireNamespace('xgboost', quietly = TRUE)) {
     return(warning("xgboost needs to be installed to run this function"))
   } else {
-
+    
     # Regression Check Arguments----
     if(!(abs(TrainSplitRatio) <= 0.99)) warning("TrainSplitRatio needs to be less than or equal to 0.99")
     if(!(tolower(eval_metric) %chin% c("rmse","mae","mape","r2"))) {
       warning("eval_metric not in RMSE, MAE, MAPE, R2")
-
+      
     }
     if(Trees < 1) warning("Trees must be greater than 1")
     if(!GridTune %in% c(TRUE,FALSE)) warning("GridTune needs to be TRUE or FALSE")
@@ -18104,22 +18104,22 @@ AutoXGBoostRegression <- function(data,
     if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
     if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
-
+    
     # Regression Ensure data is a data.table----
     if(!data.table::is.data.table(data)) {
       data <- data.table::as.data.table(data)
     }
-
+    
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
     } else {
       Target <- names(data)[TargetColumnName]
     }
-
+    
     # Regression CatFeatures Names
     CatFeatures <- names(data)[CatFeatures]
-
+    
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
@@ -18129,7 +18129,7 @@ AutoXGBoostRegression <- function(data,
       keep <- c(FeatureColNames, Target)
       data <- data[, ..keep]
     }
-
+    
     # Regression TestData Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
@@ -18139,13 +18139,13 @@ AutoXGBoostRegression <- function(data,
       keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
-
+    
     # Dummify Data Categorical Features----
     data <- RemixAutoML::DummifyDT(data = data,
                                    cols = CatFeatures,
                                    KeepFactorCols = FALSE,
                                    OneHot = FALSE)
-
+    
     # Dummify Test Categorical Features----
     if(!is.null(TestData)) {
       TestData <- RemixAutoML::DummifyDT(data = TestData,
@@ -18153,7 +18153,7 @@ AutoXGBoostRegression <- function(data,
                                          KeepFactorCols = FALSE,
                                          OneHot = FALSE)
     }
-
+    
     # Regression Save Names of data----
     Names <- data.table::as.data.table(names(data))
     data.table::setnames(Names, "V1", "ColNames")
@@ -18162,24 +18162,24 @@ AutoXGBoostRegression <- function(data,
                                        "/"
                                        ,ModelID,"_ColNames.csv"))
     }
-
+    
     # Regression Data Partition----
     x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
     dataTrain <- data[x]
     dataTest <- data[-x]
-
+    
     # Regression Subset Target Variables----
     TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
     TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
     if(!is.null(TestData)) {
       FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
     }
-
+    
     # Regression Remove Target Variable from Feature Data
     dataTrain[, eval(Target) := NULL]
     dataTest[, eval(Target) := NULL]
     TestData[, eval(Target) := NULL]
-
+    
     # Regression Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
     datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
@@ -18189,15 +18189,15 @@ AutoXGBoostRegression <- function(data,
     } else {
       EvalSets <- list(train = datatrain, test = datavalidate)
     }
-
-
+    
+    
     # Regression Grid Tune or Not Check----
     if(GridTune) {
-
+      
       # Regression Grid Create data.table To Store Results----
       GridCollect <- data.table::data.table(ParamRow = 1:(MaxModelsInGrid + 1),
                                             EvalStat = rep(9999999, MaxModelsInGrid + 1))
-
+      
       # Regression Grid Define Hyper Parameters----
       grid_params <- data.table::CJ(eta = c(0.30,0.25,0.35),
                                     max_depth = c(6,8,10),
@@ -18206,13 +18206,13 @@ AutoXGBoostRegression <- function(data,
                                     colsample_bytree = c(1,0.90,0.80))
       grid_params[, ID := runif(nrow(grid_params))]
       grid_params <- grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
-
+      
       # Regression Grid Tuning Main Loop----
       for(i in as.integer(seq_len(MaxModelsInGrid + 1))) {
-
+        
         # Print i
         print(i)
-
+        
         # Regression Grid Define Base Parameters----
         if(i ==1) {
           base_params <- list(booster = "gbtree",
@@ -18234,13 +18234,13 @@ AutoXGBoostRegression <- function(data,
                               max_bin = 64,
                               tree_method = TreeMethod)
         }
-
+        
         # Regression Grid Merge Model Parameters----
         # Have first model be the baseline model
         if(i != 1) {
           base_params <- c(as.list(grid_params[i,]), base_params)
         }
-
+        
         # Regression Grid Train Model----
         if(Verbose == 0) {
           model <- xgboost::xgb.train(params = base_params,
@@ -18256,15 +18256,15 @@ AutoXGBoostRegression <- function(data,
                                       nrounds = Trees,
                                       early_stopping_rounds = 10)
         }
-
-
+        
+        
         # Regression Grid Score Model----
         if(!is.null(TestData)) {
           predict <- stats::predict(model, datatest)
         } else {
           predict <- stats::predict(model, datavalidate)
         }
-
+        
         # Regression Grid Validation Data----
         if(!is.null(TestData)) {
           calibEval <- data.table::as.data.table(
@@ -18273,7 +18273,7 @@ AutoXGBoostRegression <- function(data,
           calibEval <- data.table::as.data.table(
             cbind(Target = TestTarget, Predicted = predict))
         }
-
+        
         # Regression Grid Evaluation Metrics----
         if(tolower(grid_eval_metric) == "poisson") {
           if(MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
@@ -18308,9 +18308,9 @@ AutoXGBoostRegression <- function(data,
               sqrt(calibEval[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(grid_eval_metric) == "r2") {
-          Metric <- (calibEval[, stats::cor(get(Target), Predict)][[1]])^2
+          Metric <- (calibEval[, stats::cor(eval(Target), Predicted)][[1]])^2
         }
-
+        
         # Regression Metrics Collection----
         data.table::set(GridCollect,
                         i = i,
@@ -18322,7 +18322,7 @@ AutoXGBoostRegression <- function(data,
                         value = round(Metric,4))
       }
     }
-
+    
     # Regression Define Final Model Parameters----
     if(GridTune) {
       if(grid_eval_metric %chin% c("kl","cs","r2")) {
@@ -18339,7 +18339,7 @@ AutoXGBoostRegression <- function(data,
                               nthread = NThreads,
                               max_bin = 64,
                               tree_method = TreeMethod)
-
+          
         } else {
           base_params <- list(booster = "gbtree",
                               objective = 'reg:linear',
@@ -18363,7 +18363,7 @@ AutoXGBoostRegression <- function(data,
                               nthread = NThreads,
                               max_bin = 64,
                               tree_method = TreeMethod)
-
+          
         } else {
           base_params <- list(booster = "gbtree",
                               objective = 'reg:linear',
@@ -18382,7 +18382,7 @@ AutoXGBoostRegression <- function(data,
                           max_bin = 64,
                           tree_method = TreeMethod)
     }
-
+    
     # Regression Train Final Model----
     if(Verbose == 0) {
       model <- xgboost::xgb.train(params = base_params,
@@ -18398,19 +18398,19 @@ AutoXGBoostRegression <- function(data,
                                   nrounds = Trees,
                                   early_stopping_rounds = 10)
     }
-
+    
     # Regression Save Model----
     if(SaveModelObjects) {
       xgboost::xgb.save(model = model, fname = ModelID)
     }
-
+    
     # Regression Grid Score Model----
     if(!is.null(TestData)) {
       predict <- stats::predict(model, datatest)
     } else {
       predict <- stats::predict(model, datavalidate)
     }
-
+    
     # Regression Validation Data----
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(
@@ -18419,10 +18419,10 @@ AutoXGBoostRegression <- function(data,
       ValidationData <- data.table::as.data.table(
         cbind(Target = TestTarget, dataTest, Predict = predict))
     }
-
+    
     # Regression r2 via sqrt of correlation
     r_squared <- (ValidationData[, stats::cor(Target, Predict)])^2
-
+    
     # Save Validation Data to File----
     if(SaveModelObjects) {
       data.table::fwrite(ValidationData, file = paste0(model_path,
@@ -18430,7 +18430,7 @@ AutoXGBoostRegression <- function(data,
                                                        ModelID,
                                                        "_ValidationData.csv"))
     }
-
+    
     # Regression Evaluation Calibration Plot----
     EvaluationPlot <- EvalPlot(data = ValidationData,
                                PredictionColName = "Predict",
@@ -18438,20 +18438,20 @@ AutoXGBoostRegression <- function(data,
                                GraphType = "calibration",
                                PercentileBucket = 0.05,
                                aggrfun = function(x) mean(x, na.rm = TRUE))
-
+    
     # Add Number of Trees to Title
     EvaluationPlot <- EvaluationPlot +
       ggplot2::ggtitle(
         paste0("Calibration Evaluation Plot: R2 = ",
                round(r_squared,3)))
-
+    
     # Save plot to file
     if(SaveModelObjects) {
       ggplot2::ggsave(paste0(model_path,
                              "/",
                              ModelID,"_EvaluationPlot.png"))
     }
-
+    
     # Regression Evaluation Calibration Plot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
@@ -18459,13 +18459,13 @@ AutoXGBoostRegression <- function(data,
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
-
+    
     # Add Number of Trees to Title
     EvaluationBoxPlot <- EvaluationBoxPlot +
       ggplot2::ggtitle(
         paste0("Calibration Evaluation Plot: R2 = ",
                round(r_squared,3)))
-
+    
     # Save plot to file
     if(SaveModelObjects) {
       ggplot2::ggsave(paste0(model_path,
@@ -18473,7 +18473,7 @@ AutoXGBoostRegression <- function(data,
                              ModelID,
                              "_EvaluationBoxPlot.png"))
     }
-
+    
     # Regression Evaluation Metrics----
     EvaluationMetrics <- data.table::data.table(Metric = c("Poisson","MAE",
                                                            "MAPE","MSE","MSLE",
@@ -18524,7 +18524,7 @@ AutoXGBoostRegression <- function(data,
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
       }, error = function(x) "skip")
     }
-
+    
     # Save EvaluationMetrics to File
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
@@ -18533,7 +18533,7 @@ AutoXGBoostRegression <- function(data,
                                        "/",
                                        ModelID,"_EvaluationMetrics.csv"))
     }
-
+    
     # Regression Variable Importance----
     VariableImportance <- xgboost::xgb.importance(model = model)
     VariableImportance[, ':=' (Gain = round(Gain,4),
@@ -18545,7 +18545,7 @@ AutoXGBoostRegression <- function(data,
                                        "/",
                                        ModelID,"_VariableImportance.csv"))
     }
-
+    
     # Regression Partial Dependence----
     ParDepPlots <- list()
     j <- 0
@@ -18562,7 +18562,7 @@ AutoXGBoostRegression <- function(data,
           PercentileBucket = 0.05,
           FactLevels = 10,
           Function = function(x) mean(x, na.rm = TRUE))
-
+        
         j <- j + 1
         ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
       }, error = function(x) "skip")
@@ -18576,40 +18576,40 @@ AutoXGBoostRegression <- function(data,
           PercentileBucket = 0.05,
           FactLevels = 10,
           Function = function(x) mean(x, na.rm = TRUE))
-
+        
         k <- k + 1
         ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
       }, error = function(x) "skip")
     }
-
+    
     # Regression Save ParDepPlots to file----
     if(SaveModelObjects) {
       save(ParDepPlots, file = paste0(model_path,"/", ModelID,"_ParDepPlots.R"))
     }
-
+    
     # Regression Save ParDepBoxPlots to file----
     if(SaveModelObjects) {
       save(ParDepBoxPlots, file = paste0(model_path,"/", ModelID,"_ParDepBoxPlots.R"))
     }
-
+    
     # Regression Save GridCollect and GridList----
     if(SaveModelObjects & GridTune == TRUE) {
       data.table::fwrite(grid_params, file = paste0(model_path,
-                                                         "/",
-                                                         ModelID,
-                                                         "_grid_params.csv"))
+                                                    "/",
+                                                    ModelID,
+                                                    "_grid_params.csv"))
       data.table::fwrite(GridCollect, file = paste0(model_path,
                                                     "/",
                                                     ModelID,
                                                     "_GridCollect.csv"))
     }
-
+    
     # Regression Remove Extraneous Variables----
     ValidationData[, ':=' (Metric = NULL,
                            Metric1 = NULL,
                            Metric2 = NULL,
                            Metric3 = NULL)]
-
+    
     # Regression Return Model Objects----
     if(GridTune) {
       if(ReturnModelObjects) {
