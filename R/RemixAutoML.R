@@ -18517,7 +18517,7 @@ AutoXGBoostRegression <- function(data,
               sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)])
           )
         } else if(tolower(metric) == "r2") {
-          Metric <- (ValidationData[, stats::cor(get(Target), Predict)][[1]])^2
+          Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1]])^2
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric,4))
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
