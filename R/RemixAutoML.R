@@ -17422,7 +17422,7 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Metrics Accuracy----
-    MetricAcc <- ValidationData[, mean(ifelse(as.character(Target) ==
+    MetricAcc <- ValidationData[, mean(ifelse(as.character(get(Target)) ==
                                                 as.character(Predict),
                                               1,
                                               0),
@@ -17914,7 +17914,7 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Metrics Accuracy----
-    MetricAcc <- ValidationData[, mean(ifelse(as.character(Target) ==
+    MetricAcc <- ValidationData[, mean(ifelse(as.character(get(Target)) ==
                                                 as.character(Predict),
                                               1,
                                               0),
