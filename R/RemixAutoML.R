@@ -17404,11 +17404,11 @@ AutoH2oGBMMultiClass <- function(data,
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(
         cbind(TestData, Predict))
-      data.table::setnames(ValidationData, "predict", "Predict")
+      data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     } else {
       ValidationData <- data.table::as.data.table(
         cbind(dataTest, Predict))
-      data.table::setnames(ValidationData, "predict", "Predict")
+      data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     }
 
     # MultiClass Metrics Accuracy----
@@ -17431,7 +17431,7 @@ AutoH2oGBMMultiClass <- function(data,
     EvaluationMetrics <- data.table::data.table(
       Metric = c("Accuracy", "MicroAUC","temp"),
       Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
-    data.table::set(EvaluationMetrics, i = 3, j = 1, value = paste0(eval_metric))
+    data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
 
     # MultiClass Change Prediction Name----
     data.table::setnames(ValidationData, "predict", "Predict")
@@ -17885,11 +17885,11 @@ AutoH2oDRFMultiClass <- function(data,
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(
         cbind(TestData, Predict))
-      data.table::setnames(ValidationData, "predict", "Predict")
+      data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     } else {
       ValidationData <- data.table::as.data.table(
         cbind(dataTest, Predict))
-      data.table::setnames(ValidationData, "predict", "Predict")
+      data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     }
 
     # MultiClass Metrics Accuracy----
@@ -17912,10 +17912,10 @@ AutoH2oDRFMultiClass <- function(data,
     EvaluationMetrics <- data.table::data.table(
       Metric = c("Accuracy", "MicroAUC","temp"),
       Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
-    data.table::set(EvaluationMetrics, i = 3, j = 1, value = paste0(eval_metric))
+    data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
 
     # MultiClass Change Prediction Name----
-    data.table::setnames(ValidationData, "predict", "Predict")
+    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
 
     # MultiClass Save Validation Data to File----
     if(SaveModelObjects) {
