@@ -14477,32 +14477,22 @@ AutoCatBoostMultiClass <- function(data,
                     j = "Predict",
                     value = as.character(ValidationData[["Predict"]]))
 
-    # MultiClass Accuracy----
-    MetricAcc <- ValidationData[, mean(ifelse(as.character(Target) ==
+    # MultiClass Metrics Accuracy----
+    MetricAcc <- ValidationData[, mean(ifelse(as.character(get(Target)) ==
                                                 as.character(Predict),
-                                              1,
-                                              0),
+                                              1.0,
+                                              0.0),
                                        na.rm = TRUE)]
-
-    # MultiClass MicroAUC----
-    ValidationData[, vals := 0.5]
-    z <- ncol(ValidationData)
-    col <- "Target"
-    for (l in seq_len(nrow(ValidationData))) {
-      cols <- ValidationData[l, get(col)][[1]]
-      valss <- ValidationData[l, ..cols][[1]]
-      data.table::set(ValidationData,
-                      i = l,
-                      j = z,
-                      value = valss)
-    }
+    
+    # MultiClass Metrics MicroAUC----
+    y <- ValidationData[[eval(Target)]]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    x <- as.matrix(ValidationData[, ..keep])
+    z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
-      stringr::str_extract(
-        pROC::multiclass.roc(ValidationData[["Target"]], ValidationData[["vals"]])$auc,
-        "\\d+\\.*\\d*"
-      )
+      stringr::str_extract(z$auc,"\\d+\\.*\\d*")
     )), 4)
-
+                 
     # MultiClass Save Validation Data to File----
     if(SaveModelObjects) {
       data.table::fwrite(ValidationData,
@@ -17424,28 +17414,17 @@ AutoH2oGBMMultiClass <- function(data,
     # MultiClass Metrics Accuracy----
     MetricAcc <- ValidationData[, mean(ifelse(as.character(get(Target)) ==
                                                 as.character(Predict),
-                                              1,
-                                              0),
+                                              1.0,
+                                              0.0),
                                        na.rm = TRUE)]
-
+    
     # MultiClass Metrics MicroAUC----
-    ValidationData[, vals := 0.5]
-    z <- ncol(ValidationData)
-    col <- Target
-    for (l in seq_len(nrow(ValidationData))) {
-      cols <- ValidationData[l, get(col)][[1]]
-      valss <- ValidationData[l, ..cols][[1]]
-      data.table::set(ValidationData,
-                      i = l,
-                      j = z,
-                      value = valss)
-    }
+    y <- ValidationData[[eval(Target)]]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    x <- as.matrix(ValidationData[, ..keep])
+    z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
-      stringr::str_extract(
-        pROC::multiclass.roc(ValidationData[[eval(Target)]],
-                             ValidationData[["vals"]])$auc,
-        "\\d+\\.*\\d*"
-      )
+      stringr::str_extract(z$auc,"\\d+\\.*\\d*")
     )), 4)
 
     # MultiClass Evaluation Metrics Table----
@@ -17916,28 +17895,17 @@ AutoH2oDRFMultiClass <- function(data,
     # MultiClass Metrics Accuracy----
     MetricAcc <- ValidationData[, mean(ifelse(as.character(get(Target)) ==
                                                 as.character(Predict),
-                                              1,
-                                              0),
+                                              1.0,
+                                              0.0),
                                        na.rm = TRUE)]
-
+    
     # MultiClass Metrics MicroAUC----
-    ValidationData[, vals := 0.5]
-    z <- ncol(ValidationData)
-    col <- Target
-    for (l in seq_len(nrow(ValidationData))) {
-      cols <- ValidationData[l, get(col)][[1]]
-      valss <- ValidationData[l, ..cols][[1]]
-      data.table::set(ValidationData,
-                      i = l,
-                      j = z,
-                      value = valss)
-    }
+    y <- ValidationData[[eval(Target)]]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    x <- as.matrix(ValidationData[, ..keep])
+    z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
-      stringr::str_extract(
-        pROC::multiclass.roc(ValidationData[[eval(Target)]],
-                             ValidationData[["vals"]])$auc,
-        "\\d+\\.*\\d*"
-      )
+      stringr::str_extract(z$auc,"\\d+\\.*\\d*")
     )), 4)
 
     # MultiClass Evaluation Metrics Table----
