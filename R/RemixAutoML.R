@@ -14486,7 +14486,7 @@ AutoCatBoostMultiClass <- function(data,
     
     # MultiClass Metrics MicroAUC----
     y <- ValidationData[[eval(Target)]]
-    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData))]
     x <- as.matrix(ValidationData[, ..keep])
     z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
@@ -17420,7 +17420,7 @@ AutoH2oGBMMultiClass <- function(data,
     
     # MultiClass Metrics MicroAUC----
     y <- ValidationData[[eval(Target)]]
-    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData))]
     x <- as.matrix(ValidationData[, ..keep])
     z <- tryCatch({pROC::multiclass.roc(response = y, predictor = x)},
                   error = function(x) 0)
@@ -17899,7 +17899,7 @@ AutoH2oDRFMultiClass <- function(data,
     
     # MultiClass Metrics MicroAUC----
     y <- ValidationData[[eval(Target)]]
-    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
+    keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData))]
     x <- as.matrix(ValidationData[, ..keep])
     z <- tryCatch({pROC::multiclass.roc(response = y, predictor = x)},
                   error = function(x) 0)
