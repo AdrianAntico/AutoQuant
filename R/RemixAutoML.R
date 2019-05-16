@@ -18190,7 +18190,6 @@ AutoXGBoostRegression <- function(data,
       EvalSets <- list(train = datatrain, test = datavalidate)
     }
     
-    
     # Regression Grid Tune or Not Check----
     if(GridTune) {
       
@@ -18434,7 +18433,7 @@ AutoXGBoostRegression <- function(data,
     # Regression Evaluation Calibration Plot----
     EvaluationPlot <- EvalPlot(data = ValidationData,
                                PredictionColName = "Predict",
-                               TargetColName = Target,
+                               TargetColName = "Target",
                                GraphType = "calibration",
                                PercentileBucket = 0.05,
                                aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -18455,7 +18454,7 @@ AutoXGBoostRegression <- function(data,
     # Regression Evaluation Calibration Plot----
     EvaluationBoxPlot <- EvalPlot(data = ValidationData,
                                   PredictionColName = "Predict",
-                                  TargetColName = Target,
+                                  TargetColName = "Target",
                                   GraphType = "boxplot",
                                   PercentileBucket = 0.05,
                                   aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -18556,7 +18555,7 @@ AutoXGBoostRegression <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "Predict",
-          TargetColName = Target,
+          TargetColName = "Target",
           IndepVar = VariableImportance[i, Feature],
           GraphType = "calibration",
           PercentileBucket = 0.05,
@@ -18570,7 +18569,7 @@ AutoXGBoostRegression <- function(data,
         Out1 <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "Predict",
-          TargetColName = Target,
+          TargetColName = "Target",
           IndepVar = VariableImportance[i, Feature],
           GraphType = "boxplot",
           PercentileBucket = 0.05,
