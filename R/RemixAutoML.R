@@ -18176,9 +18176,9 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Remove Target Variable from Feature Data
-    dataTrain[, get(Target) := NULL]
-    dataTest[, get(Target) := NULL]
-    TestData[, get(Target) := NULL]
+    dataTrain[, eval(Target) := NULL]
+    dataTest[, eval(Target) := NULL]
+    TestData[, eval(Target) := NULL]
 
     # Regression Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -18840,9 +18840,9 @@ AutoXGBoostClassifier <- function(data,
     }
 
     # Binary Remove Target Variable from Feature Data
-    dataTrain[, get(Target) := NULL]
-    dataTest[, get(Target) := NULL]
-    TestData[, get(Target) := NULL]
+    dataTrain[, eval(Target) := NULL]
+    dataTest[, eval(Target) := NULL]
+    TestData[, eval(Target) := NULL]
 
     # Binary Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -19553,9 +19553,9 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass Remove Target Variable from Feature Data
-    dataTrain[, get(Target) := NULL]
-    dataTest[, get(Target) := NULL]
-    TestData[, get(Target) := NULL]
+    dataTrain[, eval(Target) := NULL]
+    dataTest[, eval(Target) := NULL]
+    TestData[, eval(Target) := NULL]
 
     # MultiClass Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
