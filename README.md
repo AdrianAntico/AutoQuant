@@ -21,6 +21,8 @@ You can also contact me via <a href="https://www.linkedin.com/in/adrian-antico/"
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
 ## Supervised Learning Functions: 
+<details><summary>EXPAND</summary>
+<p>
 ##### **AutoCatBoostRegression()**
 AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 ##### **AutoXGBoostRegression()**
@@ -106,8 +108,12 @@ Automated collaborative filtering modeling where each model competes against eac
   
 ##### **AutoRecommenderScoring()**
 Automatically score a recommender model from AutoRecommender
+</p>
+</details>
 
 ## Unsupervised Learning Functions: 
+<details><summary>EXPAND</summary>
+<p>
 ##### **GenTSAnomVars()**
 Generate time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 
@@ -116,8 +122,12 @@ Residual outliers from time series modeling. (Cross with Feature Engineering) Ut
 
 ##### **AutoKMeans()** 
 Generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
+</p>
+</details>
 
 ## Feature Engineering Functions: 
+<details><summary>EXPAND</summary>
+<p>
 ##### **FAST_GDL_Feature_Engineering()**
 Fast generalized distributed lag feature engineering. Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set. 100% data.table except for rolling statistics.
 
@@ -138,8 +148,13 @@ Rapidly convert "inf" values to NA, convert character columns to factor columns,
 
 ##### **DummifyDT()** 
 Rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
+</p>
+</details>
+
 
 ## Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
+<details><summary>EXPAND</summary>
+<p>
 ##### **ParDepCalPlots()**
 Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
 
@@ -151,8 +166,13 @@ Great for situations with asymmetric costs across the confusion matrix. Generate
 
 ##### **RedYellowGreen()**
 Computes optimal thresholds for binary classification models when "don't classify" is an option
+</p>
+</details>
+
 
 ## Utilities and Misc. Functions:
+<details><summary>EXPAND</summary>
+<p>
 ##### **AutoH2OTextPrepScoring()** 
 Prepares your data for scoring based on models built with Word2VecModel
 
@@ -188,3 +208,6 @@ creates a word frequency data.table and a word cloud
 
 ##### **ProblematicFeatures()**
 Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
+</p>
+</details>
+
