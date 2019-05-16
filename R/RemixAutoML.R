@@ -17433,9 +17433,6 @@ AutoH2oGBMMultiClass <- function(data,
       Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
     data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
 
-    # MultiClass Change Prediction Name----
-    data.table::setnames(ValidationData, "predict", "Predict")
-
     # MultiClass Save Validation Data to File----
     if(SaveModelObjects) {
       data.table::fwrite(ValidationData,
@@ -17913,9 +17910,6 @@ AutoH2oDRFMultiClass <- function(data,
       Metric = c("Accuracy", "MicroAUC","temp"),
       Value = c(round(MetricAcc,4), round(MetricAUC,4), round(EvalMetric,4)))
     data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
-
-    # MultiClass Change Prediction Name----
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
 
     # MultiClass Save Validation Data to File----
     if(SaveModelObjects) {
