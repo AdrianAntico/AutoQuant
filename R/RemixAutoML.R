@@ -17422,7 +17422,8 @@ AutoH2oGBMMultiClass <- function(data,
     y <- ValidationData[[eval(Target)]]
     keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
     x <- as.matrix(ValidationData[, ..keep])
-    z <- pROC::multiclass.roc(response = y, predictor = x)
+    z <- tryCatch({pROC::multiclass.roc(response = y, predictor = x)},
+                  error = function(x) 0)
     MetricAUC <- round(as.numeric(noquote(
       stringr::str_extract(z$auc,"\\d+\\.*\\d*")
     )), 4)
@@ -17900,7 +17901,8 @@ AutoH2oDRFMultiClass <- function(data,
     y <- ValidationData[[eval(Target)]]
     keep <- names(ValidationData)[(ncol(data)+2):(ncol(ValidationData)-1)]
     x <- as.matrix(ValidationData[, ..keep])
-    z <- pROC::multiclass.roc(response = y, predictor = x)
+    z <- tryCatch({pROC::multiclass.roc(response = y, predictor = x)},
+                  error = function(x) 0)
     MetricAUC <- round(as.numeric(noquote(
       stringr::str_extract(z$auc,"\\d+\\.*\\d*")
     )), 4)
