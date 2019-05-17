@@ -90,7 +90,6 @@ data[, Target := as.factor(
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
-data[, Target := ifelse(Target > 0.5, 1, 0)]
 data <- data.table::rbindlist(list(data,data))
 test <- data[5001:10000]
 data <- data[1:5000]
@@ -103,7 +102,7 @@ TestModel <- AutoXGBoostMultiClass(data,
                                    eval_metric = "merror",
                                    Trees = 50,
                                    GridTune = TRUE,
-                                   grid_eval_metric = "merror",
+                                   grid_eval_metric = "accuracy",
                                    MaxModelsInGrid = 10,
                                    NThreads = 8,
                                    TreeMethod = "hist",
