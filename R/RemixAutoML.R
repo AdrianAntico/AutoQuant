@@ -14,6 +14,7 @@
 "%chin%" <- NULL
 "setcolorder" <- NULL
 ".SD" <- NULL
+".I" <- NULL
 "setorderv" <- NULL
 
 utils::globalVariables(
@@ -26,6 +27,7 @@ utils::globalVariables(
     "Value",
     "p0",
     ":=",
+    ".I",
     "catboostGridList",
     "fwrite",
     "setnames",
