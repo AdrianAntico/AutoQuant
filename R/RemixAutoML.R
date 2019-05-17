@@ -12568,13 +12568,13 @@ AutoRecommender <- function(data,
 #' \donttest{
 #' # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(RecomDataCreate(TransactionData)))
 #' Results <- AutoRecommenderScoring(
-#'   data = RecomDataCreate(
+#'   data = AutoRecomDataCreate(
 #'       data,
 #'       EntityColName = "CustomerID",
 #'       ProductColName = "StockCode",
 #'       MetricColName = "TotalSales"),
 #'   WinningModel = AutoRecommender(
-#'       RecomDataCreate(
+#'       AutoRecomDataCreate(
 #'         data,
 #'         EntityColName = "CustomerID",
 #'         ProductColName = "StockCode",
