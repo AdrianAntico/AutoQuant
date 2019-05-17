@@ -12828,20 +12828,9 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(names(data)[CatFeatures[i+1]]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -13495,23 +13484,9 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression Data Partition----
-    if(!is.null(CatFeatures)) {
-      for(i in seq_len(length(CatFeatures))) {
-        if(i == 1) {
-          data[, SampleCol := paste0(get(names(data)[CatFeatures[i]]))]
-        } else {
-          data[, SampleCol := paste0(SampleCol, get(names(data)[CatFeatures[i]]))]
-        }
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -14164,20 +14139,9 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(names(data)[CatFeatures[i+1]]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass data Subset Columns Needed----
     if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
@@ -14751,23 +14715,9 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    if(!is.null(CatFeatures)) {
-      for(i in seq_len(length(CatFeatures))) {
-        if(i == 1) {
-          data[, SampleCol := paste0(get(CatFeatures[i]))]
-        } else {
-          data[, SampleCol := paste0(SampleCol, get(CatFeatures[i]))]
-        }
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -15479,23 +15429,9 @@ AutoH2oDRFRegression <- function(data,
     MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    if(!is.null(CatFeatures)) {
-      for(i in seq_len(length(CatFeatures))) {
-        if(i == 1) {
-          data[, SampleCol := paste0(get(CatFeatures[i]))]
-        } else {
-          data[, SampleCol := paste0(SampleCol, get(CatFeatures[i]))]
-        }
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -16111,20 +16047,9 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -16678,20 +16603,9 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -17238,20 +17152,9 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -17730,20 +17633,9 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -18203,23 +18095,9 @@ AutoXGBoostRegression <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Regression Data Partition----
-    if(!is.null(CatFeatures)) {
-      for(i in seq_len(length(CatFeatures))) {
-        if(i == 1) {
-          data[, SampleCol := paste0(get(CatFeatures[i]))]
-        } else {
-          data[, SampleCol := paste0(SampleCol, get(CatFeatures[i]))]
-        }
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -18888,20 +18766,9 @@ AutoXGBoostClassifier <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Binary Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := get(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -19619,20 +19486,9 @@ AutoXGBoostMultiClass <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # MultiClass Data Partition----
-    if(!is.null(CatFeatures)) {
-      data[, SampleCol := eval(Target)]
-      for(i in seq_len(length(CatFeatures))) {
-        data[, SampleCol := paste0(SampleCol,get(CatFeatures[i]))]
-      }
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = "SampleCol"]$V1
-      data[, SampleCol := NULL]
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+    dataTrain <- data[x]
+    dataTest <- data[-x]
 
     # MultiClass data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
