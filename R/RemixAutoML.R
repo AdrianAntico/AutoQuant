@@ -12949,6 +12949,10 @@ AutoCatBoostClassifier <- function(data,
                                                 thread_count = -1)
         }
 
+        # Binary Remove Model and Collect Garbage----
+        rm(model)
+        gc()
+
         # Binary Grid Validation Data----
         if(!is.null(TestData)) {
           calibEval <- data.table::as.data.table(
@@ -13627,8 +13631,11 @@ AutoCatBoostRegression <- function(data,
                                                 thread_count = -1)
         }
 
+        # Regression Remove Model and Collect Garbage----
+        rm(model)
+        gc()
+
         # Regression Grid Validation Data----
-        # Binary Grid Validation Data----
         if(!is.null(TestData)) {
           calibEval <- data.table::as.data.table(
             cbind(Target = FinalTestTarget, Predicted = predict))
@@ -14313,6 +14320,10 @@ AutoCatBoostMultiClass <- function(data,
                                          pool = TestPool,
                                          prediction_type = "Probability"))
           }
+
+          # MultiClass Remove Model and Collect Garbage----
+          rm(model)
+          gc()
 
           # MultiClass Grid Validation Data----
           if(!is.null(TestData)) {
