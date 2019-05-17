@@ -22,11 +22,11 @@ PrintObjectsSize(N = 10)
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
+  \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
-  \code{\link{RecomDataCreate}}, \code{\link{RemixTheme}},
-  \code{\link{SimpleCap}}, \code{\link{multiplot}},
-  \code{\link{percRank}}, \code{\link{tempDatesFun}},
-  \code{\link{tokenizeH2O}}
+  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
+  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
 }
 \author{
 Adrian Antico
