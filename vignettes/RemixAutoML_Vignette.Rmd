@@ -889,14 +889,15 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 - `AutoWordFreq()`
 - `AutoH2OTextPrepScoring()`
 - `AutoRecomDataCreate()`
+- `ProblematicFeatures()`
+- `ProblematicRecords()`
 - `ChartTheme()`
 - `RemixTheme()`
 - `multiplot()`
 - `PrintObjectsSize()`
 - `percRank()`
-- `ProblematicFeatures()`
 
-The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **AutoRecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
+The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ProblematicFeatures** identified problematic columns for machine learning. **ProblematicRecords** finds problematic rows in your data set that you should investigate further. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **AutoRecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
 
 ```{r, fig.show='hold'}
 
