@@ -3,7 +3,7 @@
 
 # Install the package in R via:
 ```
-# Depending on the development state (future versions, etc.) you can install by pasting the below into your R session:
+# Depending on the development state (future versions, etc.) you can install via:
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE)
 ```
 or
