@@ -22,10 +22,7 @@ Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
   \code{\link{AutoRecomDataCreate}},
-  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
-  \code{\link{PrintObjectsSize}},
-  \code{\link{ProblematicFeatures}},
-  \code{\link{ProblematicRecords}},
+  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
   \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
   \code{\link{multiplot}}, \code{\link{percRank}},
   \code{\link{tokenizeH2O}}

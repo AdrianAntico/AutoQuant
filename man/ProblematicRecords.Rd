@@ -73,16 +73,10 @@ A data.table
 ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
 }
 \seealso{
-Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{AutoRecomDataCreate}},
-  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
-  \code{\link{PrintObjectsSize}},
-  \code{\link{ProblematicFeatures}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{multiplot}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other EDA: \code{\link{AutoWordFreq}},
+  \code{\link{ProblematicFeatures}}
 }
 \author{
 Adrian Antico
 }
-\concept{Misc}
+\concept{EDA}

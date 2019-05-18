@@ -28,10 +28,7 @@ data <- AutoH2OTextPrepScoring(data = x,
 }
 \seealso{
 Other Misc: \code{\link{AutoRecomDataCreate}},
-  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
-  \code{\link{PrintObjectsSize}},
-  \code{\link{ProblematicFeatures}},
-  \code{\link{ProblematicRecords}},
+  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
   \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
   \code{\link{multiplot}}, \code{\link{percRank}},
   \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
