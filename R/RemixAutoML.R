@@ -5740,7 +5740,7 @@ AutoNLS <- function(data,
     preds1 <- stats::fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
     val    <- base::mean(abs(zz - preds1))
-    data.table::set(nls_collection, 2L, 2L, value = val1)
+    data.table::set(nls_collection, 2L, 2L, value = val)
   }, error = function(x) {
     return("skip")
   })
@@ -5752,7 +5752,7 @@ AutoNLS <- function(data,
                  data = DATA)
     preds2 <- stats::fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
-    va2    <- base::mean(abs(zz - preds2))
+    val2    <- base::mean(abs(zz - preds2))
     data.table::set(nls_collection, 3L, 2L, value = val2)
   }, error = function(x) {
     return("skip")
@@ -5765,7 +5765,7 @@ AutoNLS <- function(data,
                  data = DATA)
     preds3 <- stats::fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
-    va3    <- base::mean(abs(zz - preds3))
+    val3    <- base::mean(abs(zz - preds3))
     data.table::set(nls_collection, 4L, 2L, value = val3)
   }, error = function(x) {
     return("skip")
