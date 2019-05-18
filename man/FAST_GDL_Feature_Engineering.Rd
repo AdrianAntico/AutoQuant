@@ -95,7 +95,6 @@ Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
   \code{\link{DummifyDT}},
   \code{\link{GDL_Feature_Engineering}},
   \code{\link{ModelDataPrep}},
-  \code{\link{ProblematicFeatures}},
   \code{\link{Scoring_GDL_Feature_Engineering}}
 }
 \author{

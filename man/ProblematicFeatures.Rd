@@ -45,15 +45,16 @@ ProblematicFeatures(test,
                     HighSkewThresh = 10)
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}},
-  \code{\link{FAST_GDL_Feature_Engineering}},
-  \code{\link{GDL_Feature_Engineering}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Scoring_GDL_Feature_Engineering}}
+Other Misc: \code{\link{AutoH2OTextPrepScoring}},
+  \code{\link{AutoRecomDataCreate}},
+  \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}},
+  \code{\link{ProblematicRecords}},
+  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
+  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
 }
 \author{
 Adrian Antico
 }
-\concept{Feature Engineering}
+\concept{Misc}

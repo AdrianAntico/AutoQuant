@@ -23,9 +23,12 @@ Cdata[, DAY_DATE := tempDatesFun(DAY_DATE)]
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
   \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoWordFreq}}, \code{\link{ChartTheme}},
-  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
-  \code{\link{SimpleCap}}, \code{\link{multiplot}},
-  \code{\link{percRank}}, \code{\link{tokenizeH2O}}
+  \code{\link{PrintObjectsSize}},
+  \code{\link{ProblematicFeatures}},
+  \code{\link{ProblematicRecords}},
+  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
+  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{tokenizeH2O}}
 }
 \author{
 Adrian Antico
