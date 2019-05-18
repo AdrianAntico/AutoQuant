@@ -177,18 +177,21 @@ Computes optimal thresholds for binary classification models when "don't classif
 ## Utilities and Misc. Functions:
 <details><summary>EXPAND</summary>
 <p>
+ 
+ ##### **AutoWordFreq()** 
+creates a word frequency data.table and a word cloud
 
 ##### **AutoH2OTextPrepScoring()** 
 Prepares your data for scoring based on models built with Word2VecModel
 
-##### **RecomDataCreate()** 
+##### **AutoRecomDataCreate()** 
 Turns your transactional data into a binary ratings matrix
 
-##### **tokenizeH2O()** 
-Tokenize and H20 string column.
+##### **ProblematicFeatures()**
+Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
 
-##### **tempDatesFun()** 
-Special case for character conversion to date when importing from Excel.
+##### **ProblematicRecords()**
+Identify records identified as outliers via Isolation Forests from H2O
 
 ##### **RemixTheme()** 
 Fonts, colors, style for plots.
@@ -196,23 +199,23 @@ Fonts, colors, style for plots.
 ##### **ChartTheme()** 
 Fonts, colors, style for plots.
 
-##### **SimpleCap()** 
-Apply proper case to text.
+##### **multiplot()** 
+Useful for displaying multiple plots in a single pane.
+
+##### **tokenizeH2O()** 
+Tokenize and H2O string column.
 
 ##### **percRank()** 
 Inner function for calibration plots and partial dependence plots. Computes PercentRank.
 
-##### **multiplot()** 
-Useful for displaying multiple plots in a single pane.
+##### **SimpleCap()** 
+Apply proper case to text.
 
 ##### **PrintObjectsSize()** 
 print out objects and their sizes that are in the envrionment
 
-##### **AutoWordFreq()** 
-creates a word frequency data.table and a word cloud
-
-##### **ProblematicFeatures()**
-Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
+##### **tempDatesFun()** 
+Special case for character conversion to date when importing from Excel.
 </p>
 </details>
 
