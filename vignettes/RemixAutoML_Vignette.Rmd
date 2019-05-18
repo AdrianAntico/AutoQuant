@@ -94,48 +94,31 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
+- `AutoNLS()`
+- `AutoRecomDataCreate()`
 - `AutoRecommender()`
 - `AutoRecommenderScoring()`
-- `AutoNLS()`
+
+#### **AutoCatBoostRegression()** 
+#### **AutoXGBoostRegression()** 
+#### **AutoH2oGBMRegression()** 
+#### **AutoH2oDRFRegression()**
+The Auto__Regression() set are automated regression modeling function that runs a variety of steps. First, the functions will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation calibration plot, evaluation calibration boxplot, evaluation model metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid metrics, grid arguments, and column names used in model fitting. You can fit standard expected value regression (all of them) along with quantile regression (catboost and h2o gbm). 
 
 #### **AutoCatBoostClassifier()** 
-AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
-
-#### **AutoCatBoostRegression()**
-AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can fit standard expected value regression along with quantile regression. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
-
-#### **AutoCatBoostMultiClass()**
-AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
-
-#### **AutoH2oGBMRegression()**
-AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can fit standard expected value regression along with quantile regression. 
-
-#### **AutoH2oDRFRegression()**
-AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
-
+#### **AutoXGBoostClassifier()** 
+#### **AutoH2oGBMClassifier()** 
 #### **AutoH2oDRFClassifier()**
-AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+The Auto__Classifier() set are automated binary classification modeling functions that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation calibration plot, evaluation metrics, variable importance, partial dependence calibration plots, grid metrics, grid arguments, and column names used in model fitting. 
 
-#### **AutoH2oGBMClassifier()**
-AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
-
-#### **AutoH2oGBMMultiClass()**
-AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
-
+#### **AutoCatBoostMultiClass()** 
+#### **AutoXGBoostMultiClass()** 
+#### **AutoH2oGBMMultiClass()** 
 #### **AutoH2oDRFMultiClass()**
-AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
-
-#### **AutoXGBoostRegression()**
-AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid arguments, grid results, and column names used in model fitting.
-
-#### **AutoXGBoostClassifier()**
-AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid arguments, grid results, and column names used in model fitting.
-
-#### **AutoXGBoostMultiClass()**
-AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, grid arguments, grid results, and column names used in model fitting.
+The Auto__MultiClass() set are automated multiclass modeling functions that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the best model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, grid metrics, grid arguments, and column names used in model fitting.
 
 #### **AutoH2OModeler()**
-The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
+The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler()** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
 
 #### **AutoH2OScoring()**
 This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH2OScoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. In total, the **AutoH2OScoring** function can score: Regression models, Quantile regression Models, Binary classification Models, Multinomial classification Models, Multioutcome multinomial classification models, Generalized low rank dimensionality reduction models, KMeans clustering models, and Word2vec models. 
@@ -143,14 +126,17 @@ This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and *
 #### **AutoTS()**
 Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. The competing models include: DSHW (Double Seasonal Holt Winters), ARFIMA (Autoregressive Fractional Integrated Moving Average), ARIMA (Autoregressive Integrated Moving Average), ETS (Exponential Smoothing and Holt Winters), TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components), TSLM (Time Series Linear Model), NN (Autoregressive Neural Network). 
 
+#### **AutoRecomDataCreate()**
+This function will automatically turn your transactional data into a binary ratings matrix that you supply to the AutoRecommender() function for model building and the AutoRecommenderScoring() function for scoring.
+
 #### **AutoRecommender()**
-This function builds out several variations of collaborative filtering models on a binary ratings matrix. To automatically build the binary ratings matrix, see **RecomDataCreate**. The competing models include: RandomItems, PopularItems, UserBasedCF, ItemBasedCF, AssociationRules.
+This function builds out several variations of collaborative filtering models on a binary ratings matrix. To automatically build the binary ratings matrix, see **AutoRecomDataCreate**. The competing models include: RandomItems, PopularItems, UserBasedCF, ItemBasedCF, AssociationRules.
 
 #### **AutoRecommenderScoring()**
-This function will automatically score your winning model. Simply feed in your data and the winning model returned from the **AutoRecommender** function and this function will generate a table of several recommended products (by rank) for each entity.
+This function will automatically score your winning model. Simply feed in your data and the winning model returned from the **AutoRecommender** function and this function will generate a table of several recommended products (by rank) for each entity. This process is parallelized for fast scoring.
 
 #### **AutoNLS()**
-This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table. The competing models include: Asymptotic, Asymptotic through origin, Asymptotic with offset, Bi-exponential, Four parameter logistic, Three parameter logistic, Gompertz, Michal Menton, Weibull, Polynomial regression or monotonic regression.
+This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table. The competing models include: Asymptotic, Asymptotic through origin, Asymptotic with offset, Bi-exponential, Four parameter logistic, Three parameter logistic, Gompertz, Michal Menton, Weibull, and Polynomial regression or monotonic regression.
 
 ### Example of **AutoXGBoostRegression()**
 
@@ -888,7 +874,6 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 ##### Functions include:
 - `AutoWordFreq()`
 - `AutoH2OTextPrepScoring()`
-- `AutoRecomDataCreate()`
 - `ProblematicFeatures()`
 - `ProblematicRecords()`
 - `ChartTheme()`
