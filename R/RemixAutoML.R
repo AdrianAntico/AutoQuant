@@ -494,7 +494,7 @@ percRank <- function(x) {
 #' ProblematicFeatures identifies problematic features for machine learning and outputs a data.table of the feature names in the first column and the metrics they failed to pass in the columns.
 #'
 #' @author Adrian Antico
-#' @family Misc
+#' @family EDA
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
 #' @param NearZeroVarThresh Set to NULL to not run NearZeroVar(). Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.
@@ -773,7 +773,7 @@ ProblematicFeatures <- function(data,
 #' ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
 #'
 #' @author Adrian Antico
-#' @family Misc
+#' @family EDA
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
 #' @param Threshold Quantile value to find the cutoff value for classifying outliers
@@ -12295,7 +12295,7 @@ AutoWord2VecModeler <- function(data,
 #'
 #' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 #' @author Adrian Antico
-#' @family Misc
+#' @family EDA
 #' @param data Source data table
 #' @param TextColName A string name for the column
 #' @param GroupColName Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
