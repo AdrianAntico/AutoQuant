@@ -21,7 +21,15 @@ ProblematicRecords(data, ColumnNumbers = NULL, Threshold = 0.975,
 
 \item{NTrees}{Specify the number of decision trees to build}
 
-\item{SampleRate}{Specify the row sample rate per tree
+\item{SampleRate}{Specify the row sample rate per tree}
+}
+\value{
+A data.table
+}
+\description{
+ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
+}
+\examples{
 \donttest{
  Correl <- 0.85
 N <- 10000
@@ -64,13 +72,7 @@ Outliers <- ProblematicRecords(data,
                               Threshold = 0.95,
                               MaxMem = "28G",
                               NThreads = -1)
-}}
 }
-\value{
-A data.table
-}
-\description{
-ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
 }
 \seealso{
 Other EDA: \code{\link{AutoWordFreq}},
