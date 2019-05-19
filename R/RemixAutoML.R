@@ -18687,8 +18687,7 @@ AutoXGBoostRegression <- function(data,
         } else if(tolower(metric) == "r2") {
           Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1]])^2
         }
-        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric,4))
-        data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = Metric)
       }, error = function(x) "skip")
     }
 
@@ -18776,6 +18775,9 @@ AutoXGBoostRegression <- function(data,
                            Metric1 = NULL,
                            Metric2 = NULL,
                            Metric3 = NULL)]
+
+    # Regression Formal Evaluation Table
+    EvaluationMetrics[, MetricValue := round(MetricValue,4)]
 
     # Regression Return Model Objects----
     if(GridTune) {
