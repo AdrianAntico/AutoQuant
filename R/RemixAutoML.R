@@ -13018,6 +13018,7 @@ AutoRecommenderScoring <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
 #' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
@@ -13077,6 +13078,7 @@ AutoRecommenderScoring <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
 #'                                     CatFeatures = NULL,
+#'                                     StratifyColumnNames = NULL,
 #'                                     MaxModelsInGrid = 3,
 #'                                     TrainSplitRatio = 0.80,
 #'                                     task_type = "GPU",
@@ -13097,6 +13099,7 @@ AutoCatBoostClassifier <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   StratifyColumnNames = NULL,
                                    TrainSplitRatio = 0.80,
                                    task_type = "GPU",
                                    eval_metric = "AUC",
@@ -13182,9 +13185,16 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -13708,6 +13718,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param CatFeatures A vector of column numbers of your categorical features.
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
@@ -13759,6 +13770,7 @@ AutoCatBoostClassifier <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
 #'                                     CatFeatures = c(12),
+#'                                     StratifyColumnNames = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     TrainSplitRatio = 0.80,
 #'                                     task_type = "GPU",
@@ -13779,6 +13791,7 @@ AutoCatBoostRegression <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   StratifyColumnNames = NULL,
                                    TrainSplitRatio = 0.80,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
@@ -13851,9 +13864,16 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -14383,6 +14403,7 @@ AutoCatBoostRegression <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
 #' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"
@@ -14432,6 +14453,7 @@ AutoCatBoostRegression <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
 #'                                     CatFeatures = NULL,
+#'                                     StratifyColumnNames = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     TrainSplitRatio = 0.80,
 #'                                     task_type = "GPU",
@@ -14451,6 +14473,7 @@ AutoCatBoostMultiClass <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   StratifyColumnNames = NULL,
                                    TrainSplitRatio = 0.80,
                                    task_type = "GPU",
                                    eval_metric = "MultiClassOneVsAll",
@@ -14518,9 +14541,16 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # MultiClass data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -14940,6 +14970,7 @@ AutoCatBoostMultiClass <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
 #' @param Distribution Choose from gaussian",  "poisson",  "gamma",  "tweedie",  "laplace",  "quantile", "huber"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
@@ -14991,6 +15022,7 @@ AutoCatBoostMultiClass <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
+#'                                   StratifyColumnNames = NULL,
 #'                                   Alpha = NULL,
 #'                                   Distribution = "poisson",
 #'                                   eval_metric = "RMSE",
@@ -15012,6 +15044,7 @@ AutoH2oGBMRegression <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  Alpha = NULL,
                                  Distribution = "poisson",
                                  eval_metric = "RMSE",
@@ -15094,9 +15127,16 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -15670,6 +15710,7 @@ AutoH2oGBMRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
@@ -15719,7 +15760,7 @@ AutoH2oGBMRegression <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
-#'                                   Alpha = NULL,
+#'                                   StratifyColumnNames = NULL,
 #'                                   eval_metric = "RMSE",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
@@ -15739,6 +15780,7 @@ AutoH2oDRFRegression <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  eval_metric = "RMSE",
                                  TrainSplitRatio = 0.80,
                                  Trees = 50,
@@ -15812,9 +15854,16 @@ AutoH2oDRFRegression <- function(data,
     MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Regression Grid Tune Check----
     if(GridTune) {
@@ -16275,6 +16324,7 @@ AutoH2oDRFRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
@@ -16324,7 +16374,7 @@ AutoH2oDRFRegression <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
-#'                                   Alpha = NULL,
+#'                                   StratifyColumnNames = NULL,
 #'                                   eval_metric = "RMSE",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
@@ -16344,6 +16394,7 @@ AutoH2oGBMClassifier <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  eval_metric = "RMSE",
                                  TrainSplitRatio = 0.80,
                                  Trees = 50,
@@ -16434,9 +16485,16 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -16835,6 +16893,7 @@ AutoH2oGBMClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
@@ -16884,7 +16943,7 @@ AutoH2oGBMClassifier <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
-#'                                   Alpha = NULL,
+#'                                   StratifyColumnNames = NULL,
 #'                                   eval_metric = "auc",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
@@ -16904,6 +16963,7 @@ AutoH2oDRFClassifier <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  eval_metric = "RMSE",
                                  TrainSplitRatio = 0.80,
                                  Trees = 50,
@@ -16994,9 +17054,16 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Binary Grid Tune Check----
     if(GridTune) {
@@ -17393,6 +17460,7 @@ AutoH2oDRFClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
@@ -17441,7 +17509,7 @@ AutoH2oDRFClassifier <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
-#'                                   Alpha = NULL,
+#'                                   StratifyColumnNames = NULL,
 #'                                   eval_metric = "RMSE",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
@@ -17460,6 +17528,7 @@ AutoH2oGBMMultiClass <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  eval_metric = "RMSE",
                                  TrainSplitRatio = 0.80,
                                  Trees = 50,
@@ -17468,7 +17537,6 @@ AutoH2oGBMMultiClass <- function(data,
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
                                  ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
@@ -17494,7 +17562,6 @@ AutoH2oGBMMultiClass <- function(data,
       if(!is.character(model_path)) warning("model_path needs to be a character type")
     }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
-    if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
     if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
     if(!(tolower(eval_metric) == "auc")) {
@@ -17545,9 +17612,16 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -17876,6 +17950,7 @@ AutoH2oGBMMultiClass <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
@@ -17924,7 +17999,7 @@ AutoH2oGBMMultiClass <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
-#'                                   Alpha = NULL,
+#'                                   StratifyColumnNames = NULL,
 #'                                   eval_metric = "RMSE",
 #'                                   TrainSplitRatio = 0.80,
 #'                                   Trees = 50,
@@ -17943,6 +18018,7 @@ AutoH2oDRFMultiClass <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 StratifyColumnNames = NULL,
                                  eval_metric = "RMSE",
                                  TrainSplitRatio = 0.80,
                                  Trees = 50,
@@ -17976,7 +18052,6 @@ AutoH2oDRFMultiClass <- function(data,
       if(!is.character(model_path)) warning("model_path needs to be a character type")
     }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
-    if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
     if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
     if(!(tolower(eval_metric) == "auc")) {
@@ -18025,9 +18100,16 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # MultiClass Grid Tune Check----
     if(GridTune) {
@@ -18354,6 +18436,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
@@ -18409,6 +18492,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    TestData = test,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
+#'                                    StratifyColumnNames = NULL,
 #'                                    CatFeatures = 12,
 #'                                    TrainSplitRatio = 0.80,
 #'                                    eval_metric = "RMSE",
@@ -18430,6 +18514,7 @@ AutoXGBoostRegression <- function(data,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
+                                  StratifyColumnNames = NULL,
                                   CatFeatures = NULL,
                                   TrainSplitRatio = 0.80,
                                   eval_metric = "RMSE",
@@ -18494,9 +18579,16 @@ AutoXGBoostRegression <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Regression Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)]]
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -19038,6 +19130,7 @@ AutoXGBoostRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
@@ -19094,6 +19187,7 @@ AutoXGBoostRegression <- function(data,
 #'                                    TestData = test,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
+#'                                    StratifyColumnNames = NULL,
 #'                                    CatFeatures = 12,
 #'                                    TrainSplitRatio = 0.80,
 #'                                    eval_metric = "auc",
@@ -19115,6 +19209,7 @@ AutoXGBoostClassifier <- function(data,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
+                                  StratifyColumnNames = NULL,
                                   CatFeatures = NULL,
                                   TrainSplitRatio = 0.80,
                                   eval_metric = "auc",
@@ -19178,9 +19273,16 @@ AutoXGBoostClassifier <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Binary Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -19739,6 +19841,7 @@ AutoXGBoostClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Target should be in factor or character form.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param StratifyColumnNames Supply column names to stratify by in the data partitioning step
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "merror", "mlogloss"
 #' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
@@ -19785,6 +19888,11 @@ AutoXGBoostClassifier <- function(data,
 #'          ifelse(Independent_Variable2 < 0.40, "B",
 #'                 ifelse(Independent_Variable2 < 0.6,  "C",
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data[, Independent_Variable11 := as.factor(
+#' ifelse(Independent_Variable2 < 0.25, "A",
+#'        ifelse(Independent_Variable2 < 0.35, "B",
+#'               ifelse(Independent_Variable2 < 0.65,  "C",
+#'                      ifelse(Independent_Variable2 < 0.75,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data <- data.table::rbindlist(list(data,data))
 #' test <- data[5001:10000]
@@ -19794,6 +19902,7 @@ AutoXGBoostClassifier <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    CatFeatures = 12,
+#'                                    StratifyColumnNames = NULL
 #'                                    TrainSplitRatio = 0.80,
 #'                                    eval_metric = "merror",
 #'                                    Trees = 50,
@@ -19814,6 +19923,7 @@ AutoXGBoostMultiClass <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   CatFeatures = NULL,
+                                  StratifyColumnNames = NULL,
                                   TrainSplitRatio = 0.80,
                                   eval_metric = "merror",
                                   Trees = 50,
@@ -19848,7 +19958,6 @@ AutoXGBoostMultiClass <- function(data,
       if(!is.character(model_path)) warning("model_path needs to be a character type")
     }
     if(!is.character(ModelID)) warning("ModelID needs to be a character type")
-    if(NumOfParDepPlots < 0) warning("NumOfParDepPlots needs to be a positive number")
     if(!(ReturnModelObjects %in% c(TRUE,FALSE))) warning("ReturnModelObjects needs to be TRUE or FALSE")
     if(!(SaveModelObjects %in% c(TRUE,FALSE))) warning("SaveModelObjects needs to be TRUE or FALSE")
 
@@ -19858,8 +19967,10 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass Ensure TestData is a data.table----
-    if(!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
     }
 
     # MultiClass Target Name Storage----
@@ -19888,20 +19999,29 @@ AutoXGBoostMultiClass <- function(data,
                   all = FALSE)
     data[, paste0(Target) := NewLevels]
     data[, NewLevels := NULL]
-    TestData <- merge(TestData, TargetLevels,
-                      by.x = eval(Target),
-                      by.y = "OriginalLevels",
-                      all = FALSE)
-    TestData[, paste0(Target) := NewLevels]
-    TestData[, NewLevels := NULL]
+    if(!is.null(TestData)) {
+      TestData <- merge(TestData, TargetLevels,
+                        by.x = eval(Target),
+                        by.y = "OriginalLevels",
+                        all = FALSE)
+      TestData[, paste0(Target) := NewLevels]
+      TestData[, NewLevels := NULL]
+    }
 
     # MultiClass CatFeatures Names
     CatFeatures <- names(data)[CatFeatures]
 
     # MultiClass Data Partition----
-    x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-    dataTrain <- data[x]
-    dataTest <- data[-x]
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(Target),eval(StratifyColumnNames))
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    } else {
+      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
+      dataTrain <- data[x]
+      dataTest <- data[-x]
+    }
 
     # MultiClass data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
