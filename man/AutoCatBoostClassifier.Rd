@@ -5,7 +5,8 @@
 \title{AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
 AutoCatBoostClassifier(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, CatFeatures = NULL, TrainSplitRatio = 0.8,
+  FeatureColNames = NULL, CatFeatures = NULL,
+  StratifyColumnNames = NULL, TrainSplitRatio = 0.8,
   task_type = "GPU", eval_metric = "AUC", Trees = 50,
   GridTune = FALSE, grid_eval_metric = "f", MaxModelsInGrid = 10,
   model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
@@ -21,6 +22,8 @@ AutoCatBoostClassifier(data, TestData = NULL, TargetColumnName = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
 \item{CatFeatures}{A vector of column numbers of your categorical features, not zero indexed.}
+
+\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
@@ -99,6 +102,7 @@ TestModel <- AutoCatBoostClassifier(data,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:11),
                                     CatFeatures = NULL,
+                                    StratifyColumnNames = NULL,
                                     MaxModelsInGrid = 3,
                                     TrainSplitRatio = 0.80,
                                     task_type = "GPU",

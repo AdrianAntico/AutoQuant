@@ -5,10 +5,11 @@
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoH2oGBMRegression(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, Alpha = NULL, Distribution = "poisson",
-  eval_metric = "RMSE", TrainSplitRatio = 0.8, Trees = 50,
-  GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
-  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
+  FeatureColNames = NULL, StratifyColumnNames = NULL, Alpha = NULL,
+  Distribution = "poisson", eval_metric = "RMSE",
+  TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
+  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo")
 }
@@ -20,6 +21,8 @@ AutoH2oGBMRegression(data, TestData = NULL, TargetColumnName = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
@@ -92,6 +95,7 @@ TestModel <- AutoH2oGBMRegression(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
+                                  StratifyColumnNames = NULL,
                                   Alpha = NULL,
                                   Distribution = "poisson",
                                   eval_metric = "RMSE",

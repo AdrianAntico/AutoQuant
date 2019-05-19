@@ -5,10 +5,10 @@
 \title{AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoH2oDRFClassifier(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, eval_metric = "RMSE",
-  TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
-  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  FeatureColNames = NULL, StratifyColumnNames = NULL,
+  eval_metric = "RMSE", TrainSplitRatio = 0.8, Trees = 50,
+  GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
+  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo")
 }
@@ -20,6 +20,8 @@ AutoH2oDRFClassifier(data, TestData = NULL, TargetColumnName = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"}
 
@@ -88,7 +90,7 @@ TestModel <- AutoH2oDRFClassifier(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  Alpha = NULL,
+                                  StratifyColumnNames = NULL,
                                   eval_metric = "auc",
                                   TrainSplitRatio = 0.80,
                                   Trees = 50,

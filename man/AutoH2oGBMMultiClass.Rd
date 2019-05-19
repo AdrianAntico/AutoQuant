@@ -5,10 +5,10 @@
 \title{AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoH2oGBMMultiClass(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, eval_metric = "RMSE",
-  TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
-  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  FeatureColNames = NULL, StratifyColumnNames = NULL,
+  eval_metric = "RMSE", TrainSplitRatio = 0.8, Trees = 50,
+  GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
+  model_path = NULL, ModelID = "FirstModel",
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo")
 }
@@ -20,6 +20,8 @@ AutoH2oGBMMultiClass(data, TestData = NULL, TargetColumnName = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
 
@@ -86,7 +88,7 @@ TestModel <- AutoH2oGBMMultiClass(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  Alpha = NULL,
+                                  StratifyColumnNames = NULL,
                                   eval_metric = "RMSE",
                                   TrainSplitRatio = 0.80,
                                   Trees = 50,

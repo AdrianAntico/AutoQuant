@@ -5,12 +5,12 @@
 \title{AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, CatFeatures = NULL, TrainSplitRatio = 0.8,
-  eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "mae", TreeMethod = "hist",
-  MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3, Verbose = 0,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
+  FeatureColNames = NULL, StratifyColumnNames = NULL,
+  CatFeatures = NULL, TrainSplitRatio = 0.8, eval_metric = "RMSE",
+  Trees = 50, GridTune = FALSE, grid_eval_metric = "mae",
+  TreeMethod = "hist", MaxModelsInGrid = 10, NThreads = 8,
+  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
+  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -20,6 +20,8 @@ AutoXGBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{CatFeatures}{Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.}
 
@@ -97,6 +99,7 @@ TestModel <- AutoXGBoostRegression(data,
                                    TestData = test,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,
+                                   StratifyColumnNames = NULL,
                                    CatFeatures = 12,
                                    TrainSplitRatio = 0.80,
                                    eval_metric = "RMSE",
