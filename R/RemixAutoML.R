@@ -12943,6 +12943,13 @@ AutoCatBoostClassifier <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Binary Ensure data is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Binary Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -12975,13 +12982,15 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary TestData Subset Columns Needed----
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, Target)
-      TestData <- TestData[, ..keep]
-    } else {
-      keep <- c(FeatureColNames, Target)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # Binary Save Names of data----
@@ -13603,6 +13612,13 @@ AutoCatBoostRegression <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Regression Ensure data is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -13635,13 +13651,15 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression TestData Subset Columns Needed----
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, Target)
-      TestData <- TestData[, ..keep]
-    } else {
-      keep <- c(FeatureColNames, Target)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # Regression Save Names of data----
@@ -14261,6 +14279,13 @@ AutoCatBoostMultiClass <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # MultiClass Ensure TestData is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # MultiClass Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -14281,45 +14306,27 @@ AutoCatBoostMultiClass <- function(data,
     dataTest <- data[-x]
 
     # MultiClass data Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
+    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
+      keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
       dataTest <- data[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(data)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      dataTrain <- data[, ..keep]
-      dataTest <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(data)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      dataTrain <- data[, ..keep]
-      dataTest <- data[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
+    } else {
+      keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
       dataTest <- data[, ..keep]
     }
 
     # MultiClass TestData Subset Columns Needed----
-    if((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(keep1, keep2)
-      TestData <- TestData[, ..keep]
-    } else if ((is.numeric(TargetColumnName) | is.integer(TargetColumnName)) & is.character(FeatureColNames)) {
-      keep2 <- names(TestData)[c(TargetColumnName)]
-      keep <- c(FeatureColNames, keep2)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & (is.numeric(FeatureColNames) | is.integer(FeatureColNames))) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else if (is.character(TargetColumnName) & is.character(FeatureColNames)) {
-      keep <- c(FeatureColNames, TargetColumnName)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -14833,10 +14840,24 @@ AutoH2oGBMRegression <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Regression Ensure data is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Regression ModelDataPrep----
     data <- ModelDataPrep(data = data,
                           Impute = FALSE,
                           CharToFactor = TRUE)
+
+    # Regression ModelDataPrep----
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = data,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
@@ -15545,14 +15566,18 @@ AutoH2oDRFRegression <- function(data,
     }
 
     # Regression Ensure data is a data.table----
-    if(!data.table::is.data.table(data)) {
-      TestData <- data.table::as.data.table(TestData)
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(data)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
     }
 
     # Regression ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # Regression ModelDataPrep----
     data <- ModelDataPrep(data = data,
@@ -16155,20 +16180,24 @@ AutoH2oGBMClassifier <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Binary Ensure TestData is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Binary ModelDataPrep----
     data <- ModelDataPrep(data = data,
                           Impute = FALSE,
                           CharToFactor = TRUE)
 
-    # Binary Ensure data is a data.table----
-    if(!data.table::is.data.table(data)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
-
     # Binary ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # Binary Target Name Storage----
     if(is.character(TargetColumnName)) {
@@ -16711,20 +16740,24 @@ AutoH2oDRFClassifier <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Binary Ensure TestData is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Binary ModelDataPrep----
     data <- ModelDataPrep(data = data,
                           Impute = FALSE,
                           CharToFactor = TRUE)
 
-    # Binary Ensure data is a data.table----
-    if(!data.table::is.data.table(data)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
-
     # Binary ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # Binary Target Name Storage----
     if(is.character(TargetColumnName)) {
@@ -17263,20 +17296,24 @@ AutoH2oGBMMultiClass <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # MultiClass Ensure data is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # MultiClass ModelDataPrep----
     data <- ModelDataPrep(data = data,
                           Impute = FALSE,
                           CharToFactor = TRUE)
 
-    # MultiClass Ensure data is a data.table----
-    if(!data.table::is.data.table(data)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
-
     # MultiClass ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # MultiClass Target Name Storage----
     if(is.character(TargetColumnName)) {
@@ -17752,9 +17789,11 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = FALSE,
+                                CharToFactor = TRUE)
+    }
 
     # MultiClass Target Name Storage----
     if(is.character(TargetColumnName)) {
@@ -18220,6 +18259,13 @@ AutoXGBoostRegression <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Regression Ensure TestData is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Regression Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -18248,13 +18294,15 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression TestData Subset Columns Needed----
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, Target)
-      TestData <- TestData[, ..keep]
-    } else {
-      keep <- c(FeatureColNames, Target)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # MultiClass Dummify dataTrain Categorical Features----
@@ -18296,7 +18344,9 @@ AutoXGBoostRegression <- function(data,
     # Regression Remove Target Variable from Feature Data
     dataTrain[, eval(Target) := NULL]
     dataTest[, eval(Target) := NULL]
-    TestData[, eval(Target) := NULL]
+    if(!is.null(TestData)) {
+      TestData[, eval(Target) := NULL]
+    }
 
     # Regression Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -18891,6 +18941,13 @@ AutoXGBoostClassifier <- function(data,
       data <- data.table::as.data.table(data)
     }
 
+    # Binary Ensure TestData is a data.table----
+    if(!is.null(TestData)) {
+      if(!data.table::is.data.table(TestData)) {
+        TestData <- data.table::as.data.table(TestData)
+      }
+    }
+
     # Binary Target Name Storage----
     if(is.character(TargetColumnName)) {
       Target <- TargetColumnName
@@ -18919,13 +18976,15 @@ AutoXGBoostClassifier <- function(data,
     }
 
     # Binary TestData Subset Columns Needed----
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, Target)
-      TestData <- TestData[, ..keep]
-    } else {
-      keep <- c(FeatureColNames, Target)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # MultiClass Dummify dataTrain Categorical Features----
@@ -18967,7 +19026,9 @@ AutoXGBoostClassifier <- function(data,
     # Binary Remove Target Variable from Feature Data
     dataTrain[, eval(Target) := NULL]
     dataTest[, eval(Target) := NULL]
-    TestData[, eval(Target) := NULL]
+    if(!is.null(TestData)) {
+      TestData[, eval(Target) := NULL]
+    }
 
     # Binary Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -19636,13 +19697,15 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass TestData Subset Columns Needed----
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      keep <- c(keep1, Target)
-      TestData <- TestData[, ..keep]
-    } else {
-      keep <- c(FeatureColNames, Target)
-      TestData <- TestData[, ..keep]
+    if(!is.null(TestData)) {
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(TestData)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      }
     }
 
     # MultiClass Dummify dataTrain Categorical Features----
@@ -19684,7 +19747,9 @@ AutoXGBoostMultiClass <- function(data,
     # MultiClass Remove Target Variable from Feature Data
     dataTrain[, eval(Target) := NULL]
     dataTest[, eval(Target) := NULL]
-    TestData[, eval(Target) := NULL]
+    if(!is.null(TestData)) {
+      TestData[, eval(Target) := NULL]
+    }
 
     # MultiClass Initialize Catboost Data Conversion----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
