@@ -17151,7 +17151,6 @@ AutoH2oDRFClassifier <- function(data,
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
@@ -17201,7 +17200,6 @@ AutoH2oDRFClassifier <- function(data,
 #'                                   MaxModelsInGrid = 10,
 #'                                   model_path = NULL,
 #'                                   ModelID = "FirstModel",
-#'                                   NumOfParDepPlots = 3,
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
@@ -17632,7 +17630,6 @@ AutoH2oGBMMultiClass <- function(data,
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
@@ -17682,7 +17679,6 @@ AutoH2oGBMMultiClass <- function(data,
 #'                                   MaxModelsInGrid = 10,
 #'                                   model_path = NULL,
 #'                                   ModelID = "FirstModel",
-#'                                   NumOfParDepPlots = 3,
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
@@ -17701,7 +17697,6 @@ AutoH2oDRFMultiClass <- function(data,
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
                                  ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
@@ -19475,7 +19470,6 @@ AutoXGBoostClassifier <- function(data,
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
@@ -19530,7 +19524,6 @@ AutoXGBoostClassifier <- function(data,
 #'                                    TreeMethod = "hist",
 #'                                    model_path = getwd(),
 #'                                    ModelID = "FirstModel",
-#'                                    NumOfParDepPlots = 3,
 #'                                    ReturnModelObjects = TRUE,
 #'                                    SaveModelObjects = FALSE)
 #' }
@@ -19551,7 +19544,6 @@ AutoXGBoostMultiClass <- function(data,
                                   NThreads = 8,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE) {
