@@ -23,6 +23,7 @@ utils::globalVariables(
     "RelativeImportance",
     "ScaledImportance",
     "Percentage",
+    "PredictedOutlier",
     "idx",
     "Value",
     "p0",
@@ -781,6 +782,7 @@ ProblematicFeatures <- function(data,
 #' @param NThreads Specify the number of threads (E.g. cores * 2)
 #' @param NTrees Specify the number of decision trees to build
 #' @param SampleRate Specify the row sample rate per tree
+#' @examples
 #' \donttest{
 #'  Correl <- 0.85
 #' N <- 10000
@@ -19902,7 +19904,7 @@ AutoXGBoostClassifier <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    CatFeatures = 12,
-#'                                    StratifyColumnNames = NULL
+#'                                    StratifyColumnNames = NULL,
 #'                                    TrainSplitRatio = 0.80,
 #'                                    eval_metric = "merror",
 #'                                    Trees = 50,
