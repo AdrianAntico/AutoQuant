@@ -6345,17 +6345,71 @@ GDL_Feature_Engineering <- function(data,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
 
-  # Ensure packages are available
+  # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
-  # Convert to data.table if not already
-  if (!data.table::is.data.table(data))
-    data <- data.table::as.data.table(data)
+  # Argument Checks----
+  if(is.null(lags) & WindowingLag == 1) {
+    lags <- 1
+  }
+  if(!(1 %in% lags) & WindowingLag == 1) {
+    lags <- c(1,lags)
+  }
+  if(any(lags < 0)) {
+    warning("lags need to be positive integers")
+  }
+  if(length(statsFUNs) != length(statsNames)) {
+    warning("statsFuns and statsNames aren't the same length")
+  }
+  if(!is.character(statsNames)) {
+    warning("statsNames needs to be a character scalar or vector")
+  }
+  if(!is.null(groupingVars)) {
+    if(!is.character(groupingVars)) {
+      warning("groupingVars needs to be a character scalar or vector")
+    }
+  }
+  if(!is.character(targets)) {
+    warning("targets needs to be a character scalar or vector")
+  }
+  if(!is.character(sortDateName)) {
+    warning("sortDateName needs to be a character scalar or vector")
+  }
+  if(!is.null(timeDiffTarget)) {
+    if(!is.character(timeDiffTarget)) {
+      warning("timeDiffTarget needs to be a character scalar or vector")
+    }
+  }
+  if(!is.null(timeAgg)) {
+    if(!is.character(timeAgg)) {
+      warning("timeAgg needs to be a character scalar or vector")
+    }
+  }
+  if(!(WindowingLag %in% c(0,1))) {
+    warning("WindowingLag needs to be either 0 or 1")
+  }
+  if(!(tolower(Type) %chin% c("lag","lead"))) {
+    warning("Type needs to be either Lag or Lead")
+  }
+  if(!is.logical(Timer)) {
+    warning("Timer needs to be TRUE or FALSE")
+  }
+  if(!is.logical(SimpleImpute)) {
+    warning("SimpleImpute needs to be TRUE or FALSE")
+  }
+  if(!is.character(SkipCols)) {
+    warning("SkipCols needs to be a character scalar or vector")
+  }
 
-  # Ensure target is numeric
+  # Convert to data.table if not already----
+  if (!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+
+  # Ensure target is numeric----
   data[, eval(targets) := as.numeric(get(targets))]
 
-  # Set up counter for countdown
+  # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
@@ -6363,7 +6417,7 @@ GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
 
-  # Define total runs
+  # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
       length(groupingVars) * tarNum * (length(periods) *
@@ -6375,12 +6429,12 @@ GDL_Feature_Engineering <- function(data,
                   length(lags))
   }
 
-  # Begin feature engineering
+  # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
 
-      # Sort data
+      # Sort data----
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = 1)
@@ -6389,7 +6443,7 @@ GDL_Feature_Engineering <- function(data,
         data.table::setorderv(data, colVar, order = -1)
       }
 
-      # Lags
+      # Generate Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i], "_LAG_",
@@ -6406,7 +6460,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Time lags
+      # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
@@ -6419,7 +6473,7 @@ GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Difference the lag dates
+        # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget, lags[l]) %in% SkipCols) & l == 1) {
@@ -6493,17 +6547,17 @@ GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Remove temporary lagged dates
+        # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           data[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
-        # Store new target
+        # Store new target----
         timeTarget <- paste0(groupingVars[i],
                              timeDiffTarget, "1")
       }
 
-      # Define targets
+      # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
           Targets <-
@@ -6523,7 +6577,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Moving stats
+      # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
@@ -6545,7 +6599,7 @@ GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
                       j = col,
@@ -6553,14 +6607,14 @@ GDL_Feature_Engineering <- function(data,
                                       is.infinite(data[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
@@ -6578,6 +6632,7 @@ GDL_Feature_Engineering <- function(data,
     return(data)
 
   } else {
+    # Sort data----
     if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = 1)
@@ -6587,7 +6642,7 @@ GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
 
-    # Lags
+    # Generate Lags----
     for (l in seq_along(lags)) {
       for (t in Targets) {
         if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
@@ -6605,7 +6660,7 @@ GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Time lags
+    # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
@@ -6618,7 +6673,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Difference the lag dates
+      # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
@@ -6691,16 +6746,16 @@ GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Remove temporary lagged dates
+      # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         data[, paste0("TEMP", lags[l]) := NULL]
       }
 
-      # Store new target
+      # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
-    # Define targets
+    # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
@@ -6718,7 +6773,7 @@ GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Moving stats
+    # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
@@ -6743,7 +6798,7 @@ GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
                       j = col,
@@ -6751,7 +6806,7 @@ GDL_Feature_Engineering <- function(data,
                                       is.infinite(data[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data,
@@ -6760,7 +6815,7 @@ GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
@@ -6843,14 +6898,64 @@ DT_GDL_Feature_Engineering <- function(data,
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
-  # Convert to data.table if not already
+  # Argument Checks----
+  if(is.null(lags) & WindowingLag == 1) {
+    lags <- 1
+  }
+  if(!(1 %in% lags) & WindowingLag == 1) {
+    lags <- c(1,lags)
+  }
+  if(any(lags < 0)) {
+    warning("lags need to be positive integers")
+  }
+  if(!is.character(statsNames)) {
+    warning("statsNames needs to be a character scalar or vector")
+  }
+  if(!is.null(groupingVars)) {
+    if(!is.character(groupingVars)) {
+      warning("groupingVars needs to be a character scalar or vector")
+    }
+  }
+  if(!is.character(targets)) {
+    warning("targets needs to be a character scalar or vector")
+  }
+  if(!is.character(sortDateName)) {
+    warning("sortDateName needs to be a character scalar or vector")
+  }
+  if(!is.null(timeDiffTarget)) {
+    if(!is.character(timeDiffTarget)) {
+      warning("timeDiffTarget needs to be a character scalar or vector")
+    }
+  }
+  if(!is.null(timeAgg)) {
+    if(!is.character(timeAgg)) {
+      warning("timeAgg needs to be a character scalar or vector")
+    }
+  }
+  if(!(WindowingLag %in% c(0,1))) {
+    warning("WindowingLag needs to be either 0 or 1")
+  }
+  if(!(tolower(Type) %chin% c("lag","lead"))) {
+    warning("Type needs to be either Lag or Lead")
+  }
+  if(!is.logical(Timer)) {
+    warning("Timer needs to be TRUE or FALSE")
+  }
+  if(!is.logical(SimpleImpute)) {
+    warning("SimpleImpute needs to be TRUE or FALSE")
+  }
+  if(!is.character(SkipCols)) {
+    warning("SkipCols needs to be a character scalar or vector")
+  }
+
+  # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
-  # Ensure target is numeric
+  # Ensure target is numeric----
   data[, eval(targets) := as.numeric(get(targets))]
 
-  # Set up counter for countdown
+  # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
@@ -6858,7 +6963,7 @@ DT_GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
 
-  # Define total runs
+  # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
       length(groupingVars) * tarNum * (length(periods) *
@@ -6870,12 +6975,12 @@ DT_GDL_Feature_Engineering <- function(data,
                   length(lags))
   }
 
-  # Begin feature engineering
+  # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
 
-      # Sort data
+      # Sort data----
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = 1)
@@ -6884,7 +6989,7 @@ DT_GDL_Feature_Engineering <- function(data,
         data.table::setorderv(data, colVar, order = -1)
       }
 
-      # Lags
+      # Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
@@ -6908,9 +7013,9 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Time lags
+      # Time lags----
       if (!is.null(timeDiffTarget)) {
-        # Lag the dates first
+        # Lag the dates first----
         for (l in seq_along(lags)) {
           if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             data[, paste0(groupingVars[i],
@@ -6923,7 +7028,7 @@ DT_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Difference the lag dates
+        # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
@@ -7003,18 +7108,18 @@ DT_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Remove temporary lagged dates
+        # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           data[, paste0(groupingVars[i], "TEMP",
                         lags[l]) := NULL]
         }
 
-        # Store new target
+        # Store new target----
         timeTarget <- paste0(groupingVars[i],
                              timeDiffTarget, "1")
       }
 
-      # Define targets
+      # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
           Targets <-
@@ -7040,7 +7145,7 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Moving stats
+      # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
@@ -7074,7 +7179,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
                       j = col,
@@ -7082,14 +7187,14 @@ DT_GDL_Feature_Engineering <- function(data,
                                       is.infinite(data[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data, j = col, value = as.factor(data[[col]]))
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
@@ -7102,7 +7207,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Done!!
+    # Done!!----
     print(CounterIndicator)
     return(data)
 
@@ -7116,7 +7221,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
 
-    # Lags
+    # Lags----
     for (l in seq_along(lags)) {
       for (t in Targets) {
         if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
@@ -7130,7 +7235,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Time lags
+    # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
@@ -7141,7 +7246,7 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Difference the lag dates
+      # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
@@ -7212,16 +7317,16 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Remove temporary lagged dates
+      # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         data[, paste0("TEMP", lags[l]) := NULL]
       }
 
-      # Store new target
+      # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
-    # Define targets
+    # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
@@ -7239,7 +7344,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Moving stats
+    # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
@@ -7269,7 +7374,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
                       j = col,
@@ -7277,7 +7382,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                       is.infinite(data[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data,
@@ -7286,7 +7391,7 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
         if (is.factor(data[[j]])) {
@@ -7374,20 +7479,76 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
 
-  # Ensure packages are available
+  # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
-  # Convert to data.table if not already
+  # Argument Checks----
+  if(is.null(lags) & WindowingLag == 1) {
+    lags <- 1
+  }
+  if(!(1 %in% lags) & WindowingLag == 1) {
+    lags <- c(1,lags)
+  }
+  if(any(lags < 0)) {
+    warning("lags need to be positive integers")
+  }
+  if(!is.character(statsNames)) {
+    warning("statsNames needs to be a character scalar or vector")
+  }
+  if(!is.null(groupingVars)) {
+    if(!is.character(groupingVars)) {
+      warning("groupingVars needs to be a character scalar or vector")
+    }
+  }
+  if(!is.character(targets)) {
+    warning("targets needs to be a character scalar or vector")
+  }
+  if(!is.character(sortDateName)) {
+    warning("sortDateName needs to be a character scalar or vector")
+  }
+  if(!is.null(timeDiffTarget)) {
+    if(!is.character(timeDiffTarget)) {
+      warning("timeDiffTarget needs to be a character scalar or vector")
+    }
+  }
+  if(!is.null(timeAgg)) {
+    if(!is.character(timeAgg)) {
+      warning("timeAgg needs to be a character scalar or vector")
+    }
+  }
+  if(!(WindowingLag %in% c(0,1))) {
+    warning("WindowingLag needs to be either 0 or 1")
+  }
+  if(!(tolower(Type) %chin% c("lag","lead"))) {
+    warning("Type needs to be either Lag or Lead")
+  }
+  if(!is.logical(Timer)) {
+    warning("Timer needs to be TRUE or FALSE")
+  }
+  if(!is.logical(SimpleImpute)) {
+    warning("SimpleImpute needs to be TRUE or FALSE")
+  }
+  if(!is.character(SkipCols)) {
+    warning("SkipCols needs to be a character scalar or vector")
+  }
+  if(!is.character(AscRowByGroup)) {
+    warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
+  }
+  if(RecordsKeep < 1) {
+    warning("RecordsKeep less than 1 means zero data. Why run this?")
+  }
+
+  # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
-  # Max data to keep
+  # Max data to keep----
   MAX_RECORDS_FULL <-
     max(max(lags + 1), max(periods + 1), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
 
-  # Set up counter for countdown
+  # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
@@ -7395,7 +7556,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
 
-  # Define total runs
+  # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
       length(groupingVars) * tarNum * (length(periods) *
@@ -7407,7 +7568,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                   length(lags))
   }
 
-  # Begin feature engineering
+  # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
@@ -7420,7 +7581,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         data.table::setorderv(data, colVar, order = -1)
       }
 
-      # Remove records
+      # Remove records----
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
       # Lags
@@ -7441,7 +7602,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Time lags
+      # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
         for (l in seq_along(lags)) {
@@ -7455,7 +7616,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Difference the lag dates
+        # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
@@ -7532,16 +7693,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Remove temporary lagged dates
+        # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
-        # Store new target
+        # Store new target----
         timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
-      # Define targets
+      # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
           Targets <-
@@ -7559,10 +7720,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Keep final values
+      # Keep final values----
       tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
-      # Moving stats
+      # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
@@ -7586,7 +7747,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 CounterIndicator <- CounterIndicator + 1
                 print(CounterIndicator / runs)
               }
-              # Merge files
+              # Merge files----
               temp4 <-
                 temp3[get(AscRowByGroup) <=
                         eval(RecordsKeep)][, c(eval(t)) := NULL]
@@ -7600,7 +7761,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
                       j = col,
@@ -7608,7 +7769,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                       is.infinite(tempData1[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
@@ -7617,7 +7778,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
@@ -7636,7 +7797,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     return(tempData1)
 
   } else {
-    # Sort data
+    # Sort data----
     if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = 1)
@@ -7646,7 +7807,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
 
-    # Remove records
+    # Remove records----
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
     # Lags
@@ -7666,9 +7827,9 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Time lags
+    # Time lags----
     if (!is.null(timeDiffTarget)) {
-      # Lag the dates first
+      # Lag the dates first----
       for (l in seq_along(lags)) {
         if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
           tempData[, paste0("TEMP", lags[l]) := data.table::shift(get(
@@ -7676,7 +7837,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Difference the lag dates
+      # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
@@ -7745,16 +7906,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Remove temporary lagged dates
+      # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         tempData[, paste0("TEMP", lags[l]) := NULL]
       }
 
-      # Store new target
+      # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
-    # Define targets
+    # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
@@ -7772,10 +7933,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Keep final values
+    # Keep final values----
     tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
-    # Moving stats
+    # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
@@ -7796,7 +7957,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
               CounterIndicator <- CounterIndicator + 1
               print(CounterIndicator / runs)
             }
-            # Merge files
+            # Merge files----
             temp4 <-
               temp3[get(AscRowByGroup) <=
                       eval(RecordsKeep)][, c(eval(AscRowByGroup),
@@ -7807,7 +7968,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
                       j = col,
@@ -7815,7 +7976,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                       is.infinite(tempData1[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
@@ -7824,7 +7985,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
@@ -7927,20 +8088,76 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          AscRowByGroup  = c("temp"),
                                          RecordsKeep    = 1) {
 
-  # Ensure packages are available
+  # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
-  # Convert to data.table if not already
+  # Argument Checks----
+  if(is.null(lags) & WindowingLag == 1) {
+    lags <- 1
+  }
+  if(!(1 %in% lags) & WindowingLag == 1) {
+    lags <- c(1,lags)
+  }
+  if(any(lags < 0)) {
+    warning("lags need to be positive integers")
+  }
+  if(!is.character(statsNames)) {
+    warning("statsNames needs to be a character scalar or vector")
+  }
+  if(!is.null(groupingVars)) {
+    if(!is.character(groupingVars)) {
+      warning("groupingVars needs to be a character scalar or vector")
+    }
+  }
+  if(!is.character(targets)) {
+    warning("targets needs to be a character scalar or vector")
+  }
+  if(!is.character(sortDateName)) {
+    warning("sortDateName needs to be a character scalar or vector")
+  }
+  if(!is.null(timeDiffTarget)) {
+    if(!is.character(timeDiffTarget)) {
+      warning("timeDiffTarget needs to be a character scalar or vector")
+    }
+  }
+  if(!is.null(timeAgg)) {
+    if(!is.character(timeAgg)) {
+      warning("timeAgg needs to be a character scalar or vector")
+    }
+  }
+  if(!(WindowingLag %in% c(0,1))) {
+    warning("WindowingLag needs to be either 0 or 1")
+  }
+  if(!(tolower(Type) %chin% c("lag","lead"))) {
+    warning("Type needs to be either Lag or Lead")
+  }
+  if(!is.logical(Timer)) {
+    warning("Timer needs to be TRUE or FALSE")
+  }
+  if(!is.logical(SimpleImpute)) {
+    warning("SimpleImpute needs to be TRUE or FALSE")
+  }
+  if(!is.character(SkipCols)) {
+    warning("SkipCols needs to be a character scalar or vector")
+  }
+  if(!is.character(AscRowByGroup)) {
+    warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
+  }
+  if(RecordsKeep < 1) {
+    warning("RecordsKeep less than 1 means zero data. Why run this?")
+  }
+
+  # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
 
-  # Max data to keep
+  # Max data to keep----
   MAX_RECORDS_FULL <-
     max(max(lags + 1), max(periods + 1), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
 
-  # Set up counter for countdown
+  # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
@@ -7948,7 +8165,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
 
-  # Define total runs
+  # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
       length(groupingVars) * tarNum * (length(periods) *
@@ -7960,7 +8177,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                   length(lags))
   }
 
-  # Begin feature engineering
+  # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
@@ -7973,10 +8190,10 @@ FAST_GDL_Feature_Engineering <- function(data,
         data.table::setorderv(data, colVar, order = -1)
       }
 
-      # Remove records
+      # Remove records----
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
-      # Lags
+      # Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
           if (!(paste0(groupingVars[i],
@@ -7994,9 +8211,9 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Time lags
+      # Time lags----
       if (!is.null(timeDiffTarget)) {
-        # Lag the dates first
+        # Lag the dates first----
         for (l in seq_along(lags)) {
           if (!(paste0(groupingVars[i], "TEMP", lags[l]) %in% SkipCols)) {
             tempData[, paste0(groupingVars[i],
@@ -8008,7 +8225,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Difference the lag dates
+        # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
             if (!(paste0(timeDiffTarget,
@@ -8095,16 +8312,16 @@ FAST_GDL_Feature_Engineering <- function(data,
           }
         }
 
-        # Remove temporary lagged dates
+        # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
 
-        # Store new target
+        # Store new target----
         timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
 
-      # Define targets
+      # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
           Targets <-
@@ -8122,10 +8339,10 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Keep final values
+      # Keep final values----
       tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
-      # Moving stats
+      # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
           for (t in Targets) {
@@ -8206,7 +8423,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                 CounterIndicator <- CounterIndicator + 1
                 print(CounterIndicator / runs)
               }
-              # Merge files
+              # Merge files----
               temp4 <-
                 temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(
                   eval(t)) := NULL]
@@ -8219,7 +8436,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
                       j = col,
@@ -8227,7 +8444,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                       is.infinite(tempData1[[col]]), NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
@@ -8236,7 +8453,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
@@ -8253,7 +8470,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     return(tempData1)
 
   } else {
-    # Sort data
+    # Sort data----
     if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = 1)
@@ -8263,7 +8480,7 @@ FAST_GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
 
-    # Remove records
+    # Remove records----
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
 
     # Lags
@@ -8280,7 +8497,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Time lags
+    # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
       for (l in seq_along(lags)) {
@@ -8291,7 +8508,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Difference the lag dates
+      # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
@@ -8362,16 +8579,16 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
 
-      # Remove temporary lagged dates
+      # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         tempData[, paste0("TEMP", lags[l]) := NULL]
       }
 
-      # Store new target
+      # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
 
-    # Define targets
+    # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
         Targets <-
@@ -8389,10 +8606,10 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Keep final values
+    # Keep final values----
     tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
 
-    # Moving stats
+    # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
         for (t in Targets) {
@@ -8464,7 +8681,7 @@ FAST_GDL_Feature_Engineering <- function(data,
               CounterIndicator <- CounterIndicator + 1
               print(CounterIndicator / runs)
             }
-            # Merge files
+            # Merge files----
             temp4 <-
               temp3[get(AscRowByGroup) <=
                       eval(RecordsKeep)][, c(eval(t)) := NULL]
@@ -8475,7 +8692,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Replace any inf values with NA
+    # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
                       j = col,
@@ -8484,7 +8701,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                       NA))
     }
 
-    # Turn character columns into factors
+    # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
         data.table::set(tempData1,
@@ -8493,7 +8710,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Impute missing values
+    # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
         if (is.factor(tempData1[[j]])) {
@@ -8510,7 +8727,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Ensure correct order of columns
+    # Ensure correct order of columns----
     setcolorder(tempData1, c(2,3,1,4:ncol(tempData1)))
 
     # Done!!
