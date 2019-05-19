@@ -86,11 +86,12 @@ data[, Independent_Variable11 := as.factor(
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
+data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 TestModel <- AutoH2oGBMClassifier(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  StratifyColumnNames = NULL,
+                                  StratifyColumnNames = "Independent_Variable11",
                                   eval_metric = "RMSE",
                                   TrainSplitRatio = 0.80,
                                   Trees = 50,

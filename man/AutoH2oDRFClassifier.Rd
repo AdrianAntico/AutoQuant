@@ -6,7 +6,7 @@
 \usage{
 AutoH2oDRFClassifier(data, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, StratifyColumnNames = NULL,
-  eval_metric = "RMSE", TrainSplitRatio = 0.8, Trees = 50,
+  eval_metric = "auc", TrainSplitRatio = 0.8, Trees = 50,
   GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
   model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
@@ -86,11 +86,12 @@ data[, Independent_Variable11 := as.factor(
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
+data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 TestModel <- AutoH2oDRFClassifier(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  StratifyColumnNames = NULL,
+                                  StratifyColumnNames = "Independent_Variable11",
                                   eval_metric = "auc",
                                   TrainSplitRatio = 0.80,
                                   Trees = 50,

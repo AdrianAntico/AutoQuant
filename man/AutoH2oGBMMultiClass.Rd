@@ -6,7 +6,7 @@
 \usage{
 AutoH2oGBMMultiClass(data, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, StratifyColumnNames = NULL,
-  eval_metric = "RMSE", TrainSplitRatio = 0.8, Trees = 50,
+  eval_metric = "logloss", TrainSplitRatio = 0.8, Trees = 50,
   GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
   model_path = NULL, ModelID = "FirstModel",
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
@@ -83,12 +83,17 @@ data[, Independent_Variable11 := as.factor(
          ifelse(Independent_Variable2 < 0.40, "B",
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data[, Target :=
+ifelse(Independent_Variable2 < 0.25, "A",
+       ifelse(Independent_Variable2 < 0.45, "B",
+              ifelse(Independent_Variable2 < 0.65, "C",
+                     ifelse(Independent_Variable2 < 0.85,  "D", "E"))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoH2oGBMMultiClass(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  StratifyColumnNames = NULL,
+                                  StratifyColumnNames = "Independent_Variable11",
                                   eval_metric = "RMSE",
                                   TrainSplitRatio = 0.80,
                                   Trees = 50,
