@@ -37,8 +37,6 @@ AutoH2oGBMMultiClass(data, TestData = NULL, TargetColumnName = NULL,
 
 \item{ModelID}{A character string to name your model and output}
 
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
-
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
@@ -97,7 +95,6 @@ TestModel <- AutoH2oGBMMultiClass(data,
                                   MaxModelsInGrid = 10,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo")

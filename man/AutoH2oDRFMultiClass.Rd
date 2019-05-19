@@ -8,9 +8,8 @@ AutoH2oDRFMultiClass(data, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, eval_metric = "RMSE",
   TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
   MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo")
+  ModelID = "FirstModel", ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, IfSaveModel = "mojo")
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -36,8 +35,6 @@ AutoH2oDRFMultiClass(data, TestData = NULL, TargetColumnName = NULL,
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{ModelID}{A character string to name your model and output}
-
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
@@ -97,7 +94,6 @@ TestModel <- AutoH2oDRFMultiClass(data,
                                   MaxModelsInGrid = 10,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo")
