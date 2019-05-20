@@ -3,6 +3,7 @@
 export(AutoCatBoostClassifier)
 export(AutoCatBoostMultiClass)
 export(AutoCatBoostRegression)
+export(AutoDataPartition)
 export(AutoH2OModeler)
 export(AutoH2OScoring)
 export(AutoH2OTextPrepScoring)
