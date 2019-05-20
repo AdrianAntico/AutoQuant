@@ -94,7 +94,7 @@ data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoCatBoostRegression(data,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
-                                    FeatureColNames = c(2:11),
+                                    FeatureColNames = c(2:12),
                                     CatFeatures = c(12),
                                     StratifyColumnNames = NULL,
                                     MaxModelsInGrid = 1,

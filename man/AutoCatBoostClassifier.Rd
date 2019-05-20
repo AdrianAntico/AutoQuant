@@ -87,21 +87,13 @@ data[, Independent_Variable11 := as.factor(
          ifelse(Independent_Variable2 < 0.40, "B",
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-# Dummify Categorical Variable
-data <- RemixAutoML::DummifyDT(data = data,
-                               cols = "Independent_Variable11",
-                               KeepFactorCols = FALSE,
-                               OneHot = TRUE,
-                               ClustScore = FALSE)
-data[, Predict := (pnorm(Correl * x1 +
-                           sqrt(1-Correl^2) * qnorm(x2)))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target < 0.5, 1, 0)]
 TestModel <- AutoCatBoostClassifier(data,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
-                                    FeatureColNames = c(2:11),
-                                    CatFeatures = NULL,
+                                    FeatureColNames = c(2:12),
+                                    CatFeatures = 12,
                                     StratifyColumnNames = NULL,
                                     MaxModelsInGrid = 3,
                                     TrainSplitRatio = 0.80,
