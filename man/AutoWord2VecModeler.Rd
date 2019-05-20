@@ -62,7 +62,8 @@ data <- AutoWord2VecModeler(data,
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{DT_GDL_Feature_Engineering}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
   \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},

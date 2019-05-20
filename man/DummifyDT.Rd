@@ -41,7 +41,8 @@ ncol(test)
 test[, sum(FactorCol_gg)]
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoWord2VecModeler}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},

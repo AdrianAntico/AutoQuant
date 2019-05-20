@@ -90,7 +90,8 @@ data <- FAST_GDL_Feature_Engineering(data,
                                      AscRowByGroup  = "temp")
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoWord2VecModeler}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
   \code{\link{GDL_Feature_Engineering}},
