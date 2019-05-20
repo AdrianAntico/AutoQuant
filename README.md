@@ -11,6 +11,30 @@ or
 devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
 ```
 
+# If you're having trouble with dependencies, run this script first before installing via devtools::install_github()
+```
+# No Remotes ----
+# Attachments ----
+to_install <- c("catboost", "caTools", "data.table", "doParallel", "foreach", "forecast", "ggplot2", "h2o", "itertools", "lubridate", "monreg", "pROC", "RColorBrewer", "recommenderlab", "ROCR", "scatterplot3d", "stringr", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
+for (i in to_install) {
+  message(paste("looking for ", i))
+  if(i == "catboost") {
+    devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+  } else if(i == "h2o") {
+    if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
+    if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
+    pkgs <- c("RCurl","jsonlite")
+    for (pkg in pkgs) {
+      if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+    }
+    install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.com/h2o/rel-yates/3/R")
+  } else if (!requireNamespace(i)) {
+    message(paste("     installing", i))
+    install.packages(i)
+  }
+}
+```
+
 # RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. To see them in action, check out our free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a>.
 
