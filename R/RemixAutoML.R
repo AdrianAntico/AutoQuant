@@ -13010,12 +13010,159 @@ AutoRecommenderScoring <- function(data,
   return(results)
 }
 
+#' The AutoRecomScoring function scores recommender models from AutoRecommender()
+#'
+#' This function will take your ratings matrix and model and score your data in parallel.
+#' @author Adrian Antico and Douglas Pestana
+#' @family Feature Engineering
+#' @param data The binary ratings matrix from RecomDataCreate()
+#' @param NumDataSets The winning model returned from AutoRecommender()
+#' @param Ratios Typically your customer ID
+#' @param PartitionType Set to either "random" or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
+#' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
+#' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
+#' @return Returns a list of data.tables
+#' @examples
+#' \donttest{
+#' dataSets <- AutoDataPartition(data,
+#'                               NumDataSets = 3,
+#'                               Ratios = c(0.70,0.20,0.10),
+#'                               PartitionType = "random",
+#'                               StratifyColumnNames = NULL,
+#'                               TimeColumnName = NULL)
+#' }
+#' @export
+AutoDataPartition <- function(data,
+                              NumDataSets = 3,
+                              Ratios = c(0.70,0.20,0.10),
+                              PartitionType = "random",
+                              StratifyColumnNames = NULL,
+                              TimeColumnName = NULL) {
+
+  # Requirements----
+  requireNamespace('data.table', quietly = TRUE)
+
+  # Arguments----
+  if(NumDataSets < 0) {
+    warning("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
+  }
+  if(abs(round(NumDataSets) - NumDataSets) < 0.01) {
+    warning("NumDataSets needs to be an integer valued positive number")
+  }
+  if(length(Ratios) != NumDataSets) {
+    warning("You need to supply the percentage of data used for each data set.")
+  }
+  if(sum(Ratios) != 1.0) {
+    warning("The sum of Ratios needs to equal 1.0")
+  }
+  if(!(tolower(PartitionType) %chin% c("random","time"))) {
+    warning("PartitionType needs to be either 'random' or 'time'.")
+  }
+  if(!is.null(StratifyColumnNames)) {
+    if(!is.character(StratifyColumnNames)) {
+      warning("StratifyColumnNames needs to be a character vector of column names")
+    }
+    if(!(StratifyColumnNames %chin% names(data))) {
+      warning("StratifyColumnNames not in vector of data names")
+    }
+  }
+  if(!is.null(TimeColumnName)) {
+    if(!(TimeColumnName %chin% names(data))) {
+      warning("TimeColumnName not in vector of data names")
+    }
+    if(is.character(data[[eval(TimeColumnName)]]) | is.factor(data[[eval(TimeColumnName)]])) {
+      warning("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
+    }
+  }
+
+  # Partition Steps----
+  if(is.null(TimeColumnName)) {
+    # Copy data----
+    copy_data <- data.table::copy(data)
+
+    # Put Stratify Column Names in Variable----
+    DataCollect <- list()
+    if(!is.null(StratifyColumnNames)) {
+      keep <- c(eval(StratifyColumnNames))
+    }
+
+    # Gather row numbers of data for partitioning----
+    RowList <- list()
+    for(i in NumDataSets:1) {
+      if(!is.null(StratifyColumnNames)) {
+        if(i == 1) {
+          temp <- copy_data
+        } else {
+          x <- copy_data[, .I[sample(.N,.N*Ratios[i])], by = list(get(keep))]$V1
+          RowList[[i]] <- x
+          copy_data <- copy_data[-x]
+        }
+      } else {
+        if(i == 1) {
+          temp <- copy_data
+        } else {
+          x <- copy_data[, .I[sample(.N,.N*Ratios[i])]]
+          RowList[i] <- x
+          copy_data <- copy_data[-x]
+        }
+      }
+    }
+
+    # Partition Data----
+    for(i in seq_len(NumDataSets)) {
+      if(i == 1) {
+        DataCollect[["TrainData"]] <- temp
+      } else if(i == 2) {
+        DataCollect[["ValidationData"]] <- data[eval(RowList[[i]])]
+      } else if (i == 3) {
+        DataCollect[["TestData"]] <- data[RowList[[i]]]
+      } else {
+        DataCollect[[paste0("TestData",NumDataSets-2)]] <- data[RowList[[i]]]
+      }
+    }
+  } else {
+
+    # Initialize DataCollect
+    DataCollect <- list()
+
+    # Sort data by TimeColumnName
+    data <- data[order(eval(TimeColumnName))]
+
+    # Get Total Row Count
+    Rows <- data[, .N]
+
+    # Figure out which rows go to which data set
+    for(i in NumDataSets:1) {
+      if(i == 1) {
+        DataCollect[["TrainData"]] <- data
+      } else if(i == 2) {
+        RowEnd <- data[, .N]
+        NumRows <- floor(Ratios[i]*Rows)
+        DataCollect[["ValidationData"]] <- data[(RowEnd-NumRows+1):RowEnd]
+        data <- data[-((RowEnd-NumRows+1):RowEnd)]
+      } else if (i == 3) {
+        RowEnd <- data[, .N]
+        NumRows <- floor(Ratios[i]*Rows)
+        DataCollect[["TestData"]] <- data[(RowEnd-NumRows+1):RowEnd]
+        data <- data[-((RowEnd-NumRows+1):RowEnd)]
+      } else {
+        RowEnd <- data[, .N]
+        NumRows <- floor(Ratios[i]*Rows)
+        DataCollect[[paste0("TestData",NumDataSets-2)]] <- data[(RowEnd-NumRows+1):RowEnd]
+        data <- data[-((RowEnd-NumRows+1):RowEnd)]
+      }
+    }
+  }
+  return(DataCollect)
+}
+
 #' AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system
 #'
 #' AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
@@ -13089,6 +13236,7 @@ AutoRecommenderScoring <- function(data,
 #' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_GridCollect, and _ModelID_GridList
 #' @export
 AutoCatBoostClassifier <- function(data,
+                                   ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
@@ -13179,16 +13327,14 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if(!is.null(StratifyColumnNames)) {
-      keep <- c(eval(Target),eval(StratifyColumnNames))
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = list(get(keep))]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    } else {
-      x <- data[, .I[sample(.N,.N*TrainSplitRatio)], by = eval(Target)]$V1
-      dataTrain <- data[x]
-      dataTest <- data[-x]
-    }
+    Sets <- AutoDataPartition(data,
+                              NumDataSets = 3,
+                              Ratios = c(0.70,0.20,0.10),
+                              PartitionType = "random",
+                              StratifyColumnNames = "Independent_Variable11",
+                              TimeColumnName = NULL)
+
+
 
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
