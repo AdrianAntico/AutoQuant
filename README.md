@@ -11,7 +11,7 @@ or
 devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
 ```
 
-# If you're having trouble with dependencies, run this script first before installing via devtools::install_github()
+#### If you're having trouble with dependencies, run this script first before installing via devtools::install_github()
 ```
 # No Remotes ----
 # Attachments ----
