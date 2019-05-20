@@ -4,10 +4,9 @@
 \alias{AutoCatBoostClassifier}
 \title{AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
+AutoCatBoostClassifier(data, ValData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
-  CatFeatures = NULL, StratifyColumnNames = NULL,
-  TrainSplitRatio = 0.8, task_type = "GPU", eval_metric = "AUC",
+  CatFeatures = NULL, task_type = "GPU", eval_metric = "AUC",
   Trees = 50, GridTune = FALSE, grid_eval_metric = "f",
   MaxModelsInGrid = 10, model_path = NULL, ModelID = "FirstModel",
   NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
@@ -16,7 +15,7 @@ AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
+\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -25,10 +24,6 @@ AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
 \item{CatFeatures}{A vector of column numbers of your categorical features, not zero indexed.}
-
-\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
-
-\item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
 \item{task_type}{"GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
@@ -93,13 +88,12 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target < 0.5, 1, 0)]
 TestModel <- AutoCatBoostClassifier(data,
+                                    ValData = NULL,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:12),
                                     CatFeatures = 12,
-                                    StratifyColumnNames = NULL,
                                     MaxModelsInGrid = 3,
-                                    TrainSplitRatio = 0.80,
                                     task_type = "GPU",
                                     eval_metric = "AUC",
                                     grid_eval_metric = "auc",

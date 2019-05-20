@@ -4,8 +4,8 @@
 \alias{AutoH2oGBMRegression}
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGBMRegression(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, StratifyColumnNames = NULL, Alpha = NULL,
+AutoH2oGBMRegression(data, ValData, TestData = NULL,
+  TargetColumnName = NULL, FeatureColNames = NULL, Alpha = NULL,
   Distribution = "poisson", eval_metric = "RMSE",
   TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
   MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
@@ -16,13 +16,13 @@ AutoH2oGBMRegression(data, TestData = NULL, TargetColumnName = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
+\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters.}
+
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
-
-\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
 
 \item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
@@ -92,14 +92,13 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoH2oGBMRegression(data,
+                                  ValData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
-                                  StratifyColumnNames = "Independent_Variable11",
                                   Alpha = NULL,
                                   Distribution = "poisson",
                                   eval_metric = "RMSE",
-                                  TrainSplitRatio = 0.80,
                                   Trees = 50,
                                   GridTune = FALSE,
                                   MaxMem = "32G",

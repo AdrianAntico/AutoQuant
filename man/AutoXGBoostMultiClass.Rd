@@ -4,17 +4,18 @@
 \alias{AutoXGBoostMultiClass}
 \title{AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostMultiClass(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, CatFeatures = NULL,
-  StratifyColumnNames = NULL, TrainSplitRatio = 0.8,
-  eval_metric = "merror", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "merror", TreeMethod = "hist",
+AutoXGBoostMultiClass(data, ValData = NULL, TestData = NULL,
+  TargetColumnName = NULL, FeatureColNames = NULL,
+  CatFeatures = NULL, eval_metric = "merror", Trees = 50,
+  GridTune = FALSE, grid_eval_metric = "merror", TreeMethod = "hist",
   MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
   ModelID = "FirstModel", Verbose = 0, ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -23,10 +24,6 @@ AutoXGBoostMultiClass(data, TestData = NULL, TargetColumnName = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{CatFeatures}{Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.}
-
-\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
-
-\item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "merror", "mlogloss"}
 
@@ -96,16 +93,12 @@ ifelse(Independent_Variable2 < 0.25, "A",
               ifelse(Independent_Variable2 < 0.65,  "C",
                      ifelse(Independent_Variable2 < 0.75,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
-data <- data.table::rbindlist(list(data,data))
-test <- data[5001:10000]
-data <- data[1:5000]
 TestModel <- AutoXGBoostMultiClass(data,
-                                   TestData = test,
+                                   ValData = NULL,
+                                   TestData = NULL,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,
                                    CatFeatures = 12,
-                                   StratifyColumnNames = "Independent_Variable11",
-                                   TrainSplitRatio = 0.80,
                                    eval_metric = "merror",
                                    Trees = 50,
                                    GridTune = TRUE,

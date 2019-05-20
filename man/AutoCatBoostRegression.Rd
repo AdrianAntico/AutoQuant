@@ -4,17 +4,18 @@
 \alias{AutoCatBoostRegression}
 \title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, CatFeatures = NULL,
-  StratifyColumnNames = NULL, TrainSplitRatio = 0.8,
-  task_type = "GPU", eval_metric = "RMSE", Alpha = NULL,
-  Trees = 50, GridTune = FALSE, grid_eval_metric = "mae",
-  MaxModelsInGrid = 10, model_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE)
+AutoCatBoostRegression(data, ValData, TestData = NULL,
+  TargetColumnName = NULL, FeatureColNames = NULL,
+  CatFeatures = NULL, task_type = "GPU", eval_metric = "RMSE",
+  Alpha = NULL, Trees = 50, GridTune = FALSE,
+  grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -23,10 +24,6 @@ AutoCatBoostRegression(data, TestData = NULL, TargetColumnName = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{CatFeatures}{A vector of column numbers of your categorical features.}
-
-\item{StratifyColumnNames}{Supply column names to stratify by in the data partitioning step}
-
-\item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
 \item{task_type}{= "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
@@ -92,13 +89,12 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoCatBoostRegression(data,
+                                    ValData = NULL,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:12),
                                     CatFeatures = c(12),
-                                    StratifyColumnNames = NULL,
                                     MaxModelsInGrid = 1,
-                                    TrainSplitRatio = 0.80,
                                     task_type = "GPU",
                                     eval_metric = "RMSE",
                                     grid_eval_metric = "r2",
