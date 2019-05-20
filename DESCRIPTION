@@ -31,7 +31,6 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     base,
-    catboost,
     caTools,
     data.table,
     doParallel,
@@ -62,7 +61,8 @@ Suggests:
     knitr,
     rmarkdown,
     sde,
-    testthat
+    testthat,
+    catboost
 VignetteBuilder: 
     knitr
 Additional_repositories: 
