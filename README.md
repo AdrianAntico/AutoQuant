@@ -48,6 +48,8 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 <details><summary>EXPAND</summary>
 <p>
 
+### Regression:
+
 ##### **AutoCatBoostRegression()**
 AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 ##### **AutoXGBoostRegression()**
@@ -58,6 +60,8 @@ AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and
 
 ##### **AutoH2oDRFRegression()**
 AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+
+### Binary Classification:
 
 ##### **AutoCatBoostClassifier()**
 AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
@@ -71,6 +75,7 @@ AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and
 ##### **AutoH2oDRFClassifier()**
 AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 
+### Multinomial Classification:
 ##### **AutoCatBoostMultiClass()**
 AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
 
@@ -83,6 +88,7 @@ AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and
 ##### **AutoH2oDRFMultiClass()**
 AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
 
+### General Purpose H2O Automated Modeling:
 ##### **AutoH2OModeler()**
 Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
 * Models include:
@@ -92,10 +98,12 @@ Automated machine learning. Automatically build any number of models along with 
   * XGBoost (for Linux)
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-  
+
+### Model Scoring:
 ##### **AutoH2OScoring()**
 Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 
+### Time Series Modeling:
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 
 Automated time series modeling function. Automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations and tests both user-supplied time series frequency and model-based time series frequency). The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
@@ -109,6 +117,7 @@ Automated time series modeling function. Automatically finds the most accurate t
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
  
+### Nonlinear Regression Modeling:
 ##### **AutoNLS()**
 Automated nonlinear regression modeling. Automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
 * Models included:
@@ -123,6 +132,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
   * Weibull
   * Polynomial regression or monotonic regression
 
+### Recommenders:
 ##### **AutoRecommender()**
 Automated collaborative filtering modeling where each model competes against each other
   * RandomItems
