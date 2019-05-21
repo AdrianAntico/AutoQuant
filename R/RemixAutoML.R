@@ -6584,7 +6584,7 @@ GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols) {
+  if(!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -7125,7 +7125,7 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols) {
+  if(!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -7705,7 +7705,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols) {
+  if(!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -8310,7 +8310,7 @@ FAST_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols) {
+  if(!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
