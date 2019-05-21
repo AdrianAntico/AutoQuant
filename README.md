@@ -181,7 +181,7 @@ For scoring purposes (brings back a single row by group), this function creates 
 Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
 
 ##### **ModelDataPrep()**
-Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns (factors are necessary (no characters values) for H20).
+Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns.
 
 ##### **DummifyDT()** 
 Rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
