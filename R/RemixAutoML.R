@@ -1492,6 +1492,42 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
+  
+  # Argument Checks----
+  if(!is.character(MaxMem)) {
+    warning("MaxMem needs to be a character value. E.g. '28G'")
+  }
+  if(!is.numeric(nthreads) | !is.integer(nthreads)) {
+    warning("nthreads should a positive number")
+  }
+  if(is.logical(SaveModels)) {
+    warning("SaveModels should either be NULL, 'standard' or 'mojo'")
+  }
+  if(!is.null(SaveModels)) {
+    if(!(tolower(SaveModels) %chin% c("mojo","standard"))) {
+      SaveModels <- "standard"
+    }
+  }
+  if(!is.null(PathFile)) {
+    if(!is.character(PathFile)) {
+      warning("PathFile should be a character value of the path to the folder of choice")
+    }
+  }
+  if(!is.logical(GridTuneGLRM)) {
+    warning("GridTuneGLRM should be either TRUE or FALSE")
+  }
+  if(!is.logical(GridTuneKMeans)) {
+    warning("GridTuneKMeans should be either TRUE or FALSE")
+  }
+  if(!is.logical(IgnoreConstCols)) {
+    warning("IgnoreConstCols should be either TRUE or FALSE")
+  }
+  if(!is.numeric(glrmCols)) {
+    warning("glrmCols should be numeric or integer")
+  }
+  if(!(KMeansMetric %chin% c("totss","betweenss","withinss")) {
+    warning("KMeansMetric is not one of 'totss', 'betweenss', or 'withinss'")
+  }
   # Ensure data.table is available
   requireNamespace('data.table', quietly = FALSE)
 
