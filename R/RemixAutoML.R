@@ -6584,10 +6584,12 @@ GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
-
+  
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -7123,8 +7125,10 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
 
   # Convert to data.table if not already----
@@ -7701,8 +7705,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
   if (!is.character(AscRowByGroup)) {
     warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
@@ -8304,8 +8310,10 @@ FAST_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
   if (!is.character(AscRowByGroup)) {
     warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
