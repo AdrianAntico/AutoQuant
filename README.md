@@ -166,16 +166,16 @@ Generalized low rank model followed by KMeans. (Possible cross with Feature Engi
 <p>
 
 ##### **FAST_GDL_Feature_Engineering()**
-Fast generalized distributed lag feature engineering. Rapidly generate time between events, autoregressive, moving average / standard deviation / min / max / quantile 85 / quantile 95 for when you want to generate these features only for predicting events at the latest time interval of the data set. 100% data.table except for rolling statistics.
+For models with target variables within the realm of the current time frame but not too far back in time, this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 
 ##### **GDL_Feature_Engineering()**
-Generate a wider set of features (similar in structure to FAST_GDL) using any aggregation statistic for the rolling stats. 100% data.table except for rolling statistics.
+Builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 
 ##### **Scoring_GDL_Feature_Engineering()**
-Generate the model features from FAST_GDL or GDL for scoring purposes when the scoring data is for forward looking predictions (not historical, which can be obtained from FAST_GDL or GDL). 100% data.table.
+For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
 
 ##### **DT_GDL_Feature_Engineering()**
-Lags + Moving Averages, 100% data.table
+100% data.table built. Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
 
 ##### **AutoWord2VecModeler()**
 Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
