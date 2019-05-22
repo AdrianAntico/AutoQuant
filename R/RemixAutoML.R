@@ -13515,7 +13515,7 @@ AutoDataPartition <- function(data,
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
-#' @param grid_eval_metric This is the metric used to find the threshold "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"
+#' @param grid_eval_metric This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options. 1080 total possible options
@@ -14530,7 +14530,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
-#' @param grid_eval_metric This is the metric used to find the threshold c('poisson','mae','mape','mse','msle','kl','cs','r2')
+#' @param grid_eval_metric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
