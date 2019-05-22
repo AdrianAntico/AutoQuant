@@ -20026,6 +20026,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -20078,6 +20079,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    CatFeatures = 12,
+#'                                    IDcols = NULL,
 #'                                    eval_metric = "RMSE",
 #'                                    Trees = 50,
 #'                                    GridTune = TRUE,
@@ -20099,6 +20101,7 @@ AutoXGBoostRegression <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   CatFeatures = NULL,
+                                  IDcols = NULL,
                                   eval_metric = "RMSE",
                                   Trees = 50,
                                   GridTune = FALSE,
@@ -20169,6 +20172,13 @@ AutoXGBoostRegression <- function(data,
       Target <- names(data)[TargetColumnName]
     }
 
+    # Regression IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
+    }
+
     # Regression CatFeatures Names
     CatFeatures <- names(data)[CatFeatures]
 
@@ -20203,11 +20213,28 @@ AutoXGBoostRegression <- function(data,
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -20535,7 +20562,7 @@ AutoXGBoostRegression <- function(data,
 
     # Regression Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestData, Predict = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
     }
@@ -20815,6 +20842,7 @@ AutoXGBoostRegression <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -20868,6 +20896,7 @@ AutoXGBoostRegression <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    CatFeatures = 12,
+#'                                    IDcols = NULL,
 #'                                    eval_metric = "auc",
 #'                                    Trees = 50,
 #'                                    GridTune = TRUE,
@@ -20889,6 +20918,7 @@ AutoXGBoostClassifier <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   CatFeatures = NULL,
+                                  IDcols = NULL,
                                   eval_metric = "auc",
                                   Trees = 50,
                                   GridTune = FALSE,
@@ -20973,6 +21003,13 @@ AutoXGBoostClassifier <- function(data,
       Target <- names(data)[TargetColumnName]
     }
 
+    # Binary IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
+    }
+
     # Binary CatFeatures Names
     CatFeatures <- names(data)[CatFeatures]
 
@@ -21007,11 +21044,28 @@ AutoXGBoostClassifier <- function(data,
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -21437,7 +21491,7 @@ AutoXGBoostClassifier <- function(data,
 
     # Binary Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestData, p1 = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
@@ -21775,6 +21829,7 @@ AutoXGBoostClassifier <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Target should be in factor or character form.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "merror", "mlogloss"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -21831,6 +21886,7 @@ AutoXGBoostClassifier <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    CatFeatures = 12,
+#'                                    IDcols = NULL,
 #'                                    eval_metric = "merror",
 #'                                    Trees = 50,
 #'                                    GridTune = TRUE,
@@ -21851,6 +21907,7 @@ AutoXGBoostMultiClass <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   CatFeatures = NULL,
+                                  IDcols = NULL,
                                   eval_metric = "merror",
                                   Trees = 50,
                                   GridTune = FALSE,
@@ -21917,11 +21974,11 @@ AutoXGBoostMultiClass <- function(data,
       Target <- names(data)[TargetColumnName]
     }
 
-    # MultiClass Target Name Storage----
-    if (is.character(TargetColumnName)) {
-      Target <- TargetColumnName
-    } else {
-      Target <- names(data)[TargetColumnName]
+    # MultiClass IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
     }
 
     # MultiClass CatFeatures Names
@@ -21958,11 +22015,28 @@ AutoXGBoostMultiClass <- function(data,
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -22319,7 +22393,7 @@ AutoXGBoostMultiClass <- function(data,
 
     # MultiClass Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestData, p1 = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
