@@ -5,7 +5,8 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  RemoveDates = FALSE, MissFactor = "0", MissNum = -1)
+  RemoveDates = FALSE, MissFactor = "0", MissNum = -1,
+  IgnoreCols = NULL)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}
@@ -19,6 +20,8 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 \item{MissFactor}{Supply the value to impute missing factor levels}
 
 \item{MissNum}{Supply  the value to impute missing numeric values}
+
+\item{IgnoreCols}{Supply column numbers for columns you want the function to ignore}
 }
 \value{
 Returns the original data table with corrected values
