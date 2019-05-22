@@ -1477,8 +1477,8 @@ ResidualOutliers <- function(data,
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 AutoKMeans <- function(data,
-                       nthreads        = 4,
-                       MaxMem          = "14G",
+                       nthreads        = 8,
+                       MaxMem          = "28G",
                        SaveModels      = NULL,
                        PathFile        = NULL,
                        GridTuneGLRM    = TRUE,
@@ -1492,15 +1492,49 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
-  # Ensure data.table is available
+
+  # Check Arguments----
+  if(nthreads < 0) {
+    warning("nthreads needs to be a positive integer")
+  }
+  if(!is.character(MaxMem)) {
+    warning("MaxMem needs to be a character value. E.g. MaxMem = '28G'")
+  }
+  if(!is.null(SaveModels)) {
+    if(!(tolower(SaveModels) %chin% c("mojo","standard"))) {
+      warning("SaveModels needs to be either NULL, 'mojo', or 'standard'")
+    }
+  }
+  if(!is.null(FilePath)) {
+    if(!is.character(FilePath)) {
+      warning("FilePath needs to resolve to a character value. E.g. getwd()")
+    }
+  }
+  if(!is.logical(GridTuneGLRM)) {
+    warning("GridTuneGLRM needs to be either TRUE or FALSE")
+  }
+  if(!is.logical(GridTuneKMeans)) {
+    warning("GridTuneKMeans needs to be either TRUE or FALSE")
+  }
+  if(!(is.numeric(glrmCols) | is.integer(glrmCols))) {
+    warning("glrmCols needs to be the column numbers")
+  }
+  if(!is.logical(IgnoreConstCols)) {
+    warning("IgnoreConstCols needs to be either TRUE or FALSE")
+  }
+  if(!(is.numeric(glrmFactors) | is.integer(glrmFactors))) {
+    warning("glrmFactors needs to be an integer value")
+  }
+
+  # Ensure data.table is available----
   requireNamespace('data.table', quietly = FALSE)
 
-  # Check data.table
+  # Check data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
 
-  # Set up Scoring File if SaveModels is not NULL
+  # Set up Scoring File if SaveModels is not NULL----
   if (!is.null(SaveModels)) {
     KMeansModelFile <- data.table::data.table(
       Name = c("GLMR", "AutoKMeans"),
@@ -1509,11 +1543,11 @@ AutoKMeans <- function(data,
     )
   }
 
-  # Build glmr model
+  # Build glmr model----
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- h2o::as.h2o(data)
   if (GridTuneGLRM) {
-    # Define grid tune search scheme in a named list
+    # Define grid tune search scheme in a named list----
     search_criteria  <-
       list(
         strategy             = "RandomDiscrete",
@@ -1525,7 +1559,7 @@ AutoKMeans <- function(data,
         stopping_tolerance   = 1e-3
       )
 
-    # Define hyperparameters
+    # Define hyperparameters----
     HyperParams <-
       list(
         transform        = c("NONE",
@@ -1560,7 +1594,7 @@ AutoKMeans <- function(data,
                              "Power")
       )
 
-    # Run grid tune
+    # Run grid tune----
     grid <- h2o::h2o.grid(
       "glrm",
       search_criteria   = search_criteria,
@@ -1571,7 +1605,7 @@ AutoKMeans <- function(data,
       hyper_params      = HyperParams
     )
 
-    # Get best performer
+    # Get best performer----
     Grid_Out <-
       h2o::h2o.getGrid(
         grid_id = "GLRM",
@@ -1592,9 +1626,9 @@ AutoKMeans <- function(data,
     )
   }
 
-  # Save model if requested
+  # Save model if requested----
   if (!is.null(SaveModels)) {
-    # Save archetypes and colnames
+    # Save archetypes and colnames----
     fitY <- model@model$archetypes
     save(fitY, file = paste0(PathFile, "/fitY"))
     set(
@@ -1605,9 +1639,9 @@ AutoKMeans <- function(data,
     )
   }
 
-  # Run k-means
+  # Run k-means----
   if (GridTuneKMeans) {
-    # GLRM output
+    # GLRM output----
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
     if (!is.null(SaveModels)) {
@@ -1622,7 +1656,7 @@ AutoKMeans <- function(data,
            file = paste0(PathFile, "/KMeansModelFile.Rdata"))
     }
 
-    # Define grid tune search scheme in a named list
+    # Define grid tune search scheme in a named list----
     search_criteria  <-
       list(
         strategy             = "RandomDiscrete",
@@ -1632,13 +1666,13 @@ AutoKMeans <- function(data,
         stopping_rounds      = 10
       )
 
-    # Define hyperparameters
+    # Define hyperparameters----
     HyperParams <- list(
       max_iterations   = c(10, 20, 50, 100),
       init             = c("Random", "PlusPlus", "Furthest")
     )
 
-    # Run grid tune
+    # Run grid tune----
     grid <- h2o::h2o.grid(
       "kmeans",
       search_criteria   = search_criteria,
@@ -1650,14 +1684,14 @@ AutoKMeans <- function(data,
       hyper_params      = HyperParams
     )
 
-    # Get best performer
+    # Get best performer----
     Grid_Out <-
       h2o::h2o.getGrid(grid_id = "KMeans",
                        sort_by = KMeansMetric,
                        decreasing = FALSE)
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
   } else {
-    # GLRM output
+    # GLRM output----
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
     if (!is.null(SaveModels)) {
@@ -1672,7 +1706,7 @@ AutoKMeans <- function(data,
            file = paste0(PathFile, "/KMeansModelFile.Rdata"))
     }
 
-    # Train KMeans
+    # Train KMeans----
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
       x              = Names,
@@ -1681,7 +1715,7 @@ AutoKMeans <- function(data,
     )
   }
 
-  # Save model if requested
+  # Save model if requested----
   if (!is.null(SaveModels)) {
     if (tolower(SaveModels) == "mojo") {
       save_model <-
@@ -1725,7 +1759,7 @@ AutoKMeans <- function(data,
     }
   }
 
-  # Combine outputs
+  # Combine outputs----
   preds <- data.table::as.data.table(h2o::h2o.predict(model, x_raw))
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(preds, data))
@@ -14459,6 +14493,7 @@ AutoCatBoostRegression <- function(data,
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE) {
+
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -15268,6 +15303,7 @@ AutoCatBoostMultiClass <- function(data,
                                    ModelID = "FirstModel",
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE) {
+
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -15977,6 +16013,7 @@ AutoH2oGBMRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
+
   # Regression Ensure packages are available----
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('h2o', quietly = TRUE)) {
@@ -16816,6 +16853,7 @@ AutoH2oDRFRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
+
   # Regression Ensure packages are available----
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('h2o', quietly = TRUE)) {
