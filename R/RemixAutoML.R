@@ -6609,6 +6609,7 @@ GDL_Feature_Engineering <- function(data,
                                     Timer          = TRUE,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
+
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -6661,8 +6662,10 @@ GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols)) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
 
   # Convert to data.table if not already----
@@ -7151,6 +7154,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Timer          = TRUE,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
+
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -7200,8 +7204,10 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols)) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
 
   # Convert to data.table if not already----
@@ -7729,6 +7735,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             SimpleImpute   = TRUE,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
+
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -7778,8 +7785,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols)) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
   if (!is.character(AscRowByGroup)) {
     warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
@@ -8332,6 +8341,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          SimpleImpute   = TRUE,
                                          AscRowByGroup  = c("temp"),
                                          RecordsKeep    = 1) {
+
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -8381,8 +8391,10 @@ FAST_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.character(SkipCols)) {
-    warning("SkipCols needs to be a character scalar or vector")
+  if(!is.null(SkipCols)) {
+    if (!is.character(SkipCols)) {
+      warning("SkipCols needs to be a character scalar or vector")
+    }
   }
   if (!is.character(AscRowByGroup)) {
     warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
@@ -9346,6 +9358,7 @@ AutoH2OModeler <- function(Construct,
                            TestData          = NULL,
                            SaveToFile        = FALSE,
                            ReturnObjects     = TRUE) {
+
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -12241,6 +12254,7 @@ AutoH2OScoring <- function(Features     = data,
                            SaveToFile   = FALSE,
                            FilesPath    = NULL,
                            H20ShutDown  = rep(FALSE, 3)) {
+
   # If FilesPath is NULL, skip function
   if (is.null(FilesPath)) {
     # Ensure packages are available
