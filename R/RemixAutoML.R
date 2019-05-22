@@ -5372,20 +5372,6 @@ ModelDataPrep <- function(data,
     data <- data.table::as.data.table(data)
   }
 
-  # Remove Dates----
-  if(RemoveDates) {
-    for (col in seq_along(data)) {
-      if (!is.character(data[[col]]) &
-          !is.factor(data[[col]]) &
-          !is.numeric(data[[col]]) &
-          !is.integer(data[[col]]) &
-          !is.logical(data[[col]]) &
-          !is.complex(data[[col]])) {
-        data[, paste0(names(data)[col]) := NULL]
-      }
-    }
-  }
-
   # Replace any inf values with NA----
   for (col in seq_along(data)) {
     data.table::set(data,
@@ -5418,6 +5404,20 @@ ModelDataPrep <- function(data,
                         which(base::is.na(data[[j]])),
                         j,
                         MissNum)
+      }
+    }
+  }
+
+  # Remove Dates----
+  if(RemoveDates) {
+    for (col in seq_along(data)) {
+      if (!is.character(data[[col]]) &
+          !is.factor(data[[col]]) &
+          !is.numeric(data[[col]]) &
+          !is.integer(data[[col]]) &
+          !is.logical(data[[col]]) &
+          !is.complex(data[[col]])) {
+        data[, paste0(names(data)[col]) := NULL]
       }
     }
   }
