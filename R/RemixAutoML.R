@@ -13504,6 +13504,7 @@ AutoDataPartition <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
 #' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
 #' @param grid_eval_metric This is the metric used to find the threshold "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"
@@ -13556,6 +13557,7 @@ AutoDataPartition <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
 #'                                     CatFeatures = 12,
+#'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 3,
 #'                                     task_type = "GPU",
 #'                                     eval_metric = "AUC",
@@ -13577,6 +13579,7 @@ AutoCatBoostClassifier <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "AUC",
                                    Trees = 50,
@@ -13698,6 +13701,13 @@ AutoCatBoostClassifier <- function(data,
       Target <- names(data)[TargetColumnName]
     }
 
+    # Binary IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
+    }
+
     # Binary Convert CatFeatures to 1-indexed----
     if (!is.null(CatFeatures)) {
       for (i in seq_len(length(CatFeatures))) {
@@ -13736,11 +13746,28 @@ AutoCatBoostClassifier <- function(data,
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -14146,7 +14173,7 @@ AutoCatBoostClassifier <- function(data,
 
     # Binary Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestData, p1 = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
@@ -14491,6 +14518,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param CatFeatures A vector of column numbers of your categorical features.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
@@ -14543,6 +14571,7 @@ AutoCatBoostClassifier <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
 #'                                     CatFeatures = c(12),
+#'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
 #'                                     eval_metric = "RMSE",
@@ -14564,6 +14593,7 @@ AutoCatBoostRegression <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
                                    Alpha = NULL,
@@ -14700,11 +14730,28 @@ AutoCatBoostRegression <- function(data,
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -15042,7 +15089,7 @@ AutoCatBoostRegression <- function(data,
 
     # Regression Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestData, Predict = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
     }
@@ -15328,6 +15375,7 @@ AutoCatBoostRegression <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
 #' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
+#' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"
 #' @param grid_eval_metric This is the metric used to find the threshold "auc","accuracy"
@@ -15378,6 +15426,7 @@ AutoCatBoostRegression <- function(data,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
 #'                                     CatFeatures = NULL,
+#'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
 #'                                     eval_metric = "MultiClass",
@@ -15398,6 +15447,7 @@ AutoCatBoostMultiClass <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    CatFeatures = NULL,
+                                   IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "MultiClassOneVsAll",
                                    Trees = 50,
@@ -15505,15 +15555,32 @@ AutoCatBoostMultiClass <- function(data,
       dataTest <- ValData[, ..keep]
     }
 
-    # MultiClass TestData Subset Columns Needed----
+    # Binary TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, keep1, Target)
+        } else {
+          keep <- c(keep1, Target)
+        }
         TestData <- TestData[, ..keep]
       } else {
-        keep <- c(FeatureColNames, Target)
+        if(!is.null(IDcols)) {
+          keep <- c(IDcols, FeatureColNames, Target)
+        } else {
+          keep <- c(FeatureColNames, Target)
+        }
         TestData <- TestData[, ..keep]
+      }
+      TestMerge <- data.table::copy(TestData)
+      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+        keep1 <- names(data)[c(FeatureColNames)]
+        keep <- c(keep1, Target)
+        TestData <- data[, ..keep]
+      } else {
+        keep <- c(FeatureColNames, Target)
+        TestData <- data[, ..keep]
       }
     }
 
@@ -15914,7 +15981,7 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Grid Validation Data----
     if (!is.null(TestData)) {
-      calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict))
+      calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge))
     } else {
       calibEval <- data.table::as.data.table(cbind(Target = TestTarget, predict))
     }
