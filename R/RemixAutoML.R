@@ -5393,16 +5393,16 @@ ModelDataPrep <- function(data,
 
   # Impute missing values----
   if (Impute) {
-    for (j in seq_along(data)) {
-      if (is.factor(data[[j]])) {
+    for (col in seq_along(data)) {
+      if (is.factor(data[[col]])) {
         data.table::set(data,
-                        which(!(data[[j]] %in% levels(data[[j]]))),
-                        j,
+                        which(!(data[[col]] %in% levels(data[[col]]))),
+                        col,
                         MissFactor)
       } else {
         data.table::set(data,
-                        which(base::is.na(data[[j]])),
-                        j,
+                        which(base::is.na(data[[col]])),
+                        col,
                         MissNum)
       }
     }
@@ -5410,7 +5410,7 @@ ModelDataPrep <- function(data,
 
   # Remove Dates----
   if(RemoveDates) {
-    for (col in seq_along(data)) {
+    for (col in ncol(data):1) {
       if (!is.character(data[[col]]) &
           !is.factor(data[[col]]) &
           !is.numeric(data[[col]]) &
