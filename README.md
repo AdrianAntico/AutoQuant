@@ -1,17 +1,6 @@
 ![RemixAutoML_Logo](https://user-images.githubusercontent.com/42076988/55656390-94dc4b00-57ab-11e9-9e3f-06b049b796d5.png)
 
-
-# Install the package in R via:
-```
-# Depending on the development state (future versions, etc.) you can install via:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE)
-```
-or
-```
-devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
-```
-
-#### If you're having trouble with dependencies, run this script first before installing RemixAutoML:
+#### 1. First, run the following R script to download dependencies
 ```
 # No Remotes ----
 # Attachments ----
@@ -33,6 +22,16 @@ for (i in to_install) {
     install.packages(i)
   }
 }
+```
+
+# 2. Install the package in R via:
+```
+# Depending on the development state (future versions, etc.) you can install via:
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE)
+```
+or
+```
+devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
 ```
 
 # RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
