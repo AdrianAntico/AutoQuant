@@ -36,7 +36,7 @@ AutoCatBoostClassifier(data, ValData = NULL, TestData = NULL,
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{grid_eval_metric}{This is the metric used to find the threshold "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
+\item{grid_eval_metric}{This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options. 1080 total possible options}
 

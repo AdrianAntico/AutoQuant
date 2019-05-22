@@ -38,7 +38,7 @@ AutoCatBoostRegression(data, ValData, TestData = NULL,
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{grid_eval_metric}{This is the metric used to find the threshold c('poisson','mae','mape','mse','msle','kl','cs','r2')}
+\item{grid_eval_metric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
