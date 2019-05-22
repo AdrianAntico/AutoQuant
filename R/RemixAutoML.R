@@ -14692,6 +14692,13 @@ AutoCatBoostRegression <- function(data,
       Target <- names(data)[TargetColumnName]
     }
 
+    # Regression IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
+    }
+
     # Regression Convert CatFeatures to 1-indexed----
     if (!is.null(CatFeatures)) {
       for (i in seq_len(length(CatFeatures))) {
@@ -15518,6 +15525,13 @@ AutoCatBoostMultiClass <- function(data,
       Target <- TargetColumnName
     } else {
       Target <- names(data)[TargetColumnName]
+    }
+
+    # MultiClass IDcol Name Storage----
+    if(!is.null(IDcols)) {
+      if(!is.character(IDcols)) {
+        IDcols <- names(data)[IDcols]
+      }
     }
 
     # MultiClass Convert CatFeatures to 1-indexed----
