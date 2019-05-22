@@ -30,7 +30,6 @@ BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Depends: 
     R (>= 3.5.0)
 Imports: 
-    base,
     caTools,
     data.table,
     doParallel,
