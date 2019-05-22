@@ -1842,6 +1842,32 @@ AutoTS <- function(data,
                    TSClean        = TRUE,
                    ModelFreq      = TRUE,
                    PrintUpdates   = FALSE) {
+
+  # Check arguments----
+  if(!is.character(TargetName)) {
+    warning("TargetName needs to be a character value")
+  }
+  if(!is.character(DateName)) {
+    warning("DateName needs to be a character value")
+  }
+  if(FCPeriods < 0) {
+    warning("FCPeriods needs to be greater than 0")
+  }
+  if(HoldOutPeriods < 0) {
+    warning("HoldOutPeriods needs to be greater than 0")
+  }
+  if(!is.character(TimeUnit)) {
+    warning("TimeUnit needs to be a character value")
+  }
+  if(Lags < 0) {
+    warning("Lags needs to be greater than 0")
+  }
+  if(!is.null(SkipModels)) {
+    if(!(tolower(SkipModels) %chin% c("DSHW","ARFIMA","ARIMA","ETS","NNET","TBATS","TSLM"))) {
+      warning("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
+    }
+  }
+
   # Ensure data.table is available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -5308,9 +5334,10 @@ AutoTS <- function(data,
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @param data This is your source data you'd like to modify
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
-#' @param data This is your source data you'd like to modify
+#' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
 #' @examples
@@ -5333,51 +5360,68 @@ AutoTS <- function(data,
 ModelDataPrep <- function(data,
                           Impute       = TRUE,
                           CharToFactor = TRUE,
+                          RemoveDates  = FALSE,
                           MissFactor   = "0",
                           MissNum      = -1) {
-  # Ensure data.table is available
+
+  # Ensure data.table is available----
   requireNamespace('data.table', quietly = FALSE)
 
-  # Check data.table
-  if (!data.table::is.data.table(data))
+  # Check data.table----
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
-
-  # Replace any inf values with NA
-  for (col in base::seq_along(data)) {
-    data.table::set(data,
-                    j = col,
-                    value = base::replace(data[[col]],
-                                          base::is.infinite(data[[col]]), NA))
   }
 
-  # Turn character columns into factors
-  if (CharToFactor) {
-    for (col in base::seq_along(data)) {
-      if (is.character(data[[col]])) {
-        data.table::set(data,
-                        j = col,
-                        value = base::as.factor(data[[col]]))
+  # Remove Dates----
+  if(RemoveDates) {
+    for (col in seq_along(data)) {
+      if (!is.character(data[[col]]) &
+          !is.factor(data[[col]]) &
+          !is.numeric(data[[col]]) &
+          !is.integer(data[[col]]) &
+          !is.logical(data[[col]]) &
+          !is.complex(data[[col]])) {
+        data[, paste0(names(data)[col]) := NULL]
       }
     }
   }
 
-  # Impute missing values
-  if (Impute) {
-    for (j in base::seq_along(data)) {
-      if (base::is.factor(data[[j]])) {
+  # Replace any inf values with NA----
+  for (col in seq_along(data)) {
+    data.table::set(data,
+                    j = col,
+                    value = replace(data[[col]],
+                                    is.infinite(data[[col]]), NA))
+  }
+
+  # Turn character columns into factors----
+  if (CharToFactor) {
+    for (col in seq_along(data)) {
+      if (is.character(data[[col]])) {
         data.table::set(data,
-                        base::which(!(data[[j]] %in% base::levels(data[[j]]))),
+                        j = col,
+                        value = as.factor(data[[col]]))
+      }
+    }
+  }
+
+  # Impute missing values----
+  if (Impute) {
+    for (j in seq_along(data)) {
+      if (is.factor(data[[j]])) {
+        data.table::set(data,
+                        which(!(data[[j]] %in% levels(data[[j]]))),
                         j,
                         MissFactor)
       } else {
         data.table::set(data,
-                        base::which(base::is.na(data[[j]])),
+                        which(base::is.na(data[[j]])),
                         j,
                         MissNum)
       }
     }
   }
-  base::return(data)
+  return(data)
 }
 
 #' RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option
