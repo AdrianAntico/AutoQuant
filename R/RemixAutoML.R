@@ -5340,6 +5340,7 @@ AutoTS <- function(data,
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
+#' @param IgnoreCols Supply column numbers for columns you want the function to ignore
 #' @examples
 #' data <- data.table::data.table(Value = runif(100000),
 #'                                FactorCol = as.character(sample(x = c(letters,
@@ -5362,7 +5363,8 @@ ModelDataPrep <- function(data,
                           CharToFactor = TRUE,
                           RemoveDates  = FALSE,
                           MissFactor   = "0",
-                          MissNum      = -1) {
+                          MissNum      = -1,
+                          IgnoreCols   = NULL) {
 
   # Ensure data.table is available----
   requireNamespace('data.table', quietly = FALSE)
@@ -5372,8 +5374,14 @@ ModelDataPrep <- function(data,
     data <- data.table::as.data.table(data)
   }
 
+  # Prepare columns for action----
+  x <- seq_along(data)
+  if(!is.null(IgnoreCols)) {
+    x <- setdiff(x, IgnoreCols)
+  }
+
   # Replace any inf values with NA----
-  for (col in seq_along(data)) {
+  for (col in x) {
     data.table::set(data,
                     j = col,
                     value = replace(data[[col]],
@@ -5382,7 +5390,7 @@ ModelDataPrep <- function(data,
 
   # Turn character columns into factors----
   if (CharToFactor) {
-    for (col in seq_along(data)) {
+    for (col in x) {
       if (is.character(data[[col]])) {
         data.table::set(data,
                         j = col,
@@ -5393,7 +5401,7 @@ ModelDataPrep <- function(data,
 
   # Impute missing values----
   if (Impute) {
-    for (col in seq_along(data)) {
+    for (col in x) {
       if (is.factor(data[[col]])) {
         data.table::set(data,
                         which(!(data[[col]] %in% levels(data[[col]]))),
@@ -5410,7 +5418,7 @@ ModelDataPrep <- function(data,
 
   # Remove Dates----
   if(RemoveDates) {
-    for (col in ncol(data):1) {
+    for (col in rev(x)) {
       if (!is.character(data[[col]]) &
           !is.factor(data[[col]]) &
           !is.numeric(data[[col]]) &
