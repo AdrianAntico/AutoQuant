@@ -5,7 +5,7 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  MissFactor = "0", MissNum = -1)
+  RemoveDates = FALSE, MissFactor = "0", MissNum = -1)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}
@@ -13,6 +13,8 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 \item{Impute}{Defaults to TRUE which tells the function to impute the data}
 
 \item{CharToFactor}{Defaults to TRUE which tells the function to convert characters to factors}
+
+\item{RemoveDates}{Defaults to FALSE. Set to TRUE to remove date columns from your data.table}
 
 \item{MissFactor}{Supply the value to impute missing factor levels}
 

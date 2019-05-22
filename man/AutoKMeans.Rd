@@ -4,7 +4,7 @@
 \alias{AutoKMeans}
 \title{AutoKMeans Automated row clustering for mixed column types}
 \usage{
-AutoKMeans(data, nthreads = 4, MaxMem = "14G", SaveModels = NULL,
+AutoKMeans(data, nthreads = 8, MaxMem = "28G", SaveModels = NULL,
   PathFile = NULL, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
   glrmCols = c(1:5), IgnoreConstCols = TRUE, glrmFactors = 5,
   Loss = "Absolute", glrmMaxIters = 1000, SVDMethod = "Randomized",
