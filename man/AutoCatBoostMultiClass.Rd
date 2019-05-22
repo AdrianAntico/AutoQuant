@@ -10,7 +10,8 @@ AutoCatBoostMultiClass(data, ValData, TestData = NULL,
   eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "Accuracy", MaxModelsInGrid = 10,
   model_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -44,6 +45,8 @@ AutoCatBoostMultiClass(data, ValData, TestData = NULL,
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 }
 \value{
 Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_EvaluationMetrics.csv, _ModelID_GridCollect, and _ModelID_GridList
@@ -99,7 +102,8 @@ TestModel <- AutoCatBoostMultiClass(data,
                                     model_path = NULL,
                                     ModelID = "ModelTest",
                                     ReturnModelObjects = TRUE,
-                                    SaveModelObjects = FALSE)
+                                    SaveModelObjects = FALSE,
+                                    PassInGrid = NULL)
 }
 }
 \seealso{

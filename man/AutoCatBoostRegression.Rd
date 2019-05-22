@@ -10,7 +10,8 @@ AutoCatBoostRegression(data, ValData, TestData = NULL,
   Alpha = NULL, Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
   ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -48,6 +49,8 @@ AutoCatBoostRegression(data, ValData, TestData = NULL,
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 }
 \value{
 Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
@@ -104,7 +107,8 @@ TestModel <- AutoCatBoostRegression(data,
                                     ModelID = "ModelTest",
                                     NumOfParDepPlots = 3,
                                     ReturnModelObjects = TRUE,
-                                    SaveModelObjects = FALSE)
+                                    SaveModelObjects = FALSE,
+                                    PassInGrid = NULL)
 }
 }
 \seealso{
