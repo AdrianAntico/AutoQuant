@@ -6,11 +6,11 @@
 \usage{
 AutoXGBoostMultiClass(data, ValData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
-  CatFeatures = NULL, eval_metric = "merror", Trees = 50,
-  GridTune = FALSE, grid_eval_metric = "merror", TreeMethod = "hist",
-  MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
-  ModelID = "FirstModel", Verbose = 0, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE)
+  CatFeatures = NULL, IDcols = NULL, eval_metric = "merror",
+  Trees = 50, GridTune = FALSE, grid_eval_metric = "merror",
+  TreeMethod = "hist", MaxModelsInGrid = 10, NThreads = 8,
+  model_path = NULL, ModelID = "FirstModel", Verbose = 0,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -24,6 +24,8 @@ AutoXGBoostMultiClass(data, ValData = NULL, TestData = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{CatFeatures}{Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.}
+
+\item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "merror", "mlogloss"}
 
@@ -99,6 +101,7 @@ TestModel <- AutoXGBoostMultiClass(data,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,
                                    CatFeatures = 12,
+                                   IDcols = NULL,
                                    eval_metric = "merror",
                                    Trees = 50,
                                    GridTune = TRUE,
