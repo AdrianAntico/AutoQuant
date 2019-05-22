@@ -13764,10 +13764,10 @@ AutoCatBoostClassifier <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
@@ -14755,10 +14755,10 @@ AutoCatBoostRegression <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
@@ -15591,10 +15591,10 @@ AutoCatBoostMultiClass <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
@@ -20231,10 +20231,10 @@ AutoXGBoostRegression <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
@@ -21062,10 +21062,10 @@ AutoXGBoostClassifier <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
@@ -22033,10 +22033,10 @@ AutoXGBoostMultiClass <- function(data,
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       } else {
         keep <- c(FeatureColNames, Target)
-        TestData <- data[, ..keep]
+        TestData <- TestData[, ..keep]
       }
     }
 
