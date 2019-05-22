@@ -13579,7 +13579,7 @@ AutoDataPartition <- function(data,
 #'                                     SaveModelObjects = FALSE,
 #'                                     PassInGrid = NULL)
 #' }
-#' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_GridCollect, and _ModelID_GridList
+#' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoCatBoostClassifier <- function(data,
                                    ValData = NULL,
@@ -14593,7 +14593,7 @@ AutoCatBoostClassifier <- function(data,
 #'                                     SaveModelObjects = FALSE,
 #'                                     PassInGrid = NULL)
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
 AutoCatBoostRegression <- function(data,
                                    ValData,
@@ -15454,7 +15454,7 @@ AutoCatBoostRegression <- function(data,
 #'                                     SaveModelObjects = FALSE,
 #'                                     PassInGrid = NULL)
 #' }
-#' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_EvaluationMetrics.csv, _ModelID_GridCollect, and _ModelID_GridList
+#' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoCatBoostMultiClass <- function(data,
                                    ValData,
@@ -16209,7 +16209,7 @@ AutoCatBoostMultiClass <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoH2oGBMRegression <- function(data,
                                  ValData,
@@ -17052,7 +17052,7 @@ AutoH2oGBMRegression <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoH2oDRFRegression <- function(data,
                                  ValData = NULL,
@@ -17756,7 +17756,7 @@ AutoH2oDRFRegression <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoH2oGBMClassifier <- function(data,
                                  ValData = NULL,
@@ -18390,7 +18390,7 @@ AutoH2oGBMClassifier <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoH2oDRFClassifier <- function(data,
                                  ValData = NULL,
@@ -19025,7 +19025,7 @@ AutoH2oDRFClassifier <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoH2oGBMMultiClass <- function(data,
                                  ValData = NULL,
@@ -19562,7 +19562,7 @@ AutoH2oGBMMultiClass <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, and _ModelID_EvaluationMetrics.csv
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoH2oDRFMultiClass <- function(data,
                                  ValData = NULL,
@@ -20101,7 +20101,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    ReturnModelObjects = TRUE,
 #'                                    SaveModelObjects = FALSE)
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoXGBoostRegression <- function(data,
                                   ValData = NULL,
@@ -20918,7 +20918,7 @@ AutoXGBoostRegression <- function(data,
 #'                                    ReturnModelObjects = TRUE,
 #'                                    SaveModelObjects = FALSE)
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoXGBoostClassifier <- function(data,
                                   ValData = NULL,
@@ -21907,7 +21907,7 @@ AutoXGBoostClassifier <- function(data,
 #'                                    ReturnModelObjects = TRUE,
 #'                                    SaveModelObjects = FALSE)
 #' }
-#' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvaluationMetrics.csv
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoXGBoostMultiClass <- function(data,
                                   ValData = NULL,
