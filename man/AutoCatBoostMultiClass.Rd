@@ -6,7 +6,7 @@
 \usage{
 AutoCatBoostMultiClass(data, ValData, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
-  CatFeatures = NULL, task_type = "GPU",
+  CatFeatures = NULL, IDcols = NULL, task_type = "GPU",
   eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "Accuracy", MaxModelsInGrid = 10,
   model_path = NULL, ModelID = "FirstModel",
@@ -25,6 +25,8 @@ AutoCatBoostMultiClass(data, ValData, TestData = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
 \item{CatFeatures}{A vector of column numbers of your categorical features, not zero indexed.}
+
+\item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{task_type}{"GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
@@ -93,6 +95,7 @@ TestModel <- AutoCatBoostMultiClass(data,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:11),
                                     CatFeatures = NULL,
+                                    IDcols = NULL,
                                     MaxModelsInGrid = 1,
                                     task_type = "GPU",
                                     eval_metric = "MultiClass",
