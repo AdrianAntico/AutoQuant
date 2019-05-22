@@ -13515,6 +13515,7 @@ AutoDataPartition <- function(data,
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -13565,7 +13566,8 @@ AutoDataPartition <- function(data,
 #'                                     ModelID = "ModelTest",
 #'                                     NumOfParDepPlots = 15,
 #'                                     ReturnModelObjects = TRUE,
-#'                                     SaveModelObjects = FALSE)
+#'                                     SaveModelObjects = FALSE,
+#'                                     PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_ROC_Plot.png, _ModelID_EvalutionPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_GridCollect, and _ModelID_GridList
 #' @export
@@ -13585,7 +13587,9 @@ AutoCatBoostClassifier <- function(data,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
-                                   SaveModelObjects = FALSE) {
+                                   SaveModelObjects = FALSE,
+                                   PassInGrid = NULL) {
+
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -13811,18 +13815,37 @@ AutoCatBoostClassifier <- function(data,
         )
 
       # Binary Grid Define Hyper Parameters----
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:12)
-      )
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+      if(!is.null(PassInGrid)) {
+        if(!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+      } else {
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
       }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <-
-        catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
       # Binary AUC List----
       AUC_List <- list()
@@ -14043,7 +14066,6 @@ AutoCatBoostClassifier <- function(data,
             metric_period        = 10,
             task_type            = task_type
           )
-
         } else {
           BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
           Base_params <- list(
@@ -14089,6 +14111,9 @@ AutoCatBoostClassifier <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
+      if(!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      }
     }
 
     # Binary Train Final Model----
@@ -14478,6 +14503,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -14527,7 +14553,8 @@ AutoCatBoostClassifier <- function(data,
 #'                                     ModelID = "ModelTest",
 #'                                     NumOfParDepPlots = 3,
 #'                                     ReturnModelObjects = TRUE,
-#'                                     SaveModelObjects = FALSE)
+#'                                     SaveModelObjects = FALSE,
+#'                                     PassInGrid = NULL)
 #' }
 #' @return Saves to file: _ModelID_VariableImportance.csv, _ModelID_, _ModelID_ValidationData.csv, _ModelID_EvalutionPlot.png, _ModelID_EvalutionBoxPlot.png, _ModelID_EvaluationMetrics.csv, _ModelID_ParDepPlots.R a named list of features with partial dependence calibration plots, _ModelID_ParDepBoxPlots.R, _ModelID_GridCollect, and _ModelID_catboostgrid
 #' @export
@@ -14548,7 +14575,8 @@ AutoCatBoostRegression <- function(data,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
-                                   SaveModelObjects = FALSE) {
+                                   SaveModelObjects = FALSE,
+                                   PassInGrid = NULL) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
@@ -14762,21 +14790,37 @@ AutoCatBoostRegression <- function(data,
         )
 
       # Regression Grid Define Hyper Parameters----
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
-        bootstrap_type = c("Poisson",
-                           "Bayesian",
-                           "Bernoulli",
-                           "No"),
-        depth = c(4:12)
-      )
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+      if(!is.null(PassInGrid)) {
+        if(!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+      } else {
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
       }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <-
-        catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
       # Regression Grid Tuning Main Loop----
       for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
@@ -14961,6 +15005,9 @@ AutoCatBoostRegression <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
+      if(!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      }
     }
 
     # Regression Train Final Model----
@@ -15291,6 +15338,7 @@ AutoCatBoostRegression <- function(data,
 #' @param ModelID A character string to name your model and output
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -15339,7 +15387,8 @@ AutoCatBoostRegression <- function(data,
 #'                                     model_path = NULL,
 #'                                     ModelID = "ModelTest",
 #'                                     ReturnModelObjects = TRUE,
-#'                                     SaveModelObjects = FALSE)
+#'                                     SaveModelObjects = FALSE,
+#'                                     PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: _ModelID_VariableImportance.csv, _ModelID_ (the model), _ModelID_ValidationData.csv, _ModelID_EvaluationMetrics.csv, _ModelID_GridCollect, and _ModelID_GridList
 #' @export
@@ -15358,7 +15407,8 @@ AutoCatBoostMultiClass <- function(data,
                                    model_path = NULL,
                                    ModelID = "FirstModel",
                                    ReturnModelObjects = TRUE,
-                                   SaveModelObjects = FALSE) {
+                                   SaveModelObjects = FALSE,
+                                   PassInGrid = NULL) {
 
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
@@ -15594,18 +15644,37 @@ AutoCatBoostMultiClass <- function(data,
         )
 
       # MultiClass Grid Define Hyper Parameters----
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:12)
-      )
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+      if(!is.null(PassInGrid)) {
+        if(!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+      } else {
+        catboostGridList <- data.table::CJ(
+          l2_leaf_reg = c(0, 1, 2, 3),
+          learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+          bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
+          depth = c(4:12)
+        )
+        if (tolower(task_type) != "gpu") {
+          catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
+        }
+        catboostGridList[, ID := runif(nrow(catboostGridList))]
+        catboostGridList <-
+          catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
       }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <-
-        catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
 
       # MultiClass Grid Tuning Main Loop----
       for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
@@ -15797,6 +15866,9 @@ AutoCatBoostMultiClass <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
+      if(!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      }
     }
 
     # MultiClass Train Final Model----
