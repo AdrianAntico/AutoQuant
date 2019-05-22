@@ -1754,8 +1754,6 @@ AutoKMeans <- function(data,
       save(KMeansModelFile,
            file = paste0(PathFile,
                          "/KMeansModelFile.Rdata"))
-    } else {
-      return("You need to specify mojo or standard if you want to save your models")
     }
   }
 
