@@ -387,6 +387,9 @@ output <- RemixAutoML::AutoTS(data,
 # Print the evaluation metric and model makeup
 knitr::kable(output$EvaluationMetrics)
 summary(output$TimeSeriesModel)
+
+# Time Series Plot
+output$TimeSeriesPlot
 ```
 
 ## **Automated Unsupervised Learning Functions**
