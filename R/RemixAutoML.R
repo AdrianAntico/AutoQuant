@@ -970,6 +970,166 @@ ProblematicRecords <- function(data,
   # Return data----
   return(OutputData[order(-predict)])
 }
+             
+#' @title  CreateCalendarVariables Create Caledar Variables
+#'
+#' @description  CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @param data This is your data
+#' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
+#' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
+#' @param TimeUnits Supply a character vector of time units for creating calendar variables.
+#' @examples
+#' data <- data.table::data.table(Date = "2018-01-01 8:53")
+#' data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("day", "month", "year"))
+#' @return Returns your data.table with the added calendar variables at the end
+#' @export
+CreateCalendarVariables <- function(data, 
+                                    DateCols = NULL,
+                                    AsFactor = FALSE, 
+                                    TimeUnits = c("second",
+                                                  "minute",
+                                                  "hour",
+                                                  "wday",
+                                                  "mday",
+                                                  "yday",
+                                                  "week",
+                                                  "isoweek",
+                                                  "month",
+                                                  "quarter",
+                                                  "year")) {
+  
+  # Require data.table----
+  requireNamespace("data.table", quietly = FALSE)
+  
+  # Convert to data.table----
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+  
+  # Check args----
+  if(!is.logical(AsFactor)) {
+    warning("AsFactor needs to be TRUE or FALSE")
+  }
+  if(!(tolower(TimeUnits) %chin% c("second",
+                                   "minute",
+                                   "hour",
+                                   "wday",
+                                   "mday",
+                                   "yday",
+                                   "week",
+                                   "isoweek",
+                                   "month",
+                                   "quarter",
+                                   "years"))) {
+    warning("TimeUnits needs to be one of 'minute', 'hour', 'day', 'wday', 
+            'mday', 'yday','week', 'month', 'quarter', 'year'")
+  }
+  
+  # Turn DateCols into character names if not already----
+  for(i in DateCols) {
+    if(!is.character(DateCols[i])) {
+      DateCols[i] <- names(data)[DateCols[i]]
+    }
+  }
+  
+  # Create DateCols to data.table IDateTime types----
+  for(i in DateCols) {
+    if(any(tolower(TimeUnits) %chin% c("second","minute","hour"))) {
+      if(min(as.ITime(data[[eval(i)]])) - max(as.ITime(data[[eval(i)]])) == 0) {
+        TimeUnits <- TimeUnits[!(tolower(TimeUnits) %chin% c("second","minute","hour"))]
+      } else {
+        data[, paste0("TIME_",i) := as.ITime(data[[i]])]
+      }
+    }
+    if(any(tolower(TimeUnits) %chin% c("wday","mday","yday","week","isoweek","month","quarter","years"))) {
+      data[, paste0("DATE_",i) := as.IDate(data[[i]])]  
+    }
+  }
+  
+  # Build Features----
+  for(i in DateCols) {
+    for(j in seq_len(length(TimeUnits))) {
+      if(tolower(TimeUnits[j]) == "second") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::second(get(paste0("TIME_",i))))]                    
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::second(get(paste0("TIME_",i))))]
+        }
+      } else if (tolower(TimeUnits[j]) == "minute") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::minute(get(paste0("TIME_",i))))]          
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::minute(get(paste0("TIME_",i))))]
+        }
+      } else if (tolower(TimeUnits[j]) == "hour") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::hour(get(paste0("TIME_",i))))]          
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::hour(get(paste0("TIME_",i))))]
+        }
+      } else if (tolower(TimeUnits[j]) == "wday") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::wday(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::wday(get(paste0("DATE_",i))))]
+        }
+      } else if (tolower(TimeUnits[j]) == "mday") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::mday(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::mday(get(paste0("DATE_",i))))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "yday") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::yday(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::yday(get(paste0("DATE_",i))))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "week") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::week(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::week(get(paste0("DATE_",i))))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "isoweek") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::isoweek(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::isoweek(get(i)))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "month") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::month(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::month(get(paste0("DATE_",i))))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "quarter") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::quarter(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::quarter(get(paste0("DATE_",i))))]          
+        }
+      } else if (tolower(TimeUnits[j]) == "year") {
+        if(AsFactor) {
+          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::year(get(paste0("DATE_",i))))]
+        } else {
+          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::year(get(paste0("DATE_",i))))]          
+        }
+      }
+    }
+    if(any(tolower(TimeUnits) %chin% c("second","minute","hour"))) {
+      data[, paste0("TIME_",i) := NULL]
+    }
+    if(any(tolower(TimeUnits) %chin% c("wday","mday","yday","week","isoweek","month","quarter","years"))) {
+      data[, paste0("DATE_",i) := NULL]
+    }
+  }
+  return(data)
+}
+
 
 #' DummifyDT creates dummy variables for the selected columns.
 #'
