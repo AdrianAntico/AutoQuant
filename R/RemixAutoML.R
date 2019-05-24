@@ -1003,8 +1003,7 @@ CreateCalendarVariables <- function(data,
   if (!is.logical(AsFactor)) {
     warning("AsFactor needs to be TRUE or FALSE")
   }
-  if (!(
-    tolower(TimeUnits) %chin% c(
+  if (!(any(tolower(TimeUnits) %chin% c(
       "second",
       "minute",
       "hour",
@@ -1017,7 +1016,7 @@ CreateCalendarVariables <- function(data,
       "quarter",
       "years"
     )
-  )) {
+  ))) {
     warning(
       "TimeUnits needs to be one of 'minute', 'hour', 'day', 'wday',
             'mday', 'yday','week', 'month', 'quarter', 'year'"
