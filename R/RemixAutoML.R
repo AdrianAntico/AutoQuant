@@ -990,7 +990,11 @@ ProblematicRecords <- function(data,
 CreateCalendarVariables <- function(data,
                                     DateCols = NULL,
                                     AsFactor = FALSE,
-                                    TimeUnits = "wday") {
+                                    TimeUnits = c("second","minute","hour",
+                                                  "wday","mday","yday",
+                                                  "week","isoweek",
+                                                  "month","quarter","year"
+                                    )) {
   # Require data.table----
   requireNamespace("data.table", quietly = FALSE)
 
@@ -1014,7 +1018,7 @@ CreateCalendarVariables <- function(data,
       "isoweek",
       "month",
       "quarter",
-      "years"
+      "year"
     )
   ))) {
     warning(
@@ -1049,7 +1053,7 @@ CreateCalendarVariables <- function(data,
         "isoweek",
         "month",
         "quarter",
-        "years"
+        "year"
       )
     )) {
       data[, paste0("DATE_", i) := as.IDate(data[[i]])]
@@ -1181,7 +1185,7 @@ CreateCalendarVariables <- function(data,
         "isoweek",
         "month",
         "quarter",
-        "years"
+        "year"
       )
     )) {
       data[, paste0("DATE_", i) := NULL]
