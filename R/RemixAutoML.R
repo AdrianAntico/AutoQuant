@@ -951,8 +951,9 @@ ProblematicRecords <- function(data,
   }
 
   # Generate Outliers data.table----
-  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest,
-                                                            newdata = Data))
+  OutliersRaw <-
+    data.table::as.data.table(h2o::h2o.predict(object = IsolationForest,
+                                               newdata = Data))
 
   # Shutdown H2O
   h2o::h2o.shutdown(prompt = FALSE)
@@ -980,151 +981,211 @@ ProblematicRecords <- function(data,
 #' @param data This is your data
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
-#' @param TimeUnits Supply a character vector of time units for creating calendar variables.
+#' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @examples
-#' data <- data.table::data.table(Date = "2018-01-01 8:53")
+#' data <- data.table::data.table(Date = "2018-01-01 00:00:00")
 #' data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("day", "month", "year"))
 #' @return Returns your data.table with the added calendar variables at the end
 #' @export
 CreateCalendarVariables <- function(data,
                                     DateCols = NULL,
                                     AsFactor = FALSE,
-                                    TimeUnits = c("second",
-                                                  "minute",
-                                                  "hour",
-                                                  "wday",
-                                                  "mday",
-                                                  "yday",
-                                                  "week",
-                                                  "isoweek",
-                                                  "month",
-                                                  "quarter",
-                                                  "year")) {
-
+                                    TimeUnits = "wday") {
   # Require data.table----
   requireNamespace("data.table", quietly = FALSE)
 
   # Convert to data.table----
-  if(!data.table::is.data.table(data)) {
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
 
   # Check args----
-  if(!is.logical(AsFactor)) {
+  if (!is.logical(AsFactor)) {
     warning("AsFactor needs to be TRUE or FALSE")
   }
-  if(!(tolower(TimeUnits) %chin% c("second",
-                                   "minute",
-                                   "hour",
-                                   "wday",
-                                   "mday",
-                                   "yday",
-                                   "week",
-                                   "isoweek",
-                                   "month",
-                                   "quarter",
-                                   "years"))) {
-    warning("TimeUnits needs to be one of 'minute', 'hour', 'day', 'wday',
-            'mday', 'yday','week', 'month', 'quarter', 'year'")
+  if (!(
+    tolower(TimeUnits) %chin% c(
+      "second",
+      "minute",
+      "hour",
+      "wday",
+      "mday",
+      "yday",
+      "week",
+      "isoweek",
+      "month",
+      "quarter",
+      "years"
+    )
+  )) {
+    warning(
+      "TimeUnits needs to be one of 'minute', 'hour', 'day', 'wday',
+            'mday', 'yday','week', 'month', 'quarter', 'year'"
+    )
   }
 
   # Turn DateCols into character names if not already----
-  for(i in DateCols) {
-    if(!is.character(DateCols[i])) {
+  for (i in DateCols) {
+    if (!is.character(DateCols[i])) {
       DateCols[i] <- names(data)[DateCols[i]]
     }
   }
 
   # Create DateCols to data.table IDateTime types----
-  for(i in DateCols) {
-    if(any(tolower(TimeUnits) %chin% c("second","minute","hour"))) {
-      if(min(as.ITime(data[[eval(i)]])) - max(as.ITime(data[[eval(i)]])) == 0) {
-        TimeUnits <- TimeUnits[!(tolower(TimeUnits) %chin% c("second","minute","hour"))]
+  for (i in DateCols) {
+    if (any(tolower(TimeUnits) %chin% c("second", "minute", "hour"))) {
+      if (min(as.ITime(data[[eval(i)]])) - max(as.ITime(data[[eval(i)]])) == 0) {
+        TimeUnits <-
+          TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
       } else {
-        data[, paste0("TIME_",i) := as.ITime(data[[i]])]
+        data[, paste0("TIME_", i) := as.ITime(data[[i]])]
       }
     }
-    if(any(tolower(TimeUnits) %chin% c("wday","mday","yday","week","isoweek","month","quarter","years"))) {
-      data[, paste0("DATE_",i) := as.IDate(data[[i]])]
+    if (any(
+      tolower(TimeUnits) %chin% c(
+        "wday",
+        "mday",
+        "yday",
+        "week",
+        "isoweek",
+        "month",
+        "quarter",
+        "years"
+      )
+    )) {
+      data[, paste0("DATE_", i) := as.IDate(data[[i]])]
     }
   }
 
   # Build Features----
-  for(i in DateCols) {
-    for(j in seq_len(length(TimeUnits))) {
-      if(tolower(TimeUnits[j]) == "second") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::second(get(paste0("TIME_",i))))]
+  for (i in DateCols) {
+    for (j in seq_len(length(TimeUnits))) {
+      if (tolower(TimeUnits[j]) == "second") {
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::second(get(paste0(
+            "TIME_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::second(get(paste0("TIME_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::second(get(paste0(
+            "TIME_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "minute") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::minute(get(paste0("TIME_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::minute(get(paste0(
+            "TIME_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::minute(get(paste0("TIME_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::minute(get(paste0(
+            "TIME_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "hour") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::hour(get(paste0("TIME_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::hour(get(paste0(
+            "TIME_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::hour(get(paste0("TIME_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::hour(get(paste0(
+            "TIME_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "wday") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::wday(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::wday(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::wday(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::wday(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "mday") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::mday(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::mday(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::mday(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::mday(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "yday") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::yday(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::yday(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::yday(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::yday(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "week") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::week(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::week(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::week(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::week(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "isoweek") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::isoweek(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::isoweek(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::isoweek(get(i)))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::isoweek(get(i)))]
         }
       } else if (tolower(TimeUnits[j]) == "month") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::month(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::month(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::month(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::month(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "quarter") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::quarter(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::quarter(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::quarter(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::quarter(get(paste0(
+            "DATE_", i
+          ))))]
         }
       } else if (tolower(TimeUnits[j]) == "year") {
-        if(AsFactor) {
-          data[, paste0(i,"_",TimeUnits[j]) := as.factor(data.table::year(get(paste0("DATE_",i))))]
+        if (AsFactor) {
+          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::year(get(paste0(
+            "DATE_", i
+          ))))]
         } else {
-          data[, paste0(i,"_",TimeUnits[j]) := as.integer(data.table::year(get(paste0("DATE_",i))))]
+          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::year(get(paste0(
+            "DATE_", i
+          ))))]
         }
       }
     }
-    if(any(tolower(TimeUnits) %chin% c("second","minute","hour"))) {
-      data[, paste0("TIME_",i) := NULL]
+    if (any(tolower(TimeUnits) %chin% c("second", "minute", "hour"))) {
+      data[, paste0("TIME_", i) := NULL]
     }
-    if(any(tolower(TimeUnits) %chin% c("wday","mday","yday","week","isoweek","month","quarter","years"))) {
-      data[, paste0("DATE_",i) := NULL]
+    if (any(
+      tolower(TimeUnits) %chin% c(
+        "wday",
+        "mday",
+        "yday",
+        "week",
+        "isoweek",
+        "month",
+        "quarter",
+        "years"
+      )
+    )) {
+      data[, paste0("DATE_", i) := NULL]
     }
   }
   return(data)
@@ -1651,37 +1712,36 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
-
   # Check Arguments----
-  if(nthreads < 0) {
+  if (nthreads < 0) {
     warning("nthreads needs to be a positive integer")
   }
-  if(!is.character(MaxMem)) {
+  if (!is.character(MaxMem)) {
     warning("MaxMem needs to be a character value. E.g. MaxMem = '28G'")
   }
-  if(!is.null(SaveModels)) {
-    if(!(tolower(SaveModels) %chin% c("mojo","standard"))) {
+  if (!is.null(SaveModels)) {
+    if (!(tolower(SaveModels) %chin% c("mojo", "standard"))) {
       warning("SaveModels needs to be either NULL, 'mojo', or 'standard'")
     }
   }
-  if(!is.null(FilePath)) {
-    if(!is.character(FilePath)) {
+  if (!is.null(FilePath)) {
+    if (!is.character(FilePath)) {
       warning("FilePath needs to resolve to a character value. E.g. getwd()")
     }
   }
-  if(!is.logical(GridTuneGLRM)) {
+  if (!is.logical(GridTuneGLRM)) {
     warning("GridTuneGLRM needs to be either TRUE or FALSE")
   }
-  if(!is.logical(GridTuneKMeans)) {
+  if (!is.logical(GridTuneKMeans)) {
     warning("GridTuneKMeans needs to be either TRUE or FALSE")
   }
-  if(!(is.numeric(glrmCols) | is.integer(glrmCols))) {
+  if (!(is.numeric(glrmCols) | is.integer(glrmCols))) {
     warning("glrmCols needs to be the column numbers")
   }
-  if(!is.logical(IgnoreConstCols)) {
+  if (!is.logical(IgnoreConstCols)) {
     warning("IgnoreConstCols needs to be either TRUE or FALSE")
   }
-  if(!(is.numeric(glrmFactors) | is.integer(glrmFactors))) {
+  if (!(is.numeric(glrmFactors) | is.integer(glrmFactors))) {
     warning("glrmFactors needs to be an integer value")
   }
 
@@ -2001,28 +2061,29 @@ AutoTS <- function(data,
                    TSClean        = TRUE,
                    ModelFreq      = TRUE,
                    PrintUpdates   = FALSE) {
-
   # Check arguments----
-  if(!is.character(TargetName)) {
+  if (!is.character(TargetName)) {
     warning("TargetName needs to be a character value")
   }
-  if(!is.character(DateName)) {
+  if (!is.character(DateName)) {
     warning("DateName needs to be a character value")
   }
-  if(FCPeriods < 0) {
+  if (FCPeriods < 0) {
     warning("FCPeriods needs to be greater than 0")
   }
-  if(HoldOutPeriods < 0) {
+  if (HoldOutPeriods < 0) {
     warning("HoldOutPeriods needs to be greater than 0")
   }
-  if(!is.character(TimeUnit)) {
+  if (!is.character(TimeUnit)) {
     warning("TimeUnit needs to be a character value")
   }
-  if(Lags < 0) {
+  if (Lags < 0) {
     warning("Lags needs to be greater than 0")
   }
-  if(!is.null(SkipModels)) {
-    if(!(tolower(SkipModels) %chin% c("DSHW","ARFIMA","ARIMA","ETS","NNET","TBATS","TSLM"))) {
+  if (!is.null(SkipModels)) {
+    if (!(
+      tolower(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM")
+    )) {
       warning("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
     }
   }
@@ -4512,8 +4573,8 @@ AutoTS <- function(data,
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(
@@ -4627,8 +4688,8 @@ AutoTS <- function(data,
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model1 <-
       tryCatch({
         forecast::nnetar(
@@ -4746,8 +4807,8 @@ AutoTS <- function(data,
       }
 
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
       NNETAR_model2 <-
         tryCatch({
           forecast::nnetar(
@@ -4863,8 +4924,8 @@ AutoTS <- function(data,
       }
 
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
       NNETAR_model3 <-
         tryCatch({
           forecast::nnetar(
@@ -5422,8 +5483,8 @@ AutoTS <- function(data,
     }
 
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(y = dataTSTrain,
@@ -5452,27 +5513,27 @@ AutoTS <- function(data,
   z[, eval(TargetName) := as.numeric(get(TargetName))]
   TimeSeriesPlot <-
     ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
-      ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
-      ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
-      ggplot2::geom_vline(
-        xintercept = max(data_test[[eval(DateName)]],
-                         na.rm = TRUE),
-        color = "red",
-        lty = "dotted",
-        lwd = 1
-      ) +
-      RemixTheme() +
-      ggplot2::labs(
-        title = paste0(FCPeriods, "-", TimeUnit, " Forecast for ", TargetName),
-        subtitle = paste0(
-          "Champion Model: ",
-          BestModel,
-          " | Mean Absolute Percentage Error: ",
-          paste(round(min(Eval$MAPE), 3) * 100, "%", sep = "")
-        ),
-        caption = "Forecast generated by Remix Institute's RemixAutoML R package"
-      ) +
-      ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TempTargetName))
+    ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
+    ggplot2::geom_vline(
+      xintercept = max(data_test[[eval(DateName)]],
+                       na.rm = TRUE),
+      color = "red",
+      lty = "dotted",
+      lwd = 1
+    ) +
+    RemixTheme() +
+    ggplot2::labs(
+      title = paste0(FCPeriods, "-", TimeUnit, " Forecast for ", TargetName),
+      subtitle = paste0(
+        "Champion Model: ",
+        BestModel,
+        " | Mean Absolute Percentage Error: ",
+        paste(round(min(Eval$MAPE), 3) * 100, "%", sep = "")
+      ),
+      caption = "Forecast generated by Remix Institute's RemixAutoML R package"
+    ) +
+    ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TempTargetName))
 
   options(warn = 0)
 
@@ -5525,7 +5586,6 @@ ModelDataPrep <- function(data,
                           MissFactor   = "0",
                           MissNum      = -1,
                           IgnoreCols   = NULL) {
-
   # Ensure data.table is available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -5536,7 +5596,7 @@ ModelDataPrep <- function(data,
 
   # Prepare columns for action----
   x <- seq_along(data)
-  if(!is.null(IgnoreCols)) {
+  if (!is.null(IgnoreCols)) {
     x <- setdiff(x, IgnoreCols)
   }
 
@@ -5577,7 +5637,7 @@ ModelDataPrep <- function(data,
   }
 
   # Remove Dates----
-  if(RemoveDates) {
+  if (RemoveDates) {
     for (col in rev(x)) {
       if (!is.character(data[[col]]) &
           !is.factor(data[[col]]) &
@@ -5834,11 +5894,11 @@ RedYellowGreen <- function(data,
           store[[j]] <- base::c(i, utility)
         }
         all <- data.table::rbindlist(list(store))
-        utilities <- data.table::melt(all[2,])
+        utilities <- data.table::melt(all[2, ])
         data.table::setnames(utilities, "value", "Utilities")
-        thresholds <- data.table::melt(all[1,])
+        thresholds <- data.table::melt(all[1, ])
         data.table::setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[, c(-1,-3)]
+        results <- cbind(utilities, thresholds)[, c(-1, -3)]
         thresh <-
           results[Thresholds <= eval(MidTierLowThresh) |
                     Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,
@@ -5988,11 +6048,11 @@ threshOptim <- function(data,
     store[[j]] <- c(i, utility)
   }
   all <- data.table::rbindlist(list(store))
-  utilities <- data.table::melt(all[2,])
+  utilities <- data.table::melt(all[2, ])
   data.table::setnames(utilities, "value", "Utilities")
-  thresholds <- data.table::melt(all[1,])
+  thresholds <- data.table::melt(all[1, ])
   data.table::setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[, c(-1,-3)]
+  results <- cbind(utilities, thresholds)[, c(-1, -3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
   return(list(Thresholds = thresh, EvaluationTable = results))
@@ -6619,7 +6679,7 @@ EvalPlot <- function(data,
                      GraphType        = c("calibration"),
                      PercentileBucket = 0.05,
                      aggrfun     = function(x)
-                       base::mean(x, na.rm = TRUE)) {
+                       mean(x, na.rm = TRUE)) {
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -6777,7 +6837,6 @@ GDL_Feature_Engineering <- function(data,
                                     Timer          = TRUE,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
-
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -6830,7 +6889,7 @@ GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols)) {
+  if (!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -7055,7 +7114,7 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -7252,7 +7311,7 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -7322,7 +7381,6 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Timer          = TRUE,
                                        SkipCols       = NULL,
                                        SimpleImpute   = TRUE) {
-
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -7372,7 +7430,7 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols)) {
+  if (!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -7631,7 +7689,7 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -7824,7 +7882,7 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
@@ -7903,7 +7961,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             SimpleImpute   = TRUE,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
-
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -7953,7 +8010,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols)) {
+  if (!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -8213,7 +8270,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j,-1)
+                          j, -1)
         }
       }
     }
@@ -8416,7 +8473,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           )), j, "0")
         } else {
           data.table::set(tempData1,
-                          which(is.na(tempData1[[j]])), j,-1)
+                          which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
@@ -8509,7 +8566,6 @@ FAST_GDL_Feature_Engineering <- function(data,
                                          SimpleImpute   = TRUE,
                                          AscRowByGroup  = c("temp"),
                                          RecordsKeep    = 1) {
-
   # Ensure packages are available----
   requireNamespace('data.table', quietly = FALSE)
 
@@ -8559,7 +8615,7 @@ FAST_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if(!is.null(SkipCols)) {
+  if (!is.null(SkipCols)) {
     if (!is.character(SkipCols)) {
       warning("SkipCols needs to be a character scalar or vector")
     }
@@ -8882,7 +8938,7 @@ FAST_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
@@ -9140,7 +9196,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j,-1)
+                          j, -1)
         }
       }
     }
@@ -9526,7 +9582,6 @@ AutoH2OModeler <- function(Construct,
                            TestData          = NULL,
                            SaveToFile        = FALSE,
                            ReturnObjects     = TRUE) {
-
   # Ensure packages are available
   requireNamespace('data.table', quietly = FALSE)
 
@@ -10240,8 +10295,9 @@ AutoH2OModeler <- function(Construct,
       if (Construct[i, "SupplyData"][[1]]) {
         train        <- h2o::as.h2o(TrainData)
         validate     <- h2o::as.h2o(TestData)
-        data_h2o     <- h2o::as.h2o(data.table::rbindlist(list(TrainData,
-                                                               TestData)))
+        data_h2o     <-
+          h2o::as.h2o(data.table::rbindlist(list(TrainData,
+                                                 TestData)))
       } else {
         data_h2o     <-
           eval(parse(text = paste0("h2o::as.h2o(",
@@ -11996,8 +12052,9 @@ AutoH2OModeler <- function(Construct,
                                newdata = validate)[, 1]
             ))
             names(xx)
-            val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
-                        na.rm = TRUE)
+            val <-
+              mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
+                   na.rm = TRUE)
           }
 
           # Store baseline val
@@ -12093,8 +12150,9 @@ AutoH2OModeler <- function(Construct,
                                newdata = validate)[, 1]
             ))
             names(xx)
-            val <- mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
-                        na.rm = TRUE)
+            val <-
+              mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
+                   na.rm = TRUE)
           }
 
           # Calibration plot
@@ -12422,7 +12480,6 @@ AutoH2OScoring <- function(Features     = data,
                            SaveToFile   = FALSE,
                            FilesPath    = NULL,
                            H20ShutDown  = rep(FALSE, 3)) {
-
   # If FilesPath is NULL, skip function
   if (is.null(FilesPath)) {
     # Ensure packages are available
@@ -12504,7 +12561,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[, -1]
+              )[,-1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             if (SaveToFile) {
@@ -12562,7 +12619,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[, -1]
+              )[,-1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             data.table::fwrite(Features, file.path(FilesPath, 'Features.csv'))
@@ -12678,7 +12735,8 @@ AutoH2OScoring <- function(Features     = data,
         } else if (TargetType[i] != "clustering") {
           model <- h2o::h2o.loadModel(path = grid_tuned_paths[i, Path])
         } else {
-          KMeans <- h2o::h2o.loadModel(path = KMeansModelFile[i + 1, FilePath1])
+          KMeans <-
+            h2o::h2o.loadModel(path = KMeansModelFile[i + 1, FilePath1])
         }
         # Load Features
         if (i == 1 && tolower(TargetType[i]) != "text") {
@@ -12708,7 +12766,7 @@ AutoH2OScoring <- function(Features     = data,
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[, -1])
+                                                                 newdata = features)[,-1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -12726,7 +12784,7 @@ AutoH2OScoring <- function(Features     = data,
                                                                  newdata = features)[, 3])
           } else if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[, -1])
+                                                                 newdata = features)[,-1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -12778,8 +12836,9 @@ AutoH2OScoring <- function(Features     = data,
             )
           x_raw <-
             h2o::h2o.getFrame(NewGLRM@model$representation_name)
-          Scores <- data.table::as.data.table(h2o::h2o.predict(object = KMeans,
-                                                               newdata = x_raw))
+          Scores <-
+            data.table::as.data.table(h2o::h2o.predict(object = KMeans,
+                                                       newdata = x_raw))
           Scores <- cbind(data.table::as.data.table(Scores),
                           Features)
         } else {
@@ -12826,7 +12885,7 @@ tokenizeH2O <- function(data) {
     tokenized.lower[h2o::h2o.grep("[0-9]",
                                   tokenized.lower,
                                   invert = TRUE,
-                                  output.logical = TRUE),]
+                                  output.logical = TRUE), ]
   tokenized.words
 }
 
@@ -13068,7 +13127,8 @@ AutoWordFreq <- function(data,
   } else {
     if (!is.character(data[[GroupColName]])) {
       data[, eval(GroupColName) := as.character(get(GroupColName))]
-      desc <- tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
+      desc <-
+        tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
     }
   }
 
@@ -13402,7 +13462,8 @@ AutoRecommender <- function(data,
   # Collect results in one data.table
   x <- data.table::rbindlist(store)
 
-  WinningModel <- x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
+  WinningModel <-
+    x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
 }
 
@@ -13647,7 +13708,8 @@ AutoDataPartition <- function(data,
       } else if (i == 3) {
         RowEnd <- data[, .N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[["TestData"]] <- data[(RowEnd - NumRows + 1):RowEnd]
+        DataCollect[["TestData"]] <-
+          data[(RowEnd - NumRows + 1):RowEnd]
         data <- data[-((RowEnd - NumRows + 1):RowEnd)]
       } else {
         RowEnd <- data[, .N]
@@ -13667,7 +13729,7 @@ AutoDataPartition <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
@@ -13720,7 +13782,7 @@ AutoDataPartition <- function(data,
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := ifelse(Target < 0.5, 1, 0)]
 #' TestModel <- AutoCatBoostClassifier(data,
-#'                                     ValData = NULL,
+#'                                     ValidationData = NULL,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
@@ -13742,7 +13804,7 @@ AutoDataPartition <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoCatBoostClassifier <- function(data,
-                                   ValData = NULL,
+                                   ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
@@ -13760,7 +13822,6 @@ AutoCatBoostClassifier <- function(data,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL) {
-
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -13848,10 +13909,10 @@ AutoCatBoostClassifier <- function(data,
       data <- data.table::as.data.table(data)
     }
 
-    # Binary Ensure ValData is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    # Binary Ensure ValidationData is a data.table----
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -13870,8 +13931,8 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -13884,7 +13945,7 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -13894,7 +13955,7 @@ AutoCatBoostClassifier <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -13903,25 +13964,25 @@ AutoCatBoostClassifier <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # Binary TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -13929,7 +13990,8 @@ AutoCatBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -14010,8 +14072,8 @@ AutoCatBoostClassifier <- function(data,
         )
 
       # Binary Grid Define Hyper Parameters----
-      if(!is.null(PassInGrid)) {
-        if(!data.table::is.data.table(PassInGrid)) {
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
           PassInGrid <- data.table::as.data.table(PassInGrid)
         }
         catboostGridList <- data.table::CJ(
@@ -14026,7 +14088,8 @@ AutoCatBoostClassifier <- function(data,
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <-
           catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+        catboostGridList <-
+          data.table::rbindlist(list(PassInGrid, catboostGridList))
       } else {
         catboostGridList <- data.table::CJ(
           l2_leaf_reg = c(0, 1, 2, 3),
@@ -14064,7 +14127,7 @@ AutoCatBoostClassifier <- function(data,
         # Binary Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(catboostGridList[i, ]), base_params)
+          base_params <- c(as.list(catboostGridList[i,]), base_params)
         }
 
         # Binary Grid Train Model----
@@ -14095,9 +14158,11 @@ AutoCatBoostClassifier <- function(data,
 
         # Binary Grid Validation Data----
         if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
         } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
         }
 
         # Binary Grid Evaluation Metrics for Each Grid----
@@ -14112,7 +14177,8 @@ AutoCatBoostClassifier <- function(data,
             j = as.integer(j + 1)
             Accuracy <-
               mean(calibEval[, ifelse(p1 > k &
-                                        Target == 1 | p1 < k & Target == 0, 1, 0)])
+                                        Target == 1 |
+                                        p1 < k & Target == 0, 1, 0)])
             data.table::set(x,
                             i = j,
                             j = 2L,
@@ -14177,7 +14243,7 @@ AutoCatBoostClassifier <- function(data,
                 ))
               Metric <-
                 z[order(-Metric)][!is.infinite(Threshold) &
-                                    !is.infinite(Metric)][1, ]
+                                    !is.infinite(Metric)][1,]
             } else {
               z <-
                 data.table::as.data.table(cbind(
@@ -14186,7 +14252,7 @@ AutoCatBoostClassifier <- function(data,
                 ))
               Metric <-
                 z[order(Metric)][!is.infinite(Threshold) &
-                                   !is.infinite(Metric)][1, ]
+                                   !is.infinite(Metric)][1,]
             }
           }
         }
@@ -14275,7 +14341,7 @@ AutoCatBoostClassifier <- function(data,
             task_type            = task_type
           )
           base_params <-
-            c(as.list(catboostGridList[BestGrid, ]), Base_params)
+            c(as.list(catboostGridList[BestGrid,]), Base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -14293,7 +14359,7 @@ AutoCatBoostClassifier <- function(data,
         task_type            = task_type
       )
       base_params <-
-        c(as.list(catboostGridList[BestGrid, ]), Base_params)
+        c(as.list(catboostGridList[BestGrid,]), Base_params)
     } else {
       base_params <- list(
         iterations           = Trees,
@@ -14306,8 +14372,8 @@ AutoCatBoostClassifier <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
-      if(!is.null(PassInGrid)) {
-        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
       }
     }
 
@@ -14341,9 +14407,11 @@ AutoCatBoostClassifier <- function(data,
 
     # Binary Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
 
     # Save Validation Data to File----
@@ -14504,7 +14572,7 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1, ]
+                                  !is.infinite(Metric)][1,]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -14513,7 +14581,7 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1, ]
+                                 !is.infinite(Metric)][1,]
           }
         }
 
@@ -14564,14 +14632,15 @@ AutoCatBoostClassifier <- function(data,
       j = as.integer(j + 1)
       Accuracy <-
         mean(ValidationData[, ifelse(p1 > i &
-                                       Target == 1 | p1 < i & Target == 0, 1, 0)])
+                                       Target == 1 |
+                                       p1 < i & Target == 0, 1, 0)])
       set(x,
           i = j,
           j = 2L,
           value = round(Accuracy, 4))
     }
     data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-    x <- x[1, ]
+    x <- x[1,]
     EvaluationMetrics <-
       data.table::rbindlist(list(EvaluationMetrics, x))
 
@@ -14681,7 +14750,7 @@ AutoCatBoostClassifier <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -14734,7 +14803,7 @@ AutoCatBoostClassifier <- function(data,
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoCatBoostRegression(data,
-#'                                     ValData = NULL,
+#'                                     ValidationData = NULL,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
@@ -14756,7 +14825,7 @@ AutoCatBoostClassifier <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
 AutoCatBoostRegression <- function(data,
-                                   ValData,
+                                   ValidationData,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
@@ -14775,7 +14844,6 @@ AutoCatBoostRegression <- function(data,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL) {
-
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -14839,10 +14907,10 @@ AutoCatBoostRegression <- function(data,
       data <- data.table::as.data.table(data)
     }
 
-    # Regression Ensure ValData is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    # Regression Ensure ValidationData is a data.table----
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -14861,8 +14929,8 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -14875,7 +14943,7 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Regression Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -14885,7 +14953,7 @@ AutoCatBoostRegression <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -14894,25 +14962,25 @@ AutoCatBoostRegression <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # Regression TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -14920,7 +14988,8 @@ AutoCatBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -15012,8 +15081,8 @@ AutoCatBoostRegression <- function(data,
         )
 
       # Regression Grid Define Hyper Parameters----
-      if(!is.null(PassInGrid)) {
-        if(!data.table::is.data.table(PassInGrid)) {
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
           PassInGrid <- data.table::as.data.table(PassInGrid)
         }
         catboostGridList <- data.table::CJ(
@@ -15028,7 +15097,8 @@ AutoCatBoostRegression <- function(data,
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <-
           catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+        catboostGridList <-
+          data.table::rbindlist(list(PassInGrid, catboostGridList))
       } else {
         catboostGridList <- data.table::CJ(
           l2_leaf_reg = c(0, 1, 2, 3),
@@ -15077,7 +15147,7 @@ AutoCatBoostRegression <- function(data,
         # Regression Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(catboostGridList[i, ]), base_params)
+          base_params <- c(as.list(catboostGridList[i,]), base_params)
         }
 
         # Regression Grid Train Model----
@@ -15108,9 +15178,11 @@ AutoCatBoostRegression <- function(data,
 
         # Regression Grid Validation Data----
         if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
         } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
         }
 
         # Regression Grid Evaluation Metrics----
@@ -15144,8 +15216,9 @@ AutoCatBoostRegression <- function(data,
             Metric2 = Target ^ 2,
             Metric3 = Predicted ^ 2
           )]
-          Metric <- calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
-                                                                 sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
+                                                         sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(grid_eval_metric) == "r2") {
           Metric <- (calibEval[, stats::cor(Target, Predicted)]) ^ 2
         }
@@ -15196,7 +15269,7 @@ AutoCatBoostRegression <- function(data,
             task_type            = task_type
           )
           base_params <-
-            c(as.list(catboostGridList[BestGrid, ]), Base_params)
+            c(as.list(catboostGridList[BestGrid,]), Base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -15213,7 +15286,7 @@ AutoCatBoostRegression <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
-      base_params <- c(as.list(catboostGridList[BestGrid, ]),
+      base_params <- c(as.list(catboostGridList[BestGrid,]),
                        Base_params)
     } else {
       base_params <- list(
@@ -15227,8 +15300,8 @@ AutoCatBoostRegression <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
-      if(!is.null(PassInGrid)) {
-        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
       }
     }
 
@@ -15264,9 +15337,11 @@ AutoCatBoostRegression <- function(data,
 
     # Regression Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
     }
 
     # Regression r2 via sqrt of correlation
@@ -15375,8 +15450,9 @@ AutoCatBoostRegression <- function(data,
             Metric2 = Target ^ 2,
             Metric3 = Predict ^ 2
           )]
-          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                                      sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
           ValidationData[, ':=' (
             Metric1 = (Target - mean(Target)) ^ 2,
@@ -15545,7 +15621,7 @@ AutoCatBoostRegression <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
@@ -15596,7 +15672,7 @@ AutoCatBoostRegression <- function(data,
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoCatBoostMultiClass(data,
-#'                                     ValData = NULL,
+#'                                     ValidationData = NULL,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
@@ -15617,7 +15693,7 @@ AutoCatBoostRegression <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoCatBoostMultiClass <- function(data,
-                                   ValData,
+                                   ValidationData,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
@@ -15634,7 +15710,6 @@ AutoCatBoostMultiClass <- function(data,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL) {
-
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('catboost', quietly = TRUE)) {
@@ -15674,10 +15749,10 @@ AutoCatBoostMultiClass <- function(data,
       data <- data.table::as.data.table(data)
     }
 
-    # MultiClass Ensure ValData is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    # MultiClass Ensure ValidationData is a data.table----
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -15696,8 +15771,8 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # MultiClass IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -15711,7 +15786,7 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -15721,7 +15796,7 @@ AutoCatBoostMultiClass <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -15730,25 +15805,25 @@ AutoCatBoostMultiClass <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # Binary TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -15756,7 +15831,8 @@ AutoCatBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -15893,8 +15969,8 @@ AutoCatBoostMultiClass <- function(data,
         )
 
       # MultiClass Grid Define Hyper Parameters----
-      if(!is.null(PassInGrid)) {
-        if(!data.table::is.data.table(PassInGrid)) {
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
           PassInGrid <- data.table::as.data.table(PassInGrid)
         }
         catboostGridList <- data.table::CJ(
@@ -15909,7 +15985,8 @@ AutoCatBoostMultiClass <- function(data,
         catboostGridList[, ID := runif(nrow(catboostGridList))]
         catboostGridList <-
           catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-        catboostGridList <- data.table::rbindlist(list(PassInGrid,catboostGridList))
+        catboostGridList <-
+          data.table::rbindlist(list(PassInGrid, catboostGridList))
       } else {
         catboostGridList <- data.table::CJ(
           l2_leaf_reg = c(0, 1, 2, 3),
@@ -15944,7 +16021,7 @@ AutoCatBoostMultiClass <- function(data,
         # MultiClass Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(catboostGridList[i, ]), base_params)
+          base_params <- c(as.list(catboostGridList[i,]), base_params)
         }
 
         # MultiClass Grid Train Model----
@@ -15988,9 +16065,11 @@ AutoCatBoostMultiClass <- function(data,
 
           # MultiClass Grid Validation Data----
           if (!is.null(TestData)) {
-            calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict))
+            calibEval <-
+              data.table::as.data.table(cbind(Target = FinalTestTarget, predict))
           } else {
-            calibEval <- data.table::as.data.table(cbind(Target = TestTarget, predict))
+            calibEval <-
+              data.table::as.data.table(cbind(Target = TestTarget, predict))
           }
           ValidationData <- merge(
             calibEval,
@@ -16101,7 +16180,7 @@ AutoCatBoostMultiClass <- function(data,
           task_type            = task_type
         )
         base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), Base_params)
+          c(as.list(catboostGridList[BestGrid,]), Base_params)
       }
     } else {
       base_params <- list(
@@ -16115,8 +16194,8 @@ AutoCatBoostMultiClass <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
-      if(!is.null(PassInGrid)) {
-        base_params <- c(base_params, as.list(PassInGrid[1,]))
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
       }
     }
 
@@ -16163,9 +16242,11 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Grid Validation Data----
     if (!is.null(TestData)) {
-      calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge))
+      calibEval <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge))
     } else {
-      calibEval <- data.table::as.data.table(cbind(Target = TestTarget, predict))
+      calibEval <-
+        data.table::as.data.table(cbind(Target = TestTarget, predict))
     }
     ValidationData <- merge(
       calibEval,
@@ -16299,7 +16380,7 @@ AutoCatBoostMultiClass <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -16351,7 +16432,7 @@ AutoCatBoostMultiClass <- function(data,
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoH2oGBMRegression(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -16372,7 +16453,7 @@ AutoCatBoostMultiClass <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoH2oGBMRegression <- function(data,
-                                 ValData,
+                                 ValidationData,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -16390,7 +16471,6 @@ AutoH2oGBMRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
-
   # Regression Ensure packages are available----
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('h2o', quietly = TRUE)) {
@@ -16427,9 +16507,9 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -16441,7 +16521,7 @@ AutoH2oGBMRegression <- function(data,
     }
 
     # Regression Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -16451,7 +16531,7 @@ AutoH2oGBMRegression <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -16461,7 +16541,7 @@ AutoH2oGBMRegression <- function(data,
                                CharToFactor = TRUE)
 
     # Regression ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -16783,16 +16863,19 @@ AutoH2oGBMRegression <- function(data,
 
     # Regression Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
 
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
     }
 
     # Regression Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
     if (SaveModelObjects) {
       data.table::fwrite(
         VariableImportance,
@@ -16829,9 +16912,11 @@ AutoH2oGBMRegression <- function(data,
 
     # Regression Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
     }
 
     # Regression Change Prediction Name----
@@ -16989,8 +17074,9 @@ AutoH2oGBMRegression <- function(data,
             Metric2 = get(Target) ^ 2,
             Metric3 = Predict ^ 2
           )]
-          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                                      sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
           Metric <-
             (ValidationData[, stats::cor(get(Target), Predict)][[1]]) ^ 2
@@ -17147,7 +17233,7 @@ AutoH2oGBMRegression <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -17196,7 +17282,7 @@ AutoH2oGBMRegression <- function(data,
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoH2oDRFRegression(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -17215,7 +17301,7 @@ AutoH2oGBMRegression <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoH2oDRFRegression <- function(data,
-                                 ValData = NULL,
+                                 ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -17230,7 +17316,6 @@ AutoH2oDRFRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
-
   # Regression Ensure packages are available----
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('h2o', quietly = TRUE)) {
@@ -17267,9 +17352,9 @@ AutoH2oDRFRegression <- function(data,
     }
 
     # Regression Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -17281,7 +17366,7 @@ AutoH2oDRFRegression <- function(data,
     }
 
     # Regression Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -17291,7 +17376,7 @@ AutoH2oDRFRegression <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -17301,7 +17386,7 @@ AutoH2oDRFRegression <- function(data,
                                CharToFactor = TRUE)
 
     # Regression ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -17547,16 +17632,19 @@ AutoH2oDRFRegression <- function(data,
 
     # Regression Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
 
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
     }
 
     # Regression Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
     if (SaveModelObjects) {
       data.table::fwrite(
         VariableImportance,
@@ -17593,9 +17681,11 @@ AutoH2oDRFRegression <- function(data,
 
     # Regression Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
     }
 
     # Regression Change Prediction Name----
@@ -17739,8 +17829,9 @@ AutoH2oDRFRegression <- function(data,
             Metric2 = get(Target) ^ 2,
             Metric3 = Predict ^ 2
           )]
-          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                                      sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
           Metric <-
             (ValidationData[, stats::cor(get(Target), Predict)][[1]]) ^ 2
@@ -17850,7 +17941,7 @@ AutoH2oDRFRegression <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -17900,7 +17991,7 @@ AutoH2oDRFRegression <- function(data,
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 #' TestModel <- AutoH2oGBMClassifier(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -17919,7 +18010,7 @@ AutoH2oDRFRegression <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoH2oGBMClassifier <- function(data,
-                                 ValData = NULL,
+                                 ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -17986,9 +18077,9 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -18000,7 +18091,7 @@ AutoH2oGBMClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -18010,7 +18101,7 @@ AutoH2oGBMClassifier <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -18020,7 +18111,7 @@ AutoH2oGBMClassifier <- function(data,
                                CharToFactor = TRUE)
 
     # Binary ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -18176,7 +18267,8 @@ AutoH2oGBMClassifier <- function(data,
         if (GridMetric > BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18188,7 +18280,8 @@ AutoH2oGBMClassifier <- function(data,
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18204,7 +18297,8 @@ AutoH2oGBMClassifier <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18216,7 +18310,8 @@ AutoH2oGBMClassifier <- function(data,
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18232,7 +18327,8 @@ AutoH2oGBMClassifier <- function(data,
         BaseMetric <- BaseMetrics@metrics$AUC
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$AUC
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        FinalThresholdTable <-
+          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
         data.table::setnames(
           FinalThresholdTable,
           c("metric", "threshold", "value"),
@@ -18245,7 +18341,8 @@ AutoH2oGBMClassifier <- function(data,
         BaseMetric <- BaseMetrics@metrics$logloss
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        FinalThresholdTable <-
+          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
         data.table::setnames(
           FinalThresholdTable,
           c("metric", "threshold", "value"),
@@ -18279,18 +18376,21 @@ AutoH2oGBMClassifier <- function(data,
 
     # Binary Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
       Predict[, p0 := NULL]
 
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
       Predict[, p0 := NULL]
     }
 
     # Binary Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
 
     # Binary Format Variable Importance Table----
     data.table::setnames(
@@ -18329,9 +18429,11 @@ AutoH2oGBMClassifier <- function(data,
 
     # Binary Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
     }
 
     # Binary Change Prediction Name----
@@ -18484,7 +18586,7 @@ AutoH2oGBMClassifier <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -18534,7 +18636,7 @@ AutoH2oGBMClassifier <- function(data,
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 #' TestModel <- AutoH2oDRFClassifier(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -18553,7 +18655,7 @@ AutoH2oGBMClassifier <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoH2oDRFClassifier <- function(data,
-                                 ValData = NULL,
+                                 ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -18621,9 +18723,9 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -18635,7 +18737,7 @@ AutoH2oDRFClassifier <- function(data,
     }
 
     # Binary Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -18645,7 +18747,7 @@ AutoH2oDRFClassifier <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -18655,7 +18757,7 @@ AutoH2oDRFClassifier <- function(data,
                                CharToFactor = TRUE)
 
     # Binary ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -18809,7 +18911,8 @@ AutoH2oDRFClassifier <- function(data,
         if (GridMetric > BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18821,7 +18924,8 @@ AutoH2oDRFClassifier <- function(data,
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18837,7 +18941,8 @@ AutoH2oDRFClassifier <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18849,7 +18954,8 @@ AutoH2oDRFClassifier <- function(data,
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+          FinalThresholdTable <-
+            data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
           data.table::setnames(
             FinalThresholdTable,
             c("metric", "threshold", "value"),
@@ -18865,7 +18971,8 @@ AutoH2oDRFClassifier <- function(data,
         BaseMetric <- BaseMetrics@metrics$AUC
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        FinalThresholdTable <-
+          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
         data.table::setnames(
           FinalThresholdTable,
           c("metric", "threshold", "value"),
@@ -18878,7 +18985,8 @@ AutoH2oDRFClassifier <- function(data,
         BaseMetric <- BaseMetrics@metrics$logloss
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        FinalThresholdTable <-
+          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
         data.table::setnames(
           FinalThresholdTable,
           c("metric", "threshold", "value"),
@@ -18912,18 +19020,21 @@ AutoH2oDRFClassifier <- function(data,
 
     # Binary Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
       Predict[, p0 := NULL]
 
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
       Predict[, p0 := NULL]
     }
 
     # Binary Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
 
     # Binary Format Variable Importance Table----
     data.table::setnames(
@@ -18962,9 +19073,11 @@ AutoH2oDRFClassifier <- function(data,
 
     # Binary Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
     }
 
     # Binary Change Prediction Name----
@@ -19117,7 +19230,7 @@ AutoH2oDRFClassifier <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -19170,7 +19283,7 @@ AutoH2oDRFClassifier <- function(data,
 #'                      ifelse(Independent_Variable2 < 0.85,  "D", "E"))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoH2oGBMMultiClass(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -19188,7 +19301,7 @@ AutoH2oDRFClassifier <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoH2oGBMMultiClass <- function(data,
-                                 ValData = NULL,
+                                 ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -19253,9 +19366,9 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -19267,7 +19380,7 @@ AutoH2oGBMMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -19277,7 +19390,7 @@ AutoH2oGBMMultiClass <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -19287,7 +19400,7 @@ AutoH2oGBMMultiClass <- function(data,
                                CharToFactor = TRUE)
 
     # MultiClass ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -19437,11 +19550,13 @@ AutoH2oGBMMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetrics@metrics$logloss
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm$table)
         }
       } else if (tolower(eval_metric) == "r2") {
         BaseMetric <- BaseMetrics@metrics$r2
@@ -19449,11 +19564,13 @@ AutoH2oGBMMultiClass <- function(data,
         if (GridMetric > BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm)
         }
       } else if (tolower(eval_metric) == "rmse") {
         BaseMetric <- BaseMetrics@metrics$logloss
@@ -19461,11 +19578,13 @@ AutoH2oGBMMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm)
         }
       } else if (tolower(eval_metric) == "mse") {
         BaseMetric <- BaseMetrics@metrics$logloss
@@ -19473,30 +19592,36 @@ AutoH2oGBMMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm$table)
         }
       }
     } else {
       if (tolower(eval_metric) == "logloss") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$logloss
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "r2") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$r2
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "rmse") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$RMSE
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "mse") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$MSE
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       }
     }
 
@@ -19522,15 +19647,18 @@ AutoH2oGBMMultiClass <- function(data,
 
     # MultiClass Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
     }
 
     # MultiClass Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
 
     # MultiClass Format Variable Importance Table----
     data.table::setnames(
@@ -19569,10 +19697,12 @@ AutoH2oGBMMultiClass <- function(data,
 
     # MultiClass Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
       data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
       data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     }
 
@@ -19654,7 +19784,7 @@ AutoH2oGBMMultiClass <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -19707,7 +19837,7 @@ AutoH2oGBMMultiClass <- function(data,
 #'                      ifelse(Independent_Variable2 < 0.85,  "D", "E"))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoH2oDRFMultiClass(data,
-#'                                   ValData = NULL,
+#'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
@@ -19725,7 +19855,7 @@ AutoH2oGBMMultiClass <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoH2oDRFMultiClass <- function(data,
-                                 ValData = NULL,
+                                 ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
@@ -19790,9 +19920,9 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -19804,7 +19934,7 @@ AutoH2oDRFMultiClass <- function(data,
     }
 
     # MultiClass Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -19814,7 +19944,7 @@ AutoH2oDRFMultiClass <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -19824,7 +19954,7 @@ AutoH2oDRFMultiClass <- function(data,
                                CharToFactor = TRUE)
 
     # MultiClass ModelDataPrep----
-    dataTest <- ModelDataPrep(data = ValData,
+    dataTest <- ModelDataPrep(data = ValidationData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
 
@@ -19972,11 +20102,13 @@ AutoH2oDRFMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetrics@metrics$logloss
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm$table)
         }
       } else if (tolower(eval_metric) == "r2") {
         BaseMetric <- BaseMetrics@metrics$r2
@@ -19984,11 +20116,13 @@ AutoH2oDRFMultiClass <- function(data,
         if (GridMetric > BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm)
         }
       } else if (tolower(eval_metric) == "rmse") {
         BaseMetric <- BaseMetrics@metrics$logloss
@@ -19996,11 +20130,13 @@ AutoH2oDRFMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm)
         }
       } else if (tolower(eval_metric) == "mse") {
         BaseMetric <- BaseMetrics@metrics$logloss
@@ -20008,30 +20144,36 @@ AutoH2oDRFMultiClass <- function(data,
         if (GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(GridMetrics@metrics$cm$table)
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+          ConfusionMatrix <-
+            data.table::as.data.table(BaseMetrics@metrics$cm$table)
         }
       }
     } else {
       if (tolower(eval_metric) == "logloss") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$logloss
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "r2") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$r2
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "rmse") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$RMSE
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       } else if (tolower(eval_metric) == "mse") {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$MSE
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <-
+          data.table::as.data.table(BaseMetrics@metrics$cm$table)
       }
     }
 
@@ -20057,15 +20199,18 @@ AutoH2oDRFMultiClass <- function(data,
 
     # MultiClass Score Final Test Data----
     if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datatest))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datatest))
     } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                            newdata = datavalidate))
+      Predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
+                                                   newdata = datavalidate))
     }
 
     # MultiClass Variable Importance----
-    VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+    VariableImportance <-
+      data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
 
     # MultiClass Format Variable Importance Table----
     data.table::setnames(
@@ -20104,10 +20249,12 @@ AutoH2oDRFMultiClass <- function(data,
 
     # MultiClass Create Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(TestData, Predict))
       data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     } else {
-      ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(dataTest, Predict))
       data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
     }
 
@@ -20189,7 +20336,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -20242,7 +20389,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoXGBoostRegression(data,
-#'                                    ValData = NULL,
+#'                                    ValidationData = NULL,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
@@ -20264,7 +20411,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoXGBoostRegression <- function(data,
-                                  ValData = NULL,
+                                  ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
@@ -20320,9 +20467,9 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -20341,8 +20488,8 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -20351,7 +20498,7 @@ AutoXGBoostRegression <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Regression Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -20361,7 +20508,7 @@ AutoXGBoostRegression <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -20370,25 +20517,25 @@ AutoXGBoostRegression <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # Regression TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -20396,7 +20543,8 @@ AutoXGBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -20535,7 +20683,7 @@ AutoXGBoostRegression <- function(data,
         # Regression Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(grid_params[i, ]), base_params)
+          base_params <- c(as.list(grid_params[i,]), base_params)
         }
 
         # Regression Grid Train Model----
@@ -20568,9 +20716,11 @@ AutoXGBoostRegression <- function(data,
 
         # Regression Grid Validation Data----
         if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
         } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
         }
 
         # Regression Grid Evaluation Metrics----
@@ -20604,10 +20754,12 @@ AutoXGBoostRegression <- function(data,
             Metric2 = Target ^ 2,
             Metric3 = Predicted ^ 2
           )]
-          Metric <- calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
-                                                                 sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
+                                                         sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(grid_eval_metric) == "r2") {
-          Metric <- (calibEval[, stats::cor(eval(Target), Predicted)][[1]]) ^ 2
+          Metric <-
+            (calibEval[, stats::cor(eval(Target), Predicted)][[1]]) ^ 2
         }
 
         # Regression Metrics Collection----
@@ -20653,7 +20805,7 @@ AutoXGBoostRegression <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -20682,7 +20834,7 @@ AutoXGBoostRegression <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       }
     } else {
@@ -20730,9 +20882,11 @@ AutoXGBoostRegression <- function(data,
 
     # Regression Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
     }
 
     # Regression r2 via sqrt of correlation
@@ -20841,8 +20995,9 @@ AutoXGBoostRegression <- function(data,
             Metric2 = Target ^ 2,
             Metric3 = Predict ^ 2
           )]
-          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                                      sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+          Metric <-
+            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
           Metric <-
             (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
@@ -21005,7 +21160,7 @@ AutoXGBoostRegression <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -21059,7 +21214,7 @@ AutoXGBoostRegression <- function(data,
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := ifelse(Target > 0.5, 1, 0)]
 #' TestModel <- AutoXGBoostClassifier(data,
-#'                                    ValData = NULL,
+#'                                    ValidationData = NULL,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
@@ -21081,7 +21236,7 @@ AutoXGBoostRegression <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoXGBoostClassifier <- function(data,
-                                  ValData = NULL,
+                                  ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
@@ -21151,9 +21306,9 @@ AutoXGBoostClassifier <- function(data,
     }
 
     # Binary Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -21172,8 +21327,8 @@ AutoXGBoostClassifier <- function(data,
     }
 
     # Binary IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -21182,7 +21337,7 @@ AutoXGBoostClassifier <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # Binary Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -21192,7 +21347,7 @@ AutoXGBoostClassifier <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -21201,25 +21356,25 @@ AutoXGBoostClassifier <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # Binary TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -21227,7 +21382,8 @@ AutoXGBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -21367,7 +21523,7 @@ AutoXGBoostClassifier <- function(data,
         # Binary Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(grid_params[i, ]), base_params)
+          base_params <- c(as.list(grid_params[i,]), base_params)
         }
 
         # Binary Grid Train Model----
@@ -21400,9 +21556,11 @@ AutoXGBoostClassifier <- function(data,
 
         # Binary Grid Validation Data----
         if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
         } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
         }
 
         # Binary Initialize AUC_List
@@ -21420,7 +21578,8 @@ AutoXGBoostClassifier <- function(data,
             j = as.integer(j + 1)
             Accuracy <-
               mean(calibEval[, ifelse(p1 > k &
-                                        Target == 1 | p1 < k & Target == 0, 1, 0)])
+                                        Target == 1 |
+                                        p1 < k & Target == 0, 1, 0)])
             data.table::set(x,
                             i = j,
                             j = 2L,
@@ -21485,7 +21644,7 @@ AutoXGBoostClassifier <- function(data,
                 ))
               Metric <-
                 z[order(-Metric)][!is.infinite(Threshold) &
-                                    !is.infinite(Metric)][1, ]
+                                    !is.infinite(Metric)][1,]
             } else {
               z <-
                 data.table::as.data.table(cbind(
@@ -21494,7 +21653,7 @@ AutoXGBoostClassifier <- function(data,
                 ))
               Metric <-
                 z[order(Metric)][!is.infinite(Threshold) &
-                                   !is.infinite(Metric)][1, ]
+                                   !is.infinite(Metric)][1,]
             }
           }
         }
@@ -21581,7 +21740,7 @@ AutoXGBoostClassifier <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -21611,7 +21770,7 @@ AutoXGBoostClassifier <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       }
     } else {
@@ -21659,9 +21818,11 @@ AutoXGBoostClassifier <- function(data,
 
     # Binary Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
 
     # Binary AUC Object Create----
@@ -21816,7 +21977,7 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1, ]
+                                  !is.infinite(Metric)][1,]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -21825,7 +21986,7 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1, ]
+                                 !is.infinite(Metric)][1,]
           }
         }
 
@@ -21876,14 +22037,15 @@ AutoXGBoostClassifier <- function(data,
       j = as.integer(j + 1)
       Accuracy <-
         mean(ValidationData[, ifelse(p1 > i &
-                                       Target == 1 | p1 < i & Target == 0, 1, 0)])
+                                       Target == 1 |
+                                       p1 < i & Target == 0, 1, 0)])
       set(x,
           i = j,
           j = 2L,
           value = round(Accuracy, 4))
     }
     data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-    x <- x[1, ]
+    x <- x[1,]
     EvaluationMetrics <-
       data.table::rbindlist(list(EvaluationMetrics, x))
 
@@ -21992,7 +22154,7 @@ AutoXGBoostClassifier <- function(data,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
-#' @param ValData This is your holdout data set used in modeling either refine your hyperparameters.
+#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Target should be in factor or character form.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
@@ -22049,7 +22211,7 @@ AutoXGBoostClassifier <- function(data,
 #'                      ifelse(Independent_Variable2 < 0.75,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoXGBoostMultiClass(data,
-#'                                    ValData = NULL,
+#'                                    ValidationData = NULL,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
@@ -22070,7 +22232,7 @@ AutoXGBoostClassifier <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoXGBoostMultiClass <- function(data,
-                                  ValData = NULL,
+                                  ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
@@ -22122,9 +22284,9 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass Ensure data is a data.table----
-    if (!is.null(ValData)) {
-      if (!data.table::is.data.table(ValData)) {
-        ValData <- data.table::as.data.table(ValData)
+    if (!is.null(ValidationData)) {
+      if (!data.table::is.data.table(ValidationData)) {
+        ValidationData <- data.table::as.data.table(ValidationData)
       }
     }
 
@@ -22143,8 +22305,8 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass IDcol Name Storage----
-    if(!is.null(IDcols)) {
-      if(!is.character(IDcols)) {
+    if (!is.null(IDcols)) {
+      if (!is.character(IDcols)) {
         IDcols <- names(data)[IDcols]
       }
     }
@@ -22153,7 +22315,7 @@ AutoXGBoostMultiClass <- function(data,
     CatFeatures <- names(data)[CatFeatures]
 
     # MultiClass Data Partition----
-    if (is.null(ValData) & is.null(TestData)) {
+    if (is.null(ValidationData) & is.null(TestData)) {
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -22163,7 +22325,7 @@ AutoXGBoostMultiClass <- function(data,
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
-      ValData <- dataSets$ValidationData
+      ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
     }
 
@@ -22172,25 +22334,25 @@ AutoXGBoostMultiClass <- function(data,
       keep1 <- names(data)[c(FeatureColNames)]
       keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     } else {
       keep <- c(FeatureColNames, Target)
       dataTrain <- data[, ..keep]
-      dataTest <- ValData[, ..keep]
+      dataTest <- ValidationData[, ..keep]
     }
 
     # MultiClass TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, keep1, Target)
         } else {
           keep <- c(keep1, Target)
         }
         TestData <- TestData[, ..keep]
       } else {
-        if(!is.null(IDcols)) {
+        if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
           keep <- c(FeatureColNames, Target)
@@ -22198,7 +22360,8 @@ AutoXGBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+      if (is.numeric(FeatureColNames) |
+          is.integer(FeatureColNames)) {
         keep1 <- names(data)[c(FeatureColNames)]
         keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
@@ -22390,7 +22553,7 @@ AutoXGBoostMultiClass <- function(data,
         # MultiClass Grid Merge Model Parameters----
         # Have first model be the baseline model
         if (i != 1) {
-          base_params <- c(as.list(grid_params[i, ]), base_params)
+          base_params <- c(as.list(grid_params[i,]), base_params)
         }
 
         # MultiClass Grid Train Model----
@@ -22423,9 +22586,11 @@ AutoXGBoostMultiClass <- function(data,
 
         # MultiClass Grid Validation Data----
         if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
         } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+          calibEval <-
+            data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
         }
 
         # MultiClass Accuracy
@@ -22477,7 +22642,7 @@ AutoXGBoostMultiClass <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -22511,7 +22676,7 @@ AutoXGBoostMultiClass <- function(data,
             tree_method = TreeMethod
           )
           base_params <-
-            c(as.list(grid_params[BestGrid, ]), base_params)
+            c(as.list(grid_params[BestGrid,]), base_params)
         }
       }
     } else {
@@ -22561,9 +22726,11 @@ AutoXGBoostMultiClass <- function(data,
 
     # MultiClass Validation Data----
     if (!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     }
 
     # MultiClass Evaluation Metrics----
