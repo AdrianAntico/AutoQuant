@@ -196,7 +196,7 @@ test <- DataSets$TestData
 
 # Build Models
 TestModel <- RemixAutoML::AutoXGBoostRegression(data = train,
-                                                ValData = valid,
+                                                ValidationData = valid,
                                                 TestData = test,
                                                 TargetColumnName = 1,
                                                 FeatureColNames = 2:12,
