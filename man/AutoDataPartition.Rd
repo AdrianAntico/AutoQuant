@@ -39,6 +39,7 @@ dataSets <- AutoDataPartition(data,
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoWord2VecModeler}},
+  \code{\link{CreateCalendarVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
   \code{\link{FAST_GDL_Feature_Engineering}},
