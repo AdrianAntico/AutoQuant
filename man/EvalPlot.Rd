@@ -6,8 +6,7 @@
 \usage{
 EvalPlot(data, PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"), GraphType = c("calibration"),
-  PercentileBucket = 0.05, aggrfun = function(x) base::mean(x, na.rm =
-  TRUE))
+  PercentileBucket = 0.05, aggrfun = function(x) mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}

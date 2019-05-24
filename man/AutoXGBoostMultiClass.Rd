@@ -4,7 +4,7 @@
 \alias{AutoXGBoostMultiClass}
 \title{AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostMultiClass(data, ValData = NULL, TestData = NULL,
+AutoXGBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   CatFeatures = NULL, IDcols = NULL, eval_metric = "merror",
   Trees = 50, GridTune = FALSE, grid_eval_metric = "merror",
@@ -15,7 +15,7 @@ AutoXGBoostMultiClass(data, ValData = NULL, TestData = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters.}
+\item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -96,7 +96,7 @@ ifelse(Independent_Variable2 < 0.25, "A",
                      ifelse(Independent_Variable2 < 0.75,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoXGBoostMultiClass(data,
-                                   ValData = NULL,
+                                   ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,

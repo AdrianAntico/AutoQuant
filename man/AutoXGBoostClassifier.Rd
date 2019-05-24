@@ -4,7 +4,7 @@
 \alias{AutoXGBoostClassifier}
 \title{AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostClassifier(data, ValData = NULL, TestData = NULL,
+AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   CatFeatures = NULL, IDcols = NULL, eval_metric = "auc",
   Trees = 50, GridTune = FALSE, grid_eval_metric = "auc",
@@ -15,7 +15,7 @@ AutoXGBoostClassifier(data, ValData = NULL, TestData = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters.}
+\item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -94,7 +94,7 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target > 0.5, 1, 0)]
 TestModel <- AutoXGBoostClassifier(data,
-                                   ValData = NULL,
+                                   ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,

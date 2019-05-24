@@ -4,7 +4,7 @@
 \alias{AutoCatBoostMultiClass}
 \title{AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system}
 \usage{
-AutoCatBoostMultiClass(data, ValData, TestData = NULL,
+AutoCatBoostMultiClass(data, ValidationData, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   CatFeatures = NULL, IDcols = NULL, task_type = "GPU",
   eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
@@ -16,7 +16,7 @@ AutoCatBoostMultiClass(data, ValData, TestData = NULL,
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{ValData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
+\item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -90,7 +90,7 @@ data[, Target := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoCatBoostMultiClass(data,
-                                    ValData = NULL,
+                                    ValidationData = NULL,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:11),

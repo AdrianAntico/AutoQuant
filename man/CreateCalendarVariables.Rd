@@ -5,8 +5,7 @@
 \title{CreateCalendarVariables Create Caledar Variables}
 \usage{
 CreateCalendarVariables(data, DateCols = NULL, AsFactor = FALSE,
-  TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday",
-  "week", "isoweek", "month", "quarter", "year"))
+  TimeUnits = "wday")
 }
 \arguments{
 \item{data}{This is your data}
@@ -15,7 +14,7 @@ CreateCalendarVariables(data, DateCols = NULL, AsFactor = FALSE,
 
 \item{AsFactor}{Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned}
 
-\item{TimeUnits}{Supply a character vector of time units for creating calendar variables.}
+\item{TimeUnits}{Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 }
 \value{
 Returns your data.table with the added calendar variables at the end
@@ -24,7 +23,7 @@ Returns your data.table with the added calendar variables at the end
 CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
 }
 \examples{
-data <- data.table::data.table(Date = "2018-01-01 8:53")
+data <- data.table::data.table(Date = "2018-01-01 00:00:00")
 data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("day", "month", "year"))
 }
 \seealso{
