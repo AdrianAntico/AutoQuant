@@ -5,7 +5,8 @@
 \title{CreateCalendarVariables Create Caledar Variables}
 \usage{
 CreateCalendarVariables(data, DateCols = NULL, AsFactor = FALSE,
-  TimeUnits = "wday")
+  TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday",
+  "week", "isoweek", "month", "quarter", "year"))
 }
 \arguments{
 \item{data}{This is your data}
