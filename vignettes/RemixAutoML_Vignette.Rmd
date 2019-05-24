@@ -47,6 +47,9 @@ In other modeling frameworks, such as Python, you need to convert your categoric
 ### **Handling text data**
 We are living in a world now where text data is becoming more readily available and your machine learning models aren't suited to handle them without first managing them. With this package, you can simply run the **AutoWord2VecModeler()** function, which builds skip-gram models, for all your text columns, thus replacing your text data with numerical vectors suitable for modeling. The function will save the models and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
 
+### **Handling date data**
+Date columns can hold quite a bit of useful information but aren't typically used inside the ML algorithms. We need to extract information out of them. Currently, the package has a function to extract the time components such as second, minute, hour, weekday, day of month, day of year, week, month, quarter, and year. 
+
 ### **Machine learning algorithms**
 The machine learning algorithms available have been demonstrated to provide optimial performance on a wide-range of business use-cases over the years. They are all intended to remove the coding aspects behind tuning, evaluation, and interpretation, along with consistent output for comparison amongst them. 
 
@@ -784,6 +787,7 @@ This suite of functions are what will take your models to the next level. The co
 - `FAST_GDL_Feature_Engineering()`
 - `Scoring_GDL_Feature_Engineering()`
 - `AutoWord2VecModeler()`
+- `CreateCalendarVariables()`
 - `ModelDataPrep()`
 - `DummifyDT()`
 - `AutoDataPartition()`
