@@ -13655,13 +13655,18 @@ AutoDataPartition <- function(data,
 
     # Gather row numbers of data for partitioning----
     RowList <- list()
+    CountList <- c()
+    TotalRows <- data[, .N]
+    for(i in seq_len(NumDataSets)) {
+      CountList[i] <- Ratios[i] * TotalRows
+    }
     for (i in NumDataSets:1) {
       if (!is.null(StratifyColumnNames)) {
         if (i == 1) {
           temp <- copy_data
         } else {
           x <-
-            copy_data[, .I[sample(.N, .N * Ratios[i])], by = list(get(keep))]$V1
+            copy_data[, .I[sample(.N, CountList[i])], by = list(get(keep))]$V1
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
@@ -13669,7 +13674,7 @@ AutoDataPartition <- function(data,
         if (i == 1) {
           temp <- copy_data
         } else {
-          x <- copy_data[, .I[sample(.N, .N * Ratios[i])]]
+          x <- copy_data[, .I[sample(.N, CountList[i])]]
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
