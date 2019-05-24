@@ -15481,7 +15481,8 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Remove Cols
-    ValidationData[, ':=' (Metric1 = NULL,
+    ValidationData[, ':=' (Metric = NULL,
+                           Metric1 = NULL,
                            Metric2 = NULL,
                            Metric3 = NULL)]
 
