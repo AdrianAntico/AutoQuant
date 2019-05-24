@@ -959,17 +959,18 @@ ProblematicRecords <- function(data,
   h2o::h2o.shutdown(prompt = FALSE)
 
   # Add column for outlier indicator----
-  Cutoff <- quantile(OutliersRaw[["predict"]],
+  setnames(OutliersRaw, c("predict","mean_length"), c("PredictIsoForest","MeanLength"))
+  Cutoff <- quantile(OutliersRaw[["PredictIsoForest"]],
                      probs = Threshold)[[1]]
-  OutliersRaw[, PredictedOutlier := ifelse(predict > Cutoff, 1, 0)]
-  OutliersRaw[, PercentileRank := percRank(predict)]
+  OutliersRaw[, PredictedOutlier := ifelse(PredictIsoForest > Cutoff, 1, 0)]
+  OutliersRaw[, PercentileRank := percRank(PredictIsoForest)]
   data.table::setcolorder(OutliersRaw, c(4, 3, 1, 2))
 
   # Merge back with source data----
   OutputData <- cbind(OutliersRaw, data)
 
   # Return data----
-  return(OutputData[order(-predict)])
+  return(OutputData[order(-PredictIsoForest)])
 }
 
 #' CreateCalendarVariables Create Caledar Variables
