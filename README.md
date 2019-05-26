@@ -1,6 +1,6 @@
 ![RemixAutoML_Logo](https://user-images.githubusercontent.com/42076988/55656390-94dc4b00-57ab-11e9-9e3f-06b049b796d5.png)
 
-# Install the package in R via:
+# How to Install the Package for R:
 
 #### 1. First, run the following R script to download dependencies
 ```
