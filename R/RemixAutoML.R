@@ -15818,7 +15818,7 @@ AutoCatBoostMultiClass <- function(data,
       dataTest <- ValidationData[, ..keep]
     }
 
-    # Binary TestData Subset Columns Needed----
+    # MultiClass TestData Subset Columns Needed----
     if (!is.null(TestData)) {
       if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
         keep1 <- names(TestData)[c(FeatureColNames)]
@@ -22956,7 +22956,16 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Change Output Predictions Column Name----
-  data.table::setnames(predict, "V1", "Predictions")
+  if(tolower(TargetType) != "multiclass") {
+    data.table::setnames(predict, "V1", "Predictions")
+  } else if(tolower(TargetType) == "multiclass") {
+    TargetLevels <- data.table::fread(paste0(ModelPath,"/",ModelID,"_TargetLevels.csv"))
+    k <- 1
+    for (name in as.character(TargetLevels[[1]])) {
+      k <- k + 1
+      data.table::setnames(predict, paste0("V", k), name)
+    }
+  }
 
   # Merge features back on----
   if(ReturnFeatures) {
