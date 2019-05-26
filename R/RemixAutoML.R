@@ -22942,12 +22942,12 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     predict <- cbind(
       1 + catboost::catboost.predict(
         model = model,
-        pool = TestPool,
+        pool = ScoringPool,
         prediction_type = "Class"
       ),
       catboost::catboost.predict(
         model = model,
-        pool = TestPool,
+        pool = ScoringPool,
         prediction_type = "Probability"
       )
     )
