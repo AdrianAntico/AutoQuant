@@ -22965,6 +22965,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       k <- k + 1
       data.table::setnames(predict, paste0("V", k), name)
     }
+    data.table::setnames(predict, "V1", "Predictions")
   }
 
   # Merge features back on----
