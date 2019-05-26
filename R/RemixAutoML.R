@@ -22966,6 +22966,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       data.table::setnames(predict, paste0("V", k), name)
     }
     data.table::setnames(predict, "V1", "Predictions")
+    predict <- merge(
+      predict,
+      TargetLevels,
+      by.x = "Predictions",
+      by.y = "NewLevels",
+      all = FALSE
+    )
+    predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
 
   # Merge features back on----
