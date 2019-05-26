@@ -13999,15 +13999,6 @@ AutoCatBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # Binary Save Names of data----
@@ -14997,15 +14988,6 @@ AutoCatBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # Regression Save Names of data----
@@ -15703,7 +15685,7 @@ AutoCatBoostRegression <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoCatBoostMultiClass <- function(data,
-                                   ValidationData,
+                                   ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
@@ -15841,15 +15823,6 @@ AutoCatBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -20553,15 +20526,6 @@ AutoXGBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # Regression Dummify dataTrain Categorical Features----
@@ -21392,15 +21356,6 @@ AutoXGBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # Binary Dummify dataTrain Categorical Features----
@@ -22370,15 +22325,6 @@ AutoXGBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (is.numeric(FeatureColNames) |
-          is.integer(FeatureColNames)) {
-        keep1 <- names(data)[c(FeatureColNames)]
-        keep <- c(keep1, Target)
-        TestData <- TestData[, ..keep]
-      } else {
-        keep <- c(FeatureColNames, Target)
-        TestData <- TestData[, ..keep]
-      }
     }
 
     # MultiClass Obtain Unique Target Levels
