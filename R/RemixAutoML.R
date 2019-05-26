@@ -16290,7 +16290,7 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Metrics MicroAUC----
     y <- ValidationData[[eval(Target)]]
-    keep <- names(ValidationData)[3:ncol(predict)]
+    keep <- names(ValidationData)[3:(ncol(predict)+1)]
     x <- as.matrix(ValidationData[, ..keep])
     z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
@@ -22939,16 +22939,18 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         prediction_type = "Probability",
         thread_count = -1))
   } else if(tolower(TargetType) == "multiclass") {
-    predict <- cbind(
-      1 + catboost::catboost.predict(
-        model = model,
-        pool = ScoringPool,
-        prediction_type = "Class"
-      ),
-      catboost::catboost.predict(
-        model = model,
-        pool = ScoringPool,
-        prediction_type = "Probability"
+    predict <- data.table::as.data.table(
+      cbind(
+        1 + catboost::catboost.predict(
+          model = model,
+          pool = ScoringPool,
+          prediction_type = "Class"
+        ),
+        catboost::catboost.predict(
+          model = model,
+          pool = ScoringPool,
+          prediction_type = "Probability"
+        )
       )
     )
   }
