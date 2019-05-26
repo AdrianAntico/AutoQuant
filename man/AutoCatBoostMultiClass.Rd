@@ -4,7 +4,7 @@
 \alias{AutoCatBoostMultiClass}
 \title{AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system}
 \usage{
-AutoCatBoostMultiClass(data, ValidationData, TestData = NULL,
+AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   CatFeatures = NULL, IDcols = NULL, task_type = "GPU",
   eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
