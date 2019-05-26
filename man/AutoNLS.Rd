@@ -87,6 +87,7 @@ data11$EvaluationMetrics
 \seealso{
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
+  \code{\link{AutoCatBoostRegressionScoring}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
