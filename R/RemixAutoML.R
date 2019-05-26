@@ -13653,20 +13653,26 @@ AutoDataPartition <- function(data,
       keep <- c(eval(StratifyColumnNames))
     }
 
-    # Gather row numbers of data for partitioning----
-    RowList <- list()
-    CountList <- c()
-    TotalRows <- data[, .N]
-    for(i in seq_len(NumDataSets)) {
-      CountList[i] <- Ratios[i] * TotalRows
+    # Modify ratios to account for data decrements----
+    RatioList <- c()
+    RatioList[NumDataSets] <- Ratios[NumDataSets]
+    for(i in (NumDataSets-1):1) {
+      tempRatio <- 0
+      for(j in (i+1):NumDataSets) {
+        tempRatio <- Ratios[j] + tempRatio
+      }
+      RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
+
+    # Gather Row Numbers----
+    RowList <- list()
     for (i in NumDataSets:1) {
       if (!is.null(StratifyColumnNames)) {
         if (i == 1) {
           temp <- copy_data
         } else {
           x <-
-            copy_data[, .I[sample(.N, CountList[i])], by = list(get(keep))]$V1
+            copy_data[, .I[sample(.N, .N * RatioList[i])], by = list(get(keep))]$V1
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
@@ -13674,7 +13680,7 @@ AutoDataPartition <- function(data,
         if (i == 1) {
           temp <- copy_data
         } else {
-          x <- copy_data[, .I[sample(.N, CountList[i])]]
+          x <- copy_data[, .I[sample(.N, .N * RatioList[i])]]
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
@@ -22958,4 +22964,5 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Return data----
   return(predict)
 }
-                    
+
+
