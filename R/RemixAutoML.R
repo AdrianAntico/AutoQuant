@@ -13991,6 +13991,7 @@ AutoCatBoostClassifier <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -13999,6 +14000,9 @@ AutoCatBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Binary Save Names of data----
@@ -14980,6 +14984,7 @@ AutoCatBoostRegression <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -14988,6 +14993,9 @@ AutoCatBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Regression Save Names of data----
@@ -15815,6 +15823,7 @@ AutoCatBoostMultiClass <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -15823,6 +15832,9 @@ AutoCatBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -20518,6 +20530,7 @@ AutoXGBoostRegression <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -20526,6 +20539,9 @@ AutoXGBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Regression Dummify dataTrain Categorical Features----
@@ -21348,6 +21364,7 @@ AutoXGBoostClassifier <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -21356,6 +21373,9 @@ AutoXGBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Binary Dummify dataTrain Categorical Features----
@@ -22317,6 +22337,7 @@ AutoXGBoostMultiClass <- function(data,
         }
         TestData <- TestData[, ..keep]
       } else {
+        keep1 <- c(FeatureColNames)
         if (!is.null(IDcols)) {
           keep <- c(IDcols, FeatureColNames, Target)
         } else {
@@ -22325,6 +22346,9 @@ AutoXGBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -22756,4 +22780,156 @@ AutoXGBoostMultiClass <- function(data,
       }
     }
   }
+}
+
+#' AutoCatBoostRegressionScoring is an automated scoring function that compliments the AutoCatBoostRegression() function.
+#'
+#' AutoCatBoostRegressionScoring is an automated scoring function that compliments the AutoCatBoostRegression() function. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion.
+#'
+#' @family Supervised Learning
+#' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
+#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
+#' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoCatBoostRegression() function
+#' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param ModelPath Supply your path file used in the AutoCatBoostRegression() function
+#' @param ModelID Supply the model ID used in the AutoCatBoostRegression() function
+#' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
+#' @param MDP_Impute Set to TRUE if you did so for modeling and didn't do so before supplying ScoringData in this function
+#' @param MDP_CharToFactor Set to TRUE to turn your character columns to factors if you didn't do so to your ScoringData that you are supplying to this function
+#' @param MDP_RemoveDates Set to TRUE if you have date of timestamp columns in your ScoringData
+#' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
+#' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
+#' @examples
+#' \donttest{
+#' Preds <- AutoCatBoostRegressionScoring(ScoringData = data,
+#'                                        FeatureColNames = 2:12,
+#'                                        CatFeatures = 12,
+#'                                        IDcols = NULL,
+#'                                        ModelPath = "home",
+#'                                        ModelID = "ModelTest",
+#'                                        ReturnFeatures = TRUE,
+#'                                        MDP_Impute = TRUE,
+#'                                        MDP_CharToFactor = TRUE,
+#'                                        MDP_RemoveDates = TRUE,
+#'                                        MDP_MissFactor = "0",
+#'                                        MDP_MissNum = -1)
+#' }
+#' @return A data.table of predicted values with the option to return model features as well.
+#' @export
+AutoCatBoostRegressionScoring <- function(ScoringData = NULL,
+                                          FeatureColNames = NULL,
+                                          CatFeatures = NULL,
+                                          IDcols = NULL,
+                                          ModelPath = NULL,
+                                          ModelID = NULL,
+                                          ReturnFeatures = TRUE,
+                                          MDP_Impute = TRUE,
+                                          MDP_CharToFactor = TRUE,
+                                          MDP_RemoveDates = TRUE,
+                                          MDP_MissFactor = "0",
+                                          MDP_MissNum = -1) {
+
+  # Check arguments----
+  if(!file.exists(ModelPath)) {
+    warning("Model does not exist in the location provided by ModelPath")
+  }
+  if(is.null(ScoringData)) {
+    warning("ScoringData cannot be NULL")
+  }
+  if(is.null(FeatureColNames)) {
+    warning("FeatureColumnNames cannot be NULL")
+  }
+  if(!data.table::is.data.table(ScoringData)) {
+    ScoringData <- data.table::as.data.table(ScoringData)
+  }
+  if(!is.logical(MDP_Impute)) {
+    warning("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.logical(MDP_CharToFactor)) {
+    warning("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.logical(MDP_RemoveDates)) {
+    warning("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) {
+    warning("MDP_MissFactor should be a character or factor value")
+  }
+  if(!is.numeric(MDP_MissNum)) {
+    warning("MDP_MissNum should be a numeric or integer value")
+  }
+
+  # ModelDataPrep Check----
+  ScoringData <- ModelDataPrep(data = ScoringData,
+                               Impute = MDP_Impute,
+                               CharToFactor = MDP_CharToFactor,
+                               RemoveDates = MDP_RemoveDates,
+                               MissFactor = MDP_MissFactor,
+                               MissNum = MDP_MissNum)
+
+  # Convert CatFeatures to 1-indexed----
+  if (!is.null(CatFeatures)) {
+    for (i in seq_len(length(CatFeatures))) {
+      CatFeatures[i] <- CatFeatures[i] - 1
+    }
+  }
+
+  # ScoringData Subset Columns Needed----
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColNames)]
+    if (!is.null(IDcols)) {
+      keep <- c(IDcols, keep1)
+    } else {
+      keep <- c(keep1)
+    }
+    ScoringData <- ScoringData[, ..keep]
+    if(ReturnFeatures) {
+      ScoringMerge <- data.table::copy(ScoringData)
+      ScoringData <- ScoringData[, ..keep1]
+    }
+  } else {
+    keep1 <- c(FeatureColNames)
+    if (!is.null(IDcols)) {
+      keep <- c(IDcols, FeatureColNames)
+    } else {
+      keep <- c(FeatureColNames)
+    }
+    ScoringData <- ScoringData[, ..keep]
+    if(ReturnFeatures) {
+      ScoringMerge <- data.table::copy(ScoringData)
+      ScoringData <- ScoringData[, ..keep1]
+    }
+  }
+
+  # Regression Initialize Catboost Data Conversion----
+  if (!is.null(CatFeatures)) {
+    ScoringPool <-
+      catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
+  } else {
+    ScoringPool <-
+      catboost::catboost.load_pool(ScoringData)
+  }
+
+  # Load model----
+  model <- tryCatch({catboost::catboost.load_model(
+    paste0(ModelPath,"/",ModelID))},
+    error = function(x) return("Model not found in ModelPath"))
+
+  # Score model----
+  predict <- data.table::as.data.table(
+    catboost::catboost.predict(
+      model = model,
+      pool = ScoringPool,
+      prediction_type = "RawFormulaVal",
+      thread_count = -1))
+
+  # Change Output Predictions Column Name----
+  data.table::setnames(predict, "V1", "Predictions")
+
+  # Merge features back on----
+  if(ReturnFeatures) {
+    predict <- cbind(predict,ScoringMerge)
+  }
+
+  # Return data----
+  return(predict)
 }
