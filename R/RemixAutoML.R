@@ -16243,20 +16243,20 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Grid Validation Data----
     if (!is.null(TestData)) {
-      calibEval <-
+      ValidationData <-
         data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge))
     } else {
-      calibEval <-
+      ValidationData <-
         data.table::as.data.table(cbind(Target = TestTarget, predict))
     }
     ValidationData <- merge(
-      calibEval,
+      ValidationData,
       TargetLevels,
-      by.x = "V2",
+      by.x = "V1",
       by.y = "NewLevels",
       all = FALSE
     )
-    ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
+    ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
     ValidationData <- merge(
       ValidationData,
       TargetLevels,
@@ -16267,12 +16267,12 @@ AutoCatBoostMultiClass <- function(data,
     ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
 
     # MultiClass Update Names for Predicted Value Columns
-    k <- 2
+    k <- 1
     for (name in as.character(TargetLevels[[1]])) {
       k <- k + 1
       data.table::setnames(ValidationData, paste0("V", k), name)
     }
-    data.table::setnames(ValidationData, "V2", "Predict")
+    data.table::setnames(ValidationData, "V1", "Predict")
     data.table::set(ValidationData,
                     j = "Target",
                     value = as.character(ValidationData[["Target"]]))
@@ -16290,7 +16290,7 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Metrics MicroAUC----
     y <- ValidationData[[eval(Target)]]
-    keep <- names(ValidationData)[3:(ncol(ValidationData))]
+    keep <- names(ValidationData)[3:ncol(predict)]
     x <- as.matrix(ValidationData[, ..keep])
     z <- pROC::multiclass.roc(response = y, predictor = x)
     MetricAUC <- round(as.numeric(noquote(
@@ -22964,5 +22964,3 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Return data----
   return(predict)
 }
-
-
