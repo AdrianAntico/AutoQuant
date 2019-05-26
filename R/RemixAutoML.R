@@ -22782,11 +22782,12 @@ AutoXGBoostMultiClass <- function(data,
   }
 }
 
-#' AutoCatBoostRegressionScoring is an automated scoring function that compliments the AutoCatBoostRegression() function.
+#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
 #'
-#' AutoCatBoostRegressionScoring is an automated scoring function that compliments the AutoCatBoostRegression() function. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion.
+#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion.
 #'
 #' @family Supervised Learning
+#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoCatBoostRegression() function
@@ -22801,7 +22802,8 @@ AutoXGBoostMultiClass <- function(data,
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @examples
 #' \donttest{
-#' Preds <- AutoCatBoostRegressionScoring(ScoringData = data,
+#' Preds <- AutoCatBoostRegressionScoring(TargetType = "regression",
+#'                                        ScoringData = data,
 #'                                        FeatureColNames = 2:12,
 #'                                        CatFeatures = 12,
 #'                                        IDcols = NULL,
@@ -22816,18 +22818,19 @@ AutoXGBoostMultiClass <- function(data,
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
-AutoCatBoostRegressionScoring <- function(ScoringData = NULL,
-                                          FeatureColNames = NULL,
-                                          CatFeatures = NULL,
-                                          IDcols = NULL,
-                                          ModelPath = NULL,
-                                          ModelID = NULL,
-                                          ReturnFeatures = TRUE,
-                                          MDP_Impute = TRUE,
-                                          MDP_CharToFactor = TRUE,
-                                          MDP_RemoveDates = TRUE,
-                                          MDP_MissFactor = "0",
-                                          MDP_MissNum = -1) {
+AutoCatBoostScoring <- function(TargetType = NULL,
+                                ScoringData = NULL,
+                                FeatureColNames = NULL,
+                                CatFeatures = NULL,
+                                IDcols = NULL,
+                                ModelPath = NULL,
+                                ModelID = NULL,
+                                ReturnFeatures = TRUE,
+                                MDP_Impute = TRUE,
+                                MDP_CharToFactor = TRUE,
+                                MDP_RemoveDates = TRUE,
+                                MDP_MissFactor = "0",
+                                MDP_MissNum = -1) {
 
   # Check arguments----
   if(!file.exists(ModelPath)) {
@@ -22915,12 +22918,34 @@ AutoCatBoostRegressionScoring <- function(ScoringData = NULL,
     error = function(x) return("Model not found in ModelPath"))
 
   # Score model----
-  predict <- data.table::as.data.table(
-    catboost::catboost.predict(
-      model = model,
-      pool = ScoringPool,
-      prediction_type = "RawFormulaVal",
-      thread_count = -1))
+  if(tolower(TargetType) == "regression") {
+    predict <- data.table::as.data.table(
+      catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "RawFormulaVal",
+        thread_count = -1))
+  } else if (tolower(TargetType) == "classification") {
+    predict <- data.table::as.data.table(
+      catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "Probability",
+        thread_count = -1))
+  } else if(tolower(TargetType) == "multiclass") {
+    predict <- cbind(
+      1 + catboost::catboost.predict(
+        model = model,
+        pool = TestPool,
+        prediction_type = "Class"
+      ),
+      catboost::catboost.predict(
+        model = model,
+        pool = TestPool,
+        prediction_type = "Probability"
+      )
+    )
+  }
 
   # Change Output Predictions Column Name----
   data.table::setnames(predict, "V1", "Predictions")
@@ -22933,3 +22958,4 @@ AutoCatBoostRegressionScoring <- function(ScoringData = NULL,
   # Return data----
   return(predict)
 }
+                    
