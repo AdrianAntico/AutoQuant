@@ -15352,7 +15352,7 @@ AutoCatBoostRegression <- function(data,
     # Regression r2 via sqrt of correlation
     r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
 
-    # Save Validation Data to File----
+    # Regression Save Validation Data to File----
     if (SaveModelObjects) {
       data.table::fwrite(ValidationData,
                          file = paste0(model_path,
@@ -20356,6 +20356,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -20407,10 +20408,12 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    ModelID = "FirstModel",
 #'                                    NumOfParDepPlots = 3,
 #'                                    ReturnModelObjects = TRUE,
-#'                                    SaveModelObjects = FALSE)
+#'                                    SaveModelObjects = FALSE,
+#'                                    PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
+# Train code
 AutoXGBoostRegression <- function(data,
                                   ValidationData = NULL,
                                   TestData = NULL,
@@ -20430,7 +20433,8 @@ AutoXGBoostRegression <- function(data,
                                   NumOfParDepPlots = 3,
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE) {
+                                  SaveModelObjects = FALSE,
+                                  PassInGrid) {
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('xgboost', quietly = TRUE)) {
@@ -20634,16 +20638,34 @@ AutoXGBoostRegression <- function(data,
         )
 
       # Regression Grid Define Hyper Parameters----
-      grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(6, 8, 10),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
-      grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <-
-        grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        grid_params <-
+          data.table::rbindlist(list(PassInGrid, grid_params))
+      } else {
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      }
 
       # Regression Grid Tuning Main Loop----
       for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
@@ -20842,6 +20864,9 @@ AutoXGBoostRegression <- function(data,
         max_bin = 64,
         tree_method = TreeMethod
       )
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      }
     }
 
     # Regression Train Final Model----
@@ -21175,6 +21200,7 @@ AutoXGBoostRegression <- function(data,
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -21227,7 +21253,8 @@ AutoXGBoostRegression <- function(data,
 #'                                    ModelID = "FirstModel",
 #'                                    NumOfParDepPlots = 3,
 #'                                    ReturnModelObjects = TRUE,
-#'                                    SaveModelObjects = FALSE)
+#'                                    SaveModelObjects = FALSE,
+#'                                    PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -21250,7 +21277,8 @@ AutoXGBoostClassifier <- function(data,
                                   NumOfParDepPlots = 3,
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE) {
+                                  SaveModelObjects = FALSE,
+                                  PassInGrid = NULL) {
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('xgboost', quietly = TRUE)) {
@@ -21469,16 +21497,34 @@ AutoXGBoostClassifier <- function(data,
         )
 
       # Binary Grid Define Hyper Parameters----
-      grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(6, 8, 10),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
-      grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <-
-        grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        grid_params <-
+          data.table::rbindlist(list(PassInGrid, grid_params))
+      } else {
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      }
 
       # Binary Grid Tuning Main Loop----
       for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
@@ -21773,6 +21819,9 @@ AutoXGBoostClassifier <- function(data,
         max_bin = 64,
         tree_method = TreeMethod
       )
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      }
     }
 
     # Binary Train Final Model----
@@ -22163,6 +22212,7 @@ AutoXGBoostClassifier <- function(data,
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -22218,7 +22268,8 @@ AutoXGBoostClassifier <- function(data,
 #'                                    model_path = getwd(),
 #'                                    ModelID = "FirstModel",
 #'                                    ReturnModelObjects = TRUE,
-#'                                    SaveModelObjects = FALSE)
+#'                                    SaveModelObjects = FALSE,
+#'                                    PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -22240,7 +22291,8 @@ AutoXGBoostMultiClass <- function(data,
                                   ModelID = "FirstModel",
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE) {
+                                  SaveModelObjects = FALSE,
+                                  PassInGrid = NULL) {
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('xgboost', quietly = TRUE)) {
@@ -22490,16 +22542,34 @@ AutoXGBoostMultiClass <- function(data,
         )
 
       # MultiClass Grid Define Hyper Parameters----
-      grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(6, 8, 10),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
-      grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <-
-        grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      if (!is.null(PassInGrid)) {
+        if (!data.table::is.data.table(PassInGrid)) {
+          PassInGrid <- data.table::as.data.table(PassInGrid)
+        }
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+        grid_params <-
+          data.table::rbindlist(list(PassInGrid, grid_params))
+      } else {
+        grid_params <- data.table::CJ(
+          eta = c(0.30, 0.25, 0.35),
+          max_depth = c(6, 8, 10),
+          min_child_weight = c(1, 2, 3),
+          subsample = c(1, 0.90, 0.80),
+          colsample_bytree = c(1, 0.90, 0.80)
+        )
+        grid_params[, ID := runif(nrow(grid_params))]
+        grid_params <-
+          grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      }
 
       # MultiClass Grid Tuning Main Loop----
       for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
@@ -22676,6 +22746,9 @@ AutoXGBoostMultiClass <- function(data,
         max_bin = 64,
         tree_method = TreeMethod
       )
+      if (!is.null(PassInGrid)) {
+        base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      }
     }
 
     # MultiClass Train Final Model----
