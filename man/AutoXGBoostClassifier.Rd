@@ -10,7 +10,8 @@ AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
   Trees = 50, GridTune = FALSE, grid_eval_metric = "auc",
   TreeMethod = "hist", MaxModelsInGrid = 10, NThreads = 8,
   model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE)
+  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -52,6 +53,8 @@ AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -111,7 +114,8 @@ TestModel <- AutoXGBoostClassifier(data,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
-                                   SaveModelObjects = FALSE)
+                                   SaveModelObjects = FALSE,
+                                   PassInGrid = NULL)
 }
 }
 \seealso{
