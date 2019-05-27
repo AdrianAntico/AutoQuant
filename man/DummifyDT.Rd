@@ -4,17 +4,24 @@
 \alias{DummifyDT}
 \title{DummifyDT creates dummy variables for the selected columns.}
 \usage{
-DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = TRUE,
-  ClustScore = FALSE)
+DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
+  SaveFactorLevels = FALSE, SavePath = NULL,
+  ImportFactorLevels = FALSE, ClustScore = FALSE)
 }
 \arguments{
-\item{data}{the data set to run the micro auc on}
+\item{data}{The data set to run the micro auc on}
 
-\item{cols}{a vector with the names of the columns you wish to dichotomize}
+\item{cols}{A vector with the names of the columns you wish to dichotomize}
 
-\item{KeepFactorCols}{set to TRUE to keep the original columns used in the dichotomization process}
+\item{KeepFactorCols}{Set to TRUE to keep the original columns used in the dichotomization process}
 
 \item{OneHot}{Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels}
+
+\item{SaveFactorLevels}{Set to TRUE to save unique levels of each factor column to file as a csv}
+
+\item{SavePath}{Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.}
+
+\item{ImportFactorLevels}{Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.}
 
 \item{ClustScore}{This is for scoring AutoKMeans. Set to FALSE for all other applications.}
 }
