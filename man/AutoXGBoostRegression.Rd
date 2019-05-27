@@ -11,7 +11,7 @@ AutoXGBoostRegression(data, ValidationData = NULL, TestData = NULL,
   TreeMethod = "hist", MaxModelsInGrid = 10, NThreads = 8,
   model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid)
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -122,6 +122,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
+  \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},
