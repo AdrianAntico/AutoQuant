@@ -13813,7 +13813,6 @@ AutoDataPartition <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
-#' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
@@ -13866,7 +13865,6 @@ AutoDataPartition <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
-#'                                     CatFeatures = 12,
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 3,
 #'                                     task_type = "GPU",
@@ -13888,7 +13886,6 @@ AutoCatBoostClassifier <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
-                                   CatFeatures = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "AUC",
@@ -14017,8 +14014,12 @@ AutoCatBoostClassifier <- function(data,
       }
     }
 
+    # Binary Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
+
     # Binary Convert CatFeatures to 1-indexed----
-    if (!is.null(CatFeatures)) {
+    if (length(CatFeatures) > 0) {
       for (i in seq_len(length(CatFeatures))) {
         CatFeatures[i] <- CatFeatures[i] - 1
       }
@@ -14829,7 +14830,6 @@ AutoCatBoostClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param CatFeatures A vector of column numbers of your categorical features.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
@@ -14882,7 +14882,6 @@ AutoCatBoostClassifier <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
-#'                                     CatFeatures = c(12),
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
@@ -14904,7 +14903,6 @@ AutoCatBoostRegression <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
-                                   CatFeatures = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
@@ -15010,8 +15008,12 @@ AutoCatBoostRegression <- function(data,
       }
     }
 
-    # Regression Convert CatFeatures to 1-indexed----
-    if (!is.null(CatFeatures)) {
+    # Regression Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
+
+    # Binary Convert CatFeatures to 1-indexed----
+    if (length(CatFeatures) > 0) {
       for (i in seq_len(length(CatFeatures))) {
         CatFeatures[i] <- CatFeatures[i] - 1
       }
@@ -15696,7 +15698,6 @@ AutoCatBoostRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
-#' @param CatFeatures A vector of column numbers of your categorical features, not zero indexed.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"
@@ -15747,7 +15748,6 @@ AutoCatBoostRegression <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
-#'                                     CatFeatures = NULL,
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
@@ -15768,7 +15768,6 @@ AutoCatBoostMultiClass <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
-                                   CatFeatures = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "MultiClassOneVsAll",
@@ -15848,9 +15847,14 @@ AutoCatBoostMultiClass <- function(data,
       }
     }
 
+    # Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
+    TargetNum <- which(names(data) == Target)
+    CatFeatures <- setdiff(CatFeatures,TargetNum)
+
     # MultiClass Convert CatFeatures to 1-indexed----
-    if (!is.null(CatFeatures) &
-        (is.numeric(CatFeatures) | is.integer(CatFeatures))) {
+    if (length(CatFeatures) > 0) {
       for (i in seq_len(length(CatFeatures))) {
         CatFeatures[i] <- CatFeatures[i] - 1
       }
@@ -20406,7 +20410,6 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param Trees The maximum number of trees you want in your models
@@ -20460,7 +20463,6 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
-#'                                    CatFeatures = 12,
 #'                                    IDcols = NULL,
 #'                                    eval_metric = "RMSE",
 #'                                    Trees = 50,
@@ -20484,7 +20486,6 @@ AutoXGBoostRegression <- function(data,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
-                                  CatFeatures = NULL,
                                   IDcols = NULL,
                                   eval_metric = "RMSE",
                                   Trees = 50,
@@ -20564,7 +20565,9 @@ AutoXGBoostRegression <- function(data,
       }
     }
 
-    # Regression CatFeatures Names
+    # Regression Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
     CatFeatures <- names(data)[CatFeatures]
 
     # Regression Data Partition----
@@ -21286,7 +21289,6 @@ AutoXGBoostRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param Trees The maximum number of trees you want in your models
@@ -21341,7 +21343,6 @@ AutoXGBoostRegression <- function(data,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
-#'                                    CatFeatures = 12,
 #'                                    IDcols = NULL,
 #'                                    eval_metric = "auc",
 #'                                    Trees = 50,
@@ -21364,7 +21365,6 @@ AutoXGBoostClassifier <- function(data,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
-                                  CatFeatures = NULL,
                                   IDcols = NULL,
                                   eval_metric = "auc",
                                   Trees = 50,
@@ -21458,7 +21458,16 @@ AutoXGBoostClassifier <- function(data,
       }
     }
 
-    # Binary CatFeatures Names
+    # Binary Convert CatFeatures to 1-indexed----
+    if (length(CatFeatures) > 0) {
+      for (i in seq_len(length(CatFeatures))) {
+        CatFeatures[i] <- CatFeatures[i] - 1
+      }
+    }
+
+    # Binary Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
     CatFeatures <- names(data)[CatFeatures]
 
     # Binary Data Partition----
@@ -22335,7 +22344,6 @@ AutoXGBoostClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Target should be in factor or character form.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param CatFeatures Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "merror", "mlogloss"
 #' @param Trees The maximum number of trees you want in your models
@@ -22393,7 +22401,6 @@ AutoXGBoostClassifier <- function(data,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
-#'                                    CatFeatures = 12,
 #'                                    IDcols = NULL,
 #'                                    eval_metric = "merror",
 #'                                    Trees = 50,
@@ -22415,7 +22422,6 @@ AutoXGBoostMultiClass <- function(data,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
-                                  CatFeatures = NULL,
                                   IDcols = NULL,
                                   eval_metric = "merror",
                                   Trees = 50,
@@ -22491,8 +22497,11 @@ AutoXGBoostMultiClass <- function(data,
       }
     }
 
-    # MultiClass CatFeatures Names
+    # MultiClass Identify column numbers for factor variables----
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                          as.numeric(which(sapply(data, is.character)))))
     CatFeatures <- names(data)[CatFeatures]
+    CatFeatures <- setdiff(CatFeatures, Target)
 
     # MultiClass Data Partition----
     if (is.null(ValidationData) & is.null(TestData)) {
@@ -23042,7 +23051,6 @@ AutoXGBoostMultiClass <- function(data,
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
-#' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoCatBoostRegression() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param ModelPath Supply your path file used in the AutoCatBoost__() function
 #' @param ModelID Supply the model ID used in the AutoCatBoost__() function
@@ -23057,7 +23065,6 @@ AutoXGBoostMultiClass <- function(data,
 #' Preds <- AutoCatBoostRegressionScoring(TargetType = "regression",
 #'                                        ScoringData = data,
 #'                                        FeatureColNames = 2:12,
-#'                                        CatFeatures = 12,
 #'                                        IDcols = NULL,
 #'                                        ModelPath = "home",
 #'                                        ModelID = "ModelTest",
@@ -23073,7 +23080,6 @@ AutoXGBoostMultiClass <- function(data,
 AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
                                 FeatureColNames = NULL,
-                                CatFeatures = NULL,
                                 IDcols = NULL,
                                 ModelPath = NULL,
                                 ModelID = NULL,
@@ -23123,6 +23129,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                RemoveDates = MDP_RemoveDates,
                                MissFactor = MDP_MissFactor,
                                MissNum = MDP_MissNum)
+
+  # Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))),
+                        as.numeric(which(sapply(ScoringData, is.character)))))
 
   # Convert CatFeatures to 1-indexed----
   if (!is.null(CatFeatures)) {
@@ -23242,7 +23252,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
-#' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
@@ -23257,7 +23266,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' Preds <- AutoXGBoostScoring(TargetType = "regression",
 #'                             ScoringData = data,
 #'                             FeatureColNames = 2:12,
-#'                             CatFeatures = 12,
 #'                             IDcols = NULL,
 #'                             ModelPath = "home",
 #'                             ModelID = "ModelTest",
@@ -23273,7 +23281,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 AutoXGBoostScoring <- function(TargetType = NULL,
                                ScoringData = NULL,
                                FeatureColNames = NULL,
-                               CatFeatures = NULL,
                                IDcols = NULL,
                                ModelPath = NULL,
                                ModelID = NULL,
@@ -23343,8 +23350,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     }
   }
 
-  # Get CatFeatures Names if in Numeric Form----
-  CatFeatures <- names(data)[CatFeatures]
+  # Binary Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))),
+                        as.numeric(which(sapply(ScoringData, is.character)))))
+  CatFeatures <- names(ScoringData)[CatFeatures]
 
   # DummifyDT categorical columns----
   ScoringData <- DummifyDT(data = ScoringData,
