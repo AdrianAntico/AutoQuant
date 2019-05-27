@@ -1209,7 +1209,6 @@ CreateCalendarVariables <- function(data,
 #' @param SavePath Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.
 #' @param ImportFactorLevels Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
-#' @importFrom data.table %chin% set setcolorder := .N fwrite setnames is.data.table data.table .SD
 #' @examples
 #' test <- data.table::data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
