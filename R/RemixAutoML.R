@@ -20499,7 +20499,7 @@ AutoXGBoostRegression <- function(data,
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
-                                  PassInGrid) {
+                                  PassInGrid = NULL) {
   # Ensure packages are available
   requireNamespace('data.table', quietly = TRUE)
   if (!requireNamespace('xgboost', quietly = TRUE)) {
