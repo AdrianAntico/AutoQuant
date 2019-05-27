@@ -20615,29 +20615,65 @@ AutoXGBoostRegression <- function(data,
     }
 
     # Regression Dummify dataTrain Categorical Features----
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # Regression Dummify dataTest Categorical Features----
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # Regression Dummify TestData Categorical Features----
-    if (!is.null(TestData)) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
+    if(SaveModelObjects) {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
         cols = CatFeatures,
         KeepFactorCols = FALSE,
         OneHot = FALSE
       )
+    }
+
+    # Regression Dummify dataTest Categorical Features----
+    if(SaveModelObjects) {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE
+      )
+    }
+
+    # Regression Dummify TestData Categorical Features----
+    if (!is.null(TestData)) {
+      if(SaveModelObjects) {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+      } else {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE
+        )
+      }
     }
 
     # Regression Save Names of data----
@@ -21473,29 +21509,65 @@ AutoXGBoostClassifier <- function(data,
     }
 
     # Binary Dummify dataTrain Categorical Features----
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # Binary Dummify dataTest Categorical Features----
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # Binary Dummify Test Categorical Features----
-    if (!is.null(TestData)) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
+    if(SaveModelObjects) {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
         cols = CatFeatures,
         KeepFactorCols = FALSE,
         OneHot = FALSE
       )
+    }
+
+    # Binary Dummify dataTest Categorical Features----
+    if(SaveModelObjects) {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE
+      )
+    }
+
+    # Binary Dummify TestData Categorical Features----
+    if (!is.null(TestData)) {
+      if(SaveModelObjects) {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+      } else {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE
+        )
+      }
     }
 
     # Binary Save Names of data----
@@ -22519,29 +22591,65 @@ AutoXGBoostMultiClass <- function(data,
     }
 
     # MultiClass Dummify dataTrain Categorical Features----
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # MultiClass Dummify dataTest Categorical Features----
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-
-    # MultiClass Dummify Test Categorical Features----
-    if (!is.null(TestData)) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
+    if(SaveModelObjects) {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTrain <- RemixAutoML::DummifyDT(
+        data = dataTrain,
         cols = CatFeatures,
         KeepFactorCols = FALSE,
         OneHot = FALSE
       )
+    }
+
+    # MultiClass Dummify dataTest Categorical Features----
+    if(SaveModelObjects) {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE,
+        SaveFactorLevels = TRUE,
+        SavePath = model_path,
+        ImportFactorLevels = FALSE
+      )
+    } else {
+      dataTest <- RemixAutoML::DummifyDT(
+        data = dataTest,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = FALSE
+      )
+    }
+
+    # MultiClass Dummify TestData Categorical Features----
+    if (!is.null(TestData)) {
+      if(SaveModelObjects) {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+      } else {
+        TestData <- RemixAutoML::DummifyDT(
+          data = TestData,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE
+        )
+      }
     }
 
     # MultiClass Save Names of data----
