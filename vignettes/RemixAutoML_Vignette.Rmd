@@ -57,7 +57,7 @@ The machine learning algorithms available have been demonstrated to provide opti
 Once you have your models developed, you or a boss may want to see what features are most important and their relationship to the target variable. The functions available are also run internally to build out partial dependence calibration plots. These show you the modeled predicted relationship along with the empirical relationship in the same graph to show the end user how accurate the relationship is what the relationship is (even for categorical variables). Variable importance tables are also available to view along with evaluation calibration plots and boxplots.  
 
 ### **Operationalizing models with ease**
-The scoring process in machine learning is typically straightforward. We have an all-purpose scoring function to score all your supervised machine learning models, text models, and clustering models, regardless of type (mojo or standard model files). 
+The scoring process in machine learning is typically straightforward. We have an several all-purpose scoring functions to score all your supervised machine learning models, text models, and clustering models, regardless of type (H2O, XGBoost, and catboost). 
 
 ##### How to install H2O
 Follow this link to install H2O if it isn't on your machine already.
@@ -94,6 +94,9 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoH2oGBMRegression()`
 - `AutoH2oDRFRegression()`
 - `AutoXGBoostRegression()`
+- `AutoCatBoostScoring()`
+- `AutoXGBoostScoring()`
+- `AutoH2oMLScoring()`
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
@@ -119,6 +122,11 @@ The Auto__Classifier() set are automated binary classification modeling function
 #### **AutoH2oGBMMultiClass()** 
 #### **AutoH2oDRFMultiClass()**
 The Auto__MultiClass() set are automated multiclass modeling functions that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the best model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, grid metrics, grid arguments, and column names used in model fitting.
+
+#### **AutoCatBoostScoring()**
+#### **AutoXGBoostScoring()**
+#### **AutoH2oMLScoring()**
+The Auto__Scoring() functions will automatically do your data conversion to prepare for scoring and then score your data with rapid speed. For example, the AutoXGBoostScoring() will automatically create your dummy variable columns that you used in model training so that you can generate predictions with ease. 
 
 #### **AutoH2OModeler()**
 The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler()** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
@@ -214,7 +222,8 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(data = train,
                                                 NumOfParDepPlots = 3,
                                                 Verbose = 0,
                                                 ReturnModelObjects = TRUE,
-                                                SaveModelObjects = FALSE)
+                                                SaveModelObjects = FALSE, 
+                                                PassInGrid = NULL)
 
 # Evaluation metrics
 TestModel$EvaluationMetrics
