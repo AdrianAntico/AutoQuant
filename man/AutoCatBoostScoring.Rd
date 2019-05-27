@@ -5,17 +5,15 @@
 \title{AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
 \usage{
 AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
-  FeatureColNames = NULL, CatFeatures = NULL, IDcols = NULL,
-  ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
-  MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
+  FeatureColNames = NULL, IDcols = NULL, ModelPath = NULL,
+  ModelID = NULL, ReturnFeatures = TRUE, MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0", MDP_MissNum = -1)
 }
 \arguments{
 \item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
-
-\item{CatFeatures}{Supply either column names or number for your categorical columns used in the AutoCatBoostRegression() function}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
 
@@ -48,7 +46,6 @@ AutoCatBoostScoring is an automated scoring function that compliments the AutoCa
 Preds <- AutoCatBoostRegressionScoring(TargetType = "regression",
                                        ScoringData = data,
                                        FeatureColNames = 2:12,
-                                       CatFeatures = 12,
                                        IDcols = NULL,
                                        ModelPath = "home",
                                        ModelID = "ModelTest",
@@ -64,6 +61,7 @@ Preds <- AutoCatBoostRegressionScoring(TargetType = "regression",
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},

@@ -5,11 +5,10 @@
 \title{AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system}
 \usage{
 AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
-  CatFeatures = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "Accuracy", MaxModelsInGrid = 10,
-  model_path = NULL, ModelID = "FirstModel",
+  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
+  task_type = "GPU", eval_metric = "MultiClassOneVsAll", Trees = 50,
+  GridTune = FALSE, grid_eval_metric = "Accuracy",
+  MaxModelsInGrid = 10, model_path = NULL, ModelID = "FirstModel",
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL)
 }
@@ -23,8 +22,6 @@ AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located, but not mixed types.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
-
-\item{CatFeatures}{A vector of column numbers of your categorical features, not zero indexed.}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -94,7 +91,6 @@ TestModel <- AutoCatBoostMultiClass(data,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:11),
-                                    CatFeatures = NULL,
                                     IDcols = NULL,
                                     MaxModelsInGrid = 1,
                                     task_type = "GPU",
@@ -113,6 +109,7 @@ TestModel <- AutoCatBoostMultiClass(data,
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
+  \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},

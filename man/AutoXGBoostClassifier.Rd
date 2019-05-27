@@ -5,12 +5,12 @@
 \title{AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
 AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
-  CatFeatures = NULL, IDcols = NULL, eval_metric = "auc",
-  Trees = 50, GridTune = FALSE, grid_eval_metric = "auc",
-  TreeMethod = "hist", MaxModelsInGrid = 10, NThreads = 8,
-  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
+  eval_metric = "auc", Trees = 50, GridTune = FALSE,
+  grid_eval_metric = "auc", TreeMethod = "hist",
+  MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 3, Verbose = 0,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL)
 }
 \arguments{
@@ -23,8 +23,6 @@ AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
-
-\item{CatFeatures}{Supply a vector of character names of the columns. Internally, the function will convert these columns to dummary variables.}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -101,7 +99,6 @@ TestModel <- AutoXGBoostClassifier(data,
                                    TestData = NULL,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,
-                                   CatFeatures = 12,
                                    IDcols = NULL,
                                    eval_metric = "auc",
                                    Trees = 50,
@@ -123,6 +120,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
+  \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},
