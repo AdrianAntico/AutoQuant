@@ -10,9 +10,9 @@ library(devtools)
 to_install <- c("catboost", "caTools", "data.table", "doParallel", "foreach", "forecast", "ggplot2", "h2o", "itertools", "lubridate", "monreg", "pROC", "RColorBrewer", "recommenderlab", "ROCR", "scatterplot3d", "stringr", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
 for (i in to_install) {
   message(paste("looking for ", i))
-  if(i == "catboost") {
+  if(i == "catboost" & !requireNamespace(i)) {
     devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-  } else if(i == "h2o") {
+  } else if(i == "h2o" & !requireNamespace(i)) {
     if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
     if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
     pkgs <- c("RCurl","jsonlite")
@@ -53,9 +53,9 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 
 ### Regression:
 
-##### **AutoCatBoostRegression()**
+##### **AutoCatBoostRegression()** GPU Also Available
 AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-##### **AutoXGBoostRegression()**
+##### **AutoXGBoostRegression()** GPU Also Available
 AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 
 ##### **AutoH2oGBMRegression()**
@@ -66,10 +66,10 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 
 ### Binary Classification:
 
-##### **AutoCatBoostClassifier()**
+##### **AutoCatBoostClassifier()** GPU Also Available
 AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 
-##### **AutoXGBoostClassifier()**
+##### **AutoXGBoostClassifier()** GPU Also Available
 AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 
 ##### **AutoH2oGBMClassifier()**
@@ -79,10 +79,10 @@ AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and
 AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 
 ### Multinomial Classification:
-##### **AutoCatBoostMultiClass()**
+##### **AutoCatBoostMultiClass()** GPU Also Available
 AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
 
-##### **AutoXGBoostMultiClass()**
+##### **AutoXGBoostMultiClass()** GPU Also Available
 AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting.
 
 ##### **AutoH2oGBMMultiClass()**
@@ -90,6 +90,14 @@ AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and
 
 ##### **AutoH2oDRFMultiClass()**
 AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
+
+##### **AutoCatBoostScoring()**
+AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
+
+##### **AutoXGBoostScoring()**
+AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
+
+##### **AutoH2oScoring()**
 
 ### General Purpose H2O Automated Modeling:
 ##### **AutoH2OModeler()**
