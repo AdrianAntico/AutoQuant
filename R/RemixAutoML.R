@@ -5588,7 +5588,7 @@ AutoTS <- function(data,
     ) +
     RemixTheme() +
     ggplot2::labs(
-      title = paste0(FCPeriods, "-", TimeUnit, " Forecast for ", TargetName),
+      title = paste0(FCPeriods, "-", TimeUnit, " Forecast for ", TempTargetName),
       subtitle = paste0(
         "Champion Model: ",
         BestModel,
