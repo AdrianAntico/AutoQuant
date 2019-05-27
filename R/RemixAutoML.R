@@ -23036,7 +23036,7 @@ AutoXGBoostMultiClass <- function(data,
 
 #' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
 #'
-#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion.
+#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 #'
 #' @family Supervised Learning
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
@@ -23236,7 +23236,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
 #' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
 #'
-#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion.
+#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 #'
 #' @family Supervised Learning
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
