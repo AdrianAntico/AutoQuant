@@ -23404,7 +23404,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 #' AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring.
 #'
 #' @family Supervised Learning
-#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoH2o__Regression(), AutoH2o__Classify() or AutoH2o__MultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoH2o__() function
 #' @param ModelType Set to either "mojo" or "standard" depending on which version you saved
@@ -23438,8 +23437,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
-AutoH2OMLScoring <- function(TargetType = NULL,
-                             ScoringData = NULL,
+AutoH2OMLScoring <- function(ScoringData = NULL,
                              FeatureColNames = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
