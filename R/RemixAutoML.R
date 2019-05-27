@@ -23044,8 +23044,8 @@ AutoXGBoostMultiClass <- function(data,
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoCatBoostRegression() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
-#' @param ModelPath Supply your path file used in the AutoCatBoostRegression() function
-#' @param ModelID Supply the model ID used in the AutoCatBoostRegression() function
+#' @param ModelPath Supply your path file used in the AutoCatBoost__() function
+#' @param ModelID Supply the model ID used in the AutoCatBoost__() function
 #' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
 #' @param MDP_Impute Set to TRUE if you did so for modeling and didn't do so before supplying ScoringData in this function
 #' @param MDP_CharToFactor Set to TRUE to turn your character columns to factors if you didn't do so to your ScoringData that you are supplying to this function
@@ -23214,6 +23214,171 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       k <- k + 1
       data.table::setnames(predict, paste0("V", k), name)
     }
+    data.table::setnames(predict, "V1", "Predictions")
+    predict <- merge(
+      predict,
+      TargetLevels,
+      by.x = "Predictions",
+      by.y = "NewLevels",
+      all = FALSE
+    )
+    predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
+  }
+
+  # Merge features back on----
+  if(ReturnFeatures) {
+    predict <- cbind(predict,ScoringMerge)
+  }
+
+  # Return data----
+  return(predict)
+}
+
+#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
+#'
+#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion.
+#'
+#' @family Supervised Learning
+#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
+#' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
+#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
+#' @param CatFeatures Supply either column names or number for your categorical columns used in the AutoXGBoost__() function
+#' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param ModelPath Supply your path file used in the AutoXGBoost__() function
+#' @param ModelID Supply the model ID used in the AutoXGBoost__() function
+#' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
+#' @param MDP_Impute Set to TRUE if you did so for modeling and didn't do so before supplying ScoringData in this function
+#' @param MDP_CharToFactor Set to TRUE to turn your character columns to factors if you didn't do so to your ScoringData that you are supplying to this function
+#' @param MDP_RemoveDates Set to TRUE if you have date of timestamp columns in your ScoringData
+#' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
+#' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
+#' @examples
+#' \donttest{
+#' Preds <- AutoXGBoostScoring(TargetType = "regression",
+#'                             ScoringData = data,
+#'                             FeatureColNames = 2:12,
+#'                             CatFeatures = 12,
+#'                             IDcols = NULL,
+#'                             ModelPath = "home",
+#'                             ModelID = "ModelTest",
+#'                             ReturnFeatures = TRUE,
+#'                             MDP_Impute = TRUE,
+#'                             MDP_CharToFactor = TRUE,
+#'                             MDP_RemoveDates = TRUE,
+#'                             MDP_MissFactor = "0",
+#'                             MDP_MissNum = -1)
+#' }
+#' @return A data.table of predicted values with the option to return model features as well.
+#' @export
+AutoXGBoostScoring <- function(TargetType = NULL,
+                               ScoringData = NULL,
+                               FeatureColNames = NULL,
+                               CatFeatures = NULL,
+                               IDcols = NULL,
+                               ModelPath = NULL,
+                               ModelID = NULL,
+                               ReturnFeatures = TRUE,
+                               MDP_Impute = TRUE,
+                               MDP_CharToFactor = TRUE,
+                               MDP_RemoveDates = TRUE,
+                               MDP_MissFactor = "0",
+                               MDP_MissNum = -1) {
+
+  # Ensure packages are available
+  requireNamespace('data.table', quietly = TRUE)
+
+  # Check arguments----
+  if(!file.exists(ModelPath)) {
+    warning("Model does not exist in the location provided by ModelPath")
+  }
+  if(is.null(ScoringData)) {
+    warning("ScoringData cannot be NULL")
+  }
+  if(is.null(FeatureColNames)) {
+    warning("FeatureColumnNames cannot be NULL")
+  }
+  if(!data.table::is.data.table(ScoringData)) {
+    ScoringData <- data.table::as.data.table(ScoringData)
+  }
+  if(!is.logical(MDP_Impute)) {
+    warning("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.logical(MDP_CharToFactor)) {
+    warning("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.logical(MDP_RemoveDates)) {
+    warning("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  }
+  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) {
+    warning("MDP_MissFactor should be a character or factor value")
+  }
+  if(!is.numeric(MDP_MissNum)) {
+    warning("MDP_MissNum should be a numeric or integer value")
+  }
+
+  # ScoringData Subset Columns Needed----
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColNames)]
+    if (!is.null(IDcols)) {
+      keep <- c(IDcols, keep1)
+    } else {
+      keep <- c(keep1)
+    }
+    ScoringData <- ScoringData[, ..keep]
+    if(ReturnFeatures) {
+      ScoringMerge <- data.table::copy(ScoringData)
+      ScoringData <- ScoringData[, ..keep1]
+    }
+  } else {
+    keep1 <- c(FeatureColNames)
+    if (!is.null(IDcols)) {
+      keep <- c(IDcols, FeatureColNames)
+    } else {
+      keep <- c(FeatureColNames)
+    }
+    ScoringData <- ScoringData[, ..keep]
+    if(ReturnFeatures) {
+      ScoringMerge <- data.table::copy(ScoringData)
+      ScoringData <- ScoringData[, ..keep1]
+    }
+  }
+
+  # Get CatFeatures Names if in Numeric Form----
+  CatFeatures <- names(data)[CatFeatures]
+
+  # DummifyDT categorical columns----
+  ScoringData <- DummifyDT(data = ScoringData,
+                           cols = CatFeatures,
+                           KeepFactorCols = FALSE,
+                           OneHot = FALSE,
+                           SaveFactorLevels = FALSE,
+                           SavePath = ModelPath,
+                           ImportFactorLevels = TRUE,
+                           ClustScore = FALSE)
+
+  # ModelDataPrep Check----
+  ScoringData <- ModelDataPrep(data = ScoringData,
+                               Impute = MDP_Impute,
+                               CharToFactor = MDP_CharToFactor,
+                               RemoveDates = MDP_RemoveDates,
+                               MissFactor = MDP_MissFactor,
+                               MissNum = MDP_MissNum)
+
+  # Regression Initialize Catboost Data Conversion----
+  ScoringMatrix <-
+    xgboost::xgb.DMatrix(as.matrix(ScoringData))
+
+  # Load model----
+  model <- xgboost::xgb.load(paste0(ModelPath,"/",ModelID))
+
+  # Score model----
+  predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
+
+  # Change Output Predictions Column Name----
+  if(tolower(TargetType) != "multiclass") {
+    data.table::setnames(predict, "V1", "Predictions")
+  } else if(tolower(TargetType) == "multiclass") {
+    TargetLevels <- data.table::fread(paste0(ModelPath,"/",ModelID,"_TargetLevels.csv"))
     data.table::setnames(predict, "V1", "Predictions")
     predict <- merge(
       predict,
