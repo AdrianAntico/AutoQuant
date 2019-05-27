@@ -130,7 +130,8 @@ Other Supervised Learning: \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostClassifier}},
   \code{\link{AutoXGBoostMultiClass}},
-  \code{\link{AutoXGBoostRegression}}
+  \code{\link{AutoXGBoostRegression}},
+  \code{\link{AutoXGBoostScoring}}
 }
 \author{
 Adrian Antico
