@@ -41,7 +41,7 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 A data.table of predicted values with the option to return model features as well.
 }
 \description{
-AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion.
+AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 }
 \examples{
 \donttest{

@@ -41,7 +41,7 @@ AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
 A data.table of predicted values with the option to return model features as well.
 }
 \description{
-AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion.
+AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 }
 \examples{
 \donttest{
