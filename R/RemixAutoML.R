@@ -14072,9 +14072,6 @@ AutoCatBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # Binary Save Names of data----
@@ -15066,9 +15063,6 @@ AutoCatBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # Regression Save Names of data----
@@ -15907,9 +15901,6 @@ AutoCatBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -20617,9 +20608,6 @@ AutoXGBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # Regression Dummify dataTrain Categorical Features----
@@ -21517,9 +21505,6 @@ AutoXGBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # Binary Dummify dataTrain Categorical Features----
@@ -22550,9 +22535,6 @@ AutoXGBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
-      if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
-      }
     }
 
     # MultiClass Obtain Unique Target Levels
