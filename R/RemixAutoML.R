@@ -14905,7 +14905,6 @@ AutoCatBoostClassifier <- function(data,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
             PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
             ColNames = Names
@@ -14923,7 +14922,6 @@ AutoCatBoostClassifier <- function(data,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
             PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names
           )
         )
