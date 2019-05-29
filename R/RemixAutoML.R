@@ -14059,20 +14059,26 @@ AutoCatBoostClassifier <- function(data,
     # Binary Sort data if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       data <- data[order(get(PrimaryDateColumn))]
-      data[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        data[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # Binary Sort ValidationData if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        ValidationData[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # Binary Sort TestData if PrimaryDateColumn----
     if(!is.null(TestData)) {
       if(!is.null(PrimaryDateColumn)) {
         TestData <- TestData[order(get(PrimaryDateColumn))]
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+          TestData[, eval(PrimaryDateColumn) := NULL]
+        }
       }
     }
 
@@ -15126,7 +15132,7 @@ AutoCatBoostRegression <- function(data,
     CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
                           as.numeric(which(sapply(data, is.character)))))
 
-    # Binary Convert CatFeatures to 1-indexed----
+    # Regression Convert CatFeatures to 1-indexed----
     if (length(CatFeatures) > 0) {
       for (i in seq_len(length(CatFeatures))) {
         CatFeatures[i] <- CatFeatures[i] - 1
@@ -15151,20 +15157,26 @@ AutoCatBoostRegression <- function(data,
     # Regression Sort data if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       data <- data[order(get(PrimaryDateColumn))]
-      data[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        data[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # Regression Sort ValidationData if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        ValidationData[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # Regression Sort TestData if PrimaryDateColumn----
     if(!is.null(TestData)) {
       if(!is.null(PrimaryDateColumn)) {
         TestData <- TestData[order(get(PrimaryDateColumn))]
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+          TestData[, eval(PrimaryDateColumn) := NULL]
+        }
       }
     }
 
@@ -16030,20 +16042,26 @@ AutoCatBoostMultiClass <- function(data,
     # MultiClass Sort data if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       data <- data[order(get(PrimaryDateColumn))]
-      data[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        data[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # MultiClass Sort ValidationData if PrimaryDateColumn----
     if(!is.null(PrimaryDateColumn)) {
       ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+        ValidationData[, eval(PrimaryDateColumn) := NULL]
+      }
     }
 
     # MultiClass Sort TestData if PrimaryDateColumn----
     if(!is.null(TestData)) {
       if(!is.null(PrimaryDateColumn)) {
         TestData <- TestData[order(get(PrimaryDateColumn))]
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        if(!(eval(PrimaryDateColumn) %in% IDcols)) {
+          TestData[, eval(PrimaryDateColumn) := NULL]
+        }
       }
     }
 
