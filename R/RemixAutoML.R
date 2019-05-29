@@ -13688,7 +13688,7 @@ AutoDataPartition <- function(data,
     if (!is.character(StratifyColumnNames)) {
       warning("StratifyColumnNames needs to be a character vector of column names")
     }
-    if (!(StratifyColumnNames %chin% names(data))) {
+    if (!all(StratifyColumnNames %chin% names(data))) {
       warning("StratifyColumnNames not in vector of data names")
     }
   }
