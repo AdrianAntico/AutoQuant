@@ -2145,8 +2145,8 @@ AutoTS <- function(data,
     warning("Lags needs to be greater than 0")
   }
   if (!is.null(SkipModels)) {
-    if (!(
-      tolower(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM")
+    if (!any(
+      toupper(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM")
     )) {
       warning("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
     }
@@ -13813,6 +13813,8 @@ AutoDataPartition <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
+#' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
+#' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
@@ -13865,6 +13867,8 @@ AutoDataPartition <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
+#'                                     PrimaryDateColumn = NULL,
+#'                                     ClassWeights = NULL,
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 3,
 #'                                     task_type = "GPU",
@@ -13886,6 +13890,8 @@ AutoCatBoostClassifier <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
+                                   PrimaryDateColumn = NULL,
+                                   ClassWeights = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "AUC",
@@ -13941,6 +13947,16 @@ AutoCatBoostClassifier <- function(data,
                             'WKappa','LogLikelihoodOfPrediction')"
       )
 
+    }
+    if(!is.null(ClassWeights)) {
+      LossFunction <- "Logloss"
+    } else {
+      LossFunction <- "CrossEntropy"
+    }
+    if(!is.null(PrimaryDateColumn)) {
+      HasTime <- TRUE
+    } else {
+      HasTime <- FALSE
     }
     if (Trees < 1)
       warning("Trees must be greater than 1")
@@ -14040,6 +14056,26 @@ AutoCatBoostClassifier <- function(data,
       TestData <- dataSets$TestData
     }
 
+    # Binary Sort data if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      data <- data[order(get(PrimaryDateColumn))]
+      data[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # Binary Sort ValidationData if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
+      ValidationData[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # Binary Sort TestData if PrimaryDateColumn----
+    if(!is.null(TestData)) {
+      if(!is.null(PrimaryDateColumn)) {
+        TestData <- TestData[order(get(PrimaryDateColumn))]
+        TestData[, eval(PrimaryDateColumn) := NULL]
+      }
+    }
+
     # Binary data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
@@ -14071,7 +14107,13 @@ AutoCatBoostClassifier <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
+      }
     }
 
     # Binary Save Names of data----
@@ -14108,7 +14150,7 @@ AutoCatBoostClassifier <- function(data,
                                        label = TrainTarget,
                                        cat_features = CatFeatures)
         TestPool <-
-          catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
+          catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures, )
         FinalTestPool <-
           catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
       } else {
@@ -14187,15 +14229,30 @@ AutoCatBoostClassifier <- function(data,
         print(i)
 
         # Binary Grid Define Base Parameters----
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = 'CrossEntropy',
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-        )
+        if(!is.null(ClassWeights)) {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = LossFunction,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type,
+            class_weights        = ClassWeights
+          )
+        } else {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = LossFunction,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type
+          )
+        }
 
         # Binary Grid Merge Model Parameters----
         # Have first model be the baseline model
@@ -14389,62 +14446,114 @@ AutoCatBoostClassifier <- function(data,
         BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
         if (BestGrid == 1) {
           BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-          Base_params <- list(
-            iterations           = Trees,
-            learning_rate        = 0.01,
-            depth                = 10,
-            loss_function        = eval_metric,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type
-          )
+          if(!is.null(ClassWeights)) {
+            base_params <- list(
+              iterations           = Trees,
+              loss_function        = LossFunction,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              has_time             = HasTime,
+              best_model_min_trees = 10,
+              metric_period        = 10,
+              task_type            = task_type,
+              class_weights        = ClassWeights
+            )
+          } else {
+            base_params <- list(
+              iterations           = Trees,
+              loss_function        = LossFunction,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              has_time             = HasTime,
+              best_model_min_trees = 10,
+              metric_period        = 10,
+              task_type            = task_type
+            )
+          }
         } else {
           BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-          Base_params <- list(
-            iterations           = Trees,
-            learning_rate        = 0.01,
-            depth                = 10,
-            loss_function        = eval_metric,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type
-          )
+          if(!is.null(ClassWeights)) {
+            base_params <- list(
+              iterations           = Trees,
+              loss_function        = LossFunction,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              has_time             = HasTime,
+              best_model_min_trees = 10,
+              metric_period        = 10,
+              task_type            = task_type,
+              class_weights        = ClassWeights
+            )
+          } else {
+            base_params <- list(
+              iterations           = Trees,
+              loss_function        = LossFunction,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              has_time             = HasTime,
+              best_model_min_trees = 10,
+              metric_period        = 10,
+              task_type            = task_type
+            )
+          }
           base_params <-
-            c(as.list(catboostGridList[BestGrid,]), Base_params)
+            c(as.list(catboostGridList[BestGrid,]), base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
         BestThresh <- GridCollect[order(EvalStat)][1, EvalStat]
       }
-      Base_params <- list(
-        iterations           = Trees,
-        learning_rate        = 0.01,
-        depth                = 10,
-        loss_function        = "CrossEntropy",
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10,
-        metric_period        = 10,
-        task_type            = task_type
-      )
+      if(!is.null(ClassWeights)) {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type,
+          class_weights        = ClassWeights
+        )
+      } else {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type
+        )
+      }
       base_params <-
-        c(as.list(catboostGridList[BestGrid,]), Base_params)
+        c(as.list(catboostGridList[BestGrid,]), base_params)
     } else {
-      base_params <- list(
-        iterations           = Trees,
-        learning_rate        = 0.01,
-        depth                = 10,
-        loss_function        = "CrossEntropy",
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10,
-        metric_period        = 10,
-        task_type            = task_type
-      )
+      if(!is.null(ClassWeights)) {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type,
+          class_weights        = ClassWeights
+        )
+      } else {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type
+        )
+      }
       if (!is.null(PassInGrid)) {
         base_params <- c(base_params, as.list(PassInGrid[1, ]))
       }
@@ -14827,6 +14936,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type = "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
@@ -14879,6 +14989,7 @@ AutoCatBoostClassifier <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:12),
+#'                                     PrimaryDateColumn = NULL,
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
@@ -14900,6 +15011,7 @@ AutoCatBoostRegression <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
+                                   PrimaryDateColumn = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
@@ -14943,6 +15055,11 @@ AutoCatBoostRegression <- function(data,
            LogLinQuantile,Lq,NumErrors,SMAPE,R2,MSLE,MedianAbsoluteError)"
       )
 
+    }
+    if(!is.null(PrimaryDateColumn)) {
+      HasTime <- TRUE
+    } else {
+      HasTime <- FALSE
     }
     if (Trees < 1)
       warning("Trees must be greater than 1")
@@ -15031,6 +15148,26 @@ AutoCatBoostRegression <- function(data,
       TestData <- dataSets$TestData
     }
 
+    # Regression Sort data if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      data <- data[order(get(PrimaryDateColumn))]
+      data[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # Regression Sort ValidationData if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
+      ValidationData[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # Regression Sort TestData if PrimaryDateColumn----
+    if(!is.null(TestData)) {
+      if(!is.null(PrimaryDateColumn)) {
+        TestData <- TestData[order(get(PrimaryDateColumn))]
+        TestData[, eval(PrimaryDateColumn) := NULL]
+      }
+    }
+
     # Regression data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
@@ -15062,7 +15199,13 @@ AutoCatBoostRegression <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
+      }
     }
 
     # Regression Save Names of data----
@@ -15193,6 +15336,7 @@ AutoCatBoostRegression <- function(data,
             loss_function        = 'RMSE',
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
+            has_time             = HasTime,
             best_model_min_trees = 10,
             metric_period        = 10,
             task_type            = task_type
@@ -15202,6 +15346,7 @@ AutoCatBoostRegression <- function(data,
             iterations           = Trees,
             loss_function        = 'Quantile',
             eval_metric          = eval_metric,
+            has_time             = HasTime,
             alpha                = Alpha,
             use_best_model       = TRUE,
             best_model_min_trees = 10,
@@ -15309,13 +15454,14 @@ AutoCatBoostRegression <- function(data,
         BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
         if (BestGrid == 1) {
           BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-          Base_params <- list(
+          base_params <- list(
             iterations           = Trees,
             learning_rate        = 0.01,
             depth                = 10,
             loss_function        = eval_metric,
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
+            has_time             = HasTime,
             best_model_min_trees = 10,
             metric_period        = 10,
             task_type            = task_type
@@ -15323,37 +15469,39 @@ AutoCatBoostRegression <- function(data,
 
         } else {
           BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-          Base_params <- list(
+          base_params <- list(
             iterations           = Trees,
             learning_rate        = 0.01,
             depth                = 10,
             loss_function        = eval_metric,
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
+            has_time             = HasTime,
             best_model_min_trees = 10,
             metric_period        = 10,
             task_type            = task_type
           )
           base_params <-
-            c(as.list(catboostGridList[BestGrid,]), Base_params)
+            c(as.list(catboostGridList[BestGrid,]), base_params)
         }
       } else {
         BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
         BestThresh <- GridCollect[order(EvalStat)][1, EvalStat]
       }
-      Base_params <- list(
+      base_params <- list(
         iterations           = Trees,
         learning_rate        = 0.01,
         depth                = 10,
         loss_function        = "RMSE",
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
+        has_time             = HasTime,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type
       )
       base_params <- c(as.list(catboostGridList[BestGrid,]),
-                       Base_params)
+                       base_params)
     } else {
       base_params <- list(
         iterations           = Trees,
@@ -15362,6 +15510,7 @@ AutoCatBoostRegression <- function(data,
         loss_function        = "RMSE",
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
+        has_time             = HasTime,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type
@@ -15399,7 +15548,6 @@ AutoCatBoostRegression <- function(data,
         thread_count = -1
       )
     }
-
 
     # Regression Validation Data----
     if (!is.null(TestData)) {
@@ -15692,6 +15840,8 @@ AutoCatBoostRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located, but not mixed types.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
+#' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
+#' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type "GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"
@@ -15742,6 +15892,8 @@ AutoCatBoostRegression <- function(data,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
 #'                                     FeatureColNames = c(2:11),
+#'                                     PrimaryDateColumn = NULL,
+#'                                     ClassWeights = NULL,
 #'                                     IDcols = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
@@ -15762,6 +15914,8 @@ AutoCatBoostMultiClass <- function(data,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
+                                   PrimaryDateColumn = NULL,
+                                   ClassWeights = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "MultiClassOneVsAll",
@@ -15784,7 +15938,11 @@ AutoCatBoostMultiClass <- function(data,
       warning("task_type needs to be either 'GPU' or 'CPU'")
     if (!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) {
       warning("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
-
+    }
+    if(!is.null(PrimaryDateColumn)) {
+      HasTime <- TRUE
+    } else {
+      HasTime <- FALSE
     }
     if (Trees < 1)
       warning("Trees must be greater than 1")
@@ -15869,6 +16027,26 @@ AutoCatBoostMultiClass <- function(data,
       TestData <- dataSets$TestData
     }
 
+    # MultiClass Sort data if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      data <- data[order(get(PrimaryDateColumn))]
+      data[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # MultiClass Sort ValidationData if PrimaryDateColumn----
+    if(!is.null(PrimaryDateColumn)) {
+      ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
+      ValidationData[, eval(PrimaryDateColumn) := NULL]
+    }
+
+    # MultiClass Sort TestData if PrimaryDateColumn----
+    if(!is.null(TestData)) {
+      if(!is.null(PrimaryDateColumn)) {
+        TestData <- TestData[order(get(PrimaryDateColumn))]
+        TestData[, eval(PrimaryDateColumn) := NULL]
+      }
+    }
+
     # MultiClass data Subset Columns Needed----
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(data)[c(FeatureColNames)]
@@ -15900,7 +16078,13 @@ AutoCatBoostMultiClass <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(FeatureColNames, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
+      }
     }
 
     # MultiClass Obtain Unique Target Levels
@@ -16069,15 +16253,30 @@ AutoCatBoostMultiClass <- function(data,
         print(i)
 
         # MultiClass Grid Define Base Parameters----
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-        )
+        if(!is.null(ClassWeights)) {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type,
+            class_weights        = ClassWeights
+          )
+        } else {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type
+          )
+        }
 
         # MultiClass Grid Merge Model Parameters----
         # Have first model be the baseline model
@@ -16215,46 +16414,84 @@ AutoCatBoostMultiClass <- function(data,
       BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
       if (BestGrid == 1) {
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        Base_params <- list(
-          iterations           = Trees,
-          learning_rate        = 0.01,
-          depth                = 10,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-        )
-
+        if(!is.null(ClassWeights)) {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type,
+            class_weights        = ClassWeights
+          )
+        } else {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type
+          )
+        }
       } else {
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        Base_params <- list(
+        if(!is.null(ClassWeights)) {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type,
+            class_weights        = ClassWeights
+          )
+        } else {
+          base_params <- list(
+            iterations           = Trees,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            has_time             = HasTime,
+            best_model_min_trees = 10,
+            metric_period        = 10,
+            task_type            = task_type
+          )
+        }
+        base_params <-
+          c(as.list(catboostGridList[BestGrid,]), base_params)
+      }
+    } else {
+      if(!is.null(ClassWeights)) {
+        base_params <- list(
           iterations           = Trees,
-          learning_rate        = 0.01,
-          depth                = 10,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type,
+          class_weights        = ClassWeights
+        )
+      } else {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
           best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
         )
-        base_params <-
-          c(as.list(catboostGridList[BestGrid,]), Base_params)
       }
-    } else {
-      base_params <- list(
-        iterations           = Trees,
-        learning_rate        = 0.01,
-        depth                = 10,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10,
-        metric_period        = 10,
-        task_type            = task_type
-      )
       if (!is.null(PassInGrid)) {
         base_params <- c(base_params, as.list(PassInGrid[1, ]))
       }
@@ -20608,6 +20845,9 @@ AutoXGBoostRegression <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Regression Dummify dataTrain Categorical Features----
@@ -21505,6 +21745,9 @@ AutoXGBoostClassifier <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # Binary Dummify dataTrain Categorical Features----
@@ -22535,6 +22778,9 @@ AutoXGBoostMultiClass <- function(data,
         TestData <- TestData[, ..keep]
       }
       TestMerge <- data.table::copy(TestData)
+      if (!is.null(IDcols)) {
+        TestData <- TestData[, ..keep1]
+      }
     }
 
     # MultiClass Obtain Unique Target Levels
