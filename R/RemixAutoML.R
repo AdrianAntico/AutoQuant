@@ -14048,7 +14048,7 @@ AutoCatBoostClassifier <- function(data,
         NumDataSets = 3,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
-        StratifyColumnNames = Target,
+        StratifyColumnNames = eval(Target),
         TimeColumnName = NULL
       )
       data <- dataSets$TrainData
@@ -14115,7 +14115,7 @@ AutoCatBoostClassifier <- function(data,
       }
       if (!is.null(IDcols)) {
         TestMerge <- data.table::copy(TestData)
-        keep <- c(FeatureColNames, Target)
+        keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
       } else {
         TestMerge <- data.table::copy(TestData)
@@ -15213,7 +15213,7 @@ AutoCatBoostRegression <- function(data,
       }
       if (!is.null(IDcols)) {
         TestMerge <- data.table::copy(TestData)
-        keep <- c(FeatureColNames, Target)
+        keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
       } else {
         TestMerge <- data.table::copy(TestData)
@@ -16072,7 +16072,7 @@ AutoCatBoostMultiClass <- function(data,
       dataTrain <- data[, ..keep]
       dataTest <- ValidationData[, ..keep]
     } else {
-      keep <- c(FeatureColNames, Target)
+      keep <- c(keep1, Target)
       dataTrain <- data[, ..keep]
       dataTest <- ValidationData[, ..keep]
     }
@@ -20862,9 +20862,12 @@ AutoXGBoostRegression <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
       if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
       }
     }
 
@@ -21762,9 +21765,12 @@ AutoXGBoostClassifier <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
       if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
       }
     }
 
@@ -22795,9 +22801,12 @@ AutoXGBoostMultiClass <- function(data,
         }
         TestData <- TestData[, ..keep]
       }
-      TestMerge <- data.table::copy(TestData)
       if (!is.null(IDcols)) {
-        TestData <- TestData[, ..keep1]
+        TestMerge <- data.table::copy(TestData)
+        keep <- c(keep1, Target)
+        TestData <- TestData[, ..keep]
+      } else {
+        TestMerge <- data.table::copy(TestData)
       }
     }
 
