@@ -13072,7 +13072,7 @@ tokenizeH2O <- function(data) {
 #'                             Epochs = 25,
 #'                             StopWords = NULL,
 #'                             SaveModel = "standard",
-#'                             Threads = 6,
+#'                             Threads = parallel::detectCores()-2),
 #'                             MaxMemory = "28G",
 #'                             SaveOutput = TRUE)
 #'}
@@ -13089,7 +13089,7 @@ AutoWord2VecModeler <- function(data,
                                 Epochs        = 25,
                                 StopWords     = NULL,
                                 SaveModel     = "standard",
-                                Threads       = 6,
+                                Threads       = max(1, parallel::detectCores()-2),
                                 MaxMemory     = "28G",
                                 SaveOutput    = FALSE) {
   # Ensure packages are available
