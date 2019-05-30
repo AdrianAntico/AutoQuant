@@ -16237,7 +16237,7 @@ AutoCatBoostMultiClass <- function(data,
     data.table::setcolorder(dataTrain, c(2:ncol(dataTrain), 1))
     data.table::setcolorder(dataTest, c(2:ncol(dataTest), 1))
     if (!is.null(TestData)) {
-      data.table::setcolorder(TestData, c(2:ncol(data), 1))
+      data.table::setcolorder(TestData, c(2:ncol(TestData), 1))
     }
 
     # MultiClass Save Names of data----
@@ -23035,7 +23035,7 @@ AutoXGBoostMultiClass <- function(data,
       TestData[, eval(Target) := NULL]
     }
 
-    # MultiClass Initialize Catboost Data Conversion----
+    # MultiClass Initialize XGBoost Data Conversion----
     datatrain <-
       xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
     datavalidate <-
