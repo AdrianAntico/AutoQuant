@@ -14203,24 +14203,24 @@ AutoCatBoostClassifier <- function(data,
       }
     }
     
-    # MultiClass Train ModelDataPrep----
+    # Binary Train ModelDataPrep----
     dataTrain <- ModelDataPrep(data = dataTrain, 
                                Impute = TRUE, 
                                CharToFactor = TRUE, 
                                RemoveDates = TRUE, 
                                MissFactor = "0",
                                MissNum = -1)
-  
-    # MultiClass Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTrain, 
+    
+    # Binary Validation ModelDataPrep----
+    dataTest <- ModelDataPrep(data = dataTest, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
                               MissFactor = "0",
                               MissNum = -1)
-
-    # MultiClass Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = dataTrain, 
+    
+    # Binary Test ModelDataPrep----
+    TestData <- ModelDataPrep(data = TestData, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
@@ -15323,24 +15323,24 @@ AutoCatBoostRegression <- function(data,
       }
     }
     
-    # MultiClass Train ModelDataPrep----
+    # Regression Train ModelDataPrep----
     dataTrain <- ModelDataPrep(data = dataTrain, 
                                Impute = TRUE, 
                                CharToFactor = TRUE, 
                                RemoveDates = TRUE, 
                                MissFactor = "0",
                                MissNum = -1)
-  
-    # MultiClass Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTrain, 
+    
+    # Regression Validation ModelDataPrep----
+    dataTest <- ModelDataPrep(data = dataTest, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
                               MissFactor = "0",
                               MissNum = -1)
-
-    # MultiClass Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = dataTrain, 
+    
+    # Regression Test ModelDataPrep----
+    TestData <- ModelDataPrep(data = TestData, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
@@ -16239,17 +16239,17 @@ AutoCatBoostMultiClass <- function(data,
                                RemoveDates = TRUE, 
                                MissFactor = "0",
                                MissNum = -1)
-  
+    
     # MultiClass Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTrain, 
+    dataTest <- ModelDataPrep(data = dataTest, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
                               MissFactor = "0",
                               MissNum = -1)
-
+    
     # MultiClass Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = dataTrain, 
+    TestData <- ModelDataPrep(data = TestData, 
                               Impute = TRUE, 
                               CharToFactor = TRUE, 
                               RemoveDates = TRUE, 
