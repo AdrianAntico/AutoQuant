@@ -16177,7 +16177,7 @@ AutoCatBoostMultiClass <- function(data,
       }
       if (!is.null(IDcols)) {
         TestMerge <- data.table::copy(TestData)
-        keep <- c(FeatureColNames, Target)
+        keep <- c(keep1, Target)
         TestData <- TestData[, ..keep]
       } else {
         TestMerge <- data.table::copy(TestData)
