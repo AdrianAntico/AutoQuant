@@ -16748,7 +16748,7 @@ AutoCatBoostMultiClass <- function(data,
 
     # MultiClass Metrics Accuracy----
     MetricAcc <-
-      ValidationData[, mean(ifelse(as.character(get(Target)) ==
+      ValidationData[, mean(ifelse(as.character(Target) ==
                                      as.character(Predict),
                                    1.0,
                                    0.0),
