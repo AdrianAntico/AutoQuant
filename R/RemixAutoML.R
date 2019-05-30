@@ -14202,6 +14202,30 @@ AutoCatBoostClassifier <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
+    
+    # MultiClass Train ModelDataPrep----
+    dataTrain <- ModelDataPrep(data = dataTrain, 
+                               Impute = TRUE, 
+                               CharToFactor = TRUE, 
+                               RemoveDates = TRUE, 
+                               MissFactor = "0",
+                               MissNum = -1)
+  
+    # MultiClass Validation ModelDataPrep----
+    dataTest <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
+
+    # MultiClass Test ModelDataPrep----
+    TestData <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
 
     # Binary Save Names of data----
     Names <- data.table::as.data.table(names(data))
@@ -15298,6 +15322,30 @@ AutoCatBoostRegression <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
+    
+    # MultiClass Train ModelDataPrep----
+    dataTrain <- ModelDataPrep(data = dataTrain, 
+                               Impute = TRUE, 
+                               CharToFactor = TRUE, 
+                               RemoveDates = TRUE, 
+                               MissFactor = "0",
+                               MissNum = -1)
+  
+    # MultiClass Validation ModelDataPrep----
+    dataTest <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
+
+    # MultiClass Test ModelDataPrep----
+    TestData <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
 
     # Regression Save Names of data----
     Names <- data.table::as.data.table(names(data))
@@ -16183,6 +16231,30 @@ AutoCatBoostMultiClass <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
+    
+    # MultiClass Train ModelDataPrep----
+    dataTrain <- ModelDataPrep(data = dataTrain, 
+                               Impute = TRUE, 
+                               CharToFactor = TRUE, 
+                               RemoveDates = TRUE, 
+                               MissFactor = "0",
+                               MissNum = -1)
+  
+    # MultiClass Validation ModelDataPrep----
+    dataTest <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
+
+    # MultiClass Test ModelDataPrep----
+    TestData <- ModelDataPrep(data = dataTrain, 
+                              Impute = TRUE, 
+                              CharToFactor = TRUE, 
+                              RemoveDates = TRUE, 
+                              MissFactor = "0",
+                              MissNum = -1)
 
     # MultiClass Obtain Unique Target Levels
     if (!is.null(TestData)) {
