@@ -2074,6 +2074,7 @@ AutoKMeans <- function(data,
 #' @param DateName is the name of the date column in your data.table
 #' @param FCPeriods is the number of periods into the future you wish to forecast
 #' @param HoldOutPeriods is the number of periods to use for validation testing
+#' @param EvaluationMetric Set this to either "MAPE", "MSE", or "MAE". Default is "MAPE"
 #' @param TimeUnit is the level of aggregation your dataset comes in
 #' @param Lags is the number of lags you wish to test in various models (same as moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
@@ -2093,19 +2094,20 @@ AutoKMeans <- function(data,
 #' data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
-#'                    TargetName     = "Target",
-#'                    DateName       = "DateTime",
-#'                    FCPeriods      = 1,
-#'                    HoldOutPeriods = 1,
-#'                    TimeUnit       = "day",
-#'                    Lags           = 1,
-#'                    SLags          = 1,
-#'                    NumCores       = 4,
-#'                    SkipModels     = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-#'                    StepWise       = TRUE,
-#'                    TSClean        = FALSE,
-#'                    ModelFreq      = TRUE,
-#'                    PrintUpdates   = FALSE)
+#'                    TargetName       = "Target",
+#'                    DateName         = "DateTime",
+#'                    FCPeriods        = 1,
+#'                    HoldOutPeriods   = 1,
+#'                    EvaluationMetric = "MAPE",
+#'                    TimeUnit         = "day",
+#'                    Lags             = 1,
+#'                    SLags            = 1,
+#'                    NumCores         = 4,
+#'                    SkipModels       = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
+#'                    StepWise         = TRUE,
+#'                    TSClean          = FALSE,
+#'                    ModelFreq        = TRUE,
+#'                    PrintUpdates     = FALSE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
@@ -2116,6 +2118,7 @@ AutoTS <- function(data,
                    DateName       = "DateTime",
                    FCPeriods      = 30,
                    HoldOutPeriods = 30,
+                   EvaluationMetric = "MAPE",
                    TimeUnit       = "day",
                    Lags           = 25,
                    SLags          = 2,
@@ -2478,7 +2481,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -2510,7 +2515,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -2544,7 +2551,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -2576,7 +2585,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -2964,7 +2975,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -2996,7 +3009,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -3030,7 +3045,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -3062,7 +3079,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -3481,7 +3500,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -3513,7 +3534,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -3547,7 +3570,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -3579,7 +3604,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -3880,7 +3907,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -3912,7 +3941,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -3978,7 +4009,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -4196,7 +4229,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -4231,7 +4266,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -4268,7 +4305,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -4303,7 +4342,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -4440,7 +4481,9 @@ AutoTS <- function(data,
           PercentError = get(TargetName) / (FC_Eval +
                                               1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -4475,7 +4518,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -4512,7 +4557,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -4547,7 +4594,9 @@ AutoTS <- function(data,
               PercentError = get(TargetName) / (FC_Eval +
                                                   1) - 1,
               AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1)
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval)^2
             )]
 
             # Increment
@@ -4670,7 +4719,9 @@ AutoTS <- function(data,
           Resid = get(TargetName) - FC_Eval,
           PercentError = get(TargetName) / (FC_Eval + 1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -4785,7 +4836,9 @@ AutoTS <- function(data,
           Resid = get(TargetName) - FC_Eval,
           PercentError = get(TargetName) / (FC_Eval + 1) - 1,
           AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1)
+                                                          1) - 1),
+          AbsoluteError = abs(get(TargetName) - FC_Eval),
+          SquaredError = (get(TargetName) - FC_Eval)^2
         )]
 
         # Increment
@@ -4904,7 +4957,9 @@ AutoTS <- function(data,
             Resid = get(TargetName) - FC_Eval,
             PercentError = get(TargetName) / (FC_Eval + 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -5021,7 +5076,9 @@ AutoTS <- function(data,
             Resid = get(TargetName) - FC_Eval,
             PercentError = get(TargetName) / (FC_Eval + 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
@@ -5040,13 +5097,35 @@ AutoTS <- function(data,
     message("FIND WINNER")
   dataEval <- data.table::rbindlist(EvalList)
 
-  # Model Evaluation
-  Eval <- dataEval[, .(
-    MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
-    MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
-    MAPE = round(base::mean(AbsolutePercentError, na.rm = TRUE), 5)
-  ),
-  by = "ModelName"][order(MAPE)][, ID := 1:.N]
+  # Model Evaluation----
+  if(tolower(EvaluationMetric) == "mae") {
+    Eval <- dataEval[, .(
+      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+    ),
+    by = "ModelName"][order(MAE)][, ID := 1:.N]
+  } else if(tolower(EvaluationMetric) == "mape") {
+    Eval <- dataEval[, .(
+      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+    ),
+    by = "ModelName"][order(MAPE)][, ID := 1:.N]
+  } else if(tolower(EvaluationMetric) == "mse") {
+    Eval <- dataEval[, .(
+      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+    ),
+    by = "ModelName"][order(MSE)][, ID := 1:.N]
+  }
 
   # Grab Winning Model
   BestModel <- Eval[1, "ModelName"][[1]]
