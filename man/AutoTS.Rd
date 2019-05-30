@@ -5,9 +5,10 @@
 \title{AutoTS is an automated time series modeling function}
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
-  FCPeriods = 30, HoldOutPeriods = 30, TimeUnit = "day", Lags = 25,
-  SLags = 2, NumCores = 4, SkipModels = NULL, StepWise = TRUE,
-  TSClean = TRUE, ModelFreq = TRUE, PrintUpdates = FALSE)
+  FCPeriods = 30, HoldOutPeriods = 30, EvaluationMetric = "MAPE",
+  TimeUnit = "day", Lags = 25, SLags = 2, NumCores = 4,
+  SkipModels = NULL, StepWise = TRUE, TSClean = TRUE,
+  ModelFreq = TRUE, PrintUpdates = FALSE)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -19,6 +20,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{FCPeriods}{is the number of periods into the future you wish to forecast}
 
 \item{HoldOutPeriods}{is the number of periods to use for validation testing}
+
+\item{EvaluationMetric}{Set this to either "MAPE", "MSE", or "MAE". Default is "MAPE"}
 
 \item{TimeUnit}{is the level of aggregation your dataset comes in}
 
@@ -70,19 +73,20 @@ data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 output <-   AutoTS(data,
-                   TargetName     = "Target",
-                   DateName       = "DateTime",
-                   FCPeriods      = 1,
-                   HoldOutPeriods = 1,
-                   TimeUnit       = "day",
-                   Lags           = 1,
-                   SLags          = 1,
-                   NumCores       = 4,
-                   SkipModels     = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-                   StepWise       = TRUE,
-                   TSClean        = FALSE,
-                   ModelFreq      = TRUE,
-                   PrintUpdates   = FALSE)
+                   TargetName       = "Target",
+                   DateName         = "DateTime",
+                   FCPeriods        = 1,
+                   HoldOutPeriods   = 1,
+                   EvaluationMetric = "MAPE",
+                   TimeUnit         = "day",
+                   Lags             = 1,
+                   SLags            = 1,
+                   NumCores         = 4,
+                   SkipModels       = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
+                   StepWise         = TRUE,
+                   TSClean          = FALSE,
+                   ModelFreq        = TRUE,
+                   PrintUpdates     = FALSE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel
