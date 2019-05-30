@@ -3977,7 +3977,9 @@ AutoTS <- function(data,
             PercentError = get(TargetName) / (FC_Eval +
                                                 1) - 1,
             AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1)
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval)^2
           )]
 
           # Increment
