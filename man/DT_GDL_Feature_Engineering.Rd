@@ -68,7 +68,7 @@ data <- DT_GDL_Feature_Engineering(data,
                                    WindowingLag   = 1,
                                    Type           = "Lag",
                                    Timer          = TRUE,
-                                   SkipCols       = FALSE,
+                                   SkipCols       = NULL,
                                    SimpleImpute   = TRUE)
 }
 \seealso{
