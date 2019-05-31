@@ -14700,7 +14700,7 @@ AutoCatBoostClassifier <- function(data,
 
     # Binary Save Model----
     if (SaveModelObjects) {
-      catboost::catboost.save_model(model = model, model_path = paste0(ModelID))
+      catboost::catboost.save_model(model = model, model_path = paste0(model_path,"/",ModelID))
     }
 
     # Binary Score Final Test Data----
@@ -15689,7 +15689,7 @@ AutoCatBoostRegression <- function(data,
     # Regression Save Model----
     if (SaveModelObjects) {
       catboost::catboost.save_model(model = model,
-                                    model_path = paste0(ModelID))
+                                    model_path = paste0(model_path,"/",ModelID))
     }
 
     # Regression Score Final Test Data----
@@ -16695,7 +16695,7 @@ AutoCatBoostMultiClass <- function(data,
     # MultiClass Save Model----
     if (SaveModelObjects) {
       catboost::catboost.save_model(model = model,
-                                    model_path = paste0(ModelID))
+                                    model_path = paste0(model_path,"/",ModelID))
     }
 
     # MultiClass Score Final Test Data----
