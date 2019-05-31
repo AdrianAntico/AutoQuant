@@ -43,18 +43,18 @@ AutoCatBoostScoring is an automated scoring function that compliments the AutoCa
 }
 \examples{
 \donttest{
-Preds <- AutoCatBoostRegressionScoring(TargetType = "regression",
-                                       ScoringData = data,
-                                       FeatureColNames = 2:12,
-                                       IDcols = NULL,
-                                       ModelPath = "home",
-                                       ModelID = "ModelTest",
-                                       ReturnFeatures = TRUE,
-                                       MDP_Impute = TRUE,
-                                       MDP_CharToFactor = TRUE,
-                                       MDP_RemoveDates = TRUE,
-                                       MDP_MissFactor = "0",
-                                       MDP_MissNum = -1)
+Preds <- AutoCatBoostScoring(TargetType = "regression",
+                             ScoringData = data,
+                             FeatureColNames = 2:12,
+                             IDcols = NULL,
+                             ModelPath = "home",
+                             ModelID = "ModelTest",
+                             ReturnFeatures = TRUE,
+                             MDP_Impute = TRUE,
+                             MDP_CharToFactor = TRUE,
+                             MDP_RemoveDates = TRUE,
+                             MDP_MissFactor = "0",
+                             MDP_MissNum = -1)
 }
 }
 \seealso{
