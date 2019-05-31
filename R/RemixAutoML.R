@@ -13874,7 +13874,7 @@ AutoDataPartition <- function(data,
     DataCollect <- list()
 
     # Sort data by TimeColumnName
-    data <- data[order(eval(TimeColumnName))]
+    data <- data[order(get(TimeColumnName))]
 
     # Get Total Row Count
     Rows <- data[, .N]
@@ -14243,12 +14243,14 @@ AutoCatBoostClassifier <- function(data,
                               MissNum = -1)
 
     # Binary Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = TRUE,
-                              CharToFactor = TRUE,
-                              RemoveDates = TRUE,
-                              MissFactor = "0",
-                              MissNum = -1)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = TRUE,
+                                CharToFactor = TRUE,
+                                RemoveDates = TRUE,
+                                MissFactor = "0",
+                                MissNum = -1)
+    }
 
     # Binary Save Names of data----
     Names <- data.table::as.data.table(names(data))
@@ -15362,12 +15364,14 @@ AutoCatBoostRegression <- function(data,
                               MissNum = -1)
 
     # Regression Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = TRUE,
-                              CharToFactor = TRUE,
-                              RemoveDates = TRUE,
-                              MissFactor = "0",
-                              MissNum = -1)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = TRUE,
+                                CharToFactor = TRUE,
+                                RemoveDates = TRUE,
+                                MissFactor = "0",
+                                MissNum = -1)
+    }
 
     # Regression Save Names of data----
     Names <- data.table::as.data.table(names(data))
@@ -16270,12 +16274,14 @@ AutoCatBoostMultiClass <- function(data,
                               MissNum = -1)
 
     # MultiClass Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = TRUE,
-                              CharToFactor = TRUE,
-                              RemoveDates = TRUE,
-                              MissFactor = "0",
-                              MissNum = -1)
+    if(!is.null(TestData)) {
+      TestData <- ModelDataPrep(data = TestData,
+                                Impute = TRUE,
+                                CharToFactor = TRUE,
+                                RemoveDates = TRUE,
+                                MissFactor = "0",
+                                MissNum = -1)
+    }
 
     # MultiClass Obtain Unique Target Levels
     if (!is.null(TestData)) {
