@@ -985,17 +985,16 @@ ProblematicRecords <- function(data,
 #' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @examples
 #' data <- data.table::data.table(Date = "2018-01-01 00:00:00")
-#' data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("day", "month", "year"))
+#' data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("wday", "month", "year"))
 #' @return Returns your data.table with the added calendar variables at the end
 #' @export
 CreateCalendarVariables <- function(data,
-                                    DateCols = NULL,
+                                    DateCols = c("Date","Date2"),
                                     AsFactor = FALSE,
                                     TimeUnits = c("second","minute","hour",
                                                   "wday","mday","yday",
                                                   "week","isoweek",
-                                                  "month","quarter","year"
-                                    )) {
+                                                  "month","quarter","year")) {
   # Require data.table----
   requireNamespace("data.table", quietly = FALSE)
 
@@ -1009,21 +1008,21 @@ CreateCalendarVariables <- function(data,
     warning("AsFactor needs to be TRUE or FALSE")
   }
   if (!(any(tolower(TimeUnits) %chin% c(
-      "second",
-      "minute",
-      "hour",
-      "wday",
-      "mday",
-      "yday",
-      "week",
-      "isoweek",
-      "month",
-      "quarter",
-      "year"
-    )
+    "second",
+    "minute",
+    "hour",
+    "wday",
+    "mday",
+    "yday",
+    "week",
+    "isoweek",
+    "month",
+    "quarter",
+    "year"
+  )
   ))) {
     warning(
-      "TimeUnits needs to be one of 'minute', 'hour', 'day', 'wday',
+      "TimeUnits needs to be one of 'minute', 'hour', 'wday',
             'mday', 'yday','week', 'month', 'quarter', 'year'"
     )
   }
@@ -1035,18 +1034,40 @@ CreateCalendarVariables <- function(data,
     }
   }
 
-  # Create DateCols to data.table IDateTime types----
-  for (i in DateCols) {
-    if (any(tolower(TimeUnits) %chin% c("second", "minute", "hour"))) {
-      if (min(as.ITime(data[[eval(i)]])) - max(as.ITime(data[[eval(i)]])) == 0) {
-        TimeUnits <-
+  # Revise TimeUnits Based on Data----
+  x <- 0
+  TimeList <- list()
+  Cols <- c()
+  for(i in seq_len(length(DateCols))) {
+    if(any(TimeUnits %chin% c("minute","hour"))) {
+      if(min(as.ITime(data[[eval(DateCols[i])]])) - max(as.ITime(data[[eval(DateCols[i])]])) == 0) {
+        TimeList[[i]] <-
           TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
+        Cols[i] <- length(TimeList[[i]])
       } else {
-        data[, paste0("TIME_", i) := as.ITime(data[[i]])]
+        TimeList[[i]] <- TimeUnits
+        Cols[i] <- length(TimeList[[i]])
       }
     }
+  }
+
+  # Allocate data.table cols
+  data.table::alloc.col(DT = data, ncol(data) + sum(Cols))
+  for(i in seq_len(length(DateCols))) {
+    for(j in seq_len(length(TimeList[[i]]))) {
+      data.table::set(data,
+                      j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                      value = 0L)
+    }
+  }
+
+  # Create DateCols to data.table IDateTime types----
+  for (i in seq_len(length(DateCols))) {
+    if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
+      data[, paste0("TIME_", eval(DateCols[i])) := as.ITime(data[[eval(DateCols[i])]])]
+    }
     if (any(
-      tolower(TimeUnits) %chin% c(
+      tolower(TimeList[[i]]) %chin% c(
         "wday",
         "mday",
         "yday",
@@ -1057,128 +1078,130 @@ CreateCalendarVariables <- function(data,
         "year"
       )
     )) {
-      data[, paste0("DATE_", i) := as.IDate(data[[i]])]
+      data[, paste0("DATE_", eval(DateCols[i])) := as.IDate(data[[eval(DateCols[i])]])]
     }
   }
 
   # Build Features----
-  for (i in DateCols) {
-    for (j in seq_len(length(TimeUnits))) {
-      if (tolower(TimeUnits[j]) == "second") {
+  for (i in seq_len(length(DateCols))) {
+    for (j in TimeList[[i]]) {
+      if(tolower(j) == "second") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::second(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.factor(data.table::second(get(paste0("TIME_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::second(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::second(data[[paste0("TIME_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "minute") {
+      } else if(tolower(j) == "minute") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::minute(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::minute(get(paste0("TIME_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::minute(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::minute(data[[paste0("TIME_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "hour") {
+      } else if(tolower(j) == "hour") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::hour(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::hour(get(paste0("TIME_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::hour(get(paste0(
-            "TIME_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::hour(data[[paste0("TIME_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "wday") {
+      } else if(tolower(j) == "wday") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::wday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::wday(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::wday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::wday(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "mday") {
+      } else if(tolower(j) == "mday") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::mday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::mday(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::mday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::mday(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "yday") {
+      } else if(tolower(j) == "yday") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::yday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::yday(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::yday(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::yday(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "week") {
+      } else if(tolower(j) == "week") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::week(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::week(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::week(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::week(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "isoweek") {
+      } else if(tolower(j) == "isoweek") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::isoweek(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::isoweek(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::isoweek(get(i)))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::isoweek(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "month") {
+      } else if(tolower(j) == "month") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::month(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::month(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::month(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::month(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "quarter") {
+      } else if(tolower(j) == "quarter") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::quarter(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::quarter(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::quarter(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::quarter(data[[paste0("DATE_", DateCols[i])]])))
         }
-      } else if (tolower(TimeUnits[j]) == "year") {
+      } else if(tolower(j) == "year") {
         if (AsFactor) {
-          data[, paste0(i, "_", TimeUnits[j]) := as.factor(data.table::year(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+                          value = as.factor(data.table::year(get(paste0("DATE_", DateCols[i])))))
         } else {
-          data[, paste0(i, "_", TimeUnits[j]) := as.integer(data.table::year(get(paste0(
-            "DATE_", i
-          ))))]
+          data.table::set(data,
+                          j = paste0(DateCols[i], "_", j),
+                          value = as.integer(data.table::year(data[[paste0("DATE_", DateCols[i])]])))
         }
       }
     }
-    if (any(tolower(TimeUnits) %chin% c("second", "minute", "hour"))) {
-      data[, paste0("TIME_", i) := NULL]
+    if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
+      data[, paste0("TIME_", DateCols[i]) := NULL]
     }
     if (any(
-      tolower(TimeUnits) %chin% c(
+      tolower(TimeList[[i]]) %chin% c(
         "wday",
         "mday",
         "yday",
@@ -1189,7 +1212,7 @@ CreateCalendarVariables <- function(data,
         "year"
       )
     )) {
-      data[, paste0("DATE_", i) := NULL]
+      data[, paste0("DATE_", DateCols[i]) := NULL]
     }
   }
   return(data)
@@ -7513,7 +7536,7 @@ GDL_Feature_Engineering <- function(data,
 #'                                    WindowingLag   = 1,
 #'                                    Type           = "Lag",
 #'                                    Timer          = TRUE,
-#'                                    SkipCols       = FALSE,
+#'                                    SkipCols       = NULL,
 #'                                    SimpleImpute   = TRUE)
 #' @export
 DT_GDL_Feature_Engineering <- function(data,
@@ -14202,28 +14225,28 @@ AutoCatBoostClassifier <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
-    
+
     # Binary Train ModelDataPrep----
-    dataTrain <- ModelDataPrep(data = dataTrain, 
-                               Impute = TRUE, 
-                               CharToFactor = TRUE, 
-                               RemoveDates = TRUE, 
+    dataTrain <- ModelDataPrep(data = dataTrain,
+                               Impute = TRUE,
+                               CharToFactor = TRUE,
+                               RemoveDates = TRUE,
                                MissFactor = "0",
                                MissNum = -1)
-    
+
     # Binary Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTest, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    dataTest <- ModelDataPrep(data = dataTest,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
-    
+
     # Binary Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    TestData <- ModelDataPrep(data = TestData,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
 
@@ -15322,28 +15345,28 @@ AutoCatBoostRegression <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
-    
+
     # Regression Train ModelDataPrep----
-    dataTrain <- ModelDataPrep(data = dataTrain, 
-                               Impute = TRUE, 
-                               CharToFactor = TRUE, 
-                               RemoveDates = TRUE, 
+    dataTrain <- ModelDataPrep(data = dataTrain,
+                               Impute = TRUE,
+                               CharToFactor = TRUE,
+                               RemoveDates = TRUE,
                                MissFactor = "0",
                                MissNum = -1)
-    
+
     # Regression Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTest, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    dataTest <- ModelDataPrep(data = dataTest,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
-    
+
     # Regression Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    TestData <- ModelDataPrep(data = TestData,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
 
@@ -16231,28 +16254,28 @@ AutoCatBoostMultiClass <- function(data,
         TestMerge <- data.table::copy(TestData)
       }
     }
-    
+
     # MultiClass Train ModelDataPrep----
-    dataTrain <- ModelDataPrep(data = dataTrain, 
-                               Impute = TRUE, 
-                               CharToFactor = TRUE, 
-                               RemoveDates = TRUE, 
+    dataTrain <- ModelDataPrep(data = dataTrain,
+                               Impute = TRUE,
+                               CharToFactor = TRUE,
+                               RemoveDates = TRUE,
                                MissFactor = "0",
                                MissNum = -1)
-    
+
     # MultiClass Validation ModelDataPrep----
-    dataTest <- ModelDataPrep(data = dataTest, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    dataTest <- ModelDataPrep(data = dataTest,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
-    
+
     # MultiClass Test ModelDataPrep----
-    TestData <- ModelDataPrep(data = TestData, 
-                              Impute = TRUE, 
-                              CharToFactor = TRUE, 
-                              RemoveDates = TRUE, 
+    TestData <- ModelDataPrep(data = TestData,
+                              Impute = TRUE,
+                              CharToFactor = TRUE,
+                              RemoveDates = TRUE,
                               MissFactor = "0",
                               MissNum = -1)
 
