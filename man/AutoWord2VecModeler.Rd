@@ -8,7 +8,8 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = NULL, vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
   Epochs = 25, StopWords = NULL, SaveModel = "standard",
-  Threads = 6, MaxMemory = "28G", SaveOutput = FALSE)
+  Threads = max(1, parallel::detectCores() - 2), MaxMemory = "28G",
+  SaveOutput = FALSE)
 }
 \arguments{
 \item{data}{Source data table to merge vects onto}
@@ -56,7 +57,7 @@ data <- AutoWord2VecModeler(data,
                             Epochs = 25,
                             StopWords = NULL,
                             SaveModel = "standard",
-                            Threads = 6,
+                            Threads = parallel::detectCores()-2),
                             MaxMemory = "28G",
                             SaveOutput = TRUE)
 }
