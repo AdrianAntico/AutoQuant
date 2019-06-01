@@ -5,9 +5,9 @@
 \title{AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
 \usage{
 AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
-  FeatureColNames = NULL, IDcols = NULL, ModelPath = NULL,
-  ModelID = NULL, ReturnFeatures = TRUE, MDP_Impute = TRUE,
-  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
+  FeatureColNames = NULL, IDcols = NULL, ModelObject = NULL,
+  ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
+  MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0", MDP_MissNum = -1)
 }
 \arguments{
@@ -16,6 +16,8 @@ AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
+
+\item{ModelObject}{Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.}
 
 \item{ModelPath}{Supply your path file used in the AutoCatBoost__() function}
 
@@ -47,6 +49,7 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
                              ScoringData = data,
                              FeatureColNames = 2:12,
                              IDcols = NULL,
+                             ModelObject = NULL,
                              ModelPath = "home",
                              ModelID = "ModelTest",
                              ReturnFeatures = TRUE,
