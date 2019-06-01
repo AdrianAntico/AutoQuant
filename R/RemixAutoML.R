@@ -23484,6 +23484,7 @@ AutoXGBoostMultiClass <- function(data,
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param ModelObject Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.
 #' @param ModelPath Supply your path file used in the AutoCatBoost__() function
 #' @param ModelID Supply the model ID used in the AutoCatBoost__() function
 #' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
@@ -23498,6 +23499,7 @@ AutoXGBoostMultiClass <- function(data,
 #'                              ScoringData = data,
 #'                              FeatureColNames = 2:12,
 #'                              IDcols = NULL,
+#'                              ModelObject = NULL,
 #'                              ModelPath = "home",
 #'                              ModelID = "ModelTest",
 #'                              ReturnFeatures = TRUE,
@@ -23513,6 +23515,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
                                 FeatureColNames = NULL,
                                 IDcols = NULL,
+                                ModelObject = NULL,
                                 ModelPath = NULL,
                                 ModelID = NULL,
                                 ReturnFeatures = TRUE,
@@ -23610,9 +23613,13 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Load model----
-  model <- tryCatch({catboost::catboost.load_model(
-    paste0(ModelPath,"/",ModelID))},
-    error = function(x) return("Model not found in ModelPath"))
+  if(!is.null(ModelObject)) {
+    model <- ModelObject
+  } else {
+    model <- tryCatch({catboost::catboost.load_model(
+      paste0(ModelPath,"/",ModelID))},
+      error = function(x) return("Model not found in ModelPath"))
+  }
 
   # Score model----
   if(tolower(TargetType) == "regression") {
