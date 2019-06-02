@@ -15027,7 +15027,7 @@ AutoCatBoostClassifier <- function(data,
     }
 
     # Final Garbage Collection----
-    if(tolower(task_type)) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       gc()
     }
 
@@ -15965,7 +15965,7 @@ AutoCatBoostRegression <- function(data,
     }
 
     # Final Garbage Collection----
-    if(tolower(task_type)) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       gc()
     }
 
@@ -16851,7 +16851,7 @@ AutoCatBoostMultiClass <- function(data,
     }
 
     # Final Garbage Collection----
-    if(tolower(task_type)) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       gc()
     }
 
