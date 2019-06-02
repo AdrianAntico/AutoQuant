@@ -2242,7 +2242,7 @@ AutoTS <- function(data,
     FC_Data[, Date := MaxDate + lubridate::month(4 * Date)]
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
-    FC_Data[, Date := MaxDate + years(Date)]
+    FC_Data[, Date := MaxDate + lubridate::years(Date)]
   } else {
     return("TimeUnit is not in hour, day, week, month,
     quarter, or year")
@@ -7868,7 +7868,9 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Done!!----
-    print(CounterIndicator)
+    if(Timer) {
+      print(CounterIndicator)
+    }
     return(data)
 
   } else {
@@ -8060,8 +8062,10 @@ DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Done!!
-    return(data)
+    # Done!!----
+    if(Timer) {
+      return(data)
+    }
   }
 }
 
