@@ -15026,6 +15026,11 @@ AutoCatBoostClassifier <- function(data,
                          file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
     }
 
+    # Final Garbage Collection----
+    if(tolower(task_type)) == "gpu") {
+      gc()
+    }
+
     # Binary Return Model Objects----
     if (GridTune) {
       if (ReturnModelObjects) {
@@ -15959,6 +15964,11 @@ AutoCatBoostRegression <- function(data,
                                        "_GridCollect.csv"))
     }
 
+    # Final Garbage Collection----
+    if(tolower(task_type)) == "gpu") {
+      gc()
+    }
+
     # Regression Return Model Objects----
     if (GridTune) {
       if (ReturnModelObjects) {
@@ -16838,6 +16848,11 @@ AutoCatBoostMultiClass <- function(data,
                                        "/",
                                        ModelID,
                                        "_GridCollect.csv"))
+    }
+
+    # Final Garbage Collection----
+    if(tolower(task_type)) == "gpu") {
+      gc()
     }
 
     # MultiClass Return Model Objects----
