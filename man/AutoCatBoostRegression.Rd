@@ -5,12 +5,13 @@
 \title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
 AutoCatBoostRegression(data, ValidationData, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
-  task_type = "GPU", eval_metric = "RMSE", Alpha = NULL,
-  Trees = 50, GridTune = FALSE, grid_eval_metric = "mae",
-  MaxModelsInGrid = 10, model_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL)
+  TargetColumnName = NULL, FeatureColNames = NULL,
+  PrimaryDateColumn = NULL, IDcols = NULL, task_type = "GPU",
+  eval_metric = "RMSE", Alpha = NULL, Trees = 50, GridTune = FALSE,
+  grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -22,6 +23,8 @@ AutoCatBoostRegression(data, ValidationData, TestData = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -95,6 +98,7 @@ TestModel <- AutoCatBoostRegression(data,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
                                     FeatureColNames = c(2:12),
+                                    PrimaryDateColumn = NULL,
                                     IDcols = NULL,
                                     MaxModelsInGrid = 1,
                                     task_type = "GPU",
@@ -123,7 +127,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMClassifier}},
   \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoNLS}},
+  \code{\link{AutoMLTS}}, \code{\link{AutoNLS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostClassifier}},
