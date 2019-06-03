@@ -1033,7 +1033,7 @@ CreateCalendarVariables <- function(data,
   TimeList <- list()
   Cols <- c()
   for(i in seq_len(length(DateCols))) {
-    if(any(TimeUnits %chin% c("minute","hour"))) {
+    if(any(TimeUnits %chin% c("second","minute","hour"))) {
       if(min(as.ITime(data[[eval(DateCols[i])]])) - max(as.ITime(data[[eval(DateCols[i])]])) == 0) {
         TimeList[[i]] <-
           TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
@@ -1042,6 +1042,9 @@ CreateCalendarVariables <- function(data,
         TimeList[[i]] <- TimeUnits
         Cols[i] <- length(TimeList[[i]])
       }
+    } else {
+      TimeList[[i]] <- TimeUnits
+      Cols[i] <- length(TimeList[[i]])
     }
   }
 
@@ -1050,26 +1053,28 @@ CreateCalendarVariables <- function(data,
 
   # Create DateCols to data.table IDateTime types----
   for (i in seq_len(length(DateCols))) {
-    if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-      data.table::set(data,
-                      j = paste0("TIME_", eval(DateCols[i])),
-                      value = as.ITime(data[[eval(DateCols[i])]]))
-    }
-    if (any(
-      tolower(TimeList[[i]]) %chin% c(
-        "wday",
-        "mday",
-        "yday",
-        "week",
-        "isoweek",
-        "month",
-        "quarter",
-        "year"
-      )
-    )) {
-      data.table::set(data,
-                      j = paste0("DATE_", eval(DateCols[i])),
-                      value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+    if(length(TimeList) != 0) {
+      if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
+        data.table::set(data,
+                        j = paste0("TIME_", eval(DateCols[i])),
+                        value = as.ITime(data[[eval(DateCols[i])]]))
+      }
+      if (any(
+        tolower(TimeList[[i]]) %chin% c(
+          "wday",
+          "mday",
+          "yday",
+          "week",
+          "isoweek",
+          "month",
+          "quarter",
+          "year"
+        )
+      )) {
+        data.table::set(data,
+                        j = paste0("DATE_", eval(DateCols[i])),
+                        value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+      }
     }
   }
 
