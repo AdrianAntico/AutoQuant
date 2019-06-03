@@ -8711,7 +8711,9 @@ DT_GDL_Feature_Engineering <- function(data,
     for (l in seq_along(lags)) {
       for (t in Targets) {
         if (!(paste0("LAG_", lags[l], "_", t) %in% SkipCols)) {
-          data[, paste0("LAG_", lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag")]
+          data.table::set(data,
+                          j = paste0("LAG_", lags[l], "_", t),
+                          value = data.table::shift(data[[eval(t)]], n = lags[l], type = "lag"))
           CounterIndicator <- CounterIndicator + 1
           if (Timer) {
             print(CounterIndicator / runs)
@@ -8725,8 +8727,9 @@ DT_GDL_Feature_Engineering <- function(data,
       # Lag the dates first
       for (l in seq_along(lags)) {
         if (!(paste0("TEMP", lags[l]) %in% SkipCols)) {
-          data[, paste0("TEMP",
-                        lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
+          data.table::set(data,
+                          j = paste0("TEMP",lags[l]),
+                          value = data.table::shift(data[[eval(sortDateName)]], n = lags[l], type = "lag"))
         }
       }
 
@@ -8735,26 +8738,25 @@ DT_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (!(paste0(timeDiffTarget, "_", lags[l]) %in% SkipCols) &
               l == 1) {
-            data[, paste0(timeDiffTarget,
-                          "_",
-                          lags[l]) := as.numeric(difftime(get(sortDateName),
-                                                          get(paste0(
-                                                            "TEMP", lags[l]
-                                                          )),
-                                                          units = eval(timeAgg)))]
+            data.table::set(data,
+                            j = paste0(timeDiffTarget,"_",lags[l]),
+                            value = as.numeric(
+                              difftime(
+                                data[[eval(sortDateName)]],
+                                data[[eval(paste0("TEMP", lags[l]))]],
+                                units = eval(timeAgg))))
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
             }
           } else {
-            data[, paste0(timeDiffTarget,
-                          "_", lags[l]) := as.numeric(difftime(get(paste0(
-                            "TEMP", lags[l] - 1
-                          )),
-                          get(paste0(
-                            "TEMP", lags[l]
-                          )),
-                          units = eval(timeAgg)))]
+            data.table::set(data,
+                            j = paste0(timeDiffTarget,"_", lags[l]),
+                            value = as.numeric(
+                              difftime(
+                                data[[eval(paste0("TEMP", lags[l] - 1))]],
+                                data[[eval(paste0("TEMP", lags[l]))]],
+                                units = eval(timeAgg))))
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
@@ -8766,12 +8768,12 @@ DT_GDL_Feature_Engineering <- function(data,
           if (l == 1) {
             if (!(paste0(timeDiffTarget,
                          "_", lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,
-                            "_", lags[l]) := as.numeric(difftime(
-                              get(sortDateName),
-                              get(paste0("TEMP", lags[l])),
-                              units = eval(timeAgg)
-                            ))]
+              data.table::set(data, j = paste0(timeDiffTarget,"_", lags[l]),
+                              value = as.numeric(
+                                difftime(
+                                  data[[eval(sortDateName)]],
+                                  data[[eval(paste0("TEMP", lags[l]))]],
+                                  units = eval(timeAgg))))
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -8781,15 +8783,12 @@ DT_GDL_Feature_Engineering <- function(data,
             if (!(paste0(timeDiffTarget,
                          "_",
                          lags[l]) %in% SkipCols)) {
-              data[, paste0(timeDiffTarget,
-                            "_",
-                            lags[l]) := as.numeric(difftime(get(paste0(
-                              "TEMP", (lags[l - 1])
-                            )),
-                            get(paste0(
-                              "TEMP", lags[l]
-                            )),
-                            units = eval(timeAgg)))]
+              data.table::set(data, j = paste0(timeDiffTarget,"_",lags[l]),
+                              value = as.numeric(
+                                difftime(
+                                  data[[eval(paste0("TEMP", (lags[l - 1])))]],
+                                  data[[eval(paste0("TEMP", lags[l]))]],
+                                  units = eval(timeAgg))))
               CounterIndicator <- CounterIndicator + 1
               if (Timer) {
                 print(CounterIndicator / runs)
@@ -8801,7 +8800,7 @@ DT_GDL_Feature_Engineering <- function(data,
 
       # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
-        data[, paste0("TEMP", lags[l]) := NULL]
+        data.table::set(data, j = paste0("TEMP", lags[l]), value = NULL)
       }
 
       # Store new target----
@@ -8834,19 +8833,17 @@ DT_GDL_Feature_Engineering <- function(data,
                        "_",
                        periods[j],
                        "_", t) %in% SkipCols)) {
-            data[, paste0(statsNames[k],
-                          "_",
-                          periods[j],
-                          "_", t) := data.table::frollmean(
-                            x = get(t),
-                            n = periods[j],
-                            fill = NA,
-                            algo = "fast",
-                            align = "right",
-                            na.rm = TRUE,
-                            hasNA = TRUE,
-                            adaptive = FALSE
-                          )]
+            data.table::set(data,
+                            j = paste0(statsNames[k],"_",periods[j],"_", t),
+                            value = data.table::frollmean(
+                              x = data[[eval(t)]],
+                              n = periods[j],
+                              fill = NA,
+                              algo = "fast",
+                              align = "right",
+                              na.rm = TRUE,
+                              hasNA = TRUE,
+                              adaptive = FALSE))
             CounterIndicator <- CounterIndicator + 1
             if (Timer) {
               print(CounterIndicator / runs)
