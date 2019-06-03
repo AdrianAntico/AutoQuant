@@ -9,7 +9,7 @@ DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
   targets = c("qty"), groupingVars = c("Group1", "Group2"),
   sortDateName = c("date"), timeDiffTarget = c("TimeDiffName"),
   timeAgg = c("days"), WindowingLag = 0, Type = c("Lag"),
-  Timer = TRUE, SkipCols = NULL, SimpleImpute = TRUE)
+  Timer = TRUE, SimpleImpute = TRUE)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -35,8 +35,6 @@ DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
 \item{Type}{List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values}
 
 \item{Timer}{Set to TRUE if you percentage complete tracker printout}
-
-\item{SkipCols}{Defaults to NULL; otherwise supply a character vector of the names of columns to skip}
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
 }
@@ -68,7 +66,6 @@ data <- DT_GDL_Feature_Engineering(data,
                                    WindowingLag   = 1,
                                    Type           = "Lag",
                                    Timer          = TRUE,
-                                   SkipCols       = NULL,
                                    SimpleImpute   = TRUE)
 }
 \seealso{

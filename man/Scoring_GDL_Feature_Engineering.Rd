@@ -5,12 +5,12 @@
 \title{An Automated Scoring Feature Engineering Function}
 \usage{
 Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
-  periods = c(3, 5, 10, 15, 20, 25), statsFUNs = c(function(x) mean(x,
-  na.rm = TRUE)), statsNames = c("MA"), targets = c("Target"),
-  groupingVars = NULL, sortDateName = c("DateTime"),
-  timeDiffTarget = c("Time_Gap"), timeAgg = "days", WindowingLag = 1,
-  Type = "Lag", Timer = TRUE, SkipCols = FALSE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
+  periods = c(3, 5, 10, 15, 20, 25), statsNames = c("MA"),
+  targets = c("Target"), groupingVars = NULL,
+  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
+  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
+  SkipCols = FALSE, SimpleImpute = TRUE, AscRowByGroup = "temp",
+  RecordsKeep = 1)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -18,8 +18,6 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 \item{lags}{A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.}
 
 \item{periods}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
-
-\item{statsFUNs}{Vector of functions for your rolling windows, such as mean, sd, min, max, quantile}
 
 \item{statsNames}{A character vector of the corresponding names to create for the rollings stats variables.}
 
@@ -38,8 +36,6 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 \item{Type}{List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values}
 
 \item{Timer}{Set to TRUE if you percentage complete tracker printout}
-
-\item{SkipCols}{Defaults to NULL; otherwise supply a character vector of the names of columns to skip}
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
 
@@ -66,7 +62,6 @@ data1 <- data1[order(DateTime)]
 data1 <- Scoring_GDL_Feature_Engineering(data1,
                                          lags           = c(seq(1,5,1)),
                                          periods        = c(3,5,10,15,20,25),
-                                         statsFUNs      = c(function(x) mean(x,na.rm = TRUE)),
                                          statsNames     = c("MA"),
                                          targets        = c("Target"),
                                          groupingVars   = NULL,
@@ -76,7 +71,6 @@ data1 <- Scoring_GDL_Feature_Engineering(data1,
                                          WindowingLag   = 1,
                                          Type           = "Lag",
                                          Timer          = TRUE,
-                                         SkipCols       = FALSE,
                                          SimpleImpute   = TRUE,
                                          AscRowByGroup  = "temp",
                                          RecordsKeep    = 1)
