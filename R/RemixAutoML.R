@@ -985,10 +985,7 @@ ProblematicRecords <- function(data,
 CreateCalendarVariables <- function(data,
                                     DateCols = c("Date","Date2"),
                                     AsFactor = FALSE,
-                                    TimeUnits = c("second","minute","hour",
-                                                  "wday","mday","yday",
-                                                  "week","isoweek",
-                                                  "month","quarter","year")) {
+                                    TimeUnits = "wday") {
   # Require data.table----
   requireNamespace("data.table", quietly = FALSE)
 
