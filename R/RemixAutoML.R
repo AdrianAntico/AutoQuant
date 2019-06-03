@@ -16,9 +16,24 @@
 ".SD" <- NULL
 ".I" <- NULL
 "setorderv" <- NULL
+"%m+%" <- NULL
+"as.IDate" <- NULL
 
 utils::globalVariables(
   names = c(
+    "Temporary",
+    "Predictions",
+    "IDcols",
+    "AbsoluteError",
+    "GroupVar",
+    "MAE",
+    "MSE",
+    "PercentileRank",
+    "PredictIsoForest",
+    "SquaredError",
+    "..keep1",
+    "GroupVar",
+    "R2_Metric",
     "test",
     "RelativeImportance",
     "ScaledImportance",
@@ -1053,18 +1068,20 @@ CreateCalendarVariables <- function(data,
 
   # Allocate data.table cols
   data.table::alloc.col(DT = data, ncol(data) + sum(Cols))
-  for(i in seq_len(length(DateCols))) {
-    for(j in seq_len(length(TimeList[[i]]))) {
-      data.table::set(data,
-                      j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-                      value = 0L)
-    }
-  }
+  # for(i in seq_len(length(DateCols))) {
+  #   for(j in seq_len(length(TimeList[[i]]))) {
+  #     data.table::set(data,
+  #                     j = paste0(DateCols[i], "_", TimeList[[i]][j]),
+  #                     value = 0L)
+  #   }
+  # }
 
   # Create DateCols to data.table IDateTime types----
   for (i in seq_len(length(DateCols))) {
     if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-      data[, paste0("TIME_", eval(DateCols[i])) := as.ITime(data[[eval(DateCols[i])]])]
+      data.table::set(data,
+                      j = paste0("TIME_", eval(DateCols[i])),
+                      value = as.ITime(data[[eval(DateCols[i])]]))
     }
     if (any(
       tolower(TimeList[[i]]) %chin% c(
@@ -1078,7 +1095,9 @@ CreateCalendarVariables <- function(data,
         "year"
       )
     )) {
-      data[, paste0("DATE_", eval(DateCols[i])) := as.IDate(data[[eval(DateCols[i])]])]
+      data.table::set(data,
+                      j = paste0("DATE_", eval(DateCols[i])),
+                      value = data.table::as.IDate(data[[eval(DateCols[i])]]))
     }
   }
 
@@ -1198,7 +1217,9 @@ CreateCalendarVariables <- function(data,
       }
     }
     if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-      data[, paste0("TIME_", DateCols[i]) := NULL]
+      data.table::set(data,
+                      j = paste0("TIME_", DateCols[i]),
+                      value = NULL)
     }
     if (any(
       tolower(TimeList[[i]]) %chin% c(
@@ -1212,7 +1233,9 @@ CreateCalendarVariables <- function(data,
         "year"
       )
     )) {
-      data[, paste0("DATE_", DateCols[i]) := NULL]
+      data.table::set(data,
+                      j = paste0("DATE_", DateCols[i]),
+                      value = NULL)
     }
   }
   return(data)
@@ -1933,7 +1956,7 @@ AutoKMeans <- function(data,
     # Save archetypes and colnames----
     fitY <- model@model$archetypes
     save(fitY, file = paste0(PathFile, "/fitY"))
-    set(
+    data.table::set(
       KMeansModelFile,
       i = 1L,
       j = 2L,
@@ -1948,7 +1971,7 @@ AutoKMeans <- function(data,
     Names <- colnames(x_raw)
     if (!is.null(SaveModels)) {
       save(Names, file = paste0(PathFile, "/Names.Rdata"))
-      set(
+      data.table::set(
         KMeansModelFile,
         i = 1L,
         j = 3L,
@@ -1998,7 +2021,7 @@ AutoKMeans <- function(data,
     Names <- colnames(x_raw)
     if (!is.null(SaveModels)) {
       save(Names, file = paste0(PathFile, "/Names.Rdata"))
-      set(
+      data.table::set(
         KMeansModelFile,
         i = 1L,
         j = 3L,
@@ -2031,11 +2054,11 @@ AutoKMeans <- function(data,
         genmodel_path = PathFile,
         genmodel_name = "KMeans"
       )
-      set(KMeansModelFile,
+      data.table::set(KMeansModelFile,
           i = 2L,
           j = 2L,
           value = save_model)
-      set(
+      data.table::set(
         KMeansModelFile,
         i = 2L,
         j = 3L,
@@ -6375,7 +6398,6 @@ AutoMLTS <- function(data,
           data = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
-          statsFUNs      = c(mean),
           statsNames     = c("MA"),
           targets        = eval(TargetColumnName),
           groupingVars   = "GroupVar",
@@ -6405,7 +6427,6 @@ AutoMLTS <- function(data,
           data = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
-          statsFUNs      = c(function(x) mean(x), na.rm = TRUE),
           statsNames     = c("MA"),
           targets        = eval(TargetColumnName),
           groupingVars   = NULL,
@@ -6464,8 +6485,8 @@ AutoMLTS <- function(data,
       PlotData, c("V1","V2"), c(eval(TargetColumnName), "Predictions"))
   } else {
     PlotData <- data.table::copy(UpdateData)
-    set(PlotData, i = (data[, .N]+1):PlotData[, .N], j = 2, value = NA)
-    set(PlotData, i = 1:data[, .N], j = 3, value = NA)
+    data.table::set(PlotData, i = (data[, .N]+1):PlotData[, .N], j = 2, value = NA)
+    data.table::set(PlotData, i = 1:data[, .N], j = 3, value = NA)
   }
 
   # Plot Time Series----
@@ -13814,7 +13835,7 @@ tokenizeH2O <- function(data) {
 #'                             Epochs = 25,
 #'                             StopWords = NULL,
 #'                             SaveModel = "standard",
-#'                             Threads = parallel::detectCores()-2),
+#'                             Threads = max(1,parallel::detectCores()-2),
 #'                             MaxMemory = "28G",
 #'                             SaveOutput = TRUE)
 #'}
@@ -15659,7 +15680,7 @@ AutoCatBoostClassifier <- function(data,
     # Binary Accuracy Threshold and Metric----
     j <- 0
     x <-
-      data.table(
+      data.table::data.table(
         Metric = "Accuracy",
         MetricValue = 5.0,
         Threshold = seq(0.01, 0.99, 0.001)
@@ -15670,7 +15691,7 @@ AutoCatBoostClassifier <- function(data,
         mean(ValidationData[, ifelse(p1 > i &
                                        Target == 1 |
                                        p1 < i & Target == 0, 1, 0)])
-      set(x,
+      data.table::set(x,
           i = j,
           j = 2L,
           value = round(Accuracy, 4))
@@ -24231,7 +24252,7 @@ AutoXGBoostMultiClass <- function(data,
 #' \donttest{
 #' Preds <- AutoCatBoostScoring(TargetType = "regression",
 #'                              ScoringData = data,
-#'                              FeatureColNames = 2:12,
+#'                              FeatureColumnNames = 2:12,
 #'                              IDcols = NULL,
 #'                              ModelObject = NULL,
 #'                              ModelPath = "home",
@@ -24247,7 +24268,7 @@ AutoXGBoostMultiClass <- function(data,
 #' @export
 AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
-                                FeatureColNames = NULL,
+                                FeatureColumnNames = NULL,
                                 IDcols = NULL,
                                 ModelObject = NULL,
                                 ModelPath = NULL,
@@ -24438,7 +24459,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' \donttest{
 #' Preds <- AutoXGBoostScoring(TargetType = "regression",
 #'                             ScoringData = data,
-#'                             FeatureColNames = 2:12,
+#'                             FeatureColumnNames = 2:12,
 #'                             IDcols = NULL,
 #'                             ModelPath = "home",
 #'                             ModelID = "ModelTest",
@@ -24453,7 +24474,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' @export
 AutoXGBoostScoring <- function(TargetType = NULL,
                                ScoringData = NULL,
-                               FeatureColNames = NULL,
+                               FeatureColumnNames = NULL,
                                IDcols = NULL,
                                ModelPath = NULL,
                                ModelID = NULL,
@@ -24603,7 +24624,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 #' @examples
 #' \donttest{
 #' Preds <- AutoH2OMLScoring(ScoringData = data,
-#'                           FeatureColNames = 2:12,
+#'                           FeatureColumnNames = 2:12,
 #'                           ModelType = "mojo",
 #'                           H2OShutdown = TRUE,
 #'                           MaxMem = "28G",
@@ -24620,7 +24641,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
 AutoH2OMLScoring <- function(ScoringData = NULL,
-                             FeatureColNames = NULL,
+                             FeatureColumnNames = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
                              MaxMem = "28G",
