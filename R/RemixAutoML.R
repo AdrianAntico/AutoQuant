@@ -979,7 +979,10 @@ ProblematicRecords <- function(data,
 #' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @examples
 #' data <- data.table::data.table(Date = "2018-01-01 00:00:00")
-#' data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("wday", "month", "year"))
+#' data <- CreateCalendarVariables(data,
+#'                                 DateCols = "Date",
+#'                                 AsFactor = FALSE,
+#'                                 TimeUnits = c("wday", "month", "year"))
 #' @return Returns your data.table with the added calendar variables at the end
 #' @export
 CreateCalendarVariables <- function(data,
