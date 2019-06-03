@@ -5,7 +5,7 @@
 \title{AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
 \usage{
 AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
-  FeatureColNames = NULL, IDcols = NULL, ModelPath = NULL,
+  FeatureColumnNames = NULL, IDcols = NULL, ModelPath = NULL,
   ModelID = NULL, ReturnFeatures = TRUE, MDP_Impute = TRUE,
   MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0", MDP_MissNum = -1)
@@ -14,6 +14,8 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
+
+\item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoXGBoost__() function}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
 
@@ -32,8 +34,6 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{MDP_MissFactor}{If you set MDP_Impute to TRUE, supply the character values to replace missing values with}
 
 \item{MDP_MissNum}{If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with}
-
-\item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoXGBoost__() function}
 }
 \value{
 A data.table of predicted values with the option to return model features as well.
@@ -45,7 +45,7 @@ AutoXGBoostScoring is an automated scoring function that compliments the AutoCat
 \donttest{
 Preds <- AutoXGBoostScoring(TargetType = "regression",
                             ScoringData = data,
-                            FeatureColNames = 2:12,
+                            FeatureColumnNames = 2:12,
                             IDcols = NULL,
                             ModelPath = "home",
                             ModelID = "ModelTest",
