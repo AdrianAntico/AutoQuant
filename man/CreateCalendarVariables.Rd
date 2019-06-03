@@ -24,7 +24,10 @@ CreateCalendarVariables Rapidly creates calendar variables based on the date col
 }
 \examples{
 data <- data.table::data.table(Date = "2018-01-01 00:00:00")
-data <- CreateCalendarVariables(data, DateCols = "Date", AsFactor = FALSE, TimeUnits = c("wday", "month", "year"))
+data <- CreateCalendarVariables(data,
+                                DateCols = "Date",
+                                AsFactor = FALSE,
+                                TimeUnits = c("wday", "month", "year"))
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
