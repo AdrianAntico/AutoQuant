@@ -5880,7 +5880,6 @@ AutoMLTS <- function(data,
       WindowingLag   = 1,
       Type           = "Lag",
       Timer          = FALSE,
-      SkipCols       = NULL,
       SimpleImpute   = TRUE)
   } else {
     data <- RemixAutoML::DT_GDL_Feature_Engineering(
@@ -5896,7 +5895,6 @@ AutoMLTS <- function(data,
       WindowingLag   = 1,
       Type           = "Lag",
       Timer          = FALSE,
-      SkipCols       = NULL,
       SimpleImpute   = TRUE)
   }
 
@@ -6387,7 +6385,6 @@ AutoMLTS <- function(data,
           WindowingLag   = 1,
           Type           = "Lag",
           Timer          = FALSE,
-          SkipCols       = NULL,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1)
@@ -6418,7 +6415,6 @@ AutoMLTS <- function(data,
           WindowingLag   = 1,
           Type           = "Lag",
           Timer          = FALSE,
-          SkipCols       = NULL,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1)
@@ -8417,11 +8413,6 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-  if (!is.null(SkipCols)) {
-    if (!is.character(SkipCols)) {
-      warning("SkipCols needs to be a character scalar or vector")
-    }
-  }
 
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
@@ -8896,7 +8887,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                             WindowingLag   = 1,
                                             Type           = "Lag",
                                             Timer          = TRUE,
-                                            SkipCols       = FALSE,
                                             SimpleImpute   = TRUE,
                                             AscRowByGroup  = "temp",
                                             RecordsKeep    = 1) {
