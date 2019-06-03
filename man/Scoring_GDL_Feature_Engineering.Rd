@@ -9,8 +9,7 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
   targets = c("Target"), groupingVars = NULL,
   sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
   timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
-  SkipCols = FALSE, SimpleImpute = TRUE, AscRowByGroup = "temp",
-  RecordsKeep = 1)
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
