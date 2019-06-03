@@ -6079,6 +6079,118 @@ AutoMLTS <- function(data,
   # Store Model----
   Model <- TestModel$Model
 
+  # Update ValidationData and Create Metrics Data----
+  TestDataEval <- TestModel$ValidationData
+  TestDataEval[, ':=' (Target = NULL, Date = NULL)]
+  MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
+  if(!is.null(GroupVariables)) {
+    Metric <- TestDataEval[, .(GroupVar, get(TargetColumnName), Predict)]
+    setnames(Metric, "V2", eval(TargetColumnName))
+    MetricCollection <- Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
+  }
+
+  # poisson----
+  if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if(!is.null(GroupVariables)) {
+      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar", all = FALSE)
+    } else {
+      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+      Metric <- TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE))]
+    }
+  }
+
+  # mae----
+  if(!is.null(GroupVariables)) {
+    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar", all = FALSE)
+  } else {
+    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
+    Metric <- TestDataEval[, mean(Metric, na.rm = TRUE)]
+  }
+
+  # mape----
+  if(!is.null(GroupVariables)) {
+    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar", all = FALSE)
+  } else {
+    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
+    Metric <- TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE))]
+  }
+
+  # mse----
+  if(!is.null(GroupVariables)) {
+    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar", all = FALSE)
+  } else {
+    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
+    Metric <- TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE))]
+  }
+
+  # msle----
+  if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if(!is.null(GroupVariables)) {
+      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar", all = FALSE)
+    } else {
+      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
+      Metric <- TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE))]
+    }
+  }
+
+  # kl----
+  if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if(!is.null(GroupVariables)) {
+      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar", all = FALSE)
+    } else {
+      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
+      Metric <- TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE))]
+    }
+  }
+
+  # r2----
+  if(!is.null(GroupVariables)) {
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict)), by = "GroupVar"],
+            by = "GroupVar", all = FALSE)
+    MetricCollection[, R2_Metric := R2_Metric^2]
+  } else {
+    Metric <- (TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict))]) ^ 2
+  }
+
+  # Update GroupVar with Original Columns, reorder columns, add to model objects----
+  if(!is.null(GroupVariables)) {
+    MetricCollection[
+      , eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][
+        , GroupVar := NULL]
+    NumGroupVars <- length(GroupVariables)
+    data.table::setcolorder(MetricCollection,
+                            c((ncol(MetricCollection)-NumGroupVars+1):ncol(MetricCollection),
+                              1:(ncol(MetricCollection)-NumGroupVars)))
+    TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
+    TestModel$EvaluationMetricsByGroup
+  }
+
   # Store Date Info----
   if(!is.null(GroupVariables)) {
     FutureDateData <- unique(dataFuture[, get(DateColumnName)])
@@ -6329,7 +6441,7 @@ AutoMLTS <- function(data,
                    axis.text = ggplot2::element_text(size = 11),
                    legend.text = ggplot2::element_text(color = "#1c1c1c",
                                                        size = 11),
-                   legend.background = ggplot2::element_rect(fill = "gray",
+                   legend.background = ggplot2::element_rect(fill = "snow3",
                                                              size = 0.25,
                                                              colour = "darkblue"),
                    legend.justification = 0,
@@ -6340,11 +6452,11 @@ AutoMLTS <- function(data,
                    panel.grid.major.y = ggplot2::element_line(color = "white"),
                    panel.grid.minor.y = ggplot2::element_line(color = "white"),
                    plot.title = ggplot2::element_text(color = "#1c1c1c",
-                                                      size = 28,
+                                                      size = 25,
                                                       hjust = 0,
                                                       face = "bold"),
                    plot.subtitle = ggplot2::element_text(color = "#1c1c1c",
-                                                         size = 16,
+                                                         size = 14,
                                                          hjust = 0),
                    plot.caption = ggplot2::element_text(size = 9,
                                                         hjust = 0, face = "italic"))
@@ -6367,14 +6479,17 @@ AutoMLTS <- function(data,
   # Plot Time Series----
   TimeSeriesPlot <-
     ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[[eval(DateColumnName)]])) +
-    ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetColumnName)]], color = "Actual")) +
-    ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]], color = "Predicted"))
+    ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetColumnName)]],
+                                    color = "Actual")) +
+    ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]],
+                                    color = "Forecast"))
 
   # Modify title----
   if(!is.null(GroupVariables)) {
     TimeSeriesPlot <- TimeSeriesPlot +
       ggplot2::geom_vline(
-        xintercept = UpdateData[data[, .N, by = "GroupVar"][1,2][[1]], max(get(DateColumnName), na.rm = TRUE)],
+        xintercept = UpdateData[data[, .N, by = "GroupVar"][1,2][[1]],
+                                max(get(DateColumnName), na.rm = TRUE)],
         color = "#FF4F00",
         lty = "dotted",
         lwd = 1
@@ -6383,7 +6498,7 @@ AutoMLTS <- function(data,
       Temp()
     TimeSeriesPlot <- TimeSeriesPlot +
       ggplot2::labs(
-        title = paste0(FC_Periods, " - Period Forecast for Total ", TargetColumnName),
+        title = paste0(FC_Periods, " - Period Forecast for Aggregate ", eval(TargetColumnName)),
         subtitle = paste0(
           "Catboost Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
@@ -6391,13 +6506,13 @@ AutoMLTS <- function(data,
         caption = "Forecast generated by Remix Institute's RemixAutoML R package"
       ) +
       ggplot2::scale_colour_manual("",
-                                   breaks = c("Actual","Predicted"),
-                                   values = c("Actual"="red","Predicted"="blue")) +
+                                   breaks = c("Actual","Forecast"),
+                                   values = c("Actual"="red","Forecast"="blue")) +
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   } else {
     TimeSeriesPlot <- TimeSeriesPlot +
       ggplot2::labs(
-        title = paste0(FC_Periods, " - Period Forecast for ", TargetColumnName),
+        title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
         subtitle = paste0(
           "Catboost Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
@@ -6405,8 +6520,8 @@ AutoMLTS <- function(data,
         caption = "Forecast generated by Remix Institute's RemixAutoML R package"
       ) +
       ggplot2::scale_colour_manual("",
-                                   breaks = c(eval(TargetColumnName),"Predicted"),
-                                   values = c("blue","black")) +
+                                   breaks = c(eval(TargetColumnName),"Forecast"),
+                                   values = c("red","blue")) +
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   }
 
