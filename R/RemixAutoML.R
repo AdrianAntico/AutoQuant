@@ -9127,7 +9127,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                              "_",
                              periods[j],
                              "_",
-                             t) :=  lapply(.SD,statsFUNs[[k]],na.rm = TRUE),
+                             t) :=  lapply(.SD,mean,na.rm = TRUE),
                     by = get(groupingVars[i]), .SDcols = eval(t)]
             if (Timer) {
               CounterIndicator <- CounterIndicator + 1
