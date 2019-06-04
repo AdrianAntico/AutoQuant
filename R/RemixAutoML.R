@@ -21671,63 +21671,85 @@ AutoXGBoostRegression <- function(data,
 
   # Regression Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # Regression Dummify dataTest Categorical Features----
-  if(SaveModelObjects) {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # Regression Dummify TestData Categorical Features----
-  if (!is.null(TestData)) {
-    if(SaveModelObjects) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE
-      )
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE,
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
     } else {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE
-      )
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+    }
+  } else {
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
+
+    } else {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = FALSE, 
+                        SavePath = FALSE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
     }
   }
 
@@ -22569,63 +22591,85 @@ AutoXGBoostClassifier <- function(data,
 
   # Binary Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # Binary Dummify dataTest Categorical Features----
-  if(SaveModelObjects) {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # Binary Dummify TestData Categorical Features----
-  if (!is.null(TestData)) {
-    if(SaveModelObjects) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE
-      )
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE,
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
     } else {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE
-      )
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+    }
+  } else {
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
+
+    } else {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = FALSE, 
+                        SavePath = FALSE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
     }
   }
 
@@ -23649,63 +23693,85 @@ AutoXGBoostMultiClass <- function(data,
 
   # MultiClass Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTrain <- RemixAutoML::DummifyDT(
-      data = dataTrain,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # MultiClass Dummify dataTest Categorical Features----
-  if(SaveModelObjects) {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE,
-      SaveFactorLevels = TRUE,
-      SavePath = model_path,
-      ImportFactorLevels = FALSE
-    )
-  } else {
-    dataTest <- RemixAutoML::DummifyDT(
-      data = dataTest,
-      cols = CatFeatures,
-      KeepFactorCols = FALSE,
-      OneHot = FALSE
-    )
-  }
-
-  # MultiClass Dummify TestData Categorical Features----
-  if (!is.null(TestData)) {
-    if(SaveModelObjects) {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE
-      )
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE,
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
     } else {
-      TestData <- RemixAutoML::DummifyDT(
-        data = TestData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE
-      )
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+    }
+  } else {
+    if(!is.null(dataTest) & !is.null(TestData)) {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "VALIDATE")
+      data.table::set(TestData, 
+                      j = "ID_Factorizer",
+                      value = "TEST")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = TRUE, 
+                        SavePath = TRUE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      TestData <- temp[ID_Factorizer == "TEST"]
+
+    } else {
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = "TRAIN")
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+      temp <- DummifyDT(data = temp, 
+                        cols = CatFeatures, 
+                        KeepFactorCols = FALSE, 
+                        OneHot = FALSE, 
+                        SaveFactorLevels = FALSE, 
+                        SavePath = FALSE, 
+                        ImportFactorLevels = FALSE)
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      dataTest <- temp[ID_Factorizer == "VALIDATE"]
     }
   }
 
