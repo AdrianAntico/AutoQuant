@@ -14790,7 +14790,10 @@ AutoCatBoostClassifier <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data[, eval(PrimaryDateColumn) := NULL]
+      # data[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(data,
+                      j = eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -14798,7 +14801,9 @@ AutoCatBoostClassifier <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(ValidationData,
+                      j = eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -14807,7 +14812,9 @@ AutoCatBoostClassifier <- function(data,
     if(!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
       if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        data.table::set(TestData,
+                        j = eval(PrimaryDateColumn),
+                        value = NULL)
       }
     }
   }
@@ -15914,7 +15921,9 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(data,
+                      j = eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -15922,7 +15931,9 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(ValidationData,
+                      j =eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -15931,7 +15942,9 @@ AutoCatBoostRegression <- function(data,
     if(!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
       if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        data.table::set(TestData,
+                        j =eval(PrimaryDateColumn),
+                        value = NULL)
       }
     }
   }
@@ -16827,7 +16840,9 @@ AutoCatBoostMultiClass <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(data,
+                      j = eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -16835,7 +16850,9 @@ AutoCatBoostMultiClass <- function(data,
   if(!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
     if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-      ValidationData[, eval(PrimaryDateColumn) := NULL]
+      data.table::set(ValidationData,
+                      j = eval(PrimaryDateColumn),
+                      value = NULL)
     }
   }
 
@@ -16844,7 +16861,9 @@ AutoCatBoostMultiClass <- function(data,
     if(!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
       if(!(eval(PrimaryDateColumn) %in% IDcols)) {
-        TestData[, eval(PrimaryDateColumn) := NULL]
+        data.table::set(TestData,
+                        j = eval(PrimaryDateColumn),
+                        value = NULL)
       }
     }
   }
