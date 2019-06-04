@@ -20,6 +20,9 @@ test_that("DummifyDT", {
     data = test,
     cols = "FactorCol",
     KeepFactorCols = FALSE,
+    SaveFactorLevels = FALSE,
+    SavePath = NULL,
+    ImportFactorLevels = FALSE,
     OneHot = FALSE,
     ClustScore = FALSE
   )
@@ -45,6 +48,9 @@ test_that("DummifyDT", {
     data = testy,
     cols = "FactorCol",
     KeepFactorCols = TRUE,
+    SaveFactorLevels = FALSE,
+    SavePath = NULL,
+    ImportFactorLevels = FALSE,
     OneHot = FALSE,
     ClustScore = FALSE
   )
@@ -70,6 +76,9 @@ test_that("DummifyDT", {
     data = testz,
     cols = "FactorCol",
     KeepFactorCols = TRUE,
+    SaveFactorLevels = FALSE,
+    SavePath = NULL,
+    ImportFactorLevels = FALSE,
     OneHot = TRUE,
     ClustScore = FALSE
   )
@@ -95,6 +104,9 @@ test_that("DummifyDT", {
     data = testz,
     cols = "FactorCol",
     KeepFactorCols = TRUE,
+    SaveFactorLevels = FALSE,
+    SavePath = NULL,
+    ImportFactorLevels = FALSE,
     OneHot = TRUE,
     ClustScore = FALSE
   )
@@ -288,7 +300,9 @@ test_that("RedYellowGreen", {
     FalsePositiveCost = -3,
     FalseNegativeCost = -2,
     MidTierCost       = -0.5,
-    Cores             = 2
+    Cores             = 2,
+    Precision         = 0.25,
+    Boundaries        = c(0.25,0.75)
   )
   expect_match(names(data)[10], "Utility")
 })
@@ -411,7 +425,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE
   )
 
@@ -442,8 +455,6 @@ test_that("DT_GDL_Feature_Engineering", {
     data1,
     lags           = c(seq(1, 1, 1)),
     periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = c("GroupVariable"),
@@ -453,7 +464,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -491,7 +501,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE
   )
 
@@ -512,8 +521,6 @@ test_that("DT_GDL_Feature_Engineering", {
     data1,
     lags           = c(seq(1, 1, 1)),
     periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = NULL,
@@ -523,7 +530,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -561,7 +567,7 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
+    SkipCols       = NULL,
     SimpleImpute   = TRUE,
     AscRowByGroup = "temp",
     RecordsKeep = 100
@@ -584,8 +590,6 @@ test_that("DT_GDL_Feature_Engineering", {
     data1,
     lags           = c(seq(1, 1, 1)),
     periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = NULL,
@@ -595,7 +599,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -648,7 +651,7 @@ test_that("FAST_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
+    SkipCols       = NULL,
     SimpleImpute   = TRUE,
     AscRowByGroup = "temp",
     RecordsKeep = 100
@@ -681,8 +684,6 @@ test_that("FAST_GDL_Feature_Engineering", {
     data1,
     lags           = c(seq(1, 2, 1)),
     periods        = c(3),
-    statsFUNs      = c(function(x)
-      mean(x, na.rm = TRUE)),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = c("GroupVariable"),
@@ -692,7 +693,6 @@ test_that("FAST_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = FALSE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -702,252 +702,3 @@ test_that("FAST_GDL_Feature_Engineering", {
   y <- names(data1)
   expect_equal(x, y)
 })
-
-# test_that("GDL_Feature_Engineering", {
-#   # GDL and Scoring
-#
-#   # Grouping Case
-#   N <- 25116
-#   data <-
-#     data.table::data.table(
-#       GroupVariable = sample(x = c(
-#         letters,
-#         LETTERS,
-#         paste0(letters, letters),
-#         paste0(LETTERS, LETTERS),
-#         paste0(letters, LETTERS),
-#         paste0(LETTERS, letters)
-#       )),
-#       DateTime = base::as.Date(Sys.time()),
-#       Target = stats::filter(
-#         rnorm(N,
-#               mean = 50,
-#               sd = 20),
-#         filter = rep(1, 10),
-#         circular = TRUE
-#       )
-#     )
-#   data[, temp := seq(1:161),
-#        by = "GroupVariable"][,
-#                              DateTime := DateTime - temp][
-#                                ,temp := NULL
-#                                ]
-#   data <- data[order(DateTime)]
-#   data <- GDL_Feature_Engineering(
-#     data,
-#     lags           = c(seq(1, 2, 1)),
-#     periods        = c(3),
-#     statsFUNs      = c(function(x) mean(x, na.rm = TRUE)),
-#     statsNames     = c("MA"),
-#     targets        = c("Target"),
-#     groupingVars   = "GroupVariable",
-#     sortDateName   = "DateTime",
-#     timeDiffTarget = c("Time_Gap"),
-#     timeAgg        = c("days"),
-#     WindowingLag   = 1,
-#     Type           = "Lag",
-#     Timer          = TRUE,
-#     SkipCols       = FALSE,
-#     SimpleImpute   = TRUE
-#   )
-#
-#   N <- 25116
-#   data1 <-
-#     data.table::data.table(
-#       GroupVariable = sample(x = c(
-#         letters,
-#         LETTERS,
-#         paste0(letters, letters),
-#         paste0(LETTERS, LETTERS),
-#         paste0(letters, LETTERS),
-#         paste0(LETTERS, letters)
-#       )),
-#       DateTime = base::as.Date(Sys.time()),
-#       Target = stats::filter(
-#         rnorm(N,
-#               mean = 50,
-#               sd = 20),
-#         filter = rep(1, 10),
-#         circular = TRUE
-#       )
-#     )
-#   data1[, temp := seq(1:161),
-#         by = "GroupVariable"][, DateTime := DateTime - temp]
-#   data1 <- data1[order(DateTime)]
-#   data1 <- Scoring_GDL_Feature_Engineering(
-#     data1,
-#     lags           = c(seq(1, 2, 1)),
-#     periods        = c(3),
-#     statsFUNs      = c(function(x)
-#       mean(x, na.rm = TRUE)),
-#     statsNames     = c("MA"),
-#     targets        = c("Target"),
-#     groupingVars   = c("GroupVariable"),
-#     sortDateName   = c("DateTime"),
-#     timeDiffTarget = c("Time_Gap"),
-#     timeAgg        = "days",
-#     WindowingLag   = 1,
-#     Type           = "Lag",
-#     Timer          = TRUE,
-#     SkipCols       = FALSE,
-#     SimpleImpute   = TRUE,
-#     AscRowByGroup  = "temp",
-#     RecordsKeep    = 1
-#   )
-#
-#   x <- names(data)
-#   y <- names(data1[, temp := NULL])
-#   expect_equal(x, y)
-#
-#   # Non Grouping Case
-#   N <- 25116
-#   data <- data.table::data.table(
-#     DateTime = as.Date(Sys.time()),
-#     Target = stats::filter(
-#       rnorm(N,
-#             mean = 50,
-#             sd = 20),
-#       filter = rep(1, 10),
-#       circular = TRUE
-#     )
-#   )
-#   data[, temp := seq(1:N)][, DateTime := DateTime - temp]
-#   data <- data[order(DateTime)]
-#   data <- FAST_GDL_Feature_Engineering(
-#     data,
-#     lags           = c(seq(1, 2, 1)),
-#     periods        = c(3),
-#     statsFUNs      = c("mean"),
-#     statsNames     = c("MA"),
-#     targets        = c("Target"),
-#     groupingVars   = NULL,
-#     sortDateName   = "DateTime",
-#     timeDiffTarget = c("Time_Gap"),
-#     timeAgg        = c("days"),
-#     WindowingLag   = 1,
-#     Type           = "Lag",
-#     Timer          = TRUE,
-#     SkipCols       = FALSE,
-#     SimpleImpute   = TRUE,
-#     AscRowByGroup = "temp",
-#     RecordsKeep = 100
-#   )
-#
-#   N <- 25116
-#   data1 <- data.table::data.table(
-#     DateTime = as.Date(Sys.time()),
-#     Target = stats::filter(
-#       rnorm(25116,
-#             mean = 50,
-#             sd = 20),
-#       filter = rep(1, 10),
-#       circular = TRUE
-#     )
-#   )
-#   data1[, temp := seq(1:N)][, DateTime := DateTime - temp]
-#   data1 <- data1[order(DateTime)]
-#   data1 <- Scoring_GDL_Feature_Engineering(
-#     data1,
-#     lags           = c(seq(1, 2, 1)),
-#     periods        = c(3),
-#     statsFUNs      = c(function(x)
-#       mean(x, na.rm = TRUE)),
-#     statsNames     = c("MA"),
-#     targets        = c("Target"),
-#     groupingVars   = NULL,
-#     sortDateName   = c("DateTime"),
-#     timeDiffTarget = c("Time_Gap"),
-#     timeAgg        = "days",
-#     WindowingLag   = 1,
-#     Type           = "Lag",
-#     Timer          = TRUE,
-#     SkipCols       = FALSE,
-#     SimpleImpute   = TRUE,
-#     AscRowByGroup  = "temp",
-#     RecordsKeep    = 1
-#   )
-#
-#   x <- names(data)
-#   y <- names(data1)
-#   expect_equal(x, y)
-# })
-
-# test_that("AutoTS", {
-#   # Check function works
-#   data <- data.table::data.table(
-#     DateTime = as.Date(Sys.time()),
-#     Target = stats::filter(
-#       rnorm(1000,
-#             mean = 50,
-#             sd = 20),
-#       filter = rep(1, 10),
-#       circular = TRUE
-#     )
-#   )
-#   data[, temp := seq(1:1000)][,
-#                               DateTime := DateTime - temp][,
-#                                                            temp := NULL]
-#   data <- data[order(DateTime)]
-#   output <-   AutoTS(
-#     data,
-#     TargetName     = "Target",
-#     DateName       = "DateTime",
-#     FCPeriods      = 30,
-#     HoldOutPeriods = 30,
-#     TimeUnit       = "day",
-#     Lags           = 5,
-#     SLags          = 1,
-#     NumCores       = 4,
-#     SkipModels     = c("NNET","TBATS","ETS","PROPHET","TSLM","ARFIMA"),
-#     StepWise       = TRUE
-#   )
-#   x <- nrow(output[[1]])
-#   expect_equal(x, 30)
-# })
-
-# test_that("AutoKMeans", {
-#   # Check that GridTuneGLRM = T and GridTuneKMeans = T
-#   data <- data.table::as.data.table(iris)
-#   data <- AutoKMeans(
-#     data,
-#     GridTuneGLRM = FALSE,
-#     GridTuneKMeans = FALSE,
-#     nthreads = 1,
-#     MaxMem = "8",
-#     glrmCols = 1:(ncol(data) - 1),
-#     IgnoreConstCols = TRUE,
-#     glrmFactors = 2,
-#     Loss = "Absolute",
-#     glrmMaxIters = 1000,
-#     SVDMethod = "Randomized",
-#     MaxRunTimeSecs = 3600,
-#     KMeansK = 5,
-#     KMeansMetric = "totss",
-#     SaveModels = NULL,
-#     PathFile = getwd()
-#   )
-#   expect_equal(ncol(data), 6)
-#
-#   #Check that GridTuneGLRM = F and GridTuneKMeans = F
-#   data1 <- data.table::as.data.table(iris)
-#   Sys.sleep(10)
-#   data1 <- AutoKMeans(
-#     data1,
-#     GridTuneGLRM = FALSE,
-#     GridTuneKMeans = FALSE,
-#     nthreads = 8,
-#     MaxMem = "28G",
-#     glrmCols = 1:(ncol(data1) - 1),
-#     IgnoreConstCols = TRUE,
-#     glrmFactors = 2,
-#     Loss = "Absolute",
-#     glrmMaxIters = 1000,
-#     SVDMethod = "Randomized",
-#     MaxRunTimeSecs = 3600,
-#     KMeansK = 5,
-#     KMeansMetric = "totss",
-#     SaveModels = NULL,
-#     PathFile = getwd()
-#   )
-#   expect_equal(ncol(data1), 6)
-# })
