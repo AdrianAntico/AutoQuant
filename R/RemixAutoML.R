@@ -16875,7 +16875,7 @@ AutoCatBoostMultiClass <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   } else {
-    keep <- c(keep1, Target)
+    keep <- c(FeatureColNames, Target)
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
