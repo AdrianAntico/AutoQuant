@@ -6322,7 +6322,7 @@ AutoMLTS <- function(data,
       } else {
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
-      temp[, eval(DateColumnName) := as_date(get(DateColumnName))]
+      temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       setnames(temp, c("V2"), c(eval(TargetColumnName)))
       UpdateData <- data.table::rbindlist(
         list(UpdateData,temp), fill = TRUE)
