@@ -2,15 +2,16 @@
 
 # How to Install the Package for R:
 
+
 #### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
 # No Remotes ----
 # Attachments ----
 to_install <- c("catboost", "caTools", "data.table", "doParallel", 
-                 "foreach", "forecast", "ggplot2", "h2o", "itertools", 
-                 "lubridate", "monreg", "pROC", "RColorBrewer", "recommenderlab", 
-                 "ROCR", "scatterplot3d", "stringr", "sde", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
+                "foreach", "forecast", "ggplot2", "h2o", "itertools", 
+                "lubridate", "monreg", "pROC", "RColorBrewer", "recommenderlab", 
+                "ROCR", "scatterplot3d", "stringr", "sde", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
 for (i in to_install) {
   message(paste("looking for ", i))
   if(i == "catboost" & !requireNamespace(i)) {
@@ -34,11 +35,7 @@ for (i in to_install) {
 ```
 # Depending on the development state (future versions, etc.) you can install via:
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE)
-```
-or
-```
-# ...you can install via:
-devtools::install_github('AdrianAntico/RemixAutoML', force = TRUE, dependencies = TRUE, upgrade = FALSE)
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
 # RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
