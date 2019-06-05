@@ -21690,8 +21690,17 @@ AutoXGBoostRegression <- function(data,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     } else {
       data.table::set(dataTrain, 
                       j = "ID_Factorizer",
@@ -21708,7 +21717,13 @@ AutoXGBoostRegression <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
@@ -21730,8 +21745,17 @@ AutoXGBoostRegression <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
 
     } else {
       data.table::set(dataTrain, 
@@ -21749,7 +21773,13 @@ AutoXGBoostRegression <- function(data,
                         SavePath = FALSE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     }
   }
 
@@ -22610,8 +22640,17 @@ AutoXGBoostClassifier <- function(data,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     } else {
       data.table::set(dataTrain, 
                       j = "ID_Factorizer",
@@ -22628,7 +22667,13 @@ AutoXGBoostClassifier <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
@@ -22650,8 +22695,17 @@ AutoXGBoostClassifier <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
 
     } else {
       data.table::set(dataTrain, 
@@ -22669,7 +22723,13 @@ AutoXGBoostClassifier <- function(data,
                         SavePath = FALSE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     }
   }
 
@@ -23712,8 +23772,17 @@ AutoXGBoostMultiClass <- function(data,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     } else {
       data.table::set(dataTrain, 
                       j = "ID_Factorizer",
@@ -23730,7 +23799,13 @@ AutoXGBoostMultiClass <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer",
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer",
+                      value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
@@ -23752,8 +23827,17 @@ AutoXGBoostMultiClass <- function(data,
                         SavePath = TRUE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
 
     } else {
       data.table::set(dataTrain, 
@@ -23771,7 +23855,13 @@ AutoXGBoostMultiClass <- function(data,
                         SavePath = FALSE, 
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(dataTest, 
+                      j = "ID_Factorizer", 
+                      value = NULL)
     }
   }
 
