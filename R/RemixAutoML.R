@@ -6387,6 +6387,7 @@ AutoMLTS <- function(data,
           list(UpdateData, Temporary), use.names = TRUE)
       }
     }
+    gc()
   }
 
   # Metrics----
