@@ -2003,9 +2003,9 @@ AutoKMeans <- function(data,
         genmodel_name = "KMeans"
       )
       data.table::set(KMeansModelFile,
-          i = 2L,
-          j = 2L,
-          value = save_model)
+                      i = 2L,
+                      j = 2L,
+                      value = save_model)
       data.table::set(
         KMeansModelFile,
         i = 2L,
@@ -5758,28 +5758,28 @@ AutoMLTS <- function(data,
                      NTrees = 1000,
                      PartitionType = "time",
                      Timer = TRUE) {
-
+  
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # Convert to data.table----
   if(!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Subset Columns----
   keep <- c(DateColumnName, TargetColumnName, GroupVariables)
   data <- data[, ..keep]
-
+  
   # Group Concatenation----
   if(!is.null(GroupVariables)) {
     data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     data[, eval(GroupVariables) := NULL]
   }
-
+  
   # Get unique set of GroupVar----
   GroupVarVector <- unique(as.character(data[["GroupVar"]]))
-
+  
   # Change column ordering
   if(!is.null(GroupVariables)) {
     data.table::setcolorder(data,
@@ -5791,28 +5791,28 @@ AutoMLTS <- function(data,
                             c(eval(DateColumnName),
                               eval(TargetColumnName)))
   }
-
-
+  
+  
   # Convert to lubridate as_date() or POSIXct----
   if (tolower(TimeUnit) != "hour") {
     data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
   }
-
+  
   # Define NumSets
   NumSets <- length(SplitRatios)
-
+  
   # Set max vals----
   val <- max(Lags,MA_Periods)
-
+  
   # Ensure data is sorted----
   if(!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
   }
-
+  
   # Create Calendar Variables----
   if(CalendarVariables) {
     data <- RemixAutoML::CreateCalendarVariables(
@@ -5831,7 +5831,7 @@ AutoMLTS <- function(data,
                     "quarter",
                     "year"))
   }
-
+  
   # GDL Features----
   if(!is.null(GroupVariables)) {
     data <- RemixAutoML::DT_GDL_Feature_Engineering(
@@ -5864,7 +5864,7 @@ AutoMLTS <- function(data,
       Timer          = FALSE,
       SimpleImpute   = TRUE)
   }
-
+  
   # Prepare data----
   data <- RemixAutoML::ModelDataPrep(
     data,
@@ -5873,12 +5873,12 @@ AutoMLTS <- function(data,
     RemoveDates = FALSE,
     MissFactor = "0",
     MissNum    = -1)
-
+  
   # Subset Data----
   if(DataTruncate) {
     data <- data[val:.N]
   }
-
+  
   # Partition Data----
   if(!is.null(GroupVariables)) {
     DataSets <- RemixAutoML::AutoDataPartition(
@@ -5897,7 +5897,7 @@ AutoMLTS <- function(data,
       StratifyColumnNames = "GroupVar",
       TimeColumnName = eval(DateColumnName))
   }
-
+  
   # Define data sets----
   if(NumSets == 2) {
     train <- DataSets$TrainData
@@ -5907,10 +5907,10 @@ AutoMLTS <- function(data,
     valid <- DataSets$ValidationData
     test  <- DataSets$TestData
   }
-
+  
   # Pass along base data unperturbed----
   dataFuture <- data.table::copy(data)
-
+  
   # Build Model----
   if(NumSets == 2) {
     if (tolower(ModelType) == "catboost") {
@@ -6036,10 +6036,10 @@ AutoMLTS <- function(data,
       }
     }
   }
-
+  
   # Store Model----
   Model <- TestModel$Model
-
+  
   # Update ValidationData and Create Metrics Data----
   TestDataEval <- TestModel$ValidationData
   TestDataEval[, ':=' (Target = NULL, Date = NULL)]
@@ -6049,7 +6049,7 @@ AutoMLTS <- function(data,
     setnames(Metric, "V2", eval(TargetColumnName))
     MetricCollection <- Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
   }
-
+  
   # poisson----
   if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
     if(!is.null(GroupVariables)) {
@@ -6063,7 +6063,7 @@ AutoMLTS <- function(data,
       Metric <- TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # mae----
   if(!is.null(GroupVariables)) {
     TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
@@ -6075,7 +6075,7 @@ AutoMLTS <- function(data,
     TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
     Metric <- TestDataEval[, mean(Metric, na.rm = TRUE)]
   }
-
+  
   # mape----
   if(!is.null(GroupVariables)) {
     TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
@@ -6087,7 +6087,7 @@ AutoMLTS <- function(data,
     TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
     Metric <- TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE))]
   }
-
+  
   # mse----
   if(!is.null(GroupVariables)) {
     TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
@@ -6099,7 +6099,7 @@ AutoMLTS <- function(data,
     TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
     Metric <- TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE))]
   }
-
+  
   # msle----
   if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
     if(!is.null(GroupVariables)) {
@@ -6113,7 +6113,7 @@ AutoMLTS <- function(data,
       Metric <- TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # kl----
   if (MinVal > 0 & min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
     if(!is.null(GroupVariables)) {
@@ -6127,7 +6127,7 @@ AutoMLTS <- function(data,
       Metric <- TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # r2----
   if(!is.null(GroupVariables)) {
     MetricCollection <-
@@ -6138,7 +6138,7 @@ AutoMLTS <- function(data,
   } else {
     Metric <- (TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict))]) ^ 2
   }
-
+  
   # Update GroupVar with Original Columns, reorder columns, add to model objects----
   if(!is.null(GroupVariables)) {
     MetricCollection[
@@ -6151,7 +6151,7 @@ AutoMLTS <- function(data,
     TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
     TestModel$EvaluationMetricsByGroup
   }
-
+  
   # Store Date Info----
   if(!is.null(GroupVariables)) {
     FutureDateData <- unique(dataFuture[, get(DateColumnName)])
@@ -6164,30 +6164,30 @@ AutoMLTS <- function(data,
       FutureDateData <- c(FutureDateData, max(FutureDateData)+1)
     }
   }
-
+  
   # Row Count----
   if(!is.null(GroupVariables)) {
     N <- data[, .N, by = "GroupVar"][, max(N)]
   } else {
     N <- data[, .N]
   }
-
+  
   # Begin loop for generating forecasts----
   for(i in seq_len(FC_Periods)) {
-
+    
     # Row counts----
     if(i != 1) {
       N <- N + 1
     }
-
+    
     # Generate predictions----
     if(i == 1) {
       Preds <- RemixAutoML::AutoCatBoostScoring(
         TargetType = "regression",
         ScoringData = data,
-        FeatureColNames = setdiff(names(data),
-                                  c(eval(DateColumnName),
-                                    eval(TargetColumnName))),
+        FeatureColumnNames = setdiff(names(data),
+                                     c(eval(DateColumnName),
+                                       eval(TargetColumnName))),
         IDcols = NULL,
         Model = Model,
         ModelPath = getwd(),
@@ -6198,7 +6198,7 @@ AutoMLTS <- function(data,
         MDP_RemoveDates = TRUE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-
+      
       # Update data----
       UpdateData <- cbind(FutureDateData[i:N],
                           data[, get(TargetColumnName)], Preds)
@@ -6215,7 +6215,7 @@ AutoMLTS <- function(data,
         Preds <- RemixAutoML::AutoCatBoostScoring(
           TargetType = "regression",
           ScoringData = temp,
-          FeatureColNames = setdiff(
+          FeatureColumnNames = setdiff(
             names(temp),
             c("Predictions",
               eval(DateColumnName),
@@ -6230,7 +6230,7 @@ AutoMLTS <- function(data,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
-
+        
         # Update data group case----
         data.table::setnames(Preds, "Predictions", "Preds")
         Preds <- cbind(UpdateData[ID == N], Preds)
@@ -6257,7 +6257,7 @@ AutoMLTS <- function(data,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
-
+        
         # Update data non-group case----
         data.table::set(UpdateData,
                         i = N,
@@ -6265,12 +6265,12 @@ AutoMLTS <- function(data,
                         value = Preds[[1]])
       }
     }
-
+    
     # Timer----
     if(Timer) {
       print(paste("Forecast future step: ",i))
     }
-
+    
     # Create single future record----
     d <- max(UpdateData[[eval(DateColumnName)]])
     if (tolower(TimeUnit) == "hour") {
@@ -6286,7 +6286,7 @@ AutoMLTS <- function(data,
     } else if (tolower(TimeUnit) == "year") {
       CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
     }
-
+    
     # Prepare for more feature engineering----
     data.table::setnames(CalendarFeatures, "V1", eval(DateColumnName))
     CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
@@ -6294,7 +6294,7 @@ AutoMLTS <- function(data,
       CalendarFeatures <- cbind(GroupVarVector, CalendarFeatures)
       data.table::setnames(CalendarFeatures, "GroupVarVector", "GroupVar")
     }
-
+    
     # Add calendar variables----
     if(CalendarVariables) {
       CalendarFeatures <- RemixAutoML::CreateCalendarVariables(
@@ -6313,7 +6313,7 @@ AutoMLTS <- function(data,
                       "quarter",
                       "year"))
     }
-
+    
     # Update features for next run----
     if(i != max(FC_Periods)) {
       temp <- cbind(CalendarFeatures, 1)
@@ -6326,7 +6326,7 @@ AutoMLTS <- function(data,
       setnames(temp, c("V2"), c(eval(TargetColumnName)))
       UpdateData <- data.table::rbindlist(
         list(UpdateData,temp), fill = TRUE)
-
+      
       # Update Lags and MA's----
       if(!is.null(GroupVariables)) {
         UpdateData <- UpdateData[order(GroupVar, get(DateColumnName))]
@@ -6354,7 +6354,7 @@ AutoMLTS <- function(data,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1)
-
+        
         # Not lining up - Updatedata and Temporary
         UpdateData <- data.table::rbindlist(
           list(UpdateData[ID != 1], Temporary), use.names = TRUE)
@@ -6388,10 +6388,10 @@ AutoMLTS <- function(data,
       }
     }
   }
-
+  
   # Metrics----
   EvalMetric <- TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
-
+  
   # Define plot theme----
   Temp <- function () {
     ggplot2::theme(axis.title = ggplot2::element_text(size = 11),
@@ -6418,7 +6418,7 @@ AutoMLTS <- function(data,
                    plot.caption = ggplot2::element_text(size = 9,
                                                         hjust = 0, face = "italic"))
   }
-
+  
   # Data Manipulation----
   if(!is.null(GroupVariables)) {
     PlotData <- data.table::copy(UpdateData)
@@ -6432,7 +6432,7 @@ AutoMLTS <- function(data,
     data.table::set(PlotData, i = (data[, .N]+1):PlotData[, .N], j = 2, value = NA)
     data.table::set(PlotData, i = 1:data[, .N], j = 3, value = NA)
   }
-
+  
   # Plot Time Series----
   TimeSeriesPlot <-
     ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[[eval(DateColumnName)]])) +
@@ -6440,7 +6440,7 @@ AutoMLTS <- function(data,
                                     color = "Actual")) +
     ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]],
                                     color = "Forecast"))
-
+  
   # Modify title----
   if(!is.null(GroupVariables)) {
     TimeSeriesPlot <- TimeSeriesPlot +
@@ -6481,10 +6481,10 @@ AutoMLTS <- function(data,
                                    values = c("red","blue")) +
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   }
-
+  
   # Return data----
   if(!is.null(GroupVariables)) {
-
+    
     # Variables to keep----
     keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
     UpdateData <- UpdateData[, ..keep]
@@ -6494,7 +6494,7 @@ AutoMLTS <- function(data,
                 TimeSeriesPlot = TimeSeriesPlot,
                 ModelInformation = TestModel))
   } else {
-
+    
     # Variables to keep----
     keep <- c(eval(DateColumnName), "Predictions")
     return(list(Forecast = PlotData[, ..keep],
@@ -8657,16 +8657,16 @@ DT_GDL_Feature_Engineering <- function(data,
       } else {
         for (l in seq_along(lags)) {
           if (l == 1) {
-              data.table::set(data, j = paste0(timeDiffTarget,"_", lags[l]),
-                              value = as.numeric(
-                                difftime(
-                                  data[[eval(sortDateName)]],
-                                  data[[eval(paste0("TEMP", lags[l]))]],
-                                  units = eval(timeAgg))))
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
+            data.table::set(data, j = paste0(timeDiffTarget,"_", lags[l]),
+                            value = as.numeric(
+                              difftime(
+                                data[[eval(sortDateName)]],
+                                data[[eval(paste0("TEMP", lags[l]))]],
+                                units = eval(timeAgg))))
+            CounterIndicator <- CounterIndicator + 1
+            if (Timer) {
+              print(CounterIndicator / runs)
+            }
           } else {
             data.table::set(data, j = paste0(timeDiffTarget,"_",lags[l]),
                             value = as.numeric(
@@ -15585,9 +15585,9 @@ AutoCatBoostClassifier <- function(data,
                                      Target == 1 |
                                      p1 < i & Target == 0, 1, 0)])
     data.table::set(x,
-        i = j,
-        j = 2L,
-        value = round(Accuracy, 4))
+                    i = j,
+                    j = 2L,
+                    value = round(Accuracy, 4))
   }
   data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
   x <- x[1,]
@@ -21672,113 +21672,113 @@ AutoXGBoostRegression <- function(data,
   # Regression Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE, 
+                        SaveFactorLevels = TRUE,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
 
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = FALSE, 
-                        SavePath = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = FALSE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
     }
   }
@@ -22622,113 +22622,113 @@ AutoXGBoostClassifier <- function(data,
   # Binary Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE, 
+                        SaveFactorLevels = TRUE,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
 
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = FALSE, 
-                        SavePath = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = FALSE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
     }
   }
@@ -23754,113 +23754,113 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Dummify dataTrain Categorical Features----
   if(SaveModelObjects) {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE, 
+                        SaveFactorLevels = TRUE,
                         SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = NULL)
     }
   } else {
     if(!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "VALIDATE")
-      data.table::set(TestData, 
+      data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = "TEST")
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = TRUE, 
-                        SavePath = TRUE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = TRUE,
+                        SavePath = TRUE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
       TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData, 
-                      j = "ID_Factorizer", 
+      data.table::set(TestData,
+                      j = "ID_Factorizer",
                       value = NULL)
 
     } else {
-      data.table::set(dataTrain, 
+      data.table::set(dataTrain,
                       j = "ID_Factorizer",
                       value = "TRAIN")
-      data.table::set(dataTest, 
+      data.table::set(dataTest,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(data = temp, 
-                        cols = CatFeatures, 
-                        KeepFactorCols = FALSE, 
-                        OneHot = FALSE, 
-                        SaveFactorLevels = FALSE, 
-                        SavePath = FALSE, 
+      temp <- DummifyDT(data = temp,
+                        cols = CatFeatures,
+                        KeepFactorCols = FALSE,
+                        OneHot = FALSE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = FALSE,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTrain,
+                      j = "ID_Factorizer",
                       value = NULL)
       dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest, 
-                      j = "ID_Factorizer", 
+      data.table::set(dataTest,
+                      j = "ID_Factorizer",
                       value = NULL)
     }
   }
