@@ -5897,7 +5897,7 @@ AutoMLTS <- function(data,
       data,
       NumDataSets = NumSets,
       Ratios = SplitRatios,
-      PartitionType = tolower(PartitionType),
+      PartitionType = "timeseries",
       StratifyColumnNames = "GroupVar",
       TimeColumnName = NULL)
   } else {
@@ -5905,7 +5905,7 @@ AutoMLTS <- function(data,
       data,
       NumDataSets = NumSets,
       Ratios = SplitRatios,
-      PartitionType = tolower(PartitionType),
+      PartitionType = "time",
       StratifyColumnNames = "GroupVar",
       TimeColumnName = eval(DateColumnName))
   }
