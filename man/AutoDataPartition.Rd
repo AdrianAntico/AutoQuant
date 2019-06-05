@@ -15,7 +15,7 @@ AutoDataPartition(data, NumDataSets = 3, Ratios = c(0.7, 0.2, 0.1),
 
 \item{Ratios}{Typically your customer ID}
 
-\item{PartitionType}{Set to either "random" or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.}
+\item{PartitionType}{Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.}
 
 \item{StratifyColumnNames}{Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option}
 
