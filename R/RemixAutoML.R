@@ -5700,6 +5700,7 @@ AutoTS <- function(data,
 #' @param Lags Select the periods for all lag variables you want to create. E.g. I use this for weekly data c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. I use this for weekly data c(1:5,52)
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
+#' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
@@ -5722,6 +5723,7 @@ AutoTS <- function(data,
 #'                     Lags = c(1:5,52),
 #'                     MA_Periods = c(1:5,52),
 #'                     CalendarVariables = TRUE,
+#'                     TimeTrendVariable = TRUE,
 #'                     DataTruncate = FALSE,
 #'                     SplitRatios = c(1-2*30/143,30/143,30/143),
 #'                     TaskType = "GPU",
@@ -5747,6 +5749,7 @@ AutoMLTS <- function(data,
                      Lags = c(1:5,52),
                      MA_Periods = c(1:5,52),
                      CalendarVariables = FALSE,
+                     TimeTrendVariable = TRUE,
                      DataTruncate = FALSE,
                      SplitRatios = c(0.7,0.2,0.1),
                      TaskType = "GPU",
@@ -5865,6 +5868,15 @@ AutoMLTS <- function(data,
       SimpleImpute   = TRUE)
   }
 
+  # TimeTrend Variable----
+  if(TimeTrendVariable) {
+    if(!is.null(GroupVariables)) {
+      data[, TimeTrend := 1:.N, by = "GroupVar"]
+    } else {
+      data[, TimeTrend := 1:.N]
+    }
+  }
+
   # Prepare data----
   data <- RemixAutoML::ModelDataPrep(
     data,
@@ -5885,7 +5897,7 @@ AutoMLTS <- function(data,
       data,
       NumDataSets = NumSets,
       Ratios = SplitRatios,
-      PartitionType = "random",
+      PartitionType = tolower(PartitionType),
       StratifyColumnNames = "GroupVar",
       TimeColumnName = NULL)
   } else {
@@ -6046,7 +6058,7 @@ AutoMLTS <- function(data,
   MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
   if(!is.null(GroupVariables)) {
     Metric <- TestDataEval[, .(GroupVar, get(TargetColumnName), Predict)]
-    setnames(Metric, "V2", eval(TargetColumnName))
+    data.table::setnames(Metric, "V2", eval(TargetColumnName))
     MetricCollection <- Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
   }
 
@@ -6314,6 +6326,11 @@ AutoMLTS <- function(data,
                       "year"))
     }
 
+    # Add TimeTrendVariable----
+    if(TimeTrendVariable) {
+      CalendarFeatures[, TimeTrend := N + 1]
+    }
+
     # Update features for next run----
     if(i != max(FC_Periods)) {
       temp <- cbind(CalendarFeatures, 1)
@@ -6323,7 +6340,7 @@ AutoMLTS <- function(data,
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
       temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-      setnames(temp, c("V2"), c(eval(TargetColumnName)))
+      data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
       UpdateData <- data.table::rbindlist(
         list(UpdateData,temp), fill = TRUE)
 
@@ -6386,6 +6403,7 @@ AutoMLTS <- function(data,
         UpdateData <- data.table::rbindlist(
           list(UpdateData, Temporary), use.names = TRUE)
       }
+      gc()
     }
     gc()
   }
@@ -24489,6 +24507,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(ReturnFeatures) {
     predict <- cbind(predict,ScoringMerge)
   }
+
+  # Garbage Collection----
+  gc()
 
   # Return data----
   return(predict)
