@@ -14371,14 +14371,14 @@ AutoRecommenderScoring <- function(data,
   return(results)
 }
 
-#' The AutoRecomScoring function scores recommender models from AutoRecommender()
+#' The AutoDataPartition function
 #'
 #' This function will take your ratings matrix and model and score your data in parallel.
 #' @author Adrian Antico and Douglas Pestana
 #' @family Feature Engineering
-#' @param data The binary ratings matrix from RecomDataCreate()
-#' @param NumDataSets The winning model returned from AutoRecommender()
-#' @param Ratios Typically your customer ID
+#' @param data Source data to do your partitioning on
+#' @param NumDataSets The number of total data sets you want built
+#' @param Ratios A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)
 #' @param PartitionType Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
 #' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
 #' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
