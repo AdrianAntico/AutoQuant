@@ -1,7 +1,7 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 1.2.1
-Date: 2019-05-01
+Version: 1.5.0
+Date: 2019-06-03
 Authors@R: 
     c(person(given = "Adrian",
              family = "Antico",
@@ -30,6 +30,7 @@ BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Depends: 
     R (>= 3.5.0)
 Imports: 
+    catboost,
     caTools,
     data.table,
     doParallel,
@@ -40,6 +41,7 @@ Imports:
     h2o,
     itertools,
     lubridate,
+    magick,
     methods,
     monreg,
     parallel,
@@ -60,8 +62,7 @@ Suggests:
     knitr,
     rmarkdown,
     sde,
-    testthat,
-    catboost
+    testthat
 VignetteBuilder: 
     knitr
 Additional_repositories: 
@@ -71,6 +72,6 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 NeedsCompilation: no
-Packaged: 2019-05-01
+Packaged: 2019-06-03
 RoxygenNote: 6.1.1
 SystemRequirements: Java (>= 7.0)
