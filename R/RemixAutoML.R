@@ -14379,7 +14379,7 @@ AutoRecommenderScoring <- function(data,
 #' @param data The binary ratings matrix from RecomDataCreate()
 #' @param NumDataSets The winning model returned from AutoRecommender()
 #' @param Ratios Typically your customer ID
-#' @param PartitionType Set to either "random" or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
+#' @param PartitionType Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
 #' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
 #' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
 #' @return Returns a list of data.tables
@@ -14494,6 +14494,50 @@ AutoDataPartition <- function(data,
       } else {
         DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
           data[RowList[[i]]]
+      }
+    }
+  } else if(tolower(PartitionType) == "timeseries" & !is.null(StratifyColumnNames)) {
+    # Initialize DataCollect
+    DataCollect <- list()
+
+    # Add ID by Strata Groups
+    data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
+
+    # Ensure row counts are all equal by strata
+    if(var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
+      return("There are an unequal number of records by strata.
+             PartitionType 'timeseries' requires equal number of observations for each strata")
+    }
+
+    # Get Total Row Count
+    Rows <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+
+    # Figure out which rows go to which data set
+    for (i in NumDataSets:1) {
+      if (i == 1) {
+        DataCollect[["TrainData"]] <- data
+      } else if (i == 2) {
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+        NumRows <- floor(Ratios[i] * Rows)
+        DataCollect[["ValidationData"]] <-
+          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
+        DataCollect[["ValidationData"]] <- DataCollect[["ValidationData"]][, ID := NULL]
+        data <- data[-((RowEnd - NumRows + 1):RowEnd)][, ID := NULL]
+      } else if (i == 3) {
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+        NumRows <- floor(Ratios[i] * Rows)
+        DataCollect[["TestData"]] <-
+          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
+        DataCollect[["TestData"]] <- DataCollect[["TestData"]][, ID := NULL]
+        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
+      } else {
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+        NumRows <- floor(Ratios[i] * Rows)
+        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
+          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
+        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
+          DataCollect[[paste0("TestData", NumDataSets - 2)]][, ID := NULL]
+        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
       }
     }
   } else {
