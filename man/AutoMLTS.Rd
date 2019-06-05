@@ -8,10 +8,11 @@ AutoMLTS(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
   FC_Periods = 30, TimeUnit = "week", Lags = c(1:5, 52),
   MA_Periods = c(1:5, 52), CalendarVariables = FALSE,
-  DataTruncate = FALSE, SplitRatios = c(0.7, 0.2, 0.1),
-  TaskType = "GPU", EvalMetric = "MAPE", GridTune = FALSE,
-  GridEvalMetric = "mape", ModelCount = 1, ModelType = "catboost",
-  NTrees = 1000, PartitionType = "time", Timer = TRUE)
+  TimeTrendVariable = TRUE, DataTruncate = FALSE,
+  SplitRatios = c(0.7, 0.2, 0.1), TaskType = "GPU",
+  EvalMetric = "MAPE", GridTune = FALSE, GridEvalMetric = "mape",
+  ModelCount = 1, ModelType = "catboost", NTrees = 1000,
+  PartitionType = "time", Timer = TRUE)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
@@ -31,6 +32,8 @@ AutoMLTS(data, TargetColumnName = "Target",
 \item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. I use this for weekly data c(1:5,52)}
 
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
+
+\item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
@@ -71,6 +74,7 @@ Results <- AutoMLTS(data,
                     Lags = c(1:5,52),
                     MA_Periods = c(1:5,52),
                     CalendarVariables = TRUE,
+                    TimeTrendVariable = TRUE,
                     DataTruncate = FALSE,
                     SplitRatios = c(1-2*30/143,30/143,30/143),
                     TaskType = "GPU",
