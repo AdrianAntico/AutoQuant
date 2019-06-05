@@ -2,18 +2,18 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoDataPartition}
 \alias{AutoDataPartition}
-\title{The AutoRecomScoring function scores recommender models from AutoRecommender()}
+\title{The AutoDataPartition function}
 \usage{
 AutoDataPartition(data, NumDataSets = 3, Ratios = c(0.7, 0.2, 0.1),
   PartitionType = "random", StratifyColumnNames = NULL,
   TimeColumnName = NULL)
 }
 \arguments{
-\item{data}{The binary ratings matrix from RecomDataCreate()}
+\item{data}{Source data to do your partitioning on}
 
-\item{NumDataSets}{The winning model returned from AutoRecommender()}
+\item{NumDataSets}{The number of total data sets you want built}
 
-\item{Ratios}{Typically your customer ID}
+\item{Ratios}{A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)}
 
 \item{PartitionType}{Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.}
 
