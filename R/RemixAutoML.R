@@ -2165,9 +2165,8 @@ AutoTS <- function(data,
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
-    SkipModels <- c(SkipModels, "PROPHET")
-    if (length(SkipModels) == 8)
-      return("Prophet doesn't run on hourly data. Choose other models.")
+    if (length(SkipModels) == 7)
+      return("Need to select at least one model to run")
   }
 
   # Ensure data is sorted
@@ -2256,7 +2255,6 @@ AutoTS <- function(data,
                                     lambda = NULL)
     }
   }
-
 
   # Begin model building
   if (!("DSHW" %in% toupper(SkipModels))) {
@@ -5746,10 +5744,10 @@ AutoMLTS <- function(data,
                      GroupVariables = NULL,
                      FC_Periods = 30,
                      TimeUnit = "week",
-                     Lags = c(1:5,52),
-                     MA_Periods = c(1:5,52),
+                     Lags = c(1:5),
+                     MA_Periods = c(1:5),
                      CalendarVariables = FALSE,
-                     TimeTrendVariable = TRUE,
+                     TimeTrendVariable = FALSE,
                      DataTruncate = FALSE,
                      SplitRatios = c(0.7,0.2,0.1),
                      TaskType = "GPU",
@@ -5759,11 +5757,20 @@ AutoMLTS <- function(data,
                      ModelCount = 1,
                      ModelType = "catboost",
                      NTrees = 1000,
-                     PartitionType = "time",
+                     PartitionType = "timeseries",
                      Timer = TRUE) {
 
   # Load catboost----
   loadNamespace(package = "catboost")
+
+  # Check arguments----
+  if(!(tolower(PartitionType) %chin% c("random","time","timeseries"))) {
+    return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
+  }
+  if(tolower(PartitionType) == "timeseries" & is.null(GroupVariables)) {
+    PartitionType <- "time"
+    warning("PartitionType was converted to 'time' because there were no GroupVariables")
+  }
 
   # Convert to data.table----
   if(!data.table::is.data.table(data)) {
@@ -5892,7 +5899,7 @@ AutoMLTS <- function(data,
   }
 
   # Partition Data----
-  if(!is.null(GroupVariables)) {
+  if(tolower(PartitionType) == "timeseries") {
     DataSets <- RemixAutoML::AutoDataPartition(
       data,
       NumDataSets = NumSets,
@@ -5900,13 +5907,31 @@ AutoMLTS <- function(data,
       PartitionType = "timeseries",
       StratifyColumnNames = "GroupVar",
       TimeColumnName = NULL)
+  } else if(tolower(PartitionType) == "random") {
+    if(!is.null(GroupVariables)) {
+      DataSets <- RemixAutoML::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = SplitRatios,
+        PartitionType = "random",
+        StratifyColumnNames = "GroupVar",
+        TimeColumnName = eval(DateColumnName))
+    } else {
+      DataSets <- RemixAutoML::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = SplitRatios,
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = eval(DateColumnName))
+    }
   } else {
     DataSets <- RemixAutoML::AutoDataPartition(
       data,
       NumDataSets = NumSets,
       Ratios = SplitRatios,
       PartitionType = "time",
-      StratifyColumnNames = "GroupVar",
+      StratifyColumnNames = NULL,
       TimeColumnName = eval(DateColumnName))
   }
 
@@ -14431,8 +14456,8 @@ AutoDataPartition <- function(data,
   if (sum(Ratios) != 1.0) {
     warning("The sum of Ratios needs to equal 1.0")
   }
-  if (!(tolower(PartitionType) %chin% c("random", "time"))) {
-    warning("PartitionType needs to be either 'random' or 'time'.")
+  if (!(tolower(PartitionType) %chin% c("random", "time","timeseries"))) {
+    warning("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
   }
   if (!is.null(StratifyColumnNames)) {
     if (!is.character(StratifyColumnNames)) {
@@ -14599,7 +14624,7 @@ AutoDataPartition <- function(data,
 
 #' AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system
 #'
-#' AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+#' AutoCatBoostClassifier is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train, validation, and test sets (if not supplied). Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions (on test data), an ROC plot, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param data This is your data set for training and testing your model
