@@ -21778,7 +21778,7 @@ AutoXGBoostRegression <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -21805,7 +21805,7 @@ AutoXGBoostRegression <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -21832,8 +21832,8 @@ AutoXGBoostRegression <- function(data,
                         cols = CatFeatures,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -21861,7 +21861,7 @@ AutoXGBoostRegression <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = FALSE,
-                        SavePath = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -22728,7 +22728,7 @@ AutoXGBoostClassifier <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -22755,7 +22755,7 @@ AutoXGBoostClassifier <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -22782,8 +22782,8 @@ AutoXGBoostClassifier <- function(data,
                         cols = CatFeatures,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -22811,7 +22811,7 @@ AutoXGBoostClassifier <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = FALSE,
-                        SavePath = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -23860,7 +23860,7 @@ AutoXGBoostMultiClass <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -23887,7 +23887,7 @@ AutoXGBoostMultiClass <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SavePath = model_path,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -23914,8 +23914,8 @@ AutoXGBoostMultiClass <- function(data,
                         cols = CatFeatures,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
-                        SaveFactorLevels = TRUE,
-                        SavePath = TRUE,
+                        SaveFactorLevels = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -23943,7 +23943,7 @@ AutoXGBoostMultiClass <- function(data,
                         KeepFactorCols = FALSE,
                         OneHot = FALSE,
                         SaveFactorLevels = FALSE,
-                        SavePath = FALSE,
+                        SavePath = NULL,
                         ImportFactorLevels = FALSE)
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
