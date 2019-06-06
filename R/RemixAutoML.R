@@ -24433,6 +24433,11 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     }
   }
 
+  # IDcols conversion----
+  if(is.numeric(IDcols) | is.integer(IDcols)) {
+    IDcols <- names(data)[IDcols]
+  }
+
   # ScoringData Subset Columns Needed----
   if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
     keep1 <- names(ScoringData)[c(FeatureColumnNames)]
@@ -24619,6 +24624,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     warning("MDP_MissNum should be a numeric or integer value")
   }
 
+  # IDcols conversion----
+  if(is.numeric(IDcols) | is.integer(IDcols)) {
+    IDcols <- names(data)[IDcols]
+  }
+
   # ScoringData Subset Columns Needed----
   if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
     keep1 <- names(ScoringData)[c(FeatureColumnNames)]
@@ -24784,6 +24794,11 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
   if(!is.numeric(MDP_MissNum)) {
     warning("MDP_MissNum should be a numeric or integer value")
+  }
+
+  # IDcols conversion----
+  if(is.numeric(IDcols) | is.integer(IDcols)) {
+    IDcols <- names(data)[IDcols]
   }
 
   # ScoringData Subset Columns Needed----
