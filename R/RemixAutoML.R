@@ -1294,6 +1294,9 @@ DummifyDT <- function(data,
       inds <- sort(unique(data[[eval(col)]]))
     }
 
+    # Allocate columns----
+    data.table::alloc.col(data, n = ncol(data) + length(inds))
+
     # Save factor levels for scoring later----
     if(SaveFactorLevels) {
       data.table::fwrite(x = data[, get(col), by = eval(col)][,V1 := NULL],
