@@ -6274,25 +6274,25 @@ AutoTS <- function(data,
     data.table::setcolorder(data, c(2,1))
   }
 
-  # Ensure data is sorted
+  # Ensure data is sorted----
   data <- data[order(get(DateName))]
 
-  # Change Target Name
+  # Change Target Name----
   TempTargetName <- TargetName
   data.table::setnames(data, paste0(eval(TargetName)), "Target")
   TargetName <- "Target"
 
-  # Create Training data
+  # Create Training data----
   data_train <- data[1:(nrow(data) - HoldOutPeriods)]
 
-  # Create Test data
+  # Create Test data----
   data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
 
   # Check for different time aggregations
   MaxDate <- data[, max(get(DateName))]
   FC_Data <- data.table::data.table(Date = seq(1:FCPeriods))
 
-  # Define TS Frequency
+  # Define TS Frequency----
   if (tolower(TimeUnit) == "hour") {
     freq <- 24
     FC_Data[, Date := MaxDate + lubridate::hours(Date)]
@@ -6316,19 +6316,19 @@ AutoTS <- function(data,
     quarter, or year")
   }
 
-  # Coerce SLags if too large
+  # Coerce SLags if too large----
   if (freq * SLags > nrow(data_train)) {
     SLags <- floor(nrow(data_train) / freq)
   }
 
-  # Convert data.tables to stats::ts objects
+  # Convert data.tables to stats::ts objects----
   # User Supplied Frequency
   dataTSTrain <-
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = freq)
 
-  # TSClean Version
+  # TSClean Version----
   if (TSClean) {
     if (MinVal > 0) {
       Target <- forecast::tsclean(x = dataTSTrain[, TargetName],
@@ -6341,7 +6341,7 @@ AutoTS <- function(data,
     }
   }
 
-  # Model-Based Frequency
+  # Model-Based Frequency----
   SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
   dataTSTrain1 <-
     stats::ts(data = data_train,
@@ -6361,9 +6361,8 @@ AutoTS <- function(data,
     }
   }
 
-  # Begin model building
+  # DSHW-------------
   if (!("DSHW" %in% toupper(SkipModels))) {
-    # ARFIMA-------------
     # 1)
     if (PrintUpdates)
       message("DSHW FITTING")
@@ -6692,7 +6691,7 @@ AutoTS <- function(data,
     }
   }
 
-  # ARFIMA Modeling
+  # ARFIMA Modeling----
   if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
@@ -7186,7 +7185,7 @@ AutoTS <- function(data,
     }
   }
 
-  # Arima
+  # Arima----
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
@@ -7711,6 +7710,7 @@ AutoTS <- function(data,
     }
   }
 
+  # ETS----
   if (!("ETS" %in% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
@@ -8118,6 +8118,7 @@ AutoTS <- function(data,
     }
   }
 
+  # TBATS----
   if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
     # 1)
@@ -8451,6 +8452,7 @@ AutoTS <- function(data,
     }
   }
 
+  # TSLM----
   if (!("TSLM" %in% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
     # 1)
@@ -8703,6 +8705,7 @@ AutoTS <- function(data,
     }
   }
 
+  # NNET----
   if (!("NNET" %in% toupper(SkipModels))) {
     # Neural Network-------------
     # 1)
@@ -9219,17 +9222,17 @@ AutoTS <- function(data,
     by = "ModelName"][order(MSE)][, ID := 1:.N]
   }
 
-  # Grab Winning Model
+  # Grab Winning Model----
   BestModel <- Eval[1, "ModelName"][[1]]
 
   # Generate Forecasts----
   if (PrintUpdates)
     message("GENERATE FORECASTS")
 
-  # Create Training data
+  # Create Training data----
   data_train <- data[seq_len(nrow(data))]
 
-  # Create Full Training Data for Final Rebruild
+  # Create Full Training Data for Final Rebruild----
   if (grepl("ModelFreq", BestModel)) {
     if (grepl("TSC", BestModel)) {
       if (MinVal > 0) {
@@ -14858,17 +14861,6 @@ AutoCatBoostClassifier <- function(data,
     }
   }
 
-  # Binary Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
-
-  # Binary Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
-    }
-  }
-
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -14954,6 +14946,17 @@ AutoCatBoostClassifier <- function(data,
       TestData <- TestData[, ..keep]
     } else {
       TestMerge <- data.table::copy(TestData)
+    }
+  }
+
+  # Binary Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                        as.numeric(which(sapply(data, is.character)))))
+
+  # Binary Convert CatFeatures to 1-indexed----
+  if (length(CatFeatures) > 0) {
+    for (i in seq_len(length(CatFeatures))) {
+      CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
 
@@ -15989,17 +15992,6 @@ AutoCatBoostRegression <- function(data,
     }
   }
 
-  # Regression Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
-
-  # Regression Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
-    }
-  }
-
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -16084,6 +16076,17 @@ AutoCatBoostRegression <- function(data,
       TestData <- TestData[, ..keep]
     } else {
       TestMerge <- data.table::copy(TestData)
+    }
+  }
+
+  # Regression Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))),
+                        as.numeric(which(sapply(dataTrain, is.character)))))
+
+  # Regression Convert CatFeatures to 1-indexed----
+  if (length(CatFeatures) > 0) {
+    for (i in seq_len(length(CatFeatures))) {
+      CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
 
@@ -16906,19 +16909,6 @@ AutoCatBoostMultiClass <- function(data,
     }
   }
 
-  # Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
-  TargetNum <- which(names(data) == Target)
-  CatFeatures <- setdiff(CatFeatures,TargetNum)
-
-  # MultiClass Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
-    }
-  }
-
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -17003,6 +16993,19 @@ AutoCatBoostMultiClass <- function(data,
       TestData <- TestData[, ..keep]
     } else {
       TestMerge <- data.table::copy(TestData)
+    }
+  }
+
+  # Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                        as.numeric(which(sapply(data, is.character)))))
+  TargetNum <- which(names(data) == Target)
+  CatFeatures <- setdiff(CatFeatures,TargetNum)
+
+  # MultiClass Convert CatFeatures to 1-indexed----
+  if (length(CatFeatures) > 0) {
+    for (i in seq_len(length(CatFeatures))) {
+      CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
 
