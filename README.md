@@ -91,6 +91,8 @@ AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and
 ##### **AutoH2oDRFMultiClass()**
 AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
 
+### Scoring the Auto__() supervised learning models:
+
 ##### **AutoCatBoostScoring()**
 AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 
@@ -98,6 +100,7 @@ AutoCatBoostScoring is an automated scoring function that compliments the AutoCa
 AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 
 ##### **AutoH2oScoring()**
+AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring.
 
 ### General Purpose H2O Automated Modeling:
 ##### **AutoH2OModeler()**
