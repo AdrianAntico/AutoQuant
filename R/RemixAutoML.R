@@ -6255,6 +6255,10 @@ AutoTS <- function(data,
     data <- data.table::as.data.table(data)
   }
 
+  # Ensure correct ordering and subsetting of data
+  keep <- c(DateName,TargetName)
+  data <- data[, ..keep]
+
   # Check for min value of data
   MinVal <- data[, min(get(TargetName))]
 
@@ -6263,8 +6267,11 @@ AutoTS <- function(data,
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
-    if (length(SkipModels) == 7)
-      return("Need to select at least one model to run")
+  }
+
+  # Correct ordering----
+  if(is.numeric(data[[1]]) | is.integer(data[[1]])) {
+    data.table::setcolorder(data, c(2,1))
   }
 
   # Ensure data is sorted
