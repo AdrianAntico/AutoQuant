@@ -24448,31 +24448,30 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     IDcols <- names(data)[IDcols]
   }
 
-  # ScoringData Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
+  # Subset Columns Needed----
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
+      keep <- c(IDcols, keep1, Target)
     } else {
-      keep <- c(keep1)
+      keep <- c(keep1, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
   } else {
-    keep1 <- c(FeatureColumnNames)
+    keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
+      keep <- c(IDcols, FeatureColNames, Target)
     } else {
-      keep <- c(FeatureColumnNames)
+      keep <- c(FeatureColNames, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
+  }
+  if (!is.null(IDcols)) {
+    ScoringMerge <- data.table::copy(ScoringData)
+    keep <- c(keep1, Target)
+    ScoringData <- ScoringData[, ..keep]
+  } else {
+    ScoringMerge <- data.table::copy(ScoringData)
   }
 
   # Initialize Catboost Data Conversion----
@@ -24639,31 +24638,30 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     IDcols <- names(data)[IDcols]
   }
 
-  # ScoringData Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
+  # Subset Columns Needed----
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
+      keep <- c(IDcols, keep1, Target)
     } else {
-      keep <- c(keep1)
+      keep <- c(keep1, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
   } else {
-    keep1 <- c(FeatureColumnNames)
+    keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
+      keep <- c(IDcols, FeatureColNames, Target)
     } else {
-      keep <- c(FeatureColumnNames)
+      keep <- c(FeatureColNames, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
+  }
+  if (!is.null(IDcols)) {
+    ScoringMerge <- data.table::copy(ScoringData)
+    keep <- c(keep1, Target)
+    ScoringData <- ScoringData[, ..keep]
+  } else {
+    ScoringMerge <- data.table::copy(ScoringData)
   }
 
   # Binary Identify column numbers for factor variables----
@@ -24811,31 +24809,30 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     IDcols <- names(data)[IDcols]
   }
 
-  # ScoringData Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
+  # Subset Columns Needed----
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
+      keep <- c(IDcols, keep1, Target)
     } else {
-      keep <- c(keep1)
+      keep <- c(keep1, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
   } else {
-    keep1 <- c(FeatureColumnNames)
+    keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
+      keep <- c(IDcols, FeatureColNames, Target)
     } else {
-      keep <- c(FeatureColumnNames)
+      keep <- c(FeatureColNames, Target)
     }
     ScoringData <- ScoringData[, ..keep]
-    if(ReturnFeatures) {
-      ScoringMerge <- data.table::copy(ScoringData)
-      ScoringData <- ScoringData[, ..keep1]
-    }
+  }
+  if (!is.null(IDcols)) {
+    ScoringMerge <- data.table::copy(ScoringData)
+    keep <- c(keep1, Target)
+    ScoringData <- ScoringData[, ..keep]
+  } else {
+    ScoringMerge <- data.table::copy(ScoringData)
   }
 
   # ModelDataPrep Check----
