@@ -24452,23 +24452,23 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1, Target)
+      keep <- c(IDcols, keep1)
     } else {
-      keep <- c(keep1, Target)
+      keep <- c(keep1)
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
     keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames, Target)
+      keep <- c(IDcols, FeatureColNames)
     } else {
-      keep <- c(FeatureColNames, Target)
+      keep <- c(FeatureColNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
   if (!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1, Target)
+    keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
@@ -24642,23 +24642,23 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1, Target)
+      keep <- c(IDcols, keep1)
     } else {
-      keep <- c(keep1, Target)
+      keep <- c(keep1)
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
     keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames, Target)
+      keep <- c(IDcols, FeatureColNames)
     } else {
-      keep <- c(FeatureColNames, Target)
+      keep <- c(FeatureColNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
   if (!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1, Target)
+    keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
@@ -24813,23 +24813,23 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(ScoringData)[c(FeatureColNames)]
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1, Target)
+      keep <- c(IDcols, keep1)
     } else {
-      keep <- c(keep1, Target)
+      keep <- c(keep1)
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
     keep1 <- c(FeatureColNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames, Target)
+      keep <- c(IDcols, FeatureColNames)
     } else {
-      keep <- c(FeatureColNames, Target)
+      keep <- c(FeatureColNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
   if (!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1, Target)
+    keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
