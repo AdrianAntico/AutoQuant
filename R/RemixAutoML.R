@@ -24449,8 +24449,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColNames)]
+  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
     if (!is.null(IDcols)) {
       keep <- c(IDcols, keep1)
     } else {
@@ -24458,11 +24458,11 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
-    keep1 <- c(FeatureColNames)
+    keep1 <- c(FeatureColumnNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames)
+      keep <- c(IDcols, FeatureColumnNames)
     } else {
-      keep <- c(FeatureColNames)
+      keep <- c(FeatureColumnNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
@@ -24639,8 +24639,8 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColNames)]
+  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
     if (!is.null(IDcols)) {
       keep <- c(IDcols, keep1)
     } else {
@@ -24648,11 +24648,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
-    keep1 <- c(FeatureColNames)
+    keep1 <- c(FeatureColumnNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames)
+      keep <- c(IDcols, FeatureColumnNames)
     } else {
-      keep <- c(FeatureColNames)
+      keep <- c(FeatureColumnNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
@@ -24810,8 +24810,8 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
 
   # Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColNames)]
+  if (is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
+    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
     if (!is.null(IDcols)) {
       keep <- c(IDcols, keep1)
     } else {
@@ -24819,11 +24819,11 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     }
     ScoringData <- ScoringData[, ..keep]
   } else {
-    keep1 <- c(FeatureColNames)
+    keep1 <- c(FeatureColumnNames)
     if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColNames)
+      keep <- c(IDcols, FeatureColumnNames)
     } else {
-      keep <- c(FeatureColNames)
+      keep <- c(FeatureColumnNames)
     }
     ScoringData <- ScoringData[, ..keep]
   }
