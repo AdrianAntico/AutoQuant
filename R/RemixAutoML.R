@@ -25244,7 +25244,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #'   
 #'   # Begin regression model building----
 #'   counter <- 0
-#'   for(bucket in seq_len(length(Buckets) + 1)) {
+#'   for(bucket in rev(seq_len(length(Buckets) + 1))) {
 #' 
 #'     # Filter By Buckets----
 #'     if(bucket == max(seq_len(length(Buckets)+1))) {
