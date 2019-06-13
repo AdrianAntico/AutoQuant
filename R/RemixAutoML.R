@@ -24907,6 +24907,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param GridTune Set to TRUE if you want to grid tune the models
 #' @param NumberModelsInGrid Set to a numeric value for the number of models to try in grid tune
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
+#' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
 AutoGeneralizedHurdleModel <- function(data,
@@ -25098,7 +25099,7 @@ AutoGeneralizedHurdleModel <- function(data,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL
+      PassInGrid = PassInGrid
     )
   } else {
     ClassifierModel <- AutoCatBoostMultiClass(
@@ -25120,7 +25121,7 @@ AutoGeneralizedHurdleModel <- function(data,
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL
+      PassInGrid = PassInGrid
     )
   }
   
@@ -25242,94 +25243,48 @@ AutoGeneralizedHurdleModel <- function(data,
     if(trainBucket[, .N] != 0) {
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0) {
         counter <- counter + 1
-        if(exists("gridSaved")) {
-          if(bucket == max(seq_len(length(Buckets)+1))) {
-            TestModel <- AutoCatBoostRegression(
-              data = trainBucket,
-              ValidationData = validBucket,
-              TestData = testBucket,
-              TargetColumnName = TargetColumnName,
-              FeatureColNames = FeatureNames,
-              PrimaryDateColumn = PrimaryDateColumn,
-              IDcols = IDcols,
-              MaxModelsInGrid = MaxModelsInGrid,
-              task_type = task_type,
-              eval_metric = "RMSE",
-              grid_eval_metric = "r2",
-              Trees = Trees,
-              GridTune = GridTune,
-              model_path = Paths[bucket-1],
-              ModelID = paste0("P6_",bucket-1,"+"),
-              NumOfParDepPlots = NumOfParDepPlots,
-              ReturnModelObjects = TRUE,
-              SaveModelObjects = SaveModelObjects,
-              PassInGrid = gridSaved)
-          } else {
-            TestModel <- AutoCatBoostRegression(
-              data = trainBucket,
-              ValidationData = validBucket,
-              TestData = testBucket,
-              TargetColumnName = TargetColumnName,
-              FeatureColNames = FeatureNames,
-              PrimaryDateColumn = PrimaryDateColumn,
-              IDcols = IDcols,
-              MaxModelsInGrid = MaxModelsInGrid,
-              task_type = task_type,
-              eval_metric = "RMSE",
-              grid_eval_metric = "r2",
-              Trees = Trees,
-              GridTune = GridTune,
-              model_path = Paths[bucket],
-              ModelID = paste0("P6_",bucket),
-              NumOfParDepPlots = NumOfParDepPlots,
-              ReturnModelObjects = TRUE,
-              SaveModelObjects = SaveModelObjects,
-              PassInGrid = gridSaved)
-          }
+        if(bucket == max(seq_len(length(Buckets)+1))) {
+          TestModel <- AutoCatBoostRegression(
+            data = trainBucket,
+            ValidationData = validBucket,
+            TestData = testBucket,
+            TargetColumnName = TargetColumnName,
+            FeatureColNames = FeatureNames,
+            PrimaryDateColumn = PrimaryDateColumn,
+            IDcols = IDcols,
+            MaxModelsInGrid = MaxModelsInGrid,
+            task_type = task_type,
+            eval_metric = "RMSE",
+            grid_eval_metric = "r2",
+            Trees = Trees,
+            GridTune = GridTune,
+            model_path = Paths[bucket-1],
+            ModelID = paste0("P6_",bucket-1,"+"),
+            NumOfParDepPlots = NumOfParDepPlots,
+            ReturnModelObjects = TRUE,
+            SaveModelObjects = SaveModelObjects,
+            PassInGrid = PassInGrid)
         } else {
-          if(bucket == max(seq_len(length(Buckets)+1))) {
-            TestModel <- AutoCatBoostRegression(
-              data = trainBucket,
-              ValidationData = validBucket,
-              TestData = testBucket,
-              TargetColumnName = TargetColumnName,
-              FeatureColNames = FeatureNames,
-              PrimaryDateColumn = PrimaryDateColumn,
-              IDcols = IDcols,
-              MaxModelsInGrid = MaxModelsInGrid,
-              task_type = task_type,
-              eval_metric = "RMSE",
-              grid_eval_metric = "r2",
-              Trees = Trees,
-              GridTune = GridTune,
-              model_path = Paths[bucket-1],
-              ModelID = paste0("P6_",bucket-1,"+"),
-              NumOfParDepPlots = NumOfParDepPlots,
-              ReturnModelObjects = TRUE,
-              SaveModelObjects = SaveModelObjects,
-              PassInGrid = NULL)
-          } else {
-            TestModel <- AutoCatBoostRegression(
-              data = trainBucket,
-              ValidationData = validBucket,
-              TestData = testBucket,
-              TargetColumnName = TargetColumnName,
-              FeatureColNames = FeatureNames,
-              PrimaryDateColumn = PrimaryDateColumn,
-              IDcols = IDcols,
-              MaxModelsInGrid = MaxModelsInGrid,
-              task_type = task_type,
-              eval_metric = "RMSE",
-              grid_eval_metric = "r2",
-              Trees = Trees,
-              GridTune = GridTune,
-              model_path = Paths[bucket],
-              ModelID = paste0("P6_",bucket),
-              NumOfParDepPlots = NumOfParDepPlots,
-              ReturnModelObjects = TRUE,
-              SaveModelObjects = SaveModelObjects,
-              PassInGrid = NULL)
-          }
+          TestModel <- AutoCatBoostRegression(
+            data = trainBucket,
+            ValidationData = validBucket,
+            TestData = testBucket,
+            TargetColumnName = TargetColumnName,
+            FeatureColNames = FeatureNames,
+            PrimaryDateColumn = PrimaryDateColumn,
+            IDcols = IDcols,
+            MaxModelsInGrid = MaxModelsInGrid,
+            task_type = task_type,
+            eval_metric = "RMSE",
+            grid_eval_metric = "r2",
+            Trees = Trees,
+            GridTune = GridTune,
+            model_path = Paths[bucket],
+            ModelID = paste0("P6_",bucket),
+            NumOfParDepPlots = NumOfParDepPlots,
+            ReturnModelObjects = TRUE,
+            SaveModelObjects = SaveModelObjects,
+            PassInGrid = PassInGrid)
         }
         
         # Store Model----
@@ -25345,17 +25300,6 @@ AutoGeneralizedHurdleModel <- function(data,
         # } else {
         #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
         # }
-        
-        # Save Grid if GridTune----
-        if(GridTune) {
-          Grid <- TestModel$GridList
-          GridMet <- TestModel$GridMetrics
-          x <- cbind(Grid,GridMet)
-          data.table::setorderv(x = x, cols = "EvalStat", order = -1, na.last = TRUE)
-          x[, ':=' (EvalStat = NULL, ParamRow = NULL)]
-          grid <- x[1,]
-          data.table::fwrite(grid, paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
-        }
         
         # Score TestData----
         if(bucket == max(seq_len(length(Buckets)+1))) {
