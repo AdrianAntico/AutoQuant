@@ -25441,33 +25441,33 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #'   #        3 Buckets --> 8 columns of preds
 #'   # Secondary logic: for i == 1, need to create the final column first
 #'   #                  for i > 1, need to take the final column and add the product of the next preds
-#'   Cols <- ncol(TestDataWithPreds)
+#'   Cols <- ncol(TestData)
 #'   for(i in seq_len(length(Buckets)+1)) {
 #'     if(length(Buckets) == 1) {
 #'       if(i == 1) {
-#'         data.table::set(TestDataWithPreds,
+#'         data.table::set(TestData,
 #'                         j = "UpdatedPrediction",
-#'                         value = TestDataWithPreds[[(Cols-(4 - i))]] *
-#'                           TestDataWithPreds[[Cols - (2 - i)]])
+#'                         value = TestData[[(Cols-(4 - i))]] *
+#'                           TestData[[Cols - (2 - i)]])
 #'       } else {
-#'         data.table::set(TestDataWithPreds,
+#'         data.table::set(TestData,
 #'                         j = "UpdatedPrediction",
-#'                         value = TestDataWithPreds[["UpdatedPrediction"]] +
-#'                           TestDataWithPreds[[(Cols-(4 - i))]] *
-#'                           TestDataWithPreds[[(Cols-(2 - i))]])
+#'                         value = TestData[["UpdatedPrediction"]] +
+#'                           TestData[[(Cols-(4 - i))]] *
+#'                           TestData[[(Cols-(2 - i))]])
 #'       }
 #'     } else {
 #'       if(i == 1) {
-#'         data.table::set(TestDataWithPreds,
+#'         data.table::set(TestData,
 #'                         j = "UpdatedPrediction",
-#'                         value = TestDataWithPreds[[(Cols-((length(Buckets) + 1) * 2 - i))]] *
-#'                           TestDataWithPreds[[(Cols-((length(Buckets) + 1) - i))]])
+#'                         value = TestData[[(Cols-((length(Buckets) + 1) * 2 - i))]] *
+#'                           TestData[[(Cols-((length(Buckets) + 1) - i))]])
 #'       } else {
-#'         data.table::set(TestDataWithPreds,
+#'         data.table::set(TestData,
 #'                         j = "UpdatedPrediction",
-#'                         value = TestDataWithPreds[["UpdatedPrediction"]] +
-#'                           TestDataWithPreds[[(Cols-((length(Buckets) + 1) * 2 - i))]] *
-#'                           TestDataWithPreds[[(Cols-((length(Buckets) + 1) - i))]])
+#'                         value = TestData[["UpdatedPrediction"]] +
+#'                           TestData[[(Cols-((length(Buckets) + 1) * 2 - i))]] *
+#'                           TestData[[(Cols-((length(Buckets) + 1) - i))]])
 #'       }
 #'     }
 #'   }
