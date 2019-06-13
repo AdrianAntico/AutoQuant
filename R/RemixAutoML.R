@@ -24893,9 +24893,9 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   return(predict)
 }
 
-#' ModelBuilder is a Retrain Function for the Regression Models for the Subsetted Data in P6
+#' AutoGeneralizedHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
 #'
-#' @family Supervised Learning
+#' @family Awesome
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -24909,7 +24909,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param RegressionModels Set to the model of choice. Currently only catboost is available.
 #' @param task_type Set to "GPU" or "CPU"
 #' @param ModelID Define a character name for your models
-#' @param ClassificationModels Set to the model of choice. Currently, only catboost is available. 
+#' @param ClassificationModels Set to the model of choice. Currently, only catboost is available.
 #' @param Paths A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 15000
@@ -24918,7 +24918,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
-GeneralizedHurdleModel <- function(data,
+AutoGeneralizedHurdleModel <- function(data,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    Buckets = c(1,5,10,20),
@@ -25420,4 +25420,4 @@ GeneralizedHurdleModel <- function(data,
   # Return Output----
   return(list(ModelInfo = ModelInformationList,
               FinalTestData = TestData))
-}                      
+}
