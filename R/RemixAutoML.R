@@ -25340,11 +25340,11 @@ AutoGeneralizedHurdleModel <- function(data,
         gc()
         
         # Collect Model Objects----
-        if(bucket == max(seq_len(length(Buckets)+1))) {
-          ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket],"+")]] <- TestModel
-        } else {
-          ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
-        }
+        # if(bucket == max(seq_len(length(Buckets)+1))) {
+        #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket],"+")]] <- TestModel
+        # } else {
+        #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
+        # }
         
         # Save Grid if GridTune----
         if(GridTune) {
