@@ -25196,7 +25196,7 @@ AutoGeneralizedHurdleModel <- function(data,
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
         testBucket <- NULL
       }
-    } else {
+    } else if(bucket == 1) {
       if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
@@ -25205,6 +25205,22 @@ AutoGeneralizedHurdleModel <- function(data,
       } else {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
+        testBucket <- NULL
+      }
+    } else {
+      if(!is.null(TestData)) {
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) &
+                              get(TargetColumnName) > eval(Buckets[bucket-1])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) &
+                                        get(TargetColumnName) > eval(Buckets[bucket-1])]
+        testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) &
+                                 get(TargetColumnName) > eval(Buckets[bucket-1])]
+        testBucket[, setdiff(names(testBucket), names(data)) := NULL]
+      } else {
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) &
+                              get(TargetColumnName) > eval(Buckets[bucket-1])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) &
+                                        get(TargetColumnName) > eval(Buckets[bucket-1])]
         testBucket <- NULL
       }
     }
