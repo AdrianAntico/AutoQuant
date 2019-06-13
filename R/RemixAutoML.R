@@ -25361,6 +25361,9 @@ AutoGeneralizedHurdleModel <- function(data,
           MDP_RemoveDates = FALSE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
+        
+        # Clear TestModel From Memory----
+        rm(TestModel)
 
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets)+1))) {
