@@ -24933,7 +24933,8 @@ AutoGeneralizedHurdleModel <- function(data,
                                        Trees = 15000,
                                        GridTune = TRUE,
                                        MaxModelsInGrid = 1,
-                                       NumOfParDepPlots = 10) {
+                                       NumOfParDepPlots = 10,
+                                       PassInGrid = NULL) {
   
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
