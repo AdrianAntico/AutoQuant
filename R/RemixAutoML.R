@@ -25384,8 +25384,11 @@ AutoGeneralizedHurdleModel <- function(data,
                                paste0("Predictions_", Buckets[bucket]))
         }
       } else {
-        # Use single value for predictions in the case of zero variance----
-        data[, paste0("Predictions", Buckets[bucket]) := Buckets[bucket]]
+        if(bucket == max(seq_len(length(Buckets)+1))) {
+          TestData[, paste0("Predictions", Buckets[bucket-1],"+") := Buckets[bucket]]
+        } else {
+          TestData[, paste0("Predictions", Buckets[bucket]) := Buckets[bucket]]          
+        }
       }
     }
   }
