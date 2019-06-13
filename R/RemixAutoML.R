@@ -24396,9 +24396,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   loadNamespace(package = "catboost")
 
   # Check arguments----
-  if(!file.exists(ModelPath)) {
-    warning("Model does not exist in the location provided by ModelPath")
-  }
   if(is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
   }
@@ -24605,9 +24602,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_MissNum = -1) {
 
   # Check arguments----
-  if(!file.exists(ModelPath)) {
-    warning("Model does not exist in the location provided by ModelPath")
-  }
   if(is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
   }
@@ -24776,9 +24770,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_MissNum = -1) {
 
   # Check arguments----
-  if(!file.exists(ModelPath)) {
-    warning("Model does not exist in the location provided by ModelPath")
-  }
   if(is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
   }
