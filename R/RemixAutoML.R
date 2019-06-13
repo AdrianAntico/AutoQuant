@@ -25324,6 +25324,9 @@ AutoGeneralizedHurdleModel <- function(data,
               PassInGrid = NULL)
           }
         }
+        
+        # Garbage Collection----
+        gc()
 
         # Collect Model Objects----
         if(bucket == max(seq_len(length(Buckets)+1))) {
