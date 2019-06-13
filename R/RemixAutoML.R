@@ -24994,7 +24994,7 @@ AutoGeneralizedHurdleModel <- function(data,
   }
 
   # FeatureColumnNames----
-  if(is.numeric(FeatureColNames)) {
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     FeatureNames <- names(data)[FeatureColNames]
   } else {
     FeatureNames <- FeatureColNames
@@ -25072,7 +25072,7 @@ AutoGeneralizedHurdleModel <- function(data,
 
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
-    DataSets <- RemixAutoML::AutoDataPartition(
+    DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3,
       Ratios = SplitRatios,
@@ -25087,7 +25087,7 @@ AutoGeneralizedHurdleModel <- function(data,
 
   # Begin classification model building----
   if(length(Buckets) == 2) {
-    ClassifierModel <- RemixAutoML::AutoCatBoostClassifier(
+    ClassifierModel <- AutoCatBoostClassifier(
       data = data,
       ValidationData = ValidationData,
       TestData = TestData,
@@ -25110,7 +25110,7 @@ AutoGeneralizedHurdleModel <- function(data,
       PassInGrid = NULL
     )
   } else {
-    ClassifierModel <- RemixAutoML::AutoCatBoostMultiClass(
+    ClassifierModel <- AutoCatBoostMultiClass(
       data = data,
       ValidationData = ValidationData,
       TestData = TestData,
@@ -25143,7 +25143,7 @@ AutoGeneralizedHurdleModel <- function(data,
 
   # Score Classification Model----
   if(length(Buckets) == 2) {
-    TestData <- RemixAutoML::AutoCatBoostScoring(
+    TestData <- AutoCatBoostScoring(
       TargetType = "classification",
       ScoringData = TestData,
       FeatureColumnNames = FeatureNames,
@@ -25159,7 +25159,7 @@ AutoGeneralizedHurdleModel <- function(data,
       MDP_MissNum = -1
     )
   } else {
-    TestData <- RemixAutoML::AutoCatBoostScoring(
+    TestData <- AutoCatBoostScoring(
       TargetType = "multiclass",
       ScoringData = TestData,
       FeatureColumnNames = FeatureNames,
@@ -25237,7 +25237,7 @@ AutoGeneralizedHurdleModel <- function(data,
         counter <- counter + 1
         if(exists("gridSaved")) {
           if(bucket == max(seq_len(length(Buckets)+1))) {
-            TestModel <- RemixAutoML::AutoCatBoostRegression(
+            TestModel <- AutoCatBoostRegression(
               data = trainBucket,
               ValidationData = validBucket,
               TestData = testBucket,
@@ -25258,7 +25258,7 @@ AutoGeneralizedHurdleModel <- function(data,
               SaveModelObjects = SaveModelObjects,
               PassInGrid = gridSaved)
           } else {
-            TestModel <- RemixAutoML::AutoCatBoostRegression(
+            TestModel <- AutoCatBoostRegression(
               data = trainBucket,
               ValidationData = validBucket,
               TestData = testBucket,
@@ -25281,7 +25281,7 @@ AutoGeneralizedHurdleModel <- function(data,
           }
         } else {
           if(bucket == max(seq_len(length(Buckets)+1))) {
-            TestModel <- RemixAutoML::AutoCatBoostRegression(
+            TestModel <- AutoCatBoostRegression(
               data = trainBucket,
               ValidationData = validBucket,
               TestData = testBucket,
@@ -25302,7 +25302,7 @@ AutoGeneralizedHurdleModel <- function(data,
               SaveModelObjects = SaveModelObjects,
               PassInGrid = NULL)
           } else {
-            TestModel <- RemixAutoML::AutoCatBoostRegression(
+            TestModel <- AutoCatBoostRegression(
               data = trainBucket,
               ValidationData = validBucket,
               TestData = testBucket,
@@ -25343,11 +25343,11 @@ AutoGeneralizedHurdleModel <- function(data,
           data.table::fwrite(grid, paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
         }
 
-        # Score TestDataWithPreds----
-        TestData <- RemixAutoML::AutoCatBoostScoring(
+        # Score TestData----
+        TestData <- AutoCatBoostScoring(
           TargetType = "regression",
           ScoringData = TestData,
-          FeatureColumnNames = FeatureColNames,
+          FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
           Model = TestModel$Model,
           ModelPath = getwd(),
