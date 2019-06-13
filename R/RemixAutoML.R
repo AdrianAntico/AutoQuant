@@ -24940,6 +24940,15 @@ AutoGeneralizedHurdleModel <- function(data,
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
   }
+  if(is.null(PassInGrid)) {
+    PassInGrid <- data.table::data.table(
+        l2_leaf_reg = 0,
+        boosting_type = "Plain",
+        learning_rate = 0.01,
+        bootstrap_type = "Bayesian",
+        depth = 4
+      )  
+  }
   if(!is.logical(SaveModelObjects)) {
     return("SaveModelOutput needs to be set to either TRUE or FALSE")
   }
