@@ -25458,6 +25458,6 @@ AutoGeneralizedHurdleModel <- function(data,
   }
   
   # Return Output----
-  return(list(ModelInfo = ModelInformationList,
+  return(list(ClassificationMetrics = ClassEvaluationMetrics,
               FinalTestData = TestData))
 }
