@@ -24963,7 +24963,7 @@ AutoGeneralizedHurdleModel <- function(data,
   # Initialize collection and counter----
   ModelInformationList <- list()
   if(length(Paths) == 1) {
-    Paths <- rep(Paths, length(Buckets))
+    Paths <- rep(Paths, length(Buckets)+1)
   }
 
   # Data.table check----
@@ -25341,7 +25341,7 @@ AutoGeneralizedHurdleModel <- function(data,
           GridMet <- TestModel$GridMetrics
           x <- cbind(Grid,GridMet)
           data.table::setorderv(x = x, cols = "EvalStat", order = -1, na.last = TRUE)
-          x[, ":=" (EvalStat = NULL, ParamRow = NULL)]
+          x[, ':=' (EvalStat = NULL, ParamRow = NULL)]
           grid <- x[1,]
           data.table::fwrite(grid, paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
         }
@@ -25354,7 +25354,7 @@ AutoGeneralizedHurdleModel <- function(data,
           IDcols = IDcolsModified,
           Model = TestModel$Model,
           ModelPath = getwd(),
-          ModelID = "ModelTest",
+          ModelID = paste0("P6_",bucket),
           ReturnFeatures = TRUE,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
