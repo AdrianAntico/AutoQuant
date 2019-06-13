@@ -25252,7 +25252,7 @@ AutoGeneralizedHurdleModel <- function(data,
               Trees = Trees,
               GridTune = GridTune,
               model_path = Paths[bucket-1],
-              ModelID = paste0("P6_",bucket),
+              ModelID = paste0("P6_",bucket-1,"+"),
               NumOfParDepPlots = NumOfParDepPlots,
               ReturnModelObjects = TRUE,
               SaveModelObjects = SaveModelObjects,
@@ -25296,7 +25296,7 @@ AutoGeneralizedHurdleModel <- function(data,
               Trees = Trees,
               GridTune = GridTune,
               model_path = Paths[bucket-1],
-              ModelID = paste0("P6_",bucket),
+              ModelID = paste0("P6_",bucket-1,"+"),
               NumOfParDepPlots = NumOfParDepPlots,
               ReturnModelObjects = TRUE,
               SaveModelObjects = SaveModelObjects,
@@ -25347,13 +25347,29 @@ AutoGeneralizedHurdleModel <- function(data,
         }
 
         # Score TestData----
-        TestData <- AutoCatBoostScoring(
+        if(bucket == max(seq_len(length(Buckets)+1))) {
+          TestData <- AutoCatBoostScoring(
           TargetType = "regression",
           ScoringData = TestData,
           FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
           Model = TestModel$Model,
-          ModelPath = getwd(),
+          ModelPath = Path[buckets-1],
+          ModelID = paste0("P6_",bucket-1,"+"),
+          ReturnFeatures = TRUE,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = FALSE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+        } else {
+          TestData <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = TestData,
+          FeatureColumnNames = FeatureNames,
+          IDcols = IDcolsModified,
+          Model = TestModel$Model,
+          ModelPath = Path[buckets],
           ModelID = paste0("P6_",bucket),
           ReturnFeatures = TRUE,
           MDP_Impute = TRUE,
@@ -25361,6 +25377,7 @@ AutoGeneralizedHurdleModel <- function(data,
           MDP_RemoveDates = FALSE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
+        }          
         
         # Clear TestModel From Memory----
         rm(TestModel)
