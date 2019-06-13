@@ -25391,7 +25391,7 @@ AutoGeneralizedHurdleModel <- function(data,
         }          
         
         # Clear TestModel From Memory----
-        rm(TestModel)
+        rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets)+1))) {
