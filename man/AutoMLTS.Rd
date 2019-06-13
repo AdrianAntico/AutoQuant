@@ -6,13 +6,13 @@
 \usage{
 AutoMLTS(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
-  FC_Periods = 30, TimeUnit = "week", Lags = c(1:5, 52),
-  MA_Periods = c(1:5, 52), CalendarVariables = FALSE,
-  TimeTrendVariable = TRUE, DataTruncate = FALSE,
+  FC_Periods = 30, TimeUnit = "week", Lags = c(1:5),
+  MA_Periods = c(1:5), CalendarVariables = FALSE,
+  TimeTrendVariable = FALSE, DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1), TaskType = "GPU",
   EvalMetric = "MAPE", GridTune = FALSE, GridEvalMetric = "mape",
   ModelCount = 1, ModelType = "catboost", NTrees = 1000,
-  PartitionType = "time", Timer = TRUE)
+  PartitionType = "timeseries", Timer = TRUE)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
