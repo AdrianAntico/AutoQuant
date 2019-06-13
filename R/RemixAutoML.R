@@ -24910,30 +24910,30 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
 AutoGeneralizedHurdleModel <- function(data,
-                                   ValidationData = NULL,
-                                   TestData = NULL,
-                                   Buckets = c(1,5,10,20),
-                                   TargetColumnName = "PLND_LABOR_UNITS",
-                                   FeatureColNames = 4:ncol(data),
-                                   PrimaryDateColumn = "PLND_STRT_DT",
-                                   IDcols = 1:3,
-                                   ClassWeights = NULL,
-                                   SplitRatios = c(0.70,0.20,0.10),
-                                   RegressionModels = "catboost",
-                                   task_type = "GPU",
-                                   ModelID = "P6",
-                                   ClassificationModels = "catboost",
-                                   Paths = c(paste0(getwd(),"/P6_Buckets"),
-                                             paste0(getwd(),"/P6_B1"),
-                                             paste0(getwd(),"/P6_B2"),
-                                             paste0(getwd(),"/P6_B3"),
-                                             paste0(getwd(),"/P6_B4")),
-                                   SaveModelObjects = TRUE,
-                                   Trees = 15000,
-                                   GridTune = TRUE,
-                                   MaxModelsInGrid = 1,
-                                   NumOfParDepPlots = 10) {
-
+                                       ValidationData = NULL,
+                                       TestData = NULL,
+                                       Buckets = c(1,5,10,20),
+                                       TargetColumnName = "PLND_LABOR_UNITS",
+                                       FeatureColNames = 4:ncol(data),
+                                       PrimaryDateColumn = "PLND_STRT_DT",
+                                       IDcols = 1:3,
+                                       ClassWeights = NULL,
+                                       SplitRatios = c(0.70,0.20,0.10),
+                                       RegressionModels = "catboost",
+                                       task_type = "GPU",
+                                       ModelID = "P6",
+                                       ClassificationModels = "catboost",
+                                       Paths = c(paste0(getwd(),"/P6_Buckets"),
+                                                 paste0(getwd(),"/P6_B1"),
+                                                 paste0(getwd(),"/P6_B2"),
+                                                 paste0(getwd(),"/P6_B3"),
+                                                 paste0(getwd(),"/P6_B4")),
+                                       SaveModelObjects = TRUE,
+                                       Trees = 15000,
+                                       GridTune = TRUE,
+                                       MaxModelsInGrid = 1,
+                                       NumOfParDepPlots = 10) {
+  
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
@@ -24950,13 +24950,13 @@ AutoGeneralizedHurdleModel <- function(data,
   if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1) {
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
-
+  
   # Initialize collection and counter----
   ModelInformationList <- list()
   if(length(Paths) == 1) {
     Paths <- rep(Paths, length(Buckets)+1)
   }
-
+  
   # Data.table check----
   if(!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -24971,26 +24971,26 @@ AutoGeneralizedHurdleModel <- function(data,
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # IDcols to Names----
   if (!is.null(IDcols)) {
     if(is.numeric(IDcols) | is.integer(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Primary Date Column----
   if(is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) {
     PrimaryDateColumn <- names(data)[PrimaryDateColumn]
   }
-
+  
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     FeatureNames <- names(data)[FeatureColNames]
   } else {
     FeatureNames <- FeatureColNames
   }
-
+  
   # Add target bucket column----
   data[, Target_Buckets := as.factor(Buckets[1])]
   for(i in seq_len(length(Buckets) + 1)) {
@@ -25012,7 +25012,7 @@ AutoGeneralizedHurdleModel <- function(data,
                       value = as.factor(Buckets[i]))
     }
   }
-
+  
   # Add target bucket column----
   if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25036,7 +25036,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Add target bucket column----
   if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25060,7 +25060,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-
+  
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -25075,7 +25075,7 @@ AutoGeneralizedHurdleModel <- function(data,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-
+  
   # Begin classification model building----
   if(length(Buckets) == 2) {
     ClassifierModel <- AutoCatBoostClassifier(
@@ -25123,15 +25123,15 @@ AutoGeneralizedHurdleModel <- function(data,
       PassInGrid = NULL
     )
   }
-
+  
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   rm(ClassifierModel)
-
+  
   # Add Target to IDcols----
   IDcols <- c(IDcols,TargetColumnName)
-
+  
   # Score Classification Model----
   if(length(Buckets) == 2) {
     TestData <- AutoCatBoostScoring(
@@ -25166,24 +25166,24 @@ AutoGeneralizedHurdleModel <- function(data,
       MDP_MissNum = -1
     )
   }
-
+  
   # Remove Model Object----
   rm(ClassModel)
-
+  
   # Remove Target_Buckets----
   data[, Target_Buckets := NULL]
   ValidationData[, Target_Buckets := NULL]
-
+  
   # Remove Target From IDcols----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-
+  
   # Change Name of Predicted MultiClass Column----
   data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-
+  
   # Begin regression model building----
   counter <- 0
   for(bucket in rev(seq_len(length(Buckets) + 1))) {
-
+    
     # Filter By Buckets----
     if(bucket == max(seq_len(length(Buckets)+1))) {
       if(!is.null(TestData)) {
@@ -25224,15 +25224,15 @@ AutoGeneralizedHurdleModel <- function(data,
         testBucket <- NULL
       }
     }
-
+    
     # Create Modified IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData),names(trainBucket)), TargetColumnName)
-
+    
     # Load Winning Grid if it exists----
     if(file.exists(paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))) {
       gridSaved <- data.table::fread(paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
     }
-
+    
     # 4 final cases:
     #     1. grid available and save output
     #     2. grid available and don't save output
@@ -25332,16 +25332,20 @@ AutoGeneralizedHurdleModel <- function(data,
           }
         }
         
+        # Store Model----
+        RegressionModel <- TestModel$Model
+        rm(TestModel)
+        
         # Garbage Collection----
         gc()
-
+        
         # Collect Model Objects----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket],"+")]] <- TestModel
         } else {
           ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
         }
-
+        
         # Save Grid if GridTune----
         if(GridTune) {
           Grid <- TestModel$GridList
@@ -25352,43 +25356,43 @@ AutoGeneralizedHurdleModel <- function(data,
           grid <- x[1,]
           data.table::fwrite(grid, paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
         }
-
+        
         # Score TestData----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           TestData <- AutoCatBoostScoring(
-          TargetType = "regression",
-          ScoringData = TestData,
-          FeatureColumnNames = FeatureNames,
-          IDcols = IDcolsModified,
-          Model = TestModel$Model,
-          ModelPath = Path[buckets-1],
-          ModelID = paste0("P6_",bucket-1,"+"),
-          ReturnFeatures = TRUE,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = FALSE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
+            TargetType = "regression",
+            ScoringData = TestData,
+            FeatureColumnNames = FeatureNames,
+            IDcols = IDcolsModified,
+            Model = RegressionModel,
+            ModelPath = Path[buckets-1],
+            ModelID = paste0("P6_",bucket-1,"+"),
+            ReturnFeatures = TRUE,
+            MDP_Impute = TRUE,
+            MDP_CharToFactor = TRUE,
+            MDP_RemoveDates = FALSE,
+            MDP_MissFactor = "0",
+            MDP_MissNum = -1)
         } else {
           TestData <- AutoCatBoostScoring(
-          TargetType = "regression",
-          ScoringData = TestData,
-          FeatureColumnNames = FeatureNames,
-          IDcols = IDcolsModified,
-          Model = TestModel$Model,
-          ModelPath = Path[buckets],
-          ModelID = paste0("P6_",bucket),
-          ReturnFeatures = TRUE,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = FALSE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
+            TargetType = "regression",
+            ScoringData = TestData,
+            FeatureColumnNames = FeatureNames,
+            IDcols = IDcolsModified,
+            Model = RegressionModel,
+            ModelPath = Path[buckets],
+            ModelID = paste0("P6_",bucket),
+            ReturnFeatures = TRUE,
+            MDP_Impute = TRUE,
+            MDP_CharToFactor = TRUE,
+            MDP_RemoveDates = FALSE,
+            MDP_MissFactor = "0",
+            MDP_MissNum = -1)
         }          
         
         # Clear TestModel From Memory----
         rm(TestModel)
-
+        
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           data.table::setnames(TestData,
@@ -25400,6 +25404,7 @@ AutoGeneralizedHurdleModel <- function(data,
                                paste0("Predictions_", Buckets[bucket]))
         }
       } else {
+        # Use single value for predictions in the case of zero variance----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           TestData[, paste0("Predictions", Buckets[bucket-1],"+") := Buckets[bucket]]
         } else {
@@ -25408,13 +25413,13 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Rearrange Column order----
   data.table::setcolorder(TestData, c(2:(1+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
   data.table::setcolorder(TestData, c(1,2,(length(IDcols)+counter+1),
                                       (length(IDcols)+counter+1+counter+1):ncol(TestData),
                                       (length(IDcols)+1):(length(IDcols)+counter),(length(IDcols)+counter+2):(length(IDcols)+counter+1+counter)))
-
+  
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
@@ -25451,7 +25456,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Return Output----
   return(list(ModelInfo = ModelInformationList,
               FinalTestData = TestData))
