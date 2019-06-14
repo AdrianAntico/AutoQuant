@@ -25443,7 +25443,7 @@ AutoCatBoostdHurdleModel <- function(data,
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
-    PredictionColName = "Predict",
+    PredictionColName = "UpdatedPrediction",
     TargetColName = eval(TargetColumnName),
     GraphType = "boxplot",
     PercentileBucket = 0.05,
@@ -25517,7 +25517,7 @@ AutoCatBoostdHurdleModel <- function(data,
       } else if (tolower(metric) == "r2") {
         TestData[, ':=' (
           Metric1 = (get(TargetcolumnName) - mean(get(TargetcolumnName))) ^ 2,
-          Metric2 = (get(TargetcolumnName) - Predict) ^ 2
+          Metric2 = (get(TargetcolumnName) - get(UpdatedPrediction)) ^ 2
         )]
         Metric <-
           1 - TestData[, sum(Metric2, na.rm = TRUE)] /
