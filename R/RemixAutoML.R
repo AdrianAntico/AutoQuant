@@ -9899,9 +9899,9 @@ AutoTS <- function(data,
   )
 }
 
-#' AutoMLTS Is an Automated Machine Learning Time Series Forecasting Function
+#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting 
 #'
-#' AutoMLTS Is an Automated Machine Learning Time Series Forecasting Function. Create hundreds of thousands of time series forecasts using this function.
+#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
 #' @family Supervised Learning
 #' @param data Supply your full series data set here
@@ -9921,39 +9921,37 @@ AutoTS <- function(data,
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
-#' @param ModelType Select from list "catboost"
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
 #' @param Timer = TRUE
 #' @examples
 #' \donttest{
-#' Results <- AutoMLTS(data,
-#'                     TargetColumnName = "Weekly_Sales",
-#'                     DateColumnName = "Date",
-#'                     GroupVariables = c("Store","Dept"),
-#'                     FC_Periods = 52,
-#'                     TimeUnit = "week",
-#'                     Lags = c(1:5,52),
-#'                     MA_Periods = c(1:5,52),
-#'                     CalendarVariables = TRUE,
-#'                     TimeTrendVariable = TRUE,
-#'                     DataTruncate = FALSE,
-#'                     SplitRatios = c(1-2*30/143,30/143,30/143),
-#'                     TaskType = "GPU",
-#'                     EvalMetric = "MAE",
-#'                     GridTune = FALSE,
-#'                     GridEvalMetric = "mae",
-#'                     ModelCount = 1,
-#'                     ModelType = "catboost",
-#'                     NTrees = 1000,
-#'                     PartitionType = "time")
+#' Results <- AutoCatBoostCARMA(data,
+#'                              TargetColumnName = "Weekly_Sales",
+#'                              DateColumnName = "Date",
+#'                              GroupVariables = c("Store","Dept"),
+#'                              FC_Periods = 52,
+#'                              TimeUnit = "week",
+#'                              Lags = c(1:5,52),
+#'                              MA_Periods = c(1:5,52),
+#'                              CalendarVariables = TRUE,
+#'                              TimeTrendVariable = TRUE,
+#'                              DataTruncate = FALSE,
+#'                              SplitRatios = c(1-2*30/143,30/143,30/143),
+#'                              TaskType = "GPU",
+#'                              EvalMetric = "MAE",
+#'                              GridTune = FALSE,
+#'                              GridEvalMetric = "mae",
+#'                              ModelCount = 1,
+#'                              NTrees = 1000,
+#'                              PartitionType = "time")
 #' Results$TimeSeriesPlot
 #' Results$Forecast
 #' Results$ModelInformation$...
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), and a time series forecast plot. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoMLTS <- function(data,
+AutoCatBoostCARMA <- function(data,
                      TargetColumnName = "Target",
                      DateColumnName = "DateTime",
                      GroupVariables = NULL,
@@ -9970,7 +9968,6 @@ AutoMLTS <- function(data,
                      GridTune = FALSE,
                      GridEvalMetric = "mape",
                      ModelCount = 1,
-                     ModelType = "catboost",
                      NTrees = 1000,
                      PartitionType = "timeseries",
                      Timer = TRUE) {
@@ -10175,7 +10172,30 @@ AutoMLTS <- function(data,
 
   # Build Model----
   if (NumSets == 2) {
-    if (tolower(ModelType) == "catboost") {
+    if (!is.null(GroupVariables)) {
+      TestModel <- RemixAutoML::AutoCatBoostRegression(
+        data = train,
+        ValidationData = valid,
+        TestData = NULL,
+        TargetColumnName = eval(TargetColumnName),
+        FeatureColNames = setdiff(names(data),
+                                  eval(TargetColumnName)),
+        PrimaryDateColumn = eval(DateColumnName),
+        IDcols = 2,
+        MaxModelsInGrid = 1,
+        task_type = TaskType,
+        eval_metric = EvalMetric,
+        grid_eval_metric = GridEvalMetric,
+        Trees = NTrees,
+        GridTune = FALSE,
+        model_path = getwd(),
+        ModelID = "ModelTest",
+        NumOfParDepPlots = 3,
+        ReturnModelObjects = TRUE,
+        SaveModelObjects = FALSE,
+        PassInGrid = NULL
+      )
+    } else {
       if (!is.null(GroupVariables)) {
         TestModel <- RemixAutoML::AutoCatBoostRegression(
           data = train,
@@ -10200,64 +10220,13 @@ AutoMLTS <- function(data,
           PassInGrid = NULL
         )
       } else {
-        if (!is.null(GroupVariables)) {
-          TestModel <- RemixAutoML::AutoCatBoostRegression(
-            data = train,
-            ValidationData = valid,
-            TestData = NULL,
-            TargetColumnName = eval(TargetColumnName),
-            FeatureColNames = setdiff(names(data),
-                                      eval(TargetColumnName)),
-            PrimaryDateColumn = eval(DateColumnName),
-            IDcols = 2,
-            MaxModelsInGrid = 1,
-            task_type = TaskType,
-            eval_metric = EvalMetric,
-            grid_eval_metric = GridEvalMetric,
-            Trees = NTrees,
-            GridTune = FALSE,
-            model_path = getwd(),
-            ModelID = "ModelTest",
-            NumOfParDepPlots = 3,
-            ReturnModelObjects = TRUE,
-            SaveModelObjects = FALSE,
-            PassInGrid = NULL
-          )
-        } else {
-          TestModel <- RemixAutoML::AutoCatBoostRegression(
-            data = train,
-            ValidationData = valid,
-            TestData = NULL,
-            TargetColumnName = eval(TargetColumnName),
-            FeatureColNames = setdiff(names(data),
-                                      eval(TargetColumnName)),
-            PrimaryDateColumn = eval(DateColumnName),
-            IDcols = 2,
-            MaxModelsInGrid = 1,
-            task_type = TaskType,
-            eval_metric = EvalMetric,
-            grid_eval_metric = GridEvalMetric,
-            Trees = NTrees,
-            GridTune = FALSE,
-            model_path = getwd(),
-            ModelID = "ModelTest",
-            NumOfParDepPlots = 3,
-            ReturnModelObjects = TRUE,
-            SaveModelObjects = FALSE,
-            PassInGrid = NULL
-          )
-        }
-      }
-    }
-  } else if (NumSets == 3) {
-    if (tolower(ModelType) == "catboost") {
-      if (!is.null(GroupVariables)) {
         TestModel <- RemixAutoML::AutoCatBoostRegression(
           data = train,
           ValidationData = valid,
-          TestData = test,
+          TestData = NULL,
           TargetColumnName = eval(TargetColumnName),
-          FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
+          FeatureColNames = setdiff(names(data),
+                                    eval(TargetColumnName)),
           PrimaryDateColumn = eval(DateColumnName),
           IDcols = 2,
           MaxModelsInGrid = 1,
@@ -10273,29 +10242,53 @@ AutoMLTS <- function(data,
           SaveModelObjects = FALSE,
           PassInGrid = NULL
         )
-      } else {
-        TestModel <- RemixAutoML::AutoCatBoostRegression(
-          data = train,
-          ValidationData = valid,
-          TestData = test,
-          TargetColumnName = eval(TargetColumnName),
-          FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
-          PrimaryDateColumn = eval(DateColumnName),
-          IDcols = NULL,
-          MaxModelsInGrid = 1,
-          task_type = TaskType,
-          eval_metric = EvalMetric,
-          grid_eval_metric = GridEvalMetric,
-          Trees = NTrees,
-          GridTune = FALSE,
-          model_path = getwd(),
-          ModelID = "ModelTest",
-          NumOfParDepPlots = 3,
-          ReturnModelObjects = TRUE,
-          SaveModelObjects = FALSE,
-          PassInGrid = NULL
-        )
       }
+    }
+  } else if (NumSets == 3) {
+    if (!is.null(GroupVariables)) {
+      TestModel <- RemixAutoML::AutoCatBoostRegression(
+        data = train,
+        ValidationData = valid,
+        TestData = test,
+        TargetColumnName = eval(TargetColumnName),
+        FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
+        PrimaryDateColumn = eval(DateColumnName),
+        IDcols = 2,
+        MaxModelsInGrid = 1,
+        task_type = TaskType,
+        eval_metric = EvalMetric,
+        grid_eval_metric = GridEvalMetric,
+        Trees = NTrees,
+        GridTune = FALSE,
+        model_path = getwd(),
+        ModelID = "ModelTest",
+        NumOfParDepPlots = 3,
+        ReturnModelObjects = TRUE,
+        SaveModelObjects = FALSE,
+        PassInGrid = NULL
+      )
+    } else {
+      TestModel <- RemixAutoML::AutoCatBoostRegression(
+        data = train,
+        ValidationData = valid,
+        TestData = test,
+        TargetColumnName = eval(TargetColumnName),
+        FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
+        PrimaryDateColumn = eval(DateColumnName),
+        IDcols = NULL,
+        MaxModelsInGrid = 1,
+        task_type = TaskType,
+        eval_metric = EvalMetric,
+        grid_eval_metric = GridEvalMetric,
+        Trees = NTrees,
+        GridTune = FALSE,
+        model_path = getwd(),
+        ModelID = "ModelTest",
+        NumOfParDepPlots = 3,
+        ReturnModelObjects = TRUE,
+        SaveModelObjects = FALSE,
+        PassInGrid = NULL
+      )
     }
   }
 
@@ -25107,7 +25100,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
 #' AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
 #'
-#' @family Awesome
+#' @family Supervised Learning
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
