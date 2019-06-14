@@ -25418,7 +25418,7 @@ AutoCatBoostdHurdleModel <- function(data,
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(TestData,
-                       file = paste0(model_path,
+                       file = paste0(Paths[1],
                                      "/",
                                      ModelID,
                                      "_ValidationData.csv"))
@@ -25442,7 +25442,7 @@ AutoCatBoostdHurdleModel <- function(data,
 
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
+    ggplot2::ggsave(paste0(Paths[1],
                            "/",
                            ModelID, "_EvaluationPlot.png"))
   }
@@ -25465,7 +25465,7 @@ AutoCatBoostdHurdleModel <- function(data,
 
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
+    ggplot2::ggsave(paste0(Paths[1],
                            "/",
                            ModelID,
                            "_EvaluationBoxPlot.png"))
@@ -25554,7 +25554,7 @@ AutoCatBoostdHurdleModel <- function(data,
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path,
+                       file = paste0(Paths[1],
                                      "/",
                                      ModelID, "_EvaluationMetrics.csv"))
   }
@@ -25606,7 +25606,7 @@ AutoCatBoostdHurdleModel <- function(data,
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
+         file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))
   }
 
   # Return Output----
