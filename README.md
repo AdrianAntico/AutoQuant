@@ -170,8 +170,8 @@ Automated time series modeling function. Automatically finds the most accurate t
   * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
  
-##### **AutoMLTS()**
-AutoMLTS Is an Automated Machine Learning Time Series Forecasting Function. Create hundreds of thousands of time series forecasts using this function. Internally, it utilizes ML algorithms, such as catboost, to replicate the ARMA process of fitting and forecasting. On top of that, you can include calendar variables and a time trend. Grid tuning is available along with several other arguments to customize your builds. Using the catboost option, you can build using GPU. Running with GPU, for example, allows me to forecast the entire Walmart store and department forecasts in less than 15 minutes (compared to 33 hours of run time to loop through all stores and departments using AutoTS).
+##### **AutoCatBoostCARMA()**
+AutoCatBoostCARMA Is an Automated Machine Learning Time Series Forecasting Function. Create hundreds of thousands of time series forecasts using this function. Internally, it utilizes the catboost algorithm to replicate the ARMA process of fitting and forecasting. On top of that, you can include calendar variables and a time trend variable. Grid tuning is available along with several other arguments to customize your builds. You can build using GPU. Running with GPU, for example, allows me to forecast the entire Walmart store and department forecasts in less than 15 minutes (compared to 33 hours of run time to loop through all stores and departments using AutoTS).
 </p>
 </details>
 
