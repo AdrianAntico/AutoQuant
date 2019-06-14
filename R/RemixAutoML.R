@@ -24884,7 +24884,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   return(predict)
 }
 
-#' AutoGeneralizedHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
+#' AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
 #'
 #' @family Awesome
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -24910,7 +24910,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @export
-AutoGeneralizedHurdleModel <- function(data,
+AutoCatBoostdHurdleModel <- function(data,
                                        ValidationData = NULL,
                                        TestData = NULL,
                                        Buckets = c(1,5,10,20),
