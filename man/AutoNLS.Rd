@@ -85,10 +85,12 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+Other Supervised Learning: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
+  \code{\link{AutoCatBoostdHurdleModel}},
   \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
@@ -98,7 +100,6 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMClassifier}},
   \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoMLTS}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostClassifier}},

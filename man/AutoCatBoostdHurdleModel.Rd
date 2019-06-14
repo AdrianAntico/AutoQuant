@@ -135,4 +135,28 @@ Output <- RemixAutoML::AutoCatBoostdHurdleModel(
   PassInGrid = grid)
 }
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostMultiClass}},
+  \code{\link{AutoCatBoostRegression}},
+  \code{\link{AutoCatBoostScoring}},
+  \code{\link{AutoH2OMLScoring}},
+  \code{\link{AutoH2OModeler}},
+  \code{\link{AutoH2OScoring}},
+  \code{\link{AutoH2oDRFClassifier}},
+  \code{\link{AutoH2oDRFMultiClass}},
+  \code{\link{AutoH2oDRFRegression}},
+  \code{\link{AutoH2oGBMClassifier}},
+  \code{\link{AutoH2oGBMMultiClass}},
+  \code{\link{AutoH2oGBMRegression}},
+  \code{\link{AutoNLS}},
+  \code{\link{AutoRecommenderScoring}},
+  \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
+  \code{\link{AutoXGBoostClassifier}},
+  \code{\link{AutoXGBoostMultiClass}},
+  \code{\link{AutoXGBoostRegression}},
+  \code{\link{AutoXGBoostScoring}}
+}
 \concept{Awesome}
+\concept{Supervised Learning}
