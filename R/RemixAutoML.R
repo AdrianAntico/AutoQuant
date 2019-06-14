@@ -25138,6 +25138,7 @@ AutoCatBoostdHurdleModel <- function(data,
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
+  VariableImportance <- ClassifierModel$VariableImportance
   rm(ClassifierModel)
 
   # Add Target to IDcols----
@@ -25411,7 +25412,211 @@ AutoCatBoostdHurdleModel <- function(data,
     }
   }
 
+
+
+
+
+  # Regression r2 via sqrt of correlation
+  r_squared <- (TestData[, stats::cor(Target, Predict)]) ^ 2
+
+  # Regression Save Validation Data to File----
+  if (SaveModelObjects) {
+    data.table::fwrite(TestData,
+                       file = paste0(model_path,
+                                     "/",
+                                     ModelID,
+                                     "_ValidationData.csv"))
+  }
+
+  # Regression Evaluation Calibration Plot----
+  EvaluationPlot <- EvalPlot(
+    data = TestData,
+    PredictionColName = "UpdatedPrediction",
+    TargetColName = eval(TargetColName),
+    GraphType = "calibration",
+    PercentileBucket = 0.05,
+    aggrfun = function(x)
+      mean(x, na.rm = TRUE)
+  )
+
+  # Add Number of Trees to Title
+  EvaluationPlot <- EvaluationPlot +
+    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
+                            round(r_squared, 3)))
+
+  # Save plot to file
+  if (SaveModelObjects) {
+    ggplot2::ggsave(paste0(model_path,
+                           "/",
+                           ModelID, "_EvaluationPlot.png"))
+  }
+
+  # Regression Evaluation Calibration Plot----
+  EvaluationBoxPlot <- EvalPlot(
+    data = TestData,
+    PredictionColName = "Predict",
+    TargetColName = eval(TargetColName),
+    GraphType = "boxplot",
+    PercentileBucket = 0.05,
+    aggrfun = function(x)
+      mean(x, na.rm = TRUE)
+  )
+
+  # Add Number of Trees to Title
+  EvaluationBoxPlot <- EvaluationBoxPlot +
+    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
+                            round(r_squared, 3)))
+
+  # Save plot to file
+  if (SaveModelObjects) {
+    ggplot2::ggsave(paste0(model_path,
+                           "/",
+                           ModelID,
+                           "_EvaluationBoxPlot.png"))
+  }
+
+  # Regression Evaluation Metrics----
+  EvaluationMetrics <-
+    data.table::data.table(
+      Metric = c("Poisson", "MAE",
+                 "MAPE", "MSE", "MSLE",
+                 "KL", "CS", "R2"),
+      MetricValue = rep(999999, 8)
+    )
+  i <- 0
+  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+    i <- as.integer(i + 1)
+    tryCatch({
+      # Regression Grid Evaluation Metrics----
+      if (tolower(metric) == "poisson") {
+        if (MinVal > 0 &
+            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := Predict - Target * log(Predict + 1)]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        }
+      } else if (tolower(metric) == "mae") {
+        TestData[, Metric := abs(Target - Predict)]
+        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+      } else if (tolower(metric) == "mape") {
+        TestData[, Metric := abs((Target - Predict) / (Target + 1))]
+        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+      } else if (tolower(metric) == "mse") {
+        TestData[, Metric := (Target - Predict) ^ 2]
+        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+      } else if (tolower(metric) == "msle") {
+        if (MinVal > 0 &
+            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        }
+      } else if (tolower(metric) == "kl") {
+        if (MinVal > 0 &
+            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := Target * log((Target + 1) /
+                                                    (Predict + 1))]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        }
+      } else if (tolower(metric) == "cs") {
+        TestData[, ':=' (
+          Metric1 = Target * Predict,
+          Metric2 = Target ^ 2,
+          Metric3 = Predict ^ 2
+        )]
+        Metric <-
+          TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) *
+                                                            sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
+      } else if (tolower(metric) == "r2") {
+        TestData[, ':=' (
+          Metric1 = (Target - mean(Target)) ^ 2,
+          Metric2 = (Target - Predict) ^ 2
+        )]
+        Metric <-
+          1 - TestData[, sum(Metric2, na.rm = TRUE)] /
+          TestData[, sum(Metric1, na.rm = TRUE)]
+      }
+      data.table::set(
+        EvaluationMetrics,
+        i = i,
+        j = 2L,
+        value = round(Metric, 4)
+      )
+      data.table::set(EvaluationMetrics,
+                      i = i,
+                      j = 3L,
+                      value = NA)
+    }, error = function(x)
+      "skip")
+  }
+
+  # Remove Cols
+  TestData[, ':=' (Metric = NULL,
+                   Metric1 = NULL,
+                   Metric2 = NULL,
+                   Metric3 = NULL)]
+
+  # Save EvaluationMetrics to File
+  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+  if (SaveModelObjects) {
+    data.table::fwrite(EvaluationMetrics,
+                       file = paste0(model_path,
+                                     "/",
+                                     ModelID, "_EvaluationMetrics.csv"))
+  }
+
+  Regression Partial Dependence----
+  ParDepPlots <- list()
+  j <- 0
+  ParDepBoxPlots <- list()
+  k <- 0
+  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    tryCatch({
+      Out <- ParDepCalPlots(
+        data = TestData,
+        PredictionColName = "Predict",
+        TargetColName = eval(TargetColName),
+        IndepVar = VariableImportance[i, Variable],
+        GraphType = "calibration",
+        PercentileBucket = 0.05,
+        FactLevels = 10,
+        Function = function(x)
+          mean(x, na.rm = TRUE)
+      )
+
+      j <- j + 1
+      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
+        Out
+    }, error = function(x)
+      "skip")
+    tryCatch({
+      Out1 <- ParDepCalPlots(
+        data = ValidationData,
+        PredictionColName = "Predict",
+        TargetColName = "Target",
+        IndepVar = VariableImportance[i, Variable],
+        GraphType = "boxplot",
+        PercentileBucket = 0.05,
+        FactLevels = 10,
+        Function = function(x)
+          mean(x, na.rm = TRUE)
+      )
+
+      k <- k + 1
+      ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
+        Out1
+    }, error = function(x)
+      "skip")
+  }
+
+  Regression Save ParDepBoxPlots to file----
+  if (SaveModelObjects) {
+    save(ParDepBoxPlots,
+         file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
+  }
+
   # Return Output----
   return(list(ClassificationMetrics = ClassEvaluationMetrics,
-              FinalTestData = TestData))
+              FinalTestData = TestData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics))
 }
