@@ -24907,32 +24907,49 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
 #' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
+#' @examples
+#' \donttest{
+#' Output <- RemixAutoML::AutoCatBoostdHurdleModel(
+#'   data,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   Buckets = c(1, 5, 10, 20),
+#'   TargetColumnName = "PLND_LABOR_UNITS",
+#'   FeatureColNames = 4:ncol(data),
+#'   PrimaryDateColumn = "PLND_STRT_DT",
+#'   IDcols = c(1,3),
+#'   ClassWeights = NULL,
+#'   SplitRatios = c(0.7, 0.2, 0.1),
+#'   task_type = "GPU",
+#'   ModelID = "P6",
+#'   Paths = c(paste0(getwd(),"/P6_Buckets")),
+#'   SaveModelObjects = TRUE,
+#'   Trees = 5000,
+#'   GridTune = FALSE,
+#'   MaxModelsInGrid = 1,
+#'   NumOfParDepPlots = 10,
+#'   PassInGrid = grid)
+#' }
 #' @export
 AutoCatBoostdHurdleModel <- function(data,
-                                       ValidationData = NULL,
-                                       TestData = NULL,
-                                       Buckets = c(1,5,10,20),
-                                       TargetColumnName = "PLND_LABOR_UNITS",
-                                       FeatureColNames = 4:ncol(data),
-                                       PrimaryDateColumn = "PLND_STRT_DT",
-                                       IDcols = 1:3,
-                                       ClassWeights = NULL,
-                                       SplitRatios = c(0.70,0.20,0.10),
-                                       RegressionModels = "catboost",
-                                       task_type = "GPU",
-                                       ModelID = "P6",
-                                       ClassificationModels = "catboost",
-                                       Paths = c(paste0(getwd(),"/P6_Buckets"),
-                                                 paste0(getwd(),"/P6_B1"),
-                                                 paste0(getwd(),"/P6_B2"),
-                                                 paste0(getwd(),"/P6_B3"),
-                                                 paste0(getwd(),"/P6_B4")),
-                                       SaveModelObjects = TRUE,
-                                       Trees = 15000,
-                                       GridTune = TRUE,
-                                       MaxModelsInGrid = 1,
-                                       NumOfParDepPlots = 10,
-                                       PassInGrid = NULL) {
+                                     ValidationData = NULL,
+                                     TestData = NULL,
+                                     Buckets = c(1,5,10,20),
+                                     TargetColumnName = "Target",
+                                     FeatureColNames = 4:ncol(data),
+                                     PrimaryDateColumn = NULL,
+                                     IDcols = NULL,
+                                     ClassWeights = NULL,
+                                     SplitRatios = c(0.70,0.20,0.10),
+                                     task_type = "GPU",
+                                     ModelID = "ModelTest",
+                                     Paths = NULL,
+                                     SaveModelObjects = TRUE,
+                                     Trees = 15000,
+                                     GridTune = TRUE,
+                                     MaxModelsInGrid = 1,
+                                     NumOfParDepPlots = 10,
+                                     PassInGrid = NULL) {
 
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
@@ -25243,11 +25260,6 @@ AutoCatBoostdHurdleModel <- function(data,
       gridSaved <- data.table::fread(paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
     }
 
-    # 4 final cases:
-    #     1. grid available and save output
-    #     2. grid available and don't save output
-    #     3. grid not available and save output
-    #     4. grid not available and don't save output
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0) {
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0) {
@@ -25269,7 +25281,7 @@ AutoCatBoostdHurdleModel <- function(data,
             GridTune = GridTune,
             model_path = Paths[bucket-1],
             ModelID = paste0("P6_",bucket-1,"+"),
-            NumOfParDepPlots = 1,
+            NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             PassInGrid = PassInGrid)
@@ -25290,7 +25302,7 @@ AutoCatBoostdHurdleModel <- function(data,
             GridTune = GridTune,
             model_path = Paths[bucket],
             ModelID = paste0("P6_",bucket),
-            NumOfParDepPlots = 1,
+            NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             PassInGrid = PassInGrid)
@@ -25501,7 +25513,7 @@ AutoCatBoostdHurdleModel <- function(data,
         if (MinVal > 0 &
             min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
           TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
-                                                    (UpdatedPrediction + 1))]
+                                                             (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
@@ -25512,7 +25524,7 @@ AutoCatBoostdHurdleModel <- function(data,
         )]
         Metric <-
           TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) *
-                                                            sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
+                                                      sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
         TestData[, ':=' (
           Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2,
