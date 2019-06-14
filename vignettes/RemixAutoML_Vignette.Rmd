@@ -97,6 +97,7 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoCatBoostScoring()`
 - `AutoXGBoostScoring()`
 - `AutoH2oMLScoring()`
+- `AutoCatBoostdHurdleModel()`
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 - `AutoTS()`
@@ -129,6 +130,9 @@ The Auto__MultiClass() set are automated multiclass modeling functions that runs
 #### **AutoH2oMLScoring()**
 The Auto__Scoring() functions will automatically do your data conversion to prepare for scoring and then score your data with rapid speed. For example, the AutoXGBoostScoring() will automatically create your dummy variable columns that you used in model training so that you can generate predictions with ease. 
 
+#### **AutoCatBoostdHurdleModel()**
+This is a modeling framework for building the necessary models for making predictions for hurdle modeling use-cases. It's generalized so that you can define any number of cutpoints (zero and greater than zero being the typical case). First step is to build either a binary classification model (in the case of a single bucket value, such as zero) or a multiclass model (for the case of multiple bucket values, such as zero and 10). The next step is to subset the data for the cases of: less than the first bucket, in between the first and second, second and third, ..., second to last and last, along with greater than last. For each data subset, a regression model is built for predicting values in the bucket ranges. The final compilation is to multiply the probabilities of being in each bucket times the values supplied by the regression values for each buckets.
+
 #### **AutoH2OModeler()**
 The supervised learning functions handle multiple tasks internally. The **AutoH2OModeler()** function can build any number of H2O models, automatically compare hyper-parameter tuned versions to baseline versions, selecting a winner, saving the model evaluation and feature interpretation metrics / graphs, along with storing models and their metadata to refer to them later in a production setting. The models available include: Gradient Boosting Machines, LightGBM (Linux only), Distributed Random Forest, XGBoost (Linux only), Deeplearning, and AutoML (for Windows users XGBoost and LightGBM are not available).
 
@@ -159,6 +163,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold', fig.width=6, fig.height=4}
 library(RemixAutoML)
+library(data.table)
 
 # Create Simulated Data to Demonstrate Modeling
 Correl <- 0.85
@@ -260,6 +265,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold', fig.width=7, fig.height=5}
 library(RemixAutoML)
+library(data.table)
 
 # Create Growth Data
 data <-
@@ -423,6 +429,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 ```{R, fig.show='hold', fig.width=8, fig.height=8}
 # Run on (Target - Predicted)
 library(RemixAutoML)
+library(data.table)
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
                                Target = as.numeric(stats::filter(rnorm(1000,
                                                                        mean = 50,
@@ -580,6 +587,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold', fig.width=8, fig.height=8}
 library(RemixAutoML)
+library(data.table)
 
 # Data generator function
 dataGen <- function(Correlation = 0.95) {
@@ -685,6 +693,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold', fig.width=8, fig.height=8}
 library(RemixAutoML)
+library(data.table)
 
 # Data generator function
 dataGen <- function(Correlation = 0.95) {
@@ -767,6 +776,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold', fig.width=6, fig.height=5}
 library(RemixAutoML)
+library(data.table)
 Correl <- 0.70
   data <- data.table::data.table(target = runif(1000))
   data[, x1 := qnorm(target)]
@@ -813,6 +823,7 @@ Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remix
 
 ```{r, fig.show='hold'}
 library(RemixAutoML)
+library(data.table)
 
 # Build data for feature engineering for modeling
 N <- 25116
@@ -845,7 +856,6 @@ ModelData <- RemixAutoML::DT_GDL_Feature_Engineering(
   WindowingLag   = 1,
   Type           = "Lag",
   Timer          = FALSE,
-  SkipCols       = FALSE,
   SimpleImpute   = TRUE)
 
 # Build data for feature engineering for scoring
@@ -871,7 +881,6 @@ ScoringData <- RemixAutoML::Scoring_GDL_Feature_Engineering(
   ScoringData,
   lags           = c(seq(1, 5, 1)),
   periods        = c(3, 5, 10, 15, 20, 25),
-  statsFUNs      = c(mean),
   statsNames     = c("MA"),
   targets        = c("Target"),
   groupingVars   = c("GroupVariable"),
@@ -881,7 +890,6 @@ ScoringData <- RemixAutoML::Scoring_GDL_Feature_Engineering(
   WindowingLag   = 1,
   Type           = "Lag",
   Timer          = FALSE,
-  SkipCols       = FALSE,
   SimpleImpute   = TRUE,
   AscRowByGroup  = "temp",
   RecordsKeep    = 1
@@ -915,6 +923,7 @@ The **AutoWord2VecModeler** function converts your text features into numerical 
 The **AutoWordFreq** function will go through a process of cleaning your text column, doing some other text operations, and ouput a table with word frequencies and a word cloud plot. The **AutoH2OTextPrepScoring** will automatically prepare your text data for scoring. This function is run internally in the **AutoH2OScoring** function but you can utilize it outside for other purposes. The **ProblematicFeatures** identified problematic columns for machine learning. **ProblematicRecords** finds problematic rows in your data set that you should investigate further. The **ChartTheme** and **RemixTheme** functions will turn your ggplots into nicely formatted and colored charts, worthy of presentation. The **multiplot** function are for those who have had a terrible time plotting multiple graphs onto a single image. The **PrintObjectsSize** function is more of a debugging function for inspecting the size of variables in your environment (useful in looping functions). The **percRank** is simply a function to compute the percentile rank of every value in a column of data. **AutoRecomDataCreate** will turn your transactional data set into a binary ratings matrix fast.
 
 ```{r, fig.show='hold'}
+library(data.table)
 
 # Create Some Data
 data <- data.table::data.table(
