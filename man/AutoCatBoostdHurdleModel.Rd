@@ -5,24 +5,18 @@
 \title{AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6}
 \usage{
 AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = c(1, 5, 10, 20), TargetColumnName = "PLND_LABOR_UNITS",
-  FeatureColNames = 4:ncol(data), PrimaryDateColumn = "PLND_STRT_DT",
-  IDcols = 1:3, ClassWeights = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  RegressionModels = "catboost", task_type = "GPU", ModelID = "P6",
-  ClassificationModels = "catboost", Paths = c(paste0(getwd(),
-  "/P6_Buckets"), paste0(getwd(), "/P6_B1"), paste0(getwd(), "/P6_B2"),
-  paste0(getwd(), "/P6_B3"), paste0(getwd(), "/P6_B4")),
+  Buckets = c(1, 5, 10, 20), TargetColumnName = "Target",
+  FeatureColNames = 4:ncol(data), PrimaryDateColumn = NULL,
+  IDcols = NULL, ClassWeights = NULL, SplitRatios = c(0.7, 0.2, 0.1),
+  task_type = "GPU", ModelID = "ModelTest", Paths = NULL,
   SaveModelObjects = TRUE, Trees = 15000, GridTune = TRUE,
   MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
 
 AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = c(1, 5, 10, 20), TargetColumnName = "PLND_LABOR_UNITS",
-  FeatureColNames = 4:ncol(data), PrimaryDateColumn = "PLND_STRT_DT",
-  IDcols = 1:3, ClassWeights = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  RegressionModels = "catboost", task_type = "GPU", ModelID = "P6",
-  ClassificationModels = "catboost", Paths = c(paste0(getwd(),
-  "/P6_Buckets"), paste0(getwd(), "/P6_B1"), paste0(getwd(), "/P6_B2"),
-  paste0(getwd(), "/P6_B3"), paste0(getwd(), "/P6_B4")),
+  Buckets = c(1, 5, 10, 20), TargetColumnName = "Target",
+  FeatureColNames = 4:ncol(data), PrimaryDateColumn = NULL,
+  IDcols = NULL, ClassWeights = NULL, SplitRatios = c(0.7, 0.2, 0.1),
+  task_type = "GPU", ModelID = "ModelTest", Paths = NULL,
   SaveModelObjects = TRUE, Trees = 15000, GridTune = TRUE,
   MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
 }
@@ -47,13 +41,9 @@ AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
-\item{RegressionModels}{Set to the model of choice. Currently only catboost is available.}
-
 \item{task_type}{Set to "GPU" or "CPU"}
 
 \item{ModelID}{Define a character name for your models}
-
-\item{ClassificationModels}{Set to the model of choice. Currently, only catboost is available.}
 
 \item{Paths}{A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models}
 
@@ -66,6 +56,10 @@ AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
 \item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
+
+\item{RegressionModels}{Set to the model of choice. Currently only catboost is available.}
+
+\item{ClassificationModels}{Set to the model of choice. Currently, only catboost is available.}
 
 \item{NumberModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
 
@@ -116,5 +110,29 @@ Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, V
 AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
 
 AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
+}
+\examples{
+\donttest{
+Output <- RemixAutoML::AutoCatBoostdHurdleModel(
+  data,
+  ValidationData = NULL,
+  TestData = NULL,
+  Buckets = c(1, 5, 10, 20),
+  TargetColumnName = "PLND_LABOR_UNITS",
+  FeatureColNames = 4:ncol(data),
+  PrimaryDateColumn = "PLND_STRT_DT",
+  IDcols = c(1,3),
+  ClassWeights = NULL,
+  SplitRatios = c(0.7, 0.2, 0.1),
+  task_type = "GPU",
+  ModelID = "P6",
+  Paths = c(paste0(getwd(),"/P6_Buckets")),
+  SaveModelObjects = TRUE,
+  Trees = 5000,
+  GridTune = FALSE,
+  MaxModelsInGrid = 1,
+  NumOfParDepPlots = 10,
+  PassInGrid = grid)
+}
 }
 \concept{Awesome}
