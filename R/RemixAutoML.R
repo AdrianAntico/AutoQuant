@@ -24935,19 +24935,19 @@ AutoGeneralizedHurdleModel <- function(data,
                                        MaxModelsInGrid = 1,
                                        NumOfParDepPlots = 10,
                                        PassInGrid = NULL) {
-  
+
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
   }
   if(is.null(PassInGrid)) {
     PassInGrid <- data.table::data.table(
-        l2_leaf_reg = 0,
-        boosting_type = "Plain",
-        learning_rate = 0.01,
-        bootstrap_type = "Bayesian",
-        depth = 4
-      )  
+      l2_leaf_reg = 0,
+      boosting_type = "Plain",
+      learning_rate = 0.01,
+      bootstrap_type = "Bayesian",
+      depth = 4
+    )
   }
   if(!is.logical(SaveModelObjects)) {
     return("SaveModelOutput needs to be set to either TRUE or FALSE")
@@ -24961,13 +24961,13 @@ AutoGeneralizedHurdleModel <- function(data,
   if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1) {
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
-  
+
   # Initialize collection and counter----
   ModelInformationList <- list()
   if(length(Paths) == 1) {
     Paths <- rep(Paths, length(Buckets)+1)
   }
-  
+
   # Data.table check----
   if(!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -24982,26 +24982,26 @@ AutoGeneralizedHurdleModel <- function(data,
       TestData <- data.table::as.data.table(TestData)
     }
   }
-  
+
   # IDcols to Names----
   if (!is.null(IDcols)) {
     if(is.numeric(IDcols) | is.integer(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-  
+
   # Primary Date Column----
   if(is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) {
     PrimaryDateColumn <- names(data)[PrimaryDateColumn]
   }
-  
+
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     FeatureNames <- names(data)[FeatureColNames]
   } else {
     FeatureNames <- FeatureColNames
   }
-  
+
   # Add target bucket column----
   data[, Target_Buckets := as.factor(Buckets[1])]
   for(i in seq_len(length(Buckets) + 1)) {
@@ -25023,7 +25023,7 @@ AutoGeneralizedHurdleModel <- function(data,
                       value = as.factor(Buckets[i]))
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25047,7 +25047,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25071,7 +25071,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-  
+
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -25086,7 +25086,7 @@ AutoGeneralizedHurdleModel <- function(data,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-  
+
   # Begin classification model building----
   if(length(Buckets) == 2) {
     ClassifierModel <- AutoCatBoostClassifier(
@@ -25109,7 +25109,7 @@ AutoGeneralizedHurdleModel <- function(data,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = PassInGrid
+      PassInGrid = NULL
     )
   } else {
     ClassifierModel <- AutoCatBoostMultiClass(
@@ -25131,18 +25131,18 @@ AutoGeneralizedHurdleModel <- function(data,
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = PassInGrid
+      PassInGrid = NULL
     )
   }
-  
+
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   rm(ClassifierModel)
-  
+
   # Add Target to IDcols----
   IDcols <- c(IDcols,TargetColumnName)
-  
+
   # Score Classification Model----
   if(length(Buckets) == 2) {
     TestData <- AutoCatBoostScoring(
@@ -25177,24 +25177,24 @@ AutoGeneralizedHurdleModel <- function(data,
       MDP_MissNum = -1
     )
   }
-  
+
   # Remove Model Object----
   rm(ClassModel)
-  
+
   # Remove Target_Buckets----
   data[, Target_Buckets := NULL]
   ValidationData[, Target_Buckets := NULL]
-  
+
   # Remove Target From IDcols----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-  
+
   # Change Name of Predicted MultiClass Column----
   data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-  
+
   # Begin regression model building----
   counter <- 0
   for(bucket in rev(seq_len(length(Buckets) + 1))) {
-    
+
     # Filter By Buckets----
     if(bucket == max(seq_len(length(Buckets)+1))) {
       if(!is.null(TestData)) {
@@ -25235,15 +25235,15 @@ AutoGeneralizedHurdleModel <- function(data,
         testBucket <- NULL
       }
     }
-    
+
     # Create Modified IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData),names(trainBucket)), TargetColumnName)
-    
+
     # Load Winning Grid if it exists----
     if(file.exists(paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))) {
       gridSaved <- data.table::fread(paste0(Paths[bucket],"/grid",Buckets[bucket],".csv"))
     }
-    
+
     # 4 final cases:
     #     1. grid available and save output
     #     2. grid available and don't save output
@@ -25296,21 +25296,21 @@ AutoGeneralizedHurdleModel <- function(data,
             SaveModelObjects = SaveModelObjects,
             PassInGrid = PassInGrid)
         }
-        
+
         # Store Model----
         RegressionModel <- TestModel$Model
         rm(TestModel)
-        
+
         # Garbage Collection----
         gc()
-        
+
         # Collect Model Objects----
         # if(bucket == max(seq_len(length(Buckets)+1))) {
         #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket],"+")]] <- TestModel
         # } else {
         #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
         # }
-        
+
         # Score TestData----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           TestData <- AutoCatBoostScoring(
@@ -25342,11 +25342,11 @@ AutoGeneralizedHurdleModel <- function(data,
             MDP_RemoveDates = FALSE,
             MDP_MissFactor = "0",
             MDP_MissNum = -1)
-        }          
-        
+        }
+
         # Clear TestModel From Memory----
         rm(RegressionModel)
-        
+
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets)+1))) {
           data.table::setnames(TestData,
@@ -25362,18 +25362,18 @@ AutoGeneralizedHurdleModel <- function(data,
         if(bucket == max(seq_len(length(Buckets)+1))) {
           TestData[, paste0("Predictions", Buckets[bucket-1],"+") := Buckets[bucket]]
         } else {
-          TestData[, paste0("Predictions", Buckets[bucket]) := Buckets[bucket]]          
+          TestData[, paste0("Predictions", Buckets[bucket]) := Buckets[bucket]]
         }
       }
     }
   }
-  
+
   # Rearrange Column order----
   data.table::setcolorder(TestData, c(2:(1+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
   data.table::setcolorder(TestData, c(1,2,(length(IDcols)+counter+1),
                                       (length(IDcols)+counter+1+counter+1):ncol(TestData),
                                       (length(IDcols)+1):(length(IDcols)+counter),(length(IDcols)+counter+2):(length(IDcols)+counter+1+counter)))
-  
+
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
@@ -25410,7 +25410,7 @@ AutoGeneralizedHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Return Output----
   return(list(ClassificationMetrics = ClassEvaluationMetrics,
               FinalTestData = TestData))
