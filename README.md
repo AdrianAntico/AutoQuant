@@ -129,6 +129,9 @@ AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGB
 </details>
 
 ### General Purpose H2O Automated Modeling:
+<details><summary>EXPAND</summary>
+<p>
+  
 ##### **AutoH2OModeler()**
 Automated machine learning. Automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
 * Models include:
@@ -138,6 +141,8 @@ Automated machine learning. Automatically build any number of models along with 
   * XGBoost (for Linux)
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
+</p>
+</details>
 
 ### Model Scoring:
 <details><summary>EXPAND</summary>
@@ -194,6 +199,9 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 <details><summary>EXPAND</summary>
 <p>
   
+##### **AutoRecomDataCreate()**
+Automatically create your binary ratings matix from transaction data
+
 ##### **AutoRecommender()**
 Automated collaborative filtering modeling where each model competes against each other
   * RandomItems
