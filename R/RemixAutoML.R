@@ -25412,12 +25412,8 @@ AutoCatBoostdHurdleModel <- function(data,
     }
   }
 
-
-
-
-
   # Regression r2 via sqrt of correlation
-  r_squared <- (TestData[, stats::cor(Target, Predict)]) ^ 2
+  r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
 
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
@@ -25548,7 +25544,7 @@ AutoCatBoostdHurdleModel <- function(data,
       "skip")
   }
 
-  # Remove Cols
+  # Remove Cols----
   TestData[, ':=' (Metric = NULL,
                    Metric1 = NULL,
                    Metric2 = NULL,
@@ -25563,7 +25559,7 @@ AutoCatBoostdHurdleModel <- function(data,
                                      ModelID, "_EvaluationMetrics.csv"))
   }
 
-  Regression Partial Dependence----
+  # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
   ParDepBoxPlots <- list()
@@ -25607,7 +25603,7 @@ AutoCatBoostdHurdleModel <- function(data,
       "skip")
   }
 
-  Regression Save ParDepBoxPlots to file----
+  # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
