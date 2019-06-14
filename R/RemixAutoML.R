@@ -25428,7 +25428,7 @@ AutoCatBoostdHurdleModel <- function(data,
   EvaluationPlot <- EvalPlot(
     data = TestData,
     PredictionColName = "UpdatedPrediction",
-    TargetColName = eval(TargetColName),
+    TargetColName = eval(TargetColumnName),
     GraphType = "calibration",
     PercentileBucket = 0.05,
     aggrfun = function(x)
@@ -25451,7 +25451,7 @@ AutoCatBoostdHurdleModel <- function(data,
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
     PredictionColName = "Predict",
-    TargetColName = eval(TargetColName),
+    TargetColName = eval(TargetColumnName),
     GraphType = "boxplot",
     PercentileBucket = 0.05,
     aggrfun = function(x)
@@ -25569,7 +25569,7 @@ AutoCatBoostdHurdleModel <- function(data,
       Out <- ParDepCalPlots(
         data = TestData,
         PredictionColName = "Predict",
-        TargetColName = eval(TargetColName),
+        TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Variable],
         GraphType = "calibration",
         PercentileBucket = 0.05,
@@ -25587,7 +25587,7 @@ AutoCatBoostdHurdleModel <- function(data,
       Out1 <- ParDepCalPlots(
         data = ValidationData,
         PredictionColName = "Predict",
-        TargetColName = "Target",
+        TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Variable],
         GraphType = "boxplot",
         PercentileBucket = 0.05,
@@ -25614,5 +25614,7 @@ AutoCatBoostdHurdleModel <- function(data,
               FinalTestData = TestData,
               EvaluationPlot = EvaluationPlot,
               EvaluationBoxPlot = EvaluationBoxPlot,
-              EvaluationMetrics = EvaluationMetrics))
+              EvaluationMetrics = EvaluationMetrics,
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots))
 }
