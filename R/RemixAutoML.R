@@ -25480,36 +25480,36 @@ AutoCatBoostdHurdleModel <- function(data,
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
             min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := get(UpdatedPrediction) - get(TargetcolumnName) * log(get(UpdatedPrediction) + 1)]
+          TestData[, Metric := UpdatedPrediction - get(TargetcolumnName) * log(UpdatedPrediction + 1)]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        TestData[, Metric := abs(get(TargetcolumnName) - get(UpdatedPrediction))]
+        TestData[, Metric := abs(get(TargetcolumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        TestData[, Metric := abs((get(TargetcolumnName) - get(UpdatedPrediction)) / (get(TargetcolumnName) + 1))]
+        TestData[, Metric := abs((get(TargetcolumnName) - UpdatedPrediction) / (get(TargetcolumnName) + 1))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        TestData[, Metric := (get(TargetcolumnName) - get(UpdatedPrediction)) ^ 2]
+        TestData[, Metric := (get(TargetcolumnName) - UpdatedPrediction) ^ 2]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
             min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := (log(get(TargetcolumnName) + 1) - log(get(UpdatedPrediction) + 1)) ^ 2]
+          TestData[, Metric := (log(get(TargetcolumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
             min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
           TestData[, Metric := get(TargetcolumnName) * log((get(TargetcolumnName) + 1) /
-                                                    (get(UpdatedPrediction) + 1))]
+                                                    (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         TestData[, ':=' (
-          Metric1 = get(TargetcolumnName) * get(UpdatedPrediction),
+          Metric1 = get(TargetcolumnName) * UpdatedPrediction,
           Metric2 = get(TargetcolumnName) ^ 2,
-          Metric3 = get(UpdatedPrediction) ^ 2
+          Metric3 = UpdatedPrediction ^ 2
         )]
         Metric <-
           TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) *
@@ -25517,7 +25517,7 @@ AutoCatBoostdHurdleModel <- function(data,
       } else if (tolower(metric) == "r2") {
         TestData[, ':=' (
           Metric1 = (get(TargetcolumnName) - mean(get(TargetcolumnName))) ^ 2,
-          Metric2 = (get(TargetcolumnName) - get(UpdatedPrediction)) ^ 2
+          Metric2 = (get(TargetcolumnName) - UpdatedPrediction) ^ 2
         )]
         Metric <-
           1 - TestData[, sum(Metric2, na.rm = TRUE)] /
