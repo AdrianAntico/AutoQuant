@@ -25271,7 +25271,7 @@ AutoCatBoostdHurdleModel <- function(data,
             GridTune = GridTune,
             model_path = Paths[bucket-1],
             ModelID = paste0("P6_",bucket-1,"+"),
-            NumOfParDepPlots = NumOfParDepPlots,
+            NumOfParDepPlots = 1,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             PassInGrid = PassInGrid)
@@ -25292,7 +25292,7 @@ AutoCatBoostdHurdleModel <- function(data,
             GridTune = GridTune,
             model_path = Paths[bucket],
             ModelID = paste0("P6_",bucket),
-            NumOfParDepPlots = NumOfParDepPlots,
+            NumOfParDepPlots = 1,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             PassInGrid = PassInGrid)
@@ -25304,13 +25304,6 @@ AutoCatBoostdHurdleModel <- function(data,
 
         # Garbage Collection----
         gc()
-
-        # Collect Model Objects----
-        # if(bucket == max(seq_len(length(Buckets)+1))) {
-        #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket],"+")]] <- TestModel
-        # } else {
-        #   ModelInformationList[[paste0("Model_",bucket,"_Bucket_",Buckets[bucket])]] <- TestModel
-        # }
 
         # Score TestData----
         if(bucket == max(seq_len(length(Buckets)+1))) {
@@ -25486,45 +25479,45 @@ AutoCatBoostdHurdleModel <- function(data,
       # Regression Grid Evaluation Metrics----
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
-            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := Predict - Target * log(Predict + 1)]
+            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := get(UpdatedPrediction) - get(TargetcolumnName) * log(get(UpdatedPrediction) + 1)]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        TestData[, Metric := abs(Target - Predict)]
+        TestData[, Metric := abs(get(TargetcolumnName) - get(UpdatedPrediction))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        TestData[, Metric := abs((Target - Predict) / (Target + 1))]
+        TestData[, Metric := abs((get(TargetcolumnName) - get(UpdatedPrediction)) / (get(TargetcolumnName) + 1))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        TestData[, Metric := (Target - Predict) ^ 2]
+        TestData[, Metric := (get(TargetcolumnName) - get(UpdatedPrediction)) ^ 2]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
-            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
+            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := (log(get(TargetcolumnName) + 1) - log(get(UpdatedPrediction) + 1)) ^ 2]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
-            min(TestData[["Predict"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := Target * log((Target + 1) /
-                                                    (Predict + 1))]
+            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
+          TestData[, Metric := get(TargetcolumnName) * log((get(TargetcolumnName) + 1) /
+                                                    (get(UpdatedPrediction) + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         TestData[, ':=' (
-          Metric1 = Target * Predict,
-          Metric2 = Target ^ 2,
-          Metric3 = Predict ^ 2
+          Metric1 = get(TargetcolumnName) * get(UpdatedPrediction),
+          Metric2 = get(TargetcolumnName) ^ 2,
+          Metric3 = get(UpdatedPrediction) ^ 2
         )]
         Metric <-
           TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) *
                                                             sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
         TestData[, ':=' (
-          Metric1 = (Target - mean(Target)) ^ 2,
-          Metric2 = (Target - Predict) ^ 2
+          Metric1 = (get(TargetcolumnName) - mean(get(TargetcolumnName))) ^ 2,
+          Metric2 = (get(TargetcolumnName) - Predict) ^ 2
         )]
         Metric <-
           1 - TestData[, sum(Metric2, na.rm = TRUE)] /
@@ -25568,7 +25561,7 @@ AutoCatBoostdHurdleModel <- function(data,
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
-        PredictionColName = "Predict",
+        PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Variable],
         GraphType = "calibration",
@@ -25586,7 +25579,7 @@ AutoCatBoostdHurdleModel <- function(data,
     tryCatch({
       Out1 <- ParDepCalPlots(
         data = ValidationData,
-        PredictionColName = "Predict",
+        PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Variable],
         GraphType = "boxplot",
