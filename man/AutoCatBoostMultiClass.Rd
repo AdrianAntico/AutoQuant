@@ -30,7 +30,7 @@ AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{task_type}{"GPU" Set to "GPU" to utilize your GPU for training. Default is "CPU".}
+\item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"}
 
