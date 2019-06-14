@@ -24897,10 +24897,8 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 #' @param IDcols Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions
 #' @param ClassWeights Utilize these for the classifier model
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
-#' @param RegressionModels Set to the model of choice. Currently only catboost is available.
 #' @param task_type Set to "GPU" or "CPU"
 #' @param ModelID Define a character name for your models
-#' @param ClassificationModels Set to the model of choice. Currently, only catboost is available.
 #' @param Paths A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 15000
