@@ -52,7 +52,7 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 <p>
 
 ### Regression:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoCatBoostRegression()** GPU + CPU
@@ -69,7 +69,7 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 </details>
 
 ### Binary Classification:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
 
 ##### **AutoCatBoostClassifier()** GPU + CPU
@@ -87,7 +87,7 @@ AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and
 </details>
 
 ### Multinomial Classification:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoCatBoostMultiClass()** GPU + CPU
@@ -105,7 +105,7 @@ AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and
 </details>
 
 ### Generalized Hurdle Models:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoCatBoostHurdleModel()**
@@ -114,7 +114,7 @@ This is a modeling framework for building the necessary models for making predic
 </details>
 
 ### Scoring the Auto__() supervised learning models:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoCatBoostScoring()**
@@ -129,7 +129,7 @@ AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGB
 </details>
 
 ### General Purpose H2O Automated Modeling:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoH2OModeler()**
@@ -145,7 +145,7 @@ Automated machine learning. Automatically build any number of models along with 
 </details>
 
 ### Model Scoring:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoH2OScoring()**
@@ -154,7 +154,7 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 </details>
 
 ### Time Series Modeling:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
@@ -176,7 +176,7 @@ AutoMLTS Is an Automated Machine Learning Time Series Forecasting Function. Crea
 </details>
 
 ### Nonlinear Regression Modeling:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoNLS()**
@@ -196,7 +196,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </details>
 
 ### Recommenders:
-<details><summary>EXPAND</summary>
+<details><summary>expand</summary>
 <p>
   
 ##### **AutoRecomDataCreate()**
