@@ -344,26 +344,26 @@ multiplot <-
            cols     = 2,
            layout   = NULL) {
     plots <- c(list(...), plotlist)
-
+    
     numPlots <- length(plots)
-
+    
     if (is.null(layout)) {
       layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
                        ncol = cols,
                        nrow = ceiling(numPlots / cols))
     }
-
+    
     if (numPlots == 1) {
       print(plots[[1]])
-
+      
     } else {
       grid::grid.newpage()
       grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout),
                                                                    ncol(layout))))
-
+      
       for (i in 1:numPlots) {
         matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
+        
         print(
           plots[[i]],
           vp = grid::viewport(
@@ -523,24 +523,24 @@ ProblematicFeatures <- function(data,
   # Convert to data.table----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Subset columns of interest----
   keep <- names(data)[ColumnNumbers]
   data <- data[, ..keep]
-
+  
   # Define Functions for Calculations----
   LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
     # Skip Option----
     if (is.null(NearZeroVarThresh))
       return(NULL)
-
+    
     # Ensure argument is valid----
     if (NearZeroVarThresh > 1)
       warning("NearZeroVarThresh should be between zero and one")
-
+    
     # Get Row Count----
     xx <- data[, .N]
-
+    
     # Begin process----
     NumNearZeroVariance <- list()
     for (i in seq_len(ncol(data))) {
@@ -550,7 +550,7 @@ ProblematicFeatures <- function(data,
           round(length(unique(data[[i]])) / xx, 4)
       }
     }
-
+    
     if (length(NumNearZeroVariance) > 0) {
       a <-
         tryCatch({
@@ -575,14 +575,14 @@ ProblematicFeatures <- function(data,
     # Skip Option----
     if (is.null(CharUniqThresh))
       return(NULL)
-
+    
     # Ensure argument is valid----
     if (CharUniqThresh > 1)
       warning("CharUniqThresh should be between zero and one")
-
+    
     # Get Row Count----
     xx <- data[, .N]
-
+    
     # Begin process----
     CharUniqueTooHigh <- list()
     for (i in seq_len(ncol(data))) {
@@ -617,14 +617,14 @@ ProblematicFeatures <- function(data,
     # Skip Option----
     if (is.null(NA_Rate))
       return(NULL)
-
+    
     # Ensure argument is valid----
     if (NA_Rate > 1)
       warning("HighSkewThresh should be between zero and one")
-
+    
     # Get Row Count----
     xx <- data[, .N]
-
+    
     # Begin process----
     LargeNAs <- list()
     for (i in seq_len(ncol(data))) {
@@ -656,10 +656,10 @@ ProblematicFeatures <- function(data,
     # Skip Option----
     if (is.null(Zero_Rate))
       return(NULL)
-
+    
     # Get Row Count----
     xx <- data[, .N]
-
+    
     # Begin process----
     LargeZeros <- list()
     for (i in seq_len(ncol(data))) {
@@ -693,15 +693,15 @@ ProblematicFeatures <- function(data,
     # Skip Option----
     if (is.null(HighSkewThresh))
       return(NULL)
-
+    
     # Ensure argument is valid----
     if (!is.numeric(HighSkewThresh) & !is.integer(HighSkewThresh)) {
       warning("HighSkewThresh should a numeric value")
     }
-
+    
     # Get Row Count----
     xx <- data[, .N]
-
+    
     # Begin process----
     HighSkew <- list()
     for (i in seq_len(ncol(data))) {
@@ -739,11 +739,11 @@ ProblematicFeatures <- function(data,
       return(NULL)
     }
   }
-
+  
   # Initalize collection
   collect <- list()
   z <- 0
-
+  
   # LowVarianceFeatures Run----
   a <-
     tryCatch({
@@ -755,7 +755,7 @@ ProblematicFeatures <- function(data,
     z <- z + 1
     collect[[z]] <- a
   }
-
+  
   # HighCardinalityFeatures Run----
   b <-
     tryCatch({
@@ -767,7 +767,7 @@ ProblematicFeatures <- function(data,
     z <- z + 1
     collect[[z]] <- b
   }
-
+  
   # HighMissingCountFeatures Run----
   c <- tryCatch({
     HighMissingCountFeatures(data, NA_Rate = NA_Rate)
@@ -778,7 +778,7 @@ ProblematicFeatures <- function(data,
     z <- z + 1
     collect[[z]] <- c
   }
-
+  
   # HighZeroCountFeatures Run----
   d <-
     tryCatch({
@@ -790,7 +790,7 @@ ProblematicFeatures <- function(data,
     z <- z + 1
     collect[[z]] <- d
   }
-
+  
   # HighSkewFeatures Run----
   e <-
     tryCatch({
@@ -802,7 +802,7 @@ ProblematicFeatures <- function(data,
     z <- z + 1
     collect[[z]] <- e
   }
-
+  
   # Combine Outputs
   if (length(collect) == 0) {
     return(NULL)
@@ -891,27 +891,27 @@ ProblematicRecords <- function(data,
   if (!requireNamespace("h2o")) {
     warning("Install H2O to run this function")
   }
-
+  
   # Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Initialize H2O----
   h2o::h2o.init(
     max_mem_size = MaxMem,
     nthreads = NThreads,
     enable_assertions = FALSE
   )
-
+  
   # Ensure Characters are Converted to Factors----
   data <- RemixAutoML::ModelDataPrep(data,
                                      Impute = FALSE,
                                      CharToFactor = TRUE)
-
+  
   # Convert data to H2O Frame----
   Data <- h2o::as.h2o(data)
-
+  
   # Build Isolation Forest----
   if (is.null(ColumnNumbers)) {
     IsolationForest <- h2o::h2o.isolationForest(
@@ -930,15 +930,15 @@ ProblematicRecords <- function(data,
       sample_rate = SampleRate
     )
   }
-
+  
   # Generate Outliers data.table----
   OutliersRaw <-
     data.table::as.data.table(h2o::h2o.predict(object = IsolationForest,
                                                newdata = Data))
-
+  
   # Shutdown H2O
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # Add column for outlier indicator----
   setnames(OutliersRaw,
            c("predict", "mean_length"),
@@ -948,10 +948,10 @@ ProblematicRecords <- function(data,
   OutliersRaw[, PredictedOutlier := ifelse(PredictIsoForest > Cutoff, 1, 0)]
   OutliersRaw[, PercentileRank := percRank(PredictIsoForest)]
   data.table::setcolorder(OutliersRaw, c(4, 3, 1, 2))
-
+  
   # Merge back with source data----
   OutputData <- cbind(OutliersRaw, data)
-
+  
   # Return data----
   return(OutputData[order(-PredictIsoForest)])
 }
@@ -1045,14 +1045,14 @@ GenTSAnomVars <- function(data,
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Scale data if not already
   if (!IsDataScaled) {
     data[, eval(ValueCol) := scale(get(ValueCol),
                                    center = TRUE,
                                    scale = TRUE)]
   }
-
+  
   # Global check for date
   if (!is.null(DateVar)) {
     if (is.null(GroupVar1) & is.null(GroupVar2)) {
@@ -1192,17 +1192,17 @@ ResidualOutliers <- function(data,
     warning("TimeUnit is not in hour, day, week, month,
     quarter, or year")
   }
-
+  
   # Ensure data is a data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure data is sorted
   data.table::setorderv(x = data,
                         cols = eval(DateColName),
                         order = 1)
-
+  
   # Keep columns
   if (!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
@@ -1212,12 +1212,12 @@ ResidualOutliers <- function(data,
   keep <- c(DateColName, "Residuals")
   temp <- data[, ..keep]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
-
+  
   # Convert to time series object
   tsData <- stats::ts(temp,
                       start = temp[, min(get(DateColName))][[1]],
                       frequency = freq)
-
+  
   # Build the auto arimia
   if (MinVal > 0) {
     fit <-
@@ -1258,13 +1258,13 @@ ResidualOutliers <- function(data,
       error = function(x)
         "empty")
   }
-
+  
   # Store the arima parameters
   pars  <- tsoutliers::coefs2poly(fit)
-
+  
   # Store the arima residuals
   resid <- cbind(tsData, stats::residuals(fit))
-
+  
   # Find the outliers
   x <- data.table::as.data.table(tsoutliers::locate.outliers(
     resid = resid[, 3],
@@ -1272,7 +1272,7 @@ ResidualOutliers <- function(data,
     cval = tstat,
     types = c("AO", "TC", "LS", "IO", "SLS")
   ))
-
+  
   # Merge back to source data
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
@@ -1284,7 +1284,7 @@ ResidualOutliers <- function(data,
   data <- merge(z, x, by = "ind", all.x = TRUE)
   data[, ':=' (ind = NULL, coefhat = NULL)]
   data[type == "<NA>", type := NA]
-
+  
   # Reorder data, remove the coefhat column to send to database or stakeholder
   return(list(FullData = data, ARIMA_MODEL = fit))
 }
@@ -1393,12 +1393,12 @@ AutoKMeans <- function(data,
   if (!(is.numeric(glrmFactors) | is.integer(glrmFactors))) {
     warning("glrmFactors needs to be an integer value")
   }
-
+  
   # Check data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Set up Scoring File if SaveModels is not NULL----
   if (!is.null(SaveModels)) {
     KMeansModelFile <- data.table::data.table(
@@ -1407,7 +1407,7 @@ AutoKMeans <- function(data,
       FilePath2 = rep("bla", 2)
     )
   }
-
+  
   # Build glmr model----
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- h2o::as.h2o(data)
@@ -1423,7 +1423,7 @@ AutoKMeans <- function(data,
         stopping_metric      = "MSE",
         stopping_tolerance   = 1e-3
       )
-
+    
     # Define hyperparameters----
     HyperParams <-
       list(
@@ -1458,7 +1458,7 @@ AutoKMeans <- function(data,
                              "GramSVD",
                              "Power")
       )
-
+    
     # Run grid tune----
     grid <- h2o::h2o.grid(
       "glrm",
@@ -1469,7 +1469,7 @@ AutoKMeans <- function(data,
       loss              = Loss,
       hyper_params      = HyperParams
     )
-
+    
     # Get best performer----
     Grid_Out <-
       h2o::h2o.getGrid(
@@ -1490,7 +1490,7 @@ AutoKMeans <- function(data,
       max_runtime_secs  = MaxRunTimeSecs
     )
   }
-
+  
   # Save model if requested----
   if (!is.null(SaveModels)) {
     # Save archetypes and colnames----
@@ -1503,7 +1503,7 @@ AutoKMeans <- function(data,
       value = paste0(PathFile, "/fitY")
     )
   }
-
+  
   # Run k-means----
   if (GridTuneKMeans) {
     # GLRM output----
@@ -1520,7 +1520,7 @@ AutoKMeans <- function(data,
       save(KMeansModelFile,
            file = paste0(PathFile, "/KMeansModelFile.Rdata"))
     }
-
+    
     # Define grid tune search scheme in a named list----
     search_criteria  <-
       list(
@@ -1530,13 +1530,13 @@ AutoKMeans <- function(data,
         seed                 = 1234,
         stopping_rounds      = 10
       )
-
+    
     # Define hyperparameters----
     HyperParams <- list(
       max_iterations   = c(10, 20, 50, 100),
       init             = c("Random", "PlusPlus", "Furthest")
     )
-
+    
     # Run grid tune----
     grid <- h2o::h2o.grid(
       "kmeans",
@@ -1548,7 +1548,7 @@ AutoKMeans <- function(data,
       estimate_k        = TRUE,
       hyper_params      = HyperParams
     )
-
+    
     # Get best performer----
     Grid_Out <-
       h2o::h2o.getGrid(grid_id = "KMeans",
@@ -1570,7 +1570,7 @@ AutoKMeans <- function(data,
       save(KMeansModelFile,
            file = paste0(PathFile, "/KMeansModelFile.Rdata"))
     }
-
+    
     # Train KMeans----
     model <- h2o::h2o.kmeans(
       training_frame = x_raw,
@@ -1579,7 +1579,7 @@ AutoKMeans <- function(data,
       estimate_k     = TRUE
     )
   }
-
+  
   # Save model if requested----
   if (!is.null(SaveModels)) {
     if (tolower(SaveModels) == "mojo") {
@@ -1621,7 +1621,7 @@ AutoKMeans <- function(data,
                          "/KMeansModelFile.Rdata"))
     }
   }
-
+  
   # Combine outputs----
   preds <- data.table::as.data.table(h2o::h2o.predict(model, x_raw))
   h2o::h2o.shutdown(prompt = FALSE)
@@ -1671,13 +1671,13 @@ ModelDataPrep <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Prepare columns for action----
   x <- seq_along(data)
   if (!is.null(IgnoreCols)) {
     x <- setdiff(x, IgnoreCols)
   }
-
+  
   # Replace any inf values with NA----
   for (col in x) {
     data.table::set(data,
@@ -1685,7 +1685,7 @@ ModelDataPrep <- function(data,
                     value = replace(data[[col]],
                                     is.infinite(data[[col]]), NA))
   }
-
+  
   # Turn character columns into factors----
   if (CharToFactor) {
     for (col in x) {
@@ -1696,7 +1696,7 @@ ModelDataPrep <- function(data,
       }
     }
   }
-
+  
   # Impute missing values----
   if (Impute) {
     for (col in x) {
@@ -1713,7 +1713,7 @@ ModelDataPrep <- function(data,
       }
     }
   }
-
+  
   # Remove Dates----
   if (RemoveDates) {
     for (col in rev(x)) {
@@ -1781,11 +1781,11 @@ RedYellowGreen <- function(data,
                            Boundaries        = c(0.05, 0.75)) {
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace('parallel', quietly = FALSE)
-
+  
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Ensure arguments are valid
   if (is.character(TruePositiveCost))
     warning("TruePositiveCost must be numeric")
@@ -1803,7 +1803,7 @@ RedYellowGreen <- function(data,
     warning("Boundaries should be a decimal value greater than 0 and less than 0.5")
   if (Boundaries[1] > Boundaries[2])
     warning("The first Boundaries element should be less than the second element")
-
+  
   # Set up evaluation table
   analysisTable <- data.table::data.table(
     TPP = base::rep(TruePositiveCost, 1),
@@ -1814,7 +1814,7 @@ RedYellowGreen <- function(data,
     MTC = base::rep(MidTierCost, 1),
     Threshold = runif(1)
   )
-
+  
   # Do nothing possibilities
   temp     <-
     data.table::CJ(
@@ -1823,7 +1823,7 @@ RedYellowGreen <- function(data,
     )[MTHT > MTLT]
   new      <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
-
+  
   # Parallel components
   requireNamespace(c("parallel", "doParallel", "foreach"))
   packages <- c("data.table")
@@ -1832,7 +1832,7 @@ RedYellowGreen <- function(data,
   parts    <- base::floor(nrow(new) / bat)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
-
+  
   # Kick off run
   results <-
     foreach::foreach(
@@ -1879,7 +1879,7 @@ RedYellowGreen <- function(data,
         }
         base::return(new)
       }
-
+      
       # Inner function for threshold optimizataion
       threshOptim <- function(data,
                               actTar   = 1,
@@ -1894,7 +1894,7 @@ RedYellowGreen <- function(data,
                               MidTierHighThresh = 0.75) {
         # Convert factor target to numeric
         data[, eval(actTar) := base::as.numeric(base::as.character(base::get(actTar)))]
-
+        
         # Optimize each column's classification threshold ::
         popTrue <- base::mean(data[[(actTar)]])
         store   <- list()
@@ -1969,11 +1969,11 @@ RedYellowGreen <- function(data,
           store[[j]] <- base::c(i, utility)
         }
         all <- data.table::rbindlist(list(store))
-        utilities <- data.table::melt(all[2,])
+        utilities <- data.table::melt(all[2, ])
         data.table::setnames(utilities, "value", "Utilities")
-        thresholds <- data.table::melt(all[1,])
+        thresholds <- data.table::melt(all[1, ])
         data.table::setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[, c(-1,-3)]
+        results <- cbind(utilities, thresholds)[, c(-1, -3)]
         thresh <-
           results[Thresholds <= eval(MidTierLowThresh) |
                     Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,
@@ -1981,7 +1981,7 @@ RedYellowGreen <- function(data,
         options(warn = 1)
         return(list(thresh, results))
       }
-
+      
       # Run core function
       data <- RedYellowGreenParallel(
         data,
@@ -1994,14 +1994,14 @@ RedYellowGreen <- function(data,
         MidTierCost       = MidTierCost,
         new = i
       )
-
+      
       # Return data table
       data
     }
-
+  
   # Shut down cluster
   parallel::stopCluster(cl)
-
+  
   # 3D Scatterplot
   s3d <-
     scatterplot3d::scatterplot3d(
@@ -2088,10 +2088,10 @@ threshOptim <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
-
+  
   # Optimize each column's classification threshold ::
   popTrue <- base::mean(data[[(actTar)]])
   store   <- list()
@@ -2120,11 +2120,11 @@ threshOptim <- function(data,
     store[[j]] <- c(i, utility)
   }
   all <- data.table::rbindlist(list(store))
-  utilities <- data.table::melt(all[2,])
+  utilities <- data.table::melt(all[2, ])
   data.table::setnames(utilities, "value", "Utilities")
-  thresholds <- data.table::melt(all[1,])
+  thresholds <- data.table::melt(all[1, ])
   data.table::setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[, c(-1,-3)]
+  results <- cbind(utilities, thresholds)[, c(-1, -3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
   return(list(Thresholds = thresh, EvaluationTable = results))
@@ -2174,24 +2174,24 @@ ParDepCalPlots <- function(data,
                              base::mean(x, na.rm = TRUE)) {
   # Turn off ggplot2 warnings
   options(warn = -1)
-
+  
   # Build buckets by independent variable of choice
   preds2 <- data.table::as.data.table(data)
-
+  
   # Subset columns
   cols <- c(PredictionColName, TargetColName, IndepVar)
   preds2 <- preds2[, ..cols]
-
+  
   # Structure data
   data <- data[, ..cols]
   data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
-
+  
   # If actual is in factor form, convert to numeric
   if (!is.numeric(preds2[[TargetColName]])) {
     preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
     GraphType <- "calibration"
   }
-
+  
   # Prepare for both calibration and boxplot
   if (is.numeric(preds2[[IndepVar]]) ||
       is.integer(preds2[[IndepVar]])) {
@@ -2227,14 +2227,14 @@ ParDepCalPlots <- function(data,
     )
     preds3 <- preds3[order(-get(PredictionColName))]
   }
-
+  
   # Build plots
   if (GraphType == "calibration") {
     # Aggregate by rank for calibration
     preds3 <-
       preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
-
+    
     # Partial dependence calibration plot
     plot <-
       ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
@@ -2257,12 +2257,12 @@ ParDepCalPlots <- function(data,
     actual <- preds2[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
-
+    
     keep <- c("rank", PredictionColName, IndepVar)
     predicted <- preds2[, ..keep]
     predicted[, Type := "predicted"]
     data.table::setnames(predicted, PredictionColName, "Output")
-
+    
     data <-
       data.table::rbindlist(list(actual, predicted))[order(rank)]
     data[, rank := as.factor(rank)]
@@ -2286,7 +2286,7 @@ ParDepCalPlots <- function(data,
     actual <- preds3[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
-
+    
     keep <- c(IndepVar, PredictionColName)
     predicted <- preds3[, ..keep]
     predicted[, Type := "predicted"]
@@ -2294,7 +2294,7 @@ ParDepCalPlots <- function(data,
     data <-
       data.table::rbindlist(list(actual,
                                  predicted))[order(-Output)]
-
+    
     plot <-
       ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]],
                                          y = Output)) +
@@ -2349,7 +2349,7 @@ EvalPlot <- function(data,
   # Turn data into data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Structure data
   cols <- c(eval(PredictionColName), eval(TargetColName))
   data <- data[, ..cols]
@@ -2357,18 +2357,18 @@ EvalPlot <- function(data,
   data.table::setnames(data,
                        c(PredictionColName, TargetColName),
                        c("preds", "acts"))
-
+  
   # If actual is in factor form, convert to numeric
   if (!is.numeric(data[["acts"]])) {
     data.table::set(data, j = "acts", value = as.numeric(as.character(data[["acts"]])))
     GraphType <- "calibration"
   }
-
+  
   # Add a column that ranks predicted values
   data.table::set(data,
                   j = "rank",
                   value = 100 * (round(percRank(data[[1]]) / PercentileBucket) * PercentileBucket))
-
+  
   # Plot
   if (GraphType == "boxplot") {
     # Remove classification and non-event predicted values
@@ -2377,7 +2377,7 @@ EvalPlot <- function(data,
     zz1 <- data[, ..cols]
     zz1[, Type := 'predicted']
     data.table::setnames(zz1, c("preds"), c("output"))
-
+    
     cols <- c("rank", "acts")
     zz2 <- data[, ..cols]
     zz2[, Type := 'actual']
@@ -2395,11 +2395,11 @@ EvalPlot <- function(data,
       ChartTheme(Size = 15) +
       ggplot2::scale_fill_manual(values = c("blue",
                                             "red"))
-
+    
   } else {
     # Aggregate all columns by rank, utilizing mean as the aggregator statistic
     data <- data[, lapply(.SD, noquote(aggrfun)), by = rank]
-
+    
     # Build calibration plot
     plot  <- ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
       ggplot2::geom_line(ggplot2::aes(y = data[[3]],
@@ -2439,7 +2439,7 @@ tokenizeH2O <- function(data) {
     tokenized.lower[h2o::h2o.grep("[0-9]",
                                   tokenized.lower,
                                   invert = TRUE,
-                                  output.logical = TRUE),]
+                                  output.logical = TRUE), ]
   tokenized.words
 }
 
@@ -2487,11 +2487,11 @@ AutoWordFreq <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure stringCol is character (not factor)
   if (!is.character(data[[eval(TextColName)]]))
     data[, eval(TextColName) := as.character(get(TextColName))]
-
+  
   # Prepare data
   if (is.null(GroupColName)) {
     desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
@@ -2502,7 +2502,7 @@ AutoWordFreq <- function(data,
         tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
     }
   }
-
+  
   # Clean text
   toSpace <-
     tm::content_transformer(function (x , pattern)
@@ -2510,38 +2510,38 @@ AutoWordFreq <- function(data,
   text <- tm::tm_map(desc, toSpace, "/")
   text <- tm::tm_map(text, toSpace, "@")
   text <- tm::tm_map(text, toSpace, "\\|")
-
+  
   # Convert the text to lower case
   text <- tm::tm_map(text, tm::content_transformer(tolower))
-
+  
   # Remove numbers
   text <- tm::tm_map(text, tm::removeNumbers)
-
+  
   # Remove english common stopwords
   if (RemoveEnglishStopwords)
     text <-
     tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
-
+  
   # specify your stopwords as a character vector
   text <- tm::tm_map(text, tm::removeWords, StopWords)
-
+  
   # Remove punctuations
   text <- tm::tm_map(text, tm::removePunctuation)
-
+  
   # Eliminate extra white spaces
   text <- tm::tm_map(text, tm::stripWhitespace)
-
+  
   # Text stemming
   if (Stemming)
     text <- tm::tm_map(text, tm::stemDocument)
-
+  
   # Finalize
   dtm <- tm::TermDocumentMatrix(text)
   m <- as.matrix(dtm)
   v <- sort(rowSums(m), decreasing = TRUE)
   d <- data.table::data.table(word = names(v), freq = v)
   print(head(d, 10))
-
+  
   # Word Cloud
   print(
     wordcloud::wordcloud(
@@ -2554,7 +2554,7 @@ AutoWordFreq <- function(data,
       colors = RColorBrewer::brewer.pal(8, "Dark2")
     )
   )
-
+  
   # Return
   return(d)
 }
@@ -2586,12 +2586,12 @@ AutoH2OTextPrepScoring <- function(data,
   }
   data[, eval(string) := as.character(get(string))]
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
-
+  
   # It is important to remove "\n" --
   data[, eval(string) := gsub("  ", " ", get(string))]
   data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
   data2 <- data[, ..string]
-
+  
   # Tokenize
   tokenized_words <- RemixAutoML::tokenizeH2O(data2)
   return(tokenized_words)
@@ -2623,7 +2623,7 @@ CreateCalendarVariables <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Check args----
   if (!is.logical(AsFactor)) {
     warning("AsFactor needs to be TRUE or FALSE")
@@ -2648,14 +2648,14 @@ CreateCalendarVariables <- function(data,
             'mday', 'yday','week', 'month', 'quarter', 'year'"
     )
   }
-
+  
   # Turn DateCols into character names if not already----
   for (i in DateCols) {
     if (!is.character(DateCols[i])) {
       DateCols[i] <- names(data)[DateCols[i]]
     }
   }
-
+  
   # Revise TimeUnits Based on Data----
   x <- 0
   TimeList <- list()
@@ -2675,10 +2675,10 @@ CreateCalendarVariables <- function(data,
       Cols[i] <- length(TimeList[[i]])
     }
   }
-
+  
   # Allocate data.table cols
   data.table::alloc.col(DT = data, ncol(data) + sum(Cols))
-
+  
   # Create DateCols to data.table IDateTime types----
   for (i in seq_len(length(DateCols))) {
     if (length(TimeList) != 0) {
@@ -2705,7 +2705,7 @@ CreateCalendarVariables <- function(data,
       }
     }
   }
-
+  
   # Build Features----
   for (i in seq_len(length(DateCols))) {
     for (j in TimeList[[i]]) {
@@ -2978,23 +2978,23 @@ DummifyDT <- function(data,
       warning("SavePath needs to be a character value of a folder location")
     }
   }
-
+  
   # Check data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure correct argument settings----
   if (OneHot == TRUE & ClustScore == TRUE) {
     OneHot <- FALSE
     KeepFactorCols <- FALSE
   }
-
+  
   # Build dummies start----
   for (col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)
-
+    
     # Import factor levels for scoring models----
     if (ImportFactorLevels) {
       temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
@@ -3002,21 +3002,21 @@ DummifyDT <- function(data,
     } else {
       inds <- sort(unique(data[[eval(col)]]))
     }
-
+    
     # Allocate columns----
     data.table::alloc.col(data, n = ncol(data) + length(inds))
-
+    
     # Save factor levels for scoring later----
     if (SaveFactorLevels) {
       data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL],
                          file = paste0(SavePath, "/", col, ".csv"))
     }
-
+    
     # Convert to character if col is factor----
     if (is.factor(data[[eval(col)]])) {
       data.table::set(data, j = eval(col), value = as.character(data[[eval(col)]]))
     }
-
+    
     # If for clustering set up old school way----
     if (!ClustScore) {
       data.table::set(data,
@@ -3027,7 +3027,7 @@ DummifyDT <- function(data,
                       j = paste0(col, inds),
                       value = 0L)
     }
-
+    
     # Build dummies----
     for (ind in inds) {
       if (!ClustScore) {
@@ -3046,7 +3046,7 @@ DummifyDT <- function(data,
         )
       }
     }
-
+    
     # Remove original factor columns----
     if (!KeepFactorCols) {
       data.table::set(data, j = eval(col), value = NULL)
@@ -3057,13 +3057,13 @@ DummifyDT <- function(data,
                             Names),
                     Names))
     }
-
+    
     # If onehot, add extra column----
     if (OneHot) {
       data.table::set(data, j = paste0(col, "_Base"), value = 0L)
     }
   }
-
+  
   # Clustering section----
   if (ClustScore) {
     setnames(data, names(data),
@@ -3209,15 +3209,15 @@ GDL_Feature_Engineering <- function(data,
       warning("SkipCols needs to be a character scalar or vector")
     }
   }
-
+  
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure target is numeric----
   data[, eval(targets) := as.numeric(get(targets))]
-
+  
   # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
@@ -3225,7 +3225,7 @@ GDL_Feature_Engineering <- function(data,
   } else {
     tarNum <- length(targets)
   }
-
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
@@ -3237,12 +3237,12 @@ GDL_Feature_Engineering <- function(data,
       tarNum * (length(periods) * length(statsNames) +
                   length(lags))
   }
-
+  
   # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
-
+      
       # Sort data----
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
@@ -3251,7 +3251,7 @@ GDL_Feature_Engineering <- function(data,
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = -1)
       }
-
+      
       # Generate Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
@@ -3267,7 +3267,7 @@ GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
@@ -3280,7 +3280,7 @@ GDL_Feature_Engineering <- function(data,
                  by = get(groupingVars[i])]
           }
         }
-
+        
         # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
@@ -3353,17 +3353,17 @@ GDL_Feature_Engineering <- function(data,
             }
           }
         }
-
+        
         # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           data[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
-
+        
         # Store new target----
         timeTarget <- paste0(groupingVars[i],
                              timeDiffTarget, "1")
       }
-
+      
       # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
@@ -3383,7 +3383,7 @@ GDL_Feature_Engineering <- function(data,
           Targets <- Targets
         }
       }
-
+      
       # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
@@ -3404,7 +3404,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
@@ -3412,14 +3412,14 @@ GDL_Feature_Engineering <- function(data,
                       value = replace(data[[col]],
                                       is.infinite(data[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data, j = col, value = as.factor(data[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
@@ -3429,14 +3429,14 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!
     return(data)
-
+    
   } else {
     # Sort data----
     if (tolower(Type) == "lag") {
@@ -3447,7 +3447,7 @@ GDL_Feature_Engineering <- function(data,
       data.table::setorderv(data, colVar, order = -1)
     }
     Targets <- targets
-
+    
     # Generate Lags----
     for (l in seq_along(lags)) {
       for (t in Targets) {
@@ -3465,7 +3465,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
@@ -3477,7 +3477,7 @@ GDL_Feature_Engineering <- function(data,
                                                       type = "lag")]
         }
       }
-
+      
       # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
@@ -3547,16 +3547,16 @@ GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         data[, paste0("TEMP", lags[l]) := NULL]
       }
-
+      
       # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
-
+    
     # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
@@ -3574,7 +3574,7 @@ GDL_Feature_Engineering <- function(data,
         Targets <- Targets
       }
     }
-
+    
     # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
@@ -3599,7 +3599,7 @@ GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
@@ -3607,7 +3607,7 @@ GDL_Feature_Engineering <- function(data,
                       value = replace(data[[col]],
                                       is.infinite(data[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
@@ -3616,7 +3616,7 @@ GDL_Feature_Engineering <- function(data,
                         value = as.factor(data[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
@@ -3626,11 +3626,11 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!
     return(data)
   }
@@ -3739,14 +3739,14 @@ DT_GDL_Feature_Engineering <- function(data,
   if (!is.logical(SimpleImpute)) {
     warning("SimpleImpute needs to be TRUE or FALSE")
   }
-
+  
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Ensure target is numeric----
   data[, eval(targets) := as.numeric(get(targets))]
-
+  
   # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
@@ -3754,7 +3754,7 @@ DT_GDL_Feature_Engineering <- function(data,
   } else {
     tarNum <- length(targets)
   }
-
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
@@ -3766,12 +3766,12 @@ DT_GDL_Feature_Engineering <- function(data,
       tarNum * (length(periods) * length(statsNames) +
                   length(lags))
   }
-
+  
   # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
       Targets <- targets
-
+      
       # Sort data----
       if (tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
@@ -3780,7 +3780,7 @@ DT_GDL_Feature_Engineering <- function(data,
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = -1)
       }
-
+      
       # Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
@@ -3798,7 +3798,7 @@ DT_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first----
@@ -3810,7 +3810,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                                       type = "lag"),
                by = get(groupingVars[i])]
         }
-
+        
         # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
@@ -3877,18 +3877,18 @@ DT_GDL_Feature_Engineering <- function(data,
             }
           }
         }
-
+        
         # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           data[, paste0(groupingVars[i], "TEMP",
                         lags[l]) := NULL]
         }
-
+        
         # Store new target----
         timeTarget <- paste0(groupingVars[i],
                              timeDiffTarget, "1")
       }
-
+      
       # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
@@ -3914,7 +3914,7 @@ DT_GDL_Feature_Engineering <- function(data,
           Targets <- Targets
         }
       }
-
+      
       # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
@@ -3943,7 +3943,7 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
@@ -3951,14 +3951,14 @@ DT_GDL_Feature_Engineering <- function(data,
                       value = replace(data[[col]],
                                       is.infinite(data[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
         data.table::set(data, j = col, value = as.factor(data[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
@@ -3967,17 +3967,17 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!----
     if (Timer) {
       print(CounterIndicator)
     }
     return(data)
-
+    
   } else {
     if (tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
@@ -3987,7 +3987,7 @@ DT_GDL_Feature_Engineering <- function(data,
       data.table::setorderv(data, colVar, order = -1)
     }
     Targets <- targets
-
+    
     # Lags----
     for (l in seq_along(lags)) {
       for (t in Targets) {
@@ -4002,7 +4002,7 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
@@ -4013,7 +4013,7 @@ DT_GDL_Feature_Engineering <- function(data,
           value = data.table::shift(data[[eval(sortDateName)]], n = lags[l], type = "lag")
         )
       }
-
+      
       # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
@@ -4080,16 +4080,16 @@ DT_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         data.table::set(data, j = paste0("TEMP", lags[l]), value = NULL)
       }
-
+      
       # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
-
+    
     # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
@@ -4107,7 +4107,7 @@ DT_GDL_Feature_Engineering <- function(data,
         Targets <- Targets
       }
     }
-
+    
     # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
@@ -4133,7 +4133,7 @@ DT_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(data)) {
       data.table::set(data,
@@ -4141,7 +4141,7 @@ DT_GDL_Feature_Engineering <- function(data,
                       value = replace(data[[col]],
                                       is.infinite(data[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(data)) {
       if (is.character(data[[col]])) {
@@ -4150,7 +4150,7 @@ DT_GDL_Feature_Engineering <- function(data,
                         value = as.factor(data[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(data)) {
@@ -4159,11 +4159,11 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j,-1)
+                          which(is.na(data[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!----
     if (Timer) {
       return(data)
@@ -4285,17 +4285,17 @@ Scoring_GDL_Feature_Engineering <- function(data,
   if (RecordsKeep < 1) {
     warning("RecordsKeep less than 1 means zero data. Why run this?")
   }
-
+  
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Max data to keep----
   MAX_RECORDS_FULL <-
     max(max(lags + 1), max(periods + 1), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
-
+  
   # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
@@ -4303,7 +4303,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
   } else {
     tarNum <- length(targets)
   }
-
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
@@ -4315,7 +4315,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
       tarNum * (length(periods) * length(statsNames) +
                   length(lags))
   }
-
+  
   # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
@@ -4328,10 +4328,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = -1)
       }
-
+      
       # Remove records----
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
-
+      
       # Lags
       for (l in seq_along(lags)) {
         for (t in Targets) {
@@ -4345,7 +4345,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
@@ -4356,7 +4356,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                                           n = lags[l],
                                                           type = "lag"), by = get(groupingVars[i])]
         }
-
+        
         # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
@@ -4423,16 +4423,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
             }
           }
         }
-
+        
         # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
-
+        
         # Store new target----
         timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
-
+      
       # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
@@ -4450,11 +4450,11 @@ Scoring_GDL_Feature_Engineering <- function(data,
           Targets <- Targets
         }
       }
-
+      
       # Keep final values----
       tempData1 <-
         tempData#[get(AscRowByGroup) <= eval(RecordsKeep)]
-
+      
       # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
@@ -4486,7 +4486,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
@@ -4494,7 +4494,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                       value = replace(tempData1[[col]],
                                       is.infinite(tempData1[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
@@ -4503,7 +4503,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                         value = as.factor(tempData1[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
@@ -4514,14 +4514,14 @@ Scoring_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j,-1)
+                          j, -1)
         }
       }
     }
-
+    
     # Done!!
     return(tempData1)
-
+    
   } else {
     # Sort data----
     if (tolower(Type) == "lag") {
@@ -4532,10 +4532,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
       data.table::setorderv(data, colVar, order = -1)
     }
     Targets <- targets
-
+    
     # Remove records----
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
-
+    
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
@@ -4552,7 +4552,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first----
@@ -4565,7 +4565,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                     type = "lag")
         )
       }
-
+      
       # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
@@ -4632,18 +4632,18 @@ Scoring_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         data.table::set(tempData,
                         j = paste0("TEMP", lags[l]),
                         value = NULL)
       }
-
+      
       # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
-
+    
     # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
@@ -4661,10 +4661,10 @@ Scoring_GDL_Feature_Engineering <- function(data,
         Targets <- Targets
       }
     }
-
+    
     # Keep final values----
     tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
-
+    
     # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
@@ -4691,7 +4691,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
@@ -4699,7 +4699,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                       value = replace(tempData1[[col]],
                                       is.infinite(tempData1[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
@@ -4708,7 +4708,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                         value = as.factor(tempData1[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
@@ -4718,11 +4718,11 @@ Scoring_GDL_Feature_Engineering <- function(data,
           )), j, "0")
         } else {
           data.table::set(tempData1,
-                          which(is.na(tempData1[[j]])), j,-1)
+                          which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!
     return(tempData1)
   }
@@ -4868,17 +4868,17 @@ FAST_GDL_Feature_Engineering <- function(data,
   if (RecordsKeep < 1) {
     warning("RecordsKeep less than 1 means zero data. Why run this?")
   }
-
+  
   # Convert to data.table if not already----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
-
+  
   # Max data to keep----
   MAX_RECORDS_FULL <-
     max(max(lags + 1), max(periods + 1), RecordsKeep)
   MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
   MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
-
+  
   # Set up counter for countdown----
   CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
@@ -4886,7 +4886,7 @@ FAST_GDL_Feature_Engineering <- function(data,
   } else {
     tarNum <- length(targets)
   }
-
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
@@ -4898,7 +4898,7 @@ FAST_GDL_Feature_Engineering <- function(data,
       tarNum * (length(periods) * length(statsNames) +
                   length(lags))
   }
-
+  
   # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
@@ -4911,10 +4911,10 @@ FAST_GDL_Feature_Engineering <- function(data,
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data, colVar, order = -1)
       }
-
+      
       # Remove records----
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
-
+      
       # Lags----
       for (l in seq_along(lags)) {
         for (t in Targets) {
@@ -4931,7 +4931,7 @@ FAST_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first----
@@ -4944,7 +4944,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                                             type = "lag"), by = get(groupingVars[i])]
           }
         }
-
+        
         # Difference the lag dates----
         if (WindowingLag != 0) {
           for (l in seq_along(lags)) {
@@ -5031,16 +5031,16 @@ FAST_GDL_Feature_Engineering <- function(data,
             }
           }
         }
-
+        
         # Remove temporary lagged dates----
         for (l in seq_along(lags)) {
           tempData[, paste0(groupingVars[i], "TEMP", lags[l]) := NULL]
         }
-
+        
         # Store new target----
         timeTarget <- paste0(groupingVars[i], timeDiffTarget, "1")
       }
-
+      
       # Define targets----
       if (WindowingLag != 0) {
         if (!is.null(timeDiffTarget)) {
@@ -5058,10 +5058,10 @@ FAST_GDL_Feature_Engineering <- function(data,
           Targets <- Targets
         }
       }
-
+      
       # Keep final values----
       tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
-
+      
       # Moving stats----
       for (j in seq_along(periods)) {
         for (k in seq_along(statsNames)) {
@@ -5154,7 +5154,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
@@ -5162,7 +5162,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                       value = replace(tempData1[[col]],
                                       is.infinite(tempData1[[col]]), NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
@@ -5171,7 +5171,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                         value = as.factor(tempData1[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
@@ -5180,14 +5180,14 @@ FAST_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
         }
       }
     }
-
+    
     # Done!!
     return(tempData1)
-
+    
   } else {
     # Sort data----
     if (tolower(Type) == "lag") {
@@ -5198,10 +5198,10 @@ FAST_GDL_Feature_Engineering <- function(data,
       data.table::setorderv(data, colVar, order = -1)
     }
     Targets <- targets
-
+    
     # Remove records----
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
-
+    
     # Lags
     for (l in seq_along(lags)) {
       for (t in Targets) {
@@ -5214,7 +5214,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Time lags----
     if (!is.null(timeDiffTarget)) {
       # Lag the dates first
@@ -5224,7 +5224,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                             lags[l]) := data.table::shift(get(sortDateName), n = lags[l], type = "lag")]
         }
       }
-
+      
       # Difference the lag dates----
       if (WindowingLag != 0) {
         for (l in seq_along(lags)) {
@@ -5293,16 +5293,16 @@ FAST_GDL_Feature_Engineering <- function(data,
           }
         }
       }
-
+      
       # Remove temporary lagged dates----
       for (l in seq_along(lags)) {
         tempData[, paste0("TEMP", lags[l]) := NULL]
       }
-
+      
       # Store new target----
       timeTarget <- paste0(timeDiffTarget, "_1")
     }
-
+    
     # Define targets----
     if (WindowingLag != 0) {
       if (!is.null(timeDiffTarget)) {
@@ -5320,10 +5320,10 @@ FAST_GDL_Feature_Engineering <- function(data,
         Targets <- Targets
       }
     }
-
+    
     # Keep final values----
     tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
-
+    
     # Moving stats----
     for (j in seq_along(periods)) {
       for (k in seq_along(statsNames)) {
@@ -5406,7 +5406,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Replace any inf values with NA----
     for (col in seq_along(tempData1)) {
       data.table::set(tempData1,
@@ -5415,7 +5415,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                                       is.infinite(tempData1[[col]]),
                                       NA))
     }
-
+    
     # Turn character columns into factors----
     for (col in seq_along(tempData1)) {
       if (is.character(tempData1[[col]])) {
@@ -5424,7 +5424,7 @@ FAST_GDL_Feature_Engineering <- function(data,
                         value = as.factor(tempData1[[col]]))
       }
     }
-
+    
     # Impute missing values----
     if (SimpleImpute) {
       for (j in seq_along(tempData1)) {
@@ -5438,14 +5438,14 @@ FAST_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j,-1)
+                          j, -1)
         }
       }
     }
-
+    
     # Ensure correct order of columns----
     setcolorder(tempData1, c(2, 3, 1, 4:ncol(tempData1)))
-
+    
     # Done!!
     return(tempData1)
   }
@@ -5461,7 +5461,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param Ratios A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)
 #' @param PartitionType Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
 #' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
-#' @param StratifyNumericTarget Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets. 
+#' @param StratifyNumericTarget Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets.
 #' @param StratTargetPrecision For "random" PartitionType and when StratifyNumericTarget is not null, precision will be the number of decimals used in the percentile calculation. If you supply a value of 1, deciles will be used. For a value of 2, percentiles will be used. Larger values are supported.
 #' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
 #' @return Returns a list of data.tables
@@ -5470,7 +5470,7 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' dataSets <- AutoDataPartition(data,
 #'                               NumDataSets = 3,
 #'                               Ratios = c(0.70,0.20,0.10),
-#'                               PartitionType = "random",                                                     
+#'                               PartitionType = "random",
 #'                               StratifyColumnNames = NULL,
 #'                               StratifyNumericTarget = NULL,
 #'                               StratTargetPrecision = 1,
@@ -5489,11 +5489,11 @@ AutoDataPartition <- function(data,
   if (NumDataSets < 0) {
     warning("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
   }
-  if(!is.null(StratifyNumericTarget)) {
-    if(!is.character(StratifyNumericTarget)) {
+  if (!is.null(StratifyNumericTarget)) {
+    if (!is.character(StratifyNumericTarget)) {
       warning("StratifyNumericTarget your target column name in quotes")
     }
-    if(!is.numeric(StratTargetPrecision)) {
+    if (!is.numeric(StratTargetPrecision)) {
       warning("StratTargetPrecision needs to be values of 1,2,...,N")
     }
   }
@@ -5526,34 +5526,31 @@ AutoDataPartition <- function(data,
       warning("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
     }
   }
-
+  
   # Ensure data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
   
   # Stratify Numeric Target----
-  if(PartitionType == "random") {
-    if(!is.null(StratifyNumericTarget)) {
-      data[, StratCol := as.factor(
-        round(
-          percRank(
-            data[[eval(StratifyNumericTarget)]]),StratTargetPrecision))]
+  if (PartitionType == "random") {
+    if (!is.null(StratifyNumericTarget)) {
+      data[, StratCol := as.factor(round(percRank(data[[eval(StratifyNumericTarget)]]), StratTargetPrecision))]
       StratifyColumnNames <- "StratCol"
     }
   }
-
+  
   # Partition Steps----
   if (is.null(TimeColumnName)) {
     # Copy data----
     copy_data <- data.table::copy(data)
-
+    
     # Put Stratify Column Names in Variable----
     DataCollect <- list()
     if (!is.null(StratifyColumnNames)) {
       keep <- c(eval(StratifyColumnNames))
     }
-
+    
     # Modify ratios to account for data decrements----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
@@ -5564,7 +5561,7 @@ AutoDataPartition <- function(data,
       }
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
-
+    
     # Gather Row Numbers----
     RowList <- list()
     for (i in NumDataSets:1) {
@@ -5587,7 +5584,7 @@ AutoDataPartition <- function(data,
         }
       }
     }
-
+    
     # Partition Data----
     for (i in seq_len(NumDataSets)) {
       if (i == 1) {
@@ -5603,8 +5600,8 @@ AutoDataPartition <- function(data,
     }
     
     # Remove StratCol from StratifyNumericTarget----
-    if(PartitionType == "random") {
-      if(!is.null(StratifyNumericTarget)) {
+    if (PartitionType == "random") {
+      if (!is.null(StratifyNumericTarget)) {
         x1 <- DataCollect$TrainData
         x1[, StratCol := NULL]
         x2 <- DataCollect$ValidationData
@@ -5616,15 +5613,15 @@ AutoDataPartition <- function(data,
         DataCollect$TestData <- x3
       }
     }
-        
+    
   } else if (tolower(PartitionType) == "timeseries" &
              !is.null(StratifyColumnNames)) {
     # Initialize DataCollect
     DataCollect <- list()
-
+    
     # Add ID by Strata Groups
     data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
-
+    
     # Ensure row counts are all equal by strata
     if (var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
       return(
@@ -5632,10 +5629,10 @@ AutoDataPartition <- function(data,
              PartitionType 'timeseries' requires equal number of observations for each strata"
       )
     }
-
+    
     # Get Total Row Count
     Rows <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
-
+    
     # Figure out which rows go to which data set
     for (i in NumDataSets:1) {
       if (i == 1) {
@@ -5669,13 +5666,13 @@ AutoDataPartition <- function(data,
   } else {
     # Initialize DataCollect
     DataCollect <- list()
-
+    
     # Sort data by TimeColumnName
     data <- data[order(get(TimeColumnName))]
-
+    
     # Get Total Row Count
     Rows <- data[, .N]
-
+    
     # Figure out which rows go to which data set
     for (i in NumDataSets:1) {
       if (i == 1) {
@@ -5762,7 +5759,7 @@ AutoWord2VecModeler <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Create storage file
   N <- length(stringCol)
   StoreFile <-
@@ -5772,28 +5769,28 @@ AutoWord2VecModeler <- function(data,
       Jar = rep("a", N)
     )
   i <- 0
-
+  
   # Loop through all the string columns
   for (string in stringCol) {
     # Ensure stringCol is character (not factor)
     if (!is.character(data[[eval(string)]])) {
       data[, eval(string) := as.character(get(string))]
     }
-
+    
     # word2vec time
     i <- as.integer(i + 1)
     Sys.sleep(10)
     h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
-
+    
     # It is important to remove "\n" --
     data[, eval(string) := gsub("  ", " ", get(string))]
     data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
     data2 <- data[, .(get(string))]
-
+    
     # Tokenize
     tokenized_words <- tokenizeH2O(data2)
     rm(data2)
-
+    
     # Build model
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
@@ -5807,7 +5804,7 @@ AutoWord2VecModeler <- function(data,
       sent_sample_rate   = 0.05,
       epochs             = Epochs
     )
-
+    
     # Save model
     if (SaveOutput) {
       if (tolower(SaveModel) == "standard") {
@@ -5853,28 +5850,28 @@ AutoWord2VecModeler <- function(data,
         save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
       }
     }
-
+    
     # Score model
     all_vecs <-
       h2o::h2o.transform(w2v.model, tokenized_words,
                          aggregate_method = "AVERAGE")
-
+    
     # Convert to data.table
     all_vecs <- data.table::as.data.table(all_vecs)
     data <- data.table::data.table(cbind(data, all_vecs))
-
+    
     # Remove string cols
     if (!KeepStringCol) {
       data[, eval(string) := NULL]
     }
-
+    
     # Replace Colnames
     cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
     for (c in cols) {
       data[, paste0(string, "_", c) := get(c)]
       data[, eval(c) := NULL]
     }
-
+    
     # Final Prep
     h2o::h2o.rm(w2v.model)
     h2o::h2o.shutdown(prompt = FALSE)
@@ -5978,15 +5975,15 @@ AutoNLS <- function(data,
       ),
       MeanAbsError = rep(999, 10)
     )
-
+  
   # Convert to data.table if not already
   if (!data.table::is.data.table(data))
     DATA <- data.table::as.data.table(data)
-
+  
   data.table::setnames(DATA,
                        c(eval(y), eval(x)),
                        c("Target", "Variable"))
-
+  
   z <- DATA[["Variable"]]
   zz <- DATA[["Target"]]
   tryCatch({
@@ -6017,7 +6014,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Asymp model
   tryCatch({
     model1 <-
@@ -6030,7 +6027,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Asymp offset model
   tryCatch({
     model2 <-
@@ -6043,7 +6040,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Asymp origin model
   tryCatch({
     model3 <-
@@ -6056,7 +6053,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Biexp model
   tryCatch({
     model4 <-
@@ -6069,7 +6066,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Four parameter logistic model
   tryCatch({
     model5 <-
@@ -6082,7 +6079,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Gompertz model
   tryCatch({
     model6 <-
@@ -6095,7 +6092,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Logistic model
   tryCatch({
     model7 <-
@@ -6108,7 +6105,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Michaelis-Menton model
   tryCatch({
     model8 <-
@@ -6122,7 +6119,7 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Weibull Growth model
   tryCatch({
     model9 <-
@@ -6135,14 +6132,14 @@ AutoNLS <- function(data,
   }, error = function(x) {
     return("skip")
   })
-
+  
   # Store best model name
   name <-
     nls_collection[MeanAbsError != 999][order(MeanAbsError)][1, 1][[1]]
-
+  
   # Collect metrics for all models fitted
   temp <- nls_collection[MeanAbsError != 999][order(MeanAbsError)]
-
+  
   # Create column using best model
   if (name == nls_collection[10, 1][[1]]) {
     DATA[, Target := preds9]
@@ -6302,7 +6299,7 @@ AutoNLS <- function(data,
 #' TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Supervised Learning
+#' @family Time Series
 #' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
 #' @param TargetName is the name of the target variable in your data.table
 #' @param DateName is the name of the date column in your data.table
@@ -6388,56 +6385,56 @@ AutoTS <- function(data,
       warning("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
     }
   }
-
+  
   # Turn off warnings
   options(warn = -1)
-
+  
   # Initialize collection variables
   i <- 0
   EvalList <- list()
-
+  
   # Convert to data.table if not already
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure correct ordering and subsetting of data
   keep <- c(DateName, TargetName)
   data <- data[, ..keep]
-
+  
   # Check for min value of data
   MinVal <- data[, min(get(TargetName))]
-
+  
   # Convert to lubridate as_date() or POSIXct
   if (tolower(TimeUnit) != "hour") {
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
   }
-
+  
   # Correct ordering----
   if (is.numeric(data[[1]]) | is.integer(data[[1]])) {
     data.table::setcolorder(data, c(2, 1))
   }
-
+  
   # Ensure data is sorted----
   data <- data[order(get(DateName))]
-
+  
   # Change Target Name----
   TempTargetName <- TargetName
   data.table::setnames(data, paste0(eval(TargetName)), "Target")
   TargetName <- "Target"
-
+  
   # Create Training data----
   data_train <- data[1:(nrow(data) - HoldOutPeriods)]
-
+  
   # Create Test data----
   data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
-
+  
   # Check for different time aggregations
   MaxDate <- data[, max(get(DateName))]
   FC_Data <- data.table::data.table(Date = seq(1:FCPeriods))
-
+  
   # Define TS Frequency----
   if (tolower(TimeUnit) == "hour") {
     freq <- 24
@@ -6461,19 +6458,19 @@ AutoTS <- function(data,
     return("TimeUnit is not in hour, day, week, month,
     quarter, or year")
   }
-
+  
   # Coerce SLags if too large----
   if (freq * SLags > nrow(data_train)) {
     SLags <- floor(nrow(data_train) / freq)
   }
-
+  
   # Convert data.tables to stats::ts objects----
   # User Supplied Frequency
   dataTSTrain <-
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = freq)
-
+  
   # TSClean Version----
   if (TSClean) {
     if (MinVal > 0) {
@@ -6486,14 +6483,14 @@ AutoTS <- function(data,
                                   lambda = NULL)
     }
   }
-
+  
   # Model-Based Frequency----
   SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
   dataTSTrain1 <-
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = SFreq)
-
+  
   # TSClean Version
   if (TSClean) {
     if (MinVal > 0) {
@@ -6506,7 +6503,7 @@ AutoTS <- function(data,
                                     lambda = NULL)
     }
   }
-
+  
   # DSHW-------------
   if (!("DSHW" %in% toupper(SkipModels))) {
     # 1)
@@ -6533,7 +6530,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         DSHW_Model1 <-
@@ -6556,7 +6553,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # Run for outlier removal and imputation
       if (TSClean) {
         # User-Supplied-Freq
@@ -6579,7 +6576,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           DSHW_Model3 <-
@@ -6624,7 +6621,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         DSHW_Model1 <-
@@ -6647,7 +6644,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # tsclean: impute and replace outliers
       if (TSClean) {
         # User-Supplied-Freq
@@ -6670,7 +6667,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           DSHW_Model3 <-
@@ -6695,7 +6692,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(DSHW_Model)) == "forecast") {
@@ -6708,7 +6705,7 @@ AutoTS <- function(data,
             forecast::forecast(DSHW_Model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_DSHW[, ':=' (
@@ -6720,16 +6717,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_DSHW
       }, error = function(x)
         "skip")
     }
-
+    
     # 2: Model-Supplied-Freq
     if (ModelFreq) {
       if (tolower(class(DSHW_Model1)) == "forecast") {
@@ -6742,7 +6739,7 @@ AutoTS <- function(data,
               forecast::forecast(DSHW_Model1, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_DSHW1[, ':=' (
@@ -6754,17 +6751,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_DSHW1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # If TSClean is TRUE
     if (TSClean) {
       # 2: Model-Supplied-Freq
@@ -6778,7 +6775,7 @@ AutoTS <- function(data,
               forecast::forecast(DSHW_Model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_DSHW2[, ':=' (
@@ -6790,16 +6787,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_DSHW2
         }, error = function(x)
           "skip")
       }
-
+      
       # 2: Model-Supplied-Freq
       if (ModelFreq) {
         if (tolower(class(DSHW_Model3)) == "forecast") {
@@ -6812,7 +6809,7 @@ AutoTS <- function(data,
                 forecast::forecast(DSHW_Model3, h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_DSHW3[, ':=' (
@@ -6824,10 +6821,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_DSHW3
           }, error = function(x)
@@ -6836,7 +6833,7 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # ARFIMA Modeling----
   if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
@@ -6863,7 +6860,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARFIMA_model1 <-
@@ -6884,7 +6881,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -6905,7 +6902,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARFIMA_model3 <-
@@ -6946,7 +6943,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARFIMA_model1 <-
@@ -6967,7 +6964,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -6988,7 +6985,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARFIMA_model3 <-
@@ -7032,7 +7029,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARFIMA_model1 <-
@@ -7054,7 +7051,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -7076,7 +7073,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARFIMA_model3 <-
@@ -7119,7 +7116,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARFIMA_model1 <-
@@ -7141,7 +7138,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -7163,7 +7160,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARFIMA_model3 <-
@@ -7188,8 +7185,8 @@ AutoTS <- function(data,
         }
       }
     }
-
-
+    
+    
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(ARFIMA_model)) == "fracdiff") {
@@ -7202,7 +7199,7 @@ AutoTS <- function(data,
             forecast::forecast(ARFIMA_model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_ARF[, ':=' (
@@ -7214,16 +7211,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_ARF
       }, error = function(x)
         "skip")
     }
-
+    
     # 2: Model-Supplied-Freq
     if (ModelFreq) {
       if (tolower(class(ARFIMA_model1)) == "fracdiff") {
@@ -7236,7 +7233,7 @@ AutoTS <- function(data,
               forecast::forecast(ARFIMA_model1, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ARF1[, ':=' (
@@ -7248,17 +7245,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ARF1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
@@ -7272,7 +7269,7 @@ AutoTS <- function(data,
               forecast::forecast(ARFIMA_model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ARF2[, ':=' (
@@ -7284,16 +7281,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ARF2
         }, error = function(x)
           "skip")
       }
-
+      
       # 2: Model-Supplied-Freq
       if (ModelFreq) {
         if (tolower(class(ARFIMA_model3)) == "fracdiff") {
@@ -7306,7 +7303,7 @@ AutoTS <- function(data,
                 forecast::forecast(ARFIMA_model3, h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_ARF3[, ':=' (
@@ -7318,10 +7315,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_ARF3
           }, error = function(x)
@@ -7330,7 +7327,7 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # Arima----
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
@@ -7359,7 +7356,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARIMA_model1 <-
@@ -7382,7 +7379,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Verison
         if (TSClean) {
           # User-Supplied-Freq
@@ -7405,7 +7402,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARIMA_model3 <-
@@ -7450,7 +7447,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARIMA_model1 <-
@@ -7473,7 +7470,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -7496,7 +7493,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARIMA_model3 <-
@@ -7544,7 +7541,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARIMA_model1 <-
@@ -7568,7 +7565,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -7592,7 +7589,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARIMA_model3 <-
@@ -7639,7 +7636,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           ARIMA_model1 <-
@@ -7663,7 +7660,7 @@ AutoTS <- function(data,
             error = function(x)
               "empty")
         }
-
+        
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
@@ -7687,7 +7684,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # Model-Supplied-Freq
           if (ModelFreq) {
             ARIMA_model3 <-
@@ -7714,7 +7711,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(ARIMA_model)[1]) == "arima") {
@@ -7727,7 +7724,7 @@ AutoTS <- function(data,
             forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_ARI[, ':=' (
@@ -7739,16 +7736,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_ARI
       }, error = function(x)
         "skip")
     }
-
+    
     # Model-Supplied-Freq
     if (ModelFreq) {
       if (tolower(class(ARIMA_model1)[1]) == "arima") {
@@ -7761,7 +7758,7 @@ AutoTS <- function(data,
               forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ARI1[, ':=' (
@@ -7773,17 +7770,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ARI1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
@@ -7797,7 +7794,7 @@ AutoTS <- function(data,
               forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ARI2[, ':=' (
@@ -7809,16 +7806,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ARI2
         }, error = function(x)
           "skip")
       }
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         if (tolower(class(ARIMA_model3)[1]) == "arima") {
@@ -7831,7 +7828,7 @@ AutoTS <- function(data,
                 forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_ARI3[, ':=' (
@@ -7843,10 +7840,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_ARI3
           }, error = function(x)
@@ -7855,14 +7852,14 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # ETS----
   if (!("ETS" %in% toupper(SkipModels))) {
     # EXPONENTIAL SMOOTHING-------------
     # 1)
     if (PrintUpdates)
       message("ETS FITTING")
-
+    
     # User-Supplied-Freq
     if (freq > 24) {
       if (MinVal > 0) {
@@ -7879,7 +7876,7 @@ AutoTS <- function(data,
             )
           }, error = function(x)
             "empty")
-
+        
         # TSClean Version
         if (TSClean) {
           EXPSMOOTH_model2 <-
@@ -7909,7 +7906,7 @@ AutoTS <- function(data,
             )
           }, error = function(x)
             "empty")
-
+        
         # TSClean Version
         if (TSClean) {
           EXPSMOOTH_model2 <-
@@ -7941,7 +7938,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # TSClean Version
         if (TSClean) {
           EXPSMOOTH_model2 <-
@@ -7972,7 +7969,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # TSClean Version
         if (TSClean) {
           EXPSMOOTH_model2 <-
@@ -7991,7 +7988,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Model-Supplied-Freq
     if (ModelFreq) {
       if (SFreq > 24) {
@@ -8009,7 +8006,7 @@ AutoTS <- function(data,
               )
             }, error = function(x)
               "empty")
-
+          
           # TSClean Version
           if (TSClean) {
             EXPSMOOTH_model3 <-
@@ -8039,7 +8036,7 @@ AutoTS <- function(data,
               )
             }, error = function(x)
               "empty")
-
+          
           # TSClean Version
           if (TSClean) {
             EXPSMOOTH_model3 <-
@@ -8071,7 +8068,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # TSClean Version
           if (TSClean) {
             EXPSMOOTH_model3 <-
@@ -8102,7 +8099,7 @@ AutoTS <- function(data,
             },
             error = function(x)
               "empty")
-
+          
           # TSClean Version
           if (TSClean) {
             EXPSMOOTH_model3 <-
@@ -8122,7 +8119,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
     if (tolower(class(EXPSMOOTH_model)) == "ets") {
@@ -8135,7 +8132,7 @@ AutoTS <- function(data,
             forecast::forecast(EXPSMOOTH_model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_ETS[, ':=' (
@@ -8147,16 +8144,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_ETS
       }, error = function(x)
         "skip")
     }
-
+    
     # 2: Model-Based-Freq
     if (ModelFreq) {
       if (tolower(class(EXPSMOOTH_model1)) == "ets") {
@@ -8169,7 +8166,7 @@ AutoTS <- function(data,
               forecast::forecast(EXPSMOOTH_model1, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ETS1[, ':=' (
@@ -8181,17 +8178,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ETS1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
@@ -8205,7 +8202,7 @@ AutoTS <- function(data,
               forecast::forecast(EXPSMOOTH_model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_ETS2[, ':=' (
@@ -8217,16 +8214,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_ETS2
         }, error = function(x)
           "skip")
       }
-
+      
       # 2: Model-Based-Freq
       if (ModelFreq) {
         if (tolower(class(EXPSMOOTH_model3)) == "ets") {
@@ -8239,7 +8236,7 @@ AutoTS <- function(data,
                 forecast::forecast(EXPSMOOTH_model3, h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_ETS3[, ':=' (
@@ -8251,10 +8248,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_ETS3
           }, error = function(x)
@@ -8263,7 +8260,7 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # TBATS----
   if (!("TBATS" %in% toupper(SkipModels))) {
     # TBATS-------------
@@ -8290,7 +8287,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         TBATS_model1 <-
@@ -8312,7 +8309,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # TSClean Version
       if (TSClean) {
         # User-Supplied-Freq
@@ -8334,7 +8331,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           TBATS_model3 <-
@@ -8377,7 +8374,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         TBATS_model1 <-
@@ -8399,7 +8396,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # TSClean Version
       if (TSClean) {
         # User-Supplied-Freq
@@ -8421,7 +8418,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           TBATS_model3 <-
@@ -8445,7 +8442,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # User-Supplied-Freq
     if (class(TBATS_model)[1] == "tbats" |
         class(TBATS_model)[1] == "bats") {
@@ -8460,7 +8457,7 @@ AutoTS <- function(data,
             forecast::forecast(TBATS_model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_TBATS[, ':=' (
@@ -8472,16 +8469,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_TBATS
       }, error = function(x)
         "skip")
     }
-
+    
     # Model-Supplied-Freq
     if (ModelFreq) {
       if (class(TBATS_model1)[1] == "tbats" |
@@ -8497,7 +8494,7 @@ AutoTS <- function(data,
               forecast::forecast(TBATS_model1, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_TBATS1[, ':=' (
@@ -8509,17 +8506,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_TBATS1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # TSClean Version
     if (TSClean) {
       # User-Supplied-Freq
@@ -8536,7 +8533,7 @@ AutoTS <- function(data,
               forecast::forecast(TBATS_model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_TBATS2[, ':=' (
@@ -8548,16 +8545,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_TBATS2
         }, error = function(x)
           "skip")
       }
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         if (class(TBATS_model3)[1] == "tbats" |
@@ -8573,7 +8570,7 @@ AutoTS <- function(data,
                 forecast::forecast(TBATS_model3, h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_TBATS3[, ':=' (
@@ -8585,10 +8582,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_TBATS3
           }, error = function(x)
@@ -8597,7 +8594,7 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # TSLM----
   if (!("TSLM" %in% toupper(SkipModels))) {
     # LINEAR MODEL WITH TIME SERIES COMPONENTS-------------
@@ -8614,7 +8611,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         TSLM_model1 <-
@@ -8626,7 +8623,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # TSClean Version
       if (TSClean) {
         # User-Supplied-Freq
@@ -8638,7 +8635,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           TSLM_model3 <-
@@ -8661,7 +8658,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         TSLM_model1 <-
@@ -8673,7 +8670,7 @@ AutoTS <- function(data,
           error = function(x)
             "empty")
       }
-
+      
       # TSClean Version
       if (TSClean) {
         TSLM_model2 <-
@@ -8684,7 +8681,7 @@ AutoTS <- function(data,
           },
           error = function(x)
             "empty")
-
+        
         # Model-Supplied-Freq
         if (ModelFreq) {
           TSLM_model3 <-
@@ -8698,7 +8695,7 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # User-Supplied-Freq
     if (tolower(class(TSLM_model)[1]) == "tslm") {
       tryCatch({
@@ -8713,7 +8710,7 @@ AutoTS <- function(data,
                                h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_TSLM[, ':=' (
@@ -8725,16 +8722,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_TSLM
       }, error = function(x)
         "skip")
     }
-
+    
     # Model-Supplied-Freq
     if (ModelFreq) {
       if (tolower(class(TSLM_model1)[1]) == "tslm") {
@@ -8750,7 +8747,7 @@ AutoTS <- function(data,
                                  h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_TSLM1[, ':=' (
@@ -8762,17 +8759,17 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_TSLM1
         }, error = function(x)
           "skip")
       }
     }
-
+    
     # TSClean Version
     if (TSClean) {
       # User-Supplied-Freq
@@ -8789,7 +8786,7 @@ AutoTS <- function(data,
                                  h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_TSLM2[, ':=' (
@@ -8801,16 +8798,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_TSLM2
         }, error = function(x)
           "skip")
       }
-
+      
       # Model-Supplied-Freq
       if (ModelFreq) {
         if (tolower(class(TSLM_model3)[1]) == "tslm") {
@@ -8826,7 +8823,7 @@ AutoTS <- function(data,
                                    h = HoldOutPeriods)$mean
               )
             )]
-
+            
             # Add Evaluation Columns
             # 3)
             data_test_TSLM3[, ':=' (
@@ -8838,10 +8835,10 @@ AutoTS <- function(data,
               AbsoluteError = abs(get(TargetName) - FC_Eval),
               SquaredError = (get(TargetName) - FC_Eval) ^ 2
             )]
-
+            
             # Increment
             i <- i + 1
-
+            
             # Collect model filename
             EvalList[[i]] <- data_test_TSLM3
           }, error = function(x)
@@ -8850,7 +8847,7 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # NNET----
   if (!("NNET" %in% toupper(SkipModels))) {
     # Neural Network-------------
@@ -8880,7 +8877,7 @@ AutoTS <- function(data,
             )
           }, error = function(x)
             "error")
-
+        
         if (length(NNETAR_model_temp) == 1) {
           data.table::set(temp,
                           i = k,
@@ -8898,7 +8895,7 @@ AutoTS <- function(data,
                           i = k,
                           j = 4L,
                           value = 999999999)
-
+          
         } else {
           data.table::set(temp,
                           i = k,
@@ -8925,10 +8922,10 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(
@@ -8940,7 +8937,7 @@ AutoTS <- function(data,
       },
       error = function(x)
         "empty")
-
+    
     # Collect Test Data for Model Comparison
     # 2)
     if (tolower(class(NNETAR_model)) == "nnetar") {
@@ -8953,7 +8950,7 @@ AutoTS <- function(data,
             forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_NN[, ':=' (
@@ -8964,16 +8961,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_NN
       }, error = function(x)
         "skip")
     }
-
+    
     k <- 0L
     temp <-
       data.table::data.table(
@@ -8997,7 +8994,7 @@ AutoTS <- function(data,
             )
           }, error = function(x)
             "error")
-
+        
         if (length(NNETAR_model_temp) == 1) {
           data.table::set(temp,
                           i = k,
@@ -9015,7 +9012,7 @@ AutoTS <- function(data,
                           i = k,
                           j = 4L,
                           value = 999999999)
-
+          
         } else {
           data.table::set(temp,
                           i = k,
@@ -9042,10 +9039,10 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model1 <-
       tryCatch({
         forecast::nnetar(
@@ -9057,7 +9054,7 @@ AutoTS <- function(data,
       },
       error = function(x)
         "empty")
-
+    
     # Collect Test Data for Model Comparison
     # 2)
     if (tolower(class(NNETAR_model1)) == "nnetar") {
@@ -9070,7 +9067,7 @@ AutoTS <- function(data,
             forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
           )
         )]
-
+        
         # Add Evaluation Columns
         # 3)
         data_test_NN1[, ':=' (
@@ -9081,16 +9078,16 @@ AutoTS <- function(data,
           AbsoluteError = abs(get(TargetName) - FC_Eval),
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
-
+        
         # Increment
         i <- i + 1
-
+        
         # Collect model filename
         EvalList[[i]] <- data_test_NN1
       }, error = function(x)
         "skip")
     }
-
+    
     # TSClean Version
     if (TSClean) {
       k <- 0L
@@ -9116,7 +9113,7 @@ AutoTS <- function(data,
               )
             }, error = function(x)
               "error")
-
+          
           if (length(NNETAR_model_temp) == 1) {
             data.table::set(temp,
                             i = k,
@@ -9134,7 +9131,7 @@ AutoTS <- function(data,
                             i = k,
                             j = 4L,
                             value = 999999999)
-
+            
           } else {
             data.table::set(temp,
                             i = k,
@@ -9163,10 +9160,10 @@ AutoTS <- function(data,
           }
         }
       }
-
+      
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
       NNETAR_model2 <-
         tryCatch({
           forecast::nnetar(
@@ -9178,7 +9175,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Collect Test Data for Model Comparison
       # 2)
       if (tolower(class(NNETAR_model2)) == "nnetar") {
@@ -9191,7 +9188,7 @@ AutoTS <- function(data,
               forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_NN2[, ':=' (
@@ -9202,16 +9199,16 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_NN2
         }, error = function(x)
           "skip")
       }
-
+      
       k <- 0L
       temp <-
         data.table::data.table(
@@ -9235,7 +9232,7 @@ AutoTS <- function(data,
               )
             }, error = function(x)
               "error")
-
+          
           if (length(NNETAR_model_temp) == 1) {
             data.table::set(temp,
                             i = k,
@@ -9253,7 +9250,7 @@ AutoTS <- function(data,
                             i = k,
                             j = 4L,
                             value = 999999999)
-
+            
           } else {
             data.table::set(temp,
                             i = k,
@@ -9282,10 +9279,10 @@ AutoTS <- function(data,
           }
         }
       }
-
+      
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
       NNETAR_model3 <-
         tryCatch({
           forecast::nnetar(
@@ -9297,7 +9294,7 @@ AutoTS <- function(data,
         },
         error = function(x)
           "empty")
-
+      
       # Collect Test Data for Model Comparison
       # 2)
       if (tolower(class(NNETAR_model3)) == "nnetar") {
@@ -9310,7 +9307,7 @@ AutoTS <- function(data,
               forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
             )
           )]
-
+          
           # Add Evaluation Columns
           # 3)
           data_test_NN3[, ':=' (
@@ -9321,10 +9318,10 @@ AutoTS <- function(data,
             AbsoluteError = abs(get(TargetName) - FC_Eval),
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
-
+          
           # Increment
           i <- i + 1
-
+          
           # Collect model filename
           EvalList[[i]] <- data_test_NN3
         }, error = function(x)
@@ -9332,12 +9329,12 @@ AutoTS <- function(data,
       }
     }
   }
-
+  
   # Model Collection----
   if (PrintUpdates)
     message("FIND WINNER")
   dataEval <- data.table::rbindlist(EvalList)
-
+  
   # Model Evaluation----
   if (tolower(EvaluationMetric) == "mae") {
     Eval <- dataEval[, .(
@@ -9367,17 +9364,17 @@ AutoTS <- function(data,
     ),
     by = "ModelName"][order(MSE)][, ID := 1:.N]
   }
-
+  
   # Grab Winning Model----
   BestModel <- Eval[1, "ModelName"][[1]]
-
+  
   # Generate Forecasts----
   if (PrintUpdates)
     message("GENERATE FORECASTS")
-
+  
   # Create Training data----
   data_train <- data[seq_len(nrow(data))]
-
+  
   # Create Full Training Data for Final Rebruild----
   if (grepl("ModelFreq", BestModel)) {
     if (grepl("TSC", BestModel)) {
@@ -9388,7 +9385,7 @@ AutoTS <- function(data,
           stats::ts(data = data_train,
                     start = data_train[, min(get(DateName))][[1]],
                     frequency = SFreq)
-
+        
         # TSClean Version
         dataTSTrain <-
           forecast::tsclean(x = dataTSTrain[, TargetName],
@@ -9401,14 +9398,14 @@ AutoTS <- function(data,
           stats::ts(data = data_train,
                     start = data_train[, min(get(DateName))][[1]],
                     frequency = SFreq)
-
+        
         # TSClean Version
         dataTSTrain <-
           forecast::tsclean(x = dataTSTrain[, TargetName],
                             replace.missing = TRUE,
                             lambda = NULL)
       }
-
+      
     } else {
       # Model-Supplied-Freq
       SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
@@ -9416,7 +9413,7 @@ AutoTS <- function(data,
         stats::ts(data = data_train,
                   start = data_train[, min(get(DateName))][[1]],
                   frequency = SFreq)
-
+      
       # Only Target as Numeric Vector
       dataTSTrain <- dataTSTrain[, TargetName]
     }
@@ -9428,7 +9425,7 @@ AutoTS <- function(data,
           stats::ts(data = data_train,
                     start = data_train[, min(get(DateName))][[1]],
                     frequency = freq)
-
+        
         # TSClean Version
         dataTSTrain <-
           forecast::tsclean(x = dataTSTrain[, TargetName],
@@ -9440,7 +9437,7 @@ AutoTS <- function(data,
           stats::ts(data = data_train,
                     start = data_train[, min(get(DateName))][[1]],
                     frequency = freq)
-
+        
         # TSClean Version
         dataTSTrain <-
           forecast::tsclean(x = dataTSTrain[, TargetName],
@@ -9453,12 +9450,12 @@ AutoTS <- function(data,
         stats::ts(data = data_train,
                   start = data_train[, min(get(DateName))][[1]],
                   frequency = freq)
-
+      
       # Only Target as Numeric Vector
       dataTSTrain <- dataTSTrain[, TargetName]
     }
   }
-
+  
   # Retrain best model
   if (grepl(pattern = "DSHW", BestModel)) {
     if (PrintUpdates)
@@ -9507,14 +9504,14 @@ AutoTS <- function(data,
         error = function(x)
           "empty")
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(DSHW_Model,
                                                                               h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- DSHW_Model
-
+    
   } else if (grepl(pattern = "ARFIMA", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA ARFIMA FITTING")
@@ -9578,14 +9575,14 @@ AutoTS <- function(data,
         )
       }
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARFIMA_model,
                                                                               h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- ARFIMA_model
-
+    
   } else if (grepl(pattern = "ARIMA", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA ARIMA FITTING")
@@ -9661,14 +9658,14 @@ AutoTS <- function(data,
           )
       }
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARIMA_model,
                                                                               h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- ARIMA_model
-
+    
   } else if (grepl(pattern = "ETS", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA ETS FITTING")
@@ -9720,14 +9717,14 @@ AutoTS <- function(data,
           )
       }
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model,
                                                                               h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- EXPSMOOTH_model
-
+    
   } else if (grepl(pattern = "TBATS", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA TBATS FITTING")
@@ -9762,14 +9759,14 @@ AutoTS <- function(data,
         num.cores = NumCores
       )
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TBATS_model,
                                                                               h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- TBATS_model
-
+    
   } else if (grepl(pattern = "TSLM", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA TSLM FITTING")
@@ -9786,13 +9783,13 @@ AutoTS <- function(data,
                        lambda = FALSE,
                        biasadj = FALSE)
     }
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- TSLM_model
-
+    
   } else if (grepl(pattern = "NN", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA NN FITTING")
@@ -9820,7 +9817,7 @@ AutoTS <- function(data,
             )
           }, error = function(x)
             "error")
-
+        
         if (length(NNETAR_model_temp) == 1) {
           data.table::set(temp,
                           i = k,
@@ -9838,7 +9835,7 @@ AutoTS <- function(data,
                           i = k,
                           j = 4L,
                           value = 999999999)
-
+          
         } else {
           data.table::set(temp,
                           i = k,
@@ -9865,10 +9862,10 @@ AutoTS <- function(data,
         }
       }
     }
-
+    
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(y = dataTSTrain,
@@ -9877,15 +9874,15 @@ AutoTS <- function(data,
       },
       error = function(x)
         "empty")
-
+    
     # Forecast with new model
     FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
-
+    
     # Store model
     model <- NNETAR_model
-
+    
   }
-
+  
   # Create plot
   temp <- data.table::copy(FC_Data)
   data.table::setnames(data, c(eval(DateName)), "Date")
@@ -9921,13 +9918,13 @@ AutoTS <- function(data,
       caption = "Forecast generated by Remix Institute's RemixAutoML R package"
     ) +
     ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TempTargetName))
-
+  
   # Get back to adding image to plot----
   # TimeSeriesPlot
   # grid::grid.raster(logo, x = .73, y = 0.01, just = c('left', 'bottom'), width = 0.25)
-
+  
   options(warn = 0)
-
+  
   # Return values
   return(
     list(
@@ -9940,11 +9937,11 @@ AutoTS <- function(data,
   )
 }
 
-#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting 
+#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting
 #'
 #' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
-#' @family Supervised Learning
+#' @family Time Series
 #' @param data Supply your full series data set here
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -9993,28 +9990,28 @@ AutoTS <- function(data,
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), and a time series forecast plot. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostCARMA <- function(data,
-                     TargetColumnName = "Target",
-                     DateColumnName = "DateTime",
-                     GroupVariables = NULL,
-                     FC_Periods = 30,
-                     TimeUnit = "week",
-                     Lags = c(1:5),
-                     MA_Periods = c(1:5),
-                     CalendarVariables = FALSE,
-                     TimeTrendVariable = FALSE,
-                     DataTruncate = FALSE,
-                     SplitRatios = c(0.7, 0.2, 0.1),
-                     TaskType = "GPU",
-                     EvalMetric = "MAPE",
-                     GridTune = FALSE,
-                     GridEvalMetric = "mape",
-                     ModelCount = 1,
-                     NTrees = 1000,
-                     PartitionType = "timeseries",
-                     Timer = TRUE) {
+                              TargetColumnName = "Target",
+                              DateColumnName = "DateTime",
+                              GroupVariables = NULL,
+                              FC_Periods = 30,
+                              TimeUnit = "week",
+                              Lags = c(1:5),
+                              MA_Periods = c(1:5),
+                              CalendarVariables = FALSE,
+                              TimeTrendVariable = FALSE,
+                              DataTruncate = FALSE,
+                              SplitRatios = c(0.7, 0.2, 0.1),
+                              TaskType = "GPU",
+                              EvalMetric = "MAPE",
+                              GridTune = FALSE,
+                              GridEvalMetric = "mape",
+                              ModelCount = 1,
+                              NTrees = 1000,
+                              PartitionType = "timeseries",
+                              Timer = TRUE) {
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # Check arguments----
   if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
     return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
@@ -10024,25 +10021,25 @@ AutoCatBoostCARMA <- function(data,
     PartitionType <- "time"
     warning("PartitionType was converted to 'time' because there were no GroupVariables")
   }
-
+  
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Subset Columns----
   keep <- c(DateColumnName, TargetColumnName, GroupVariables)
   data <- data[, ..keep]
-
+  
   # Group Concatenation----
   if (!is.null(GroupVariables)) {
     data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     data[, eval(GroupVariables) := NULL]
   }
-
+  
   # Get unique set of GroupVar----
   GroupVarVector <- unique(as.character(data[["GroupVar"]]))
-
+  
   # Change column ordering
   if (!is.null(GroupVariables)) {
     data.table::setcolorder(data,
@@ -10054,28 +10051,28 @@ AutoCatBoostCARMA <- function(data,
                             c(eval(DateColumnName),
                               eval(TargetColumnName)))
   }
-
-
+  
+  
   # Convert to lubridate as_date() or POSIXct----
   if (tolower(TimeUnit) != "hour") {
     data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
   }
-
+  
   # Define NumSets
   NumSets <- length(SplitRatios)
-
+  
   # Set max vals----
   val <- max(Lags, MA_Periods)
-
+  
   # Ensure data is sorted----
   if (!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
   }
-
+  
   # Create Calendar Variables----
   if (CalendarVariables) {
     data <- RemixAutoML::CreateCalendarVariables(
@@ -10097,7 +10094,7 @@ AutoCatBoostCARMA <- function(data,
       )
     )
   }
-
+  
   # GDL Features----
   if (!is.null(GroupVariables)) {
     data <- RemixAutoML::DT_GDL_Feature_Engineering(
@@ -10132,7 +10129,7 @@ AutoCatBoostCARMA <- function(data,
       SimpleImpute   = TRUE
     )
   }
-
+  
   # TimeTrend Variable----
   if (TimeTrendVariable) {
     if (!is.null(GroupVariables)) {
@@ -10141,7 +10138,7 @@ AutoCatBoostCARMA <- function(data,
       data[, TimeTrend := 1:.N]
     }
   }
-
+  
   # Prepare data----
   data <- RemixAutoML::ModelDataPrep(
     data,
@@ -10151,12 +10148,12 @@ AutoCatBoostCARMA <- function(data,
     MissFactor = "0",
     MissNum    = -1
   )
-
+  
   # Subset Data----
   if (DataTruncate) {
     data <- data[val:.N]
   }
-
+  
   # Partition Data----
   if (tolower(PartitionType) == "timeseries") {
     DataSets <- RemixAutoML::AutoDataPartition(
@@ -10197,7 +10194,7 @@ AutoCatBoostCARMA <- function(data,
       TimeColumnName = eval(DateColumnName)
     )
   }
-
+  
   # Define data sets----
   if (NumSets == 2) {
     train <- DataSets$TrainData
@@ -10207,10 +10204,10 @@ AutoCatBoostCARMA <- function(data,
     valid <- DataSets$ValidationData
     test  <- DataSets$TestData
   }
-
+  
   # Pass along base data unperturbed----
   dataFuture <- data.table::copy(data)
-
+  
   # Build Model----
   if (NumSets == 2) {
     if (!is.null(GroupVariables)) {
@@ -10332,10 +10329,10 @@ AutoCatBoostCARMA <- function(data,
       )
     }
   }
-
+  
   # Store Model----
   Model <- TestModel$Model
-
+  
   # Update ValidationData and Create Metrics Data----
   TestDataEval <- TestModel$ValidationData
   TestDataEval[, ':=' (Target = NULL, Date = NULL)]
@@ -10347,7 +10344,7 @@ AutoCatBoostCARMA <- function(data,
     MetricCollection <-
       Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
   }
-
+  
   # poisson----
   if (MinVal > 0 &
       min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
@@ -10364,7 +10361,7 @@ AutoCatBoostCARMA <- function(data,
         TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # mae----
   if (!is.null(GroupVariables)) {
     TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
@@ -10377,7 +10374,7 @@ AutoCatBoostCARMA <- function(data,
     TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
     Metric <- TestDataEval[, mean(Metric, na.rm = TRUE)]
   }
-
+  
   # mape----
   if (!is.null(GroupVariables)) {
     TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
@@ -10391,7 +10388,7 @@ AutoCatBoostCARMA <- function(data,
     Metric <-
       TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE))]
   }
-
+  
   # mse----
   if (!is.null(GroupVariables)) {
     TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
@@ -10405,7 +10402,7 @@ AutoCatBoostCARMA <- function(data,
     Metric <-
       TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE))]
   }
-
+  
   # msle----
   if (MinVal > 0 &
       min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
@@ -10421,7 +10418,7 @@ AutoCatBoostCARMA <- function(data,
       Metric <- TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # kl----
   if (MinVal > 0 &
       min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
@@ -10438,7 +10435,7 @@ AutoCatBoostCARMA <- function(data,
         TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE))]
     }
   }
-
+  
   # r2----
   if (!is.null(GroupVariables)) {
     MetricCollection <-
@@ -10451,7 +10448,7 @@ AutoCatBoostCARMA <- function(data,
     Metric <-
       (TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict))]) ^ 2
   }
-
+  
   # Update GroupVar with Original Columns, reorder columns, add to model objects----
   if (!is.null(GroupVariables)) {
     MetricCollection[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
@@ -10463,7 +10460,7 @@ AutoCatBoostCARMA <- function(data,
     TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
     TestModel$EvaluationMetricsByGroup
   }
-
+  
   # Store Date Info----
   if (!is.null(GroupVariables)) {
     FutureDateData <- unique(dataFuture[, get(DateColumnName)])
@@ -10476,21 +10473,21 @@ AutoCatBoostCARMA <- function(data,
       FutureDateData <- c(FutureDateData, max(FutureDateData) + 1)
     }
   }
-
+  
   # Row Count----
   if (!is.null(GroupVariables)) {
     N <- data[, .N, by = "GroupVar"][, max(N)]
   } else {
     N <- data[, .N]
   }
-
+  
   # Begin loop for generating forecasts----
   for (i in seq_len(FC_Periods)) {
     # Row counts----
     if (i != 1) {
       N <- N + 1
     }
-
+    
     # Generate predictions----
     if (i == 1) {
       Preds <- RemixAutoML::AutoCatBoostScoring(
@@ -10512,7 +10509,7 @@ AutoCatBoostCARMA <- function(data,
         MDP_MissFactor = "0",
         MDP_MissNum = -1
       )
-
+      
       # Update data----
       UpdateData <- cbind(FutureDateData[i:N],
                           data[, get(TargetColumnName)], Preds)
@@ -10544,7 +10541,7 @@ AutoCatBoostCARMA <- function(data,
           MDP_MissFactor = "0",
           MDP_MissNum = -1
         )
-
+        
         # Update data group case----
         data.table::setnames(Preds, "Predictions", "Preds")
         Preds <- cbind(UpdateData[ID == N], Preds)
@@ -10556,7 +10553,7 @@ AutoCatBoostCARMA <- function(data,
       } else {
         Preds <- RemixAutoML::AutoCatBoostScoring(
           TargetType = "regression",
-          ScoringData = UpdateData[.N, ],
+          ScoringData = UpdateData[.N,],
           FeatureColNames = setdiff(names(UpdateData),
                                     c(
                                       "Predictions",
@@ -10574,7 +10571,7 @@ AutoCatBoostCARMA <- function(data,
           MDP_MissFactor = "0",
           MDP_MissNum = -1
         )
-
+        
         # Update data non-group case----
         data.table::set(UpdateData,
                         i = N,
@@ -10582,12 +10579,12 @@ AutoCatBoostCARMA <- function(data,
                         value = Preds[[1]])
       }
     }
-
+    
     # Timer----
     if (Timer) {
       print(paste("Forecast future step: ", i))
     }
-
+    
     # Create single future record----
     d <- max(UpdateData[[eval(DateColumnName)]])
     if (tolower(TimeUnit) == "hour") {
@@ -10607,7 +10604,7 @@ AutoCatBoostCARMA <- function(data,
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::years(1))
     }
-
+    
     # Prepare for more feature engineering----
     data.table::setnames(CalendarFeatures, "V1", eval(DateColumnName))
     CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
@@ -10615,7 +10612,7 @@ AutoCatBoostCARMA <- function(data,
       CalendarFeatures <- cbind(GroupVarVector, CalendarFeatures)
       data.table::setnames(CalendarFeatures, "GroupVarVector", "GroupVar")
     }
-
+    
     # Add calendar variables----
     if (CalendarVariables) {
       CalendarFeatures <- RemixAutoML::CreateCalendarVariables(
@@ -10637,12 +10634,12 @@ AutoCatBoostCARMA <- function(data,
         )
       )
     }
-
+    
     # Add TimeTrendVariable----
     if (TimeTrendVariable) {
       CalendarFeatures[, TimeTrend := N + 1]
     }
-
+    
     # Update features for next run----
     if (i != max(FC_Periods)) {
       temp <- cbind(CalendarFeatures, 1)
@@ -10653,8 +10650,9 @@ AutoCatBoostCARMA <- function(data,
       }
       temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
-
+      UpdateData <-
+        data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
+      
       # Update Lags and MA's----
       if (!is.null(GroupVariables)) {
         UpdateData <- UpdateData[order(GroupVar, get(DateColumnName))]
@@ -10685,9 +10683,10 @@ AutoCatBoostCARMA <- function(data,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1
         )
-
+        
         # Not lining up - Updatedata and Temporary
-        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), use.names = TRUE)
+        UpdateData <-
+          data.table::rbindlist(list(UpdateData[ID != 1], Temporary), use.names = TRUE)
       } else {
         UpdateData <- UpdateData[order(get(DateColumnName))]
         UpdateData[, ID := .N:1]
@@ -10716,17 +10715,18 @@ AutoCatBoostCARMA <- function(data,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1
         )
-        UpdateData <- data.table::rbindlist(list(UpdateData, Temporary), use.names = TRUE)
+        UpdateData <-
+          data.table::rbindlist(list(UpdateData, Temporary), use.names = TRUE)
       }
       gc()
     }
     gc()
   }
-
+  
   # Metrics----
   EvalMetric <-
     TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
-
+  
   # Define plot theme----
   Temp <- function () {
     ggplot2::theme(
@@ -10765,7 +10765,7 @@ AutoCatBoostCARMA <- function(data,
       )
     )
   }
-
+  
   # Data Manipulation----
   if (!is.null(GroupVariables)) {
     PlotData <- data.table::copy(UpdateData)
@@ -10786,7 +10786,7 @@ AutoCatBoostCARMA <- function(data,
                     j = 3,
                     value = NA)
   }
-
+  
   # Plot Time Series----
   TimeSeriesPlot <-
     ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[[eval(DateColumnName)]])) +
@@ -10794,7 +10794,7 @@ AutoCatBoostCARMA <- function(data,
                                     color = "Actual")) +
     ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]],
                                     color = "Forecast"))
-
+  
   # Modify title----
   if (!is.null(GroupVariables)) {
     TimeSeriesPlot <- TimeSeriesPlot +
@@ -10842,7 +10842,7 @@ AutoCatBoostCARMA <- function(data,
                                    values = c("red", "blue")) +
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   }
-
+  
   # Return data----
   if (!is.null(GroupVariables)) {
     # Variables to keep----
@@ -11249,7 +11249,7 @@ AutoH2OModeler <- function(Construct,
   ######################################
   # Error handling and prevention
   ######################################
-
+  
   # Handle the multinomial case
   for (i in as.integer(seq_len(nrow(Construct)))) {
     if (tolower(Construct[i, 2][[1]]) == "multinomial" &&
@@ -11286,7 +11286,7 @@ AutoH2OModeler <- function(Construct,
                       value = "crossentropy")
     }
   }
-
+  
   ErrorCollection <-
     data.table::data.table(Row = rep(-720, 10000),
                            Msg = "I like modeling")
@@ -11374,7 +11374,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceValue)
       }
-
+      
       # GBM and RF distributions
       if (!(
         tolower(Construct[i, 2][[1]]) %in% c(
@@ -11447,7 +11447,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceValue2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceValue2)
       }
-
+      
       # Distribution and loss combos for non-regression
       if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial",
                                                "bernoulli", "multinomial") &&
@@ -11481,7 +11481,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Distribution and loss combos for regression
       if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
@@ -11510,7 +11510,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Quantile Regression with GBM
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
@@ -11535,7 +11535,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # RF Quantile regression fail
       if (tolower(Construct[i, 6][[1]]) == "randomforest" &&
           tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -11558,7 +11558,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Quantile regression loss metrics
       if (tolower(Construct[i, 2][[1]]) == "quantile" &&
           tolower(Construct[i, 3][[1]]) != "mae") {
@@ -11580,7 +11580,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       if (tolower(Construct[i, 6][[1]]) == "automl" &
           Construct[i, 11][[1]] != TRUE) {
         j <- j + 1
@@ -11658,7 +11658,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceVal)
       }
-
+      
       # Deeplearning distributions
       if (!(
         tolower(Construct[i, 2][[1]]) %in% c(
@@ -11727,7 +11727,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceVal2)
       }
-
+      
       # Distribution and loss combos for non-regression
       if (tolower(Construct[i, 2][[1]]) %in% c("bernoulli",
                                                "multinomial") &&
@@ -11753,7 +11753,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Distribution and loss combos for regression
       if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
@@ -11790,7 +11790,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Quantile regression loss metrics
       if (tolower(Construct[i, 2][[1]]) == "quantile" &&
           tolower(Construct[i, 3][[1]]) != "quantile") {
@@ -11813,7 +11813,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
       # Quantile Regression with DL
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
@@ -11838,7 +11838,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-
+      
     } else {
       j <- j + 1
       data.table::set(ErrorCollection,
@@ -11860,7 +11860,7 @@ AutoH2OModeler <- function(Construct,
       )
     }
   }
-
+  
   # Error stopping point and Construct file save
   ErrorCollection <- ErrorCollection[Row != -720]
   if (nrow(ErrorCollection) >= 1) {
@@ -11892,10 +11892,10 @@ AutoH2OModeler <- function(Construct,
       )
     }
   }
-
+  
   # Clear table
   rm(distMatch)
-
+  
   # Set up grid_tuned_paths.R file
   grid_tuned_paths <-
     data.table::data.table(
@@ -11906,11 +11906,11 @@ AutoH2OModeler <- function(Construct,
       BinThresh = rep(1234.5678, nrow(Construct)),
       PathJar   = rep("a", nrow(Construct))
     )
-
+  
   ######################################
   # Loop through model building
   ######################################
-
+  
   tryCatch({
     for (i in as.integer(seq_len(nrow(Construct)))) {
       # No deeplearning loss functions as stopping metrics
@@ -11931,7 +11931,7 @@ AutoH2OModeler <- function(Construct,
           StoppingMetric <- Construct[i, 3][[1]]
         }
       }
-
+      
       # Define grid tune search scheme in a named list
       search_criteria  <-
         list(
@@ -11943,7 +11943,7 @@ AutoH2OModeler <- function(Construct,
           stopping_metric      = StoppingMetric,
           stopping_tolerance   = 1e-3
         )
-
+      
       # Set up H2O environment instance
       Sys.sleep(10)
       h2o::h2o.init(
@@ -11951,7 +11951,7 @@ AutoH2OModeler <- function(Construct,
         max_mem_size = max_memory,
         enable_assertions = FALSE
       )
-
+      
       # Define data sets
       if (Construct[i, "SupplyData"][[1]]) {
         train        <- h2o::as.h2o(TrainData)
@@ -11968,7 +11968,7 @@ AutoH2OModeler <- function(Construct,
         train        <- data_train[[1]]
         validate     <- data_train[[2]]
       }
-
+      
       # Define targets
       target         <-
         eval(parse(text = paste0(Construct[i, 8][[1]])))
@@ -11988,7 +11988,7 @@ AutoH2OModeler <- function(Construct,
           ModelExclude   <- c("XGBoost", "GLM", "DRF")
         }
       }
-
+      
       if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
         N              <- length(features)
         P5             <- 2 ^ (-1 / 5)
@@ -11999,11 +11999,11 @@ AutoH2OModeler <- function(Construct,
                       i = i,
                       j = 1L,
                       value = Construct[i, 5][[1]])
-
+      
       ######################################
       # Target Encoding
       ######################################
-
+      
       if (!is.na(Construct[i, "TargetEncoding"][[1]])) {
         TEncode <- eval(parse(text = Construct[i, "TargetEncoding"][[1]]))
         cols <- names(train)[TEncode]
@@ -12025,7 +12025,7 @@ AutoH2OModeler <- function(Construct,
             blended_avg = TRUE,
             noise_level = 0
           )
-
+          
           # Apply to validation data
           validate <- h2o::h2o.target_encode_apply(
             validate,
@@ -12036,7 +12036,7 @@ AutoH2OModeler <- function(Construct,
             blended_avg = TRUE,
             noise_level = 0
           )
-
+          
           if (SaveToFile == TRUE) {
             save(x,
                  file = paste0(model_path,
@@ -12046,7 +12046,7 @@ AutoH2OModeler <- function(Construct,
                                ".Rdata"))
           }
         }
-
+        
         # Modify feature reference
         features <-
           c((min(features) + length(eval(
@@ -12056,7 +12056,7 @@ AutoH2OModeler <- function(Construct,
                                length(eval(
                                  parse(text = paste0(Construct[i, 24][[1]]))
                                ))))
-
+        
         # Turn target columns back to factor
         train[, Construct[i, "Targets"][[1]]] <-
           as.factor(train[, Construct[i, "Targets"][[1]]])
@@ -12067,11 +12067,11 @@ AutoH2OModeler <- function(Construct,
                         j = "PD_Data",
                         value = "Validate")
       }
-
+      
       ######################################
       # Hyperparameters
       ######################################
-
+      
       if (Construct[i, 11][[1]]) {
         if (tolower(Construct[i, 6][[1]]) == "gbm") {
           if (tolower(
@@ -12125,7 +12125,7 @@ AutoH2OModeler <- function(Construct,
               )
             )
           }
-
+          
         } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
           if (tolower(Construct[i, 3][[1]] %in% c("automatic",
                                                   "crossentropy"))) {
@@ -12348,15 +12348,15 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-
+      
       ######################################
       # Grid Tune Models
       ######################################
-
+      
       # Check to see if GridTune is TRUE
       # Check to see if Distribution is quantile
       # Select model
-
+      
       # Grid tuned model build
       if (Construct[i, 11][[1]]) {
         if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -12504,7 +12504,7 @@ AutoH2OModeler <- function(Construct,
             )
           }
         }
-
+        
         # Store all models built sorted by metric
         if (tolower(Construct[i, 6][[1]]) == "automl") {
           Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
@@ -12528,14 +12528,14 @@ AutoH2OModeler <- function(Construct,
               decreasing = Decreasing
             )
         }
-
+        
         # Store best model
         if (tolower(Construct[i, 6][[1]]) == "automl") {
           best_model <- Grid_Out@leader
         } else {
           best_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
         }
-
+        
         # Collect accuracy metric on validation data
         if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
           if (tolower(Construct[i, 2][[1]]) == "multinomial") {
@@ -12564,11 +12564,11 @@ AutoH2OModeler <- function(Construct,
                         j = 3L,
                         value = cc)
       }
-
+      
       ######################################
       # Baseline Models
       ######################################
-
+      
       # Check to see if quantile is selected
       # Choose model
       if (tolower(Construct[i, 6][[1]]) != "automl") {
@@ -12660,7 +12660,7 @@ AutoH2OModeler <- function(Construct,
             ntrees           = BL_Trees
           )
         }
-
+        
         # Collect accuracy metric on validation data
         if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
           if (tolower(Construct[i, 2][[1]]) == "multinomial") {
@@ -12682,22 +12682,22 @@ AutoH2OModeler <- function(Construct,
               )
             ))
         }
-
+        
         # Store results in metadata file
         data.table::set(grid_tuned_paths,
                         i = i,
                         j = 4L,
                         value = dd)
       }
-
+      
       ######################################
       # Model Evaluation & Saving
       ######################################
-
+      
       # Check to see if GridTune is TRUE
       # Check to see if Distribution is multinomial
       # Proceed
-
+      
       if (tolower(Construct[i, 6][[1]]) == "automl") {
         if (Construct[i, 21][[1]] == TRUE) {
           if (grid_tuned_paths[i, 2][[1]] != "a")
@@ -12747,7 +12747,7 @@ AutoH2OModeler <- function(Construct,
             }
           }
         }
-
+        
         # Save VarImp and VarNOTImp
         if (best_model@algorithm != "stackedensemble") {
           VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -12780,7 +12780,7 @@ AutoH2OModeler <- function(Construct,
                           j = 13L,
                           value = 0)
         }
-
+        
         # Gather predicted values
         preds <-
           h2o::h2o.predict(best_model, newdata = validate)[, 1]
@@ -12800,7 +12800,7 @@ AutoH2OModeler <- function(Construct,
           predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
         }
       }
-
+      
       if (Construct[i, 11][[1]] == TRUE &
           tolower(Construct[i, 6][[1]]) != "automl") {
         if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
@@ -12857,7 +12857,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-
+            
             # Save VarImp and VarNOTImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -12880,7 +12880,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-
+            
             # Gather predicted values
             preds <-
               h2o::h2o.predict(best_model, newdata = validate)[, 1]
@@ -12955,7 +12955,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-
+            
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(bl_model))
@@ -12978,7 +12978,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-
+            
             # Gather predicted values
             preds <-
               h2o::h2o.predict(bl_model, newdata = validate)[, 1]
@@ -13050,7 +13050,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-
+            
             # Store threshold
             store_results <-
               data.table::data.table(
@@ -13103,7 +13103,7 @@ AutoH2OModeler <- function(Construct,
               j = 5L,
               value = Thresh
             )
-
+            
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -13125,7 +13125,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-
+            
             # Gather predicted values
             preds <-
               h2o::h2o.predict(best_model, newdata = validate)[, 3]
@@ -13195,7 +13195,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-
+            
             # Store threshold
             store_results <-
               data.table::data.table(
@@ -13246,7 +13246,7 @@ AutoH2OModeler <- function(Construct,
               j = 5L,
               value = Thresh
             )
-
+            
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(bl_model))
@@ -13268,7 +13268,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-
+            
             # Gather predicted values
             preds <-
               h2o::h2o.predict(bl_model, newdata = validate)[, 3]
@@ -13343,7 +13343,7 @@ AutoH2OModeler <- function(Construct,
             }
           }
         }
-
+        
         # Store threshold for binary classification
         if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                  "binomial",
@@ -13431,7 +13431,7 @@ AutoH2OModeler <- function(Construct,
             predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
           }
         }
-
+        
         # Save VarImp
         VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
         if (SaveToFile == TRUE) {
@@ -13452,11 +13452,11 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-
+      
       ######################################
       # Model Evaluation Plots
       ######################################
-
+      
       # Generate plots
       col <- Construct[i, 1][[1]]
       calibration <-
@@ -13503,7 +13503,7 @@ AutoH2OModeler <- function(Construct,
         }
       }
       predName <- names(calibration[, 1])
-
+      
       # Generate evaluation plots
       if (tolower(Construct[i, 2][[1]]) != "multinomial") {
         if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -13517,7 +13517,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-
+          
           # Calibration plot
           out1 <- EvalPlot(
             calibration,
@@ -13542,7 +13542,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-
+          
           # Calibration boxplot
           out2 <- EvalPlot(
             calibration,
@@ -13576,7 +13576,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-
+          
           out1 <- EvalPlot(
             calibration,
             PredictionColName = predName,
@@ -13592,7 +13592,7 @@ AutoH2OModeler <- function(Construct,
             ": ",
             round(val, 4)
           ))
-
+          
           if (exists("Thresh")) {
             out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
           }
@@ -13613,7 +13613,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-
+          
           # Calibration plot
           out1 <- EvalPlot(
             calibration,
@@ -13636,7 +13636,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-
+          
           # Calibration boxplot
           out2 <- EvalPlot(
             calibration,
@@ -13697,7 +13697,7 @@ AutoH2OModeler <- function(Construct,
             store[[k]] <- temp
           }
           xxx <- data.table::rbindlist(store)
-
+          
           # Multinomial metric
           if (multinomialMetric == "auc") {
             val <- H2OMultinomialAUC(
@@ -13717,13 +13717,13 @@ AutoH2OModeler <- function(Construct,
               mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
-
+          
           # Store baseline val
           temp <- H2OMultinomialAUC(validate,
                                     best_model,
                                     targetColNum = 1,
                                     targetName = Construct[i, 1][[1]])
-
+          
           # Store micro auc
           data.table::set(
             grid_tuned_paths,
@@ -13737,7 +13737,7 @@ AutoH2OModeler <- function(Construct,
             j = 4L,
             value = temp
           )
-
+          
           # Calibration plot
           out1 <- EvalPlot(
             xxx,
@@ -13760,7 +13760,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-
+          
         } else {
           predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
           col <- Construct[i, 1][[1]]
@@ -13797,7 +13797,7 @@ AutoH2OModeler <- function(Construct,
             store[[k]] <- temp
           }
           xxx <- data.table::rbindlist(store)
-
+          
           # Multinomial metric
           if (multinomialMetric == "auc") {
             val <- H2OMultinomialAUC(validate,
@@ -13815,7 +13815,7 @@ AutoH2OModeler <- function(Construct,
               mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
-
+          
           # Calibration plot
           out1 <- EvalPlot(
             xxx,
@@ -13838,18 +13838,18 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]], ".png"))
           }
         }
-
+        
         # Store micro auc
         data.table::set(grid_tuned_paths,
                         i = i,
                         j = 4L,
                         value = val)
       }
-
+      
       #######################################
       # Partial dependence calibration plots
       #######################################
-
+      
       if (Construct[i, 13][[1]] >= 1) {
         VIMP <- VIMP[!is.na(VIMP[, 2][[1]])]
         rows <- nrow(VIMP)
@@ -13895,7 +13895,7 @@ AutoH2OModeler <- function(Construct,
               error = function(x)
                 "skip")
             }
-
+            
             # Add threshold line to charts
             if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
@@ -13907,7 +13907,7 @@ AutoH2OModeler <- function(Construct,
             } else {
               calibr[[paste0(col)]] <- out1
             }
-
+            
             # Expected value regression
             if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                        "binomial",
@@ -13927,7 +13927,7 @@ AutoH2OModeler <- function(Construct,
                 "skip")
             }
           }
-
+          
           # Save output
           if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
@@ -13953,13 +13953,13 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-
+      
       # Save grid_tuned_paths
       if (SaveToFile == TRUE) {
         save(grid_tuned_paths,
              file = paste0(model_path, "/grid_tuned_paths.Rdata"))
       }
-
+      
       # Clear H2O environment between runs
       h2o::h2o.rm(data_h2o)
       if (!Construct[i, SupplyData][[1]]) {
@@ -13975,7 +13975,7 @@ AutoH2OModeler <- function(Construct,
       }
       h2o::h2o.rm(preds)
       h2o::h2o.shutdown(prompt = FALSE)
-
+      
       # Clear R environment between runs
       if (Construct[i, 11][[1]]) {
         if (Construct[i, 2][[1]] != "multinomial" &
@@ -14011,7 +14011,7 @@ AutoH2OModeler <- function(Construct,
           rm(dd, VIMP, features, target)
         }
       }
-
+      
       # Remove data if no longer needed
       if (i > 1) {
         if (Construct[i, 7][[1]] != Construct[(i - 1), 7][[1]]) {
@@ -14157,7 +14157,7 @@ AutoH2OScoring <- function(Features     = data,
       warning("Run either text models, supervised models,
          or unsupervised models, but only one")
     }
-
+    
     # Import grid_tuned_paths or StoreFile
     if (any(
       tolower(TargetType) %in% c(
@@ -14175,7 +14175,7 @@ AutoH2OScoring <- function(Features     = data,
     } else {
       warning("TargetType not a valid option")
     }
-
+    
     # Ensure GridTuneRow is not out of bounds
     if (any(
       tolower(TargetType) %in% c(
@@ -14202,7 +14202,7 @@ AutoH2OScoring <- function(Features     = data,
     } else {
       warning("TargetType not a valid option")
     }
-
+    
     ScoresList <- list()
     for (i in as.integer(seq_along(GridTuneRow))) {
       # Scoring
@@ -14219,7 +14219,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[, -1]
+              )[,-1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             if (SaveToFile) {
@@ -14277,7 +14277,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[, -1]
+              )[,-1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             data.table::fwrite(Features, file.path(FilesPath, 'Features.csv'))
@@ -14386,7 +14386,7 @@ AutoH2OScoring <- function(Features     = data,
             startH2o()
           }
         )
-
+        
         # Load model
         if (tolower(TargetType[i]) == "text") {
           model <- h2o::h2o.loadModel(path = StoreFile[i, Path])
@@ -14424,7 +14424,7 @@ AutoH2OScoring <- function(Features     = data,
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[, -1])
+                                                                 newdata = features)[,-1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -14442,7 +14442,7 @@ AutoH2OScoring <- function(Features     = data,
                                                                  newdata = features)[, 3])
           } else if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[, -1])
+                                                                 newdata = features)[,-1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -14525,7 +14525,7 @@ AutoH2OScoring <- function(Features     = data,
 #' Convert transactional data.table to a binary ratings matrix
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Misc
+#' @family Recommenders
 #' @param data This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).
 #' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
 #' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU
@@ -14551,26 +14551,26 @@ AutoRecomDataCreate <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Ensure EntityColName is character type----
   if (!is.character(data[1, get(EntityColName)])) {
     data[, eval(EntityColName) := as.character(get(EntityColName))]
   }
-
+  
   # Ensure ProductColName is character type----
   if (!is.character(data[1, get(ProductColName)])) {
     data[, eval(ProductColName) := as.character(get(ProductColName))]
   }
-
+  
   # Ensure MetricColName is numeric----
   if (!is.numeric(data[1, get(MetricColName)])) {
     data[, eval(MetricColName) := as.numeric(get(MetricColName))]
   }
-
+  
   # Only keep the necessary columns----
   keep <- c(EntityColName, ProductColName, MetricColName)
   data <- data[, ..keep]
-
+  
   # CREATE BINARY RATING MATRIX-----
   train_data <- data.table::dcast(
     data,
@@ -14580,30 +14580,30 @@ AutoRecomDataCreate <- function(data,
       sum(!is.na(x)),
     fill = 0
   )
-
+  
   # Change name back to original----
   data.table::setnames(train_data,
                        "EntityColName",
                        eval(EntityColName))
-
+  
   # Convert Sales data to Binary (60% faster than ifelse)----
   for (j in 2:ncol(train_data)) {
     data.table::set(train_data, which(train_data[[j]] > 0), j, 1)
     data.table::set(train_data, which(train_data[[j]] <= 0), j, 0)
   }
-
+  
   # Store customerID for rownames----
   train_data_rownames <- train_data[[eval(EntityColName)]]
-
+  
   # Remove CustomerID column----
   train_data[, eval(EntityColName) := NULL]
-
+  
   # Convert train to matrix----
   train_data_matrix <- as.matrix(train_data)
-
+  
   # Set rownames
   row.names(train_data_matrix) <- train_data_rownames
-
+  
   # Return binary rating matrix----
   if (ReturnMatrix) {
     return(recommenderlab::coerce(from = train_data_matrix,
@@ -14618,7 +14618,7 @@ AutoRecomDataCreate <- function(data,
 #'
 #' This function returns the winning model that you pass onto AutoRecommenderScoring
 #' @author Adrian Antico and Douglas Pestana
-#' @family Supervised Learning
+#' @family Recommenders
 #' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
 #' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
@@ -14652,18 +14652,18 @@ AutoRecommender <- function(data,
   if (class(data)[1] != "binaryRatingMatrix") {
     warning("data must be of class binaryRatingMatrix")
   }
-
+  
   # Ensure KFolds is correct----
   if (tolower(Partition) == "split") {
     KFolds <- 1
   }
-
+  
   # Ensure Ratio is proper----
   if (abs(Ratio) > 1 | Ratio == 0) {
     warning("Ratio must be a decimal between 0 and 1.
          Default is 0.75")
   }
-
+  
   # Ensure RatingType is real----
   if (tolower(RatingType) == "topn") {
     RatingType <- "topNList"
@@ -14672,7 +14672,7 @@ AutoRecommender <- function(data,
   } else if (tolower(RatingType) == "ratingMatrix") {
     RatingType <- "ratingMatrix"
   }
-
+  
   # Pick winning model based max TPR for 10th recommendation----
   if (tolower(ModelMetric) == "precision") {
     ModelMetric <- "precision"
@@ -14685,7 +14685,7 @@ AutoRecommender <- function(data,
   } else {
     warning("ModelMetric not in list of usable metrics")
   }
-
+  
   # Evaluation setup----
   scheme <- recommenderlab::evaluationScheme(
     data,
@@ -14695,7 +14695,7 @@ AutoRecommender <- function(data,
     given      = 1,
     goodRating = 1
   )
-
+  
   # Store algorithms in nested list----
   algorithms <- list(
     "RandomItems"  = list(name = "RANDOM",  param = NULL),
@@ -14707,7 +14707,7 @@ AutoRecommender <- function(data,
       param = list(support = 0.001, confidence = 0.05)
     )
   )
-
+  
   # Remove all algos in SkipModels----
   if (any(tolower(SkipModels) == "associationrules")) {
     algorithms[["AssociationRules"]] <- NULL
@@ -14727,7 +14727,7 @@ AutoRecommender <- function(data,
   if (length(algorithms) == 0) {
     warning("You must have at least one algorithm to run")
   }
-
+  
   # evauluate predicted ratings from each algorithm----
   results <- recommenderlab::evaluate(
     x      = scheme,
@@ -14735,7 +14735,7 @@ AutoRecommender <- function(data,
     type   = RatingType,
     n      = 1:RatingsKeep
   )
-
+  
   # determine winning model - highest TPR for next best 10 products----
   # start by averaging Confusion Matrix for all k-fold runs
   n <- length(results)
@@ -14746,10 +14746,10 @@ AutoRecommender <- function(data,
     temp[, n_products := seq(1:RatingsKeep)]
     store[[i]] <- temp
   }
-
+  
   # Collect results in one data.table----
   x <- data.table::rbindlist(store)
-
+  
   WinningModel <-
     x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
@@ -14759,7 +14759,7 @@ AutoRecommender <- function(data,
 #'
 #' This function will take your ratings matrix and model and score your data in parallel.
 #' @author Adrian Antico and Douglas Pestana
-#' @family Supervised Learning
+#' @family Recommenders
 #' @param data The binary ratings matrix from RecomDataCreate()
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
@@ -14797,7 +14797,7 @@ AutoRecommenderScoring <- function(data,
                                    ProductColName = "StockCode") {
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
-
+  
   # Setup winning model and arguments
   if (WinningModel == "AR") {
     recommender <- recommenderlab::Recommender(
@@ -14810,14 +14810,14 @@ AutoRecommenderScoring <- function(data,
     recommender <- recommenderlab::Recommender(data = data,
                                                method = WinningModel)
   }
-
+  
   # Setup the parallel environment
   packages <- c("curl", "reshape2", "recommenderlab", "data.table")
   cores    <- 8
   parts    <- floor(nrow(data) * ncol(data) / 250000)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
-
+  
   # Begin scoring
   results <- foreach::foreach(
     i = itertools::isplitRows(data,
@@ -14832,7 +14832,7 @@ AutoRecommenderScoring <- function(data,
                                                 type = "topNList",
                                                 n = 10),
                         "list")
-
+    
     # Data transformations
     temp <- data.table::data.table(data.table::melt(data))
     data.table::setcolorder(temp, c(2, 1))
@@ -14841,15 +14841,15 @@ AutoRecommenderScoring <- function(data,
                          c(EntityColName, ProductColName))
     temp
   }
-
+  
   # shut down parallel objects
   parallel::stopCluster(cl)
   rm(cl)
-
+  
   # Finalize data transformations: append list of data.tables, add ProductRank, gsub x 2, add ts
   results[, ProductRank := seq_len(.N), by = eval(EntityColName)]
   results[, ':=' (TimeStamp = as.character(Sys.time()))]
-
+  
   return(results)
 }
 
@@ -14957,7 +14957,7 @@ AutoCatBoostClassifier <- function(data,
                                    PassInGrid = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # Binary Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu")))
     warning("task_type needs to be either 'GPU' or 'CPU'")
@@ -14994,7 +14994,7 @@ AutoCatBoostClassifier <- function(data,
                           'ZeroOneLoss','Kappa',
                           'WKappa','LogLikelihoodOfPrediction')"
     )
-
+    
   }
   if (!is.null(ClassWeights)) {
     LossFunction <- "Logloss"
@@ -15044,40 +15044,40 @@ AutoCatBoostClassifier <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Binary Ensure ValidationData is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Binary Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Binary IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -15092,7 +15092,7 @@ AutoCatBoostClassifier <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Binary Sort data if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
@@ -15103,7 +15103,7 @@ AutoCatBoostClassifier <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Binary Sort ValidationData if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
@@ -15113,7 +15113,7 @@ AutoCatBoostClassifier <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Binary Sort TestData if PrimaryDateColumn----
   if (!is.null(TestData)) {
     if (!is.null(PrimaryDateColumn)) {
@@ -15125,7 +15125,7 @@ AutoCatBoostClassifier <- function(data,
       }
     }
   }
-
+  
   # Binary data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -15137,7 +15137,7 @@ AutoCatBoostClassifier <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # Binary TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -15165,7 +15165,7 @@ AutoCatBoostClassifier <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # Binary Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(
     sapply(data, is.factor)
@@ -15173,14 +15173,14 @@ AutoCatBoostClassifier <- function(data,
   as.numeric(which(
     sapply(data, is.character)
   ))))
-
+  
   # Binary Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
     for (i in seq_len(length(CatFeatures))) {
       CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
-
+  
   # Binary Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
     data = dataTrain,
@@ -15190,7 +15190,7 @@ AutoCatBoostClassifier <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # Binary Validation ModelDataPrep----
   dataTest <- ModelDataPrep(
     data = dataTest,
@@ -15200,7 +15200,7 @@ AutoCatBoostClassifier <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # Binary Test ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(
@@ -15212,14 +15212,14 @@ AutoCatBoostClassifier <- function(data,
       MissNum = -1
     )
   }
-
+  
   # Binary Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
     data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
-
+  
   # Binary Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -15238,7 +15238,7 @@ AutoCatBoostClassifier <- function(data,
       }, error = function(x)
         TestData[, eval(Target)])
   }
-
+  
   # Binary Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
@@ -15247,7 +15247,7 @@ AutoCatBoostClassifier <- function(data,
                                      label = TrainTarget,
                                      cat_features = CatFeatures)
       TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures,)
+        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures, )
       FinalTestPool <-
         catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
@@ -15273,7 +15273,7 @@ AutoCatBoostClassifier <- function(data,
         catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
-
+  
   # Binary Grid Tune or Not Check----
   if (GridTune) {
     # Binary Grid Create data.table To Store Results----
@@ -15282,7 +15282,7 @@ AutoCatBoostClassifier <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # Binary Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -15316,15 +15316,15 @@ AutoCatBoostClassifier <- function(data,
       catboostGridList <-
         catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # Binary AUC List----
     AUC_List <- list()
-
+    
     # Binary Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # Binary Grid Define Base Parameters----
       if (!is.null(ClassWeights)) {
         base_params <- list(
@@ -15350,18 +15350,18 @@ AutoCatBoostClassifier <- function(data,
           task_type            = task_type
         )
       }
-
+      
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
+        base_params <- c(as.list(catboostGridList[i,]), base_params)
       }
-
+      
       # Binary Grid Train Model----
       model <- catboost::catboost.train(learn_pool = TrainPool,
                                         test_pool  = TestPool,
                                         params     = base_params)
-
+      
       # Binary Grid Score Model----
       if (!is.null(TestData)) {
         predict <- catboost::catboost.predict(
@@ -15378,11 +15378,11 @@ AutoCatBoostClassifier <- function(data,
           thread_count = -1
         )
       }
-
+      
       # Binary Remove Model and Collect Garbage----
       rm(model)
       gc()
-
+      
       # Binary Grid Validation Data----
       if (!is.null(TestData)) {
         calibEval <-
@@ -15391,7 +15391,7 @@ AutoCatBoostClassifier <- function(data,
         calibEval <-
           data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
       }
-
+      
       # Binary Grid Evaluation Metrics for Each Grid----
       if (tolower(grid_eval_metric) == "accuracy") {
         j <- 0
@@ -15470,7 +15470,7 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1, ]
+                                  !is.infinite(Metric)][1,]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -15479,11 +15479,11 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1, ]
+                                 !is.infinite(Metric)][1,]
           }
         }
       }
-
+      
       # Binary AUC Object Create----
       AUC_Metrics <- pROC::roc(
         response = calibEval[["Target"]],
@@ -15493,14 +15493,14 @@ AutoCatBoostClassifier <- function(data,
         auc = TRUE,
         ci = TRUE
       )
-
+      
       # Binary AUC Conversion to data.table----
       AUC_List[[i]] <- data.table::data.table(
         ModelNumber = i,
         Sensitivity = as.numeric(AUC_Metrics$sensitivities + 0.0001),
         Specificity = as.numeric(AUC_Metrics$specificities + 0.0001)
       )
-
+      
       # Collect Metrics and Corresponding Grids
       # Store Output Information
       if (tolower(grid_eval_metric) == "accuracy") {
@@ -15534,7 +15534,7 @@ AutoCatBoostClassifier <- function(data,
       }
     }
   }
-
+  
   # Binary Define Final Model Parameters----
   if (GridTune) {
     if (grid_eval_metric %chin% c("accuracy", "auc", "tpr", "tnr", "prbe", "f", "odds")) {
@@ -15592,7 +15592,7 @@ AutoCatBoostClassifier <- function(data,
           )
         }
         base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), base_params)
+          c(as.list(catboostGridList[BestGrid,]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -15623,7 +15623,7 @@ AutoCatBoostClassifier <- function(data,
       )
     }
     base_params <-
-      c(as.list(catboostGridList[BestGrid, ]), base_params)
+      c(as.list(catboostGridList[BestGrid,]), base_params)
   } else {
     if (!is.null(ClassWeights)) {
       base_params <- list(
@@ -15650,21 +15650,21 @@ AutoCatBoostClassifier <- function(data,
       )
     }
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # Binary Train Final Model----
   model <- catboost::catboost.train(learn_pool = TrainPool,
                                     test_pool  = TestPool,
                                     params     = base_params)
-
+  
   # Binary Save Model----
   if (SaveModelObjects) {
     catboost::catboost.save_model(model = model,
                                   model_path = paste0(model_path, "/", ModelID))
   }
-
+  
   # Binary Score Final Test Data----
   if (!is.null(TestData)) {
     predict <- catboost::catboost.predict(
@@ -15681,7 +15681,7 @@ AutoCatBoostClassifier <- function(data,
       thread_count = -1
     )
   }
-
+  
   # Binary Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -15690,13 +15690,13 @@ AutoCatBoostClassifier <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
   }
-
+  
   # Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
                        file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))
   }
-
+  
   # Binary AUC Object Create----
   AUC_Metrics <- pROC::roc(
     response = ValidationData[["Target"]],
@@ -15706,20 +15706,20 @@ AutoCatBoostClassifier <- function(data,
     auc = TRUE,
     ci = TRUE
   )
-
+  
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities
   )
-
+  
   # Binary Rbind AUC
   if (GridTune == TRUE & MaxModelsInGrid <= 15) {
     temp <- data.table::rbindlist(AUC_List)
     AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
     AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-
+    
     # Binary Plot ROC Curve----
     ROC_Plot <-
       ggplot2::ggplot(AUC_Data,
@@ -15737,7 +15737,7 @@ AutoCatBoostClassifier <- function(data,
       )) +
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
-
+    
   } else {
     ROC_Plot <-
       ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
@@ -15748,12 +15748,12 @@ AutoCatBoostClassifier <- function(data,
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))
   }
-
+  
   # Binary Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -15764,19 +15764,19 @@ AutoCatBoostClassifier <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0(
       "Calibration Evaluation Plot: AUC = ",
       round(AUC_Metrics$auc, 3)
     ))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))
   }
-
+  
   # Evaluation Metrics at Optimial Threshold----
   x <- ROCR::prediction(predictions = ValidationData[["p1"]],
                         labels = ValidationData[["Target"]])
@@ -15845,7 +15845,7 @@ AutoCatBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(-Metric)][!is.infinite(Threshold) &
-                                !is.infinite(Metric)][1, ]
+                                !is.infinite(Metric)][1,]
         } else {
           z <-
             data.table::as.data.table(cbind(
@@ -15854,10 +15854,10 @@ AutoCatBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(Metric)][!is.infinite(Threshold) &
-                               !is.infinite(Metric)][1, ]
+                               !is.infinite(Metric)][1,]
         }
       }
-
+      
       # Store Output Information
       if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
               nrow(data.table::as.data.table(y@x.values)) <= 1)) {
@@ -15888,7 +15888,7 @@ AutoCatBoostClassifier <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Accuracy Threshold and Metric----
   j <- 0
   x <-
@@ -15909,17 +15909,17 @@ AutoCatBoostClassifier <- function(data,
                     value = round(Accuracy, 4))
   }
   data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-  x <- x[1, ]
+  x <- x[1,]
   EvaluationMetrics <-
     data.table::rbindlist(list(EvaluationMetrics, x))
-
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     data.table::fwrite(EvaluationMetrics,
                        file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # Binary Variable Importance----
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <-
@@ -15931,7 +15931,7 @@ AutoCatBoostClassifier <- function(data,
     data.table::fwrite(VariableImportance,
                        file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -15950,20 +15950,20 @@ AutoCatBoostClassifier <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Binary Save GridCollect and catboostGridList----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(catboostGridList,
@@ -15971,12 +15971,12 @@ AutoCatBoostClassifier <- function(data,
     data.table::fwrite(GridCollect,
                        file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
   }
-
+  
   # Final Garbage Collection----
   if (tolower(task_type) == "gpu") {
     gc()
   }
-
+  
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -16115,7 +16115,7 @@ AutoCatBoostRegression <- function(data,
                                    PassInGrid = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # Regression Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu")))
     warning("task_type needs to be either 'GPU' or 'CPU'")
@@ -16139,7 +16139,7 @@ AutoCatBoostRegression <- function(data,
       "eval_metric not in c(RMSE,MAE,MAPE,Poisson,Quantile,
          LogLinQuantile,Lq,NumErrors,SMAPE,R2,MSLE,MedianAbsoluteError)"
     )
-
+    
   }
   if (!is.null(PrimaryDateColumn)) {
     HasTime <- TRUE
@@ -16173,40 +16173,40 @@ AutoCatBoostRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Regression Ensure ValidationData is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Regression Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Regression Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Regression IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -16221,7 +16221,7 @@ AutoCatBoostRegression <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Regression Sort data if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
@@ -16231,7 +16231,7 @@ AutoCatBoostRegression <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Regression Sort ValidationData if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
@@ -16241,7 +16241,7 @@ AutoCatBoostRegression <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Regression Sort TestData if PrimaryDateColumn----
   if (!is.null(TestData)) {
     if (!is.null(PrimaryDateColumn)) {
@@ -16253,7 +16253,7 @@ AutoCatBoostRegression <- function(data,
       }
     }
   }
-
+  
   # Regression data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -16265,7 +16265,7 @@ AutoCatBoostRegression <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # Regression TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -16293,7 +16293,7 @@ AutoCatBoostRegression <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # Regression Identify column numbers for factor variables----
   CatFeatures <-
     sort(c(as.numeric(which(
@@ -16302,14 +16302,14 @@ AutoCatBoostRegression <- function(data,
     as.numeric(which(
       sapply(dataTrain, is.character)
     ))))
-
+  
   # Regression Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
     for (i in seq_len(length(CatFeatures))) {
       CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
-
+  
   # Regression Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
     data = dataTrain,
@@ -16319,7 +16319,7 @@ AutoCatBoostRegression <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # Regression Validation ModelDataPrep----
   dataTest <- ModelDataPrep(
     data = dataTest,
@@ -16329,7 +16329,7 @@ AutoCatBoostRegression <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # Regression Test ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(
@@ -16341,7 +16341,7 @@ AutoCatBoostRegression <- function(data,
       MissNum = -1
     )
   }
-
+  
   # Regression Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
@@ -16350,10 +16350,10 @@ AutoCatBoostRegression <- function(data,
                                      "/"
                                      , ModelID, "_ColNames.csv"))
   }
-
+  
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
-
+  
   # Regression Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -16372,13 +16372,13 @@ AutoCatBoostRegression <- function(data,
       }, error = function(x)
         TestData[, eval(Target)])
   }
-
+  
   # Regression eval_metric checks
   if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0 |
                                            min(TestTarget) < 0)) {
     warning("eval_metric Poisson requires positive values for Target")
   }
-
+  
   # Regression Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
@@ -16413,7 +16413,7 @@ AutoCatBoostRegression <- function(data,
         catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
-
+  
   # Regression Grid Tune or Not Check----
   if (GridTune) {
     # Regression Grid Create data.table To Store Results----
@@ -16422,7 +16422,7 @@ AutoCatBoostRegression <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # Regression Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -16456,12 +16456,12 @@ AutoCatBoostRegression <- function(data,
       catboostGridList <-
         catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # Regression Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # Regression Grid Define Base Parameters----
       if (eval_metric != "Quantile" &
           eval_metric != "LogLinQuantile") {
@@ -16488,18 +16488,18 @@ AutoCatBoostRegression <- function(data,
           task_type            = task_type
         )
       }
-
+      
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
+        base_params <- c(as.list(catboostGridList[i,]), base_params)
       }
-
+      
       # Regression Grid Train Model----
       model <- catboost::catboost.train(learn_pool = TrainPool,
                                         test_pool  = TestPool,
                                         params     = base_params)
-
+      
       # Regression Grid Score Model----
       if (!is.null(TestData)) {
         predict <- catboost::catboost.predict(
@@ -16516,11 +16516,11 @@ AutoCatBoostRegression <- function(data,
           thread_count = -1
         )
       }
-
+      
       # Regression Remove Model and Collect Garbage----
       rm(model)
       gc()
-
+      
       # Regression Grid Validation Data----
       if (!is.null(TestData)) {
         calibEval <-
@@ -16529,7 +16529,7 @@ AutoCatBoostRegression <- function(data,
         calibEval <-
           data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
       }
-
+      
       # Regression Grid Evaluation Metrics----
       if (tolower(grid_eval_metric) == "poisson") {
         if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
@@ -16567,7 +16567,7 @@ AutoCatBoostRegression <- function(data,
       } else if (tolower(grid_eval_metric) == "r2") {
         Metric <- (calibEval[, stats::cor(Target, Predicted)]) ^ 2
       }
-
+      
       # Regression Metrics Collection----
       data.table::set(GridCollect,
                       i = i,
@@ -16581,7 +16581,7 @@ AutoCatBoostRegression <- function(data,
       )
     }
   }
-
+  
   # Regression Define Final Model Parameters----
   if (GridTune) {
     if (grid_eval_metric %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
@@ -16600,7 +16600,7 @@ AutoCatBoostRegression <- function(data,
           metric_period        = 10,
           task_type            = task_type
         )
-
+        
       } else {
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
         base_params <- list(
@@ -16616,7 +16616,7 @@ AutoCatBoostRegression <- function(data,
           task_type            = task_type
         )
         base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), base_params)
+          c(as.list(catboostGridList[BestGrid,]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -16634,7 +16634,7 @@ AutoCatBoostRegression <- function(data,
       metric_period        = 10,
       task_type            = task_type
     )
-    base_params <- c(as.list(catboostGridList[BestGrid, ]),
+    base_params <- c(as.list(catboostGridList[BestGrid,]),
                      base_params)
   } else {
     base_params <- list(
@@ -16650,21 +16650,21 @@ AutoCatBoostRegression <- function(data,
       task_type            = task_type
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # Regression Train Final Model----
   model <- catboost::catboost.train(learn_pool = TrainPool,
                                     test_pool  = TestPool,
                                     params     = base_params)
-
+  
   # Regression Save Model----
   if (SaveModelObjects) {
     catboost::catboost.save_model(model = model,
                                   model_path = paste0(model_path, "/", ModelID))
   }
-
+  
   # Regression Score Final Test Data----
   if (!is.null(TestData)) {
     predict <- catboost::catboost.predict(
@@ -16681,7 +16681,7 @@ AutoCatBoostRegression <- function(data,
       thread_count = -1
     )
   }
-
+  
   # Regression Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -16690,10 +16690,10 @@ AutoCatBoostRegression <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
   }
-
+  
   # Regression r2 via sqrt of correlation
   r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
-
+  
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -16702,7 +16702,7 @@ AutoCatBoostRegression <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -16713,19 +16713,19 @@ AutoCatBoostRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
                            "/",
                            ModelID, "_EvaluationPlot.png"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = ValidationData,
@@ -16736,12 +16736,12 @@ AutoCatBoostRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationBoxPlot <- EvaluationBoxPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -16749,7 +16749,7 @@ AutoCatBoostRegression <- function(data,
                            ModelID,
                            "_EvaluationBoxPlot.png"))
   }
-
+  
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
@@ -16820,7 +16820,7 @@ AutoCatBoostRegression <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Remove Cols
   ValidationData[, ':=' (
     Metric = NULL,
@@ -16828,7 +16828,7 @@ AutoCatBoostRegression <- function(data,
     Metric2 = NULL,
     Metric3 = NULL
   )]
-
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
@@ -16837,7 +16837,7 @@ AutoCatBoostRegression <- function(data,
                                      "/",
                                      ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # Regression Variable Importance----
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <-
@@ -16851,7 +16851,7 @@ AutoCatBoostRegression <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -16870,7 +16870,7 @@ AutoCatBoostRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
@@ -16888,26 +16888,26 @@ AutoCatBoostRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       k <- k + 1
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
         Out1
     }, error = function(x)
       "skip")
   }
-
+  
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
   }
-
+  
   # Regression Save GridCollect and catboostGridList----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(catboostGridList,
@@ -16921,12 +16921,12 @@ AutoCatBoostRegression <- function(data,
                                      ModelID,
                                      "_GridCollect.csv"))
   }
-
+  
   # Final Garbage Collection----
   if (tolower(task_type) == "gpu") {
     gc()
   }
-
+  
   # Regression Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -17065,7 +17065,7 @@ AutoCatBoostMultiClass <- function(data,
                                    PassInGrid = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # MultiClass Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu")))
     warning("task_type needs to be either 'GPU' or 'CPU'")
@@ -17098,40 +17098,40 @@ AutoCatBoostMultiClass <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # MultiClass Ensure ValidationData is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # MultiClass Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # MultiClass Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # MultiClass IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -17146,7 +17146,7 @@ AutoCatBoostMultiClass <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # MultiClass Sort data if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
@@ -17156,7 +17156,7 @@ AutoCatBoostMultiClass <- function(data,
                       value = NULL)
     }
   }
-
+  
   # MultiClass Sort ValidationData if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
@@ -17166,7 +17166,7 @@ AutoCatBoostMultiClass <- function(data,
                       value = NULL)
     }
   }
-
+  
   # MultiClass Sort TestData if PrimaryDateColumn----
   if (!is.null(TestData)) {
     if (!is.null(PrimaryDateColumn)) {
@@ -17178,7 +17178,7 @@ AutoCatBoostMultiClass <- function(data,
       }
     }
   }
-
+  
   # MultiClass data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -17190,7 +17190,7 @@ AutoCatBoostMultiClass <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # MultiClass TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -17218,7 +17218,7 @@ AutoCatBoostMultiClass <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(
     sapply(data, is.factor)
@@ -17228,14 +17228,14 @@ AutoCatBoostMultiClass <- function(data,
   ))))
   TargetNum <- which(names(data) == Target)
   CatFeatures <- setdiff(CatFeatures, TargetNum)
-
+  
   # MultiClass Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
     for (i in seq_len(length(CatFeatures))) {
       CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
-
+  
   # MultiClass Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
     data = dataTrain,
@@ -17245,7 +17245,7 @@ AutoCatBoostMultiClass <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # MultiClass Validation ModelDataPrep----
   dataTest <- ModelDataPrep(
     data = dataTest,
@@ -17255,7 +17255,7 @@ AutoCatBoostMultiClass <- function(data,
     MissFactor = "0",
     MissNum = -1
   )
-
+  
   # MultiClass Test ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(
@@ -17267,7 +17267,7 @@ AutoCatBoostMultiClass <- function(data,
       MissNum = -1
     )
   }
-
+  
   # MultiClass Obtain Unique Target Levels
   if (!is.null(TestData)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
@@ -17285,7 +17285,7 @@ AutoCatBoostMultiClass <- function(data,
                                      ModelID,
                                      "_TargetLevels.csv"))
   }
-
+  
   # MultiClass Convert Target to Numeric Factor
   dataTrain <- merge(
     dataTrain,
@@ -17316,21 +17316,21 @@ AutoCatBoostMultiClass <- function(data,
     TestData[, paste0(Target) := NewLevels]
     TestData[, NewLevels := NULL]
   }
-
+  
   # Reorder Colnames
   data.table::setcolorder(dataTrain, c(2:ncol(dataTrain), 1))
   data.table::setcolorder(dataTest, c(2:ncol(dataTest), 1))
   if (!is.null(TestData)) {
     data.table::setcolorder(TestData, c(2:ncol(TestData), 1))
   }
-
+  
   # MultiClass Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
     data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
-
+  
   # MultiClass Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -17349,7 +17349,7 @@ AutoCatBoostMultiClass <- function(data,
       }, error = function(x)
         TestData[, as.numeric(eval(Target))])
   }
-
+  
   # MultiClass Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
@@ -17384,7 +17384,7 @@ AutoCatBoostMultiClass <- function(data,
         catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
-
+  
   # MultiClass Grid Tune or Not Check----
   if (GridTune) {
     # MultiClass Grid Create data.table To Store Results----
@@ -17393,7 +17393,7 @@ AutoCatBoostMultiClass <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # MultiClass Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -17427,12 +17427,12 @@ AutoCatBoostMultiClass <- function(data,
       catboostGridList <-
         catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # MultiClass Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # MultiClass Grid Define Base Parameters----
       if (!is.null(ClassWeights)) {
         base_params <- list(
@@ -17458,18 +17458,18 @@ AutoCatBoostMultiClass <- function(data,
           task_type            = task_type
         )
       }
-
+      
       # MultiClass Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
+        base_params <- c(as.list(catboostGridList[i,]), base_params)
       }
-
+      
       # MultiClass Grid Train Model----
       model <- catboost::catboost.train(learn_pool = TrainPool,
                                         test_pool  = TestPool,
                                         params     = base_params)
-
+      
       # MultiClass Grid Score Model----
       tryCatch({
         if (!is.null(TestData)) {
@@ -17499,11 +17499,11 @@ AutoCatBoostMultiClass <- function(data,
             )
           )
         }
-
+        
         # MultiClass Remove Model and Collect Garbage----
         rm(model)
         gc()
-
+        
         # MultiClass Grid Validation Data----
         if (!is.null(TestData)) {
           calibEval <-
@@ -17528,7 +17528,7 @@ AutoCatBoostMultiClass <- function(data,
           all = FALSE
         )
         ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-
+        
         # MultiClass Update Names for Predicted Value Columns
         k <- 2
         for (name in as.character(TargetLevels[[1]])) {
@@ -17542,7 +17542,7 @@ AutoCatBoostMultiClass <- function(data,
         data.table::set(ValidationData,
                         j = "Predict",
                         value = as.character(ValidationData[["Predict"]]))
-
+        
         # MultiClass Metric----
         if (tolower(grid_eval_metric) == "accuracy") {
           Metric <- ValidationData[, mean(ifelse(as.character(Target) ==
@@ -17572,7 +17572,7 @@ AutoCatBoostMultiClass <- function(data,
             )
           )), 4)
         }
-
+        
         # Collect Metrics and Corresponding Grids
         # Store Output Information
         data.table::set(GridCollect,
@@ -17587,7 +17587,7 @@ AutoCatBoostMultiClass <- function(data,
         "skip")
     }
   }
-
+  
   # MultiClass Define Final Model Parameters----
   if (GridTune) {
     BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
@@ -17644,7 +17644,7 @@ AutoCatBoostMultiClass <- function(data,
         )
       }
       base_params <-
-        c(as.list(catboostGridList[BestGrid, ]), base_params)
+        c(as.list(catboostGridList[BestGrid,]), base_params)
     }
   } else {
     if (!is.null(ClassWeights)) {
@@ -17672,21 +17672,21 @@ AutoCatBoostMultiClass <- function(data,
       )
     }
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # MultiClass Train Final Model----
   model <- catboost::catboost.train(learn_pool = TrainPool,
                                     test_pool  = TestPool,
                                     params     = base_params)
-
+  
   # MultiClass Save Model----
   if (SaveModelObjects) {
     catboost::catboost.save_model(model = model,
                                   model_path = paste0(model_path, "/", ModelID))
   }
-
+  
   # MultiClass Score Final Test Data----
   if (!is.null(TestData)) {
     predict <- cbind(
@@ -17715,7 +17715,7 @@ AutoCatBoostMultiClass <- function(data,
       )
     )
   }
-
+  
   # MultiClass Grid Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -17740,7 +17740,7 @@ AutoCatBoostMultiClass <- function(data,
     all = FALSE
   )
   ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-
+  
   # MultiClass Update Names for Predicted Value Columns
   k <- 1
   for (name in as.character(TargetLevels[[1]])) {
@@ -17754,7 +17754,7 @@ AutoCatBoostMultiClass <- function(data,
   data.table::set(ValidationData,
                   j = "Predict",
                   value = as.character(ValidationData[["Predict"]]))
-
+  
   # MultiClass Metrics Accuracy----
   MetricAcc <-
     ValidationData[, mean(ifelse(as.character(Target) ==
@@ -17762,7 +17762,7 @@ AutoCatBoostMultiClass <- function(data,
                                  1.0,
                                  0.0),
                           na.rm = TRUE)]
-
+  
   # MultiClass Metrics MicroAUC----
   y <- ValidationData[[eval(Target)]]
   keep <- names(ValidationData)[3:(ncol(predict) + 1)]
@@ -17771,26 +17771,26 @@ AutoCatBoostMultiClass <- function(data,
   MetricAUC <- round(as.numeric(noquote(
     stringr::str_extract(z$auc, "\\d+\\.*\\d*")
   )), 4)
-
+  
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
                        file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))
   }
-
+  
   # MultiClass Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
       Metric = c("AUC", "Accuracy"),
       MetricValue = c(MetricAUC, MetricAcc)
     )
-
+  
   # MultiClass Save EvaluationMetrics to File
   if (SaveModelObjects) {
     data.table::fwrite(EvaluationMetrics,
                        file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # MultiClass Variable Importance----
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <-
@@ -17802,7 +17802,7 @@ AutoCatBoostMultiClass <- function(data,
     data.table::fwrite(VariableImportance,
                        file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))
   }
-
+  
   # MultiClass Save GridCollect and catboostGridList----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(catboostGridList,
@@ -17816,12 +17816,12 @@ AutoCatBoostMultiClass <- function(data,
                                      ModelID,
                                      "_GridCollect.csv"))
   }
-
+  
   # Final Garbage Collection----
   if (tolower(task_type) == "gpu") {
     gc()
   }
-
+  
   # MultiClass Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -17952,7 +17952,7 @@ AutoH2oGBMRegression <- function(data,
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -17973,26 +17973,26 @@ AutoH2oGBMRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Regression Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Regression Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -18007,34 +18007,34 @@ AutoH2oGBMRegression <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Regression ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # Regression ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # Regression ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # Regression Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
-
+  
   # Regression Proper Distribution Check----
   if (MinVal < 0 & tolower(Distribution) == "poisson") {
     Distribution <- "gaussian"
@@ -18042,17 +18042,17 @@ AutoH2oGBMRegression <- function(data,
              tolower(Distribution) %chin% c("gamma", "tweedie")) {
     Distribution <- "poisson"
   }
-
+  
   # Regression Grid Tune Check----
   if (GridTune) {
     # Regression Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # Regression Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -18063,7 +18063,7 @@ AutoH2oGBMRegression <- function(data,
       stopping_metric      = toupper(eval_metric),
       stopping_tolerance   = 1e-3
     )
-
+    
     # Regression Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -18078,7 +18078,7 @@ AutoH2oGBMRegression <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # Regression Grid Train Model----
     if (!is.null(Alpha)) {
       grid <- h2o::h2o.grid(
@@ -18151,28 +18151,28 @@ AutoH2oGBMRegression <- function(data,
         )
       }
     }
-
+    
     # Regression Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = FALSE
     )
-
+    
     # Regression Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # Regression Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # Regression Baseline Model----
   if (!is.null(Alpha)) {
     base_model <- h2o::h2o.gbm(
@@ -18196,7 +18196,7 @@ AutoH2oGBMRegression <- function(data,
       ntrees           = Trees
     )
   }
-
+  
   # Regression Grab Evaluation Metric----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -18260,7 +18260,7 @@ AutoH2oGBMRegression <- function(data,
           h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
                                               newdata = datavalidate))
       }
-
+      
     }
   } else {
     if (!is.null(TestData)) {
@@ -18302,7 +18302,7 @@ AutoH2oGBMRegression <- function(data,
       }
     }
   }
-
+  
   # Regression Pick Winner----
   if (GridTune) {
     if (GridModelEval > BaseModelEval) {
@@ -18313,7 +18313,7 @@ AutoH2oGBMRegression <- function(data,
   } else {
     FinalModel <- base_model
   }
-
+  
   # Regression Save Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -18333,19 +18333,19 @@ AutoH2oGBMRegression <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # Regression Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datatest))
-
+    
   } else {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
   }
-
+  
   # Regression Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
@@ -18355,7 +18355,7 @@ AutoH2oGBMRegression <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Regression Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -18377,10 +18377,10 @@ AutoH2oGBMRegression <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # Regression H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # Regression Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -18389,14 +18389,14 @@ AutoH2oGBMRegression <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(dataTest, Predict))
   }
-
+  
   # Regression Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-
+  
   # Regression Get R2----
   r_squared <-
     (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
-
+  
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -18405,7 +18405,7 @@ AutoH2oGBMRegression <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   if (!is.null(Alpha)) {
     EvaluationPlot <- EvalPlot(
@@ -18430,7 +18430,7 @@ AutoH2oGBMRegression <- function(data,
         mean(x, na.rm = TRUE)
     )
   }
-
+  
   # Regression Evaluation Plot Update Title----
   if (GridTune) {
     val <- max(GridModelEval, BaseModelEval)
@@ -18450,7 +18450,7 @@ AutoH2oGBMRegression <- function(data,
         round(BaseModelEval, 3)
       ))
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -18458,7 +18458,7 @@ AutoH2oGBMRegression <- function(data,
                            ModelID,
                            "_EvaluationPlot.png"))
   }
-
+  
   # Regression Evaluation BoxPlot----
   EvaluationBoxPlot <- EvalPlot(
     data = ValidationData,
@@ -18469,7 +18469,7 @@ AutoH2oGBMRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Regression Evaluation BoxPlot Update Title----
   if (GridTune) {
     val <- max(GridModelEval, BaseModelEval)
@@ -18489,7 +18489,7 @@ AutoH2oGBMRegression <- function(data,
         round(BaseModelEval, 3)
       ))
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -18497,7 +18497,7 @@ AutoH2oGBMRegression <- function(data,
                            ModelID,
                            "_EvaluationBoxPlot.png"))
   }
-
+  
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
@@ -18565,12 +18565,12 @@ AutoH2oGBMRegression <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Remove Features
   ValidationData[, ':=' (Metric1 = NULL,
                          Metric2 = NULL,
                          Metric3 = NULL)]
-
+  
   # Regression Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
@@ -18580,7 +18580,7 @@ AutoH2oGBMRegression <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -18602,7 +18602,7 @@ AutoH2oGBMRegression <- function(data,
                      probs = Alpha,
                      na.rm = TRUE)
         )
-
+        
         j <- j + 1
         ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
           Out
@@ -18622,7 +18622,7 @@ AutoH2oGBMRegression <- function(data,
                      probs = Alpha,
                      na.rm = TRUE)
         )
-
+        
         k <- k + 1
         ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
           Out1
@@ -18641,7 +18641,7 @@ AutoH2oGBMRegression <- function(data,
           Function = function(x)
             mean(x, na.rm = TRUE)
         )
-
+        
         j <- j + 1
         ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
           Out
@@ -18659,7 +18659,7 @@ AutoH2oGBMRegression <- function(data,
           Function = function(x)
             mean(x, na.rm = TRUE)
         )
-
+        
         k <- k + 1
         ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
           Out1
@@ -18667,19 +18667,19 @@ AutoH2oGBMRegression <- function(data,
         "skip")
     }
   }
-
+  
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
   }
-
+  
   # Regression Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -18789,7 +18789,7 @@ AutoH2oDRFRegression <- function(data,
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -18810,26 +18810,26 @@ AutoH2oDRFRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Regression Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Regression Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -18844,44 +18844,44 @@ AutoH2oDRFRegression <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Regression ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # Regression ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # Regression ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # Regression Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
-
+  
   # Regression Grid Tune Check----
   if (GridTune) {
     # Regression Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # Regression Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -18892,7 +18892,7 @@ AutoH2oDRFRegression <- function(data,
       stopping_metric      = toupper(eval_metric),
       stopping_tolerance   = 1e-3
     )
-
+    
     # Regression Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -18906,7 +18906,7 @@ AutoH2oDRFRegression <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # Regression Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -18926,28 +18926,28 @@ AutoH2oDRFRegression <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234
     )
-
+    
     # Regression Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = FALSE
     )
-
+    
     # Regression Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # Regression Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # Regression Baseline Model----
   base_model <- h2o::h2o.randomForest(
     x                = FeatureColNames,
@@ -18957,7 +18957,7 @@ AutoH2oDRFRegression <- function(data,
     model_id         = ModelID,
     ntrees           = Trees
   )
-
+  
   # Regression Grab Evaluation Metric----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -19021,7 +19021,7 @@ AutoH2oDRFRegression <- function(data,
           h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
                                               newdata = datavalidate))
       }
-
+      
     }
   } else {
     if (!is.null(TestData)) {
@@ -19063,7 +19063,7 @@ AutoH2oDRFRegression <- function(data,
       }
     }
   }
-
+  
   # Regression Pick Winner----
   if (GridTune) {
     if (GridModelEval < BaseModelEval) {
@@ -19074,7 +19074,7 @@ AutoH2oDRFRegression <- function(data,
   } else {
     FinalModel <- base_model
   }
-
+  
   # Regression Save Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -19094,19 +19094,19 @@ AutoH2oDRFRegression <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # Regression Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datatest))
-
+    
   } else {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
   }
-
+  
   # Regression Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
@@ -19116,7 +19116,7 @@ AutoH2oDRFRegression <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Regression Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -19138,10 +19138,10 @@ AutoH2oDRFRegression <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # Regression H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # Regression Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -19150,14 +19150,14 @@ AutoH2oDRFRegression <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(dataTest, Predict))
   }
-
+  
   # Regression Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-
+  
   # Regression Get R2----
   r_squared <-
     (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
-
+  
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -19166,7 +19166,7 @@ AutoH2oDRFRegression <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -19177,7 +19177,7 @@ AutoH2oDRFRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Regression Evaluation Plot Update Title----
   if (GridTune) {
     val <- max(GridModelEval, BaseModelEval)
@@ -19197,7 +19197,7 @@ AutoH2oDRFRegression <- function(data,
         round(BaseModelEval, 3)
       ))
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -19205,7 +19205,7 @@ AutoH2oDRFRegression <- function(data,
                            ModelID,
                            "_EvaluationPlot.png"))
   }
-
+  
   # Regression Evaluation BoxPlot----
   EvaluationBoxPlot <- EvalPlot(
     data = ValidationData,
@@ -19216,7 +19216,7 @@ AutoH2oDRFRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Regression Evaluation Plot Update Title----
   if (GridTune) {
     val <- max(GridModelEval, BaseModelEval)
@@ -19236,7 +19236,7 @@ AutoH2oDRFRegression <- function(data,
         round(BaseModelEval, 3)
       ))
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -19244,7 +19244,7 @@ AutoH2oDRFRegression <- function(data,
                            ModelID,
                            "_EvaluationBoxPlot.png"))
   }
-
+  
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
@@ -19312,7 +19312,7 @@ AutoH2oDRFRegression <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Regression Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
@@ -19322,7 +19322,7 @@ AutoH2oDRFRegression <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -19341,7 +19341,7 @@ AutoH2oDRFRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
@@ -19359,27 +19359,27 @@ AutoH2oDRFRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       k <- k + 1
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
         Out1
     }, error = function(x)
       "skip")
-
+    
   }
-
+  
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
   }
-
+  
   # Regression Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -19520,33 +19520,33 @@ AutoH2oGBMClassifier <- function(data,
   } else {
     Decreasing <- FALSE
   }
-
+  
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -19561,57 +19561,57 @@ AutoH2oGBMClassifier <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Binary ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # Binary ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # Binary ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # Binary Get Min Value of Target Data----
   MinVal <- min(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
   MaxVal <- max(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
   if (MaxVal - MinVal > 1)
     warning("Target Variable is not binary")
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.factor(dataTrain[[eval(Target)]])) {
     dataTrain[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.factor(dataTest[[eval(Target)]])) {
     dataTest[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.null(TestData)) {
     if (!is.factor(TestData[[eval(Target)]])) {
       TestData[, eval(Target) := as.factor(get(Target))]
     }
   }
-
+  
   # Binary Grid Tune Check----
   if (GridTune) {
     # Binary Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # Binary Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -19622,7 +19622,7 @@ AutoH2oGBMClassifier <- function(data,
       stopping_metric      = eval_metric,
       stopping_tolerance   = 1e-3
     )
-
+    
     # Binary Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -19637,7 +19637,7 @@ AutoH2oGBMClassifier <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # Binary Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -19658,28 +19658,28 @@ AutoH2oGBMClassifier <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234
     )
-
+    
     # Binary Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing
     )
-
+    
     # Binary Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # Binary Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # Binary Build Baseline Model----
   base_model <- h2o::h2o.gbm(
     x                = FeatureColNames,
@@ -19690,7 +19690,7 @@ AutoH2oGBMClassifier <- function(data,
     model_id         = ModelID,
     ntrees           = Trees
   )
-
+  
   # Binary Get Metrics----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -19715,7 +19715,7 @@ AutoH2oGBMClassifier <- function(data,
                                           newdata = datavalidate)
     }
   }
-
+  
   # Binary Evaluate Metrics----
   if (GridTune) {
     if (tolower(eval_metric) == "auc") {
@@ -19810,7 +19810,7 @@ AutoH2oGBMClassifier <- function(data,
                                   Value = round(Value, 4))]
     }
   }
-
+  
   # Binary Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -19830,25 +19830,25 @@ AutoH2oGBMClassifier <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # Binary Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datatest))
     Predict[, p0 := NULL]
-
+    
   } else {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
     Predict[, p0 := NULL]
   }
-
+  
   # Binary Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
+  
   # Binary Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -19870,7 +19870,7 @@ AutoH2oGBMClassifier <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # Binary Save Variable Importance----
   if (SaveModelObjects) {
     data.table::fwrite(VariableImportance,
@@ -19878,10 +19878,10 @@ AutoH2oGBMClassifier <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Binary H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # Binary Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -19890,10 +19890,10 @@ AutoH2oGBMClassifier <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(dataTest, Predict))
   }
-
+  
   # Binary Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-
+  
   # Binary Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -19902,7 +19902,7 @@ AutoH2oGBMClassifier <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Binary Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -19913,7 +19913,7 @@ AutoH2oGBMClassifier <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Binary Evaluation Plot Update Title----
   if (GridTune) {
     EvaluationPlot <- EvaluationPlot +
@@ -19932,7 +19932,7 @@ AutoH2oGBMClassifier <- function(data,
         round(EvalMetric, 3)
       ))
   }
-
+  
   # Binary Save plot to file----
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -19940,7 +19940,7 @@ AutoH2oGBMClassifier <- function(data,
                            ModelID,
                            "_EvaluationPlot.png"))
   }
-
+  
   # Binary AUC Object Create----
   AUC_Metrics <-
     pROC::roc(
@@ -19951,14 +19951,14 @@ AutoH2oGBMClassifier <- function(data,
       auc = TRUE,
       ci = TRUE
     )
-
+  
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities
   )
-
+  
   # Binary Plot ROC Curve----
   ROC_Plot <-
     ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
@@ -19968,7 +19968,7 @@ AutoH2oGBMClassifier <- function(data,
                             100 * round(AUC_Metrics$auc, 3), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -19976,7 +19976,7 @@ AutoH2oGBMClassifier <- function(data,
                            ModelID,
                            "_ROC_Plot.png"))
   }
-
+  
   # Binary Save EvaluationMetrics to File----
   if (SaveModelObjects) {
     data.table::fwrite(FinalThresholdTable,
@@ -19985,7 +19985,7 @@ AutoH2oGBMClassifier <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -20002,20 +20002,20 @@ AutoH2oGBMClassifier <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Binary Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -20125,7 +20125,7 @@ AutoH2oDRFClassifier <- function(data,
   # Binary Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -20156,33 +20156,33 @@ AutoH2oDRFClassifier <- function(data,
   } else {
     Decreasing <- FALSE
   }
-
+  
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -20197,57 +20197,57 @@ AutoH2oDRFClassifier <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Binary ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # Binary ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # Binary ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # Binary Get Min Value of Target Data----
   MinVal <- min(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
   MaxVal <- max(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
   if (MaxVal - MinVal > 1)
     warning("Target Variable is not binary")
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.factor(dataTrain[[eval(Target)]])) {
     dataTrain[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.factor(dataTest[[eval(Target)]])) {
     dataTest[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # Binary Ensure Target Is a Factor Type----
   if (!is.null(TestData)) {
     if (!is.factor(TestData[[eval(Target)]])) {
       TestData[, eval(Target) := as.factor(get(Target))]
     }
   }
-
+  
   # Binary Grid Tune Check----
   if (GridTune) {
     # Binary Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # Binary Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -20258,7 +20258,7 @@ AutoH2oDRFClassifier <- function(data,
       stopping_metric      = eval_metric,
       stopping_tolerance   = 1e-3
     )
-
+    
     # Binary Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -20273,7 +20273,7 @@ AutoH2oDRFClassifier <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # Binary Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -20293,28 +20293,28 @@ AutoH2oDRFClassifier <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234
     )
-
+    
     # Binary Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing
     )
-
+    
     # Binary Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # Binary Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # Binary Build Baseline Model----
   base_model <- h2o::h2o.randomForest(
     x                = FeatureColNames,
@@ -20324,7 +20324,7 @@ AutoH2oDRFClassifier <- function(data,
     model_id         = ModelID,
     ntrees           = Trees
   )
-
+  
   # Binary Get Metrics----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -20349,7 +20349,7 @@ AutoH2oDRFClassifier <- function(data,
                                           newdata = datavalidate)
     }
   }
-
+  
   # Binary Evaluate Metrics----
   if (GridTune) {
     if (tolower(eval_metric) == "auc") {
@@ -20444,7 +20444,7 @@ AutoH2oDRFClassifier <- function(data,
                                   Value = round(Value, 4))]
     }
   }
-
+  
   # Binary Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -20464,25 +20464,25 @@ AutoH2oDRFClassifier <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # Binary Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datatest))
     Predict[, p0 := NULL]
-
+    
   } else {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
     Predict[, p0 := NULL]
   }
-
+  
   # Binary Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
+  
   # Binary Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -20504,7 +20504,7 @@ AutoH2oDRFClassifier <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # Binary Save Variable Importance----
   if (SaveModelObjects) {
     data.table::fwrite(VariableImportance,
@@ -20512,10 +20512,10 @@ AutoH2oDRFClassifier <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Binary H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # Binary Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -20524,10 +20524,10 @@ AutoH2oDRFClassifier <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(dataTest, Predict))
   }
-
+  
   # Binary Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-
+  
   # Binary Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -20536,7 +20536,7 @@ AutoH2oDRFClassifier <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Binary Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -20547,7 +20547,7 @@ AutoH2oDRFClassifier <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Binary Evaluation Plot Update Title----
   if (GridTune) {
     EvaluationPlot <- EvaluationPlot +
@@ -20566,7 +20566,7 @@ AutoH2oDRFClassifier <- function(data,
         round(EvalMetric, 3)
       ))
   }
-
+  
   # Binary Save plot to file----
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -20574,7 +20574,7 @@ AutoH2oDRFClassifier <- function(data,
                            ModelID,
                            "_EvaluationPlot.png"))
   }
-
+  
   # Binary AUC Object Create----
   AUC_Metrics <-
     pROC::roc(
@@ -20585,14 +20585,14 @@ AutoH2oDRFClassifier <- function(data,
       auc = TRUE,
       ci = TRUE
     )
-
+  
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities
   )
-
+  
   # Binary Plot ROC Curve----
   ROC_Plot <-
     ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
@@ -20602,7 +20602,7 @@ AutoH2oDRFClassifier <- function(data,
                             100 * round(AUC_Metrics$auc, 3), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -20610,7 +20610,7 @@ AutoH2oDRFClassifier <- function(data,
                            ModelID,
                            "_ROC_Plot.png"))
   }
-
+  
   # Binary Save EvaluationMetrics to File----
   if (SaveModelObjects) {
     data.table::fwrite(FinalThresholdTable,
@@ -20619,7 +20619,7 @@ AutoH2oDRFClassifier <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -20636,20 +20636,20 @@ AutoH2oDRFClassifier <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Binary Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -20760,7 +20760,7 @@ AutoH2oGBMMultiClass <- function(data,
   # MultiClass Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -20789,33 +20789,33 @@ AutoH2oGBMMultiClass <- function(data,
   } else {
     Decreasing <- FALSE
   }
-
+  
   # MultiClass Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -20830,51 +20830,51 @@ AutoH2oGBMMultiClass <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # MultiClass ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # MultiClass ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # MultiClass ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.factor(dataTrain[[eval(Target)]])) {
     dataTrain[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.factor(dataTest[[eval(Target)]])) {
     dataTest[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.null(TestData)) {
     if (!is.factor(TestData[[eval(Target)]])) {
       TestData[, eval(Target) := as.factor(get(Target))]
     }
   }
-
+  
   # MultiClass Grid Tune Check----
   if (GridTune) {
     # MultiClass Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # MultiClass Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -20885,7 +20885,7 @@ AutoH2oGBMMultiClass <- function(data,
       stopping_metric      = eval_metric,
       stopping_tolerance   = 1e-3
     )
-
+    
     # MultiClass Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -20900,7 +20900,7 @@ AutoH2oGBMMultiClass <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # MultiClass Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -20921,28 +20921,28 @@ AutoH2oGBMMultiClass <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234
     )
-
+    
     # MultiClass Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing
     )
-
+    
     # MultiClass Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # MultiClass Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # MultiClass Build Baseline Model----
   base_model <- h2o::h2o.gbm(
     x                = FeatureColNames,
@@ -20953,7 +20953,7 @@ AutoH2oGBMMultiClass <- function(data,
     model_id         = ModelID,
     ntrees           = Trees
   )
-
+  
   # MultiClass Get Metrics----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -20978,7 +20978,7 @@ AutoH2oGBMMultiClass <- function(data,
                                           newdata = datavalidate)
     }
   }
-
+  
   # MultiClass Evaluate Metrics----
   if (GridTune) {
     if (tolower(eval_metric) == "logloss") {
@@ -21061,7 +21061,7 @@ AutoH2oGBMMultiClass <- function(data,
         data.table::as.data.table(BaseMetrics@metrics$cm$table)
     }
   }
-
+  
   # MultiClass Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -21081,7 +21081,7 @@ AutoH2oGBMMultiClass <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # MultiClass Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
@@ -21092,11 +21092,11 @@ AutoH2oGBMMultiClass <- function(data,
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
   }
-
+  
   # MultiClass Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
+  
   # MultiClass Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -21118,7 +21118,7 @@ AutoH2oGBMMultiClass <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # MultiClass Save Variable Importance----
   if (SaveModelObjects) {
     data.table::fwrite(VariableImportance,
@@ -21126,10 +21126,10 @@ AutoH2oGBMMultiClass <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # MultiClass H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # MultiClass Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -21140,7 +21140,7 @@ AutoH2oGBMMultiClass <- function(data,
       data.table::as.data.table(cbind(dataTest, Predict))
     data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
   }
-
+  
   # MultiClass Metrics Accuracy----
   MetricAcc <-
     ValidationData[, mean(ifelse(as.character(eval(Target)) ==
@@ -21148,7 +21148,7 @@ AutoH2oGBMMultiClass <- function(data,
                                  1.0,
                                  0.0),
                           na.rm = TRUE)]
-
+  
   # MultiClass Metrics MicroAUC----
   y <- ValidationData[[eval(Target)]]
   keep <-
@@ -21163,7 +21163,7 @@ AutoH2oGBMMultiClass <- function(data,
   MetricAUC <- round(as.numeric(noquote(
     stringr::str_extract(z$auc, "\\d+\\.*\\d*")
   )), 4)
-
+  
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
     Metric = c("Accuracy", "MicroAUC", "temp"),
@@ -21179,7 +21179,7 @@ AutoH2oGBMMultiClass <- function(data,
     j = 1L,
     value = paste0(eval_metric)
   )
-
+  
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -21188,7 +21188,7 @@ AutoH2oGBMMultiClass <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # MultiClass Save ConfusionMatrix to File----
   if (SaveModelObjects) {
     data.table::fwrite(ConfusionMatrix,
@@ -21197,7 +21197,7 @@ AutoH2oGBMMultiClass <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # MultiClass Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -21306,7 +21306,7 @@ AutoH2oDRFMultiClass <- function(data,
   # MultiClass Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -21335,33 +21335,33 @@ AutoH2oDRFMultiClass <- function(data,
   } else {
     Decreasing <- FALSE
   }
-
+  
   # MultiClass Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -21376,51 +21376,51 @@ AutoH2oDRFMultiClass <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # MultiClass ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data,
                              Impute = FALSE,
                              CharToFactor = TRUE)
-
+  
   # MultiClass ModelDataPrep----
   dataTest <- ModelDataPrep(data = ValidationData,
                             Impute = FALSE,
                             CharToFactor = TRUE)
-
+  
   # MultiClass ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
                               Impute = FALSE,
                               CharToFactor = TRUE)
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.factor(dataTrain[[eval(Target)]])) {
     dataTrain[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.factor(dataTest[[eval(Target)]])) {
     dataTest[, eval(Target) := as.factor(get(Target))]
   }
-
+  
   # MultiClass Ensure Target Is a Factor Type----
   if (!is.null(TestData)) {
     if (!is.factor(TestData[[eval(Target)]])) {
       TestData[, eval(Target) := as.factor(get(Target))]
     }
   }
-
+  
   # MultiClass Grid Tune Check----
   if (GridTune) {
     # MultiClass Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-
+    
     # MultiClass Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -21431,7 +21431,7 @@ AutoH2oDRFMultiClass <- function(data,
       stopping_metric      = eval_metric,
       stopping_tolerance   = 1e-3
     )
-
+    
     # MultiClass Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(6, 9, 12),
@@ -21446,7 +21446,7 @@ AutoH2oDRFMultiClass <- function(data,
                                            "QuantilesGlobal",
                                            "RoundRobin")
     )
-
+    
     # MultiClass Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -21466,28 +21466,28 @@ AutoH2oDRFMultiClass <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234
     )
-
+    
     # MultiClass Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing
     )
-
+    
     # MultiClass Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
   }
-
+  
   # MultiClass Start Up H2O----
   if (!GridTune) {
     h2o::h2o.init(max_mem_size = MaxMem,
                   enable_assertions = FALSE)
-
+    
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
   }
-
+  
   # MultiClass Build Baseline Model----
   base_model <- h2o::h2o.randomForest(
     x                = FeatureColNames,
@@ -21497,7 +21497,7 @@ AutoH2oDRFMultiClass <- function(data,
     model_id         = ModelID,
     ntrees           = Trees
   )
-
+  
   # MultiClass Get Metrics----
   if (GridTune) {
     if (!is.null(TestData)) {
@@ -21522,7 +21522,7 @@ AutoH2oDRFMultiClass <- function(data,
                                           newdata = datavalidate)
     }
   }
-
+  
   # MultiClass Evaluate Metrics----
   if (GridTune) {
     if (tolower(eval_metric) == "logloss") {
@@ -21605,7 +21605,7 @@ AutoH2oDRFMultiClass <- function(data,
         data.table::as.data.table(BaseMetrics@metrics$cm$table)
     }
   }
-
+  
   # MultiClass Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
@@ -21625,7 +21625,7 @@ AutoH2oDRFMultiClass <- function(data,
                                       force = TRUE)
     }
   }
-
+  
   # MultiClass Score Final Test Data----
   if (!is.null(TestData)) {
     Predict <-
@@ -21636,11 +21636,11 @@ AutoH2oDRFMultiClass <- function(data,
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
                                                  newdata = datavalidate))
   }
-
+  
   # MultiClass Variable Importance----
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
+  
   # MultiClass Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
@@ -21662,7 +21662,7 @@ AutoH2oDRFMultiClass <- function(data,
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4)
   )]
-
+  
   # MultiClass Save Variable Importance----
   if (SaveModelObjects) {
     data.table::fwrite(VariableImportance,
@@ -21670,10 +21670,10 @@ AutoH2oDRFMultiClass <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # MultiClass H2O Shutdown----
   h2o::h2o.shutdown(prompt = FALSE)
-
+  
   # MultiClass Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -21684,7 +21684,7 @@ AutoH2oDRFMultiClass <- function(data,
       data.table::as.data.table(cbind(dataTest, Predict))
     data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
   }
-
+  
   # MultiClass Metrics Accuracy----
   MetricAcc <-
     ValidationData[, mean(ifelse(as.character(eval(Target)) ==
@@ -21692,7 +21692,7 @@ AutoH2oDRFMultiClass <- function(data,
                                  1.0,
                                  0.0),
                           na.rm = TRUE)]
-
+  
   # MultiClass Metrics MicroAUC----
   y <- ValidationData[[eval(Target)]]
   keep <-
@@ -21707,7 +21707,7 @@ AutoH2oDRFMultiClass <- function(data,
   MetricAUC <- round(as.numeric(noquote(
     stringr::str_extract(z$auc, "\\d+\\.*\\d*")
   )), 4)
-
+  
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
     Metric = c("Accuracy", "MicroAUC", "temp"),
@@ -21723,7 +21723,7 @@ AutoH2oDRFMultiClass <- function(data,
     j = 1L,
     value = paste0(eval_metric)
   )
-
+  
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -21732,7 +21732,7 @@ AutoH2oDRFMultiClass <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # MultiClass Save ConfusionMatrix to File----
   if (SaveModelObjects) {
     data.table::fwrite(ConfusionMatrix,
@@ -21741,7 +21741,7 @@ AutoH2oDRFMultiClass <- function(data,
                                      ModelID,
                                      "_EvaluationMetrics.csv"))
   }
-
+  
   # MultiClass Return Objects----
   if (ReturnModelObjects) {
     return(
@@ -21860,7 +21860,7 @@ AutoXGBoostRegression <- function(data,
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) {
     warning("eval_metric not in RMSE, MAE, MAPE, R2")
-
+    
   }
   if (Trees < 1)
     warning("Trees must be greater than 1")
@@ -21882,40 +21882,40 @@ AutoXGBoostRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Regression Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Regression Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Regression Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Regression IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Regression Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(
     sapply(data, is.factor)
@@ -21924,7 +21924,7 @@ AutoXGBoostRegression <- function(data,
     sapply(data, is.character)
   ))))
   CatFeatures <- names(data)[CatFeatures]
-
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -21939,7 +21939,7 @@ AutoXGBoostRegression <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Regression data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -21951,7 +21951,7 @@ AutoXGBoostRegression <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # Regression TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -21979,7 +21979,7 @@ AutoXGBoostRegression <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # Regression Dummify dataTrain Categorical Features----
   if (SaveModelObjects) {
     if (!is.null(dataTest) & !is.null(TestData)) {
@@ -22075,7 +22075,7 @@ AutoXGBoostRegression <- function(data,
       data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = NULL)
-
+      
     } else {
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -22103,7 +22103,7 @@ AutoXGBoostRegression <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Regression Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
@@ -22112,7 +22112,7 @@ AutoXGBoostRegression <- function(data,
                                      "/"
                                      , ModelID, "_ColNames.csv"))
   }
-
+  
   # Regression Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -22131,14 +22131,14 @@ AutoXGBoostRegression <- function(data,
       }, error = function(x)
         TestData[, eval(Target)])
   }
-
+  
   # Regression Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
   dataTest[, eval(Target) := NULL]
   if (!is.null(TestData)) {
     TestData[, eval(Target) := NULL]
   }
-
+  
   # Regression Initialize Catboost Data Conversion----
   datatrain <-
     xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -22151,7 +22151,7 @@ AutoXGBoostRegression <- function(data,
   } else {
     EvalSets <- list(train = datatrain, test = datavalidate)
   }
-
+  
   # Regression Grid Tune or Not Check----
   if (GridTune) {
     # Regression Grid Create data.table To Store Results----
@@ -22160,7 +22160,7 @@ AutoXGBoostRegression <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # Regression Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -22190,12 +22190,12 @@ AutoXGBoostRegression <- function(data,
       grid_params <-
         grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # Regression Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # Regression Grid Define Base Parameters----
       if (i == 1) {
         base_params <- list(
@@ -22221,13 +22221,13 @@ AutoXGBoostRegression <- function(data,
           tree_method = TreeMethod
         )
       }
-
+      
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i, ]), base_params)
+        base_params <- c(as.list(grid_params[i,]), base_params)
       }
-
+      
       # Regression Grid Train Model----
       if (Verbose == 0) {
         model <- xgboost::xgb.train(
@@ -22247,15 +22247,15 @@ AutoXGBoostRegression <- function(data,
           early_stopping_rounds = 10
         )
       }
-
-
+      
+      
       # Regression Grid Score Model----
       if (!is.null(TestData)) {
         predict <- stats::predict(model, datatest)
       } else {
         predict <- stats::predict(model, datavalidate)
       }
-
+      
       # Regression Grid Validation Data----
       if (!is.null(TestData)) {
         calibEval <-
@@ -22264,7 +22264,7 @@ AutoXGBoostRegression <- function(data,
         calibEval <-
           data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
       }
-
+      
       # Regression Grid Evaluation Metrics----
       if (tolower(grid_eval_metric) == "poisson") {
         if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
@@ -22303,7 +22303,7 @@ AutoXGBoostRegression <- function(data,
         Metric <-
           (calibEval[, stats::cor(eval(Target), Predicted)][[1]]) ^ 2
       }
-
+      
       # Regression Metrics Collection----
       data.table::set(GridCollect,
                       i = i,
@@ -22317,7 +22317,7 @@ AutoXGBoostRegression <- function(data,
       )
     }
   }
-
+  
   # Regression Define Final Model Parameters----
   if (GridTune) {
     if (grid_eval_metric %chin% c("kl", "cs", "r2")) {
@@ -22336,7 +22336,7 @@ AutoXGBoostRegression <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -22347,7 +22347,7 @@ AutoXGBoostRegression <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -22365,7 +22365,7 @@ AutoXGBoostRegression <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -22376,7 +22376,7 @@ AutoXGBoostRegression <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     }
   } else {
@@ -22389,10 +22389,10 @@ AutoXGBoostRegression <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # Regression Train Final Model----
   if (Verbose == 0) {
     model <- xgboost::xgb.train(
@@ -22412,19 +22412,19 @@ AutoXGBoostRegression <- function(data,
       early_stopping_rounds = 10
     )
   }
-
+  
   # Regression Save Model----
   if (SaveModelObjects) {
     xgboost::xgb.save(model = model, fname = ModelID)
   }
-
+  
   # Regression Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
   } else {
     predict <- stats::predict(model, datavalidate)
   }
-
+  
   # Regression Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -22433,10 +22433,10 @@ AutoXGBoostRegression <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
   }
-
+  
   # Regression r2 via sqrt of correlation
   r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
-
+  
   # Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(ValidationData,
@@ -22445,7 +22445,7 @@ AutoXGBoostRegression <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -22456,19 +22456,19 @@ AutoXGBoostRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
                            "/",
                            ModelID, "_EvaluationPlot.png"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = ValidationData,
@@ -22479,12 +22479,12 @@ AutoXGBoostRegression <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationBoxPlot <- EvaluationBoxPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path,
@@ -22492,7 +22492,7 @@ AutoXGBoostRegression <- function(data,
                            ModelID,
                            "_EvaluationBoxPlot.png"))
   }
-
+  
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
@@ -22554,7 +22554,7 @@ AutoXGBoostRegression <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
@@ -22563,7 +22563,7 @@ AutoXGBoostRegression <- function(data,
                                      "/",
                                      ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # Regression Variable Importance----
   VariableImportance <- xgboost::xgb.importance(model = model)
   VariableImportance[, ':=' (
@@ -22577,7 +22577,7 @@ AutoXGBoostRegression <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -22596,7 +22596,7 @@ AutoXGBoostRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
     }, error = function(x)
@@ -22613,26 +22613,26 @@ AutoXGBoostRegression <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       k <- k + 1
       ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <-
         Out1
     }, error = function(x)
       "skip")
   }
-
+  
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
   }
-
+  
   # Regression Save GridCollect and GridList----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(grid_params,
@@ -22646,7 +22646,7 @@ AutoXGBoostRegression <- function(data,
                                      ModelID,
                                      "_GridCollect.csv"))
   }
-
+  
   # Regression Remove Extraneous Variables----
   ValidationData[, ':=' (
     Metric = NULL,
@@ -22654,10 +22654,10 @@ AutoXGBoostRegression <- function(data,
     Metric2 = NULL,
     Metric3 = NULL
   )]
-
+  
   # Regression Formal Evaluation Table
   EvaluationMetrics[, MetricValue := round(MetricValue, 4)]
-
+  
   # Regression Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -22836,47 +22836,47 @@ AutoXGBoostClassifier <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # Binary Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # Binary Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # Binary IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Binary Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
     for (i in seq_len(length(CatFeatures))) {
       CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
-
+  
   # Binary Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(
     sapply(data, is.factor)
@@ -22885,7 +22885,7 @@ AutoXGBoostClassifier <- function(data,
     sapply(data, is.character)
   ))))
   CatFeatures <- names(data)[CatFeatures]
-
+  
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -22900,7 +22900,7 @@ AutoXGBoostClassifier <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # Binary data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -22912,7 +22912,7 @@ AutoXGBoostClassifier <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # Binary TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -22940,7 +22940,7 @@ AutoXGBoostClassifier <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # Binary Dummify dataTrain Categorical Features----
   if (SaveModelObjects) {
     if (!is.null(dataTest) & !is.null(TestData)) {
@@ -23036,7 +23036,7 @@ AutoXGBoostClassifier <- function(data,
       data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = NULL)
-
+      
     } else {
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -23064,7 +23064,7 @@ AutoXGBoostClassifier <- function(data,
                       value = NULL)
     }
   }
-
+  
   # Binary Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
@@ -23073,7 +23073,7 @@ AutoXGBoostClassifier <- function(data,
                                      "/"
                                      , ModelID, "_ColNames.csv"))
   }
-
+  
   # Binary Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -23092,14 +23092,14 @@ AutoXGBoostClassifier <- function(data,
       }, error = function(x)
         TestData[, eval(Target)])
   }
-
+  
   # Binary Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
   dataTest[, eval(Target) := NULL]
   if (!is.null(TestData)) {
     TestData[, eval(Target) := NULL]
   }
-
+  
   # Binary Initialize Catboost Data Conversion----
   datatrain <-
     xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -23112,8 +23112,8 @@ AutoXGBoostClassifier <- function(data,
   } else {
     EvalSets <- list(train = datatrain, test = datavalidate)
   }
-
-
+  
+  
   # Binary Grid Tune or Not Check----
   if (GridTune) {
     # Binary Grid Create data.table To Store Results----
@@ -23122,7 +23122,7 @@ AutoXGBoostClassifier <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # Binary Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -23152,12 +23152,12 @@ AutoXGBoostClassifier <- function(data,
       grid_params <-
         grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # Binary Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # Binary Grid Define Base Parameters----
       if (i == 1) {
         base_params <- list(
@@ -23183,13 +23183,13 @@ AutoXGBoostClassifier <- function(data,
           tree_method = TreeMethod
         )
       }
-
+      
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i, ]), base_params)
+        base_params <- c(as.list(grid_params[i,]), base_params)
       }
-
+      
       # Binary Grid Train Model----
       if (Verbose == 0) {
         model <- xgboost::xgb.train(
@@ -23209,15 +23209,15 @@ AutoXGBoostClassifier <- function(data,
           early_stopping_rounds = 10
         )
       }
-
-
+      
+      
       # Binary Grid Score Model----
       if (!is.null(TestData)) {
         predict <- stats::predict(model, datatest)
       } else {
         predict <- stats::predict(model, datavalidate)
       }
-
+      
       # Binary Grid Validation Data----
       if (!is.null(TestData)) {
         calibEval <-
@@ -23226,10 +23226,10 @@ AutoXGBoostClassifier <- function(data,
         calibEval <-
           data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
       }
-
+      
       # Binary Initialize AUC_List
       AUC_List <- list()
-
+      
       # Binary Grid Evaluation Metrics for Each Grid----
       if (tolower(grid_eval_metric) == "accuracy") {
         j <- 0
@@ -23308,7 +23308,7 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1, ]
+                                  !is.infinite(Metric)][1,]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -23317,11 +23317,11 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1, ]
+                                 !is.infinite(Metric)][1,]
           }
         }
       }
-
+      
       # Binary AUC Object Create----
       AUC_Metrics <- pROC::roc(
         response = calibEval[["Target"]],
@@ -23331,14 +23331,14 @@ AutoXGBoostClassifier <- function(data,
         auc = TRUE,
         ci = TRUE
       )
-
+      
       # Binary AUC Conversion to data.table----
       AUC_List[[i]] <- data.table::data.table(
         ModelNumber = i,
         Sensitivity = as.numeric(AUC_Metrics$sensitivities + 0.0001),
         Specificity = as.numeric(AUC_Metrics$specificities + 0.0001)
       )
-
+      
       # Collect Metrics and Corresponding Grids
       # Store Output Information
       if (tolower(grid_eval_metric) == "accuracy") {
@@ -23372,7 +23372,7 @@ AutoXGBoostClassifier <- function(data,
       }
     }
   }
-
+  
   # Binary Define Final Model Parameters----
   if (GridTune) {
     if (eval_metric %chin% c("accuracy", "auc", "tpr", "prbe", "f", "odds")) {
@@ -23391,7 +23391,7 @@ AutoXGBoostClassifier <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -23402,7 +23402,7 @@ AutoXGBoostClassifier <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -23421,7 +23421,7 @@ AutoXGBoostClassifier <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -23432,7 +23432,7 @@ AutoXGBoostClassifier <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     }
   } else {
@@ -23445,10 +23445,10 @@ AutoXGBoostClassifier <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # Binary Train Final Model----
   if (Verbose == 0) {
     model <- xgboost::xgb.train(
@@ -23468,19 +23468,19 @@ AutoXGBoostClassifier <- function(data,
       early_stopping_rounds = 10
     )
   }
-
+  
   # Binary Save Model----
   if (SaveModelObjects) {
     xgboost::xgb.save(model = model, fname = ModelID)
   }
-
+  
   # Binary Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
   } else {
     predict <- stats::predict(model, datavalidate)
   }
-
+  
   # Binary Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -23489,7 +23489,7 @@ AutoXGBoostClassifier <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
   }
-
+  
   # Binary AUC Object Create----
   AUC_Metrics <- pROC::roc(
     response = ValidationData[["Target"]],
@@ -23499,20 +23499,20 @@ AutoXGBoostClassifier <- function(data,
     auc = TRUE,
     ci = TRUE
   )
-
+  
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities
   )
-
+  
   # Binary Rbind AUC
   if (GridTune == TRUE & MaxModelsInGrid <= 15) {
     temp <- data.table::rbindlist(AUC_List)
     AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
     AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-
+    
     # Binary Plot ROC Curve----
     ROC_Plot <-
       ggplot2::ggplot(AUC_Data,
@@ -23530,7 +23530,7 @@ AutoXGBoostClassifier <- function(data,
       )) +
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
-
+    
   } else {
     ROC_Plot <-
       ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
@@ -23541,12 +23541,12 @@ AutoXGBoostClassifier <- function(data,
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
   }
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))
   }
-
+  
   # Binary Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
@@ -23557,19 +23557,19 @@ AutoXGBoostClassifier <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0(
       "Calibration Evaluation Plot: AUC = ",
       round(AUC_Metrics$auc, 3)
     ))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))
   }
-
+  
   # Evaluation Metrics at Optimial Threshold----
   x <- ROCR::prediction(predictions = ValidationData[["p1"]],
                         labels = ValidationData[["Target"]])
@@ -23638,7 +23638,7 @@ AutoXGBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(-Metric)][!is.infinite(Threshold) &
-                                !is.infinite(Metric)][1, ]
+                                !is.infinite(Metric)][1,]
         } else {
           z <-
             data.table::as.data.table(cbind(
@@ -23647,10 +23647,10 @@ AutoXGBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(Metric)][!is.infinite(Threshold) &
-                               !is.infinite(Metric)][1, ]
+                               !is.infinite(Metric)][1,]
         }
       }
-
+      
       # Store Output Information
       if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
               nrow(data.table::as.data.table(y@x.values)) <= 1)) {
@@ -23681,7 +23681,7 @@ AutoXGBoostClassifier <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Accuracy Threshold and Metric----
   j <- 0
   x <-
@@ -23702,17 +23702,17 @@ AutoXGBoostClassifier <- function(data,
         value = round(Accuracy, 4))
   }
   data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-  x <- x[1, ]
+  x <- x[1,]
   EvaluationMetrics <-
     data.table::rbindlist(list(EvaluationMetrics, x))
-
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     data.table::fwrite(EvaluationMetrics,
                        file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # Binary Variable Importance----
   VariableImportance <- xgboost::xgb.importance(model = model)
   VariableImportance[, ':=' (
@@ -23726,7 +23726,7 @@ AutoXGBoostClassifier <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -23745,19 +23745,19 @@ AutoXGBoostClassifier <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
     }, error = function(x)
       "skip")
   }
-
+  
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     save(ParDepPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
   }
-
+  
   # Binary Save GridCollect and GridList----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(grid_params,
@@ -23765,7 +23765,7 @@ AutoXGBoostClassifier <- function(data,
     data.table::fwrite(GridCollect,
                        file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
   }
-
+  
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -23926,40 +23926,40 @@ AutoXGBoostMultiClass <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-
+  
   # MultiClass Ensure data is a data.table----
   if (!is.null(ValidationData)) {
     if (!data.table::is.data.table(ValidationData)) {
       ValidationData <- data.table::as.data.table(ValidationData)
     }
   }
-
+  
   # MultiClass Ensure TestData is a data.table----
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # MultiClass Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
   } else {
     Target <- names(data)[TargetColumnName]
   }
-
+  
   # MultiClass IDcol Name Storage----
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # MultiClass Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(
     sapply(data, is.factor)
@@ -23969,7 +23969,7 @@ AutoXGBoostMultiClass <- function(data,
   ))))
   CatFeatures <- names(data)[CatFeatures]
   CatFeatures <- setdiff(CatFeatures, Target)
-
+  
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
     dataSets <- AutoDataPartition(
@@ -23984,7 +23984,7 @@ AutoXGBoostMultiClass <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-
+  
   # MultiClass data Subset Columns Needed----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
@@ -23996,7 +23996,7 @@ AutoXGBoostMultiClass <- function(data,
     dataTrain <- data[, ..keep]
     dataTest <- ValidationData[, ..keep]
   }
-
+  
   # MultiClass TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
@@ -24024,7 +24024,7 @@ AutoXGBoostMultiClass <- function(data,
       TestMerge <- data.table::copy(TestData)
     }
   }
-
+  
   # MultiClass Obtain Unique Target Levels
   if (!is.null(TestData)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
@@ -24042,7 +24042,7 @@ AutoXGBoostMultiClass <- function(data,
                                      ModelID,
                                      "_TargetLevels.csv"))
   }
-
+  
   # MultiClass Convert Target to Numeric Factor
   dataTrain <- merge(
     dataTrain,
@@ -24073,7 +24073,7 @@ AutoXGBoostMultiClass <- function(data,
     TestData[, paste0(Target) := NewLevels]
     TestData[, NewLevels := NULL]
   }
-
+  
   # MultiClass Dummify dataTrain Categorical Features----
   if (SaveModelObjects) {
     if (!is.null(dataTest) & !is.null(TestData)) {
@@ -24169,7 +24169,7 @@ AutoXGBoostMultiClass <- function(data,
       data.table::set(TestData,
                       j = "ID_Factorizer",
                       value = NULL)
-
+      
     } else {
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -24197,7 +24197,7 @@ AutoXGBoostMultiClass <- function(data,
                       value = NULL)
     }
   }
-
+  
   # MultiClass Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
@@ -24206,7 +24206,7 @@ AutoXGBoostMultiClass <- function(data,
                                      "/"
                                      , ModelID, "_ColNames.csv"))
   }
-
+  
   # MultiClass Subset Target Variables----
   TrainTarget <-
     tryCatch({
@@ -24225,14 +24225,14 @@ AutoXGBoostMultiClass <- function(data,
       }, error = function(x)
         TestData[, eval(Target)])
   }
-
+  
   # MultiClass Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
   dataTest[, eval(Target) := NULL]
   if (!is.null(TestData)) {
     TestData[, eval(Target) := NULL]
   }
-
+  
   # MultiClass Initialize XGBoost Data Conversion----
   datatrain <-
     xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -24245,7 +24245,7 @@ AutoXGBoostMultiClass <- function(data,
   } else {
     EvalSets <- list(train = datatrain, test = datavalidate)
   }
-
+  
   # MultiClass Grid Tune or Not Check----
   if (GridTune) {
     # MultiClass Grid Create data.table To Store Results----
@@ -24254,7 +24254,7 @@ AutoXGBoostMultiClass <- function(data,
         ParamRow = 1:(MaxModelsInGrid + 1),
         EvalStat = rep(9999999, MaxModelsInGrid + 1)
       )
-
+    
     # MultiClass Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
       if (!data.table::is.data.table(PassInGrid)) {
@@ -24284,12 +24284,12 @@ AutoXGBoostMultiClass <- function(data,
       grid_params <-
         grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
     }
-
+    
     # MultiClass Grid Tuning Main Loop----
     for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
       # Print i
       print(i)
-
+      
       # MultiClass Grid Define Base Parameters----
       if (i == 1) {
         base_params <- list(
@@ -24319,13 +24319,13 @@ AutoXGBoostMultiClass <- function(data,
           tree_method = TreeMethod
         )
       }
-
+      
       # MultiClass Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i, ]), base_params)
+        base_params <- c(as.list(grid_params[i,]), base_params)
       }
-
+      
       # MultiClass Grid Train Model----
       if (Verbose == 0) {
         model <- xgboost::xgb.train(
@@ -24345,15 +24345,15 @@ AutoXGBoostMultiClass <- function(data,
           early_stopping_rounds = 10
         )
       }
-
-
+      
+      
       # MultiClass Grid Score Model----
       if (!is.null(TestData)) {
         predict <- stats::predict(model, datatest)
       } else {
         predict <- stats::predict(model, datavalidate)
       }
-
+      
       # MultiClass Grid Validation Data----
       if (!is.null(TestData)) {
         calibEval <-
@@ -24362,11 +24362,11 @@ AutoXGBoostMultiClass <- function(data,
         calibEval <-
           data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
       }
-
+      
       # MultiClass Accuracy
       Metric <-
         calibEval[, mean(ifelse(p1 == eval(Target), 1, 0), na.rm = TRUE)]
-
+      
       # MultiClass Store Output Information----
       data.table::set(GridCollect,
                       i = i,
@@ -24378,7 +24378,7 @@ AutoXGBoostMultiClass <- function(data,
                       value = Metric)
     }
   }
-
+  
   # MultiClass Define Final Model Parameters----
   if (GridTune) {
     if (eval_metric %chin% c("merror", "mlogloss")) {
@@ -24399,7 +24399,7 @@ AutoXGBoostMultiClass <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -24412,7 +24412,7 @@ AutoXGBoostMultiClass <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -24433,7 +24433,7 @@ AutoXGBoostMultiClass <- function(data,
           max_bin = 64,
           tree_method = TreeMethod
         )
-
+        
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -24446,7 +24446,7 @@ AutoXGBoostMultiClass <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          c(as.list(grid_params[BestGrid,]), base_params)
       }
     }
   } else {
@@ -24461,10 +24461,10 @@ AutoXGBoostMultiClass <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1, ]))
     }
   }
-
+  
   # MultiClass Train Final Model----
   if (Verbose == 0) {
     model <- xgboost::xgb.train(
@@ -24484,19 +24484,19 @@ AutoXGBoostMultiClass <- function(data,
       early_stopping_rounds = 10
     )
   }
-
+  
   # MultiClass Save Model----
   if (SaveModelObjects) {
     xgboost::xgb.save(model = model, fname = ModelID)
   }
-
+  
   # MultiClass Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
   } else {
     predict <- stats::predict(model, datavalidate)
   }
-
+  
   # MultiClass Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -24505,21 +24505,21 @@ AutoXGBoostMultiClass <- function(data,
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
   }
-
+  
   # MultiClass Evaluation Metrics----
   EvaluationMetrics <- data.table::data.table(Metric = "Accuracy",
                                               MetricValue = ValidationData[, mean(ifelse(p1 == eval(Target), 1, 0),
                                                                                   na.rm = TRUE)])
-
-
-
+  
+  
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     data.table::fwrite(EvaluationMetrics,
                        file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # MultiClass Variable Importance----
   VariableImportance <- xgboost::xgb.importance(model = model)
   VariableImportance[, ':=' (
@@ -24533,7 +24533,7 @@ AutoXGBoostMultiClass <- function(data,
                                      "/",
                                      ModelID, "_VariableImportance.csv"))
   }
-
+  
   # MultiClass Save GridCollect and grid_metrics----
   if (SaveModelObjects & GridTune == TRUE) {
     data.table::fwrite(grid_params,
@@ -24541,7 +24541,7 @@ AutoXGBoostMultiClass <- function(data,
     data.table::fwrite(GridCollect,
                        file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
   }
-
+  
   # MultiClass Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -24623,7 +24623,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 MDP_MissNum = -1) {
   # Load catboost----
   loadNamespace(package = "catboost")
-
+  
   # Check arguments----
   if (is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
@@ -24649,7 +24649,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (!is.numeric(MDP_MissNum)) {
     warning("MDP_MissNum should be a numeric or integer value")
   }
-
+  
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -24659,7 +24659,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum
   )
-
+  
   # Identify column numbers for factor variables----
   CatFeatures <-
     sort(c(as.numeric(which(
@@ -24668,19 +24668,19 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     as.numeric(which(
       sapply(ScoringData, is.character)
     ))))
-
+  
   # Convert CatFeatures to 1-indexed----
   if (!is.null(CatFeatures)) {
     for (i in seq_len(length(CatFeatures))) {
       CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
-
+  
   # IDcols conversion----
   if (is.numeric(IDcols) | is.integer(IDcols)) {
     IDcols <- names(data)[IDcols]
   }
-
+  
   # Subset Columns Needed----
   if (is.numeric(FeatureColumnNames) |
       is.integer(FeatureColumnNames)) {
@@ -24707,7 +24707,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
   }
-
+  
   # Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     ScoringPool <-
@@ -24716,7 +24716,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     ScoringPool <-
       catboost::catboost.load_pool(ScoringData)
   }
-
+  
   # Load model----
   if (!is.null(ModelObject)) {
     model <- ModelObject
@@ -24727,7 +24727,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     error = function(x)
       return("Model not found in ModelPath"))
   }
-
+  
   # Score model----
   if (tolower(TargetType) == "regression") {
     predict <- data.table::as.data.table(
@@ -24761,7 +24761,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       )
     ))
   }
-
+  
   # Change Output Predictions Column Name----
   if (tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
@@ -24783,15 +24783,15 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     )
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
-
+  
   # Merge features back on----
   if (ReturnFeatures) {
     predict <- cbind(predict, ScoringMerge)
   }
-
+  
   # Garbage Collection----
   gc()
-
+  
   # Return data----
   return(predict)
 }
@@ -24867,12 +24867,12 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if (!is.numeric(MDP_MissNum)) {
     warning("MDP_MissNum should be a numeric or integer value")
   }
-
+  
   # IDcols conversion----
   if (is.numeric(IDcols) | is.integer(IDcols)) {
     IDcols <- names(data)[IDcols]
   }
-
+  
   # Subset Columns Needed----
   if (is.numeric(FeatureColumnNames) |
       is.integer(FeatureColumnNames)) {
@@ -24899,7 +24899,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
   }
-
+  
   # Binary Identify column numbers for factor variables----
   CatFeatures <-
     sort(c(as.numeric(which(
@@ -24909,7 +24909,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       sapply(ScoringData, is.character)
     ))))
   CatFeatures <- names(ScoringData)[CatFeatures]
-
+  
   # DummifyDT categorical columns----
   ScoringData <- DummifyDT(
     data = ScoringData,
@@ -24921,7 +24921,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     ImportFactorLevels = TRUE,
     ClustScore = FALSE
   )
-
+  
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -24931,18 +24931,18 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum
   )
-
+  
   # Initialize XGBoost Data Conversion----
   ScoringMatrix <-
     xgboost::xgb.DMatrix(as.matrix(ScoringData))
-
+  
   # Load model----
   model <- xgboost::xgb.load(paste0(ModelPath, "/", ModelID))
-
+  
   # Score model----
   predict <-
     data.table::as.data.table(stats::predict(model, ScoringMatrix))
-
+  
   # Change Output Predictions Column Name----
   if (tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
@@ -24959,12 +24959,12 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     )
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
-
+  
   # Merge features back on----
   if (ReturnFeatures) {
     predict <- cbind(predict, ScoringMerge)
   }
-
+  
   # Return data----
   return(predict)
 }
@@ -25046,12 +25046,12 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   if (!is.numeric(MDP_MissNum)) {
     warning("MDP_MissNum should be a numeric or integer value")
   }
-
+  
   # IDcols conversion----
   if (is.numeric(IDcols) | is.integer(IDcols)) {
     IDcols <- names(data)[IDcols]
   }
-
+  
   # Subset Columns Needed----
   if (is.numeric(FeatureColumnNames) |
       is.integer(FeatureColumnNames)) {
@@ -25078,7 +25078,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
   }
-
+  
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -25088,7 +25088,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum
   )
-
+  
   # Initialize H2O Data Conversion----
   if (tolower(ModelType) != "mojo") {
     h2o::h2o.init(max_mem_size = MaxMem,
@@ -25097,7 +25097,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   } else {
     ScoreData <- ScoringData
   }
-
+  
   # Make Predictions----
   if (tolower(ModelType) == "mojo") {
     predict <- data.table::as.data.table(
@@ -25108,33 +25108,34 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
         java_options = JavaOptions
       )
     )
-
+    
   } else if (tolower(ModelType) == "standard") {
     model <- h2o::h2o.loadModel(path = paste0(ModelPath, "/", ModelID))
-    predict <- data.table::as.data.table(h2o::h2o.predict(object = model,
-                                                          newdata = ScoreData))
+    predict <-
+      data.table::as.data.table(h2o::h2o.predict(object = model,
+                                                 newdata = ScoreData))
   }
-
+  
   # Change column name----
   data.table::setnames(predict, "predict", "Predictions")
-
+  
   # Merge features----
   if (ReturnFeatures) {
     ReturnPreds <- cbind(predict, ScoringData)
   }
-
+  
   # Shut down H2O----
   if (tolower(ModelType) != "mojo") {
     if (H2OShutdown) {
       h2o::h2o.shutdown(prompt = FALSE)
     }
   }
-
+  
   # Merge features back on----
   if (ReturnFeatures) {
     predict <- cbind(predict, ScoringMerge)
   }
-
+  
   # Return data----
   return(predict)
 }
@@ -25234,13 +25235,13 @@ AutoCatBoostdHurdleModel <- function(data,
       is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1) {
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
-
+  
   # Initialize collection and counter----
   ModelInformationList <- list()
   if (length(Paths) == 1) {
     Paths <- rep(Paths, length(Buckets) + 1)
   }
-
+  
   # Data.table check----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -25255,27 +25256,27 @@ AutoCatBoostdHurdleModel <- function(data,
       TestData <- data.table::as.data.table(TestData)
     }
   }
-
+  
   # IDcols to Names----
   if (!is.null(IDcols)) {
     if (is.numeric(IDcols) | is.integer(IDcols)) {
       IDcols <- names(data)[IDcols]
     }
   }
-
+  
   # Primary Date Column----
   if (is.numeric(PrimaryDateColumn) |
       is.integer(PrimaryDateColumn)) {
     PrimaryDateColumn <- names(data)[PrimaryDateColumn]
   }
-
+  
   # FeatureColumnNames----
   if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     FeatureNames <- names(data)[FeatureColNames]
   } else {
     FeatureNames <- FeatureColNames
   }
-
+  
   # Add target bucket column----
   data[, Target_Buckets := as.factor(Buckets[1])]
   for (i in seq_len(length(Buckets) + 1)) {
@@ -25305,7 +25306,7 @@ AutoCatBoostdHurdleModel <- function(data,
       )
     }
   }
-
+  
   # Add target bucket column----
   if (!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25337,7 +25338,7 @@ AutoCatBoostdHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Add target bucket column----
   if (!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1])]
@@ -25369,7 +25370,7 @@ AutoCatBoostdHurdleModel <- function(data,
       }
     }
   }
-
+  
   # AutoDataPartition if Validation and TestData are NULL----
   if (is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -25385,7 +25386,7 @@ AutoCatBoostdHurdleModel <- function(data,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-
+  
   # Begin classification model building----
   if (length(Buckets) == 2) {
     ClassifierModel <- AutoCatBoostClassifier(
@@ -25433,16 +25434,16 @@ AutoCatBoostdHurdleModel <- function(data,
       PassInGrid = NULL
     )
   }
-
+  
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
   rm(ClassifierModel)
-
+  
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
-
+  
   # Score Classification Model----
   if (length(Buckets) == 2) {
     TestData <- AutoCatBoostScoring(
@@ -25477,20 +25478,20 @@ AutoCatBoostdHurdleModel <- function(data,
       MDP_MissNum = -1
     )
   }
-
+  
   # Remove Model Object----
   rm(ClassModel)
-
+  
   # Remove Target_Buckets----
   data[, Target_Buckets := NULL]
   ValidationData[, Target_Buckets := NULL]
-
+  
   # Remove Target From IDcols----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-
+  
   # Change Name of Predicted MultiClass Column----
   data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-
+  
   # Begin regression model building----
   counter <- 0
   for (bucket in rev(seq_len(length(Buckets) + 1))) {
@@ -25550,17 +25551,17 @@ AutoCatBoostdHurdleModel <- function(data,
         testBucket <- NULL
       }
     }
-
+    
     # Create Modified IDcols----
     IDcolsModified <-
       c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
-
+    
     # Load Winning Grid if it exists----
     if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
       gridSaved <-
         data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
-
+    
     # AutoCatBoostRegression()----
     if (trainBucket[, .N] != 0) {
       if (var(trainBucket[[eval(TargetColumnName)]]) > 0) {
@@ -25610,14 +25611,14 @@ AutoCatBoostdHurdleModel <- function(data,
             PassInGrid = PassInGrid
           )
         }
-
+        
         # Store Model----
         RegressionModel <- TestModel$Model
         rm(TestModel)
-
+        
         # Garbage Collection----
         gc()
-
+        
         # Score TestData----
         if (bucket == max(seq_len(length(Buckets) + 1))) {
           TestData <- AutoCatBoostScoring(
@@ -25652,10 +25653,10 @@ AutoCatBoostdHurdleModel <- function(data,
             MDP_MissNum = -1
           )
         }
-
+        
         # Clear TestModel From Memory----
         rm(RegressionModel)
-
+        
         # Change prediction name to prevent duplicates----
         if (bucket == max(seq_len(length(Buckets) + 1))) {
           data.table::setnames(TestData,
@@ -25676,7 +25677,7 @@ AutoCatBoostdHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Rearrange Column order----
   data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))
   data.table::setcolorder(TestData, c(
@@ -25689,7 +25690,7 @@ AutoCatBoostdHurdleModel <- function(data,
                             counter),
     (length(IDcols) + counter + 2):(length(IDcols) + counter + 1 + counter)
   ))
-
+  
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
@@ -25726,11 +25727,11 @@ AutoCatBoostdHurdleModel <- function(data,
       }
     }
   }
-
+  
   # Regression r2 via sqrt of correlation
   r_squared <-
     (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
-
+  
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     data.table::fwrite(TestData,
@@ -25739,7 +25740,7 @@ AutoCatBoostdHurdleModel <- function(data,
                                      ModelID,
                                      "_ValidationData.csv"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = TestData,
@@ -25750,19 +25751,19 @@ AutoCatBoostdHurdleModel <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(Paths[1],
                            "/",
                            ModelID, "_EvaluationPlot.png"))
   }
-
+  
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
@@ -25773,12 +25774,12 @@ AutoCatBoostdHurdleModel <- function(data,
     aggrfun = function(x)
       mean(x, na.rm = TRUE)
   )
-
+  
   # Add Number of Trees to Title
   EvaluationBoxPlot <- EvaluationBoxPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
                             round(r_squared, 3)))
-
+  
   # Save plot to file
   if (SaveModelObjects) {
     ggplot2::ggsave(paste0(Paths[1],
@@ -25786,7 +25787,7 @@ AutoCatBoostdHurdleModel <- function(data,
                            ModelID,
                            "_EvaluationBoxPlot.png"))
   }
-
+  
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
@@ -25863,7 +25864,7 @@ AutoCatBoostdHurdleModel <- function(data,
     }, error = function(x)
       "skip")
   }
-
+  
   # Remove Cols----
   TestData[, ':=' (
     Metric = NULL,
@@ -25871,7 +25872,7 @@ AutoCatBoostdHurdleModel <- function(data,
     Metric2 = NULL,
     Metric3 = NULL
   )]
-
+  
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
@@ -25880,7 +25881,7 @@ AutoCatBoostdHurdleModel <- function(data,
                                      "/",
                                      ModelID, "_EvaluationMetrics.csv"))
   }
-
+  
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0
@@ -25899,7 +25900,7 @@ AutoCatBoostdHurdleModel <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
         Out
@@ -25917,20 +25918,20 @@ AutoCatBoostdHurdleModel <- function(data,
         Function = function(x)
           mean(x, na.rm = TRUE)
       )
-
+      
       k <- k + 1
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
         Out1
     }, error = function(x)
       "skip")
   }
-
+  
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))
   }
-
+  
   # Return Output----
   return(
     list(
