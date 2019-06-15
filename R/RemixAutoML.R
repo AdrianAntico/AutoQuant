@@ -5461,6 +5461,8 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' @param Ratios A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)
 #' @param PartitionType Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
 #' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
+#' @param StratifyNumericTarget Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets. 
+#' @param StratTargetPrecision For "random" PartitionType and when StratifyNumericTarget is not null, precision will be the number of decimals used in the percentile calculation. If you supply a value of 1, deciles will be used. For a value of 2, percentiles will be used. Larger values are supported.
 #' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
 #' @return Returns a list of data.tables
 #' @examples
@@ -5468,8 +5470,10 @@ FAST_GDL_Feature_Engineering <- function(data,
 #' dataSets <- AutoDataPartition(data,
 #'                               NumDataSets = 3,
 #'                               Ratios = c(0.70,0.20,0.10),
-#'                               PartitionType = "random",
+#'                               PartitionType = "random",                                                     
 #'                               StratifyColumnNames = NULL,
+#'                               StratifyNumericTarget = NULL,
+#'                               StratTargetPrecision = 1,
 #'                               TimeColumnName = NULL)
 #' }
 #' @export
@@ -5478,10 +5482,20 @@ AutoDataPartition <- function(data,
                               Ratios = c(0.70, 0.20, 0.10),
                               PartitionType = "random",
                               StratifyColumnNames = NULL,
+                              StratifyNumericTarget = NULL,
+                              StratTargetPrecision = 3,
                               TimeColumnName = NULL) {
   # Arguments----
   if (NumDataSets < 0) {
     warning("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
+  }
+  if(!is.null(StratifyNumericTarget)) {
+    if(!is.character(StratifyNumericTarget)) {
+      warning("StratifyNumericTarget your target column name in quotes")
+    }
+    if(!is.numeric(StratTargetPrecision)) {
+      warning("StratTargetPrecision needs to be values of 1,2,...,N")
+    }
   }
   if (abs(round(NumDataSets) - NumDataSets) > 0.01) {
     warning("NumDataSets needs to be an integer valued positive number")
@@ -5516,6 +5530,17 @@ AutoDataPartition <- function(data,
   # Ensure data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
+  }
+  
+  # Stratify Numeric Target----
+  if(PartitionType == "random") {
+    if(!is.null(StratifyNumericTarget)) {
+      data[, StratCol := as.factor(
+        round(
+          percRank(
+            data[[eval(StratifyNumericTarget)]]),StratTargetPrecision))]
+      StratifyColumnNames <- "StratCol"
+    }
   }
 
   # Partition Steps----
@@ -5576,6 +5601,22 @@ AutoDataPartition <- function(data,
           data[RowList[[i]]]
       }
     }
+    
+    # Remove StratCol from StratifyNumericTarget----
+    if(PartitionType == "random") {
+      if(!is.null(StratifyNumericTarget)) {
+        x1 <- DataCollect$TrainData
+        x1[, StratCol := NULL]
+        x2 <- DataCollect$ValidationData
+        x2[, StratCol := NULL]
+        x3 <- DataCollect$TestData
+        x3[, StratCol := NULL]
+        DataCollect$TrainData <- x1
+        DataCollect$Validation <- x2
+        DataCollect$TestData <- x3
+      }
+    }
+        
   } else if (tolower(PartitionType) == "timeseries" &
              !is.null(StratifyColumnNames)) {
     # Initialize DataCollect
