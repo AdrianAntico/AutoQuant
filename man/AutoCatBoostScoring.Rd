@@ -61,8 +61,7 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostClassifier}},
+Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostdHurdleModel}},
@@ -76,8 +75,6 @@ Other Supervised Learning: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
-  \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostClassifier}},
   \code{\link{AutoXGBoostMultiClass}},
   \code{\link{AutoXGBoostRegression}},

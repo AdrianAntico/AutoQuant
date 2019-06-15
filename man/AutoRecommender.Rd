@@ -44,30 +44,10 @@ WinningModel <- AutoRecommender(RatingsMatrix,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostClassifier}},
-  \code{\link{AutoCatBoostMultiClass}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoCatBoostdHurdleModel}},
-  \code{\link{AutoH2OMLScoring}},
-  \code{\link{AutoH2OModeler}},
-  \code{\link{AutoH2OScoring}},
-  \code{\link{AutoH2oDRFClassifier}},
-  \code{\link{AutoH2oDRFMultiClass}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMClassifier}},
-  \code{\link{AutoH2oGBMMultiClass}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoNLS}},
-  \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostClassifier}},
-  \code{\link{AutoXGBoostMultiClass}},
-  \code{\link{AutoXGBoostRegression}},
-  \code{\link{AutoXGBoostScoring}}
+Other Recommenders: \code{\link{AutoRecomDataCreate}},
+  \code{\link{AutoRecommenderScoring}}
 }
 \author{
 Adrian Antico and Douglas Pestana
 }
-\concept{Supervised Learning}
+\concept{Recommenders}

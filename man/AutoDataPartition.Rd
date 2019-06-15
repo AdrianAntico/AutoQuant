@@ -37,7 +37,7 @@ This function will take your ratings matrix and model and score your data in par
 dataSets <- AutoDataPartition(data,
                               NumDataSets = 3,
                               Ratios = c(0.70,0.20,0.10),
-                              PartitionType = "random",                                                     
+                              PartitionType = "random",
                               StratifyColumnNames = NULL,
                               StratifyNumericTarget = NULL,
                               StratTargetPrecision = 1,

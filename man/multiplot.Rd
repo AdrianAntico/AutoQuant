@@ -50,7 +50,6 @@ RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{AutoRecomDataCreate}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
   \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
   \code{\link{percRank}}, \code{\link{tempDatesFun}},

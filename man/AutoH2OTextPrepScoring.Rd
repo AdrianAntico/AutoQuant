@@ -27,11 +27,11 @@ data <- AutoH2OTextPrepScoring(data = x,
 }
 }
 \seealso{
-Other Misc: \code{\link{AutoRecomDataCreate}},
-  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{multiplot}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other Misc: \code{\link{ChartTheme}},
+  \code{\link{PrintObjectsSize}}, \code{\link{RemixTheme}},
+  \code{\link{SimpleCap}}, \code{\link{multiplot}},
+  \code{\link{percRank}}, \code{\link{tempDatesFun}},
+  \code{\link{tokenizeH2O}}
 }
 \author{
 Adrian Antico

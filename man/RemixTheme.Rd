@@ -26,7 +26,6 @@ p <- p + RemixTheme()
 }
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{AutoRecomDataCreate}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
   \code{\link{SimpleCap}}, \code{\link{multiplot}},
   \code{\link{percRank}}, \code{\link{tempDatesFun}},
