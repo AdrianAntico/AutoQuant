@@ -6450,7 +6450,7 @@ AutoTS <- function(data,
     FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
   } else if (tolower(TimeUnit) == "quarter") {
     freq <- 4
-    FC_Data[, Date := MaxDate + lubridate::month(4 * Date)]
+    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4*Date)]
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
     FC_Data[, Date := MaxDate + lubridate::years(Date)]
