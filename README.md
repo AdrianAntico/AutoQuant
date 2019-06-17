@@ -195,7 +195,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </p>
 </details>
 
-### Recommenders:
+### Marketing Modeling:
 <details><summary>expand</summary>
 <p>
   
@@ -212,6 +212,9 @@ Automated collaborative filtering modeling where each model competes against eac
   
 ##### **AutoRecommenderScoring()**
 Automatically score a recommender model from AutoRecommender
+
+##### **AutoMarketBasketModel()**
+AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
 </p>
 </details>
 
