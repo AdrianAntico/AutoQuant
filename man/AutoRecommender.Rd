@@ -44,10 +44,11 @@ WinningModel <- AutoRecommender(RatingsMatrix,
 }
 }
 \seealso{
-Other Recommenders: \code{\link{AutoRecomDataCreate}},
+Other Marketing Modeling: \code{\link{AutoMarketBasketModel}},
+  \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoRecommenderScoring}}
 }
 \author{
 Adrian Antico and Douglas Pestana
 }
-\concept{Recommenders}
+\concept{Marketing Modeling}

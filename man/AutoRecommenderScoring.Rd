@@ -49,10 +49,11 @@ Results <- AutoRecommenderScoring(
 }
 }
 \seealso{
-Other Recommenders: \code{\link{AutoRecomDataCreate}},
+Other Marketing Modeling: \code{\link{AutoMarketBasketModel}},
+  \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoRecommender}}
 }
 \author{
 Adrian Antico and Douglas Pestana
 }
-\concept{Recommenders}
+\concept{Marketing Modeling}
