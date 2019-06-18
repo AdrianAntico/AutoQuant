@@ -25537,7 +25537,7 @@ AutoCatBoostdHurdleModel <- function(data,
   }
   
   # Begin classification model building----
-  if (length(Buckets) == 2) {
+  if (length(Buckets) == 1) {
     ClassifierModel <- AutoCatBoostClassifier(
       data = data,
       ValidationData = ValidationData,
