@@ -25594,7 +25594,7 @@ AutoCatBoostdHurdleModel <- function(data,
   IDcols <- c(IDcols, TargetColumnName)
   
   # Score Classification Model----
-  if (length(Buckets) == 2) {
+  if (length(Buckets) == 1) {
     TestData <- AutoCatBoostScoring(
       TargetType = "classification",
       ScoringData = TestData,
