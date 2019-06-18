@@ -14857,7 +14857,7 @@ AutoRecommenderScoring <- function(data,
 #' 
 #' AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
 #' 
-#' Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf 
+#' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf 
 #' 
 #' @author Adrian Antico and Douglas Pestana
 #' @family Marketing Modeling
@@ -23023,13 +23023,6 @@ AutoXGBoostClassifier <- function(data,
   if (!is.null(IDcols)) {
     if (!is.character(IDcols)) {
       IDcols <- names(data)[IDcols]
-    }
-  }
-  
-  # Binary Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
     }
   }
   
