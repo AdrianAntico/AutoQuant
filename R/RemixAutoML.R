@@ -15203,8 +15203,8 @@ AutoCatBoostClassifier <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(Paths)) {
-    setwd(Paths[1])    
+  if(!is.null(model_path)) {
+    setwd(model_path)    
   }
   
   # Binary Ensure data is a data.table----
@@ -16341,8 +16341,8 @@ AutoCatBoostRegression <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(Paths)) {
-    setwd(Paths[1])    
+  if(!is.null(model_path)) {
+    setwd(model_path)    
   }
   
   # Regression Ensure data is a data.table----
@@ -17275,8 +17275,8 @@ AutoCatBoostMultiClass <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(Paths)) {
-    setwd(Paths[1])    
+  if(!is.null(model_path)) {
+    setwd(model_path)    
   }
   
   # MultiClass Ensure data is a data.table----
