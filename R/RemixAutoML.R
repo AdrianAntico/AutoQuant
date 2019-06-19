@@ -15403,7 +15403,7 @@ AutoCatBoostClassifier <- function(data,
                                      label = TrainTarget,
                                      cat_features = CatFeatures)
       TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures, )
+        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
       FinalTestPool <-
         catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
