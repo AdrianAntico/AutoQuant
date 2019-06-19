@@ -15201,6 +15201,12 @@ AutoCatBoostClassifier <- function(data,
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
   
+  # Update working directory----
+  working_directory <- getwd()
+  if(!is.null(Paths)) {
+    setwd(Paths[1])    
+  }
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -16133,6 +16139,9 @@ AutoCatBoostClassifier <- function(data,
     gc()
   }
   
+  # Reset working directory----
+  setwd(working_directory)
+  
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -16329,6 +16338,12 @@ AutoCatBoostRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
+  
+  # Update working directory----
+  working_directory <- getwd()
+  if(!is.null(Paths)) {
+    setwd(Paths[1])    
+  }
   
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -17083,6 +17098,9 @@ AutoCatBoostRegression <- function(data,
     gc()
   }
   
+  # Reset working directory----
+  setwd(working_directory)
+  
   # Regression Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
@@ -17254,6 +17272,12 @@ AutoCatBoostMultiClass <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
+  
+  # Update working directory----
+  working_directory <- getwd()
+  if(!is.null(Paths)) {
+    setwd(Paths[1])    
+  }
   
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -17977,6 +18001,9 @@ AutoCatBoostMultiClass <- function(data,
   if (tolower(task_type) == "gpu") {
     gc()
   }
+  
+  # Reset working directory----
+  setwd(working_directory)
   
   # MultiClass Return Model Objects----
   if (GridTune) {
@@ -25385,6 +25412,12 @@ AutoCatBoostdHurdleModel <- function(data,
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
   
+  # Update working directory----
+  working_directory <- getwd()
+  if(!is.null(Paths)) {
+    setwd(Paths[1])    
+  }
+  
   # Initialize collection and counter----
   ModelInformationList <- list()
   if (length(Paths) == 1) {
@@ -26080,6 +26113,10 @@ AutoCatBoostdHurdleModel <- function(data,
     save(ParDepBoxPlots,
          file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))
   }
+  
+  # Reset workding directory
+  # Update working directory----
+  setwd(working_directory)
   
   # Return Output----
   return(
