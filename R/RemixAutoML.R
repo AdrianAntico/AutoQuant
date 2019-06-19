@@ -15204,6 +15204,7 @@ AutoCatBoostClassifier <- function(data,
   # Update working directory----
   working_directory <- getwd()
   if(!is.null(model_path)) {
+    if(working_directory != model_path)
     setwd(model_path)    
   }
   
@@ -16342,7 +16343,8 @@ AutoCatBoostRegression <- function(data,
   # Update working directory----
   working_directory <- getwd()
   if(!is.null(model_path)) {
-    setwd(model_path)    
+    if(working_directory != model_path)
+      setwd(model_path)    
   }
   
   # Regression Ensure data is a data.table----
@@ -17276,7 +17278,8 @@ AutoCatBoostMultiClass <- function(data,
   # Update working directory----
   working_directory <- getwd()
   if(!is.null(model_path)) {
-    setwd(model_path)    
+    if(working_directory != model_path)
+      setwd(model_path)    
   }
   
   # MultiClass Ensure data is a data.table----
@@ -25415,7 +25418,8 @@ AutoCatBoostdHurdleModel <- function(data,
   # Update working directory----
   working_directory <- getwd()
   if(!is.null(Paths)) {
-    setwd(Paths[1])    
+    if(working_directory != Paths[1])
+      setwd(Paths[1])    
   }
   
   # Initialize collection and counter----
