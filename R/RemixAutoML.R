@@ -17271,7 +17271,7 @@ AutoCatBoostRegression <- function(data,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
             ColNames = Names,
-            TransformationResults = TransformationResults
+            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
           )
         )
       }
@@ -17306,7 +17306,7 @@ AutoCatBoostRegression <- function(data,
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names,
-            TransformationResults = TransformationResults
+            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
           )
         )
       }
