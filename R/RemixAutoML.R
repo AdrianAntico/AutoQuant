@@ -16801,20 +16801,26 @@ AutoCatBoostRegression <- function(data,
       
       # Inverse Transform----
       if(!is.null(TransformNumericColumns)) {
-        
+
+        # Make copy of TransformationResults----
+        grid_trans_results <- data.table::copy(TransformationResults)
+
         # Append record for Predicted Column----
-        if(i != 1) {
-          TransformationResults <- TransformationResults[ColumnName != "Predicted"]
-        }
-        TransformationResults <- data.table::rbindlist(
-          list(TransformationResults,
-               data.table::data.table(ColumnName = "Predicted",
-                                      MethodName = TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                         MethodName],
-                                      Lambda = TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                     Lambda],
-                                      NormalizedStatistics = 0)))
-        
+        data.table::set(grid_trans_results,
+                        i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), 
+                        j = "ColumnName", 
+                        value = "Target")
+        grid_trans_results <- data.table::rbindlist(
+          list(
+            grid_trans_results,
+            data.table::data.table(ColumnName = c("Predicted"),
+                                   MethodName = grid_trans_results[ColumnName == "Target",
+                                                                   MethodName],
+                                   Lambda = grid_trans_results[ColumnName == "Target", 
+                                                               Lambda],
+                                   NormalizedStatistics = 0)))
+
+        # Run Back-Transform----
         calibEval <- AutoTransformationScore(
           ScoringData = calibEval,
           Type = "Inverse",
