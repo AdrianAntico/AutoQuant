@@ -26884,13 +26884,13 @@ AutoTransformationScore <- function(ScoringData,
                                                TransID,
                                                "_transformation.csv"))    
   }
-
+  
   # Loop through ColumnNames----
   for(colNames in Results[["ColumnName"]]) {
     
     # YeoJohnson----
     if(Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
-      if(tolower(Type) == "inverse") {
+      if(tolower(Type) != "inverse") {
         data.table::set(ScoringData, 
                         j = eval(colNames),
                         value = Apply_YeoJohnson(
@@ -26907,7 +26907,7 @@ AutoTransformationScore <- function(ScoringData,
     
     # BoxCox----
     if(Results[ColumnName == eval(colNames), MethodName] == "BoxCox") {
-      if(tolower(Type) == "inverse") { 
+      if(tolower(Type) != "inverse") { 
         data.table::set(ScoringData, 
                         j = eval(colNames),
                         value = Apply_BoxCox(
@@ -26924,7 +26924,7 @@ AutoTransformationScore <- function(ScoringData,
     
     # Asinh----
     if(Results[ColumnName == eval(colNames), MethodName] == "Asinh") {
-      if(tolower(Type) == "inverse") { 
+      if(tolower(Type) != "inverse") {
         data.table::set(ScoringData, 
                         j = eval(colNames),
                         value = Apply_Asinh(
@@ -26939,7 +26939,7 @@ AutoTransformationScore <- function(ScoringData,
     
     # Asin----
     if(Results[ColumnName == eval(colNames), MethodName] == "Asin") {
-      if(tolower(Type) == "inverse") { 
+      if(tolower(Type) != "inverse") { 
         data.table::set(ScoringData, 
                         j = eval(colNames),
                         value = Apply_Asin(
@@ -26954,7 +26954,7 @@ AutoTransformationScore <- function(ScoringData,
     
     # Logit----
     if(Results[ColumnName == eval(colNames), MethodName] == "Logit") {
-      if(tolower(Type) == "inverse") { 
+      if(tolower(Type) != "inverse") { 
         data.table::set(ScoringData, 
                         j = eval(colNames),
                         value = Apply_Logit(
