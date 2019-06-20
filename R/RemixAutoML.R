@@ -17316,6 +17316,7 @@ AutoCatBoostRegression <- function(data,
           PartialDependenceBoxPlots = ParDepBoxPlots,
           ColNames = Names
         )
+      )
     }
   }
 }
