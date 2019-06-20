@@ -301,9 +301,6 @@ creates a word frequency data.table and a word cloud
 ##### **AutoH2OTextPrepScoring()** 
 Prepares your data for scoring based on models built with Word2VecModel
 
-##### **AutoRecomDataCreate()** 
-Turns your transactional data into a binary ratings matrix
-
 ##### **ProblematicFeatures()**
 Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
 
