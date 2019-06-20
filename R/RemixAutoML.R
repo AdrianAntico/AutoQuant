@@ -16824,7 +16824,7 @@ AutoCatBoostRegression <- function(data,
         calibEval <- AutoTransformationScore(
           ScoringData = calibEval,
           Type = "Inverse",
-          FinalResults = TransformationResults,
+          FinalResults = grid_trans_results,
           TransID = NULL,
           Path = NULL)        
       }
