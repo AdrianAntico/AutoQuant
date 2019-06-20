@@ -17250,7 +17250,26 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Return Model Objects----
   if (GridTune) {
-    if (ReturnModelObjects) {
+    if(!is.null(TransformNumericColumns)) {
+      if (ReturnModelObjects) {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            GridList = catboostGridList,
+            GridMetrics = GridCollect,
+            ColNames = Names,
+            TransformationResults = TransformationResults
+          )
+        )
+      }
+    } else {
       return(
         list(
           Model = model,
@@ -17268,7 +17287,23 @@ AutoCatBoostRegression <- function(data,
       )
     }
   } else {
-    if (ReturnModelObjects) {
+    if(!is.null(TransformNumericColumns)) {
+      if (ReturnModelObjects) {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            ColNames = Names,
+            TransformationResults = TransformationResults
+          )
+      }
+    } else {
       return(
         list(
           Model = model,
@@ -17281,7 +17316,6 @@ AutoCatBoostRegression <- function(data,
           PartialDependenceBoxPlots = ParDepBoxPlots,
           ColNames = Names
         )
-      )
     }
   }
 }
