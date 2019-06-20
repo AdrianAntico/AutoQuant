@@ -26845,7 +26845,7 @@ AutoTransformationCreate <- function(data,
 
 #' AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()
 #'
-#' AutoTransformationScore() is a the complimentary function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and scored your models so you can obtain statistics on the original features.
+#' AutoTransformationScore() is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
 #'              
 #' @author Adrian Antico
 #' @family Feature Engineering
