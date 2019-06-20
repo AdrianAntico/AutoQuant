@@ -16804,9 +16804,9 @@ AutoCatBoostRegression <- function(data,
         TransformationResults <- data.table::rbindlist(
           list(TransformationResults,
                data.table::data.table(ColumnName = "Predicted",
-                                      MethodName = TransformationResults[ColumnName == get(TargetColumnName), 
+                                      MethodName = TransformationResults[ColumnName == eval(TargetColumnName), 
                                                                          MethodName],
-                                      Lambda = TransformationResults[ColumnName == get(TargetColumnName), 
+                                      Lambda = TransformationResults[ColumnName == eval(TargetColumnName), 
                                                                      Lambda],
                                       NormalizedStatistics = 0)))
         
@@ -16989,9 +16989,9 @@ AutoCatBoostRegression <- function(data,
     TransformationResults <- data.table::rbindlist(
       list(TransformationResults,
            data.table::data.table(ColumnName = "Predict",
-                                  MethodName = TransformationResults[ColumnName == get(TargetColumnName), 
+                                  MethodName = TransformationResults[ColumnName == eval(TargetColumnName), 
                                                                      MethodName],
-                                  Lambda = TransformationResults[ColumnName == get(TargetColumnName), 
+                                  Lambda = TransformationResults[ColumnName == eval(TargetColumnName), 
                                                                  Lambda],
                                   NormalizedStatistics = 0)))
     
