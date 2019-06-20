@@ -4,9 +4,10 @@
 \alias{AutoCatBoostRegression}
 \title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostRegression(data, ValidationData, TestData = NULL,
+AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
-  PrimaryDateColumn = NULL, IDcols = NULL, task_type = "GPU",
+  PrimaryDateColumn = NULL, IDcols = NULL,
+  TransformNumericColumns = NULL, task_type = "GPU",
   eval_metric = "RMSE", Alpha = NULL, Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
   ModelID = "FirstModel", NumOfParDepPlots = 3,
@@ -103,6 +104,7 @@ TestModel <- AutoCatBoostRegression(data,
                                     MaxModelsInGrid = 1,
                                     task_type = "GPU",
                                     eval_metric = "RMSE",
+                                    Alpha = NULL,
                                     grid_eval_metric = "r2",
                                     Trees = 50,
                                     GridTune = FALSE,

@@ -30,9 +30,6 @@ AutoMarketBasketModel(data, OrderIDColumnName, ItemIDColumnName,
 \description{
 AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within.
 }
-\details{
-Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
-}
 \examples{
 \donttest{
 rules_data <- AutoMarketBasketModel(
@@ -48,6 +45,8 @@ rules_data <- AutoMarketBasketModel(
 }
 }
 \seealso{
+Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
+
 Other Marketing Modeling: \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}
