@@ -17154,8 +17154,8 @@ AutoCatBoostRegression <- function(data,
   # Regression Variable Importance----
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <-
-    data.table::data.table(cbind(Variable = names(temp), temp))
-  data.table::setnames(VariableImportance, "temp", "Importance")
+    data.table::data.table(cbind(Variable = row.names(temp), temp))
+  data.table::setnames(VariableImportance, "V2", "Importance")
   VariableImportance[, Importance := round(as.numeric(Importance), 4)]
   VariableImportance <- VariableImportance[order(-Importance)]
   if (SaveModelObjects) {
