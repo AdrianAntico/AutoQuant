@@ -16375,6 +16375,7 @@ AutoCatBoostRegression <- function(data,
   
   # Transform data, ValidationData, and TestData----
   if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
+    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
@@ -16439,6 +16440,9 @@ AutoCatBoostRegression <- function(data,
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
       
+      # Mean of data----
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      
       # Transform data sets----
       Output <- AutoTransformationCreate(
         data,
@@ -16482,7 +16486,8 @@ AutoCatBoostRegression <- function(data,
       )
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData      
+      TestData <- dataSets$TestData    
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     }
   }
   
@@ -16812,7 +16817,7 @@ AutoCatBoostRegression <- function(data,
         
         calibEval <- AutoTransformationScore(
           ScoringData = calibEval,
-          Type = "Apply",
+          Type = "Inverse",
           FinalResults = TransformationResults,
           TransID = NULL,
           Path = NULL)        
@@ -16884,7 +16889,7 @@ AutoCatBoostRegression <- function(data,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           has_time             = HasTime,
-          #best_model_min_trees = 10,
+          best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
         )
@@ -16899,7 +16904,7 @@ AutoCatBoostRegression <- function(data,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           has_time             = HasTime,
-          #best_model_min_trees = 10,
+          best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
         )
@@ -16918,7 +16923,7 @@ AutoCatBoostRegression <- function(data,
       eval_metric          = eval_metric,
       use_best_model       = TRUE,
       has_time             = HasTime,
-      #best_model_min_trees = 10,
+      best_model_min_trees = 10,
       metric_period        = 10,
       task_type            = task_type
     )
@@ -16933,7 +16938,7 @@ AutoCatBoostRegression <- function(data,
       eval_metric          = eval_metric,
       use_best_model       = TRUE,
       has_time             = HasTime,
-      #best_model_min_trees = 10,
+      best_model_min_trees = 10,
       metric_period        = 10,
       task_type            = task_type
     )
@@ -16988,17 +16993,17 @@ AutoCatBoostRegression <- function(data,
     }
     TransformationResults <- data.table::rbindlist(
       list(TransformationResults,
-           data.table::data.table(ColumnName = "Predict",
-                                  MethodName = TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                     MethodName],
-                                  Lambda = TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                 Lambda],
-                                  NormalizedStatistics = 0)))
+           data.table::data.table(ColumnName = c("Predict","Target"),
+                                  MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
+                                                                     MethodName],2),
+                                  Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
+                                                                 Lambda],2),
+                                  NormalizedStatistics = rep(0,2))))
     
     # Transform Target and Predicted Value----
     ValidationData <- AutoTransformationScore(
       ScoringData = ValidationData,
-      Type = "Apply",
+      Type = "Inverse",
       FinalResults = TransformationResults,
       TransID = NULL,
       Path = NULL)        
@@ -17114,7 +17119,7 @@ AutoCatBoostRegression <- function(data,
           ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
                                                             sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
-        ValidationData[, ':=' (Metric1 = (Target - mean(Target)) ^ 2,
+        ValidationData[, ':=' (Metric1 = (Target - MeanTrainTarget) ^ 2,
                                Metric2 = (Target - Predict) ^ 2)]
         Metric <-
           1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
