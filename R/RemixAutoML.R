@@ -17302,6 +17302,7 @@ AutoCatBoostRegression <- function(data,
             ColNames = Names,
             TransformationResults = TransformationResults
           )
+        )
       }
     } else {
       return(
