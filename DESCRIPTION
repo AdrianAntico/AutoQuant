@@ -44,6 +44,7 @@ Imports:
     magick,
     methods,
     monreg,
+    nortest,
     parallel,
     pROC,
     RColorBrewer,
