@@ -16820,6 +16820,18 @@ AutoCatBoostRegression <- function(data,
                                                                Lambda],
                                    NormalizedStatistics = 0)))
         
+        # If Actual target columnname == "Target" remove the duplicate version----
+        if(length(unique(grid_trans_results[["ColumnName"]])) != nrow(grid_trans_results)) {
+          grid_trans_results <- grid_trans_results[, .N, by = "ColumnName"][N != 1][[1]]
+          temp1 <- which(names(calibEval) == temp)[1]
+          calibEval[, eval(names(data)[temp1]) := NULL]
+          grid_trans_results <- grid_trans_results[
+            , ID := 1:.N][
+              ID != which(grid_trans_results[["ColumnName"]] == temp)[2]][
+                ID := NULL
+                ]
+        }
+        
         # Run Back-Transform----
         calibEval <- AutoTransformationScore(
           ScoringData = calibEval,
@@ -17011,6 +17023,13 @@ AutoCatBoostRegression <- function(data,
       temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
       temp1 <- which(names(ValidationData) == temp)[1]
       ValidationData[, eval(names(data)[temp1]) := NULL]
+      TransformationResults <- TransformationResults[
+        , ID := 1:.N][
+          ID != which(TransformationResults[["ColumnName"]] == temp)[2]][
+            ID := NULL
+          ]
+                      
+                                            
     }
     
     # Transform Target and Predicted Value----
