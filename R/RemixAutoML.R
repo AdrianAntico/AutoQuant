@@ -10098,6 +10098,19 @@ AutoCatBoostCARMA <- function(data,
     )
   }
   
+  # Target Transformation----
+  if(TargetTransformation) {
+    data <- AutoTransformationCreate(
+      data, 
+      ColumnNames = eval(TargetColumnName),
+      Methods = c("YeoJohnson","BoxCox","Asinh","Asin","Logit"),
+      Path = NULL,
+      TransID = "Trans",
+      SaveOutput = FALSE
+    )
+    
+  }
+  
   # GDL Features----
   if (!is.null(GroupVariables)) {
     data <- RemixAutoML::DT_GDL_Feature_Engineering(
@@ -10223,7 +10236,7 @@ AutoCatBoostCARMA <- function(data,
                                   eval(TargetColumnName)),
         PrimaryDateColumn = eval(DateColumnName),
         IDcols = 2,
-        TransformNumericColumns = eval(TargetColumnName),
+        TransformNumericColumns = NULL,
         MaxModelsInGrid = 1,
         task_type = TaskType,
         eval_metric = EvalMetric,
@@ -10248,7 +10261,7 @@ AutoCatBoostCARMA <- function(data,
                                     eval(TargetColumnName)),
           PrimaryDateColumn = eval(DateColumnName),
           IDcols = 2,
-          TransformNumericColumns = eval(TargetColumnName),
+          TransformNumericColumns = NULL,
           MaxModelsInGrid = 1,
           task_type = TaskType,
           eval_metric = EvalMetric,
@@ -10272,7 +10285,7 @@ AutoCatBoostCARMA <- function(data,
                                     eval(TargetColumnName)),
           PrimaryDateColumn = eval(DateColumnName),
           IDcols = 2,
-          TransformNumericColumns = eval(TargetColumnName),
+          TransformNumericColumns = NULL,
           MaxModelsInGrid = 1,
           task_type = TaskType,
           eval_metric = EvalMetric,
@@ -10298,7 +10311,7 @@ AutoCatBoostCARMA <- function(data,
         FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
         PrimaryDateColumn = eval(DateColumnName),
         IDcols = 2,
-        TransformNumericColumns = eval(TargetColumnName),
+        TransformNumericColumns = NULL,
         MaxModelsInGrid = 1,
         task_type = TaskType,
         eval_metric = EvalMetric,
@@ -10321,7 +10334,7 @@ AutoCatBoostCARMA <- function(data,
         FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
         PrimaryDateColumn = eval(DateColumnName),
         IDcols = NULL,
-        TransformNumericColumns = eval(TargetColumnName),
+        TransformNumericColumns = NULL,
         MaxModelsInGrid = 1,
         task_type = TaskType,
         eval_metric = EvalMetric,
@@ -10572,7 +10585,7 @@ AutoCatBoostCARMA <- function(data,
                                          eval(TargetColumnName)
                                        )),
           IDcols = NULL,
-          Model = Model,
+          ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
           ReturnFeatures = FALSE,
@@ -15078,7 +15091,7 @@ AutoMarketBasketModel <- function(data,
 #' @param grid_eval_metric This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param MaxModelsInGrid Number of models to test from grid options. 1080 total possible options
+#' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
@@ -26856,7 +26869,7 @@ Test_Identity <- function(x) {
 #' @param Path Set to the directly where you want to save all of your modeling files
 #' @param TransID Set to a character value that corresponds with your modeling project
 #' @param SaveOutput Set to TRUE to save necessary file to run AutoTransformationScore()
-#' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
+#' @return data with transformed columns and the transformation object for back-transforming later
 #' @examples
 #' Correl <- 0.85
 #' N <- 1000
@@ -27034,7 +27047,7 @@ AutoTransformationCreate <- function(data,
 #' @param Type Set to "Inverse" to back-transfrom or "Apply" for applying the transformation.
 #' @param Path Set to the directly where you want to save all of your modeling files
 #' @param TransID Set to a character value that corresponds with your modeling project
-#' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
+#' @return data with transformed columns
 #' @examples
 #' Correl <- 0.85
 #' N <- 1000
