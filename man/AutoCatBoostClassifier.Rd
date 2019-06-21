@@ -40,7 +40,7 @@ AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 
 \item{grid_eval_metric}{This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"}
 
-\item{MaxModelsInGrid}{Number of models to test from grid options. 1080 total possible options}
+\item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
