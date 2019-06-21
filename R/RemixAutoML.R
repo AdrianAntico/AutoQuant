@@ -4165,9 +4165,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Done!!----
-    if (Timer) {
-      return(data)
-    }
+    return(data)
   }
 }
 
@@ -10100,7 +10098,7 @@ AutoCatBoostCARMA <- function(data,
   
   # Target Transformation----
   if(TargetTransformation) {
-    data <- AutoTransformationCreate(
+    TransformResults <- AutoTransformationCreate(
       data, 
       ColumnNames = eval(TargetColumnName),
       Methods = c("YeoJohnson","BoxCox","Asinh","Asin","Logit"),
@@ -10108,7 +10106,8 @@ AutoCatBoostCARMA <- function(data,
       TransID = "Trans",
       SaveOutput = FALSE
     )
-    
+    data <- TransformResults$Data
+    TransformObject <- TransformResults$FinalResults
   }
   
   # GDL Features----
