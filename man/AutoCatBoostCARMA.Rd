@@ -6,8 +6,8 @@
 \usage{
 AutoCatBoostCARMA(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
-  FC_Periods = 30, TimeUnit = "week", Lags = c(1:5),
-  MA_Periods = c(1:5), CalendarVariables = FALSE,
+  FC_Periods = 30, TimeUnit = "week", TargetTransformation = TRUE,
+  Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   TimeTrendVariable = FALSE, DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1), TaskType = "GPU",
   EvalMetric = "MAPE", GridTune = FALSE, GridEvalMetric = "mape",
@@ -26,6 +26,8 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"}
+
+\item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables). )}
 
 \item{Lags}{Select the periods for all lag variables you want to create. E.g. I use this for weekly data c(1:5,52)}
 
@@ -69,6 +71,7 @@ Results <- AutoCatBoostCARMA(data,
                              GroupVariables = c("Store","Dept"),
                              FC_Periods = 52,
                              TimeUnit = "week",
+                             TargetTransformation = TRUE,
                              Lags = c(1:5,52),
                              MA_Periods = c(1:5,52),
                              CalendarVariables = TRUE,

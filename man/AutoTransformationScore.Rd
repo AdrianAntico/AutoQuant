@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoTransformationScore}
 \alias{AutoTransformationScore}
-\title{Test Identity Transformation}
+\title{AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()}
 \usage{
 AutoTransformationScore(ScoringData, FinalResults, Type = "Inverse",
   TransID = "TestModel", Path = NULL)
@@ -22,7 +22,7 @@ AutoTransformationScore(ScoringData, FinalResults, Type = "Inverse",
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 }
 \description{
-Test Identity Transformation
+AutoTransformationScore() is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
 }
 \examples{
 Correl <- 0.85
