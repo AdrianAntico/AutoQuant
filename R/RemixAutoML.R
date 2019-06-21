@@ -17280,6 +17280,16 @@ AutoCatBoostRegression <- function(data,
   # Reset working directory----
   setwd(working_directory)
   
+  # Fix up transformation results----
+  if(!is.null(TransformNumericColumns)) {
+    if(eval(TargetColumnName) == "Target") {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+    } else {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
+    }
+
+  }
+  
   # Regression Return Model Objects----
   if (GridTune) {
     if(!is.null(TransformNumericColumns)) {
@@ -17297,7 +17307,7 @@ AutoCatBoostRegression <- function(data,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
+            TransformationResults = TransformationResults
           )
         )
       }
@@ -17332,7 +17342,7 @@ AutoCatBoostRegression <- function(data,
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
+            TransformationResults = TransformationResults
           )
         )
       }
