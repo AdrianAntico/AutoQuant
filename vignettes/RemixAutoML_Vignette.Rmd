@@ -37,7 +37,7 @@ There are several core packages RemixAutoML relies on which include. From a data
 The package is designed to give your models the best chance at being the most accurate for your machine learning tasks. There are functions in here to help you get the most out of your data for the models to take advantage of. There are three types of features you need to manage for machine learning: numeric, categorical, and text features. The functions in this package will help you squeeze as much information out of your data set as possible. Then you simply supply those data sets into the automated machine learning functions for state of the art output with minimal effort on your part. With the extra time saved you can try out significantly more experiments to ensure you are putting the best models and frameworks possible for your machine learning use-cases.
 
 ### **Handling numerical features**
-Numerical features can hide relationships in a variety of ways and it's our goal as modeling professionals (or researchers) to capture as many of those relationships as we can (or enough to provide a sufficient return on investment). We have linear and nonlinear relationships, linear and nonlinear interactions, along with threshold effects. Those are what I call column-based model effects. Nowadays, you don't really have to bother with any of those when using tree-based ensembles (boosting and bagging) as those relationships can be captured without the need to manual create features to account for their peculiarities. However, there is still a significant amount of potential information to be extracted from your data if you don't account for time-based effects. In the business world, many applications require modeling data that is collected across time (think transactional data). With time series data (or panel data), where data is collected (or manipulated to be) across equally spaced time periods (hourly, daily, etc.), you tend to look at lags and moving averages of your target variable for predicting the present and future events. Well, why aren't we using the same type of features in our transaction data? That's where we offer our '_GDL_' suite of functions. They are designed to create lags and rolling statistics off of numeric target variables and numeric independent variables, by groups. They can also generate lags and rolling statistics off of the time between events, by groups. This is what I call row-based model effects. Any nonlinearities and interactions will be captured by the tree-based ensembles. 
+Numerical features can hide relationships in a variety of ways and it's our goal as modeling professionals (or researchers) to capture as many of those relationships as we can (or enough to provide a sufficient return on investment). We have linear and nonlinear relationships, linear and nonlinear interactions, along with threshold effects. Those are what I call column-based model effects. Nowadays, you don't really have to bother with any of those when using tree-based ensembles (boosting and bagging) as those relationships can be captured without the need to manual create features to account for their peculiarities, aside from the target variables in which we still offer automated transformation creation and scoring functions. However, there is still a significant amount of potential information to be extracted from your data if you don't account for time-based effects. In the business world, many applications require modeling data that is collected across time (think transactional data). With time series data (or panel data), where data is collected (or manipulated to be) across equally spaced time periods (hourly, daily, etc.), you tend to look at lags and moving averages of your target variable for predicting the present and future events. Well, why aren't we using the same type of features in our transaction data? That's where we offer our '_GDL_' suite of functions. They are designed to create lags and rolling statistics off of numeric target variables and numeric independent variables, by groups. They can also generate lags and rolling statistics off of the time between events, by groups. This is what I call row-based model effects. Any nonlinearities and interactions will be captured by the tree-based ensembles. 
 
 Taking this a step further, there is a concept out there called target encoding. What's done, essentially, is that the mean of the target is used as a replacement for factor levels, thus converting your factor variables into numeric variables. I generally have two problems with this. For one thing, there is inherent forward leak because you are using all values across time to predict values that occur historically. Second, it fails to account for all the other information in your data to be used in the transformation process. If you used the '_GDL_' suite of functions, you can do your target encoding without any forward leak (they are forced to prevent this), but you will also be able to utilize various window sizes (opposed to full history) to capture recent trends or cyclical effects, and do the same thing based on your independent various that have effects distributed across time.
 
@@ -82,30 +82,47 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 ## **Automated Supervised Learning Functions**
 
 ##### Functions include:
+
+###### Binary Classification
 - `AutoCatBoostClassifier()`
 - `AutoXGBoostClassifier()`
 - `AutoH2oGBMClassifier()`
 - `AutoH2oDRFClassifier()`
+
+###### MultiClass Classification
 - `AutoCatBoostMultiClass()`
 - `AutoXGBoostMultiClass()`
 - `AutoH2oGBMMultiClass()`
 - `AutoH2oDRFMultiClass()`
+
+###### Regression
 - `AutoCatBoostRegression()`
 - `AutoH2oGBMRegression()`
 - `AutoH2oDRFRegression()`
 - `AutoXGBoostRegression()`
+- `AutoCatBoostdHurdleModel()`
+
+###### Scoring Functions
 - `AutoCatBoostScoring()`
 - `AutoXGBoostScoring()`
 - `AutoH2oMLScoring()`
-- `AutoCatBoostdHurdleModel()`
+
+###### All purpose modeling and scoring
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
+
+###### Time Series
 - `AutoTS()`
 - `AutoCatBoostCARMA()`
+
+###### Non Linear Regression
 - `AutoNLS()`
+
+###### Marketing Modleing
 - `AutoRecomDataCreate()`
 - `AutoRecommender()`
 - `AutoRecommenderScoring()`
+- `AutoMarketBasketModel()`
 
 #### **AutoCatBoostRegression()** 
 #### **AutoXGBoostRegression()** 
@@ -153,6 +170,9 @@ This function builds out several variations of collaborative filtering models on
 
 #### **AutoRecommenderScoring()**
 This function will automatically score your winning model. Simply feed in your data and the winning model returned from the **AutoRecommender** function and this function will generate a table of several recommended products (by rank) for each entity. This process is parallelized for fast scoring.
+
+#### **AutoMarketBasketModel()**
+AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
 
 #### **AutoNLS()**
 This automated supervised learning function builds nonlinear regression models for a more niche set of tasks. It's set up to generate interpolation predictions, such as smoothing cost curves for optimization tasks. It returns the interpolated data, the winning model name, the model object, and the evaluation metrics table. The competing models include: Asymptotic, Asymptotic through origin, Asymptotic with offset, Bi-exponential, Four parameter logistic, Three parameter logistic, Gompertz, Michal Menton, Weibull, and Polynomial regression or monotonic regression.
@@ -814,6 +834,8 @@ This suite of functions are what will take your models to the next level. The co
 - `ModelDataPrep()`
 - `DummifyDT()`
 - `AutoDataPartition()`
+- `AutoTransformationCreate()`
+- `AutoTransformationScore()`
 
 The first three are used for building out lags and rolling statistics from target variables (numeric type; including classification models (0|1) and multinomial models with a little bit of work) and numeric features over your entire data set (no aggregation is done) with the option for creating the rolling statistics on the main variable or the lag1 version of the main variable. You can also compute time between records (by group) and add their lags and rolling statistics as well (really useful for transactional data). They can be generated using a single grouping variable (for multiple grouping variables you can concatenate them) and you can feed in a list of grouping variables to generate them by. The first function (**GDL_**) has the largest variety of rolling statics options but runs the slowest. The second function (**DT_GDL_**) runs the fastest but only generates moving averages. The third function (**FAST_GDL_**) is used for cases where you don't need to generate the features across the entire data set. Suppose you have a limited number of target variable instance but a rich history of data. You can use the FAST_GDL_ version to create lags and rolling statistics for N number of records previous to each target instance (i.e. not the entire historical data set). The fourth function (**Scoring_GDL_**) is for use in a production setting where you need to generate single instances of the feature set quickly. You basically feed in the same arguments as you used for the other versions and out the other end is the same set of features, identically named.
 
@@ -906,7 +928,7 @@ knitr::kable(
   
 ```
 
-The **AutoWord2VecModeler** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep** function is used to prepare your data for modeling with the **AutoH2OModeler** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. 
+The **AutoWord2VecModeler()** function converts your text features into numerical vector representations. You supply the function with your data set and all the text column names you want converted, and out the other end you have a data set with all the features merged on. The models can be saved to file and metadata saves their paths for scoring purposes in a production setting. The models built are based on H2O's word2vec algorithm and has done an execellent job at extracting high quality information out of those text columns. The **ModelDataPrep()** function is used to prepare your data for modeling with the **AutoH2OModeler()** function. It will convert character columns to factors, replace inf values to NA, and impute missing values (both numeric and factor based on supplied values). The **DummifyDT()** function will turn your character (or factor) columns into dummy variable columns. You can specify one-hot encoding or not in which you will get N+1 columns for one-hot or N columns otherwise. The **AutoDataPartition()** can build out any number of data sets under three schemes: random sampling, timeseries sampling, and time sampling. The random and timeseries allows for stratified sampling while time does not. The **AutoTransformationCreate()** and **AutoTransformationScore()** functions are for automatically applying the best transformation to any of your numeric features or target variable along with saving that data or passing the output file on to the scoring function for automatic inverse transforming for scroring settings.
 
 ## **Miscellaneous Functions**
 ##### Functions include:
