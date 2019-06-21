@@ -16827,7 +16827,7 @@ AutoCatBoostRegression <- function(data,
           calibEval[, eval(names(data)[temp1]) := NULL]
           grid_trans_results <- grid_trans_results[
             , ID := 1:.N][
-              ID != which(grid_trans_results[["ColumnName"]] == temp)[2]][
+              ID != which(grid_trans_results[["ID"]] == temp)][
                 , ID := NULL
                 ]
         }
@@ -17025,11 +17025,11 @@ AutoCatBoostRegression <- function(data,
       ValidationData[, eval(names(data)[temp1]) := NULL]
       TransformationResults <- TransformationResults[
         , ID := 1:.N][
-          ID != which(TransformationResults[["ColumnName"]] == temp)[2]][
+          ID != which(TransformationResults[["ID"]] == temp1)][
             , ID := NULL
-            ]
-      
-      
+          ]
+                      
+                                            
     }
     
     # Transform Target and Predicted Value----
