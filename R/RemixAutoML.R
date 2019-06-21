@@ -16828,7 +16828,7 @@ AutoCatBoostRegression <- function(data,
           grid_trans_results <- grid_trans_results[
             , ID := 1:.N][
               ID != which(grid_trans_results[["ColumnName"]] == temp)[2]][
-                ID := NULL
+                , ID := NULL
                 ]
         }
         
@@ -17026,10 +17026,10 @@ AutoCatBoostRegression <- function(data,
       TransformationResults <- TransformationResults[
         , ID := 1:.N][
           ID != which(TransformationResults[["ColumnName"]] == temp)[2]][
-            ID := NULL
-          ]
-                      
-                                            
+            , ID := NULL
+            ]
+      
+      
     }
     
     # Transform Target and Predicted Value----
