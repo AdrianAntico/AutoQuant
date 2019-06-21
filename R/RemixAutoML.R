@@ -16699,7 +16699,7 @@ AutoCatBoostRegression <- function(data,
       }
       catboostGridList <- data.table::CJ(
         l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
+        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
         bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
         depth = c(4:12)
       )
@@ -16801,10 +16801,10 @@ AutoCatBoostRegression <- function(data,
       
       # Inverse Transform----
       if(!is.null(TransformNumericColumns)) {
-
+        
         # Make copy of TransformationResults----
         grid_trans_results <- data.table::copy(TransformationResults)
-
+        
         # Append record for Predicted Column----
         data.table::set(grid_trans_results,
                         i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), 
@@ -16819,7 +16819,7 @@ AutoCatBoostRegression <- function(data,
                                    Lambda = grid_trans_results[ColumnName == "Target", 
                                                                Lambda],
                                    NormalizedStatistics = 0)))
-
+        
         # Run Back-Transform----
         calibEval <- AutoTransformationScore(
           ScoringData = calibEval,
@@ -17001,10 +17001,17 @@ AutoCatBoostRegression <- function(data,
       list(TransformationResults,
            data.table::data.table(ColumnName = c("Predict","Target"),
                                   MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                     MethodName],2),
+                                                                         MethodName],2),
                                   Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                 Lambda],2),
+                                                                     Lambda],2),
                                   NormalizedStatistics = rep(0,2))))
+    
+    # If Actual target columnname == "Target" remove the duplicate version----
+    if(length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
+      temp1 <- which(names(ValidationData) == temp)[1]
+      ValidationData[, eval(names(data)[temp1]) := NULL]
+    }
     
     # Transform Target and Predicted Value----
     ValidationData <- AutoTransformationScore(
