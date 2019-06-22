@@ -10020,7 +10020,6 @@ AutoCatBoostCARMA <- function(data,
   if (tolower(PartitionType) == "timeseries" &
       is.null(GroupVariables)) {
     PartitionType <- "time"
-    warning("PartitionType was converted to 'time' because there were no GroupVariables")
   }
   
   # Convert to data.table----
@@ -10039,7 +10038,9 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # Get unique set of GroupVar----
-  GroupVarVector <- unique(as.character(data[["GroupVar"]]))
+  if(!is.null(GroupVariables)) {
+    GroupVarVector <- unique(as.character(data[["GroupVar"]]))    
+  }
   
   # Change column ordering
   if (!is.null(GroupVariables)) {
@@ -10060,6 +10061,9 @@ AutoCatBoostCARMA <- function(data,
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
   }
+  
+  # Ensure Target is Numeric----
+  data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
   
   # Define NumSets
   NumSets <- length(SplitRatios)
@@ -10100,8 +10104,8 @@ AutoCatBoostCARMA <- function(data,
   if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data, 
-      ColumnNames = eval(TargetColumnName),
-      Methods = c("YeoJohnson","BoxCox","Asinh","Asin","Logit"),
+      ColumnNames = TargetColumnName,
+      Methods = c("BoxCox","Asinh","Asin","Logit","YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
       SaveOutput = FALSE
@@ -10112,7 +10116,7 @@ AutoCatBoostCARMA <- function(data,
   
   # GDL Features----
   if (!is.null(GroupVariables)) {
-    data <- RemixAutoML::DT_GDL_Feature_Engineering(
+    data <- DT_GDL_Feature_Engineering(
       data,
       lags           = c(Lags),
       periods        = c(MA_Periods),
@@ -10128,7 +10132,7 @@ AutoCatBoostCARMA <- function(data,
       SimpleImpute   = TRUE
     )
   } else {
-    data <- RemixAutoML::DT_GDL_Feature_Engineering(
+    data <- DT_GDL_Feature_Engineering(
       data,
       lags           = c(Lags),
       periods        = c(MA_Periods),
@@ -10226,7 +10230,7 @@ AutoCatBoostCARMA <- function(data,
   # Build Model----
   if (NumSets == 2) {
     if (!is.null(GroupVariables)) {
-      TestModel <- RemixAutoML::AutoCatBoostRegression(
+      TestModel <- AutoCatBoostRegression(
         data = train,
         ValidationData = valid,
         TestData = NULL,
@@ -10250,59 +10254,33 @@ AutoCatBoostCARMA <- function(data,
         PassInGrid = NULL
       )
     } else {
-      if (!is.null(GroupVariables)) {
-        TestModel <- RemixAutoML::AutoCatBoostRegression(
-          data = train,
-          ValidationData = valid,
-          TestData = NULL,
-          TargetColumnName = eval(TargetColumnName),
-          FeatureColNames = setdiff(names(data),
-                                    eval(TargetColumnName)),
-          PrimaryDateColumn = eval(DateColumnName),
-          IDcols = 2,
-          TransformNumericColumns = NULL,
-          MaxModelsInGrid = 1,
-          task_type = TaskType,
-          eval_metric = EvalMetric,
-          grid_eval_metric = GridEvalMetric,
-          Trees = NTrees,
-          GridTune = FALSE,
-          model_path = getwd(),
-          ModelID = "ModelTest",
-          NumOfParDepPlots = 3,
-          ReturnModelObjects = TRUE,
-          SaveModelObjects = FALSE,
-          PassInGrid = NULL
-        )
-      } else {
-        TestModel <- RemixAutoML::AutoCatBoostRegression(
-          data = train,
-          ValidationData = valid,
-          TestData = NULL,
-          TargetColumnName = eval(TargetColumnName),
-          FeatureColNames = setdiff(names(data),
-                                    eval(TargetColumnName)),
-          PrimaryDateColumn = eval(DateColumnName),
-          IDcols = 2,
-          TransformNumericColumns = NULL,
-          MaxModelsInGrid = 1,
-          task_type = TaskType,
-          eval_metric = EvalMetric,
-          grid_eval_metric = GridEvalMetric,
-          Trees = NTrees,
-          GridTune = FALSE,
-          model_path = getwd(),
-          ModelID = "ModelTest",
-          NumOfParDepPlots = 3,
-          ReturnModelObjects = TRUE,
-          SaveModelObjects = FALSE,
-          PassInGrid = NULL
-        )
-      }
+      TestModel <- AutoCatBoostRegression(
+        data = train,
+        ValidationData = valid,
+        TestData = NULL,
+        TargetColumnName = eval(TargetColumnName),
+        FeatureColNames = setdiff(names(data),
+                                  eval(TargetColumnName)),
+        PrimaryDateColumn = eval(DateColumnName),
+        IDcols = 1,
+        TransformNumericColumns = NULL,
+        MaxModelsInGrid = 1,
+        task_type = TaskType,
+        eval_metric = EvalMetric,
+        grid_eval_metric = GridEvalMetric,
+        Trees = NTrees,
+        GridTune = FALSE,
+        model_path = getwd(),
+        ModelID = "ModelTest",
+        NumOfParDepPlots = 3,
+        ReturnModelObjects = TRUE,
+        SaveModelObjects = FALSE,
+        PassInGrid = NULL
+      )
     }
   } else if (NumSets == 3) {
     if (!is.null(GroupVariables)) {
-      TestModel <- RemixAutoML::AutoCatBoostRegression(
+      TestModel <- AutoCatBoostRegression(
         data = train,
         ValidationData = valid,
         TestData = test,
@@ -10325,14 +10303,14 @@ AutoCatBoostCARMA <- function(data,
         PassInGrid = NULL
       )
     } else {
-      TestModel <- RemixAutoML::AutoCatBoostRegression(
+      TestModel <- AutoCatBoostRegression(
         data = train,
         ValidationData = valid,
         TestData = test,
         TargetColumnName = eval(TargetColumnName),
         FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
         PrimaryDateColumn = eval(DateColumnName),
-        IDcols = NULL,
+        IDcols = 1,
         TransformNumericColumns = NULL,
         MaxModelsInGrid = 1,
         task_type = TaskType,
@@ -10352,13 +10330,27 @@ AutoCatBoostCARMA <- function(data,
   
   # Store Model----
   Model <- TestModel$Model
-  if(TargetTransformation) {
-    TransOutput <- TestModel$FinalResults    
-  }
-
+  
   # Update ValidationData and Create Metrics Data----
   TestDataEval <- TestModel$ValidationData
-  TestDataEval[, ':=' (Target = NULL, Date = NULL)]
+  TestDataEval[, Target := NULL]
+  TestDataEval[, eval(DateColumnName) := NULL]
+  TransformObject <- data.table::rbindlist(
+    list(
+      TransformObject,
+      data.table::data.table(
+        ColumnName = "Predict",
+        MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
+        Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
+        NormalizedStatistics = 0
+      )
+    ))
+  TestDataEval <- AutoTransformationScore(
+    ScoringData = TestDataEval, 
+    FinalResults = TransformObject, 
+    Type = "Inverse", 
+    TransID = NULL, 
+    Path = NULL)
   MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
   if (!is.null(GroupVariables)) {
     Metric <-
@@ -10522,10 +10514,16 @@ AutoCatBoostCARMA <- function(data,
                                        eval(TargetColumnName)
                                      )),
         IDcols = NULL,
-        Model = Model,
+        ModelObject = Model,
         ModelPath = getwd(),
         ModelID = "ModelTest",
         ReturnFeatures = TRUE,
+        TransformNumeric = FALSE, 
+        BackTransNumeric = FALSE, 
+        TransformationObject = NULL, 
+        TransID = NULL, 
+        TransPath = NULL,
+        TargetColumnName = eval(TargetColumnName),
         MDP_Impute = TRUE,
         MDP_CharToFactor = TRUE,
         MDP_RemoveDates = TRUE,
@@ -10534,7 +10532,7 @@ AutoCatBoostCARMA <- function(data,
       )
       
       # Update data----
-      UpdateData <- cbind(FutureDateData[i:N],
+      UpdateData <- cbind(FutureDateData[1:N],
                           data[, get(TargetColumnName)], Preds)
       data.table::setnames(UpdateData,
                            c("V1", "V2"),
@@ -10544,36 +10542,6 @@ AutoCatBoostCARMA <- function(data,
       if (!is.null(GroupVariables)) {
         temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
         temp <- temp[ID == N][, ID := NULL]
-        
-        
-        ########################################################################################
-        ########################################################################################
-        ########################################################################################
-        ########################################################################################
-        
-        # Add Apply Trans to pre-scoring
-        
-        # Add Inverse Trans to pre-Scoring_GDL()
-        
-        
-        # Add AutoTransformationScore() to Apply Trans----
-        if(!is.null(TargetTransformation)) {
-          temp <- AutoTransformationScore(
-            ScoringData = temp, 
-            FinalResults = TransOutput, 
-            Type = "Apply", 
-            TransID = NULL, 
-            Path = NULL)
-        }
-
-        ########################################################################################
-        ########################################################################################
-        ########################################################################################
-        ########################################################################################
-        
-        
-        
-        
         Preds <- RemixAutoML::AutoCatBoostScoring(
           TargetType = "regression",
           ScoringData = temp,
@@ -10587,7 +10555,13 @@ AutoCatBoostCARMA <- function(data,
           ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
-          ReturnFeatures = FALSE,
+          ReturnFeatures = FALSE, 
+          TransformNumeric = FALSE, 
+          BackTransNumeric = FALSE, 
+          TargetColumnName = eval(TargetColumnName), 
+          TransformationObject = NULL, 
+          TransID = NULL, 
+          TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
@@ -10614,10 +10588,16 @@ AutoCatBoostCARMA <- function(data,
                                       eval(TargetColumnName)
                                     )),
           IDcols = NULL,
-          Model = Model,
+          ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
           ReturnFeatures = FALSE,
+          TransformNumeric = FALSE, 
+          BackTransNumeric = FALSE, 
+          TargetColumnName = eval(TargetColumnName), 
+          TransformationObject = NULL, 
+          TransID = NULL, 
+          TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
@@ -10777,10 +10757,14 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # BackTransform----
+  data.table::set(TransformObject, 
+                  i = 2L, 
+                  j = 1L, 
+                  value = "Predictions")
   if(TargetTransformation) {
     UpdateData <- AutoTransformationScore(
       ScoringData = UpdateData, 
-      FinalResults = TransOutput, 
+      FinalResults = TransformObject, 
       Type = "Inverse", 
       TransID = NULL, 
       Path = NULL)
@@ -25061,6 +25045,12 @@ AutoXGBoostMultiClass <- function(data,
 #'                              ModelPath = "home",
 #'                              ModelID = "ModelTest",
 #'                              ReturnFeatures = TRUE,
+#'                              TransformNumeric = FALSE,
+#'                              BackTransNumeric = FALSE,
+#'                              TargetColumnName = NULL,
+#'                              TransformationObject = NULL,
+#'                              TransID = NULL,
+#'                              TransPath = NULL,
 #'                              MDP_Impute = TRUE,
 #'                              MDP_CharToFactor = TRUE,
 #'                              MDP_RemoveDates = TRUE,
