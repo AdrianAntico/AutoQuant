@@ -27,7 +27,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"}
 
-\item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables). )}
+\item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
 \item{Lags}{Select the periods for all lag variables you want to create. E.g. I use this for weekly data c(1:5,52)}
 
