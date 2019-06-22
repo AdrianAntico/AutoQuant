@@ -10793,7 +10793,7 @@ AutoTS <- function(data,
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"
-#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables). )
+#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Lags Select the periods for all lag variables you want to create. E.g. I use this for weekly data c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. I use this for weekly data c(1:5,52)
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
