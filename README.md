@@ -157,8 +157,12 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 <p>
   
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
-
-Automated time series modeling function. Automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations and tests both user-supplied time series frequency and model-based time series frequency). The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
+Automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations) along with their variants. The variants mean that four models for each type will be tested. The variations include: 
+  * user-specified time frequency + no historicaly series smoothing
+  * model-based time frequency + no historical smoothing
+  * user-specified time frequency + historical series smoothing
+  * model-based time frequency + historical smoothing 
+The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
 
 * Automated Time Series Models include:
   * DSHW: Double Seasonal Holt-Winters
@@ -170,7 +174,7 @@ Automated time series modeling function. Automatically finds the most accurate t
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
  
 ##### **AutoCatBoostCARMA()**
-AutoCatBoostCARMA Is an Automated Machine Learning Time Series Forecasting Function. Create hundreds of thousands of time series forecasts using this function. Internally, it utilizes the catboost algorithm and replicates the ARMA process of forecasting. What this means is that a one-step ahead forecast is made, then the model features are re-computed and the next one-step ahead forecast is made. This process is done for every time period you wish to have forecasted. On top of that, you can include calendar variables and a time trend variable. Grid tuning is available along with several other arguments to customize your builds. You can also utilize GPU if you have one. Running with GPU, for example, allows me to forecast the entire Walmart store and department forecasts (2660 store & department combinations) in less than 15 minutes (compared to 33 hours of run time to loop through all stores and departments using AutoTS). Note, the test was based on using a 1080ti.
+AutoCatBoostCARMA Is an Automated Machine Learning Time Series Forecasting Function. Create hundreds of thousands of time series forecasts using this function. Internally, it utilizes the catboost algorithm and replicates the ARMA process of forecasting. What this means is that a one-step ahead forecast is made, then the model features are re-computed and the next one-step ahead forecast is made, etc. This process is done for every time period you wish to have forecasted. On top of that, you can include calendar variables, a time trend variable, and automatically have an optimal transformation made on your target variable, with competing transformations being: YeoJohnson, BoxCox, arcsinh, along with arcsin and logit for proportion data. Grid tuning is available along with several other arguments to customize your builds. You can also utilize GPU if you have one. Running with GPU, for example, allows me to forecast the entire Walmart store and department forecasts (2660 store & department combinations) in less than 15 minutes with a 30k-tree model (compared to 33 hours of run time to loop through all stores and departments using AutoTS). Note, the test was based on using a 1080ti.
 </p>
 </details>
 
