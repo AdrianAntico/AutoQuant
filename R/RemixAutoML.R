@@ -10834,7 +10834,7 @@ AutoTS <- function(data,
 #' Results$Forecast
 #' Results$ModelInformation$...
 #' }
-#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), and a time series forecast plot. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostCARMA <- function(data,
                               TargetColumnName = "Target",
@@ -11748,23 +11748,45 @@ AutoCatBoostCARMA <- function(data,
         "Predictions")
     UpdateData <- UpdateData[, ..keep]
     UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-    return(
-      list(
-        Forecast = UpdateData,
-        TimeSeriesPlot = TimeSeriesPlot,
-        ModelInformation = TestModel
+    if(TargetTransformation) {
+      return(
+        list(
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel,
+          TransformationDetail = TransformObject
+        )
       )
-    )
+    } else {
+      return(
+        list(
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel
+        )
+      )      
+    }
   } else {
     # Variables to keep----
     keep <- c(eval(DateColumnName), "Predictions")
-    return(
-      list(
-        Forecast = PlotData[, ..keep],
-        TimeSeriesPlot = TimeSeriesPlot,
-        ModelInformation = TestModel
+    if(TargetTransformation) {
+      return(
+        list(
+          Forecast = PlotData[, ..keep],
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel,
+          TransformationDetail = TransformObject
+        )
       )
-    )
+    } else {
+      return(
+        list(
+          Forecast = PlotData[, ..keep],
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel
+        )
+      )      
+    }
   }
 }
 
