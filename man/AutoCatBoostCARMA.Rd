@@ -58,7 +58,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 \item{Timer}{= TRUE}
 }
 \value{
-Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), and a time series forecast plot. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 }
 \description{
 AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
