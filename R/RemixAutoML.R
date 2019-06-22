@@ -26559,11 +26559,11 @@ Estimate_YeoJohnson_Lambda <-
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @param lambda optimal lambda
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
-#' @export
 Apply_YeoJohnson <- function(x, 
                              lambda, 
                              eps = 0.001) {
@@ -26595,11 +26595,11 @@ Apply_YeoJohnson <- function(x,
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @param lambda optimal lambda
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
-#' @export
 InvApply_YeoJohnson <- function(x, 
                                 lambda, 
                                 eps = 0.001) {
@@ -26702,11 +26702,11 @@ Estimate_BoxCox_Lambda <-
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @param lambda optimal lambda
 #' @param eps erorr tolerance
 #' @return BoxCox results
-#' @export
 Apply_BoxCox <- function(x, 
                          lambda, 
                          eps = 0.001) {
@@ -26723,11 +26723,11 @@ Apply_BoxCox <- function(x,
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @param lambda optimal lambda
 #' @param eps erorr tolerance
 #' @return BoxCox results
-#' @export
 InvApply_BoxCox <- function(x, 
                             lambda, 
                             eps = 0.001) {
@@ -26769,9 +26769,9 @@ Test_Asinh <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Asinh results
-#' @export
 Apply_Asinh <- function(x) {
   return(asinh(x))
 }
@@ -26780,9 +26780,9 @@ Apply_Asinh <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Asinh results
-#' @export
 InvApply_Asinh <- function(x) {
   return(sinh(x))
 }
@@ -26814,9 +26814,9 @@ Test_Asin <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Asin results
-#' @export
 Apply_Asin <- function(x) {
   return(asin(sqrt(x)))
 }
@@ -26825,9 +26825,9 @@ Apply_Asin <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Asin results
-#' @export
 InvApply_Asin <- function(x) {
   return(sin(x) ^ 2)
 }
@@ -26859,9 +26859,9 @@ Test_Logit <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Logit results
-#' @export
 Apply_Logit <- function(x) {
   return(log(x / (1 - x)))
 }
@@ -26870,9 +26870,9 @@ Apply_Logit <- function(x) {
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#' @noRd
 #' @param x The data in numerical vector form
 #' @return Logit results
-#' @export
 InvApply_Logit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
