@@ -17294,11 +17294,13 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Convert TransformNumericColumns to Names if not character----
-  if (!is.null(TransformNumericColumns) &
-      !is.character(TransformNumericColumns)) {
-    TransformNumericColumns <- names(data)[TransformNumericColumns]
-  }
-  
+  if (!is.null(TransformNumericColumns)) {
+    if(!is.character(TransformNumericColumns)) {
+      TransformNumericColumns <- names(data)[TransformNumericColumns]      
+    }
+  } 
+
+
   # Transform data, ValidationData, and TestData----
   if (!is.null(ValidationData) &
       !is.null(TransformNumericColumns)) {
