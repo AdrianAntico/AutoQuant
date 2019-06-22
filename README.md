@@ -283,7 +283,7 @@ Great for features effects estimation and reliability of model in predicting tho
 Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
 
 ##### **threshOptim()**
-Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models
+Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 ##### **RedYellowGreen()**
 Computes optimal thresholds for binary classification models when "don't classify" is an option. Consider a health care binary classification model that predictions whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary widely. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < lower threshold are confidently classified as a negative case and predicted values > upper threshold are confidently classified as a postive case. Predicted values inbetween the lower and upper thresholds are cases that should require further analysis.
