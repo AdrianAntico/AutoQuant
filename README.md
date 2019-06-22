@@ -51,10 +51,10 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 <p>
 
 #### Regression:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
  
-____________________________________________________________________________________________________________________________________________
 ##### **AutoCatBoostRegression()** GPU + CPU
 AutoCatBoostRegression is an automated modeling function that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 ##### **AutoXGBoostRegression()** GPU + CPU
@@ -69,6 +69,7 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 </details>
 
 #### Binary Classification:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
 
@@ -87,6 +88,7 @@ AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and
 </details>
 
 #### Multinomial Classification:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -105,6 +107,7 @@ AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and
 </details>
 
 #### Generalized Hurdle Models:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -114,6 +117,7 @@ This is a modeling framework for building the necessary models for making predic
 </details>
 
 #### Scoring the Auto__() supervised learning models:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -129,6 +133,7 @@ AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGB
 </details>
 
 #### General Purpose H2O Automated Modeling:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -145,6 +150,7 @@ Automated machine learning. Automatically build any number of models along with 
 </details>
 
 #### Model Scoring:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -154,6 +160,7 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 </details>
 
 #### Time Series Modeling:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -180,6 +187,7 @@ AutoCatBoostCARMA Is an Automated Machine Learning Time Series Forecasting Funct
 </details>
 
 #### Nonlinear Regression Modeling:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
@@ -200,6 +208,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </details>
 
 #### Marketing-Based Models:
+____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
