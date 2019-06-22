@@ -1969,11 +1969,11 @@ RedYellowGreen <- function(data,
           store[[j]] <- base::c(i, utility)
         }
         all <- data.table::rbindlist(list(store))
-        utilities <- data.table::melt(all[2, ])
+        utilities <- data.table::melt(all[2,])
         data.table::setnames(utilities, "value", "Utilities")
-        thresholds <- data.table::melt(all[1, ])
+        thresholds <- data.table::melt(all[1,])
         data.table::setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[, c(-1, -3)]
+        results <- cbind(utilities, thresholds)[, c(-1,-3)]
         thresh <-
           results[Thresholds <= eval(MidTierLowThresh) |
                     Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,
@@ -2120,11 +2120,11 @@ threshOptim <- function(data,
     store[[j]] <- c(i, utility)
   }
   all <- data.table::rbindlist(list(store))
-  utilities <- data.table::melt(all[2, ])
+  utilities <- data.table::melt(all[2,])
   data.table::setnames(utilities, "value", "Utilities")
-  thresholds <- data.table::melt(all[1, ])
+  thresholds <- data.table::melt(all[1,])
   data.table::setnames(thresholds, "value", "Thresholds")
-  results <- cbind(utilities, thresholds)[, c(-1, -3)]
+  results <- cbind(utilities, thresholds)[, c(-1,-3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
   return(list(Thresholds = thresh, EvaluationTable = results))
@@ -2439,7 +2439,7 @@ tokenizeH2O <- function(data) {
     tokenized.lower[h2o::h2o.grep("[0-9]",
                                   tokenized.lower,
                                   invert = TRUE,
-                                  output.logical = TRUE), ]
+                                  output.logical = TRUE),]
   tokenized.words
 }
 
@@ -3429,7 +3429,7 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j, -1)
+                          which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3626,7 +3626,7 @@ GDL_Feature_Engineering <- function(data,
                           j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j, -1)
+                          which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -3967,7 +3967,7 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j, -1)
+                          which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -4159,7 +4159,7 @@ DT_GDL_Feature_Engineering <- function(data,
                           which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data,
-                          which(is.na(data[[j]])), j, -1)
+                          which(is.na(data[[j]])), j,-1)
         }
       }
     }
@@ -4512,7 +4512,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j, -1)
+                          j,-1)
         }
       }
     }
@@ -4716,7 +4716,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
           )), j, "0")
         } else {
           data.table::set(tempData1,
-                          which(is.na(tempData1[[j]])), j, -1)
+                          which(is.na(tempData1[[j]])), j,-1)
         }
       }
     }
@@ -5178,7 +5178,7 @@ FAST_GDL_Feature_Engineering <- function(data,
             tempData1[[j]] %in% levels(tempData1[[j]])
           )), j, "0")
         } else {
-          data.table::set(tempData1, which(is.na(tempData1[[j]])), j, -1)
+          data.table::set(tempData1, which(is.na(tempData1[[j]])), j,-1)
         }
       }
     }
@@ -5436,7 +5436,7 @@ FAST_GDL_Feature_Engineering <- function(data,
         } else {
           data.table::set(tempData1,
                           which(is.na(tempData1[[j]])),
-                          j, -1)
+                          j,-1)
         }
       }
     }
@@ -6448,7 +6448,7 @@ AutoTS <- function(data,
     FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
   } else if (tolower(TimeUnit) == "quarter") {
     freq <- 4
-    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4*Date)]
+    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4 * Date)]
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
     FC_Data[, Date := MaxDate + lubridate::years(Date)]
@@ -8922,8 +8922,8 @@ AutoTS <- function(data,
     }
     
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(
@@ -9039,8 +9039,8 @@ AutoTS <- function(data,
     }
     
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
     NNETAR_model1 <-
       tryCatch({
         forecast::nnetar(
@@ -9160,8 +9160,8 @@ AutoTS <- function(data,
       }
       
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
       NNETAR_model2 <-
         tryCatch({
           forecast::nnetar(
@@ -9279,8 +9279,8 @@ AutoTS <- function(data,
       }
       
       # Identify best model and retrain it
-      LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-      SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
       NNETAR_model3 <-
         tryCatch({
           forecast::nnetar(
@@ -9862,8 +9862,8 @@ AutoTS <- function(data,
     }
     
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1, ][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1, ][, 2][[1]]
+    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
     NNETAR_model <-
       tryCatch({
         forecast::nnetar(y = dataTSTrain,
@@ -10038,8 +10038,8 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # Get unique set of GroupVar----
-  if(!is.null(GroupVariables)) {
-    GroupVarVector <- unique(as.character(data[["GroupVar"]]))    
+  if (!is.null(GroupVariables)) {
+    GroupVarVector <- unique(as.character(data[["GroupVar"]]))
   }
   
   # Change column ordering
@@ -10101,11 +10101,11 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # Target Transformation----
-  if(TargetTransformation) {
+  if (TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
-      data, 
+      data,
       ColumnNames = TargetColumnName,
-      Methods = c("BoxCox","Asinh","Asin","Logit","YeoJohnson"),
+      Methods = c("BoxCox", "Asinh", "Asin", "Logit", "YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
       SaveOutput = FALSE
@@ -10335,22 +10335,22 @@ AutoCatBoostCARMA <- function(data,
   TestDataEval <- TestModel$ValidationData
   TestDataEval[, Target := NULL]
   TestDataEval[, eval(DateColumnName) := NULL]
-  TransformObject <- data.table::rbindlist(
-    list(
-      TransformObject,
-      data.table::data.table(
-        ColumnName = "Predict",
-        MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
-        Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
-        NormalizedStatistics = 0
-      )
-    ))
+  TransformObject <- data.table::rbindlist(list(
+    TransformObject,
+    data.table::data.table(
+      ColumnName = "Predict",
+      MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
+      Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
+      NormalizedStatistics = 0
+    )
+  ))
   TestDataEval <- AutoTransformationScore(
-    ScoringData = TestDataEval, 
-    FinalResults = TransformObject, 
-    Type = "Inverse", 
-    TransID = NULL, 
-    Path = NULL)
+    ScoringData = TestDataEval,
+    FinalResults = TransformObject,
+    Type = "Inverse",
+    TransID = NULL,
+    Path = NULL
+  )
   MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
   if (!is.null(GroupVariables)) {
     Metric <-
@@ -10518,10 +10518,10 @@ AutoCatBoostCARMA <- function(data,
         ModelPath = getwd(),
         ModelID = "ModelTest",
         ReturnFeatures = TRUE,
-        TransformNumeric = FALSE, 
-        BackTransNumeric = FALSE, 
-        TransformationObject = NULL, 
-        TransID = NULL, 
+        TransformNumeric = FALSE,
+        BackTransNumeric = FALSE,
+        TransformationObject = NULL,
+        TransID = NULL,
         TransPath = NULL,
         TargetColumnName = eval(TargetColumnName),
         MDP_Impute = TRUE,
@@ -10555,12 +10555,12 @@ AutoCatBoostCARMA <- function(data,
           ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
-          ReturnFeatures = FALSE, 
-          TransformNumeric = FALSE, 
-          BackTransNumeric = FALSE, 
-          TargetColumnName = eval(TargetColumnName), 
-          TransformationObject = NULL, 
-          TransID = NULL, 
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = eval(TargetColumnName),
+          TransformationObject = NULL,
+          TransID = NULL,
           TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
@@ -10580,7 +10580,7 @@ AutoCatBoostCARMA <- function(data,
       } else {
         Preds <- RemixAutoML::AutoCatBoostScoring(
           TargetType = "regression",
-          ScoringData = UpdateData[.N,],
+          ScoringData = UpdateData[.N, ],
           FeatureColNames = setdiff(names(UpdateData),
                                     c(
                                       "Predictions",
@@ -10592,11 +10592,11 @@ AutoCatBoostCARMA <- function(data,
           ModelPath = getwd(),
           ModelID = "ModelTest",
           ReturnFeatures = FALSE,
-          TransformNumeric = FALSE, 
-          BackTransNumeric = FALSE, 
-          TargetColumnName = eval(TargetColumnName), 
-          TransformationObject = NULL, 
-          TransID = NULL, 
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = eval(TargetColumnName),
+          TransformationObject = NULL,
+          TransID = NULL,
           TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
@@ -10757,17 +10757,18 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # BackTransform----
-  data.table::set(TransformObject, 
-                  i = 2L, 
-                  j = 1L, 
+  data.table::set(TransformObject,
+                  i = 2L,
+                  j = 1L,
                   value = "Predictions")
-  if(TargetTransformation) {
+  if (TargetTransformation) {
     UpdateData <- AutoTransformationScore(
-      ScoringData = UpdateData, 
-      FinalResults = TransformObject, 
-      Type = "Inverse", 
-      TransID = NULL, 
-      Path = NULL)
+      ScoringData = UpdateData,
+      FinalResults = TransformObject,
+      Type = "Inverse",
+      TransID = NULL,
+      Path = NULL
+    )
   }
   
   # Metrics----
@@ -14266,7 +14267,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[,-1]
+              )[, -1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             if (SaveToFile) {
@@ -14324,7 +14325,7 @@ AutoH2OScoring <- function(Features     = data,
                 java_options = JavaOptions,
                 genmodel_jar_path = grid_tuned_paths[i, 6][[1]],
                 verbose = FALSE
-              )[,-1]
+              )[, -1]
             )
           } else if (tolower(ClassVals[i]) == "label") {
             data.table::fwrite(Features, file.path(FilesPath, 'Features.csv'))
@@ -14471,7 +14472,7 @@ AutoH2OScoring <- function(Features     = data,
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[,-1])
+                                                                 newdata = features)[, -1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -14489,7 +14490,7 @@ AutoH2OScoring <- function(Features     = data,
                                                                  newdata = features)[, 3])
           } else if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
-                                                                 newdata = features)[,-1])
+                                                                 newdata = features)[, -1])
           } else if (tolower(ClassVals[i]) == "label") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                  newdata = features)[, 1])
@@ -14901,11 +14902,11 @@ AutoRecommenderScoring <- function(data,
 }
 
 #' AutoMarketBasketModel function runs a market basket analysis automatically
-#' 
-#' AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
-#' 
-#' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf 
-#' 
+#'
+#' AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within.
+#'
+#' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
+#'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Marketing Modeling
 #' @param data This is your transactions data set
@@ -14917,32 +14918,31 @@ AutoRecommenderScoring <- function(data,
 #' @param MaxLength Maximum combinations of Item ID (number of items in basket to consider)
 #' @param MinLength Minimum length of combinations of ItemID (number of items in basket to consider)
 #' @param MaxTime Max run time per iteration (default is 5 seconds)
-#' @examples 
+#' @examples
 #' \donttest{
 #' rules_data <- AutoMarketBasketModel(
-#'   data, 
-#'   OrderIDColumnName = "OrderNumber", 
-#'   ItemIDColumnName = "ItemNumber", 
+#'   data,
+#'   OrderIDColumnName = "OrderNumber",
+#'   ItemIDColumnName = "ItemNumber",
 #'   LHS_Delimeter = ",",
-#'   Support = 0.001, 
+#'   Support = 0.001,
 #'   Confidence = 0.1,
-#'   MaxLength = 2, 
-#'   MinLength = 2, 
+#'   MaxLength = 2,
+#'   MinLength = 2,
 #'   MaxTime = 5)
 #' }
 #' @export
-AutoMarketBasketModel <- function(data, 
-                                  OrderIDColumnName, 
-                                  ItemIDColumnName, 
+AutoMarketBasketModel <- function(data,
+                                  OrderIDColumnName,
+                                  ItemIDColumnName,
                                   LHS_Delimeter = ",",
-                                  Support = 0.001, 
+                                  Support = 0.001,
                                   Confidence = 0.1,
-                                  MaxLength = 2, 
-                                  MinLength = 2, 
+                                  MaxLength = 2,
+                                  MinLength = 2,
                                   MaxTime = 5) {
-  
   # Convert to data.table----
-  if(!data.table::is.data.table(data)) {
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
   
@@ -14950,22 +14950,22 @@ AutoMarketBasketModel <- function(data,
   n <- length(unique(data[, OrderNumber]))
   
   # Check args----
-  if(!is.character(OrderIDColumnName)) {
+  if (!is.character(OrderIDColumnName)) {
     warning("OrderIDColumnName needs to be a character value")
   }
-  if(!is.character(ItemIDColumnName)) {
+  if (!is.character(ItemIDColumnName)) {
     warning("ItemIDColumnName needs to be a character value")
   }
-  if(!(Confidence > 0 & Confidence < 1)) {
+  if (!(Confidence > 0 & Confidence < 1)) {
     warning("Confidence needs to be between zero and one")
   }
-  if(!(Support > 0 & Support < 1)) {
+  if (!(Support > 0 & Support < 1)) {
     warning("Support needs to be between zero and one")
   }
-  if(MaxLength <= 0) {
+  if (MaxLength <= 0) {
     warning("MaxLength needs to be a positive number")
   }
-  if(MinLength > MaxLength | MinLength < 0) {
+  if (MinLength > MaxLength | MinLength < 0) {
     warning("MinLength needs to be less than MaxLength and greater than zero")
   }
   
@@ -14974,83 +14974,92 @@ AutoMarketBasketModel <- function(data,
   
   
   # Look into data.table split----
-  TransactionData <- methods::as(
-    split(
-      data[["ItemNumber"]], 
-      data[["OrderNumber"]]),
-    "transactions")  
+  TransactionData <- methods::as(split(data[["ItemNumber"]],
+                                       data[["OrderNumber"]]),
+                                 "transactions")
   
   # Association rules----
   options(warn = -1)
   rules <- arules::apriori(
-    data = TransactionData, 
+    data = TransactionData,
     parameter = list(
       support = Support,
       confidence = Confidence,
-      target = "rules", 
-      minlen = 2, 
-      maxlen = 3, 
-      maxtime = 5))
+      target = "rules",
+      minlen = 2,
+      maxlen = 3,
+      maxtime = 5
+    )
+  )
   options(warn = 0)
   
   # Convet back to data.table---
   rules_data <- data.table::data.table(
     ProductA = arules::labels(arules::lhs(rules)),
     ProductB = arules::labels(arules::rhs(rules)),
-    rules@quality)
-  data.table::setnames(rules_data, 
-                       c("support",
-                         "confidence",
-                         "lift",
-                         "count"),
-                       c("Support",
-                         "Confidence",
-                         "Lift",
-                         "Count"))
+    rules@quality
+  )
+  data.table::setnames(
+    rules_data,
+    c("support",
+      "confidence",
+      "lift",
+      "count"),
+    c("Support",
+      "Confidence",
+      "Lift",
+      "Count")
+  )
   
   # Delimeter time----
-  if(LHS_Delimeter != ",") {
-    rules_data[, ProductA := gsub(",",LHS_Delimeter,ProductA)]
+  if (LHS_Delimeter != ",") {
+    rules_data[, ProductA := gsub(",", LHS_Delimeter, ProductA)]
   }
   
-  # Remove left Brackets from ProductA, ProductB Columns---- 
-  rules_data[, ':=' (ProductA = gsub("\\}.*",
-                                     "",
-                                     ProductA, 
-                                     ignore.case = TRUE),
-                     ProductB = gsub("\\}.*",
-                                     "",
-                                     ProductB, 
-                                     ignore.case = TRUE))]
+  # Remove left Brackets from ProductA, ProductB Columns----
+  rules_data[, ':=' (
+    ProductA = gsub("\\}.*",
+                    "",
+                    ProductA,
+                    ignore.case = TRUE),
+    ProductB = gsub("\\}.*",
+                    "",
+                    ProductB,
+                    ignore.case = TRUE)
+  )]
   
   # Remove right Brackets from ProductA, ProductB Columns----
-  rules_data[, ':=' (ProductA = gsub("\\{",
-                                     "",
-                                     ProductA, 
-                                     ignore.case=TRUE),  
-                     ProductB = gsub("\\{",
-                                     "",
-                                     ProductB, 
-                                     ignore.case=TRUE))]
+  rules_data[, ':=' (
+    ProductA = gsub("\\{",
+                    "",
+                    ProductA,
+                    ignore.case = TRUE),
+    ProductB = gsub("\\{",
+                    "",
+                    ProductB,
+                    ignore.case = TRUE)
+  )]
   
   # Compute Chi-Sq. and P-Value----
-  rules_data[, Chi_SQ := n * (Lift - 1)^2 * 
-               Support * Confidence / 
+  rules_data[, Chi_SQ := n * (Lift - 1) ^ 2 *
+               Support * Confidence /
                ((Confidence - Support) * (Lift - Confidence))]
   
-  rules_data[, P_Value := round(1 - pchisq(Chi_SQ,1),10)]
+  rules_data[, P_Value := round(1 - pchisq(Chi_SQ, 1), 10)]
   
   # Sort data properly----
-  rules_data <- rules_data[order(ProductA, -Lift)]
+  rules_data <- rules_data[order(ProductA,-Lift)]
   
   # Add Rule Rank by ProductA----
   rules_data[, RuleRank := 1:.N, by = "ProductA"]
   
   # Change Column Names----
-  data.table::setnames(rules_data, 
-                       c("ProductA","ProductB"),
-                       c(paste0(ItemIDColumnName,"_LHS"),
-                         paste0(ItemIDColumnName,"_RHS")))
+  data.table::setnames(rules_data,
+                       c("ProductA", "ProductB"),
+                       c(
+                         paste0(ItemIDColumnName, "_LHS"),
+                         paste0(ItemIDColumnName, "_RHS")
+                       ))
   
   # Done----
   return(rules_data)
@@ -15250,9 +15259,9 @@ AutoCatBoostClassifier <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(model_path)) {
-    if(working_directory != model_path)
-      setwd(model_path)    
+  if (!is.null(model_path)) {
+    if (working_directory != model_path)
+      setwd(model_path)
   }
   
   # Binary Ensure data is a data.table----
@@ -15564,7 +15573,7 @@ AutoCatBoostClassifier <- function(data,
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i,]), base_params)
+        base_params <- c(as.list(catboostGridList[i, ]), base_params)
       }
       
       # Binary Grid Train Model----
@@ -15680,7 +15689,7 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1,]
+                                  !is.infinite(Metric)][1, ]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -15689,7 +15698,7 @@ AutoCatBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1,]
+                                 !is.infinite(Metric)][1, ]
           }
         }
       }
@@ -15802,7 +15811,7 @@ AutoCatBoostClassifier <- function(data,
           )
         }
         base_params <-
-          c(as.list(catboostGridList[BestGrid,]), base_params)
+          c(as.list(catboostGridList[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -15833,7 +15842,7 @@ AutoCatBoostClassifier <- function(data,
       )
     }
     base_params <-
-      c(as.list(catboostGridList[BestGrid,]), base_params)
+      c(as.list(catboostGridList[BestGrid, ]), base_params)
   } else {
     if (!is.null(ClassWeights)) {
       base_params <- list(
@@ -15860,7 +15869,7 @@ AutoCatBoostClassifier <- function(data,
       )
     }
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -16055,7 +16064,7 @@ AutoCatBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(-Metric)][!is.infinite(Threshold) &
-                                !is.infinite(Metric)][1,]
+                                !is.infinite(Metric)][1, ]
         } else {
           z <-
             data.table::as.data.table(cbind(
@@ -16064,7 +16073,7 @@ AutoCatBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(Metric)][!is.infinite(Threshold) &
-                               !is.infinite(Metric)][1,]
+                               !is.infinite(Metric)][1, ]
         }
       }
       
@@ -16119,7 +16128,7 @@ AutoCatBoostClassifier <- function(data,
                     value = round(Accuracy, 4))
   }
   data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-  x <- x[1,]
+  x <- x[1, ]
   EvaluationMetrics <-
     data.table::rbindlist(list(EvaluationMetrics, x))
   
@@ -16391,9 +16400,9 @@ AutoCatBoostRegression <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(model_path)) {
-    if(working_directory != model_path)
-      setwd(model_path)    
+  if (!is.null(model_path)) {
+    if (working_directory != model_path)
+      setwd(model_path)
   }
   
   # Regression Ensure data is a data.table----
@@ -16416,12 +16425,14 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Convert TransformNumericColumns to Names if not character----
-  if(!is.null(TransformNumericColumns) & !is.character(TransformNumericColumns)) {
-    TransformNumericColumns <- names(data)[TransformNumericColumns]   
+  if (!is.null(TransformNumericColumns) &
+      !is.character(TransformNumericColumns)) {
+    TransformNumericColumns <- names(data)[TransformNumericColumns]
   }
   
   # Transform data, ValidationData, and TestData----
-  if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
+  if (!is.null(ValidationData) &
+      !is.null(TransformNumericColumns)) {
     MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     Output <- AutoTransformationCreate(
       data,
@@ -16433,7 +16444,8 @@ AutoCatBoostRegression <- function(data,
                   "Logit"),
       Path = model_path,
       TransID = ModelID,
-      SaveOutput = SaveModelObjects)
+      SaveOutput = SaveModelObjects
+    )
     data <- Output$Data
     TransformationResults <- Output$FinalResults
     
@@ -16443,16 +16455,18 @@ AutoCatBoostRegression <- function(data,
       Type = "Apply",
       FinalResults = TransformationResults,
       TransID = NULL,
-      Path = NULL)
+      Path = NULL
+    )
     
     # Transform TestData----
-    if(!is.null(TestData)) {
+    if (!is.null(TestData)) {
       TestData <- AutoTransformationScore(
         ScoringData = TestData,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL)
+        Path = NULL
+      )
     }
   }
   
@@ -16472,8 +16486,7 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
-    if(!is.null(TransformNumericColumns)) {
-      
+    if (!is.null(TransformNumericColumns)) {
       # Partition----
       dataSets <- AutoDataPartition(
         data,
@@ -16501,7 +16514,8 @@ AutoCatBoostRegression <- function(data,
                     "Logit"),
         Path = model_path,
         TransID = ModelID,
-        SaveOutput = SaveModelObjects)
+        SaveOutput = SaveModelObjects
+      )
       data <- Output$Data
       TransformationResults <- Output$FinalResults
       
@@ -16511,16 +16525,18 @@ AutoCatBoostRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL)
+        Path = NULL
+      )
       
       # Transform TestData----
-      if(!is.null(TestData)) {
+      if (!is.null(TestData)) {
         TestData <- AutoTransformationScore(
           ScoringData = TestData,
           Type = "Apply",
           FinalResults = TransformationResults,
           TransID = NULL,
-          Path = NULL)
+          Path = NULL
+        )
       }
     } else {
       dataSets <- AutoDataPartition(
@@ -16533,7 +16549,7 @@ AutoCatBoostRegression <- function(data,
       )
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData    
+      TestData <- dataSets$TestData
       MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     }
   }
@@ -16808,7 +16824,7 @@ AutoCatBoostRegression <- function(data,
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i,]), base_params)
+        base_params <- c(as.list(catboostGridList[i, ]), base_params)
       }
       
       # Regression Grid Train Model----
@@ -16847,36 +16863,37 @@ AutoCatBoostRegression <- function(data,
       }
       
       # Inverse Transform----
-      if(!is.null(TransformNumericColumns)) {
-        
+      if (!is.null(TransformNumericColumns)) {
         # Make copy of TransformationResults----
-        grid_trans_results <- data.table::copy(TransformationResults)
+        grid_trans_results <-
+          data.table::copy(TransformationResults)
         
         # Append record for Predicted Column----
-        data.table::set(grid_trans_results,
-                        i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), 
-                        j = "ColumnName", 
-                        value = "Target")
-        grid_trans_results <- data.table::rbindlist(
-          list(
-            grid_trans_results,
-            data.table::data.table(ColumnName = c("Predicted"),
-                                   MethodName = grid_trans_results[ColumnName == "Target",
-                                                                   MethodName],
-                                   Lambda = grid_trans_results[ColumnName == "Target", 
-                                                               Lambda],
-                                   NormalizedStatistics = 0)))
+        data.table::set(
+          grid_trans_results,
+          i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
+          j = "ColumnName",
+          value = "Target"
+        )
+        grid_trans_results <- data.table::rbindlist(list(
+          grid_trans_results,
+          data.table::data.table(
+            ColumnName = c("Predicted"),
+            MethodName = grid_trans_results[ColumnName == "Target",
+                                            MethodName],
+            Lambda = grid_trans_results[ColumnName == "Target",
+                                        Lambda],
+            NormalizedStatistics = 0
+          )
+        ))
         
         # If Actual target columnname == "Target" remove the duplicate version----
-        if(length(unique(grid_trans_results[["ColumnName"]])) != nrow(grid_trans_results)) {
-          grid_trans_results <- grid_trans_results[, .N, by = "ColumnName"][N != 1][[1]]
+        if (length(unique(grid_trans_results[["ColumnName"]])) != nrow(grid_trans_results)) {
+          grid_trans_results <-
+            grid_trans_results[, .N, by = "ColumnName"][N != 1][[1]]
           temp1 <- which(names(calibEval) == temp)[1]
           calibEval[, eval(names(data)[temp1]) := NULL]
-          grid_trans_results <- grid_trans_results[
-            , ID := 1:.N][
-              ID != which(grid_trans_results[["ID"]] == temp)][
-                , ID := NULL
-                ]
+          grid_trans_results <- grid_trans_results[, ID := 1:.N][ID != which(grid_trans_results[["ID"]] == temp)][, ID := NULL]
         }
         
         # Run Back-Transform----
@@ -16885,7 +16902,8 @@ AutoCatBoostRegression <- function(data,
           Type = "Inverse",
           FinalResults = grid_trans_results,
           TransID = NULL,
-          Path = NULL)        
+          Path = NULL
+        )
       }
       
       # Regression Grid Evaluation Metrics----
@@ -16974,7 +16992,7 @@ AutoCatBoostRegression <- function(data,
           task_type            = task_type
         )
         base_params <-
-          c(as.list(catboostGridList[BestGrid,]), base_params)
+          c(as.list(catboostGridList[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -16992,7 +17010,7 @@ AutoCatBoostRegression <- function(data,
       metric_period        = 10,
       task_type            = task_type
     )
-    base_params <- c(as.list(catboostGridList[BestGrid,]),
+    base_params <- c(as.list(catboostGridList[BestGrid, ]),
                      base_params)
   } else {
     base_params <- list(
@@ -17008,7 +17026,7 @@ AutoCatBoostRegression <- function(data,
       task_type            = task_type
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -17050,31 +17068,30 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Inverse Transform----
-  if(!is.null(TransformNumericColumns)) {
-    
+  if (!is.null(TransformNumericColumns)) {
     # Append record for Predicted Column----
-    if(GridTune) {
-      TransformationResults <- TransformationResults[ColumnName != "Predicted"]      
+    if (GridTune) {
+      TransformationResults <-
+        TransformationResults[ColumnName != "Predicted"]
     }
-    TransformationResults <- data.table::rbindlist(
-      list(TransformationResults,
-           data.table::data.table(ColumnName = c("Predict","Target"),
-                                  MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                         MethodName],2),
-                                  Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), 
-                                                                     Lambda],2),
-                                  NormalizedStatistics = rep(0,2))))
+    TransformationResults <- data.table::rbindlist(list(
+      TransformationResults,
+      data.table::data.table(
+        ColumnName = c("Predict", "Target"),
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                               MethodName], 2),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                           Lambda], 2),
+        NormalizedStatistics = rep(0, 2)
+      )
+    ))
     
     # If Actual target columnname == "Target" remove the duplicate version----
-    if(length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
       temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
       temp1 <- which(names(ValidationData) == temp)[1]
       ValidationData[, eval(names(data)[temp1]) := NULL]
-      TransformationResults <- TransformationResults[
-        , ID := 1:.N][
-          ID != which(TransformationResults[["ID"]] == temp1)][
-            , ID := NULL
-            ]
+      TransformationResults <- TransformationResults[, ID := 1:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
       
       
     }
@@ -17085,7 +17102,8 @@ AutoCatBoostRegression <- function(data,
       Type = "Inverse",
       FinalResults = TransformationResults,
       TransID = NULL,
-      Path = NULL)        
+      Path = NULL
+    )
   }
   
   # Regression r2 via sqrt of correlation
@@ -17198,8 +17216,10 @@ AutoCatBoostRegression <- function(data,
           ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
                                                             sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
-        ValidationData[, ':=' (Metric1 = (Target - MeanTrainTarget) ^ 2,
-                               Metric2 = (Target - Predict) ^ 2)]
+        ValidationData[, ':=' (
+          Metric1 = (Target - MeanTrainTarget) ^ 2,
+          Metric2 = (Target - Predict) ^ 2
+        )]
         Metric <-
           1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
           ValidationData[, sum(Metric1, na.rm = TRUE)]
@@ -17329,7 +17349,7 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Return Model Objects----
   if (GridTune) {
-    if(!is.null(TransformNumericColumns)) {
+    if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
         return(
           list(
@@ -17344,7 +17364,7 @@ AutoCatBoostRegression <- function(data,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
+            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
           )
         )
       }
@@ -17366,7 +17386,7 @@ AutoCatBoostRegression <- function(data,
       )
     }
   } else {
-    if(!is.null(TransformNumericColumns)) {
+    if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
         return(
           list(
@@ -17379,7 +17399,7 @@ AutoCatBoostRegression <- function(data,
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict","Target"))]
+            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
           )
         )
       }
@@ -17537,9 +17557,9 @@ AutoCatBoostMultiClass <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(model_path)) {
-    if(working_directory != model_path)
-      setwd(model_path)    
+  if (!is.null(model_path)) {
+    if (working_directory != model_path)
+      setwd(model_path)
   }
   
   # MultiClass Ensure data is a data.table----
@@ -17905,7 +17925,7 @@ AutoCatBoostMultiClass <- function(data,
       # MultiClass Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i,]), base_params)
+        base_params <- c(as.list(catboostGridList[i, ]), base_params)
       }
       
       # MultiClass Grid Train Model----
@@ -18087,7 +18107,7 @@ AutoCatBoostMultiClass <- function(data,
         )
       }
       base_params <-
-        c(as.list(catboostGridList[BestGrid,]), base_params)
+        c(as.list(catboostGridList[BestGrid, ]), base_params)
     }
   } else {
     if (!is.null(ClassWeights)) {
@@ -18115,7 +18135,7 @@ AutoCatBoostMultiClass <- function(data,
       )
     }
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -22671,7 +22691,7 @@ AutoXGBoostRegression <- function(data,
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i,]), base_params)
+        base_params <- c(as.list(grid_params[i, ]), base_params)
       }
       
       # Regression Grid Train Model----
@@ -22793,7 +22813,7 @@ AutoXGBoostRegression <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -22822,7 +22842,7 @@ AutoXGBoostRegression <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     }
   } else {
@@ -22835,7 +22855,7 @@ AutoXGBoostRegression <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -23626,7 +23646,7 @@ AutoXGBoostClassifier <- function(data,
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i,]), base_params)
+        base_params <- c(as.list(grid_params[i, ]), base_params)
       }
       
       # Binary Grid Train Model----
@@ -23747,7 +23767,7 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1,]
+                                  !is.infinite(Metric)][1, ]
           } else {
             z <-
               data.table::as.data.table(cbind(
@@ -23756,7 +23776,7 @@ AutoXGBoostClassifier <- function(data,
               ))
             Metric <-
               z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1,]
+                                 !is.infinite(Metric)][1, ]
           }
         }
       }
@@ -23841,7 +23861,7 @@ AutoXGBoostClassifier <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -23871,7 +23891,7 @@ AutoXGBoostClassifier <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     }
   } else {
@@ -23884,7 +23904,7 @@ AutoXGBoostClassifier <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -24077,7 +24097,7 @@ AutoXGBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(-Metric)][!is.infinite(Threshold) &
-                                !is.infinite(Metric)][1,]
+                                !is.infinite(Metric)][1, ]
         } else {
           z <-
             data.table::as.data.table(cbind(
@@ -24086,7 +24106,7 @@ AutoXGBoostClassifier <- function(data,
             ))
           Metric <-
             z[order(Metric)][!is.infinite(Threshold) &
-                               !is.infinite(Metric)][1,]
+                               !is.infinite(Metric)][1, ]
         }
       }
       
@@ -24141,7 +24161,7 @@ AutoXGBoostClassifier <- function(data,
         value = round(Accuracy, 4))
   }
   data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-  x <- x[1,]
+  x <- x[1, ]
   EvaluationMetrics <-
     data.table::rbindlist(list(EvaluationMetrics, x))
   
@@ -24762,7 +24782,7 @@ AutoXGBoostMultiClass <- function(data,
       # MultiClass Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i,]), base_params)
+        base_params <- c(as.list(grid_params[i, ]), base_params)
       }
       
       # MultiClass Grid Train Model----
@@ -24851,7 +24871,7 @@ AutoXGBoostMultiClass <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -24885,7 +24905,7 @@ AutoXGBoostMultiClass <- function(data,
           tree_method = TreeMethod
         )
         base_params <-
-          c(as.list(grid_params[BestGrid,]), base_params)
+          c(as.list(grid_params[BestGrid, ]), base_params)
       }
     }
   } else {
@@ -24900,7 +24920,7 @@ AutoXGBoostMultiClass <- function(data,
       tree_method = TreeMethod
     )
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1, ]))
+      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -25106,14 +25126,16 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   
   # Pull in ColNames----
   if (is.null(FeatureColumnNames)) {
-    FeatureColumnNames <- data.table::fread(file = paste0(ModelID,"_ColNames.csv"))
+    FeatureColumnNames <-
+      data.table::fread(file = paste0(ModelID, "_ColNames.csv"))
   }
   
   # Pull In Transformation Object----
-  if(is.null(TransformationObject)) {
-    if(TransformNumeric == TRUE | BackTransNumeric == TRUE) {
-      TransformationObject <- data.table::fread(paste0(TransID, "_transformation.csv"))
-    }    
+  if (is.null(TransformationObject)) {
+    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+      TransformationObject <-
+        data.table::fread(paste0(TransID, "_transformation.csv"))
+    }
   }
   
   # ModelDataPrep Check----
@@ -25148,27 +25170,29 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Apply Transform Numeric Variables----
-  if(TransformNumeric) {
+  if (TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
     tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
     ScoringData <- AutoTransformationScore(
-      ScoringData = ScoringData, 
-      FinalResults = tempTrans, 
-      Type = "Apply", 
-      TransID = TransID, 
-      Path = TransPath)    
+      ScoringData = ScoringData,
+      FinalResults = tempTrans,
+      Type = "Apply",
+      TransID = TransID,
+      Path = TransPath
+    )
   }
   
   # Convert FeatureColumnNames to Character Names----
-  if(data.table::is.data.table(FeatureColumnNames)) {
+  if (data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1]]
-  } else if(is.numeric(FeatureColumnNames)) {
+  } else if (is.numeric(FeatureColumnNames)) {
     FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
   }
   
   # Remove Target from FeatureColumnNames----
-  if(TargetColumnName %chin% FeatureColumnNames) {
-    FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+  if (TargetColumnName %chin% FeatureColumnNames) {
+    FeatureColumnNames <-
+      FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
   }
   
   # Subset Columns Needed----
@@ -25269,17 +25293,19 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Back Transform Numeric Variables----
-  if(BackTransNumeric) {
-    
+  if (BackTransNumeric) {
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
-    grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
+    grid_trans_results <-
+      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Append record for Predicted Column----
-    data.table::set(grid_trans_results,
-                    i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), 
-                    j = "ColumnName", 
-                    value = "Predictions")
+    data.table::set(
+      grid_trans_results,
+      i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
+      j = "ColumnName",
+      value = "Predictions"
+    )
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
@@ -25287,7 +25313,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       Type = "Inverse",
       FinalResults = grid_trans_results,
       TransID = NULL,
-      Path = NULL)        
+      Path = NULL
+    )
   }
   
   # Garbage Collection----
@@ -25739,9 +25766,9 @@ AutoCatBoostdHurdleModel <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
-  if(!is.null(Paths)) {
-    if(working_directory != Paths[1])
-      setwd(Paths[1])    
+  if (!is.null(Paths)) {
+    if (working_directory != Paths[1])
+      setwd(Paths[1])
   }
   
   # Initialize collection and counter----
@@ -26496,27 +26523,35 @@ Test_YeoJohnson <- function(x, eps = 0.001, ...) {
 #' @param upper the upper bound for search
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
-Estimate_YeoJohnson_Lambda <- function(x, lower = -5, upper = 5, eps = 0.001) {
-  n <- length(x)
-  ccID <- !is.na(x)
-  x <- x[ccID]
-  
-  
-  # See references, Yeo & Johnson Biometrika (2000)
-  yj_loglik <- function(lambda) {
-    x_t <- Apply_YeoJohnson(x, lambda, eps)
-    x_t_bar <- mean(x_t)
-    x_t_var <- var(x_t) * (n - 1) / n
-    constant <- sum(sign(x) * log(abs(x) + 1))
-    -0.5 * n * log(x_t_var) + (lambda - 1) * constant
+Estimate_YeoJohnson_Lambda <-
+  function(x,
+           lower = -5,
+           upper = 5,
+           eps = 0.001) {
+    n <- length(x)
+    ccID <- !is.na(x)
+    x <- x[ccID]
+    
+    
+    # See references, Yeo & Johnson Biometrika (2000)
+    yj_loglik <- function(lambda) {
+      x_t <- Apply_YeoJohnson(x, lambda, eps)
+      x_t_bar <- mean(x_t)
+      x_t_var <- var(x_t) * (n - 1) / n
+      constant <- sum(sign(x) * log(abs(x) + 1))
+      - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
+    }
+    
+    results <- optimize(
+      yj_loglik,
+      lower = lower,
+      upper = upper,
+      maximum = TRUE,
+      tol = .0001
+    )
+    
+    results$maximum
   }
-  
-  results <- optimize(yj_loglik, lower = lower, 
-                      upper = upper, maximum = TRUE,
-                      tol = .0001)
-  
-  results$maximum
-}
 
 #' Apply YeoJohnson Transformation
 #'
@@ -26538,14 +26573,15 @@ Apply_YeoJohnson <- function(x, lambda, eps = 0.001) {
     } else {
       x[pos_idx] <- ((x[pos_idx] + 1) ^ lambda - 1) / lambda
     }
-  } 
+  }
   
   # Transform nonnegative values
-  if (any(neg_idx)){
+  if (any(neg_idx)) {
     if (abs(lambda - 2) < eps) {
-      x[neg_idx] <- - log(-x[neg_idx] + 1)
+      x[neg_idx] <- -log(-x[neg_idx] + 1)
     } else {
-      x[neg_idx] <- - ((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
+      x[neg_idx] <-
+        -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
     }
   }
   x
@@ -26564,18 +26600,19 @@ InvApply_YeoJohnson <- function(x, lambda, eps = 0.001) {
   val <- x
   neg_idx <- x < 0
   
-  if(any(!neg_idx)) {
-    if(abs(lambda) < eps) {
+  if (any(!neg_idx)) {
+    if (abs(lambda) < eps) {
       val[!neg_idx] <- exp(x[!neg_idx]) - 1
     } else {
       val[!neg_idx] <- (x[!neg_idx] * lambda + 1) ^ (1 / lambda) - 1
     }
   }
-  if(any(neg_idx)) {
-    if(abs(lambda - 2) < eps) {
+  if (any(neg_idx)) {
+    if (abs(lambda - 2) < eps) {
       val[neg_idx] <- -expm1(-x[neg_idx])
     } else {
-      val[neg_idx] <- 1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
+      val[neg_idx] <-
+        1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
     }
   }
   val
@@ -26616,36 +26653,44 @@ Test_BoxCox <- function(x, ...) {
 #' @param upper the upper bound for search
 #' @param eps erorr tolerance
 #' @return BoxCox results
-Estimate_BoxCox_Lambda <- function(x, lower = -1, upper = 2, eps = 0.001) {
-  n <- length(x)
-  ccID <- !is.na(x)
-  x <- x[ccID]
-  
-  if (any(x <= 0))
-    stop("x must be positive")
-  
-  log_x <- log(x)
-  xbar <- exp(mean(log_x))
-  
-  fit <- lm(x ~ 1, data = data.frame(x = x))
-  xqr <- fit$qr
-  
-  boxcox_loglik <- function(lambda) {
-    if (abs(lambda) > eps)
-      xt <- (x ^ lambda - 1) / lambda
-    else 
-      xt <- log_x * (1 + (lambda * log_x) / 2 * 
-                       (1 + (lambda * log_x) / 3 * 
-                          (1 + (lambda * log_x) / 4)))
-    - n / 2 * log(sum(qr.resid(xqr, xt / xbar ^ (lambda - 1)) ^ 2))
+Estimate_BoxCox_Lambda <-
+  function(x,
+           lower = -1,
+           upper = 2,
+           eps = 0.001) {
+    n <- length(x)
+    ccID <- !is.na(x)
+    x <- x[ccID]
+    
+    if (any(x <= 0))
+      stop("x must be positive")
+    
+    log_x <- log(x)
+    xbar <- exp(mean(log_x))
+    
+    fit <- lm(x ~ 1, data = data.frame(x = x))
+    xqr <- fit$qr
+    
+    boxcox_loglik <- function(lambda) {
+      if (abs(lambda) > eps)
+        xt <- (x ^ lambda - 1) / lambda
+      else
+        xt <- log_x * (1 + (lambda * log_x) / 2 *
+                         (1 + (lambda * log_x) / 3 *
+                            (1 + (lambda * log_x) / 4)))
+      - n / 2 * log(sum(qr.resid(xqr, xt / xbar ^ (lambda - 1)) ^ 2))
+    }
+    
+    results <- optimize(
+      boxcox_loglik,
+      lower = lower,
+      upper = upper,
+      maximum = TRUE,
+      tol = .0001
+    )
+    
+    results$maximum
   }
-  
-  results <- optimize(boxcox_loglik, lower = lower, 
-                      upper = upper, maximum = TRUE,
-                      tol = .0001)
-  
-  results$maximum
-}
 
 #' Apply BoxCox Transformation
 #'
@@ -26774,7 +26819,7 @@ Apply_Asin <- function(x) {
 #' @return Asin results
 #' @export
 InvApply_Asin <- function(x) {
-  return(sin(x)^2)
+  return(sin(x) ^ 2)
 }
 
 #' Test Logit Transformation
@@ -26786,7 +26831,7 @@ InvApply_Asin <- function(x) {
 #' @return Logit results
 Test_Logit <- function(x) {
   stopifnot(is.numeric(x))
-  trans_data <- log(x/(1-x))
+  trans_data <- log(x / (1 - x))
   mu <- mean(trans_data, na.rm = TRUE)
   sigma <- sd(trans_data, na.rm = TRUE)
   trans_data_standardized <- (trans_data - mu) / sigma
@@ -26808,7 +26853,7 @@ Test_Logit <- function(x) {
 #' @return Logit results
 #' @export
 Apply_Logit <- function(x) {
-  return(log(x/(1-x)))
+  return(log(x / (1 - x)))
 }
 
 #' Inverse Logit Transformation
@@ -26819,7 +26864,7 @@ Apply_Logit <- function(x) {
 #' @return Logit results
 #' @export
 InvApply_Logit <- function(x) {
-  return(1/(1 + exp(-x)))
+  return(1 / (1 + exp(-x)))
 }
 
 #' Test Identity Transformation
@@ -26849,7 +26894,7 @@ Test_Identity <- function(x) {
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.
 #'
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Asin, and Logit) and find the one that produces data that is the closest to normally distributed data. It then makes the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects (always) or saving them to file (optional).
-#'             
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
 #' @param data This is your source data
@@ -26867,7 +26912,7 @@ Test_Identity <- function(x) {
 #' data[, x2 := runif(N)]
 #' data[, Adrian1 := log(pnorm(Correl * x1 +
 #'                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data <- AutoTransformationCreate(data, 
+#' data <- AutoTransformationCreate(data,
 #'                                  ColumnNames = "Sample",
 #'                                  Methods = c("BoxCox","Asin"),
 #'                                  Path = NULL,
@@ -26884,32 +26929,33 @@ AutoTransformationCreate <- function(data,
                                      Path = NULL,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
-  
   # Check arguments----
-  if(!data.table::is.data.table(data)) {
+  if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-  if(!any(tolower(Methods) %chin% c("boxcox","yeojohnson","asinh","asin","logit"))) {
+  if (!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "asin", "logit"))) {
     warning("Methods not supported")
   }
-  if(is.numeric(ColumnNames) | is.integer(ColumnNames)) {
+  if (is.numeric(ColumnNames) | is.integer(ColumnNames)) {
     ColumnNames <- names(data)[ColumnNames]
   }
-  for(i in ColumnNames) {
-    if(!(class(data[[eval(i)]]) %chin% c("numeric","integer"))) {
+  for (i in ColumnNames) {
+    if (!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) {
       return("ColumnNames must be for numeric or integer columns")
     }
   }
   
   # Loop through ColumnNames----
-  for(colNames in as.integer(seq_along(ColumnNames))) {
-    
+  for (colNames in as.integer(seq_along(ColumnNames))) {
     # Collection Object----
     EvaluationTable <- data.table::data.table(
-      ColumnName = rep("BLABLA", length(ColumnNames)*(length(Methods)+1)),
-      MethodName = rep("BLABLA", length(ColumnNames)*(length(Methods)+1)),
-      Lambda = rep(1.0, length(ColumnNames)*(length(Methods)+1)),
-      NormalizedStatistics = rep(1.0, length(ColumnNames)*(length(Methods)+1)))
+      ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods) + 1)),
+      MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods) +
+                                                          1)),
+      Lambda = rep(1.0, length(ColumnNames) * (length(Methods) + 1)),
+      NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods) +
+                                                               1))
+    )
     DataCollection <- list()
     Counter <- 0L
     
@@ -26921,90 +26967,211 @@ AutoTransformationCreate <- function(data,
     FinalMethods <- Methods
     
     # Update Methods----
-    if(MinVal <= 0) {
-      FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox"))]
+    if (MinVal <= 0) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox"))]
     }
-    if(MinVal < 0) {
-      FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asinh"))]
+    if (MinVal < 0) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("asinh"))]
     }
-    if(MaxVal - MinVal > 1) {
-      FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin","logit"))]
+    if (MaxVal - MinVal > 1) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("asin", "logit"))]
     }
     
     # Store column data as vector----
     x <- data[[eval(ColumnNames[colNames])]]
     
     # YeoJohnson----
-    if(any(tolower(FinalMethods) %chin% "yeojohnson")) {
+    if (any(tolower(FinalMethods) %chin% "yeojohnson")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_YeoJohnson(x)
-      DataCollection[["yeojohnson"]] <- output$Data 
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      DataCollection[["yeojohnson"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # BoxCox----
-    if(any(tolower(FinalMethods) %chin% "boxcox")) {
+    if (any(tolower(FinalMethods) %chin% "boxcox")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_BoxCox(x)
-      DataCollection[["boxcox"]] <- output$Data 
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      DataCollection[["boxcox"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Asinh----
-    if(any(tolower(FinalMethods) %chin% "asinh")) {
+    if (any(tolower(FinalMethods) %chin% "asinh")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Asinh(x)
-      DataCollection[["asinh"]] <- output$Data 
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      DataCollection[["asinh"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Asin----
-    if(any(tolower(FinalMethods) %chin% "asin")) {
+    if (any(tolower(FinalMethods) %chin% "asin")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Asin(x)
-      DataCollection[["asin"]] <- output$Data 
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      DataCollection[["asin"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Logit----
-    if(any(tolower(FinalMethods) %chin% "logit")) {
+    if (any(tolower(FinalMethods) %chin% "logit")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Logit(x)
-      DataCollection[["logit"]] <- output$Data 
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      DataCollection[["logit"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Identity----
     Counter <- Counter + 1L
-    data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+    data.table::set(
+      EvaluationTable,
+      i = Counter,
+      j = "ColumnName",
+      value = eval(ColumnNames[colNames])
+    )
     output <- Test_Identity(x)
-    DataCollection[["identity"]] <- output$Data 
-    data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-    data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-    data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+    DataCollection[["identity"]] <- output$Data
+    data.table::set(EvaluationTable,
+                    i = Counter,
+                    j = "MethodName",
+                    value = output$Name)
+    data.table::set(
+      EvaluationTable,
+      i = Counter,
+      j = "Lambda",
+      value = output$Lambda
+    )
+    data.table::set(
+      EvaluationTable,
+      i = Counter,
+      j = "NormalizedStatistics",
+      value = output$Normalized_Statistic
+    )
     
     # Pick winner----
     EvaluationTable <- EvaluationTable[MethodName != "BLABLA"]
-    if(colNames == 1) {
-      Results <- EvaluationTable[order(NormalizedStatistics)][1,]
+    if (colNames == 1) {
+      Results <- EvaluationTable[order(NormalizedStatistics)][1, ]
     } else {
-      Results <- data.table::rbindlist(list(Results, 
-                                            EvaluationTable[order(NormalizedStatistics)][1,]))
+      Results <- data.table::rbindlist(list(Results,
+                                            EvaluationTable[order(NormalizedStatistics)][1, ]))
     }
     
     # Apply to data----
@@ -27012,7 +27179,7 @@ AutoTransformationCreate <- function(data,
   }
   
   # Save output----
-  if(SaveOutput == TRUE & !is.null(Path)) {
+  if (SaveOutput == TRUE & !is.null(Path)) {
     data.table::fwrite(Results, file = paste0(Path,
                                               "/",
                                               TransID,
@@ -27021,18 +27188,18 @@ AutoTransformationCreate <- function(data,
   }
   
   # Return data----
-  return(list(Data = data, 
+  return(list(Data = data,
               FinalResults = Results))
 }
 
 #' AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()
 #'
 #' AutoTransformationScore() is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
-#'              
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
 #' @param ScoringData This is your source data
-#' @param FinalResults This is the FinalResults output object from AutoTransformationCreate(). 
+#' @param FinalResults This is the FinalResults output object from AutoTransformationCreate().
 #' @param Type Set to "Inverse" to back-transfrom or "Apply" for applying the transformation.
 #' @param Path Set to the directly where you want to save all of your modeling files
 #' @param TransID Set to a character value that corresponds with your modeling project
@@ -27045,7 +27212,7 @@ AutoTransformationCreate <- function(data,
 #' data[, x2 := runif(N)]
 #' data[, Adrian1 := log(pnorm(Correl * x1 +
 #'                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data <- AutoTransformationScore(ScoringData, 
+#' data <- AutoTransformationScore(ScoringData,
 #'                                 FinalResults,
 #'                                 Path = NULL,
 #'                                 TransID = "Trans")
@@ -27055,101 +27222,97 @@ AutoTransformationScore <- function(ScoringData,
                                     Type = "Inverse",
                                     TransID = "TestModel",
                                     Path = NULL) {
-  
   # Check arguments----
-  if(!data.table::is.data.table(ScoringData)) {
+  if (!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
   }
   
   # Pull in Results File----
-  if(is.null(Path) | is.null(TransID)) {
+  if (is.null(Path) | is.null(TransID)) {
     Results <- FinalResults
   } else {
     Results <- data.table::fread(file = paste0(Path,
                                                "/",
                                                TransID,
-                                               "_transformation.csv"))    
+                                               "_transformation.csv"))
   }
   
   # Loop through ColumnNames----
-  for(colNames in Results[["ColumnName"]]) {
-    
+  for (colNames in Results[["ColumnName"]]) {
     # YeoJohnson----
-    if(Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, 
-                        j = eval(colNames),
-                        value = Apply_YeoJohnson(
-                          ScoringData[[eval(colNames)]],
-                          Results[ColumnName == eval(colNames), Lambda]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_YeoJohnson(ScoringData[[eval(colNames)]],
+                                   Results[ColumnName == eval(colNames), Lambda])
+        )
       } else {
-        data.table::set(ScoringData, 
-                        j = eval(colNames),
-                        value = InvApply_YeoJohnson(
-                          ScoringData[[eval(colNames)]],
-                          Results[ColumnName == eval(colNames), Lambda]))        
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_YeoJohnson(ScoringData[[eval(colNames)]],
+                                      Results[ColumnName == eval(colNames), Lambda])
+        )
       }
     }
     
     # BoxCox----
-    if(Results[ColumnName == eval(colNames), MethodName] == "BoxCox") {
-      if(tolower(Type) != "inverse") { 
-        data.table::set(ScoringData, 
-                        j = eval(colNames),
-                        value = Apply_BoxCox(
-                          ScoringData[[eval(colNames)]],
-                          Results[ColumnName == eval(colNames), Lambda])) 
+    if (Results[ColumnName == eval(colNames), MethodName] == "BoxCox") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_BoxCox(ScoringData[[eval(colNames)]],
+                               Results[ColumnName == eval(colNames), Lambda])
+        )
       } else {
-        data.table::set(ScoringData, 
-                        j = eval(colNames),
-                        value = InvApply_BoxCox(
-                          ScoringData[[eval(colNames)]],
-                          Results[ColumnName == eval(colNames), Lambda]))        
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_BoxCox(ScoringData[[eval(colNames)]],
+                                  Results[ColumnName == eval(colNames), Lambda])
+        )
       }
     }
     
     # Asinh----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Asinh") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, 
+    if (Results[ColumnName == eval(colNames), MethodName] == "Asinh") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = Apply_Asinh(
-                          ScoringData[[eval(colNames)]]))
+                        value = Apply_Asinh(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, 
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = InvApply_Asinh(
-                          ScoringData[[eval(colNames)]]))        
+                        value = InvApply_Asinh(ScoringData[[eval(colNames)]]))
       }
     }
     
     # Asin----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Asin") {
-      if(tolower(Type) != "inverse") { 
-        data.table::set(ScoringData, 
+    if (Results[ColumnName == eval(colNames), MethodName] == "Asin") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = Apply_Asin(
-                          ScoringData[[eval(colNames)]]))
+                        value = Apply_Asin(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, 
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = InvApply_Asin(
-                          ScoringData[[eval(colNames)]]))        
+                        value = InvApply_Asin(ScoringData[[eval(colNames)]]))
       }
     }
     
     # Logit----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Logit") {
-      if(tolower(Type) != "inverse") { 
-        data.table::set(ScoringData, 
+    if (Results[ColumnName == eval(colNames), MethodName] == "Logit") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = Apply_Logit(
-                          ScoringData[[eval(colNames)]]))
+                        value = Apply_Logit(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, 
+        data.table::set(ScoringData,
                         j = eval(colNames),
-                        value = InvApply_Logit(
-                          ScoringData[[eval(colNames)]]))        
+                        value = InvApply_Logit(ScoringData[[eval(colNames)]]))
       }
     }
   }
