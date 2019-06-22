@@ -26494,7 +26494,9 @@ AutoCatBoostdHurdleModel <- function(data,
 #' @param eps erorr tolerance
 #' @param ... Arguments to pass along
 #' @return YeoJohnson results
-Test_YeoJohnson <- function(x, eps = 0.001, ...) {
+Test_YeoJohnson <- function(x, 
+                            eps = 0.001, 
+                            ...) {
   stopifnot(is.numeric(x))
   lambda <- Estimate_YeoJohnson_Lambda(x, eps = eps, ...)
   trans_data <- x
@@ -26562,7 +26564,9 @@ Estimate_YeoJohnson_Lambda <-
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
 #' @export
-Apply_YeoJohnson <- function(x, lambda, eps = 0.001) {
+Apply_YeoJohnson <- function(x, 
+                             lambda, 
+                             eps = 0.001) {
   pos_idx <- x >= 0
   neg_idx <- x < 0
   
@@ -26596,7 +26600,9 @@ Apply_YeoJohnson <- function(x, lambda, eps = 0.001) {
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
 #' @export
-InvApply_YeoJohnson <- function(x, lambda, eps = 0.001) {
+InvApply_YeoJohnson <- function(x, 
+                                lambda, 
+                                eps = 0.001) {
   val <- x
   neg_idx <- x < 0
   
@@ -26701,7 +26707,9 @@ Estimate_BoxCox_Lambda <-
 #' @param eps erorr tolerance
 #' @return BoxCox results
 #' @export
-Apply_BoxCox <- function(x, lambda, eps = 0.001) {
+Apply_BoxCox <- function(x, 
+                         lambda, 
+                         eps = 0.001) {
   if (lambda < 0)
     x[x < 0] <- NA
   if (abs(lambda) < eps)
@@ -26720,7 +26728,9 @@ Apply_BoxCox <- function(x, lambda, eps = 0.001) {
 #' @param eps erorr tolerance
 #' @return BoxCox results
 #' @export
-InvApply_BoxCox <- function(x, lambda, eps = 0.001) {
+InvApply_BoxCox <- function(x, 
+                            lambda, 
+                            eps = 0.001) {
   if (lambda < 0)
     x[x > -1 / lambda] <- NA
   if (abs(lambda) < eps)
