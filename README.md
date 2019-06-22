@@ -46,7 +46,9 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
+____________________________________________________________________________________________________________________________________________
 ## Supervised Learning Functions: 
+____________________________________________________________________________________________________________________________________________
 <details><summary>EXPAND</summary>
 <p>
 
