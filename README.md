@@ -50,7 +50,7 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 <details><summary>EXPAND</summary>
 <p>
 
-### Regression:
+#### Regression:
 <details><summary>expand</summary>
 <p>
   
@@ -67,7 +67,7 @@ AutoH2oDRFRegression is an automated H2O modeling framework with grid-tuning and
 </p>
 </details>
 
-### Binary Classification:
+#### Binary Classification:
 <details><summary>expand</summary>
 <p>
 
@@ -85,7 +85,7 @@ AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and
 </p>
 </details>
 
-### Multinomial Classification:
+#### Multinomial Classification:
 <details><summary>expand</summary>
 <p>
   
@@ -103,7 +103,7 @@ AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and
 </p>
 </details>
 
-### Generalized Hurdle Models:
+#### Generalized Hurdle Models:
 <details><summary>expand</summary>
 <p>
   
@@ -112,7 +112,7 @@ This is a modeling framework for building the necessary models for making predic
 </p>
 </details>
 
-### Scoring the Auto__() supervised learning models:
+#### Scoring the Auto__() supervised learning models:
 <details><summary>expand</summary>
 <p>
   
@@ -127,7 +127,7 @@ AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGB
 </p>
 </details>
 
-### General Purpose H2O Automated Modeling:
+#### General Purpose H2O Automated Modeling:
 <details><summary>expand</summary>
 <p>
   
@@ -143,7 +143,7 @@ Automated machine learning. Automatically build any number of models along with 
 </p>
 </details>
 
-### Model Scoring:
+#### Model Scoring:
 <details><summary>expand</summary>
 <p>
   
@@ -152,7 +152,7 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 </p>
 </details>
 
-### Time Series Modeling:
+#### Time Series Modeling:
 <details><summary>expand</summary>
 <p>
   
@@ -178,7 +178,7 @@ AutoCatBoostCARMA Is an Automated Machine Learning Time Series Forecasting Funct
 </p>
 </details>
 
-### Nonlinear Regression Modeling:
+#### Nonlinear Regression Modeling:
 <details><summary>expand</summary>
 <p>
   
@@ -198,7 +198,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </p>
 </details>
 
-### Marketing Modeling:
+#### Marketing-Based Models:
 <details><summary>expand</summary>
 <p>
   
