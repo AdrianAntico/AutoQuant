@@ -32,17 +32,13 @@ data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
 data[, Adrian1 := log(pnorm(Correl * x1 +
                             sqrt(1-Correl^2) * qnorm(x2)))]
-data <- AutoTransformationScore(ScoringData, 
+data <- AutoTransformationScore(ScoringData,
                                 FinalResults,
                                 Path = NULL,
                                 TransID = "Trans")
 }
 \seealso{
-Other Feature Engineering: \code{\link{Apply_Asinh}},
-  \code{\link{Apply_Asin}}, \code{\link{Apply_BoxCox}},
-  \code{\link{Apply_Logit}},
-  \code{\link{Apply_YeoJohnson}},
-  \code{\link{AutoDataPartition}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoWord2VecModeler}},
   \code{\link{CreateCalendarVariables}},
@@ -50,11 +46,6 @@ Other Feature Engineering: \code{\link{Apply_Asinh}},
   \code{\link{DummifyDT}},
   \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},
-  \code{\link{InvApply_Asinh}},
-  \code{\link{InvApply_Asin}},
-  \code{\link{InvApply_BoxCox}},
-  \code{\link{InvApply_Logit}},
-  \code{\link{InvApply_YeoJohnson}},
   \code{\link{ModelDataPrep}},
   \code{\link{Scoring_GDL_Feature_Engineering}}
 }

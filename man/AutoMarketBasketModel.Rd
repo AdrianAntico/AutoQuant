@@ -33,14 +33,14 @@ AutoMarketBasketModel function runs a market basket analysis automatically. It w
 \examples{
 \donttest{
 rules_data <- AutoMarketBasketModel(
-  data, 
-  OrderIDColumnName = "OrderNumber", 
-  ItemIDColumnName = "ItemNumber", 
+  data,
+  OrderIDColumnName = "OrderNumber",
+  ItemIDColumnName = "ItemNumber",
   LHS_Delimeter = ",",
-  Support = 0.001, 
+  Support = 0.001,
   Confidence = 0.1,
-  MaxLength = 2, 
-  MinLength = 2, 
+  MaxLength = 2,
+  MinLength = 2,
   MaxTime = 5)
 }
 }

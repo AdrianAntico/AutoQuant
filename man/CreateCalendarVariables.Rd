@@ -30,11 +30,7 @@ data <- CreateCalendarVariables(data,
                                 TimeUnits = c("wday", "month", "year"))
 }
 \seealso{
-Other Feature Engineering: \code{\link{Apply_Asinh}},
-  \code{\link{Apply_Asin}}, \code{\link{Apply_BoxCox}},
-  \code{\link{Apply_Logit}},
-  \code{\link{Apply_YeoJohnson}},
-  \code{\link{AutoDataPartition}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},
   \code{\link{AutoWord2VecModeler}},
@@ -42,11 +38,6 @@ Other Feature Engineering: \code{\link{Apply_Asinh}},
   \code{\link{DummifyDT}},
   \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},
-  \code{\link{InvApply_Asinh}},
-  \code{\link{InvApply_Asin}},
-  \code{\link{InvApply_BoxCox}},
-  \code{\link{InvApply_Logit}},
-  \code{\link{InvApply_YeoJohnson}},
   \code{\link{ModelDataPrep}},
   \code{\link{Scoring_GDL_Feature_Engineering}}
 }
