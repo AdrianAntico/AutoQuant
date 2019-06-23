@@ -2,6 +2,8 @@
 
 # How to Install the Package for R:
 
+<span style="color:blue">some *This is Blue italic.* text</span>
+
 #### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
