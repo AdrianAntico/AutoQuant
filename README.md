@@ -2,9 +2,6 @@
 
 # How to Install the Package for R:
 
-<p>Some Markdown text with <span style="color:blue">some <em>blue</em> text</span>.</p>
-
-
 #### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
