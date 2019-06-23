@@ -3110,8 +3110,8 @@ DummifyDT <- function(data,
 #' data <- GDL_Feature_Engineering(data,
 #'            lags           = c(seq(1,1,1)),
 #'            periods        = c(3),
-#'            statsFUNs      = c(function(x) quantile(x, probs = 0.20, na.rm = TRUE)),
-#'            statsNames     = c("q20"),
+#'            statsFUNs      = "mean",
+#'            statsNames     = "mean",
 #'            targets        = c("Target"),
 #'            groupingVars   = NULL,
 #'            sortDateName   = "DateTime",
@@ -3124,34 +3124,17 @@ DummifyDT <- function(data,
 #'            SimpleImpute   = TRUE)
 #' @export
 GDL_Feature_Engineering <- function(data,
-                                    lags           = c(seq(1, 5, 1)),
-                                    periods        = c(3, 5, 10, 15, 20, 25),
-                                    statsFUNs      = c(function(x)
-                                      quantile(x, probs = 0.1, na.rm = TRUE),
-                                      function(x)
-                                        quantile(x, probs = 0.9, na.rm = TRUE),
-                                      function(x)
-                                        base::mean(x, na.rm = TRUE),
-                                      function(x)
-                                        sd(x, na.rm = TRUE),
-                                      function(x)
-                                        quantile(x, probs = 0.25, na.rm = TRUE),
-                                      function(x)
-                                        quantile(x, probs = 0.75, na.rm = TRUE)),
-                                    statsNames     = c("q10",
-                                                       "q90",
-                                                       "mean",
-                                                       "sd",
-                                                       "q25",
-                                                       "q75"),
-                                    targets        = c("qty"),
-                                    groupingVars   = c("Group1",
-                                                       "Group2"),
-                                    sortDateName   = c("date"),
-                                    timeDiffTarget = c("TimeDiffName"),
-                                    timeAgg        = c("days"),
-                                    WindowingLag   = 0,
-                                    Type           = c("Lag"),
+                                    lags           = seq(1, 5, 1),
+                                    periods        = seq(1, 5, 1),
+                                    statsFUNs      = "mean",
+                                    statsNames     = "mean",
+                                    targets        = NULL,
+                                    groupingVars   = NULL,
+                                    sortDateName   = NULL,
+                                    timeDiffTarget = NULL,
+                                    timeAgg        = NULL,
+                                    WindowingLag   = 1,
+                                    Type           = "Lag",
                                     Timer          = TRUE,
                                     SkipCols       = NULL,
                                     SimpleImpute   = TRUE) {
@@ -5489,7 +5472,7 @@ AutoDataPartition <- function(data,
   }
   if (!is.null(StratifyNumericTarget)) {
     if (!is.character(StratifyNumericTarget)) {
-      warning("StratifyNumericTarget your target column name in quotes")
+      warning("StratifyNumericTarget is your target column name in quotes")
     }
     if (!is.numeric(StratTargetPrecision)) {
       warning("StratTargetPrecision needs to be values of 1,2,...,N")
@@ -15684,7 +15667,7 @@ AutoRecommender <- function(data,
 #' @return Returns the prediction data
 #' @examples
 #' \donttest{
-#' # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(RecomDataCreate(TransactionData)))
+#' # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(AutoRecomDataCreate(TransactionData)))
 #' Results <- AutoRecommenderScoring(
 #'   data = AutoRecomDataCreate(
 #'       data,
@@ -15715,7 +15698,7 @@ AutoRecommenderScoring <- function(data,
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
   
-  # Setup winning model and arguments
+  # Setup winning model and arguments----
   if (WinningModel == "AR") {
     recommender <- recommenderlab::Recommender(
       data = data,
@@ -15728,14 +15711,14 @@ AutoRecommenderScoring <- function(data,
                                                method = WinningModel)
   }
   
-  # Setup the parallel environment
+  # Setup the parallel environment----
   packages <- c("curl", "reshape2", "recommenderlab", "data.table")
   cores    <- 8
   parts    <- floor(nrow(data) * ncol(data) / 250000)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   
-  # Begin scoring
+  # Begin scoring----
   results <- foreach::foreach(
     i = itertools::isplitRows(data,
                               chunks = parts),
@@ -15750,7 +15733,7 @@ AutoRecommenderScoring <- function(data,
                                                 n = 10),
                         "list")
     
-    # Data transformations
+    # Data transformations----
     temp <- data.table::data.table(data.table::melt(data))
     data.table::setcolorder(temp, c(2, 1))
     data.table::setnames(temp,
@@ -15759,7 +15742,7 @@ AutoRecommenderScoring <- function(data,
     temp
   }
   
-  # shut down parallel objects
+  # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
   
