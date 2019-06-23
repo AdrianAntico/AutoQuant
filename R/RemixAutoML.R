@@ -15514,7 +15514,7 @@ AutoRecomDataCreate <- function(data,
   }
 }
 
-#' Automatically build the best recommendere model among models available.
+#' Automatically build the best recommender model among models available.
 #'
 #' This function returns the winning model that you pass onto AutoRecommenderScoring
 #' @author Adrian Antico and Douglas Pestana
@@ -17099,6 +17099,7 @@ AutoCatBoostClassifier <- function(data,
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
@@ -17152,6 +17153,7 @@ AutoCatBoostClassifier <- function(data,
 #'                                     FeatureColNames = c(2:12),
 #'                                     PrimaryDateColumn = NULL,
 #'                                     IDcols = NULL,
+#'                                     TransformNumericColumns = NULL,
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
 #'                                     eval_metric = "RMSE",
