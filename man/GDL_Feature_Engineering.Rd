@@ -4,17 +4,11 @@
 \alias{GDL_Feature_Engineering}
 \title{An Automated Feature Engineering Function}
 \usage{
-GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)), periods = c(3, 5,
-  10, 15, 20, 25), statsFUNs = c(function(x) quantile(x, probs = 0.1,
-  na.rm = TRUE), function(x) quantile(x, probs = 0.9, na.rm = TRUE),
-  function(x) base::mean(x, na.rm = TRUE), function(x) sd(x, na.rm = TRUE),
-  function(x) quantile(x, probs = 0.25, na.rm = TRUE), function(x)
-  quantile(x, probs = 0.75, na.rm = TRUE)), statsNames = c("q10", "q90",
-  "mean", "sd", "q25", "q75"), targets = c("qty"),
-  groupingVars = c("Group1", "Group2"), sortDateName = c("date"),
-  timeDiffTarget = c("TimeDiffName"), timeAgg = c("days"),
-  WindowingLag = 0, Type = c("Lag"), Timer = TRUE, SkipCols = NULL,
-  SimpleImpute = TRUE)
+GDL_Feature_Engineering(data, lags = seq(1, 5, 1), periods = seq(1, 5,
+  1), statsFUNs = "mean", statsNames = "mean", targets = NULL,
+  groupingVars = NULL, sortDateName = NULL, timeDiffTarget = NULL,
+  timeAgg = NULL, WindowingLag = 1, Type = "Lag", Timer = TRUE,
+  SkipCols = NULL, SimpleImpute = TRUE)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -66,8 +60,8 @@ data <- data[order(DateTime)]
 data <- GDL_Feature_Engineering(data,
            lags           = c(seq(1,1,1)),
            periods        = c(3),
-           statsFUNs      = c(function(x) quantile(x, probs = 0.20, na.rm = TRUE)),
-           statsNames     = c("q20"),
+           statsFUNs      = "mean",
+           statsNames     = "mean",
            targets        = c("Target"),
            groupingVars   = NULL,
            sortDateName   = "DateTime",

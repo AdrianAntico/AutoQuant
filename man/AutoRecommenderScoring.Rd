@@ -24,7 +24,7 @@ This function will take your ratings matrix and model and score your data in par
 }
 \examples{
 \donttest{
-# F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(RecomDataCreate(TransactionData)))
+# F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(AutoRecomDataCreate(TransactionData)))
 Results <- AutoRecommenderScoring(
   data = AutoRecomDataCreate(
       data,
