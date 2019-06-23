@@ -2,7 +2,7 @@
 % Please edit documentation in R/RemixAutoML.R
 \name{AutoRecommender}
 \alias{AutoRecommender}
-\title{Automatically build the best recommendere model among models available.}
+\title{Automatically build the best recommender model among models available.}
 \usage{
 AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
   RatingType = "TopN", RatingsKeep = 20,
