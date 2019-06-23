@@ -5,8 +5,6 @@
 #### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
-# No Remotes ----
-# Attachments ----
 to_install <- c("catboost", "caTools", "data.table", "doParallel", 
                 "foreach", "forecast", "ggplot2", "h2o", "itertools", 
                 "lubridate", "monreg", "nortest","pROC", "RColorBrewer", "recommenderlab", 
