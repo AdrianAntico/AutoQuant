@@ -316,7 +316,7 @@ Prepares your data for scoring based on models built with Word2VecModel
 Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
 
 ##### **ProblematicRecords()**
-Identify records identified as outliers via Isolation Forests from H2O
+Identify anomalous data records via Isolation Forests from H2O
 
 ##### **RemixTheme()** 
 Fonts, colors, style for plots.
