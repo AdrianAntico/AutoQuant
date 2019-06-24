@@ -6,8 +6,8 @@
 \usage{
 AutoXGBoostRegression(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
-  eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "mae", TreeMethod = "hist",
+  TransformNumericColumns = NULL, eval_metric = "RMSE", Trees = 50,
+  GridTune = FALSE, grid_eval_metric = "mae", TreeMethod = "hist",
   MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
   ModelID = "FirstModel", NumOfParDepPlots = 3, Verbose = 0,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
@@ -25,6 +25,8 @@ AutoXGBoostRegression(data, ValidationData = NULL, TestData = NULL,
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"}
 
@@ -99,6 +101,7 @@ TestModel <- AutoXGBoostRegression(data,
                                    TargetColumnName = 1,
                                    FeatureColNames = 2:12,
                                    IDcols = NULL,
+                                   TransformNumericColumns = NULL,
                                    eval_metric = "RMSE",
                                    Trees = 50,
                                    GridTune = TRUE,
