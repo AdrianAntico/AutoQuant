@@ -4,7 +4,7 @@
 \alias{AutoH2oGBMRegression}
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
+AutoH2oGBMRegression(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL, Alpha = NULL,
   Distribution = "poisson", eval_metric = "RMSE",
   TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
