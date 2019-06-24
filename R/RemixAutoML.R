@@ -19248,7 +19248,7 @@ AutoCatBoostMultiClass <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
 #' @export
 AutoH2oGBMRegression <- function(data,
                                  ValidationData,
@@ -20143,19 +20143,36 @@ AutoH2oGBMRegression <- function(data,
   }
   
   # Regression Return Objects----
+  # Regression Return Objects----
   if (ReturnModelObjects) {
-    return(
-      list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationBoxPlot = EvaluationBoxPlot,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance,
-        PartialDependencePlots = ParDepPlots,
-        PartialDependenceBoxPlots = ParDepBoxPlots
+    if(TransformNumericColumns) {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationBoxPlot = EvaluationBoxPlot,
+          EvaluationMetrics = EvaluationMetrics,
+          VariableImportance = VariableImportance,
+          PartialDependencePlots = ParDepPlots,
+          PartialDependenceBoxPlots = ParDepBoxPlots,
+          TransformationInformation = TransformationResults
+        )
       )
-    )
+    } else {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationBoxPlot = EvaluationBoxPlot,
+          EvaluationMetrics = EvaluationMetrics,
+          VariableImportance = VariableImportance,
+          PartialDependencePlots = ParDepPlots,
+          PartialDependenceBoxPlots = ParDepBoxPlots
+        )
+      )
+    }
   }
 }
 
@@ -20232,7 +20249,7 @@ AutoH2oGBMRegression <- function(data,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo")
 #' }
-#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
 AutoH2oDRFRegression <- function(data,
                                  ValidationData = NULL,
@@ -20989,18 +21006,34 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Return Objects----
   if (ReturnModelObjects) {
-    return(
-      list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationBoxPlot = EvaluationBoxPlot,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance,
-        PartialDependencePlots = ParDepPlots,
-        PartialDependenceBoxPlots = ParDepBoxPlots
+    if(TransformNumericColumns) {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationBoxPlot = EvaluationBoxPlot,
+          EvaluationMetrics = EvaluationMetrics,
+          VariableImportance = VariableImportance,
+          PartialDependencePlots = ParDepPlots,
+          PartialDependenceBoxPlots = ParDepBoxPlots,
+          TransformationInformation = TransformationResults
+        )
       )
-    )
+    } else {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationBoxPlot = EvaluationBoxPlot,
+          EvaluationMetrics = EvaluationMetrics,
+          VariableImportance = VariableImportance,
+          PartialDependencePlots = ParDepPlots,
+          PartialDependenceBoxPlots = ParDepBoxPlots
+        )
+      )      
+    }
   }
 }
 
