@@ -18200,6 +18200,13 @@ AutoCatBoostRegression <- function(data,
   # Reset working directory----
   setwd(working_directory)
   
+  # Subset Transformation Object----
+  if(TargetColumnName == "Target") {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+  } else {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  }
+  
   # Regression Return Model Objects----
   if (GridTune) {
     if (!is.null(TransformNumericColumns)) {
@@ -18217,7 +18224,7 @@ AutoCatBoostRegression <- function(data,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+            TransformationResults = TransformationResults
           )
         )
       }
@@ -18252,7 +18259,7 @@ AutoCatBoostRegression <- function(data,
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names,
-            TransformationResults = TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+            TransformationResults = TransformationResults
           )
         )
       }
@@ -20143,9 +20150,8 @@ AutoH2oGBMRegression <- function(data,
   }
   
   # Regression Return Objects----
-  # Regression Return Objects----
   if (ReturnModelObjects) {
-    if(TransformNumericColumns) {
+    if(!is.null(TransformNumericColumns)) {
       return(
         list(
           Model = FinalModel,
@@ -21006,7 +21012,7 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Return Objects----
   if (ReturnModelObjects) {
-    if(TransformNumericColumns) {
+    if(!is.null(TransformNumericColumns)) {
       return(
         list(
           Model = FinalModel,
@@ -23407,6 +23413,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -23460,6 +23467,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    IDcols = NULL,
+#'                                    TransformNumericColumns = NULL,
 #'                                    eval_metric = "RMSE",
 #'                                    Trees = 50,
 #'                                    GridTune = TRUE,
@@ -23483,6 +23491,7 @@ AutoXGBoostRegression <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   IDcols = NULL,
+                                  TransformNumericColumns = NULL,
                                   eval_metric = "RMSE",
                                   Trees = 50,
                                   GridTune = FALSE,
@@ -23565,19 +23574,114 @@ AutoXGBoostRegression <- function(data,
   ))))
   CatFeatures <- names(data)[CatFeatures]
   
+  # Transform data, ValidationData, and TestData----
+  if (!is.null(ValidationData) &
+      !is.null(TransformNumericColumns)) {
+    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    Output <- AutoTransformationCreate(
+      data,
+      ColumnNames = TransformNumericColumns,
+      Methods = c("BoxCox",
+                  "YeoJohnson",
+                  "Asinh",
+                  "Asin",
+                  "Logit"),
+      Path = model_path,
+      TransID = ModelID,
+      SaveOutput = SaveModelObjects
+    )
+    data <- Output$Data
+    TransformationResults <- Output$FinalResults
+    
+    # Transform ValidationData----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Apply",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+    
+    # Transform TestData----
+    if (!is.null(TestData)) {
+      TestData <- AutoTransformationScore(
+        ScoringData = TestData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+    }
+  }
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = NULL,
-      TimeColumnName = NULL
-    )
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
-    TestData <- dataSets$TestData
+    if (!is.null(TransformNumericColumns)) {
+      # Partition----
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      
+      # Mean of data----
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      
+      # Transform data sets----
+      Output <- AutoTransformationCreate(
+        data,
+        ColumnNames = TransformNumericColumns,
+        Methods = c("BoxCox",
+                    "YeoJohnson",
+                    "Asinh",
+                    "Asin",
+                    "Logit"),
+        Path = model_path,
+        TransID = ModelID,
+        SaveOutput = SaveModelObjects
+      )
+      data <- Output$Data
+      TransformationResults <- Output$FinalResults
+      
+      # Transform ValidationData----
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+      
+      # Transform TestData----
+      if (!is.null(TestData)) {
+        TestData <- AutoTransformationScore(
+          ScoringData = TestData,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL
+        )
+      }
+    } else {
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    }
   }
   
   # Regression data Subset Columns Needed----
@@ -24074,6 +24178,45 @@ AutoXGBoostRegression <- function(data,
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
   }
   
+  # Inverse Transform----
+  if (!is.null(TransformNumericColumns)) {
+    # Append record for Predicted Column----
+    if (GridTune) {
+      TransformationResults <-
+        TransformationResults[ColumnName != "Predict"]
+    }
+    TransformationResults <- data.table::rbindlist(list(
+      TransformationResults,
+      data.table::data.table(
+        ColumnName = "Predict",
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                               MethodName], 1),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                           Lambda], 1),
+        NormalizedStatistics = rep(0, 1)
+      )
+    ))
+    
+    # If Actual target columnname == "Target" remove the duplicate version----
+    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
+      temp1 <- which(names(ValidationData) == temp)[1]
+      ValidationData[, eval(names(data)[temp1]) := NULL]
+      TransformationResults <- TransformationResults[, ID := 1:.N][
+        ID != which(TransformationResults[["ID"]] == temp1)][
+          , ID := NULL]
+    }
+    
+    # Transform Target and Predicted Value----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Inverse",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+  }
+  
   # Regression r2 via sqrt of correlation
   r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
   
@@ -24298,9 +24441,35 @@ AutoXGBoostRegression <- function(data,
   # Regression Formal Evaluation Table
   EvaluationMetrics[, MetricValue := round(MetricValue, 4)]
   
+  # Subset Transformation Object----
+  if(TargetColumnName == "Target") {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+  } else {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  }
+  
   # Regression Return Model Objects----
   if (GridTune) {
-    if (ReturnModelObjects) {
+    if (!is.null(TransformNumericColumns)) {
+      if (ReturnModelObjects) {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            GridList = grid_params,
+            GridMetrics = GridCollect,
+            ColNames = Names,
+            TransformationResults = TransformationResults
+          )
+        )
+      }
+    } else {
       return(
         list(
           Model = model,
@@ -24318,7 +24487,24 @@ AutoXGBoostRegression <- function(data,
       )
     }
   } else {
-    if (ReturnModelObjects) {
+    if (!is.null(TransformNumericColumns)) {
+      if (ReturnModelObjects) {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            ColNames = Names,
+            TransformationResults = TransformationResults
+          )
+        )
+      }
+    } else {
       return(
         list(
           Model = model,
