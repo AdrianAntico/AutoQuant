@@ -15505,13 +15505,8 @@ AutoRecomDataCreate <- function(data,
   row.names(train_data_matrix) <- train_data_rownames
   
   # Return binary rating matrix----
-  if (ReturnMatrix) {
-    return(recommenderlab::coerce(from = train_data_matrix,
-                                  to = "BinaryRatingsMatrix"))
-  } else {
-    return(methods::as(object = train_data_matrix,
-                       Class = "binaryRatingMatrix"))
-  }
+  return(methods::as(object = train_data_matrix,
+                     Class = "binaryRatingMatrix"))
 }
 
 #' Automatically build the best recommender model among models available.
