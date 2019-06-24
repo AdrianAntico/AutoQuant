@@ -6,8 +6,10 @@
 \usage{
 AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
   FeatureColumnNames = NULL, IDcols = NULL, ModelPath = NULL,
-  ModelID = NULL, ReturnFeatures = TRUE, MDP_Impute = TRUE,
-  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
+  ModelID = NULL, ReturnFeatures = TRUE, TransformNumeric = FALSE,
+  BackTransNumeric = FALSE, TargetColumnName = NULL,
+  TransformationObject = NULL, TransID = NULL, TransPath = NULL,
+  MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0", MDP_MissNum = -1)
 }
 \arguments{
@@ -24,6 +26,18 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{ModelID}{Supply the model ID used in the AutoXGBoost__() function}
 
 \item{ReturnFeatures}{Set to TRUE to return your features with the predicted values.}
+
+\item{TransformNumeric}{Set to TRUE if you have features that were transformed automatically from an Auto__Regression() model AND you haven't already transformed them.}
+
+\item{BackTransNumeric}{Set to TRUE to generate back-transformed predicted values. Also, if you return features, those will also be back-transformed.}
+
+\item{TargetColumnName}{Input your target column name used in training if you are utilizing the transformation service}
+
+\item{TransformationObject}{Set to NULL if you didn't use transformations or if you want the function to pull from the file output from the Auto__Regression() function. You can also supply the transformation data.table object with the transformation details versus having it pulled from file.}
+
+\item{TransID}{Set to the ID used for saving the transformation data.table object or set it to the ModelID if you are pulling from file from a build with Auto__Regression().}
+
+\item{TransPath}{Set the path file to the folder where your transformation data.table detail object is stored. If you used the Auto__Regression() to build, set it to the same path as ModelPath.}
 
 \item{MDP_Impute}{Set to TRUE if you did so for modeling and didn't do so before supplying ScoringData in this function}
 
