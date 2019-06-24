@@ -15447,6 +15447,10 @@ AutoRecomDataCreate <- function(data,
                                 ProductColName = "StockCode",
                                 MetricColName  = "TotalSales",
                                 ReturnMatrix   = FALSE) {
+  
+  # Require RecommenderLab
+  requireNamespace("recommenderlab", quietly = TRUE)
+  
   # Ensure data is data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -15505,8 +15509,7 @@ AutoRecomDataCreate <- function(data,
   row.names(train_data_matrix) <- train_data_rownames
   
   # Return binary rating matrix----
-  return(methods::as(object = train_data_matrix,
-                     Class = "binaryRatingMatrix"))
+  methods::as(object = train_data_matrix, Class = "binaryRatingMatrix")
 }
 
 #' Automatically build the best recommender model among models available.
@@ -17278,8 +17281,7 @@ AutoCatBoostRegression <- function(data,
     if(!is.character(TransformNumericColumns)) {
       TransformNumericColumns <- names(data)[TransformNumericColumns]      
     }
-  } 
-
+  }
 
   # Transform data, ValidationData, and TestData----
   if (!is.null(ValidationData) &
