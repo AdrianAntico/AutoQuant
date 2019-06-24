@@ -20149,6 +20149,13 @@ AutoH2oGBMRegression <- function(data,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
   }
   
+  # Subset Transformation Object----
+  if(TargetColumnName == "Target") {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+  } else {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  }
+  
   # Regression Return Objects----
   if (ReturnModelObjects) {
     if(!is.null(TransformNumericColumns)) {
@@ -21008,6 +21015,13 @@ AutoH2oDRFRegression <- function(data,
   if (SaveModelObjects) {
     save(ParDepBoxPlots,
          file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
+  }
+  
+  # Subset Transformation Object----
+  if(TargetColumnName == "Target") {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+  } else {
+    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
   }
   
   # Regression Return Objects----
