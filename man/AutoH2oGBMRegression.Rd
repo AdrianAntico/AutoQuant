@@ -4,12 +4,12 @@
 \alias{AutoH2oGBMRegression}
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGBMRegression(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL, Alpha = NULL,
-  Distribution = "poisson", eval_metric = "RMSE",
-  TrainSplitRatio = 0.8, Trees = 50, GridTune = FALSE,
-  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
+  TargetColumnName = NULL, FeatureColNames = NULL,
+  TransformNumericColumns = NULL, Alpha = NULL,
+  Distribution = "poisson", eval_metric = "RMSE", Trees = 50,
+  GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
+  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo")
 }
@@ -24,13 +24,13 @@ AutoH2oGBMRegression(data, ValidationData = NULL, TestData = NULL,
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
 \item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
 \item{Distribution}{Choose from gaussian",  "poisson",  "gamma",  "tweedie",  "laplace",  "quantile", "huber"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
-
-\item{TrainSplitRatio}{A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.}
 
 \item{Trees}{The maximum number of trees you want in your models}
 
@@ -96,6 +96,7 @@ TestModel <- AutoH2oGBMRegression(data,
                                   TestData = NULL,
                                   TargetColumnName = "Target",
                                   FeatureColNames = 2:ncol(data),
+                                  TransformNumericColumns = NULL,
                                   Alpha = NULL,
                                   Distribution = "poisson",
                                   eval_metric = "RMSE",
