@@ -19181,10 +19181,10 @@ AutoCatBoostMultiClass <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
 #' @param Distribution Choose from gaussian",  "poisson",  "gamma",  "tweedie",  "laplace",  "quantile", "huber"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
-#' @param TrainSplitRatio A decimal between 0.01 and 0.99 that tells the function how much data to keep for training and validation.
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
@@ -19233,6 +19233,7 @@ AutoCatBoostMultiClass <- function(data,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
 #'                                   FeatureColNames = 2:ncol(data),
+#'                                   TransformNumericColumns = NULL,
 #'                                   Alpha = NULL,
 #'                                   Distribution = "poisson",
 #'                                   eval_metric = "RMSE",
@@ -19250,14 +19251,14 @@ AutoCatBoostMultiClass <- function(data,
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
 AutoH2oGBMRegression <- function(data,
-                                 ValidationData = NULL,
+                                 ValidationData,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 TransformNumericColumns = NULL,
                                  Alpha = NULL,
                                  Distribution = "poisson",
                                  eval_metric = "RMSE",
-                                 TrainSplitRatio = 0.80,
                                  Trees = 50,
                                  GridTune = FALSE,
                                  MaxMem = "32G",
@@ -19312,19 +19313,121 @@ AutoH2oGBMRegression <- function(data,
     }
   }
   
+  # Convert TransformNumericColumns to Names if not character----
+  if (!is.null(TransformNumericColumns)) {
+    if(!is.character(TransformNumericColumns)) {
+      TransformNumericColumns <- names(data)[TransformNumericColumns]      
+    }
+  }
+  
+  # Transform data, ValidationData, and TestData----
+  if (!is.null(ValidationData) &
+      !is.null(TransformNumericColumns)) {
+    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    Output <- AutoTransformationCreate(
+      data,
+      ColumnNames = TransformNumericColumns,
+      Methods = c("BoxCox",
+                  "YeoJohnson",
+                  "Asinh",
+                  "Asin",
+                  "Logit"),
+      Path = model_path,
+      TransID = ModelID,
+      SaveOutput = SaveModelObjects
+    )
+    data <- Output$Data
+    TransformationResults <- Output$FinalResults
+    
+    # Transform ValidationData----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Apply",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+    
+    # Transform TestData----
+    if (!is.null(TestData)) {
+      TestData <- AutoTransformationScore(
+        ScoringData = TestData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+    }
+  }
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = NULL,
-      TimeColumnName = NULL
-    )
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
-    TestData <- dataSets$TestData
+    if (!is.null(TransformNumericColumns)) {
+      # Partition----
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      
+      # Mean of data----
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      
+      # Transform data sets----
+      Output <- AutoTransformationCreate(
+        data,
+        ColumnNames = TransformNumericColumns,
+        Methods = c("BoxCox",
+                    "YeoJohnson",
+                    "Asinh",
+                    "Asin",
+                    "Logit"),
+        Path = model_path,
+        TransID = ModelID,
+        SaveOutput = SaveModelObjects
+      )
+      data <- Output$Data
+      TransformationResults <- Output$FinalResults
+      
+      # Transform ValidationData----
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+      
+      # Transform TestData----
+      if (!is.null(TestData)) {
+        TestData <- AutoTransformationScore(
+          ScoringData = TestData,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL
+        )
+      }
+    } else {
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    }
   }
   
   # Regression ModelDataPrep----
@@ -19712,6 +19815,45 @@ AutoH2oGBMRegression <- function(data,
   # Regression Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
   
+  # Inverse Transform----
+  if (!is.null(TransformNumericColumns)) {
+    # Append record for Predicted Column----
+    if (GridTune) {
+      TransformationResults <-
+        TransformationResults[ColumnName != "Predict"]
+    }
+    TransformationResults <- data.table::rbindlist(list(
+      TransformationResults,
+      data.table::data.table(
+        ColumnName = "Predict",
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                               MethodName], 1),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                           Lambda], 1),
+        NormalizedStatistics = rep(0, 1)
+      )
+    ))
+    
+    # If Actual target columnname == "Target" remove the duplicate version----
+    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
+      temp1 <- which(names(ValidationData) == temp)[1]
+      ValidationData[, eval(names(data)[temp1]) := NULL]
+      TransformationResults <- TransformationResults[, ID := 1:.N][
+        ID != which(TransformationResults[["ID"]] == temp1)][
+          , ID := NULL]
+    }
+    
+    # Transform Target and Predicted Value----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Inverse",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+  }
+  
   # Regression Get R2----
   r_squared <-
     (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
@@ -19833,35 +19975,35 @@ AutoH2oGBMRegression <- function(data,
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
+          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(get(Target) - Predict)]
+        ValidationData[, Metric := abs(Target - Predict)]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((get(Target) - Predict) / (Target + 1))]
+        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (get(Target) - Predict) ^ 2]
+        ValidationData[, Metric := (Target - Predict) ^ 2]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1)) ^ 2]
+          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := get(Target) * log((get(Target) + 1) /
-                                                         (Predict + 1))]
+          ValidationData[, Metric := Target * log((Target + 1) /
+                                                    (Predict + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         ValidationData[, ':=' (
-          Metric1 = get(Target) * Predict,
-          Metric2 = get(Target) ^ 2,
+          Metric1 = Target * Predict,
+          Metric2 = Target ^ 2,
           Metric3 = Predict ^ 2
         )]
         Metric <-
@@ -19869,7 +20011,7 @@ AutoH2oGBMRegression <- function(data,
                                                             sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
         Metric <-
-          (ValidationData[, stats::cor(get(Target), Predict)][[1]]) ^ 2
+          (ValidationData[, stats::cor(Target, Predict)][[1]]) ^ 2
       }
       data.table::set(
         EvaluationMetrics,
@@ -19885,8 +20027,9 @@ AutoH2oGBMRegression <- function(data,
       "skip")
   }
   
-  # Remove Features
-  ValidationData[, ':=' (Metric1 = NULL,
+  # Remove Features----
+  ValidationData[, ':=' (Metric  = NULL, 
+                         Metric1 = NULL,
                          Metric2 = NULL,
                          Metric3 = NULL)]
   
@@ -20026,6 +20169,7 @@ AutoH2oGBMRegression <- function(data,
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -20105,6 +20249,7 @@ AutoH2oDRFRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo") {
+  
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
@@ -20149,19 +20294,121 @@ AutoH2oDRFRegression <- function(data,
     }
   }
   
+  # Convert TransformNumericColumns to Names if not character----
+  if (!is.null(TransformNumericColumns)) {
+    if(!is.character(TransformNumericColumns)) {
+      TransformNumericColumns <- names(data)[TransformNumericColumns]      
+    }
+  }
+  
+  # Transform data, ValidationData, and TestData----
+  if (!is.null(ValidationData) &
+      !is.null(TransformNumericColumns)) {
+    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    Output <- AutoTransformationCreate(
+      data,
+      ColumnNames = TransformNumericColumns,
+      Methods = c("BoxCox",
+                  "YeoJohnson",
+                  "Asinh",
+                  "Asin",
+                  "Logit"),
+      Path = model_path,
+      TransID = ModelID,
+      SaveOutput = SaveModelObjects
+    )
+    data <- Output$Data
+    TransformationResults <- Output$FinalResults
+    
+    # Transform ValidationData----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Apply",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+    
+    # Transform TestData----
+    if (!is.null(TestData)) {
+      TestData <- AutoTransformationScore(
+        ScoringData = TestData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+    }
+  }
+  
   # Regression Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = NULL,
-      TimeColumnName = NULL
-    )
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
-    TestData <- dataSets$TestData
+    if (!is.null(TransformNumericColumns)) {
+      # Partition----
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      
+      # Mean of data----
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      
+      # Transform data sets----
+      Output <- AutoTransformationCreate(
+        data,
+        ColumnNames = TransformNumericColumns,
+        Methods = c("BoxCox",
+                    "YeoJohnson",
+                    "Asinh",
+                    "Asin",
+                    "Logit"),
+        Path = model_path,
+        TransID = ModelID,
+        SaveOutput = SaveModelObjects
+      )
+      data <- Output$Data
+      TransformationResults <- Output$FinalResults
+      
+      # Transform ValidationData----
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+      
+      # Transform TestData----
+      if (!is.null(TestData)) {
+        TestData <- AutoTransformationScore(
+          ScoringData = TestData,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL
+        )
+      }
+    } else {
+      dataSets <- AutoDataPartition(
+        data,
+        NumDataSets = 3,
+        Ratios = c(0.70, 0.20, 0.10),
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = NULL
+      )
+      data <- dataSets$TrainData
+      ValidationData <- dataSets$ValidationData
+      TestData <- dataSets$TestData
+      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    }
   }
   
   # Regression ModelDataPrep----
@@ -20473,6 +20720,45 @@ AutoH2oDRFRegression <- function(data,
   # Regression Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
   
+  # Inverse Transform----
+  if (!is.null(TransformNumericColumns)) {
+    # Append record for Predicted Column----
+    if (GridTune) {
+      TransformationResults <-
+        TransformationResults[ColumnName != "Predict"]
+    }
+    TransformationResults <- data.table::rbindlist(list(
+      TransformationResults,
+      data.table::data.table(
+        ColumnName = "Predict",
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                               MethodName], 1),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
+                                           Lambda], 1),
+        NormalizedStatistics = rep(0, 1)
+      )
+    ))
+    
+    # If Actual target columnname == "Target" remove the duplicate version----
+    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
+      temp1 <- which(names(ValidationData) == temp)[1]
+      ValidationData[, eval(names(data)[temp1]) := NULL]
+      TransformationResults <- TransformationResults[, ID := 1:.N][
+        ID != which(TransformationResults[["ID"]] == temp1)][
+          , ID := NULL]
+    }
+    
+    # Transform Target and Predicted Value----
+    ValidationData <- AutoTransformationScore(
+      ScoringData = ValidationData,
+      Type = "Inverse",
+      FinalResults = TransformationResults,
+      TransID = NULL,
+      Path = NULL
+    )
+  }
+  
   # Regression Get R2----
   r_squared <-
     (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
@@ -20580,35 +20866,35 @@ AutoH2oDRFRegression <- function(data,
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
+          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(get(Target) - Predict)]
+        ValidationData[, Metric := abs(Target - Predict)]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((get(Target) - Predict) / (Target + 1))]
+        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (get(Target) - Predict) ^ 2]
+        ValidationData[, Metric := (Target - Predict) ^ 2]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1)) ^ 2]
+          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := get(Target) * log((get(Target) + 1) /
-                                                         (Predict + 1))]
+          ValidationData[, Metric := Target * log((Target + 1) /
+                                                    (Predict + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         ValidationData[, ':=' (
-          Metric1 = get(Target) * Predict,
-          Metric2 = get(Target) ^ 2,
+          Metric1 = Target * Predict,
+          Metric2 = Target ^ 2,
           Metric3 = Predict ^ 2
         )]
         Metric <-
@@ -20616,7 +20902,7 @@ AutoH2oDRFRegression <- function(data,
                                                             sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
         Metric <-
-          (ValidationData[, stats::cor(get(Target), Predict)][[1]]) ^ 2
+          (ValidationData[, stats::cor(Target, Predict)][[1]]) ^ 2
       }
       data.table::set(
         EvaluationMetrics,
