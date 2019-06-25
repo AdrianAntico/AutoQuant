@@ -27525,6 +27525,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
 #' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
@@ -27545,6 +27546,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #'                             ScoringData = data,
 #'                             FeatureColumnNames = 2:12,
 #'                             IDcols = NULL,
+#'                             ModelObject = NULL,
 #'                             ModelPath = "home",
 #'                             ModelID = "ModelTest",
 #'                             ReturnFeatures = TRUE,
@@ -27560,6 +27562,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                ScoringData = NULL,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
+                               ModelObject = NULL,
                                ModelPath = NULL,
                                ModelID = NULL,
                                ReturnFeatures = TRUE,
