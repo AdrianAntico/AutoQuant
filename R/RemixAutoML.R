@@ -27682,7 +27682,15 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     xgboost::xgb.DMatrix(as.matrix(ScoringData))
   
   # Load model----
-  model <- xgboost::xgb.load(paste0(ModelPath, "/", ModelID))
+  if (!is.null(ModelObject)) {
+    model <- ModelObject
+  } else {
+    model <- tryCatch({
+      model <- xgboost::xgb.load(paste0(ModelPath, "/", ModelID))
+    },
+    error = function(x)
+      return("Model not found in ModelPath"))
+  }
   
   # Score model----
   predict <-
