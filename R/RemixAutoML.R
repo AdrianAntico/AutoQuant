@@ -24186,10 +24186,11 @@ AutoXGBoostRegression <- function(data,
   # Regression Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
-      data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+      data.table::as.data.table(cbind(TestMerge, Predict = predict))
   } else {
     ValidationData <-
       data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+    data.table::setnames(ValidationData, "Target", eval(TargetColumnName))
   }
   
   # Inverse Transform----
