@@ -5,11 +5,12 @@
 \title{AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
 \usage{
 AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
-  FeatureColumnNames = NULL, IDcols = NULL, ModelPath = NULL,
-  ModelID = NULL, ReturnFeatures = TRUE, TransformNumeric = FALSE,
-  BackTransNumeric = FALSE, TargetColumnName = NULL,
-  TransformationObject = NULL, TransID = NULL, TransPath = NULL,
-  MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
+  FeatureColumnNames = NULL, IDcols = NULL, ModelObject = NULL,
+  ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
+  TransformNumeric = FALSE, BackTransNumeric = FALSE,
+  TargetColumnName = NULL, TransformationObject = NULL,
+  TransID = NULL, TransPath = NULL, MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0", MDP_MissNum = -1)
 }
 \arguments{
@@ -20,6 +21,8 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoXGBoost__() function}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
+
+\item{ModelObject}{Supply a model for scoring, otherwise it will have to search for it in the file path you specify}
 
 \item{ModelPath}{Supply your path file used in the AutoXGBoost__() function}
 
@@ -61,6 +64,7 @@ Preds <- AutoXGBoostScoring(TargetType = "regression",
                             ScoringData = data,
                             FeatureColumnNames = 2:12,
                             IDcols = NULL,
+                            ModelObject = NULL,
                             ModelPath = "home",
                             ModelID = "ModelTest",
                             ReturnFeatures = TRUE,
