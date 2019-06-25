@@ -20793,7 +20793,7 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Get R2----
   r_squared <-
-    (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
+    (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
