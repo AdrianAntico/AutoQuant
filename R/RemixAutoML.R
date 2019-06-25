@@ -24233,7 +24233,7 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression r2 via sqrt of correlation
-  r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
+  r_squared <- (ValidationData[, stats::cor(get(Target), Predict)]) ^ 2
   
   # Save Validation Data to File----
   if (SaveModelObjects) {
@@ -24248,7 +24248,7 @@ AutoXGBoostRegression <- function(data,
   EvaluationPlot <- EvalPlot(
     data = ValidationData,
     PredictionColName = "Predict",
-    TargetColName = "Target",
+    TargetColName = eval(TargetColumnName),
     GraphType = "calibration",
     PercentileBucket = 0.05,
     aggrfun = function(x)
@@ -24271,7 +24271,7 @@ AutoXGBoostRegression <- function(data,
   EvaluationBoxPlot <- EvalPlot(
     data = ValidationData,
     PredictionColName = "Predict",
-    TargetColName = "Target",
+    TargetColName = eval(TargetColumnName),
     GraphType = "boxplot",
     PercentileBucket = 0.05,
     aggrfun = function(x)
@@ -24307,35 +24307,35 @@ AutoXGBoostRegression <- function(data,
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
+          ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(Target - Predict)]
+        ValidationData[, Metric := abs(get(Target) - Predict)]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
+        ValidationData[, Metric := abs((get(Target) - Predict) / (get(Target) + 1))]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (Target - Predict) ^ 2]
+        ValidationData[, Metric := (get(Target) - Predict) ^ 2]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
+          ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1)) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Target * log((Target + 1) /
+          ValidationData[, Metric := get(Target) * log((get(Target) + 1) /
                                                     (Predict + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         ValidationData[, ':=' (
-          Metric1 = Target * Predict,
-          Metric2 = Target ^ 2,
+          Metric1 = get(Target) * Predict,
+          Metric2 = get(Target) ^ 2,
           Metric3 = Predict ^ 2
         )]
         Metric <-
@@ -24386,7 +24386,7 @@ AutoXGBoostRegression <- function(data,
       Out <- ParDepCalPlots(
         data = ValidationData,
         PredictionColName = "Predict",
-        TargetColName = "Target",
+        TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Feature],
         GraphType = "calibration",
         PercentileBucket = 0.05,
@@ -24403,7 +24403,7 @@ AutoXGBoostRegression <- function(data,
       Out1 <- ParDepCalPlots(
         data = ValidationData,
         PredictionColName = "Predict",
-        TargetColName = "Target",
+        TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Feature],
         GraphType = "boxplot",
         PercentileBucket = 0.05,
