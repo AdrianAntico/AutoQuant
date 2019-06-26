@@ -27489,7 +27489,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (is.null(TransformationObject)) {
     if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
       TransformationObject <-
-        data.table::fread(paste0(TransID, "_transformation.csv"))
+        data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
     }
   }
   
