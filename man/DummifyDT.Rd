@@ -6,8 +6,8 @@
 \usage{
 DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
   SaveFactorLevels = FALSE, SavePath = NULL,
-  ImportFactorLevels = FALSE, ClustScore = FALSE,
-  ReturnFactorLevels = FALSE)
+  ImportFactorLevels = FALSE, FactorLevelsList = NULL,
+  ClustScore = FALSE, ReturnFactorLevels = FALSE)
 }
 \arguments{
 \item{data}{The data set to run the micro auc on}
@@ -23,6 +23,8 @@ DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
 \item{SavePath}{Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.}
 
 \item{ImportFactorLevels}{Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.}
+
+\item{FactorLevelsList}{Supply a list of factor variable levels}
 
 \item{ClustScore}{This is for scoring AutoKMeans. Set to FALSE for all other applications.}
 
@@ -51,6 +53,7 @@ test <- DummifyDT(data = test,
                   SaveFactorLevels = FALSE,
                   SavePath = NULL,
                   ImportFactorLevels = FALSE,
+                  FactorLevelsList = NULL,
                   ClustScore = FALSE,
                   ReturnFactorLevels = FALSE)
 ncol(test)

@@ -6,8 +6,8 @@
 \usage{
 AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
   FeatureColumnNames = NULL, IDcols = NULL, FactorLevelsList = NULL,
-  ModelObject = NULL, ModelPath = NULL, ModelID = NULL,
-  ReturnFeatures = TRUE, TransformNumeric = FALSE,
+  OneHot = FALSE, ModelObject = NULL, ModelPath = NULL,
+  ModelID = NULL, ReturnFeatures = TRUE, TransformNumeric = FALSE,
   BackTransNumeric = FALSE, TargetColumnName = NULL,
   TransformationObject = NULL, TransID = NULL, TransPath = NULL,
   MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
@@ -23,6 +23,8 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
 
 \item{FactorLevelsList}{Supply the factor variables' list from DummifyDT()}
+
+\item{OneHot}{Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable}
 
 \item{ModelObject}{Supply a model for scoring, otherwise it will have to search for it in the file path you specify}
 
@@ -67,6 +69,7 @@ Preds <- AutoXGBoostScoring(TargetType = "regression",
                             FeatureColumnNames = 2:12,
                             IDcols = NULL,
                             FactorLevelsList = NULL,
+                            OneHot = FALSE,
                             ModelObject = NULL,
                             ModelPath = "home",
                             ModelID = "ModelTest",
