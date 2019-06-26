@@ -17304,7 +17304,7 @@ AutoCatBoostRegression <- function(data,
       TransformNumericColumns <- names(data)[TransformNumericColumns]      
     }
   }
-
+  
   # Transform data, ValidationData, and TestData----
   if (!is.null(ValidationData) &
       !is.null(TransformNumericColumns)) {
@@ -18223,10 +18223,12 @@ AutoCatBoostRegression <- function(data,
   setwd(working_directory)
   
   # Subset Transformation Object----
-  if(TargetColumnName == "Target") {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
-  } else {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  if(!is.null(TransformNumericColumns)) {
+    if(TargetColumnName == "Target") {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+    } else {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+    }  
   }
   
   # Regression Return Model Objects----
