@@ -2926,6 +2926,7 @@ CreateCalendarVariables <- function(data,
 #' @param SavePath Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.
 #' @param ImportFactorLevels Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
+#' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
 #' @examples
 #' test <- data.table::data.table(Value = runif(100000),
 #'                    FactorCol = sample(x = c(letters,
@@ -2937,11 +2938,17 @@ CreateCalendarVariables <- function(data,
 #'                                       size = 100000,
 #'                                       replace = TRUE))
 #' test <- DummifyDT(data = test,
-#'                   cols = "FactorCol",
-#'                   KeepFactorCols = FALSE)
+#'                   cols,
+#'                   KeepFactorCols = FALSE,
+#'                   OneHot = FALSE,
+#'                   SaveFactorLevels = FALSE,
+#'                   SavePath = NULL,
+#'                   ImportFactorLevels = FALSE,
+#'                   ClustScore = FALSE,
+#'                   ReturnFactorLevels = FALSE)
 #' ncol(test)
 #' test[, sum(FactorCol_gg)]
-#' @return data table with new dummy variables columns and optionally removes base columns
+#' @return Either a data table with new dummy variables columns and optionally removes base columns (if ReturnFactorLevels is FALSE), otherwise a list with the data.table and a list of the factor levels.
 #' @export
 DummifyDT <- function(data,
                       cols,
@@ -2950,7 +2957,9 @@ DummifyDT <- function(data,
                       SaveFactorLevels   = FALSE,
                       SavePath           = NULL,
                       ImportFactorLevels = FALSE,
-                      ClustScore         = FALSE) {
+                      ClustScore         = FALSE,
+                      ReturnFactorLevels = FALSE) {
+  
   # Check arguments----
   if (!is.character(cols)) {
     warning("cols needs to be a character vector of names")
@@ -3010,6 +3019,12 @@ DummifyDT <- function(data,
     if (SaveFactorLevels) {
       data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL],
                          file = paste0(SavePath, "/", col, ".csv"))
+    }
+    
+    # Collect Factor Levels----
+    if(ReturnFactorLevels) {
+      FactorsLevelsList <- list()
+      FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
     }
     
     # Convert to character if col is factor----
@@ -3073,7 +3088,14 @@ DummifyDT <- function(data,
                names(data)
              )))
   }
-  return(data)
+  
+  # Return data----
+  if(ReturnFactorLevels) {
+    return(list(data = data,
+                FactorLevelsList = FactorsLevelsList))
+  } else {
+    return(data)    
+  }
 }
 
 #' An Automated Feature Engineering Function
@@ -23427,6 +23449,7 @@ AutoH2oDRFMultiClass <- function(data,
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param ReturnFactorLevels Set to TRUE to have the factor levels returned with the other model objects
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param Trees The maximum number of trees you want in your models
@@ -23481,6 +23504,7 @@ AutoH2oDRFMultiClass <- function(data,
 #'                                    TargetColumnName = 1,
 #'                                    FeatureColNames = 2:12,
 #'                                    IDcols = NULL,
+#'                                    ReturnFactorLevels = FALSE,
 #'                                    TransformNumericColumns = NULL,
 #'                                    eval_metric = "RMSE",
 #'                                    Trees = 50,
@@ -23505,6 +23529,7 @@ AutoXGBoostRegression <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   IDcols = NULL,
+                                  ReturnFactorLevels = FALSE,
                                   TransformNumericColumns = NULL,
                                   eval_metric = "RMSE",
                                   Trees = 50,
@@ -23752,15 +23777,31 @@ AutoXGBoostRegression <- function(data,
                       value = "TEST")
       temp <-
         data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE
-      )
+      if(ReturnFactorLevels) {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+      }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -23781,15 +23822,31 @@ AutoXGBoostRegression <- function(data,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE
-      )
+      if(ReturnFactorLevels) {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE
+        )  
+      }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -23812,15 +23869,31 @@ AutoXGBoostRegression <- function(data,
                       value = "TEST")
       temp <-
         data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = FALSE,
-        SavePath = NULL,
-        ImportFactorLevels = FALSE
-      )
+      if(ReturnFactorLevels) {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE
+        )
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE
+        )        
+      }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -23842,15 +23915,29 @@ AutoXGBoostRegression <- function(data,
                       j = "ID_Factorizer",
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = FALSE,
-        SavePath = NULL,
-        ImportFactorLevels = FALSE
-      )
+      if(ReturnFactorLevels) {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE
+        )
+      } else {
+        temp <- DummifyDT(
+          data = temp,
+          cols = CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = ReturnFactorLevels,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE
+        )  
+      }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -24467,6 +24554,45 @@ AutoXGBoostRegression <- function(data,
   if (GridTune) {
     if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
+        if(ReturnFactorLevels) {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              GridList = grid_params,
+              GridMetrics = GridCollect,
+              ColNames = Names,
+              TransformationResults = TransformationResults,
+              FactorLevelsList = FactorLevelsList
+            )
+          )
+        } else {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              GridList = grid_params,
+              GridMetrics = GridCollect,
+              ColNames = Names,
+              TransformationResults = TransformationResults
+            )
+          )          
+        }
+      }
+    } else {
+      if(ReturnFactorLevels) {
         return(
           list(
             Model = model,
@@ -24480,30 +24606,65 @@ AutoXGBoostRegression <- function(data,
             GridList = grid_params,
             GridMetrics = GridCollect,
             ColNames = Names,
-            TransformationResults = TransformationResults
+            FactorLevelsList = FactorLevelsList
           )
         )
+      } else {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            GridList = grid_params,
+            GridMetrics = GridCollect,
+            ColNames = Names
+          )
+        )        
       }
-    } else {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          GridList = grid_params,
-          GridMetrics = GridCollect,
-          ColNames = Names
-        )
-      )
     }
   } else {
     if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
+        if(ReturnFactorLevels) {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              ColNames = Names,
+              TransformationResults = TransformationResults,
+              FactorLevelsList = FactorLevelsList
+            )
+          )
+        } else {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              ColNames = Names,
+              TransformationResults = TransformationResults
+            )
+          )          
+        }
+      }
+    } else {
+      if(ReturnFactorLevels) {
         return(
           list(
             Model = model,
@@ -24515,24 +24676,24 @@ AutoXGBoostRegression <- function(data,
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             ColNames = Names,
-            TransformationResults = TransformationResults
+            FactorLevelsList = FactorLevelsList
           )
         )
+      } else {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationPlot = EvaluationPlot,
+            EvaluationBoxPlot = EvaluationBoxPlot,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            PartialDependencePlots = ParDepPlots,
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            ColNames = Names
+          )
+        )        
       }
-    } else {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          ColNames = Names
-        )
-      )
     }
   }
 }
@@ -27525,6 +27686,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
 #' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
@@ -27546,6 +27708,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 #'                             ScoringData = data,
 #'                             FeatureColumnNames = 2:12,
 #'                             IDcols = NULL,
+#'                             FactorLevelsList = NULL,
 #'                             ModelObject = NULL,
 #'                             ModelPath = "home",
 #'                             ModelID = "ModelTest",
@@ -27562,6 +27725,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                ScoringData = NULL,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
+                               FactorLevelsList = NULL,
                                ModelObject = NULL,
                                ModelPath = NULL,
                                ModelID = NULL,
