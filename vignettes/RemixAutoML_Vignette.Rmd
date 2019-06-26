@@ -187,9 +187,9 @@ library(data.table)
 
 # Create Simulated Data to Demonstrate Modeling
 Correl <- 0.85
-N <- 10000
-data <- data.table::data.table(Target = runif(N))
-data[, x1 := qnorm(Target)]
+N <- 1000
+data <- data.table::data.table(Adrian = runif(N))
+data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
 data[, Independent_Variable1 := log(pnorm(Correl * x1 +
                                             sqrt(1-Correl^2) * qnorm(x2)))]
@@ -218,40 +218,29 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 
-# Create Train and Test Data
-DataSets <- RemixAutoML::AutoDataPartition(data = data, 
-                                           NumDataSets = 3, 
-                                           Ratios = c(0.70,0.20,0.10), 
-                                           PartitionType = "random", 
-                                           StratifyColumnNames = NULL, 
-                                           TimeColumnName = NULL)
-
-# Store data sets
-train <- DataSets$TrainData
-valid <- DataSets$ValidationData
-test <- DataSets$TestData
-
 # Build Models
-TestModel <- RemixAutoML::AutoXGBoostRegression(data = train,
-                                                ValidationData = valid,
-                                                TestData = test,
-                                                TargetColumnName = 1,
-                                                FeatureColNames = 2:12,
-                                                IDcols = NULL,
-                                                eval_metric = "RMSE",
-                                                Trees = 50,
-                                                GridTune = TRUE,
-                                                grid_eval_metric = "mae",
-                                                MaxModelsInGrid = 10,
-                                                NThreads = 8,
-                                                TreeMethod = "hist",
-                                                model_path = NULL,
-                                                ModelID = "FirstModel",
-                                                NumOfParDepPlots = 3,
-                                                Verbose = 0,
-                                                ReturnModelObjects = TRUE,
-                                                SaveModelObjects = FALSE, 
-                                                PassInGrid = NULL)
+TestModel <- RemixAutoML::AutoXGBoostRegression(
+  data,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = 2:12,
+  IDcols = NULL,
+  TransformNumericColumns = "Adrian",
+  eval_metric = "RMSE",
+  Trees = 50,
+  GridTune = TRUE,
+  grid_eval_metric = "mae",
+  MaxModelsInGrid = 10,
+  NThreads = 8,
+  TreeMethod = "hist",
+  model_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 3,
+  Verbose = 0,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, 
+  PassInGrid = NULL)
 
 # Evaluation metrics
 TestModel$EvaluationMetrics
