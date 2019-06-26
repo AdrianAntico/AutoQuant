@@ -5,6 +5,7 @@
 #' @family Supervised Learning
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoH2o__() function
+#' @param ModelObject Supply a model object from AutoH2oDRF__()
 #' @param ModelType Set to either "mojo" or "standard" depending on which version you saved
 #' @param H2OShutdown Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.
 #' @param MaxMem Set to you dedicated amount of memory. E.g. "28G"
@@ -27,6 +28,7 @@
 #' \donttest{
 #' Preds <- AutoH2OMLScoring(ScoringData = data,
 #'                           FeatureColumnNames = 2:12,
+#'                           ModelObject = NULL,
 #'                           ModelType = "mojo",
 #'                           H2OShutdown = TRUE,
 #'                           MaxMem = "28G",
@@ -50,6 +52,7 @@
 #' @export
 AutoH2OMLScoring <- function(ScoringData = NULL,
                              FeatureColumnNames = NULL,
+                             ModelObject = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
                              MaxMem = "28G",
@@ -107,33 +110,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     )
   }
   
-  # Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) |
-      is.integer(FeatureColumnNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
-    } else {
-      keep <- c(keep1)
-    }
-    ScoringData <- ScoringData[, ..keep]
-  } else {
-    keep1 <- c(FeatureColumnNames)
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
-    } else {
-      keep <- c(FeatureColumnNames)
-    }
-    ScoringData <- ScoringData[, ..keep]
-  }
-  if (!is.null(IDcols)) {
-    ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1)
-    ScoringData <- ScoringData[, ..keep]
-  } else {
-    ScoringMerge <- data.table::copy(ScoringData)
-  }
-  
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -145,32 +121,39 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   )
   
   # Initialize H2O Data Conversion----
-  if (tolower(ModelType) != "mojo") {
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  enable_assertions = FALSE)
-    ScoreData    <- h2o::as.h2o(ScoringData)
-  } else {
-    ScoreData <- ScoringData
+  if(!is.null(ModelType)) {
+    if (tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
+      h2o::h2o.init(max_mem_size = MaxMem,
+                    enable_assertions = FALSE)
+      ScoreData <- h2o::as.h2o(ScoringData)
+    } else {
+      ScoreData <- ScoringData
+    }    
   }
-  
+
   # Make Predictions----
-  if (tolower(ModelType) == "mojo") {
+  if(!is.null(ModelObject)) {
     predict <- data.table::as.data.table(
-      h2o::h2o.mojo_predict_df(
-        frame = ScoreData,
-        mojo_zip_path = file.path(ModelPath, paste0(ModelID, ".zip")),
-        genmodel_jar_path = file.path(ModelPath, paste0(ModelID)),
-        java_options = JavaOptions
+      h2o::h2o.predict(ModelObject, newdata = ScoreData))
+  } else {
+    if (tolower(ModelType) == "mojo") {
+      predict <- data.table::as.data.table(
+        h2o::h2o.mojo_predict_df(
+          frame = ScoreData,
+          mojo_zip_path = file.path(ModelPath, paste0(ModelID, ".zip")),
+          genmodel_jar_path = file.path(ModelPath, paste0(ModelID)),
+          java_options = JavaOptions
+        )
       )
-    )
-    
-  } else if (tolower(ModelType) == "standard") {
-    model <- h2o::h2o.loadModel(path = paste0(ModelPath, "/", ModelID))
-    predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = model,
-                                                 newdata = ScoreData))
+      
+    } else if (tolower(ModelType) == "standard") {
+      model <- h2o::h2o.loadModel(path = paste0(ModelPath, "/", ModelID))
+      predict <-
+        data.table::as.data.table(h2o::h2o.predict(object = model,
+                                                   newdata = ScoreData))
+    }    
   }
-  
+
   # Change column name----
   data.table::setnames(predict, "predict", "Predictions")
   
@@ -188,7 +171,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   
   # Merge features back on----
   if (ReturnFeatures) {
-    predict <- cbind(predict, ScoringMerge)
+    predict <- cbind(predict, ScoringData)
   }
   
   # Back Transform Numeric Variables----
