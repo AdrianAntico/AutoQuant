@@ -27488,6 +27488,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Pull In Transformation Object----
   if (is.null(TransformationObject)) {
     if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+      if(is.null(TargetColumnName)) {
+        return("TargetColumnName needs to be supplied")
+      }
       TransformationObject <-
         data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
     }
