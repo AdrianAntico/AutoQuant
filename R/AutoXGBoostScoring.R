@@ -95,15 +95,25 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   
   # Apply Transform Numeric Variables----
   if (TransformNumeric) {
-    tempTrans <- data.table::copy(TransformationObject)
-    tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-    ScoringData <- AutoTransformationScore(
-      ScoringData = ScoringData,
-      FinalResults = tempTrans,
-      Type = "Apply",
-      TransID = TransID,
-      Path = TransPath
-    )
+    if(!is.null(TransformationObject)) {
+      tempTrans <- data.table::copy(TransformationObject)
+      tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
+      ScoringData <- AutoTransformationScore(
+        ScoringData = ScoringData,
+        FinalResults = tempTrans,
+        Type = "Apply",
+        TransID = TransID,
+        Path = NULL
+      )
+    } else {
+      ScoringData <- AutoTransformationScore(
+        ScoringData = ScoringData,
+        FinalResults = tempTrans,
+        Type = "Apply",
+        TransID = TransID,
+        Path = TransPath
+      )
+    }
   }
   
   # Subset Columns Needed----
