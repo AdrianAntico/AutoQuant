@@ -8,6 +8,7 @@
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
+#' @param OneHot Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable
 #' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
@@ -30,6 +31,7 @@
 #'                             FeatureColumnNames = 2:12,
 #'                             IDcols = NULL,
 #'                             FactorLevelsList = NULL,
+#'                             OneHot = FALSE,
 #'                             ModelObject = NULL,
 #'                             ModelPath = "home",
 #'                             ModelID = "ModelTest",
@@ -47,6 +49,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
                                FactorLevelsList = NULL,
+                               OneHot = FALSE,
                                ModelObject = NULL,
                                ModelPath = NULL,
                                ModelID = NULL,
@@ -154,16 +157,35 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   CatFeatures <- names(ScoringData)[CatFeatures]
   
   # DummifyDT categorical columns----
-  ScoringData <- DummifyDT(
-    data = ScoringData,
-    cols = CatFeatures,
-    KeepFactorCols = FALSE,
-    OneHot = FALSE,
-    SaveFactorLevels = FALSE,
-    SavePath = ModelPath,
-    ImportFactorLevels = TRUE,
-    ClustScore = FALSE
-  )
+  if(!is.null(CatFeatures)) {
+    if(!is.null(FactorLevelsList)) {
+      ScoringData <- DummifyDT(
+        data = ScoringData,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = OneHot,
+        SaveFactorLevels = FALSE,
+        SavePath = ModelPath,
+        ImportFactorLevels = FALSE, 
+        FactorLevelsList = FactorLevelsList,
+        ReturnFactorLevels = FALSE,
+        ClustScore = FALSE
+      )
+    } else {
+      ScoringData <- DummifyDT(
+        data = ScoringData,
+        cols = CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = OneHot,
+        SaveFactorLevels = FALSE,
+        SavePath = ModelPath,
+        ImportFactorLevels = TRUE,
+        ReturnFactorLevels = FALSE,
+        ClustScore = FALSE
+      )
+    }
+  }
+  
   
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
