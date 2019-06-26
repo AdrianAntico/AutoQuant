@@ -6,7 +6,8 @@
 \usage{
 DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
   SaveFactorLevels = FALSE, SavePath = NULL,
-  ImportFactorLevels = FALSE, ClustScore = FALSE)
+  ImportFactorLevels = FALSE, ClustScore = FALSE,
+  ReturnFactorLevels = FALSE)
 }
 \arguments{
 \item{data}{The data set to run the micro auc on}
@@ -24,9 +25,11 @@ DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
 \item{ImportFactorLevels}{Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.}
 
 \item{ClustScore}{This is for scoring AutoKMeans. Set to FALSE for all other applications.}
+
+\item{ReturnFactorLevels}{If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels}
 }
 \value{
-data table with new dummy variables columns and optionally removes base columns
+Either a data table with new dummy variables columns and optionally removes base columns (if ReturnFactorLevels is FALSE), otherwise a list with the data.table and a list of the factor levels.
 }
 \description{
 DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
@@ -42,8 +45,14 @@ test <- data.table::data.table(Value = runif(100000),
                                       size = 100000,
                                       replace = TRUE))
 test <- DummifyDT(data = test,
-                  cols = "FactorCol",
-                  KeepFactorCols = FALSE)
+                  cols,
+                  KeepFactorCols = FALSE,
+                  OneHot = FALSE,
+                  SaveFactorLevels = FALSE,
+                  SavePath = NULL,
+                  ImportFactorLevels = FALSE,
+                  ClustScore = FALSE,
+                  ReturnFactorLevels = FALSE)
 ncol(test)
 test[, sum(FactorCol_gg)]
 }
