@@ -93,12 +93,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   if (!is.numeric(MDP_MissNum)) {
     warning("MDP_MissNum should be a numeric or integer value")
   }
-  
-  # IDcols conversion----
-  if (is.numeric(IDcols) | is.integer(IDcols)) {
-    IDcols <- names(data)[IDcols]
-  }
-  
+
   # Apply Transform Numeric Variables----
   if (TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
