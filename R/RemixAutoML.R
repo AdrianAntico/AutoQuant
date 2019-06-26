@@ -15064,7 +15064,7 @@ AutoH2OScoring <- function(Features     = data,
                            FilesPath    = NULL,
                            H20ShutDown  = rep(FALSE, 3)) {
   # If FilesPath is NULL, skip function
-  if (is.null(FilesPath)) {
+  if (!is.null(FilesPath)) {
     # Only run text or other models types
     if (any(tolower(TargetType) %in% "clustering") &
         any(tolower(TargetType) %in% "text") &
