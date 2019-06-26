@@ -398,22 +398,25 @@ AutoCatBoostCARMA <- function(data,
   TestDataEval <- TestModel$ValidationData
   TestDataEval[, Target := NULL]
   TestDataEval[, eval(DateColumnName) := NULL]
-  TransformObject <- data.table::rbindlist(list(
-    TransformObject,
-    data.table::data.table(
-      ColumnName = "Predict",
-      MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
-      Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
-      NormalizedStatistics = 0
-    )
-  ))
-  TestDataEval <- AutoTransformationScore(
-    ScoringData = TestDataEval,
-    FinalResults = TransformObject,
-    Type = "Inverse",
-    TransID = NULL,
-    Path = NULL
-  )
+  if(TargetTransformation) {
+    TransformObject <- data.table::rbindlist(list(
+      TransformObject,
+      data.table::data.table(
+        ColumnName = "Predict",
+        MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
+        Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
+        NormalizedStatistics = 0
+      )
+    ))
+    TestDataEval <- AutoTransformationScore(
+      ScoringData = TestDataEval,
+      FinalResults = TransformObject,
+      Type = "Inverse",
+      TransID = NULL,
+      Path = NULL
+    )    
+  }
+
   MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
   if (!is.null(GroupVariables)) {
     Metric <-
