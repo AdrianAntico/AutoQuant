@@ -823,11 +823,11 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # BackTransform----
-  data.table::set(TransformObject,
-                  i = 2L,
-                  j = 1L,
-                  value = "Predictions")
   if (TargetTransformation) {
+    data.table::set(TransformObject,
+                    i = 2L,
+                    j = 1L,
+                    value = "Predictions")
     UpdateData <- AutoTransformationScore(
       ScoringData = UpdateData,
       FinalResults = TransformObject,
