@@ -11,6 +11,7 @@
 #' @param SaveFactorLevels Set to TRUE to save unique levels of each factor column to file as a csv
 #' @param SavePath Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.
 #' @param ImportFactorLevels Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.
+#' @param FactorLevelsList Supply a list of factor variable levels
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
 #' @examples
@@ -30,6 +31,7 @@
 #'                   SaveFactorLevels = FALSE,
 #'                   SavePath = NULL,
 #'                   ImportFactorLevels = FALSE,
+#'                   FactorLevelsList = NULL,
 #'                   ClustScore = FALSE,
 #'                   ReturnFactorLevels = FALSE)
 #' ncol(test)
@@ -43,6 +45,7 @@ DummifyDT <- function(data,
                       SaveFactorLevels   = FALSE,
                       SavePath           = NULL,
                       ImportFactorLevels = FALSE,
+                      FactorLevelsList   = NULL,
                       ClustScore         = FALSE,
                       ReturnFactorLevels = FALSE) {
   
@@ -92,8 +95,13 @@ DummifyDT <- function(data,
     
     # Import factor levels for scoring models----
     if (ImportFactorLevels) {
-      temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
-      inds <- sort(unique(temp[[eval(col)]]))
+      if(!is.null(FactorLevelsList)) {
+        temp <- FactorLevelsList[[eval(col)]]
+        inds <- sort(unique(temp[[eval(col)]]))
+      } else {
+        temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
+        inds <- sort(unique(temp[[eval(col)]]))        
+      }
     } else {
       inds <- sort(unique(data[[eval(col)]]))
     }
