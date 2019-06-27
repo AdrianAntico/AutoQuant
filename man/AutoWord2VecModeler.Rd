@@ -4,7 +4,7 @@
 \alias{AutoWord2VecModeler}
 \title{Automated word2vec data generation via H2O}
 \usage{
-AutoWord2VecModeler(data, BuildType = "Combined",
+AutoWord2VecModeler(data, BuildType = "individual",
   stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = NULL, vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
