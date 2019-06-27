@@ -20,6 +20,7 @@
 #' @examples
 #' \donttest{
 #' data <- AutoWord2VecModeler(data,
+#'                             BuildType = "individual",
 #'                             stringCol = c("Text_Col1",
 #'                                           "Text_Col2"),
 #'                             KeepStringCol = FALSE,
