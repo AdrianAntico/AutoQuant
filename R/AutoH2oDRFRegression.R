@@ -20,7 +20,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param StopH2O Set to TRUE to have H2O shut down after running the function
+#' @param StopH2O For use in other functions.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -551,7 +551,7 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression H2O Shutdown----
   if(StopH2O) {
-    h2o::h2o.shutdown(prompt = FALSE)    
+    h2o::h2o.shutdown(prompt = FALSE)
   }
 
   # Regression Create Validation Data----
