@@ -160,11 +160,13 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Remove Target from FeatureColumnNames----
-  if (TargetColumnName %chin% FeatureColumnNames) {
-    FeatureColumnNames <-
-      FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
-  }    
-  
+  if(is.null(TargetColumnName)) {
+    if (TargetColumnName %chin% FeatureColumnNames) {
+      FeatureColumnNames <-
+        FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+    }    
+  } 
+
   # Subset Columns Needed----
   keep1 <- c(FeatureColumnNames)
   if (!is.null(IDcols)) {
