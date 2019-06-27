@@ -10,7 +10,7 @@ AutoH2oDRFRegression(data, ValidationData = NULL, TestData = NULL,
   GridTune = FALSE, MaxMem = "32G", MaxModelsInGrid = 2,
   model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo")
+  IfSaveModel = "mojo", StopH2O = TRUE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -46,6 +46,8 @@ AutoH2oDRFRegression(data, ValidationData = NULL, TestData = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
+
+\item{StopH2O}{For use in other functions.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -102,7 +104,8 @@ TestModel <- AutoH2oDRFRegression(data,
                                   NumOfParDepPlots = 3,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo")
+                                  IfSaveModel = "mojo",
+                                  StopH2O = TRUE)
 }
 }
 \seealso{
