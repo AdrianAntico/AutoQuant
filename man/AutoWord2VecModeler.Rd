@@ -4,7 +4,8 @@
 \alias{AutoWord2VecModeler}
 \title{Automated word2vec data generation via H2O}
 \usage{
-AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
+AutoWord2VecModeler(data, BuildType = "Combined",
+  stringCol = c("Text_Col1", "Text_Col2"),
   KeepStringCol = FALSE, model_path = NULL, vects = 100,
   SaveStopWords = FALSE, MinWords = 1, WindowSize = 12,
   Epochs = 25, StopWords = NULL, SaveModel = "standard",
@@ -13,6 +14,8 @@ AutoWord2VecModeler(data, stringCol = c("Text_Col1", "Text_Col2"),
 }
 \arguments{
 \item{data}{Source data table to merge vects onto}
+  
+\item{BuildType}{Select "combined" to build a single model for all columns. Otherwise a single model will be build for each text columnn}
 
 \item{stringCol}{A string name for the column to convert via word2vec}
 
