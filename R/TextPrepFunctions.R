@@ -157,14 +157,17 @@ AutoWordFreq <- function(data,
 AutoH2OTextPrepScoring <- function(data,
                                    string,
                                    MaxMem,
-                                   NThreads) {
+                                   NThreads,
+                                   StartH2O = TRUE) {
   # Ensure data.table----
   if (!is.data.table(data)) {
     data <- data.table::as.data.table((data))
   }
   data[, eval(string) := as.character(get(string))]
-  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
-  
+  if(StartH2O) {
+    h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)    
+  }
+
   # It is important to remove "\n" --
   data[, eval(string) := gsub("  ", " ", get(string))]
   data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
