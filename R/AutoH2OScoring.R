@@ -459,7 +459,8 @@ AutoH2OScoring <- function(Features     = data,
               data = Features,
               string = name,
               NThreads = NThreads,
-              MaxMem = MaxMem
+              MaxMem = MaxMem, 
+              StartH2O = FALSE
             )
             Scores <- data.table::as.data.table(h2o::h2o.transform(
               model,
