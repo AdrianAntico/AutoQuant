@@ -66,9 +66,9 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{AutoWord2VecModeler}},
   \code{\link{CreateCalendarVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{FAST_GDL_Feature_Engineering}},
   \code{\link{GDL_Feature_Engineering}},
   \code{\link{ModelDataPrep}},
+  \code{\link{Partial_DT_GDL_Feature_Engineering}},
   \code{\link{Scoring_GDL_Feature_Engineering}}
 }
 \author{
