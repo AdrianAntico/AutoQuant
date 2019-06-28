@@ -113,7 +113,7 @@ AutoWord2VecModeler <- function(data,
     # Build model----
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
-      model_id           = string,
+      model_id           = "Combined",
       word_model         = "SkipGram",
       norm_model         = "HSM",
       vec_size           = vects,
