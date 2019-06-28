@@ -76,7 +76,8 @@ data <- FAST_GDL_Feature_Engineering(data,
                                      Timer          = TRUE,
                                      SkipCols       = FALSE,
                                      SimpleImpute   = TRUE,
-                                     AscRowByGroup  = "temp")
+                                     AscRowByGroup  = "temp",
+                                     RecordsKeep    = 1)
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
