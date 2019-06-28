@@ -5,7 +5,7 @@
 \title{Automatically build the best recommender model among models available.}
 \usage{
 AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
-  RatingType = "TopN", RatingsKeep = 20,
+  ProductEvaluation = 1, RatingType = "TopN", RatingsKeep = 20,
   SkipModels = "AssociationRules", ModelMetric = "TPR")
 }
 \arguments{
@@ -16,6 +16,8 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 \item{KFolds}{Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations}
 
 \item{Ratio}{The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training}
+
+\item{ProductEvaluation}{The number of products you would like to evaluate. Negative values implement all-but schemes.}
 
 \item{RatingType}{Choose from "TopN", "ratings", "ratingMatrix"}
 
@@ -37,6 +39,7 @@ WinningModel <- AutoRecommender(RatingsMatrix,
                                 Partition = "Split",
                                 KFolds = 2,
                                 Ratio = 0.75,
+                                ProductEvaluation = 1,
                                 RatingType = "TopN",
                                 RatingsKeep = 20,
                                 SkipModels = "AssociationRules",
