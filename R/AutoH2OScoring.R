@@ -452,7 +452,7 @@ AutoH2OScoring <- function(Features     = data,
                                                                newdata = features)[, 1])
           
           # Text Scoring----
-        } else if (tolower(TargetType[i]) == c("text")) {
+        } else if (tolower(TargetType[i]) == "text") {
           if(tolower(TextType) == "individual") {
             name <- StoreFile[i, ModelName][[1]]
             data <- AutoH2OTextPrepScoring(
@@ -475,7 +475,6 @@ AutoH2OScoring <- function(Features     = data,
             
             # Loop through text columns----
             for(textCol in TextNames) {
-              textCol <- StoreFile[i, ModelName][[1]]
               data <- AutoH2OTextPrepScoring(
                 data = Features,
                 string = textCol,
