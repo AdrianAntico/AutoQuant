@@ -43,7 +43,6 @@
 #'                                      WindowingLag   = 1,
 #'                                      Type           = "Lag",
 #'                                      Timer          = TRUE,
-#'                                      SkipCols       = FALSE,
 #'                                      SimpleImpute   = TRUE,
 #'                                      AscRowByGroup  = "temp",
 #'                                      RecordsKeep    = 1)
@@ -122,9 +121,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   
   # Max data to keep----
   MAX_RECORDS_FULL <-
-    max(max(lags + 1), max(periods + 1), RecordsKeep)
-  MAX_RECORDS_LAGS <- max(max(lags + 1), RecordsKeep)
-  MAX_RECORDS_ROLL <- max(max(periods + 1), RecordsKeep)
+    max(lags + 1 + RecordsKeep, periods + 1 + RecordsKeep)
+  MAX_RECORDS_LAGS <- lags + 1 + RecordsKeep
+  MAX_RECORDS_ROLL <- periods + 1 + RecordsKeep
   
   # Set up counter for countdown----
   CounterIndicator <- 0
@@ -166,7 +165,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for (t in Targets) {
           tempData[, paste0(groupingVars[i],
                             "_LAG_",
-                            lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"),
+                            lags[l], "_", t) := data.table::shift(get(t), 
+                                                                  n = lags[l],
+                                                                  type = "lag"),
                    by = get(groupingVars[i])]
           CounterIndicator <- CounterIndicator + 1
           if (Timer) {
@@ -322,6 +323,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
               CounterIndicator <- CounterIndicator + 1
               print(CounterIndicator / runs)
             }
+            
             # Merge files----
             temp4 <-
               temp3[get(AscRowByGroup) <= eval(RecordsKeep)][, c(eval(t)) := NULL]
