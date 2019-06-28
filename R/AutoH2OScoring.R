@@ -107,15 +107,17 @@ AutoH2OScoring <- function(Features     = data,
                            ScoreMethod  = "Standard",
                            TargetType   = rep("multinomial", 3),
                            ClassVals    = rep("probs", 3),
+                           TextType     = "individual",
+                           TextNames    = NULL,
                            NThreads     = 6,
                            MaxMem       = "28G",
                            JavaOptions  = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
                            SaveToFile   = FALSE,
                            FilesPath    = NULL,
                            H20ShutDown  = rep(FALSE, 3)) {
-  # If FilesPath is NULL, skip function
+  # If FilesPath is NULL, skip function----
   if (!is.null(FilesPath)) {
-    # Only run text or other models types
+    # Only run text or other models types----
     if (any(tolower(TargetType) %in% "clustering") &
         any(tolower(TargetType) %in% "text") &
         any(
@@ -130,7 +132,7 @@ AutoH2OScoring <- function(Features     = data,
          or unsupervised models, but only one")
     }
     
-    # Import grid_tuned_paths or StoreFile
+    # Import grid_tuned_paths or StoreFile----
     if (any(
       tolower(TargetType) %in% c(
         "regression",
@@ -148,7 +150,7 @@ AutoH2OScoring <- function(Features     = data,
       warning("TargetType not a valid option")
     }
     
-    # Ensure GridTuneRow is not out of bounds
+    # Ensure GridTuneRow is not out of bounds----
     if (any(
       tolower(TargetType) %in% c(
         "regression",
@@ -177,8 +179,11 @@ AutoH2OScoring <- function(Features     = data,
     
     ScoresList <- list()
     for (i in as.integer(seq_along(GridTuneRow))) {
-      # Scoring
+      
+      # Mojo Scoring----
       if (tolower(ScoreMethod) == "mojo") {
+        
+        # Multinomial Scoring----
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == c("probs")) {
             if (SaveToFile) {
@@ -224,6 +229,8 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label or All")
           }
+          
+          # Binary Scoring----
         } else if (tolower(TargetType[i]) == "classification") {
           if (tolower(ClassVals[i]) == c("p1")) {
             if (SaveToFile) {
@@ -280,6 +287,8 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label or All")
           }
+          
+          # Regression Scoring----
         } else if (tolower(TargetType[i]) == "regression") {
           if (SaveToFile) {
             data.table::fwrite(Features, file.path(FilesPath, 'Features.csv'))
@@ -293,6 +302,8 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE
             )
           )
+          
+          # Text Scoring----
         } else if (tolower(TargetType[i]) == "text") {
           keep <- StoreFile[i, 1][[1]]
           temp <- AutoH2OTextPrepScoring(data = Features[, ..keep],
@@ -309,6 +320,8 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE
             )
           )
+          
+          # Multinomial Multilabel Scoring----
         } else if (tolower(TargetType[i]) == "multioutcome") {
           if (SaveToFile) {
             data.table::fwrite(Features, file.path(FilesPath, 'Features.csv'))
@@ -343,13 +356,15 @@ AutoH2OScoring <- function(Features     = data,
           warning("TargetType is not Multinomial,
           Classification, Regression, or Text")
         }
+        
+        # Standard Scoring----
       } else if (tolower(ScoreMethod) == "standard") {
-        # H2O Startup function
+        # H2O Startup function----
         startH2o <- function() {
           h2o::h2o.init(nthreads     = NThreads,
                         max_mem_size = MaxMem)
         }
-        # Check if H2O is running
+        # Check if H2O is running----
         tryCatch(
           expr = {
             h2o::h2o.init(startH2O = FALSE)
@@ -359,7 +374,7 @@ AutoH2OScoring <- function(Features     = data,
           }
         )
         
-        # Load model
+        # Load model----
         if (tolower(TargetType[i]) == "text") {
           model <- h2o::h2o.loadModel(path = StoreFile[i, Path])
         } else if (TargetType[i] != "clustering") {
@@ -368,7 +383,7 @@ AutoH2OScoring <- function(Features     = data,
           KMeans <-
             h2o::h2o.loadModel(path = KMeansModelFile[i + 1, FilePath1])
         }
-        # Load Features
+        # Load Features----
         if (i == 1 && tolower(TargetType[i]) != "text") {
           if (tolower(TargetType[i]) == "clustering") {
             x <- c()
@@ -393,6 +408,8 @@ AutoH2OScoring <- function(Features     = data,
             features <- h2o::as.h2o(Features)
           }
         }
+        
+        # Multinomial Scoring----
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == "probs") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
@@ -408,6 +425,8 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label, or All")
           }
+          
+          # Binary Scoring----
         } else if (tolower(TargetType[i]) == "classification") {
           if (tolower(ClassVals[i]) == "p1") {
             Scores <- data.table::as.data.table(h2o::h2o.predict(model,
@@ -426,27 +445,55 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label, or All")
           }
+          
+          # Regression Scoring----
         } else if (tolower(TargetType[i]) == "regression") {
           Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                newdata = features)[, 1])
+          
+          # Text Scoring----
         } else if (tolower(TargetType[i]) == c("text")) {
-          name <- StoreFile[i, ModelName][[1]]
-          data <- AutoH2OTextPrepScoring(
-            data = Features,
-            string = name,
-            NThreads = NThreads,
-            MaxMem = MaxMem
-          )
-          Scores <- data.table::as.data.table(h2o::h2o.transform(
-            model,
-            words = data,
-            aggregate_method = "AVERAGE"
-          ))
-          setnames(Scores, names(Scores), paste0(name,
-                                                 "_",
-                                                 names(Scores)))
-          Features <-
-            cbind(Features[, paste0(name) := NULL], Scores)
+          if(tolower(TextType) == "individual") {
+            name <- StoreFile[i, ModelName][[1]]
+            data <- AutoH2OTextPrepScoring(
+              data = Features,
+              string = name,
+              NThreads = NThreads,
+              MaxMem = MaxMem
+            )
+            Scores <- data.table::as.data.table(h2o::h2o.transform(
+              model,
+              words = data,
+              aggregate_method = "AVERAGE"
+            ))
+            setnames(Scores, names(Scores), paste0(name,
+                                                   "_",
+                                                   names(Scores)))
+            Features <-
+              cbind(Features[, paste0(name) := NULL], Scores)            
+          } else {
+            
+            # Loop through text columns----
+            for(textCol in TextNames) {
+              textCol <- StoreFile[i, ModelName][[1]]
+              data <- AutoH2OTextPrepScoring(
+                data = Features,
+                string = textCol,
+                NThreads = NThreads,
+                MaxMem = MaxMem
+              )
+              Scores <- data.table::as.data.table(h2o::h2o.transform(
+                model,
+                words = data,
+                aggregate_method = "AVERAGE"
+              ))
+              setnames(Scores, names(Scores), paste0(textCol,
+                                                     "_",
+                                                     names(Scores)))
+              Features <-
+                cbind(Features[, paste0(textCol) := NULL], Scores)              
+            }
+          }
         } else if (tolower(TargetType[i]) == "multioutcome") {
           Counts <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                newdata = features)[1, 1])
