@@ -45,7 +45,8 @@
 #'                                      Timer          = TRUE,
 #'                                      SkipCols       = FALSE,
 #'                                      SimpleImpute   = TRUE,
-#'                                      AscRowByGroup  = "temp")
+#'                                      AscRowByGroup  = "temp",
+#'                                      RecordsKeep    = 1)
 #' @export
 FAST_GDL_Feature_Engineering <- function(data,
                                          lags           = 1:5,
