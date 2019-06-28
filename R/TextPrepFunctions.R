@@ -146,18 +146,20 @@ AutoWordFreq <- function(data,
 #' @param string The name of the string column to prepare
 #' @param MaxMem Amount of memory you want to let H2O utilize
 #' @param NThreads The number of threads you want to let H2O utilize
+#' @param StartH2O Set to TRUE to have H2O start inside this function
 #' @examples
 #' \donttest{
 #' data <- AutoH2OTextPrepScoring(data = x,
 #'                                string = "text_column",
 #'                                MaxMem = "28G",
-#'                                NThreads = 8)
+#'                                NThreads = 8,
+#'                                StartH2O = TRUE)
 #' }
 #' @export
 AutoH2OTextPrepScoring <- function(data,
-                                   string,
-                                   MaxMem,
-                                   NThreads,
+                                   string = NULL,
+                                   MaxMem = NULL,
+                                   NThreads = NULL,
                                    StartH2O = TRUE) {
   # Ensure data.table----
   if (!is.data.table(data)) {
