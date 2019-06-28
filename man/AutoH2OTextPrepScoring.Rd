@@ -4,7 +4,8 @@
 \alias{AutoH2OTextPrepScoring}
 \title{AutoH2OTextPrepScoring is for NLP scoring}
 \usage{
-AutoH2OTextPrepScoring(data, string, MaxMem, NThreads)
+AutoH2OTextPrepScoring(data, string = NULL, MaxMem = NULL,
+  NThreads = NULL, StartH2O = TRUE)
 }
 \arguments{
 \item{data}{The text data}
@@ -14,6 +15,8 @@ AutoH2OTextPrepScoring(data, string, MaxMem, NThreads)
 \item{MaxMem}{Amount of memory you want to let H2O utilize}
 
 \item{NThreads}{The number of threads you want to let H2O utilize}
+
+\item{StartH2O}{Set to TRUE to have H2O start inside this function}
 }
 \description{
 This function returns prepared tokenized data for H2O Word2VecModeler scoring
@@ -23,7 +26,8 @@ This function returns prepared tokenized data for H2O Word2VecModeler scoring
 data <- AutoH2OTextPrepScoring(data = x,
                                string = "text_column",
                                MaxMem = "28G",
-                               NThreads = 8)
+                               NThreads = 8,
+                               StartH2O = TRUE)
 }
 }
 \seealso{

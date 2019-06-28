@@ -6,7 +6,8 @@
 \usage{
 AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
   ScoreMethod = "Standard", TargetType = rep("multinomial", 3),
-  ClassVals = rep("probs", 3), NThreads = 6, MaxMem = "28G",
+  ClassVals = rep("probs", 3), TextType = "individual",
+  TextNames = NULL, NThreads = 6, MaxMem = "28G",
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
   SaveToFile = FALSE, FilesPath = NULL, H20ShutDown = rep(FALSE, 3))
 }
