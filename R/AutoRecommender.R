@@ -7,6 +7,7 @@
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
 #' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
 #' @param Ratio The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training
+#' @param ProductEvaluation The number of products you would like to evaluate. Negative values implement all-but schemes.   
 #' @param RatingType Choose from "TopN", "ratings", "ratingMatrix"
 #' @param RatingsKeep The total ratings you wish to return. Default is 20.
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
@@ -17,6 +18,7 @@
 #'                                 Partition = "Split",
 #'                                 KFolds = 2,
 #'                                 Ratio = 0.75,
+#'                                 ProductEvaluation = 1,
 #'                                 RatingType = "TopN",
 #'                                 RatingsKeep = 20,
 #'                                 SkipModels = "AssociationRules",
@@ -28,6 +30,7 @@ AutoRecommender <- function(data,
                             Partition   = "Split",
                             KFolds      = 2,
                             Ratio       = 0.75,
+                            ProductEvaluation = 1,
                             RatingType  = "TopN",
                             RatingsKeep = 20,
                             SkipModels  = "AssociationRules",
@@ -76,7 +79,7 @@ AutoRecommender <- function(data,
     method     = tolower(Partition),
     k          = KFolds,
     train      = Ratio,
-    given      = 1,
+    given      = ProductEvaluation,
     goodRating = 1
   )
   
