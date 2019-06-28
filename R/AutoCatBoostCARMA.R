@@ -647,7 +647,7 @@ AutoCatBoostCARMA <- function(data,
         Preds <- RemixAutoML::AutoCatBoostScoring(
           TargetType = "regression",
           ScoringData = UpdateData[.N, ],
-          FeatureColNames = setdiff(names(UpdateData),
+          FeatureColumnNames = setdiff(names(UpdateData),
                                     c(
                                       "Predictions",
                                       eval(DateColumnName),
