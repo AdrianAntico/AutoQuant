@@ -20,6 +20,7 @@
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
+#' @param AscRowRemove Set to TRUE to remove the AscRowByGroup column upon returning data.
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
 #' N = 25116
@@ -45,7 +46,8 @@
 #'                                      Timer          = TRUE,
 #'                                      SimpleImpute   = TRUE,
 #'                                      AscRowByGroup  = "temp",
-#'                                      RecordsKeep    = 1)
+#'                                      RecordsKeep    = 1,
+#'                                      AscRowRemove   = TRUE)
 #' @export
 Partial_DT_GDL_Feature_Engineering <- function(data,
                                                lags           = c(seq(1,5,1)),
@@ -61,7 +63,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                                Timer          = TRUE,
                                                SimpleImpute   = TRUE,
                                                AscRowByGroup  = "temp",
-                                               RecordsKeep    = 1) {
+                                               RecordsKeep    = 1,
+                                               AscRowRemove   = TRUE) {
   # Argument Checks----
   if (is.null(lags) & WindowingLag == 1) {
     lags <- 1
@@ -513,8 +516,12 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
     }
 
-    # Done!!
-    return(FinalData[, get(AscRowByGroup) := NULL])
+    # Done----
+    if(AscRowRemove) {
+      return(FinalData[, get(AscRowByGroup) := NULL])      
+    } else {
+      return(FinalData)
+    }
     
     # Non-grouping case----
   } else {
@@ -827,6 +834,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Done----
-    return(FinalData[, get(AscRowByGroup) := NULL])
+    if(AscRowRemove) {
+      return(FinalData[, get(AscRowByGroup) := NULL])      
+    } else {
+      return(FinalData)
+    }
   }
 }
