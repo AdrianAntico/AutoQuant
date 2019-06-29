@@ -46,7 +46,7 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 }
 \description{
-For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups.
+For scoring purposes of a single record when 1 or 0 groups were utilized in the DT_GDL_Feature_Engineering() function. This function runs internally inside the CARMA functions but might have use outside of it.
 }
 \examples{
 N = 25116

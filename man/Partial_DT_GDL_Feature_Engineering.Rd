@@ -84,7 +84,7 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
 
-\item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
+\item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).}
 
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
 }
