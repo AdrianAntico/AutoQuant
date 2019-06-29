@@ -10,14 +10,16 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
   targets = c("Target"), groupingVars = NULL,
   sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
   timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1,
+  AscRowRemove = TRUE)
 
 Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
   periods = c(3, 5, 10, 15, 20, 25), statsNames = c("MA"),
   targets = c("Target"), groupingVars = NULL,
   sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
   timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1,
+  AscRowRemove = TRUE)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -49,6 +51,8 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
 
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
+
+\item{AscRowRemove}{Set to TRUE to remove the AscRowByGroup column upon returning data.}
 
 \item{statsFUNs}{Vector of functions for your rolling windows, such as mean, sd, min, max, quantile}
 
@@ -147,7 +151,8 @@ data <- Partial_DT_GDL_Feature_Engineering(data,
                                      Timer          = TRUE,
                                      SimpleImpute   = TRUE,
                                      AscRowByGroup  = "temp",
-                                     RecordsKeep    = 1)
+                                     RecordsKeep    = 1,
+                                     AscRowRemove   = TRUE)
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
