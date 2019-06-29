@@ -512,9 +512,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-    
+
     # Done!!
-    return(FinalData)
+    return(FinalData[, get(AscRowByGroup) := NULL])
     
     # Non-grouping case----
   } else {
@@ -826,7 +826,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
     }
     
-    # Done!!
-    return(FinalData)
+    # Done----
+    return(FinalData[, get(AscRowByGroup) := NULL])
   }
 }
