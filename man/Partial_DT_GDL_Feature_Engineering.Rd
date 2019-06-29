@@ -5,19 +5,19 @@
 \alias{Partial_DT_GDL_Feature_Engineering}
 \title{A version of the DT_GDL function for creating the GDL features for a subset of records in your data}
 \usage{
-Partial_DT_GDL_Feature_Engineering(data, lags = 1:5, periods = seq(10,
-  50, 10), statsNames = "MA", targets = "Target",
-  groupingVars = "GroupVariable", sortDateName = "DateTime",
-  timeDiffTarget = NULL, timeAgg = NULL, WindowingLag = 1,
-  Type = "Lag", Timer = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = "temp", RecordsKeep = 1)
+Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
+  periods = c(3, 5, 10, 15, 20, 25), statsNames = c("MA"),
+  targets = c("Target"), groupingVars = NULL,
+  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
+  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 
-Partial_DT_GDL_Feature_Engineering(data, lags = 1:5, periods = seq(10,
-  50, 10), statsNames = "MA", targets = "Target",
-  groupingVars = "GroupVariable", sortDateName = "DateTime",
-  timeDiffTarget = NULL, timeAgg = NULL, WindowingLag = 1,
-  Type = "Lag", Timer = FALSE, SimpleImpute = TRUE,
-  AscRowByGroup = "temp", RecordsKeep = 1)
+Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
+  periods = c(3, 5, 10, 15, 20, 25), statsNames = c("MA"),
+  targets = c("Target"), groupingVars = NULL,
+  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
+  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
+  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
