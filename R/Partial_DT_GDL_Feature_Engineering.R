@@ -18,7 +18,7 @@
 #' @param Timer Set to TRUE if you percentage complete tracker printout
 #' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)
+#' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
@@ -48,8 +48,8 @@
 #'                                      RecordsKeep    = 1)
 #' @export
 Partial_DT_GDL_Feature_Engineering <- function(data,
-                                               lags           = c(seq(1, 5, 1)),
-                                               periods        = c(3, 5, 10, 15, 20, 25),
+                                               lags           = c(seq(1,5,1)),
+                                               periods        = c(3,5,10,15,20,25),
                                                statsNames     = c("MA"),
                                                targets        = c("Target"),
                                                groupingVars   = NULL,
