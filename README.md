@@ -253,11 +253,11 @@ Generalized low rank model followed by KMeans. (Possible cross with Feature Engi
 ##### **DT_GDL_Feature_Engineering()**
 Builds autoregressive and moving average features from target columns and distributed lags and distributed moving average from independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups. 100% data.table built. It runs super fast and can handle big data.
 
+##### **Partial_DT_GDL_Feature_Engineering()**
+For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. For generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set (such as new records in a data base). Column names will match exactly and ordering will be identical to DT_GDL_Feature_Engineering().
+
 ##### **Scoring_GDL_Feature_Engineering()**
 For scoring purposes (brings back a single row by group), this function creates autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups. The column names will 100% match those from DT_GDL_Feature_Engineering() so you can easily productionize those features with low latency.
-
-##### **Partial_DT_GDL_Feature_Engineering()**
-For generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set (such as new records in a data base). 100% data.table.
 
 ##### **AutoWord2VecModeler()**
 Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
