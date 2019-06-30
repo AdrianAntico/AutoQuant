@@ -288,10 +288,10 @@ Builds autoregressive and rolling stats from target columns and distributed lags
 <p>
 
 ##### **ParDepCalPlots()**
-Great for features effects estimation and reliability of model in predicting those effects. Build a partial dependence calibration plot on train, test, or all data
+Great for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot or box plot.
 
 ##### **EvalPlot()**
-Great for assessing accuracy across range of predicted values. Build a calibration plot on test data
+Two versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
 ##### **threshOptim()**
 Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
