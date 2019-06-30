@@ -5,7 +5,7 @@
 \title{The AutoRecomScoring function scores recommender models from AutoRecommender()}
 \usage{
 AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
-  ProductColName = "StockCode")
+  ProductColName = "StockCode", NumItemsReturn = 1)
 }
 \arguments{
 \item{data}{The binary ratings matrix from RecomDataCreate()}
@@ -15,6 +15,8 @@ AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
 \item{EntityColName}{Typically your customer ID}
 
 \item{ProductColName}{Something like "StockCode"}
+
+\item{NumItemsReturn}{Number of items to return on scoring}
 }
 \value{
 Returns the prediction data
