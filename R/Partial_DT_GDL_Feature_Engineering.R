@@ -173,9 +173,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       Rows <- c()
       for(x in as.integer(seq_along(rows))) {
         if(x == 1) {
-          Rows <- rows[x]:(rows[x]-MaxCols*2)
+          Rows <- rows[x]:(rows[x]-MaxCols)
         } else {
-          Rows <- c(Rows, rows[x]:(rows[x]-MaxCols*2))
+          Rows <- c(Rows, rows[x]:(rows[x]-MaxCols))
         }
       }
       datax <- datax[Rows]
@@ -537,7 +537,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
 
     # Done----
     if(AscRowRemove) {
-      return(FinalData[, get(AscRowByGroup) := NULL])      
+      return(FinalData[, get(AscRowByGroup) := NULL])
     } else {
       return(FinalData)
     }
