@@ -100,7 +100,7 @@ data.table of original data plus created lags, rolling stats, and time between e
 \description{
 A version of the DT_GDL function for creating the GDL features for a subset of records in your data. Create the same lags, moving averages, and the like off of time between records. 100% data.table.
 
-A version of the DT_GDL function for creating the GDL features for a subset of records in your data. Create the same lags, moving averages, and the like off of time between records. 100% data.table.
+For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
 }
 \examples{
 N = 25116
