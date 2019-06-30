@@ -170,7 +170,24 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       
       # Subset data for the rows needed to compute MaxCols----
       rows <- datax[, .I[get(AscRowByGroup) %in% 1:RecordsKeep]]
-      datax <- datax[(min(rows)-MaxCols):max(rows)]
+      Rows <- c()
+      for(x in as.integer(seq_along(rows))) {
+        if(x == 1) {
+          Rows <- rows[x]:(rows[x]-MaxCols*2)
+        } else {
+          Rows <- c(Rows, rows[x]:(rows[x]-MaxCols*2))
+        }
+      }
+      datax <- datax[Rows]
+      
+      # Sort data----
+      if (tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1])
+        data.table::setorderv(datax, colVar, order = 1)
+      } else {
+        colVar <- c(groupingVars[i], sortDateName[1])
+        data.table::setorderv(datax, colVar, order = -1)
+      }
       
       # Lags----
       data1 <- data.table::copy(datax)
@@ -178,7 +195,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for (t in Targets) {
           data1[, paste0(groupingVars[i],
                          "_LAG_",
-                         l, "_", t) := data.table::shift(get(t), n = l, type = "lag"),
+                         l, "_", t) := data.table::shift(get(t), 
+                                                         n = l, 
+                                                         type = "lag"),
                 by = get(groupingVars[i])]
           CounterIndicator <- CounterIndicator + 1
           
@@ -525,6 +544,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Non-grouping case----
   } else {
+    Targets <- targets
     
     # Sort data----
     if (tolower(Type) == "lag") {
@@ -534,11 +554,27 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = -1)
     }
-    Targets <- targets
     
     # Subset data for the rows needed to compute MaxCols----
     rows <- data[, .I[get(AscRowByGroup) %in% 1:RecordsKeep]]
-    data <- data[(min(rows)-MaxCols):max(rows)]
+    Rows <- c()
+    for(x in seq_along(rows)) {
+      if(x == 1) {
+        Rows <- rows[x]:(rows[x]-MaxCols)
+      } else {
+        Rows <- c(Rows, rows[x]:(rows[x]-MaxCols))
+      }
+    }
+    data <- data[Rows]
+    
+    # Sort data----
+    if (tolower(Type) == "lag") {
+      colVar <- c(sortDateName[1])
+      data.table::setorderv(data, colVar, order = 1)
+    } else {
+      colVar <- c(sortDateName[1])
+      data.table::setorderv(data, colVar, order = -1)
+    }
     
     # Lags----
     data1 <- data.table::copy(data)
