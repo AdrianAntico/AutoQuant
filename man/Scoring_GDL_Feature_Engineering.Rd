@@ -40,7 +40,7 @@ Scoring_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with 1 being the record for scoring (typically the most current in time)}
 
-\item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
+\item{RecordsKeep}{Keep set to 1. Any larger value and the results will not be what you intend. I'll remove it eventually. If you want more than 1, look up Partial_DT_GDL_Feature_Engineering().}
 }
 \value{
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
