@@ -117,6 +117,26 @@ DT_GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
   
+  # Ensure enough columns are allocated beforehand----
+  if(!is.null(groupingVars)) {
+    if(max(max(lags + 1), max(periods + 1)) * 
+       length(groupingVars) * 
+       tarNum > data.table::truelength(data)) {
+      data.table::alloc.col(DT = data, 
+                            n = ncol(data) +
+                              max(max(lags + 1), max(periods + 1)) *
+                              length(groupingVars) * 
+                              tarNum)
+    }
+  } else {
+    if(max(max(lags + 1), max(periods + 1)) > 1000) {
+      data.table::alloc.col(DT = data, 
+                            n = ncol(data) + 
+                              MaxCols * 
+                              tarNum)
+    }
+  }
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
