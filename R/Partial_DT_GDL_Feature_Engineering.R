@@ -140,6 +140,24 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     tarNum <- length(targets)
   }
   
+  # Ensure enough columns are allocated beforehand----
+  if(!is.null(groupingVars)) {
+    if(MaxCols * length(groupingVars) * tarNum > data.table::truelength(data)) {
+      data.table::alloc.col(DT = data, 
+                            n = ncol(data) +
+                              MaxCols *
+                              length(groupingVars) *
+                              tarNum)
+    }
+  } else {
+    if(MaxCols * tarNum > data.table::truelength(data)) {
+      data.table::alloc.col(DT = data, 
+                            n = ncol(data) + 
+                              MaxCols * 
+                              tarNum)
+    }
+  }
+  
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
