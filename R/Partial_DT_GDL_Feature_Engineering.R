@@ -198,7 +198,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                          l, "_", t) := data.table::shift(get(t), 
                                                          n = l, 
                                                          type = "lag"),
-                by = get(groupingVars[i])]
+                by = eval(groupingVars[i])]
           CounterIndicator <- CounterIndicator + 1
           
           # Store column names MA's and subsetting----
@@ -244,7 +244,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                          l) := data.table::shift(get(sortDateName),
                                                  n = l,
                                                  type = "lag"), 
-                by = get(groupingVars[i])]
+                by = eval(groupingVars[i])]
         }
         
         # Difference the lag dates----
@@ -259,7 +259,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                  groupingVars[i], "TEMP", l
                                )),
                                units = eval(timeAgg)
-                             )), by = get(groupingVars[i])]
+                             )), by = eval(groupingVars[i])]
               
               # TimeLagCols----
               TimeLagCols <- c(paste0(groupingVars[i],
@@ -285,7 +285,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                              get(
                                paste0(groupingVars[i], "TEMP", l)
                              ),
-                             units = eval(timeAgg))), by = get(groupingVars[i])]
+                             units = eval(timeAgg))), by = eval(groupingVars[i])]
               
               # TimeLagCols----
               TimeLagCols <- c(TimeLagCols,
@@ -319,7 +319,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                  groupingVars[i], "TEMP", l
                                )),
                                units = eval(timeAgg)
-                             )), by = get(groupingVars[i])]
+                             )), by = eval(groupingVars[i])]
               
               # TimeLagCols----
               TimeLagCols <- c(paste0(groupingVars[i],
@@ -347,7 +347,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                              get(
                                paste0(groupingVars[i], "TEMP", l)
                              ),
-                             units = eval(timeAgg))), by = get(groupingVars[i])]
+                             units = eval(timeAgg))), by = eval(groupingVars[i])]
               
               # TimeLagCols----
               TimeLagCols <- c(TimeLagCols,
