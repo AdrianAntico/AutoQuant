@@ -40,6 +40,7 @@ AutoRecommenderScoring <- function(data,
                                    ProductColName = "StockCode") {
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
+  requireNamespace("data.table", quietly = FALSE)
   
   # Setup winning model and arguments----
   if (WinningModel == "AR") {
