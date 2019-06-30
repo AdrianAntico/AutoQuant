@@ -91,6 +91,7 @@ AutoRecommenderScoring <- function(data,
   rm(cl)
   
   # Finalize data transformations: append list of data.tables, add ProductRank, gsub x 2, add ts
+  if(!data.table::is.data.table(results)) results <- data.table::as.data.table(results)
   results[, ProductRank := seq_len(.N), by = eval(EntityColName)]
   results[, ':=' (TimeStamp = as.character(Sys.time()))]
   
