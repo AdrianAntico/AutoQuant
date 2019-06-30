@@ -7,6 +7,7 @@
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
 #' @param ProductColName Something like "StockCode"
+#' @param NumItemsReturn Number of items to return on scoring
 #' @return Returns the prediction data
 #' @examples
 #' \donttest{
@@ -37,7 +38,8 @@
 AutoRecommenderScoring <- function(data,
                                    WinningModel,
                                    EntityColName  = "CustomerID",
-                                   ProductColName = "StockCode") {
+                                   ProductColName = "StockCode",
+                                   NumItemsReturn = 1) {
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace("data.table", quietly = FALSE)
@@ -74,7 +76,7 @@ AutoRecommenderScoring <- function(data,
     data <- methods::as(recommenderlab::predict(recommender,
                                                 i,
                                                 type = "topNList",
-                                                n = 10),
+                                                n = NumItemsReturn),
                         "list")
     
     # Data transformations----
