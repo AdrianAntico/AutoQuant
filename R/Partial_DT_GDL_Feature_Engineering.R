@@ -1,54 +1,21 @@
-#' A version of the DT_GDL function for creating the GDL features for a new set of records
-#'
-#' For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
-#' @author Adrian Antico
-#' @family Feature Engineering
-#' @param data A data.table you want to run the function on
-#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
-#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
-#' @param statsFUNs Vector of functions for your rolling windows, such as mean, sd, min, max, quantile
-#' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
-#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
-#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
-#' @param sortDateName The column name of your date column used to sort events over time
-#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
-#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
-#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
-#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
-#' @param Timer Set to TRUE if you percentage complete tracker printout
-#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
-#' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
-#' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
-#' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
-#' @param AscRowRemove Set to TRUE to remove the AscRowByGroup column upon returning data.
-#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
-#' @examples
-#' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(N,
-#'                                mean = 50,
-#'                                sd = 20),
-#'                          filter=rep(1,10),
-#'                          circular=TRUE))
-#' data[, temp := seq(1:N)][, DateTime := DateTime - temp]
-#' data <- data[order(DateTime)]
-#' data <- Partial_DT_GDL_Feature_Engineering(data,
-#'                                            lags           = c(1:5),
-#'                                            periods        = c(seq(10,50,10)),
-#'                                            statsNames     = "mean",
-#'                                            targets        = c("Target"),
-#'                                            groupingVars   = NULL,
-#'                                            sortDateName   = "DateTime",
-#'                                            timeDiffTarget = c("Time_Gap"),
-#'                                            timeAgg        = "days",
-#'                                            WindowingLag   = 1,
-#'                                            Type           = "Lag",
-#'                                            Timer          = TRUE,
-#'                                            SimpleImpute   = TRUE,
-#'                                            AscRowByGroup  = "temp",
-#'                                            RecordsKeep    = 1,
-#'                                            AscRowRemove   = TRUE)
-#' @export
+library(RemixAutoML)
+library(data.table)
+lags           = c(seq(1,20,1))
+periods        = c(seq(2,100,2))
+statsNames     = "MA"
+targets        = c("PLND_LABOR_UNITS")
+groupingVars   = names(data)[4:7]
+sortDateName   = "PLND_STRT_DT"
+timeDiffTarget = NULL
+timeAgg        = NULL
+WindowingLag   = 1
+Type           = "Lag"
+Timer          = TRUE
+SimpleImpute   = TRUE
+AscRowByGroup  = "temp"
+RecordsKeep    = 10
+AscRowRemove   = TRUE
+
 Partial_DT_GDL_Feature_Engineering <- function(data,
                                                lags           = c(seq(1,5,1)),
                                                periods        = c(3,5,10,15,20,25),
@@ -430,65 +397,96 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             incre <- incre + 1L
             
             # Check if target is for time between records or not----
-            if(grepl(pattern = eval(timeDiffTarget),x = t)) {
-              data1[, eval(paste0(groupingVars[i],
+            if(!is.null(timeDiffTarget)) {
+              if(grepl(pattern = eval(timeDiffTarget),x = t)) {
+                data1[, eval(paste0(groupingVars[i],
                                     statsNames[k],
                                     "_",
                                     j,
                                     "_",
                                     t)) := Matrix::rowMeans(.SD), .SDcols = TimeLagCols[1:j]]
-              if(incre == 1) {
-                PeriodKeep <-  paste0(groupingVars[i],
-                                      statsNames[k],
-                                      "_",
-                                      j,
-                                      "_",
-                                      t)
-                
-              } else {
-                PeriodKeep <-  c(PeriodKeep, 
-                                 paste0(groupingVars[i],
+                if(incre == 1) {
+                  PeriodKeep <-  paste0(groupingVars[i],
                                         statsNames[k],
                                         "_",
                                         j,
                                         "_",
-                                        t))
-              }
-              
-              # Update----
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
-              
-            } else {
-              data1[, eval(paste0(groupingVars[i],
+                                        t)
+                  
+                } else {
+                  PeriodKeep <-  c(PeriodKeep, 
+                                   paste0(groupingVars[i],
+                                          statsNames[k],
+                                          "_",
+                                          j,
+                                          "_",
+                                          t))
+                }
+                
+                # Update----
+                CounterIndicator <- CounterIndicator + 1
+                if (Timer) {
+                  print(CounterIndicator / runs)
+                }
+                
+              } else {
+                data1[, eval(paste0(groupingVars[i],
                                     statsNames[k],
                                     "_",
                                     j,
                                     "_",
                                     t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
-              if(incre == 1) {
-                PeriodKeep <-  paste0(groupingVars[i],
-                                      statsNames[k],
-                                      "_",
-                                      j,
-                                      "_",
-                                      t)
-              } else {
-                PeriodKeep <-  c(PeriodKeep, 
-                                 paste0(groupingVars[i],
+                if(incre == 1) {
+                  PeriodKeep <-  paste0(groupingVars[i],
                                         statsNames[k],
                                         "_",
                                         j,
                                         "_",
-                                        t))
-              }
-              
-              # Update----
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
+                                        t)
+                } else {
+                  PeriodKeep <-  c(PeriodKeep, 
+                                   paste0(groupingVars[i],
+                                          statsNames[k],
+                                          "_",
+                                          j,
+                                          "_",
+                                          t))
+                }
+                
+                # Update----
+                CounterIndicator <- CounterIndicator + 1
+                if (Timer) {
+                  print(CounterIndicator / runs)
+                }
+              } else {
+                data1[, eval(paste0(groupingVars[i],
+                                    statsNames[k],
+                                    "_",
+                                    j,
+                                    "_",
+                                    t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+                if(incre == 1) {
+                  PeriodKeep <-  paste0(groupingVars[i],
+                                        statsNames[k],
+                                        "_",
+                                        j,
+                                        "_",
+                                        t)
+                } else {
+                  PeriodKeep <-  c(PeriodKeep, 
+                                   paste0(groupingVars[i],
+                                          statsNames[k],
+                                          "_",
+                                          j,
+                                          "_",
+                                          t))
+                }
+                
+                # Update----
+                CounterIndicator <- CounterIndicator + 1
+                if (Timer) {
+                  print(CounterIndicator / runs)
+                }
               }
             }
           }
@@ -552,7 +550,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         }
       }
     }
-
+    
     # Done----
     if(AscRowRemove) {
       return(FinalData[, get(AscRowByGroup) := NULL])
@@ -598,7 +596,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     for (l in seq_len(MaxCols)) {
       for (t in Targets) {
         data[, paste0("LAG_",
-                       l, "_", t) := data.table::shift(get(t), n = l, type = "lag")]
+                      l, "_", t) := data.table::shift(get(t), n = l, type = "lag")]
         CounterIndicator <- CounterIndicator + 1
         
         # Store column names MA's and subsetting----
@@ -636,9 +634,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       # Lag the dates first----
       for (l in seq_len(MaxCols+1)) {
         data[, paste0("TEMP",
-                       l) := data.table::shift(get(sortDateName),
-                                               n = l,
-                                               type = "lag")]
+                      l) := data.table::shift(get(sortDateName),
+                                              n = l,
+                                              type = "lag")]
       }
       
       # Difference the lag dates----
@@ -646,10 +644,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for (l in seq_len(MaxCols)) {
           if (l == 1) {
             data[, paste0(timeDiffTarget,
-                           l) := as.numeric(difftime(
-                             get(sortDateName),
-                             get(paste0("TEMP", l)),
-                             units = eval(timeAgg)))]
+                          l) := as.numeric(difftime(
+                            get(sortDateName),
+                            get(paste0("TEMP", l)),
+                            units = eval(timeAgg)))]
             
             # TimeLagCols----
             TimeLagCols <- paste0(timeDiffTarget,
@@ -666,13 +664,13 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             }
           } else {
             data[, paste0(timeDiffTarget,
-                           l) := as.numeric(difftime(get(
-                             paste0("TEMP", (l - 1))
-                           ),
-                           get(
-                             paste0("TEMP", l)
-                           ),
-                           units = eval(timeAgg)))]
+                          l) := as.numeric(difftime(get(
+                            paste0("TEMP", (l - 1))
+                          ),
+                          get(
+                            paste0("TEMP", l)
+                          ),
+                          units = eval(timeAgg)))]
             
             # TimeLagCols----
             TimeLagCols <- c(TimeLagCols,
@@ -697,11 +695,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for (l in seq_along(lags)) {
           if (l == 1) {
             data[, paste0(timeDiffTarget,
-                           l) := as.numeric(difftime(
-                             get(sortDateName),
-                             get(paste0("TEMP", l
-                             )),
-                             units = eval(timeAgg)))]
+                          l) := as.numeric(difftime(
+                            get(sortDateName),
+                            get(paste0("TEMP", l
+                            )),
+                            units = eval(timeAgg)))]
             
             # TimeLagCols----
             TimeLagCols <- paste0(timeDiffTarget,
@@ -719,13 +717,13 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             }
           } else {
             data[, paste0(timeDiffTarget,
-                           l) := as.numeric(difftime(get(
-                             paste0("TEMP", (l - 1))
-                           ),
-                           get(
-                             paste0("TEMP", l)
-                           ),
-                           units = eval(timeAgg)))]
+                          l) := as.numeric(difftime(get(
+                            paste0("TEMP", (l - 1))
+                          ),
+                          get(
+                            paste0("TEMP", l)
+                          ),
+                          units = eval(timeAgg)))]
             
             # TimeLagCols----
             TimeLagCols <- c(TimeLagCols,
@@ -788,39 +786,67 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
           incre <- incre + 1L
           
           # Check if target is for time between records or not----
-          if(grepl(pattern = eval(timeDiffTarget),x = t)) {
-            data[, eval(paste0(statsNames[k],
-                                  "_",
-                                  j,
-                                  "_",
-                                  t)) := Matrix::rowMeans(.SD), .SDcols = TimeLagCols[1:j]]
-            if(incre == 1) {
-              PeriodKeep <-  paste0(statsNames[k],
-                                    "_",
-                                    j,
-                                    "_",
-                                    t)
-            } else {
-              PeriodKeep <-  c(PeriodKeep, 
-                               paste0(statsNames[k],
+          if(!is.null(timeDiffTarget)) {
+            if(grepl(pattern = eval(timeDiffTarget),x = t)) {
+              data[, eval(paste0(statsNames[k],
+                                 "_",
+                                 j,
+                                 "_",
+                                 t)) := Matrix::rowMeans(.SD), .SDcols = TimeLagCols[1:j]]
+              if(incre == 1) {
+                PeriodKeep <-  paste0(statsNames[k],
                                       "_",
                                       j,
                                       "_",
-                                      t))
+                                      t)
+              } else {
+                PeriodKeep <-  c(PeriodKeep, 
+                                 paste0(statsNames[k],
+                                        "_",
+                                        j,
+                                        "_",
+                                        t))
+              }
+              
+              # Update----
+              CounterIndicator <- CounterIndicator + 1
+              if (Timer) {
+                print(CounterIndicator / runs)
+              }
+              
+            } else {
+              data[, eval(paste0(statsNames[k],
+                                 "_",
+                                 j,
+                                 "_",
+                                 t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+              if(incre == 1) {
+                PeriodKeep <-  paste0(statsNames[k],
+                                      "_",
+                                      j,
+                                      "_",
+                                      t)
+              } else {
+                PeriodKeep <-  c(PeriodKeep, 
+                                 paste0(statsNames[k],
+                                        "_",
+                                        j,
+                                        "_",
+                                        t))
+              }
+              
+              # Update----
+              CounterIndicator <- CounterIndicator + 1
+              if (Timer) {
+                print(CounterIndicator / runs)
+              }
             }
-            
-            # Update----
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
-            
           } else {
             data[, eval(paste0(statsNames[k],
-                                  "_",
-                                  j,
-                                  "_",
-                                  t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+                               "_",
+                               j,
+                               "_",
+                               t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
             if(incre == 1) {
               PeriodKeep <-  paste0(statsNames[k],
                                     "_",
