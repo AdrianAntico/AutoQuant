@@ -573,7 +573,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
           FinalData <- merge(FinalData, 
                              data1[, ..keep], 
                              by = eval(AscRowByGroup), 
-                             all = FALSE)
+                             all = TRUE)
         }
       }
     }
