@@ -1,7 +1,78 @@
 #' Partial_DT_GDL_Feature_Engineering
-
-
-
+#' 
+#' A version of the DT_GDL function for creating the GDL features for a subset of records in your data
+#' 
+#' @family Feature Engineering
+#' @author Adrian Antico
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1
+#' @param periods 
+#' @param statsNames 
+#' @param targets 
+#' @param groupingVars 
+#' @param sortDateName 
+#' @param timeDiffTarget 
+#' @param timeAgg
+#' @param WindowingLag
+#' @param Type 
+#' @param Timer 
+#' @param SimpleImpute 
+#' @param AscRowByGroup 
+#' @param RecordsKeep 
+#' @param AscRowRemove
+#' \donttest{
+#' N = 25116
+#'   data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#'                                  Target = stats::filter(rnorm(N,
+#'                                                               mean = 50,
+#'                                                               sd = 20),
+#'                                                         filter=rep(1,10),
+#'                                                         circular=TRUE))
+#'   data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#'   data <- data[order(DateTime)]
+#'   data <- Partial_DT_GDL_Feature_Engineering(data,
+#'                                              lags           = c(1:5),
+#'                                              periods        = c(seq(10,50,10)),
+#'                                              statsNames     = "mean",
+#'                                              targets        = c("Target"),
+#'                                              groupingVars   = NULL,
+#'                                              sortDateName   = "DateTime",
+#'                                              timeDiffTarget = c("Time_Gap"),
+#'                                              timeAgg        = "days",
+#'                                              WindowingLag   = 1,
+#'                                              Type           = "Lag",
+#'                                              Timer          = TRUE,
+#'                                              SkipCols       = FALSE,
+#'                                              SimpleImpute   = TRUE,
+#'                                              AscRowByGroup  = "temp",
+#'                                              RecordsKeep    = 1)
+#'   N = 25116
+#'   data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#'                                  Target = stats::filter(rnorm(N,
+#'                                                               mean = 50,
+#'                                                               sd = 20),
+#'                                                         filter=rep(1,10),
+#'                                                         circular=TRUE))
+#'   data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#'   data <- data[order(DateTime)]
+#'   data <- Partial_DT_GDL_Feature_Engineering(data,
+#'                                              lags           = c(1:5),
+#'                                              periods        = c(seq(10,50,10)),
+#'                                              statsNames     = "mean",
+#'                                              targets        = c("Target"),
+#'                                              groupingVars   = NULL,
+#'                                              sortDateName   = "DateTime",
+#'                                              timeDiffTarget = c("Time_Gap"),
+#'                                              timeAgg        = "days",
+#'                                              WindowingLag   = 1,
+#'                                              Type           = "Lag",
+#'                                              Timer          = TRUE,
+#'                                              SimpleImpute   = TRUE,
+#'                                              AscRowByGroup  = "temp",
+#'                                              RecordsKeep    = 1,
+#'                                              AscRowRemove   = TRUE)
+#' }
+#' }
 #' @return Returns data.table with lags and moving averages
 #' @export
 Partial_DT_GDL_Feature_Engineering <- function(data,
