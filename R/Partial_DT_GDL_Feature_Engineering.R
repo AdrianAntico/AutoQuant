@@ -1,4 +1,9 @@
+#' Partial_DT_GDL_Feature_Engineering
 
+
+
+#' @return Returns data.table with lags and moving averages
+#' @export
 Partial_DT_GDL_Feature_Engineering <- function(data,
                                                lags           = c(seq(1,5,1)),
                                                periods        = c(3,5,10,15,20,25),
@@ -441,35 +446,35 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                 if (Timer) {
                   print(CounterIndicator / runs)
                 }
+              }
+            } else {
+              data1[, eval(paste0(groupingVars[i],
+                                  statsNames[k],
+                                  "_",
+                                  j,
+                                  "_",
+                                  t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+              if(incre == 1) {
+                PeriodKeep <-  paste0(groupingVars[i],
+                                      statsNames[k],
+                                      "_",
+                                      j,
+                                      "_",
+                                      t)
               } else {
-                data1[, eval(paste0(groupingVars[i],
-                                    statsNames[k],
-                                    "_",
-                                    j,
-                                    "_",
-                                    t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
-                if(incre == 1) {
-                  PeriodKeep <-  paste0(groupingVars[i],
+                PeriodKeep <-  c(PeriodKeep, 
+                                 paste0(groupingVars[i],
                                         statsNames[k],
                                         "_",
                                         j,
                                         "_",
-                                        t)
-                } else {
-                  PeriodKeep <-  c(PeriodKeep, 
-                                   paste0(groupingVars[i],
-                                          statsNames[k],
-                                          "_",
-                                          j,
-                                          "_",
-                                          t))
-                }
-                
-                # Update----
-                CounterIndicator <- CounterIndicator + 1
-                if (Timer) {
-                  print(CounterIndicator / runs)
-                }
+                                        t))
+              }
+              
+              # Update----
+              CounterIndicator <- CounterIndicator + 1
+              if (Timer) {
+                print(CounterIndicator / runs)
               }
             }
           }
