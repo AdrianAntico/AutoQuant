@@ -26,14 +26,13 @@ A BinaryRatingsMatrix
 Convert transactional data.table to a binary ratings matrix
 }
 \examples{
-data <- data.table::data.table(CustomerID = c(1,1,2,2,3,3),
-                               StockCode = c("A","B","A","A","B","A"),
-                               TotalSales = c(2,3,4,5,1,2))
+\donttest{
 RatingsMatrix <- AutoRecomDataCreate(data,
                                      EntityColName = "CustomerID",
                                      ProductColName = "StockCode",
                                      MetricColName = "TotalSales",
                                      ReturnMatrix = TRUE)
+}
 }
 \seealso{
 Other Marketing Modeling: \code{\link{AutoMarketBasketModel}},
