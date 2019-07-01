@@ -222,7 +222,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
           Rows <- c(Rows, rows[x]:(rows[x]-MaxCols))
         }
       }
-      data1 <- data1[Rows]
+      data1 <- data1[unique(Rows)]
       
       # Sort data----
       if (tolower(Type) == "lag") {
@@ -640,7 +640,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         Rows <- c(Rows, rows[x]:(rows[x]-MaxCols))
       }
     }
-    data <- data[Rows]
+    data <- data[unique(Rows)]
     
     # Sort data----
     if (tolower(Type) == "lag") {
