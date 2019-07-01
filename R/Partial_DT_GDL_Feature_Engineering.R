@@ -1,20 +1,3 @@
-library(RemixAutoML)
-library(data.table)
-lags           = c(seq(1,20,1))
-periods        = c(seq(2,100,2))
-statsNames     = "MA"
-targets        = c("PLND_LABOR_UNITS")
-groupingVars   = names(data)[4:7]
-sortDateName   = "PLND_STRT_DT"
-timeDiffTarget = NULL
-timeAgg        = NULL
-WindowingLag   = 1
-Type           = "Lag"
-Timer          = TRUE
-SimpleImpute   = TRUE
-AscRowByGroup  = "temp"
-RecordsKeep    = 10
-AscRowRemove   = TRUE
 
 Partial_DT_GDL_Feature_Engineering <- function(data,
                                                lags           = c(seq(1,5,1)),
