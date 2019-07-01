@@ -612,7 +612,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Done----
     if(AscRowRemove) {
-      return(FinalData[, get(AscRowByGroup) := NULL])
+      return(FinalData[, eval(AscRowByGroup) := NULL])
     } else {
       return(FinalData)
     }
@@ -973,7 +973,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Done----
     if(AscRowRemove) {
-      return(data[, get(AscRowByGroup) := NULL])      
+      return(data[, eval(AscRowByGroup) := NULL])      
     } else {
       return(data)
     }
