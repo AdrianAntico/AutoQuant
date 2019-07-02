@@ -204,13 +204,13 @@ AutoWord2VecModeler <- function(data,
       if (!KeepStringCol) {
         data[, eval(string) := NULL]
       }
-    }
-    
-    # Replace Colnames----
-    cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
-    for (c in cols) {
-      data[, paste0(string, "_", c) := get(c)]
-      data[, eval(c) := NULL]
+      
+      # Replace Colnames----
+      cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
+      for (c in cols) {
+        data[, paste0(string, "_", c) := get(c)]
+        data[, eval(c) := NULL]
+      }
     }
     
     # Final Prep
