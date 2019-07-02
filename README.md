@@ -260,19 +260,19 @@ Builds autoregressive and moving average features from target columns and distri
 For generating the equivalent features built from DT_GDL_Feature_Engineering() for a set of new records as rapidly as possible. I used this to create the feature vectors for scoring models in production. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
 
 ##### **Partial_DT_GDL_Feature_Engineering2()**
-Another way to compute the same features for a partial set of records as the Partial_DT_GDL_Feature_Engineering() funciton. This version can run quicker for data sets where moving average features have long windows and the lag list is short. You can benchmark both the original and this version to see which one runs faster for your data.
+Another way to compute the same features for a partial set of records as the Partial_DT_GDL_Feature_Engineering() function. This version can run quicker for data sets where moving average features have long windows and the lag list is short. You can benchmark both the original and this version to see which one runs faster for your data.
 
 ##### **Scoring_GDL_Feature_Engineering()**
 This function runs internally inside the CARMA functions but might have use outside of it. It is for scoring a single record, for no grouping variables, or one record per group level when a single group is utilized. Generates identical column names as the DT_GDL_Feature_Engineering() function and the Partial_GDL_Feature_Engineering() function. 
 
 ##### **AutoWord2VecModeler()**
-Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process.
+Generate a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process. You can choose to build individual models for each columns or one model for all your columns.
 
 ##### **ModelDataPrep()**
 Rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns.
 
 ##### **DummifyDT()** 
-Rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise)
+Rapidly dichotomize a list of columns in a data table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels for model scoring processes, which are used internally in the AutoXGBoost__() suite of modeling functions.
 
 ##### **AutoDataPartition()**
 This function is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
@@ -294,7 +294,7 @@ Builds autoregressive and rolling stats from target columns and distributed lags
 <p>
 
 ##### **ParDepCalPlots()**
-Great for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot or box plot.
+Great for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
 ##### **EvalPlot()**
 Two versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
@@ -303,7 +303,7 @@ Two versions: calibration line plot of predicted values and actual values across
 Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 ##### **RedYellowGreen()**
-Computes optimal thresholds for binary classification models when "don't classify" is an option. Consider a health care binary classification model that predictions whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary widely. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < lower threshold are confidently classified as a negative case and predicted values > upper threshold are confidently classified as a postive case. Predicted values inbetween the lower and upper thresholds are cases that should require further analysis.
+Computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
 </p>
 </details>
 
@@ -313,37 +313,37 @@ Computes optimal thresholds for binary classification models when "don't classif
 <p>
  
  ##### **AutoWordFreq()** 
-creates a word frequency data.table and a word cloud
+Creates a word frequency data.table and a word cloud
 
 ##### **AutoH2OTextPrepScoring()** 
 Prepares your data for scoring based on models built with Word2VecModel
 
 ##### **ProblematicFeatures()**
-Identify columns that have either little to no variance, extremely high cardinality, too many NA's, too many zeros, or too high of a skew
+Identify columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
 
 ##### **ProblematicRecords()**
-Identify anomalous data records via Isolation Forests from H2O
+Automatically identify anomalous data records via Isolation Forests from H2O.
 
 ##### **RemixTheme()** 
-Fonts, colors, style for plots.
+Fonts, colors, and style for plots.
 
 ##### **ChartTheme()** 
-Fonts, colors, style for plots.
+Fonts, colors, and style for plots.
 
 ##### **multiplot()** 
-Useful for displaying multiple plots in a single pane.
+Useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
 ##### **tokenizeH2O()** 
 Tokenize and H2O string column.
 
 ##### **percRank()** 
-Inner function for calibration plots and partial dependence plots. Computes PercentRank.
+Inner function for calibration plots and partial dependence plots. Computes PercentRank for all numeric records in a column.
 
 ##### **SimpleCap()** 
 Apply proper case to text.
 
 ##### **PrintObjectsSize()** 
-print out objects and their sizes that are in the envrionment
+Print out objects and their sizes that are in the envrionment. Useful for debugging programs.
 
 ##### **tempDatesFun()** 
 Special case for character conversion to date when importing from Excel.
