@@ -816,7 +816,8 @@ This suite of functions are what will take your models to the next level. The co
 ##### Functions include:
 - `GDL_Feature_Engineering()`
 - `DT_GDL_Feature_Engineering()`
-- `FAST_GDL_Feature_Engineering()`
+- `Partial_DT_GDL_Feature_Engineering()`
+- `Partial_DT_GDL_Feature_Engineering2()`
 - `Scoring_GDL_Feature_Engineering()`
 - `AutoWord2VecModeler()`
 - `CreateCalendarVariables()`
@@ -826,7 +827,7 @@ This suite of functions are what will take your models to the next level. The co
 - `AutoTransformationCreate()`
 - `AutoTransformationScore()`
 
-The first three are used for building out lags and rolling statistics from target variables (numeric type; including classification models (0|1) and multinomial models with a little bit of work) and numeric features over your entire data set (no aggregation is done) with the option for creating the rolling statistics on the main variable or the lag1 version of the main variable. You can also compute time between records (by group) and add their lags and rolling statistics as well (really useful for transactional data). They can be generated using a single grouping variable (for multiple grouping variables you can concatenate them) and you can feed in a list of grouping variables to generate them by. The first function (**GDL_**) has the largest variety of rolling statics options but runs the slowest. The second function (**DT_GDL_**) runs the fastest but only generates moving averages. The third function (**FAST_GDL_**) is used for cases where you don't need to generate the features across the entire data set. Suppose you have a limited number of target variable instance but a rich history of data. You can use the FAST_GDL_ version to create lags and rolling statistics for N number of records previous to each target instance (i.e. not the entire historical data set). The fourth function (**Scoring_GDL_**) is for use in a production setting where you need to generate single instances of the feature set quickly. You basically feed in the same arguments as you used for the other versions and out the other end is the same set of features, identically named.
+The first three are used for building out lags and rolling statistics from target variables (numeric type; including classification models (0|1) and multinomial models with a little bit of work) and numeric features over your entire data set (no aggregation is done) with the option for creating the rolling statistics on the main variable or the lag1 version of the main variable. You can also compute time between records (by group) and add their lags and rolling statistics as well (really useful for transactional data). They can be generated using a single grouping variable (for multiple grouping variables you can concatenate them) and you can feed in a list of grouping variables to generate them by. The first function (**GDL_**) has the largest variety of rolling statics options but runs the slowest. The second function (**DT_GDL_**) runs the fastest but only generates moving averages. The third function group (**Partial_GDL_** in which there are two versions) is used for cases where you don't need to generate the features across the entire data set but rather for a subset of records. This comes up typically in scoring environments where you only need the features created for one or a few records (not all records). The fourth function (**Scoring_GDL_**) is currently used in the AutoCatBoostCARMA() function for generating the lags and moving average features for one record at a time.
 
 ### DT_GDL_Feature_Engineering and Scoring_GDL_Feature_Engineering Demo (simulated data)
 
