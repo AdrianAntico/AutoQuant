@@ -256,6 +256,9 @@ Builds autoregressive and moving average features from target columns and distri
 ##### **Partial_DT_GDL_Feature_Engineering()**
 For generating the equivalent features built from DT_GDL_Feature_Engineering() for a set of new records as rapidly as possible. I used this to create the feature vectors for scoring models in production. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
 
+##### **Partial_DT_GDL_Feature_Engineering2()**
+Another way to compute the same features for a partial set of records as the Partial_DT_GDL_Feature_Engineering() funciton. This version can run quicker for data sets where moving average features have long windows and the lag list is short. You can benchmark both the original and this version to see which one runs faster for your data.
+
 ##### **Scoring_GDL_Feature_Engineering()**
 This function runs internally inside the CARMA functions but might have use outside of it. It is for scoring a single record, for no grouping variables, or one record per group level when a single group is utilized. Generates identical column names as the DT_GDL_Feature_Engineering() function and the Partial_GDL_Feature_Engineering() function. 
 
