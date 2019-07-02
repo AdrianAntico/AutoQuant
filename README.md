@@ -35,7 +35,7 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 ```
 
 #### 3. If you're having trouble installing, see if this issue helps you out.
-![Issue](https://github.com/AdrianAntico/RemixAutoML/issues/19)
+![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling output is generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods. To see them in action, check out our free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a>.
