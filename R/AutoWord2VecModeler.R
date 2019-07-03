@@ -150,7 +150,7 @@ AutoWord2VecModeler <- function(data,
           path = model_path,
           get_genmodel_jar = TRUE,
           genmodel_path = model_path,
-          genmodel_name = string
+          genmodel_name = "Combined"
         )
         data.table::set(StoreFile,
                         i = 1L,
