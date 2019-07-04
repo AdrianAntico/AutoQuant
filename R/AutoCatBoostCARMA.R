@@ -815,7 +815,7 @@ AutoCatBoostCARMA <- function(data,
           RecordsKeep    = 1
         )
         UpdateData <-
-          data.table::rbindlist(list(UpdateData, Temporary), use.names = TRUE)
+          data.table::rbindlist(list(UpdateData[ID != 1], Temporary), use.names = TRUE)
       }
       gc()
     }
@@ -987,11 +987,10 @@ AutoCatBoostCARMA <- function(data,
     }
   } else {
     # Variables to keep----
-    keep <- c(eval(DateColumnName), "Predictions")
     if(TargetTransformation) {
       return(
         list(
-          Forecast = PlotData[, ..keep],
+          Forecast = UpdateData,
           TimeSeriesPlot = TimeSeriesPlot,
           ModelInformation = TestModel,
           TransformationDetail = TransformObject
@@ -1000,7 +999,7 @@ AutoCatBoostCARMA <- function(data,
     } else {
       return(
         list(
-          Forecast = PlotData[, ..keep],
+          Forecast = UpdateData,
           TimeSeriesPlot = TimeSeriesPlot,
           ModelInformation = TestModel
         )
