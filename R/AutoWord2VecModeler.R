@@ -155,7 +155,7 @@ AutoWord2VecModeler <- function(data,
         data.table::set(StoreFile,
                         i = 1L,
                         j = 1L,
-                        value = string)
+                        value = "Combined")
         data.table::set(StoreFile,
                         i = 1L,
                         j = 2L,
