@@ -505,7 +505,6 @@ AutoXGBoostClassifier <- function(data,
         )
       }
       
-      
       # Binary Grid Score Model----
       if (!is.null(TestData)) {
         predict <- stats::predict(model, datatest)
@@ -595,7 +594,7 @@ AutoXGBoostClassifier <- function(data,
             }
           }
         } else {
-          if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
+          if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
             z <-
               data.table::as.data.table(cbind(
                 Metric = y@y.values[[1]],
