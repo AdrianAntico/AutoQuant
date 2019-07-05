@@ -30,7 +30,7 @@ AutoRecommender <- function(data,
                             Partition   = "Split",
                             KFolds      = 1,
                             Ratio       = 0.75,
-                            ProductEvaluation = 1,
+                            given       = 1,
                             RatingType  = "TopN",
                             RatingsKeep = 20,
                             SkipModels  = "AssociationRules",
@@ -79,7 +79,7 @@ AutoRecommender <- function(data,
     method     = tolower(Partition),
     k          = KFolds,
     train      = Ratio,
-    given      = ProductEvaluation,
+    given      = given,
     goodRating = 1
   )
   
