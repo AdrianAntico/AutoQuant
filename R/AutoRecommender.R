@@ -79,7 +79,7 @@ AutoRecommender <- function(data,
     method     = tolower(Partition),
     k          = KFolds,
     train      = Ratio,
-    given      = ProductEvaluation,
+    given      = Given,
     goodRating = 1
   )
   
