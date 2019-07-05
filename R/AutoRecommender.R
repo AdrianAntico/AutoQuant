@@ -28,7 +28,7 @@
 #' @export
 AutoRecommender <- function(data,
                             Partition   = "Split",
-                            KFolds      = 2,
+                            KFolds      = 1,
                             Ratio       = 0.75,
                             ProductEvaluation = 1,
                             RatingType  = "TopN",
