@@ -4,7 +4,7 @@
 \alias{AutoRecommender}
 \title{Automatically build the best recommender model among models available.}
 \usage{
-AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
+AutoRecommender(data, Partition = "Split", KFolds = 1, Ratio = 0.75,
   ProductEvaluation = 1, RatingType = "TopN", RatingsKeep = 20,
   SkipModels = "AssociationRules", ModelMetric = "TPR")
 }
@@ -13,7 +13,7 @@ AutoRecommender(data, Partition = "Split", KFolds = 2, Ratio = 0.75,
 
 \item{Partition}{Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.}
 
-\item{KFolds}{Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations}
+\item{KFolds}{Choose 1 for traditional train and test. Choose greater than 1 for the number of cross validations}
 
 \item{Ratio}{The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training}
 
@@ -37,7 +37,7 @@ This function returns the winning model that you pass onto AutoRecommenderScorin
 \donttest{
 WinningModel <- AutoRecommender(RatingsMatrix,
                                 Partition = "Split",
-                                KFolds = 2,
+                                KFolds = 1,
                                 Ratio = 0.75,
                                 ProductEvaluation = 1,
                                 RatingType = "TopN",
