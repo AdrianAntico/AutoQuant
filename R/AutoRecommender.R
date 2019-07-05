@@ -5,7 +5,7 @@
 #' @family Marketing Modeling
 #' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
-#' @param KFolds Choose 2 for traditional train and test. Choose greater than 2 for the number of cross validations
+#' @param KFolds Choose 1 for traditional train and test. Choose greater than 1 for the number of cross validations
 #' @param Ratio The ratio for train and test. E.g. 0.75 for 75 percent data allocated to training
 #' @param ProductEvaluation The number of products you would like to evaluate. Negative values implement all-but schemes.   
 #' @param RatingType Choose from "TopN", "ratings", "ratingMatrix"
@@ -16,7 +16,7 @@
 #' \donttest{
 #' WinningModel <- AutoRecommender(RatingsMatrix,
 #'                                 Partition = "Split",
-#'                                 KFolds = 2,
+#'                                 KFolds = 1,
 #'                                 Ratio = 0.75,
 #'                                 ProductEvaluation = 1,
 #'                                 RatingType = "TopN",
@@ -136,7 +136,6 @@ AutoRecommender <- function(data,
   
   # Collect results in one data.table----
   x <- data.table::rbindlist(store)
-  
   WinningModel <-
     x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
