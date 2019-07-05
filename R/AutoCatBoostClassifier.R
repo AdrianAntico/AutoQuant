@@ -614,7 +614,7 @@ AutoCatBoostClassifier <- function(data,
             }
           }
         } else {
-          if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
+          if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
             z <-
               data.table::as.data.table(cbind(
                 Metric = y@y.values[[1]],
