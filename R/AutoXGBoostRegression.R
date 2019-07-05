@@ -653,7 +653,6 @@ AutoXGBoostRegression <- function(data,
         )
       }
       
-      
       # Regression Grid Score Model----
       if (!is.null(TestData)) {
         predict <- stats::predict(model, datatest)
@@ -1104,12 +1103,14 @@ AutoXGBoostRegression <- function(data,
   EvaluationMetrics[, MetricValue := round(MetricValue, 4)]
   
   # Subset Transformation Object----
-  if(TargetColumnName == "Target") {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
-  } else {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  if(!is.null(TransformNumericColumns)) {
+    if(TargetColumnName == "Target") {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+    } else {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+    }    
   }
-  
+
   # Regression Return Model Objects----
   if (GridTune) {
     if (!is.null(TransformNumericColumns)) {
