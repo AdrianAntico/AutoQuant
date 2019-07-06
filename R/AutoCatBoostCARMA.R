@@ -746,7 +746,6 @@ AutoCatBoostCARMA <- function(data,
       } else {
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
-      temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
       UpdateData <-
         data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
@@ -942,6 +941,7 @@ AutoCatBoostCARMA <- function(data,
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   } else {
     TimeSeriesPlot <- TimeSeriesPlot +
+      Temp() +
       ggplot2::labs(
         title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
         subtitle = paste0(
