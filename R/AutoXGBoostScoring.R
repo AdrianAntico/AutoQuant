@@ -186,7 +186,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     }
   }
   
-  
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
