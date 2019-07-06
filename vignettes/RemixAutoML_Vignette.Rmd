@@ -114,6 +114,7 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 ###### Time Series
 - `AutoTS()`
 - `AutoCatBoostCARMA()`
+- `AutoXGBoostCARMA()`
 
 ###### Non Linear Regression
 - `AutoNLS()`
@@ -159,8 +160,8 @@ This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and *
 #### **AutoTS()**
 Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. The competing models include: DSHW (Double Seasonal Holt Winters), ARFIMA (Autoregressive Fractional Integrated Moving Average), ARIMA (Autoregressive Integrated Moving Average), ETS (Exponential Smoothing and Holt Winters), TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components), TSLM (Time Series Linear Model), NN (Autoregressive Neural Network). 
 
-#### **AutoCatBoostCARMA()**
-This is a unique function that utilizes machine learning models (currently catboost) to generate time series forecasts. It replicates the time series models forecasting approach, where it predicts one step ahead and re-generates the model features, and makes the next forecast, etc. If you need to generate forecasts for say 100,000 unique series, you can  simply supply the grouping variables that identify which series is which, and generate forecasts for every one.
+#### **AutoCatBoostCARMA()** & **AutoXGBoostCARMA()**
+This is a unique function that utilizes machine learning models (currently catboost and xgboost) to generate time series forecasts. It replicates the time series models forecasting approach, where it predicts one step ahead and re-generates the model features, and makes the next forecast, etc. If you need to generate forecasts for say 100,000 unique series, you can  simply supply the grouping variables that identify which series is which, and generate forecasts for every one.
 
 #### **AutoRecomDataCreate()**
 This function will automatically turn your transactional data into a binary ratings matrix that you supply to the AutoRecommender() function for model building and the AutoRecommenderScoring() function for scoring.
