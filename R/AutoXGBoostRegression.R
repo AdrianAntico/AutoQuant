@@ -641,7 +641,7 @@ AutoXGBoostRegression <- function(data,
           watchlist = EvalSets,
           nrounds = Trees,
           verbose = Verbose,
-          early_stopping_rounds = 10
+          early_stopping_rounds = 50
         )
       } else {
         model <- xgboost::xgb.train(
@@ -649,7 +649,7 @@ AutoXGBoostRegression <- function(data,
           data = datatrain,
           watchlist = EvalSets,
           nrounds = Trees,
-          early_stopping_rounds = 10
+          early_stopping_rounds = 50
         )
       }
       
@@ -805,7 +805,7 @@ AutoXGBoostRegression <- function(data,
       watchlist = EvalSets,
       nrounds = Trees,
       verbose = Verbose,
-      early_stopping_rounds = 10
+      early_stopping_rounds = 50
     )
   } else {
     model <- xgboost::xgb.train(
@@ -813,7 +813,7 @@ AutoXGBoostRegression <- function(data,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
-      early_stopping_rounds = 10
+      early_stopping_rounds = 50
     )
   }
   
