@@ -1008,42 +1008,46 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Binary Variable Importance----
-  VariableImportance <- xgboost::xgb.importance(model = model)
-  VariableImportance[, ':=' (
-    Gain = round(Gain, 4),
-    Cover = round(Cover, 4),
-    Frequency = round(Frequency, 4)
-  )]
-  if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_VariableImportance.csv"))
-  }
-  
-  # Binary Partial Dependence----
-  ParDepPlots <- list()
-  j <- 0
-  ParDepBoxPlots <- list()
-  k <- 0
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-    tryCatch({
-      Out <- ParDepCalPlots(
-        data = ValidationData,
-        PredictionColName = "p1",
-        TargetColName = Target,
-        IndepVar = VariableImportance[i, Feature],
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      j <- j + 1
-      ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
-    }, error = function(x)
-      "skip")
+  VariableImportance <- tryCatch({
+    data.table::as.data.table(xgboost::xgb.importance(model = model))}, 
+    error = function(x) x <- data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
+  if(VariableImportance[, .N] != 0) {
+    VariableImportance[, ':=' (
+      Gain = round(Gain, 4),
+      Cover = round(Cover, 4),
+      Frequency = round(Frequency, 4)
+    )]
+    if (SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))
+    }
+    
+    # Binary Partial Dependence----
+    ParDepPlots <- list()
+    j <- 0
+    ParDepBoxPlots <- list()
+    k <- 0
+    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "p1",
+          TargetColName = Target,
+          IndepVar = VariableImportance[i, Feature],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        
+        j <- j + 1
+        ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+      }, error = function(x)
+        "skip")
+    }  
   }
   
   # Binary Save ParDepPlots to file----
