@@ -510,7 +510,7 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Save Names of data----
-  Names <- data.table::as.data.table(names(data))
+  Names <- data.table::as.data.table(names(dataTrain))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
     data.table::fwrite(Names, paste0(model_path,
@@ -1009,60 +1009,65 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Variable Importance----
-  VariableImportance <- xgboost::xgb.importance(model = model)
-  VariableImportance[, ':=' (
-    Gain = round(Gain, 4),
-    Cover = round(Cover, 4),
-    Frequency = round(Frequency, 4)
-  )]
-  if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_VariableImportance.csv"))
-  }
-  
-  # Regression Partial Dependence----
-  ParDepPlots <- list()
-  j <- 0
-  ParDepBoxPlots <- list()
-  k <- 0
-  for (i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
-    tryCatch({
-      Out <- ParDepCalPlots(
-        data = ValidationData,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Feature],
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      j <- j + 1
-      ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
-    }, error = function(x)
-      "skip")
-    tryCatch({
-      Out1 <- ParDepCalPlots(
-        data = ValidationData,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Feature],
-        GraphType = "boxplot",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      k <- k + 1
-      ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <-
-        Out1
-    }, error = function(x)
-      "skip")
+  VariableImportance <- tryCatch({xgboost::xgb.importance(model = model)}, error = function(x) "empty")
+  if(VariableImportance != "empty") {
+    VariableImportance[, ':=' (
+      Gain = round(Gain, 4),
+      Cover = round(Cover, 4),
+      Frequency = round(Frequency, 4)
+    )]
+    if (SaveModelObjects) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))
+    }
+    
+    # Regression Partial Dependence----
+    ParDepPlots <- list()
+    j <- 0
+    ParDepBoxPlots <- list()
+    k <- 0
+    for (i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "Predict",
+          TargetColName = eval(TargetColumnName),
+          IndepVar = VariableImportance[i, Feature],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        
+        j <- j + 1
+        ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+      }, error = function(x)
+        "skip")
+      tryCatch({
+        Out1 <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "Predict",
+          TargetColName = eval(TargetColumnName),
+          IndepVar = VariableImportance[i, Feature],
+          GraphType = "boxplot",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x)
+            mean(x, na.rm = TRUE)
+        )
+        
+        k <- k + 1
+        ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <-
+          Out1
+      }, error = function(x)
+        "skip")
+    }
+  } else {
+    ParDepPlots <- list()
+    ParDepBoxPlots <- list()
   }
   
   # Regression Save ParDepPlots to file----
