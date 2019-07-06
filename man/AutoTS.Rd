@@ -92,7 +92,8 @@ ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel
 }
 \seealso{
-Other Time Series: \code{\link{AutoCatBoostCARMA}}
+Other Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoXGBoostCARMA}}
 }
 \author{
 Adrian Antico and Douglas Pestana
