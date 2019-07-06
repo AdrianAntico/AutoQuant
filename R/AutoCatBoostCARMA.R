@@ -117,7 +117,6 @@ AutoCatBoostCARMA <- function(data,
                               eval(TargetColumnName)))
   }
   
-  
   # Convert to lubridate as_date() or POSIXct----
   if (tolower(TimeUnit) != "hour") {
     data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
@@ -766,7 +765,7 @@ AutoCatBoostCARMA <- function(data,
         ))
         Temporary <- data.table::copy(UpdateData[, ..keep])
         Temporary <- Scoring_GDL_Feature_Engineering(
-          data = Temporary,
+          data           = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
           statsNames     = c("MA"),
