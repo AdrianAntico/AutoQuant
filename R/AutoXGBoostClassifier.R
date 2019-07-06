@@ -1010,7 +1010,7 @@ AutoXGBoostClassifier <- function(data,
   # Binary Variable Importance----
   VariableImportance <- tryCatch({
     data.table::as.data.table(xgboost::xgb.importance(model = model))}, 
-    error = function(x) x <- data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
+    error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
   if(VariableImportance[, .N] != 0) {
     VariableImportance[, ':=' (
       Gain = round(Gain, 4),
