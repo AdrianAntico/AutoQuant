@@ -941,6 +941,13 @@ AutoCatBoostCARMA <- function(data,
       ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
   } else {
     TimeSeriesPlot <- TimeSeriesPlot +
+      ggplot2::geom_vline(
+        xintercept = UpdateData[data[, .N][[1]],
+                                max(get(DateColumnName), na.rm = TRUE)],
+        color = "#FF4F00",
+        lty = "dotted",
+        lwd = 1
+      ) +
       Temp() +
       ggplot2::labs(
         title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
