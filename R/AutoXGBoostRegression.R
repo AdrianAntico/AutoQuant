@@ -1009,8 +1009,10 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Variable Importance----
-  VariableImportance <- tryCatch({xgboost::xgb.importance(model = model)}, error = function(x) "empty")
-  if(VariableImportance != "empty") {
+  VariableImportance <- tryCatch({
+    data.table::as.data.table(xgboost::xgb.importance(model = model))}, 
+    error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
+  if(VariableImportance[, .N] != 0) {
     VariableImportance[, ':=' (
       Gain = round(Gain, 4),
       Cover = round(Cover, 4),
