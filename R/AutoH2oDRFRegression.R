@@ -712,35 +712,35 @@ AutoH2oDRFRegression <- function(data,
       if (tolower(metric) == "poisson") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
+          ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(Target - Predict)]
+        ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
+        ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (Target - Predict) ^ 2]
+        ValidationData[, Metric := (get(TargetColumnName) - Predict) ^ 2]
         Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
+          ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
         if (MinVal > 0 &
             min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Target * log((Target + 1) /
-                                                    (Predict + 1))]
+          ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
+                                                                   (Predict + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
         ValidationData[, ':=' (
-          Metric1 = Target * Predict,
-          Metric2 = Target ^ 2,
+          Metric1 = get(TargetColumnName) * Predict,
+          Metric2 = get(TargetColumnName) ^ 2,
           Metric3 = Predict ^ 2
         )]
         Metric <-
@@ -748,7 +748,7 @@ AutoH2oDRFRegression <- function(data,
                                                             sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
         Metric <-
-          (ValidationData[, stats::cor(Target, Predict)][[1]]) ^ 2
+          (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2
       }
       data.table::set(
         EvaluationMetrics,
@@ -762,6 +762,18 @@ AutoH2oDRFRegression <- function(data,
                       value = NA)
     }, error = function(x)
       "skip")
+  }
+  
+  # Remove Features----
+  if(MinVal > 0) {
+    ValidationData[, ':=' (
+      Metric  = NULL, 
+      Metric1 = NULL,
+      Metric2 = NULL,
+      Metric3 = NULL)]
+  } else {
+    ValidationData[, ':=' (
+      Metric  = NULL)]
   }
   
   # Regression Save EvaluationMetrics to File----
