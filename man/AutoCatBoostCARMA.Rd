@@ -55,7 +55,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
-\item{Timer}{= TRUE}
+\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -84,14 +84,15 @@ Results <- AutoCatBoostCARMA(data,
                              GridEvalMetric = "mae",
                              ModelCount = 1,
                              NTrees = 1000,
-                             PartitionType = "time")
+                             PartitionType = "timeseries",
+                             Timer = TRUE)
 Results$TimeSeriesPlot
 Results$Forecast
 Results$ModelInformation$...
 }
 }
 \seealso{
-Other Time Series: \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+Other Time Series: \code{\link{AutoH2oDRFCARMA}},
+  \code{\link{AutoTS}}, \code{\link{AutoXGBoostCARMA}}
 }
 \concept{Time Series}

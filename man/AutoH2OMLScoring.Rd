@@ -4,7 +4,7 @@
 \alias{AutoH2OMLScoring}
 \title{AutoH2OMLScoring is an automated scoring function that compliments the AutoH2o model training functions.}
 \usage{
-AutoH2OMLScoring(ScoringData = NULL, FeatureColumnNames = NULL,
+AutoH2OMLScoring(ScoringData = NULL, ModelObject = NULL,
   ModelType = "mojo", H2OShutdown = TRUE, MaxMem = "28G",
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
   ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
@@ -17,7 +17,7 @@ AutoH2OMLScoring(ScoringData = NULL, FeatureColumnNames = NULL,
 \arguments{
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
 
-\item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoH2o__() function}
+\item{ModelObject}{Supply a model object from AutoH2oDRF__()}
 
 \item{ModelType}{Set to either "mojo" or "standard" depending on which version you saved}
 
@@ -64,7 +64,7 @@ AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGB
 \examples{
 \donttest{
 Preds <- AutoH2OMLScoring(ScoringData = data,
-                          FeatureColumnNames = 2:12,
+                          ModelObject = NULL,
                           ModelType = "mojo",
                           H2OShutdown = TRUE,
                           MaxMem = "28G",
