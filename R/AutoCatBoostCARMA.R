@@ -302,7 +302,7 @@ AutoCatBoostCARMA <- function(data,
   TestModel <- AutoCatBoostRegression(
     data = train,
     ValidationData = valid,
-    TestData = NULL,
+    TestData = test,
     TargetColumnName = eval(TargetColumnName),
     FeatureColNames = setdiff(names(data),
                               eval(TargetColumnName)),
