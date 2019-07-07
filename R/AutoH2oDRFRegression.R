@@ -765,16 +765,11 @@ AutoH2oDRFRegression <- function(data,
   }
   
   # Remove Features----
-  if(MinVal > 0) {
-    ValidationData[, ':=' (
-      Metric  = NULL, 
-      Metric1 = NULL,
-      Metric2 = NULL,
-      Metric3 = NULL)]
-  } else {
-    ValidationData[, ':=' (
-      Metric  = NULL)]
-  }
+  ValidationData[, ':=' (
+    Metric  = NULL, 
+    Metric1 = NULL,
+    Metric2 = NULL,
+    Metric3 = NULL)]
   
   # Regression Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
