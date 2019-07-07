@@ -144,7 +144,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Create Calendar Variables----
   if (CalendarVariables) {
-    data <- RemixAutoML::CreateCalendarVariables(
+    data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
@@ -305,7 +305,7 @@ AutoXGBoostCARMA <- function(data,
   TestModel <- RemixAutoML::AutoXGBoostRegression(
     data = train,
     ValidationData = valid,
-    TestData = NULL,
+    TestData = test,
     TargetColumnName = eval(TargetColumnName),
     FeatureColNames = setdiff(names(datax),
                               c(eval(TargetColumnName),
