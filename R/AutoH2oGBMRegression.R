@@ -22,6 +22,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @param StopH2O Set to FALSE to keep H2O running after you build your model
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -73,7 +74,8 @@
 #'                                   NumOfParDepPlots = 3,
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
-#'                                   IfSaveModel = "mojo")
+#'                                   IfSaveModel = "mojo",
+#'                                   StopH2O = TRUE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
 #' @export
@@ -95,7 +97,8 @@ AutoH2oGBMRegression <- function(data,
                                  NumOfParDepPlots = 3,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
-                                 IfSaveModel = "mojo") {
+                                 IfSaveModel = "mojo",
+                                 StopH2O = TRUE) {
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
@@ -628,8 +631,10 @@ AutoH2oGBMRegression <- function(data,
   )]
   
   # Regression H2O Shutdown----
-  h2o::h2o.shutdown(prompt = FALSE)
-  
+  if(StopH2O) {
+    h2o::h2o.shutdown(prompt = FALSE)    
+  }
+
   # Regression Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
@@ -970,12 +975,14 @@ AutoH2oGBMRegression <- function(data,
   }
   
   # Subset Transformation Object----
-  if(TargetColumnName == "Target") {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
-  } else {
-    TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+  if(!is.null(TransformNumericColumns)) {
+    if(TargetColumnName == "Target") {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+    } else {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+    }    
   }
-  
+
   # Regression Return Objects----
   if (ReturnModelObjects) {
     if(!is.null(TransformNumericColumns)) {
