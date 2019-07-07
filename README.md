@@ -216,7 +216,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </p>
 </details>
 
-#### Marketing-Based Models:
+#### Recommender Systems:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
