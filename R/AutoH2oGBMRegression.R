@@ -860,11 +860,14 @@ AutoH2oGBMRegression <- function(data,
   }
   
   # Remove Features----
-  ValidationData[, ':=' (Metric  = NULL, 
-                         Metric1 = NULL,
-                         Metric2 = NULL,
-                         Metric3 = NULL)]
-  
+  if(MinVal > 0) {
+    ValidationData[, ':=' (
+      Metric  = NULL, 
+      Metric1 = NULL,
+      Metric2 = NULL,
+      Metric3 = NULL)]    
+  }
+
   # Regression Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
