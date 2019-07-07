@@ -282,6 +282,7 @@ AutoXGBoostCARMA <- function(data,
   if (NumSets == 2) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
+    test  <- NULL
   } else if (NumSets == 3) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
@@ -293,116 +294,32 @@ AutoXGBoostCARMA <- function(data,
   datax <- data
   rm(data)
   
-  # Build Model----
-  if (NumSets == 2) {
-    if (!is.null(GroupVariables)) {
-      TestModel <- RemixAutoML::AutoXGBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = NULL,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(datax),
-                                  c(eval(TargetColumnName),
-                                    eval(DateColumnName))),
-        IDcols = 2,
-        ReturnFactorLevels = TRUE,
-        TransformNumericColumns = NULL,
-        eval_metric = EvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        grid_eval_metric = GridEvalMetric,
-        TreeMethod = TreeMethod,
-        MaxModelsInGrid = ModelCount,
-        NThreads = NThreads,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        Verbose = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL)
-    } else {
-      TestModel <- RemixAutoML::AutoXGBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = NULL,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(datax),
-                                  c(eval(TargetColumnName),
-                                    eval(DateColumnName))),
-        IDcols = 1,
-        ReturnFactorLevels = TRUE,
-        TransformNumericColumns = NULL,
-        eval_metric = EvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        grid_eval_metric = GridEvalMetric,
-        TreeMethod = TreeMethod,
-        MaxModelsInGrid = ModelCount,
-        NThreads = NThreads,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        Verbose = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL)
-    }
-  } else if (NumSets == 3) {
-    if (!is.null(GroupVariables)) {
-      TestModel <- RemixAutoML::AutoXGBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = test,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(datax),
-                                  c(eval(TargetColumnName),
-                                    eval(DateColumnName))),
-        IDcols = 2,
-        ReturnFactorLevels = TRUE,
-        TransformNumericColumns = NULL,
-        eval_metric = EvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        grid_eval_metric = GridEvalMetric,
-        TreeMethod = TreeMethod,
-        MaxModelsInGrid = ModelCount,
-        NThreads = NThreads,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        Verbose = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL)
-    } else {
-      TestModel <- RemixAutoML::AutoXGBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = test,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(datax),
-                                  c(eval(TargetColumnName),
-                                    eval(DateColumnName))),
-        IDcols = NULL,
-        ReturnFactorLevels = FALSE,
-        TransformNumericColumns = NULL,
-        eval_metric = EvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        grid_eval_metric = GridEvalMetric,
-        TreeMethod = TreeMethod,
-        MaxModelsInGrid = ModelCount,
-        NThreads = NThreads,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        Verbose = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL)
-    }
-  }
+  # Build Regression Model----
+  TestModel <- RemixAutoML::AutoXGBoostRegression(
+    data = train,
+    ValidationData = valid,
+    TestData = NULL,
+    TargetColumnName = eval(TargetColumnName),
+    FeatureColNames = setdiff(names(datax),
+                              c(eval(TargetColumnName),
+                                eval(DateColumnName))),
+    IDcols = IDcols,
+    ReturnFactorLevels = TRUE,
+    TransformNumericColumns = NULL,
+    eval_metric = EvalMetric,
+    Trees = NTrees,
+    GridTune = GridTune,
+    grid_eval_metric = GridEvalMetric,
+    TreeMethod = TreeMethod,
+    MaxModelsInGrid = ModelCount,
+    NThreads = NThreads,
+    model_path = getwd(),
+    ModelID = "ModelTest",
+    NumOfParDepPlots = 1,
+    Verbose = 1,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    PassInGrid = NULL)
   
   # Store Model----
   Model <- TestModel$Model
