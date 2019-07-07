@@ -47,11 +47,11 @@ rules_data <- AutoMarketBasketModel(
 \seealso{
 Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
 
-Other Marketing Modeling: \code{\link{AutoRecomDataCreate}},
+Other Recommender Systems: \code{\link{AutoRecomDataCreate}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}
 }
 \author{
 Adrian Antico and Douglas Pestana
 }
-\concept{Marketing Modeling}
+\concept{Recommender Systems}
