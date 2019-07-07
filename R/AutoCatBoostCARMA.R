@@ -1,6 +1,6 @@
-#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting
+#' AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting
 #'
-#' AutoCatBoostCARMA Automated CatBoost Calendar and ARMA Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+#' AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
 #' @family Time Series
 #' @param data Supply your full series data set here
@@ -10,8 +10,8 @@
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
-#' @param Lags Select the periods for all lag variables you want to create. E.g. I use this for weekly data c(1:5,52)
-#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. I use this for weekly data c(1:5,52)
+#' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
+#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
@@ -23,7 +23,7 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
-#' @param Timer = TRUE
+#' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @examples
 #' \donttest{
 #' Results <- AutoCatBoostCARMA(data,
@@ -45,7 +45,8 @@
 #'                              GridEvalMetric = "mae",
 #'                              ModelCount = 1,
 #'                              NTrees = 1000,
-#'                              PartitionType = "time")
+#'                              PartitionType = "timeseries",
+#'                              Timer = TRUE)
 #' Results$TimeSeriesPlot
 #' Results$Forecast
 #' Results$ModelInformation$...
@@ -280,115 +281,47 @@ AutoCatBoostCARMA <- function(data,
   if (NumSets == 2) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
+    test  <- NULL
   } else if (NumSets == 3) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
     test  <- DataSets$TestData
   }
   
+  # IDcols----
+  if(!is.null(GroupVariables)) {
+    IDcols <- 2
+  } else {
+    IDcols <- 1
+  }
+  
   # Pass along base data unperturbed----
   dataFuture <- data.table::copy(data)
   
   # Build Model----
-  if (NumSets == 2) {
-    if (!is.null(GroupVariables)) {
-      TestModel <- AutoCatBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = NULL,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(data),
-                                  eval(TargetColumnName)),
-        PrimaryDateColumn = eval(DateColumnName),
-        IDcols = 2,
-        TransformNumericColumns = NULL,
-        MaxModelsInGrid = ModelCount,
-        task_type = TaskType,
-        eval_metric = EvalMetric,
-        grid_eval_metric = GridEvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL
-      )
-    } else {
-      TestModel <- AutoCatBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = NULL,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(data),
-                                  eval(TargetColumnName)),
-        PrimaryDateColumn = eval(DateColumnName),
-        IDcols = 1,
-        TransformNumericColumns = NULL,
-        MaxModelsInGrid = ModelCount,
-        task_type = TaskType,
-        eval_metric = EvalMetric,
-        grid_eval_metric = GridEvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL
-      )
-    }
-  } else if (NumSets == 3) {
-    if (!is.null(GroupVariables)) {
-      TestModel <- AutoCatBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = test,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
-        PrimaryDateColumn = eval(DateColumnName),
-        IDcols = 2,
-        TransformNumericColumns = NULL,
-        MaxModelsInGrid = ModelCount,
-        task_type = TaskType,
-        eval_metric = EvalMetric,
-        grid_eval_metric = GridEvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL
-      )
-    } else {
-      TestModel <- AutoCatBoostRegression(
-        data = train,
-        ValidationData = valid,
-        TestData = test,
-        TargetColumnName = eval(TargetColumnName),
-        FeatureColNames = setdiff(names(data), eval(TargetColumnName)),
-        PrimaryDateColumn = eval(DateColumnName),
-        IDcols = 1,
-        TransformNumericColumns = NULL,
-        MaxModelsInGrid = ModelCount,
-        task_type = TaskType,
-        eval_metric = EvalMetric,
-        grid_eval_metric = GridEvalMetric,
-        Trees = NTrees,
-        GridTune = GridTune,
-        model_path = getwd(),
-        ModelID = "ModelTest",
-        NumOfParDepPlots = 1,
-        ReturnModelObjects = TRUE,
-        SaveModelObjects = FALSE,
-        PassInGrid = NULL
-      )
-    }
-  }
+  TestModel <- AutoCatBoostRegression(
+    data = train,
+    ValidationData = valid,
+    TestData = NULL,
+    TargetColumnName = eval(TargetColumnName),
+    FeatureColNames = setdiff(names(data),
+                              eval(TargetColumnName)),
+    PrimaryDateColumn = eval(DateColumnName),
+    IDcols = IDcols,
+    TransformNumericColumns = NULL,
+    MaxModelsInGrid = ModelCount,
+    task_type = TaskType,
+    eval_metric = EvalMetric,
+    grid_eval_metric = GridEvalMetric,
+    Trees = NTrees,
+    GridTune = GridTune,
+    model_path = getwd(),
+    ModelID = "ModelTest",
+    NumOfParDepPlots = 1,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    PassInGrid = NULL
+  )
   
   # Store Model----
   Model <- TestModel$Model
