@@ -260,6 +260,9 @@ TestModel$GridList
 # Metrics from Grid Tuning
 TestModel$GridMetrics
 
+# Transformation Object
+TestModel$TransformationResults
+
 # Evaluation Calibration Plot
 TestModel$EvaluationPlot
 
@@ -272,8 +275,6 @@ TestModel$PartialDependencePlots$Independent_Variable1
 # Partial Dependence Calibration BoxPlot
 TestModel$PartialDependenceBoxPlots$Independent_Variable1
 
-# Transformation Object
-TestModel$TransformationResults
 ```
 
 ### Example of **AutoNLS()**
