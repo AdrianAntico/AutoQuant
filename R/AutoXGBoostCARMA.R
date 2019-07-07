@@ -294,6 +294,13 @@ AutoXGBoostCARMA <- function(data,
   datax <- data
   rm(data)
   
+  # IDcols----
+  if(!is.null(GroupVariables)) {
+    IDcols <- 2
+  } else {
+    IDcols <- 1
+  }
+  
   # Build Regression Model----
   TestModel <- RemixAutoML::AutoXGBoostRegression(
     data = train,
