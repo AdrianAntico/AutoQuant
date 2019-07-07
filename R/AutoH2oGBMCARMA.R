@@ -1,1018 +1,943 @@
-#' AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation
+#' AutoH2oGBMCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting
 #'
-#' AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
-#' @author Adrian Antico
-#' @family Supervised Learning
-#' @param data This is your data set for training and testing your model
-#' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
-#' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
-#' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
-#' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
-#' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
-#' @param Distribution Choose from gaussian",  "poisson",  "gamma",  "tweedie",  "laplace",  "quantile", "huber"
-#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
-#' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
-#' @param model_path A character string of your path file to where you want your output saved
-#' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
-#' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
-#' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
-#' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param StopH2O Set to FALSE to keep H2O running after you build your model
+#' AutoH2oDRFCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+#'
+#' @family Time Series
+#' @param data Supply your full series data set here
+#' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
+#' @param DateColumnName List the column name of your date column. E.g. "DateTime"
+#' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
+#' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
+#' @param TimeUnit List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"
+#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
+#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
+#' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
+#' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
+#' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
+#' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
+#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param GridTune Set to TRUE to run a grid tune
+#' @param ModelCount Set the number of models to try in the grid tune
+#' @param NTrees Select the number of trees you want to have built to train the model
+#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
+#' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
+#' @param NThreads Set to the number of threads you want to dedicate to this function.
+#' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @examples
 #' \donttest{
-#' Correl <- 0.85
-#' N <- 1000
-#' data <- data.table::data.table(Target = runif(N))
-#' data[, x1 := qnorm(Target)]
-#' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
-#' data[, Independent_Variable11 := as.factor(
-#'   ifelse(Independent_Variable2 < 0.20, "A",
-#'          ifelse(Independent_Variable2 < 0.40, "B",
-#'                 ifelse(Independent_Variable2 < 0.6,  "C",
-#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-#' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' TestModel <- AutoH2oGBMRegression(data,
-#'                                   ValidationData = NULL,
-#'                                   TestData = NULL,
-#'                                   TargetColumnName = "Target",
-#'                                   FeatureColNames = 2:ncol(data),
-#'                                   TransformNumericColumns = NULL,
-#'                                   Alpha = NULL,
-#'                                   Distribution = "poisson",
-#'                                   eval_metric = "RMSE",
-#'                                   Trees = 50,
-#'                                   GridTune = FALSE,
-#'                                   MaxMem = "32G",
-#'                                   MaxModelsInGrid = 10,
-#'                                   model_path = NULL,
-#'                                   ModelID = "FirstModel",
-#'                                   NumOfParDepPlots = 3,
-#'                                   ReturnModelObjects = TRUE,
-#'                                   SaveModelObjects = FALSE,
-#'                                   IfSaveModel = "mojo",
-#'                                   StopH2O = TRUE)
+#' Results <- AutoH2oGBMCARMA(data,
+#'                            TargetColumnName = "Weekly_Sales",
+#'                            DateColumnName = "Date",
+#'                            GroupVariables = c("Store","Dept"),
+#'                            FC_Periods = 52,
+#'                            TimeUnit = "week",
+#'                            TargetTransformation = FALSE,
+#'                            Lags = c(1:5,52),
+#'                            MA_Periods = c(1:5,52),
+#'                            CalendarVariables = TRUE,
+#'                            TimeTrendVariable = TRUE,
+#'                            DataTruncate = FALSE,
+#'                            SplitRatios = c(1-2*30/143,30/143,30/143),
+#'                            EvalMetric = "MAE",
+#'                            GridTune = FALSE,
+#'                            ModelCount = 1,
+#'                            NTrees = 1000,
+#'                            PartitionType = "timeseries",
+#'                            MaxMem = "32G",
+#'                            NThreads = max(1, parallel::detectCores() - 2),
+#'                            Timer = TRUE)
+#' Results$TimeSeriesPlot
+#' Results$Forecast
+#' Results$ModelInformation$...
 #' }
-#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
+#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoH2oGBMRegression <- function(data,
-                                 ValidationData,
-                                 TestData = NULL,
-                                 TargetColumnName = NULL,
-                                 FeatureColNames = NULL,
-                                 TransformNumericColumns = NULL,
-                                 Alpha = NULL,
-                                 Distribution = "poisson",
-                                 eval_metric = "RMSE",
-                                 Trees = 50,
-                                 GridTune = FALSE,
-                                 MaxMem = "32G",
-                                 MaxModelsInGrid = 2,
-                                 model_path = NULL,
-                                 ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
-                                 ReturnModelObjects = TRUE,
-                                 SaveModelObjects = FALSE,
-                                 IfSaveModel = "mojo",
-                                 StopH2O = TRUE) {
-  # Regression Check Arguments----
-  if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
-    warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
-    
+AutoH2oGBMCARMA <- function(data,
+                            TargetColumnName = "Target",
+                            DateColumnName = "DateTime",
+                            GroupVariables = NULL,
+                            FC_Periods = 30,
+                            TimeUnit = "week",
+                            TargetTransformation = FALSE,
+                            Lags = c(1:5),
+                            MA_Periods = c(1:5),
+                            CalendarVariables = FALSE,
+                            TimeTrendVariable = FALSE,
+                            DataTruncate = FALSE,
+                            SplitRatios = c(0.7, 0.2, 0.1),
+                            EvalMetric = "MAE",
+                            GridTune = FALSE,
+                            ModelCount = 1,
+                            NTrees = 1000,
+                            PartitionType = "timeseries",
+                            MaxMem = "32G",
+                            NThreads = max(1, parallel::detectCores() - 2),
+                            Timer = TRUE) {
+  # Check arguments----
+  if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
+    return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
-  if (MaxModelsInGrid < 1 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1")
+  if (tolower(PartitionType) == "timeseries" &
+      is.null(GroupVariables)) {
+    PartitionType <- "time"
   }
-  if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
-  }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (NumOfParDepPlots < 0)
-    warning("NumOfParDepPlots needs to be a positive number")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
   
-  # Regression Ensure data is a data.table----
+  # Ensure H2O Stays Running----
+  StopH2O <- FALSE
+  
+  # Convert to data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
   
-  # Regression Ensure data is a data.table----
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) {
-      ValidationData <- data.table::as.data.table(ValidationData)
-    }
+  # Subset Columns----
+  keep <- c(DateColumnName, TargetColumnName, GroupVariables)
+  data <- data[, ..keep]
+  
+  # Group Concatenation----
+  if (!is.null(GroupVariables)) {
+    data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    data[, eval(GroupVariables) := NULL]
   }
   
-  # Regression Ensure data is a data.table----
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
+  # Get unique set of GroupVar----
+  if (!is.null(GroupVariables)) {
+    GroupVarVector <- unique(as.character(data[["GroupVar"]]))
   }
   
-  # Convert TransformNumericColumns to Names if not character----
-  if (!is.null(TransformNumericColumns)) {
-    if(!is.character(TransformNumericColumns)) {
-      TransformNumericColumns <- names(data)[TransformNumericColumns]      
-    }
+  # Change column ordering
+  if (!is.null(GroupVariables)) {
+    data.table::setcolorder(data,
+                            c("GroupVar",
+                              eval(DateColumnName),
+                              eval(TargetColumnName)))
+  } else {
+    data.table::setcolorder(data,
+                            c(eval(DateColumnName),
+                              eval(TargetColumnName)))
   }
   
-  # Transform data, ValidationData, and TestData----
-  if (!is.null(ValidationData) &
-      !is.null(TransformNumericColumns)) {
-    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-    Output <- AutoTransformationCreate(
+  # Convert to lubridate as_date() or POSIXct----
+  if (tolower(TimeUnit) != "hour") {
+    data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+  } else {
+    data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+  }
+  
+  # Ensure Target is Numeric----
+  data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
+  
+  # Define NumSets
+  NumSets <- length(SplitRatios)
+  
+  # Set max vals----
+  val <- max(Lags, MA_Periods)
+  
+  # Ensure data is sorted----
+  if (!is.null(GroupVariables)) {
+    data <- data[order(GroupVar, get(DateColumnName))]
+  } else {
+    data <- data[order(get(DateColumnName))]
+  }
+  
+  # Create Calendar Variables----
+  if (CalendarVariables) {
+    data <- RemixAutoML::CreateCalendarVariables(
+      data = data,
+      DateCols = eval(DateColumnName),
+      AsFactor = FALSE,
+      TimeUnits = c(
+        "second",
+        "minute",
+        "hour",
+        "wday",
+        "mday",
+        "yday",
+        "week",
+        "isoweek",
+        "month",
+        "quarter",
+        "year"
+      )
+    )
+  }
+  
+  # Target Transformation----
+  if (TargetTransformation) {
+    TransformResults <- AutoTransformationCreate(
       data,
-      ColumnNames = TransformNumericColumns,
-      Methods = c("BoxCox",
-                  "YeoJohnson",
-                  "Asinh",
-                  "Asin",
-                  "Logit"),
-      Path = model_path,
-      TransID = ModelID,
-      SaveOutput = SaveModelObjects
+      ColumnNames = TargetColumnName,
+      Methods = c("BoxCox", "Asinh", "Asin", "Logit", "YeoJohnson"),
+      Path = NULL,
+      TransID = "Trans",
+      SaveOutput = FALSE
     )
-    data <- Output$Data
-    TransformationResults <- Output$FinalResults
-    
-    # Transform ValidationData----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
-      Type = "Apply",
-      FinalResults = TransformationResults,
-      TransID = NULL,
-      Path = NULL
-    )
-    
-    # Transform TestData----
-    if (!is.null(TestData)) {
-      TestData <- AutoTransformationScore(
-        ScoringData = TestData,
-        Type = "Apply",
-        FinalResults = TransformationResults,
-        TransID = NULL,
-        Path = NULL
-      )
-    }
+    data <- TransformResults$Data
+    TransformObject <- TransformResults$FinalResults
   }
   
-  # Regression Data Partition----
-  if (is.null(ValidationData) & is.null(TestData)) {
-    if (!is.null(TransformNumericColumns)) {
-      # Partition----
-      dataSets <- AutoDataPartition(
-        data,
-        NumDataSets = 3,
-        Ratios = c(0.70, 0.20, 0.10),
-        PartitionType = "random",
-        StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData
-      
-      # Mean of data----
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-      
-      # Transform data sets----
-      Output <- AutoTransformationCreate(
-        data,
-        ColumnNames = TransformNumericColumns,
-        Methods = c("BoxCox",
-                    "YeoJohnson",
-                    "Asinh",
-                    "Asin",
-                    "Logit"),
-        Path = model_path,
-        TransID = ModelID,
-        SaveOutput = SaveModelObjects
-      )
-      data <- Output$Data
-      TransformationResults <- Output$FinalResults
-      
-      # Transform ValidationData----
-      ValidationData <- AutoTransformationScore(
-        ScoringData = ValidationData,
-        Type = "Apply",
-        FinalResults = TransformationResults,
-        TransID = NULL,
-        Path = NULL
-      )
-      
-      # Transform TestData----
-      if (!is.null(TestData)) {
-        TestData <- AutoTransformationScore(
-          ScoringData = TestData,
-          Type = "Apply",
-          FinalResults = TransformationResults,
-          TransID = NULL,
-          Path = NULL
-        )
-      }
-    } else {
-      dataSets <- AutoDataPartition(
-        data,
-        NumDataSets = 3,
-        Ratios = c(0.70, 0.20, 0.10),
-        PartitionType = "random",
-        StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-    }
-  }
-  
-  # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data,
-                             Impute = FALSE,
-                             CharToFactor = TRUE)
-  
-  # Regression ModelDataPrep----
-  dataTest <- ModelDataPrep(data = ValidationData,
-                            Impute = FALSE,
-                            CharToFactor = TRUE)
-  
-  # Regression ModelDataPrep----
-  if (!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
-  }
-  
-  # Regression Target Name Storage----
-  if (is.character(TargetColumnName)) {
-    Target <- TargetColumnName
-  } else {
-    Target <- names(data)[TargetColumnName]
-  }
-  
-  # Regression Get Min Value of Target Data----
-  MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
-  
-  # Regression Proper Distribution Check----
-  if (MinVal < 0 & tolower(Distribution) == "poisson") {
-    Distribution <- "gaussian"
-  } else if (MinVal == 0 &
-             tolower(Distribution) %chin% c("gamma", "tweedie")) {
-    Distribution <- "poisson"
-  }
-  
-  # Regression Grid Tune Check----
-  if (GridTune) {
-    # Regression Start Up H2O----
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  enable_assertions = FALSE)
-    
-    # Regression Define data sets----
-    datatrain    <- h2o::as.h2o(dataTrain)
-    datavalidate <- h2o::as.h2o(dataTest)
-    
-    # Regression Grid Tune Search Criteria----
-    search_criteria  <- list(
-      strategy             = "RandomDiscrete",
-      max_runtime_secs     = 3600 * 24 * 7,
-      max_models           = MaxModelsInGrid,
-      seed                 = 1234,
-      stopping_rounds      = 10,
-      stopping_metric      = toupper(eval_metric),
-      stopping_tolerance   = 1e-3
-    )
-    
-    # Regression Grid Parameters----
-    hyper_params <- list(
-      max_depth                        = c(6, 9, 12),
-      sample_rate                      = c(0.5, 0.75, 1.0),
-      col_sample_rate                  = c(0.5, 0.75, 1.0),
-      col_sample_rate_per_tree         = c(0.5, 0.75, 1.0),
-      col_sample_rate_change_per_level = c(0.9, 1.0, 1.1),
-      min_rows                         = c(1, 10),
-      nbins                            = c(10, 20, 30),
-      nbins_cats                       = c(64, 256, 512),
-      histogram_type                   = c("UniformAdaptive",
-                                           "QuantilesGlobal",
-                                           "RoundRobin")
-    )
-    
-    # Regression Grid Train Model----
-    if (!is.null(Alpha)) {
-      grid <- h2o::h2o.grid(
-        hyper_params         = hyper_params,
-        search_criteria      = search_criteria,
-        is_supervised        = TRUE,
-        algorithm            = "gbm",
-        grid_id              = paste0(ModelID, "_Grid"),
-        x                    = FeatureColNames,
-        y                    = TargetColumnName,
-        ntrees               = Trees,
-        training_frame       = datatrain,
-        validation_frame     = datavalidate,
-        distribution         = "quantile",
-        quantile_alpha       = Alpha,
-        learn_rate           = 0.05,
-        learn_rate_annealing = 0.99,
-        max_runtime_secs     = 3600 * 24 * 7,
-        stopping_rounds      = 10,
-        stopping_tolerance   = 1e-3,
-        stopping_metric      = toupper(eval_metric),
-        score_tree_interval  = 10,
-        seed                 = 1234
-      )
-    } else {
-      if (tolower(Distribution) == "tweedie") {
-        grid <- h2o::h2o.grid(
-          hyper_params         = hyper_params,
-          search_criteria      = search_criteria,
-          is_supervised        = TRUE,
-          algorithm            = "gbm",
-          grid_id              = paste0(ModelID, "_Grid"),
-          x                    = FeatureColNames,
-          y                    = TargetColumnName,
-          ntrees               = Trees,
-          training_frame       = datatrain,
-          validation_frame     = datavalidate,
-          distribution         = tolower(Distribution),
-          tweedie_power        = 1.5,
-          learn_rate           = 0.05,
-          learn_rate_annealing = 0.99,
-          max_runtime_secs     = 3600 * 24 * 7,
-          stopping_rounds      = 10,
-          stopping_tolerance   = 1e-3,
-          stopping_metric      = toupper(eval_metric),
-          score_tree_interval  = 10,
-          seed                 = 1234
-        )
-      } else {
-        grid <- h2o::h2o.grid(
-          hyper_params         = hyper_params,
-          search_criteria      = search_criteria,
-          is_supervised        = TRUE,
-          algorithm            = "gbm",
-          grid_id              = paste0(ModelID, "_Grid"),
-          x                    = FeatureColNames,
-          y                    = TargetColumnName,
-          ntrees               = Trees,
-          training_frame       = datatrain,
-          validation_frame     = datavalidate,
-          distribution         = tolower(Distribution),
-          learn_rate           = 0.05,
-          learn_rate_annealing = 0.99,
-          max_runtime_secs     = 3600 * 24 * 7,
-          stopping_rounds      = 10,
-          stopping_tolerance   = 1e-3,
-          stopping_metric      = toupper(eval_metric),
-          score_tree_interval  = 10,
-          seed                 = 1234
-        )
-      }
-    }
-    
-    # Regression Get Best Model----
-    Grid_Out   <- h2o::h2o.getGrid(
-      grid_id = paste0(ModelID, "_Grid"),
-      sort_by = eval_metric,
-      decreasing = FALSE
-    )
-    
-    # Regression Collect Best Grid Model----
-    grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
-  }
-  
-  # Regression Start Up H2O----
-  if (!GridTune) {
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  enable_assertions = FALSE)
-    
-    # Regression Define data sets----
-    datatrain    <- h2o::as.h2o(dataTrain)
-    datavalidate <- h2o::as.h2o(dataTest)
-  }
-  
-  # Regression Baseline Model----
-  if (!is.null(Alpha)) {
-    base_model <- h2o::h2o.gbm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      distribution     = Distribution,
-      quantile_alpha   = Alpha,
-      model_id         = ModelID,
-      ntrees           = Trees
+  # GDL Features----
+  if (!is.null(GroupVariables)) {
+    data <- DT_GDL_Feature_Engineering(
+      data,
+      lags           = c(Lags),
+      periods        = c(MA_Periods),
+      statsNames     = c("MA"),
+      targets        = eval(TargetColumnName),
+      groupingVars   = "GroupVar",
+      sortDateName   = eval(DateColumnName),
+      timeDiffTarget = NULL,
+      timeAgg        = NULL,
+      WindowingLag   = 1,
+      Type           = "Lag",
+      Timer          = FALSE,
+      SimpleImpute   = TRUE
     )
   } else {
-    base_model <- h2o::h2o.gbm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      distribution     = Distribution,
-      model_id         = ModelID,
-      ntrees           = Trees
+    data <- DT_GDL_Feature_Engineering(
+      data,
+      lags           = c(Lags),
+      periods        = c(MA_Periods),
+      statsNames     = c("MA"),
+      targets        = eval(TargetColumnName),
+      groupingVars   = NULL,
+      sortDateName   = eval(DateColumnName),
+      timeDiffTarget = NULL,
+      timeAgg        = NULL,
+      WindowingLag   = 1,
+      Type           = "Lag",
+      Timer          = FALSE,
+      SimpleImpute   = TRUE
     )
   }
   
-  # Regression Grab Evaluation Metric----
-  if (GridTune) {
-    if (!is.null(TestData)) {
-      datatest        <-  h2o::as.h2o(TestData)
-      if (tolower(eval_metric) == "mse") {
-        GridModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = grid_model,
-                                            newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
-      } else if (tolower(eval_metric) == "rmse") {
-        GridModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = grid_model,
-                                             newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datatest))
-      } else if (tolower(eval_metric) == "mae") {
-        GridModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = grid_model,
-                                            newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
-      } else if (tolower(eval_metric) == "rmsle") {
-        GridModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model,
-                                              newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datatest))
-      }
+  # TimeTrend Variable----
+  if (TimeTrendVariable) {
+    if (!is.null(GroupVariables)) {
+      data[, TimeTrend := 1:.N, by = "GroupVar"]
     } else {
-      if (tolower(eval_metric) == "mse") {
-        GridModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = grid_model,
-                                            newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
-      } else if (tolower(eval_metric) == "rmse") {
-        GridModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = grid_model,
-                                             newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datavalidate))
-      } else if (tolower(eval_metric) == "mae") {
-        GridModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = grid_model,
-                                            newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
-      } else if (tolower(eval_metric) == "rmsle") {
-        GridModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model,
-                                              newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datavalidate))
-      }
-      
-    }
-  } else {
-    if (!is.null(TestData)) {
-      datatest        <-  h2o::as.h2o(TestData)
-      if (tolower(eval_metric) == "mse") {
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
-      } else if (tolower(eval_metric) == "rmse") {
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datatest))
-      } else if (tolower(eval_metric) == "mae") {
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
-      } else if (tolower(eval_metric) == "rmsle") {
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datatest))
-      }
-    } else {
-      if (tolower(eval_metric) == "mse") {
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
-      } else if (tolower(eval_metric) == "rmse") {
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datavalidate))
-      } else if (tolower(eval_metric) == "mae") {
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
-      } else if (tolower(eval_metric) == "rmsle") {
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datavalidate))
-      }
+      data[, TimeTrend := 1:.N]
     }
   }
   
-  # Regression Pick Winner----
-  if (GridTune) {
-    if (GridModelEval > BaseModelEval) {
-      FinalModel <- grid_model
-    } else {
-      FinalModel <- base_model
-    }
-  } else {
-    FinalModel <- base_model
-  }
-  
-  # Regression Save Model----
-  if (SaveModelObjects) {
-    if (tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel,
-                                     path = model_path,
-                                     force = TRUE)
-      h2o::h2o.download_mojo(
-        model = FinalModel,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = ModelID
-      )
-    } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel,
-                                      path = model_path,
-                                      force = TRUE)
-    }
-  }
-  
-  # Regression Score Final Test Data----
-  if (!is.null(TestData)) {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datatest))
-    
-  } else {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datavalidate))
-  }
-  
-  # Regression Variable Importance----
-  VariableImportance <-
-    data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-  if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_VariableImportance.csv"))
-  }
-  
-  # Regression Format Variable Importance Table----
-  data.table::setnames(
-    VariableImportance,
-    c(
-      "variable",
-      "relative_importance",
-      "scaled_importance",
-      "percentage"
-    ),
-    c(
-      "Variable",
-      "RelativeImportance",
-      "ScaledImportance",
-      "Percentage"
-    )
+  # Prepare data----
+  data <- RemixAutoML::ModelDataPrep(
+    data,
+    Impute = TRUE,
+    CharToFactor = TRUE,
+    RemoveDates = FALSE,
+    MissFactor = "0",
+    MissNum    = -1
   )
-  VariableImportance[, ':=' (
-    RelativeImportance = round(RelativeImportance, 4),
-    ScaledImportance = round(ScaledImportance, 4),
-    Percentage = round(Percentage, 4)
-  )]
   
-  # Regression H2O Shutdown----
-  if(StopH2O) {
-    h2o::h2o.shutdown(prompt = FALSE)    
-  }
-
-  # Regression Create Validation Data----
-  if (!is.null(TestData)) {
-    ValidationData <-
-      data.table::as.data.table(cbind(TestData, Predict))
-  } else {
-    ValidationData <-
-      data.table::as.data.table(cbind(dataTest, Predict))
+  # Subset Data----
+  if (DataTruncate) {
+    data <- data[val:.N]
   }
   
-  # Regression Change Prediction Name----
-  data.table::setnames(ValidationData, "predict", "Predict")
-  
-  # Inverse Transform----
-  if (!is.null(TransformNumericColumns)) {
-    # Append record for Predicted Column----
-    if (GridTune) {
-      TransformationResults <-
-        TransformationResults[ColumnName != "Predict"]
+  # Partition Data----
+  if (tolower(PartitionType) == "timeseries") {
+    DataSets <- RemixAutoML::AutoDataPartition(
+      data,
+      NumDataSets = NumSets,
+      Ratios = SplitRatios,
+      PartitionType = "timeseries",
+      StratifyColumnNames = "GroupVar",
+      TimeColumnName = NULL
+    )
+  } else if (tolower(PartitionType) == "random") {
+    if (!is.null(GroupVariables)) {
+      DataSets <- RemixAutoML::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = SplitRatios,
+        PartitionType = "random",
+        StratifyColumnNames = "GroupVar",
+        TimeColumnName = eval(DateColumnName)
+      )
+    } else {
+      DataSets <- RemixAutoML::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = SplitRatios,
+        PartitionType = "random",
+        StratifyColumnNames = NULL,
+        TimeColumnName = eval(DateColumnName)
+      )
     }
-    TransformationResults <- data.table::rbindlist(list(
-      TransformationResults,
+  } else {
+    DataSets <- RemixAutoML::AutoDataPartition(
+      data,
+      NumDataSets = NumSets,
+      Ratios = SplitRatios,
+      PartitionType = "time",
+      StratifyColumnNames = NULL,
+      TimeColumnName = eval(DateColumnName)
+    )
+  }
+  
+  # Define data sets----
+  if (NumSets == 2) {
+    train <- DataSets$TrainData
+    valid <- DataSets$ValidationData
+    test  <- NULL
+  } else if (NumSets == 3) {
+    train <- DataSets$TrainData
+    valid <- DataSets$ValidationData
+    test  <- DataSets$TestData
+  }
+  
+  # Pass along base data unperturbed----
+  dataFuture <- data.table::copy(data)
+  
+  # Initialize H2O----
+  h2o::h2o.init(nthreads = NThreads, 
+                max_mem_size = MaxMem, 
+                enable_assertions = FALSE)
+  
+  # Build Model----
+  TestModel <- AutoH2oGBMRegression(
+    data = train,
+    ValidationData = valid,
+    TestData = test,
+    TargetColumnName = eval(TargetColumnName),
+    FeatureColNames = setdiff(names(data),
+                              eval(TargetColumnName)),
+    TransformNumericColumns = NULL,
+    eval_metric = EvalMetric,
+    Distribution = "gaussian",
+    Trees = NTrees,
+    GridTune = GridTune,
+    MaxMem = MaxMem,
+    MaxModelsInGrid = ModelCount,
+    model_path = getwd(),
+    ModelID = "ModelTest",
+    NumOfParDepPlots = 1,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    IfSaveModel = "mojo",
+    StopH2O = FALSE
+  )
+  
+  # Store Model----
+  Model <- TestModel$Model
+  
+  # Update ValidationData and Create Metrics Data----
+  TestDataEval <- TestModel$ValidationData
+  TestDataEval[, Target := NULL]
+  TestDataEval[, eval(DateColumnName) := NULL]
+  if(TargetTransformation) {
+    TransformObject <- data.table::rbindlist(list(
+      TransformObject,
       data.table::data.table(
         ColumnName = "Predict",
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                               MethodName], 1),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                           Lambda], 1),
-        NormalizedStatistics = rep(0, 1)
+        MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
+        Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
+        NormalizedStatistics = 0
       )
     ))
-    
-    # If Actual target columnname == "Target" remove the duplicate version----
-    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
-      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
-      temp1 <- which(names(ValidationData) == temp)[1]
-      ValidationData[, eval(names(data)[temp1]) := NULL]
-      TransformationResults <- TransformationResults[, ID := 1:.N][
-        ID != which(TransformationResults[["ID"]] == temp1)][
-          , ID := NULL]
+    TestDataEval <- AutoTransformationScore(
+      ScoringData = TestDataEval,
+      FinalResults = TransformObject,
+      Type = "Inverse",
+      TransID = NULL,
+      Path = NULL
+    )    
+  }
+  
+  MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
+  if (!is.null(GroupVariables)) {
+    Metric <-
+      TestDataEval[, .(GroupVar, get(TargetColumnName), Predict)]
+    data.table::setnames(Metric, "V2", eval(TargetColumnName))
+    MetricCollection <-
+      Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
+  }
+  
+  # poisson----
+  if (MinVal > 0 &
+      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if (!is.null(GroupVariables)) {
+      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar",
+              all = FALSE)
+    } else {
+      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
+      Metric <-
+        TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE))]
+    }
+  }
+  
+  # mae----
+  if (!is.null(GroupVariables)) {
+    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar",
+            all = FALSE)
+  } else {
+    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
+    Metric <- TestDataEval[, mean(Metric, na.rm = TRUE)]
+  }
+  
+  # mape----
+  if (!is.null(GroupVariables)) {
+    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar",
+            all = FALSE)
+  } else {
+    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
+    Metric <-
+      TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE))]
+  }
+  
+  # mse----
+  if (!is.null(GroupVariables)) {
+    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+            by = "GroupVar",
+            all = FALSE)
+  } else {
+    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
+    Metric <-
+      TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE))]
+  }
+  
+  # msle----
+  if (MinVal > 0 &
+      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if (!is.null(GroupVariables)) {
+      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar",
+              all = FALSE)
+    } else {
+      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
+      Metric <- TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE))]
+    }
+  }
+  
+  # kl----
+  if (MinVal > 0 &
+      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
+    if (!is.null(GroupVariables)) {
+      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
+      MetricCollection <-
+        merge(MetricCollection,
+              TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+              by = "GroupVar",
+              all = FALSE)
+    } else {
+      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
+      Metric <-
+        TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE))]
+    }
+  }
+  
+  # r2----
+  if (!is.null(GroupVariables)) {
+    MetricCollection <-
+      merge(MetricCollection,
+            TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict)), by = "GroupVar"],
+            by = "GroupVar",
+            all = FALSE)
+    MetricCollection[, R2_Metric := R2_Metric ^ 2]
+  } else {
+    Metric <-
+      (TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict))]) ^ 2
+  }
+  
+  # Update GroupVar with Original Columns, reorder columns, add to model objects----
+  if (!is.null(GroupVariables)) {
+    MetricCollection[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    NumGroupVars <- length(GroupVariables)
+    data.table::setcolorder(MetricCollection,
+                            c((ncol(MetricCollection) - NumGroupVars + 1):ncol(MetricCollection),
+                              1:(ncol(MetricCollection) - NumGroupVars)
+                            ))
+    TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
+    TestModel$EvaluationMetricsByGroup
+  }
+  
+  # Store Date Info----
+  if (!is.null(GroupVariables)) {
+    FutureDateData <- unique(dataFuture[, get(DateColumnName)])
+    for (i in  seq_len(FC_Periods)) {
+      FutureDateData <- c(FutureDateData, max(FutureDateData) + 1)
+    }
+  } else {
+    FutureDateData <- dataFuture[, get(DateColumnName)]
+    for (i in  seq_len(FC_Periods)) {
+      FutureDateData <- c(FutureDateData, max(FutureDateData) + 1)
+    }
+  }
+  
+  # Row Count----
+  if (!is.null(GroupVariables)) {
+    N <- data[, .N, by = "GroupVar"][, max(N)]
+  } else {
+    N <- data[, .N]
+  }
+  
+  # Begin loop for generating forecasts----
+  for (i in seq_len(FC_Periods)) {
+    # Row counts----
+    if (i != 1) {
+      N <- N + 1
     }
     
-    # Transform Target and Predicted Value----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
+    # Generate predictions----
+    if (i == 1) {
+      Preds <- AutoH2OMLScoring(
+        ScoringData = data,
+        ModelObject = Model,
+        ModelType = "mojo",
+        H2OShutdown = TRUE,
+        MaxMem = "28G",
+        JavaOptions = NULL,
+        ModelPath = NULL,
+        ModelID = "ModelTest",
+        ReturnFeatures = TRUE,
+        TransformNumeric = FALSE,
+        BackTransNumeric = FALSE,
+        TargetColumnName = NULL,
+        TransformationObject = NULL,
+        TransID = NULL,
+        TransPath = NULL,
+        MDP_Impute = TRUE,
+        MDP_CharToFactor = TRUE,
+        MDP_RemoveDates = TRUE,
+        MDP_MissFactor = "0",
+        MDP_MissNum = -1)
+      
+      # Update data----
+      UpdateData <- cbind(FutureDateData[1:N],
+                          data[, get(TargetColumnName)], Preds[, Weekly_Sales := NULL])
+      data.table::setnames(UpdateData,
+                           c("V1", "V2"),
+                           c(eval(DateColumnName),
+                             eval(TargetColumnName)))
+    } else {
+      if (!is.null(GroupVariables)) {
+        temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
+        temp <- temp[ID == N][, ID := NULL]
+        Preds <- AutoH2OMLScoring(
+          ScoringData = temp,
+          ModelObject = Model,
+          ModelType = "mojo",
+          H2OShutdown = TRUE,
+          MaxMem = "28G",
+          JavaOptions = NULL,
+          ModelPath = NULL,
+          ModelID = "ModelTest",
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = NULL,
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+        
+        # Update data group case----
+        data.table::setnames(Preds, "Predictions", "Preds")
+        Preds <- cbind(UpdateData[ID == N], Preds)
+        Preds[, eval(TargetColumnName) := Preds]
+        Preds[, Predictions := Preds][, Preds := NULL]
+        UpdateData <- UpdateData[ID != N]
+        UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
+        UpdateData[, ID := NULL]
+      } else {
+        Preds <- AutoH2OMLScoring(
+          ScoringData = temp,
+          ModelObject = Model,
+          ModelType = "mojo",
+          H2OShutdown = TRUE,
+          MaxMem = "28G",
+          JavaOptions = NULL,
+          ModelPath = NULL,
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = NULL,
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+        
+        # Update data non-group case----
+        data.table::set(UpdateData,
+                        i = N,
+                        j = 2:3,
+                        value = Preds[[1]])
+      }
+    }
+    
+    # Timer----
+    if (Timer) {
+      print(paste("Forecast future step: ", i))
+    }
+    
+    # Create single future record----
+    d <- max(UpdateData[[eval(DateColumnName)]])
+    if (tolower(TimeUnit) == "hour") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::hours(1))
+    } else if (tolower(TimeUnit) == "day") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::days(1))
+    } else if (tolower(TimeUnit) == "week") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::weeks(1))
+    } else if (tolower(TimeUnit) == "month") {
+      CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
+    } else if (tolower(TimeUnit) == "quarter") {
+      CalendarFeatures <- data.table::as.data.table(d %m+% months(4))
+    } else if (tolower(TimeUnit) == "year") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::years(1))
+    }
+    
+    # Prepare for more feature engineering----
+    data.table::setnames(CalendarFeatures, "V1", eval(DateColumnName))
+    CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
+    if (!is.null(GroupVariables)) {
+      CalendarFeatures <- cbind(GroupVarVector, CalendarFeatures)
+      data.table::setnames(CalendarFeatures, "GroupVarVector", "GroupVar")
+    }
+    
+    # Add calendar variables----
+    if (CalendarVariables) {
+      CalendarFeatures <- RemixAutoML::CreateCalendarVariables(
+        data = CalendarFeatures,
+        DateCols = eval(DateColumnName),
+        AsFactor = FALSE,
+        TimeUnits = c(
+          "second",
+          "minute",
+          "hour",
+          "wday",
+          "mday",
+          "yday",
+          "week",
+          "isoweek",
+          "month",
+          "quarter",
+          "year"
+        )
+      )
+    }
+    
+    # Add TimeTrendVariable----
+    if (TimeTrendVariable) {
+      CalendarFeatures[, TimeTrend := N + 1]
+    }
+    
+    # Update features for next run----
+    if (i != max(FC_Periods)) {
+      temp <- cbind(CalendarFeatures, 1)
+      if (tolower(TimeUnit) != "hour") {
+        temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+      } else {
+        temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+      }
+      data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
+      UpdateData <-
+        data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
+      
+      # Update Lags and MA's----
+      if (!is.null(GroupVariables)) {
+        UpdateData <- UpdateData[order(GroupVar, get(DateColumnName))]
+        UpdateData[, ID := .N:1, by = "GroupVar"]
+        keep <- unique(c(
+          eval(DateColumnName),
+          eval(TargetColumnName),
+          "Predictions",
+          "GroupVar",
+          "ID",
+          names(CalendarFeatures)
+        ))
+        Temporary <- data.table::copy(UpdateData[, ..keep])
+        Temporary <- Scoring_GDL_Feature_Engineering(
+          data           = Temporary,
+          lags           = c(Lags),
+          periods        = c(MA_Periods),
+          statsNames     = c("MA"),
+          targets        = eval(TargetColumnName),
+          groupingVars   = "GroupVar",
+          sortDateName   = eval(DateColumnName),
+          timeDiffTarget = NULL,
+          timeAgg        = NULL,
+          WindowingLag   = 1,
+          Type           = "Lag",
+          Timer          = FALSE,
+          SimpleImpute   = TRUE,
+          AscRowByGroup  = "ID",
+          RecordsKeep    = 1
+        )
+        
+        # Not lining up - Updatedata and Temporary
+        
+        UpdateData <-
+          data.table::rbindlist(
+            list(
+              UpdateData[ID != 1], 
+              Temporary), 
+            use.names = TRUE)
+      } else {
+        UpdateData <- UpdateData[order(get(DateColumnName))]
+        UpdateData[, ID := .N:1]
+        keep <- unique(c(
+          eval(DateColumnName),
+          eval(TargetColumnName),
+          "Predictions",
+          "ID",
+          names(CalendarFeatures)
+        ))
+        Temporary <- data.table::copy(UpdateData[, ..keep])
+        Temporary <- Scoring_GDL_Feature_Engineering(
+          data = Temporary,
+          lags           = c(Lags),
+          periods        = c(MA_Periods),
+          statsNames     = c("MA"),
+          targets        = eval(TargetColumnName),
+          groupingVars   = NULL,
+          sortDateName   = eval(DateColumnName),
+          timeDiffTarget = NULL,
+          timeAgg        = NULL,
+          WindowingLag   = 1,
+          Type           = "Lag",
+          Timer          = FALSE,
+          SimpleImpute   = TRUE,
+          AscRowByGroup  = "ID",
+          RecordsKeep    = 1
+        )
+        UpdateData <-
+          data.table::rbindlist(
+            list(
+              UpdateData[ID != 1],
+              Temporary), 
+            use.names = TRUE)
+      }
+      gc()
+    }
+    gc()
+  }
+  
+  # BackTransform----
+  if (TargetTransformation) {
+    data.table::set(TransformObject,
+                    i = 2L,
+                    j = 1L,
+                    value = "Predictions")
+    UpdateData <- AutoTransformationScore(
+      ScoringData = UpdateData,
+      FinalResults = TransformObject,
       Type = "Inverse",
-      FinalResults = TransformationResults,
       TransID = NULL,
       Path = NULL
     )
   }
   
-  # Regression Get R2----
-  r_squared <-
-    (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2
+  # Metrics----
+  EvalMetric <-
+    TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
   
-  # Regression Save Validation Data to File----
-  if (SaveModelObjects) {
-    data.table::fwrite(ValidationData,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_ValidationData.csv"))
-  }
-  
-  # Regression Evaluation Calibration Plot----
-  if (!is.null(Alpha)) {
-    EvaluationPlot <- EvalPlot(
-      data = ValidationData,
-      PredictionColName = "Predict",
-      TargetColName = Target,
-      GraphType = "calibration",
-      PercentileBucket = 0.05,
-      aggrfun = function(x)
-        quantile(x,
-                 probs = Alpha,
-                 na.rm = TRUE)
-    )
-  } else {
-    EvaluationPlot <- EvalPlot(
-      data = ValidationData,
-      PredictionColName = "Predict",
-      TargetColName = Target,
-      GraphType = "calibration",
-      PercentileBucket = 0.05,
-      aggrfun = function(x)
-        mean(x, na.rm = TRUE)
-    )
-  }
-  
-  # Regression Evaluation Plot Update Title----
-  if (GridTune) {
-    val <- max(GridModelEval, BaseModelEval)
-    EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0(
-        "GBM Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(val, 3)
-      ))
-  } else {
-    EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0(
-        "GBM Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(BaseModelEval, 3)
-      ))
-  }
-  
-  # Save plot to file
-  if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID,
-                           "_EvaluationPlot.png"))
-  }
-  
-  # Regression Evaluation BoxPlot----
-  EvaluationBoxPlot <- EvalPlot(
-    data = ValidationData,
-    PredictionColName = "Predict",
-    TargetColName = Target,
-    GraphType = "boxplot",
-    PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
-  
-  # Regression Evaluation BoxPlot Update Title----
-  if (GridTune) {
-    val <- max(GridModelEval, BaseModelEval)
-    EvaluationBoxPlot <- EvaluationBoxPlot +
-      ggplot2::ggtitle(paste0(
-        "GBM Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(val, 3)
-      ))
-  } else {
-    EvaluationBoxPlot <- EvaluationBoxPlot +
-      ggplot2::ggtitle(paste0(
-        "GBM Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(BaseModelEval, 3)
-      ))
-  }
-  
-  # Save plot to file
-  if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID,
-                           "_EvaluationBoxPlot.png"))
-  }
-  
-  # Regression Evaluation Metrics----
-  EvaluationMetrics <-
-    data.table::data.table(
-      Metric = c("Poisson", "MAE",
-                 "MAPE", "MSE", "MSLE",
-                 "KL", "CS", "R2"),
-      MetricValue = rep(999999, 8)
-    )
-  i <- 0
-  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1)
-    tryCatch({
-      # Regression Grid Evaluation Metrics----
-      if (tolower(metric) == "poisson") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(Target - Predict)]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (Target - Predict) ^ 2]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "msle") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "kl") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Target * log((Target + 1) /
-                                                    (Predict + 1))]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "cs") {
-        ValidationData[, ':=' (
-          Metric1 = Target * Predict,
-          Metric2 = Target ^ 2,
-          Metric3 = Predict ^ 2
-        )]
-        Metric <-
-          ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                            sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(metric) == "r2") {
-        Metric <-
-          (ValidationData[, stats::cor(Target, Predict)][[1]]) ^ 2
-      }
-      data.table::set(
-        EvaluationMetrics,
-        i = i,
-        j = 2L,
-        value = round(Metric, 4)
+  # Define plot theme----
+  Temp <- function () {
+    ggplot2::theme(
+      axis.title = ggplot2::element_text(size = 11),
+      axis.text = ggplot2::element_text(size = 11),
+      legend.text = ggplot2::element_text(color = "#1c1c1c",
+                                          size = 11),
+      legend.background = ggplot2::element_rect(
+        fill = "snow3",
+        size = 0.25,
+        colour = "darkblue"
+      ),
+      legend.justification = 0,
+      legend.position = "bottom",
+      plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
+      panel.background = ggplot2::element_rect(fill = "#E7E7E7"),
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.minor.x = ggplot2::element_blank(),
+      panel.grid.major.y = ggplot2::element_line(color = "white"),
+      panel.grid.minor.y = ggplot2::element_line(color = "white"),
+      plot.title = ggplot2::element_text(
+        color = "#1c1c1c",
+        size = 25,
+        hjust = 0,
+        face = "bold"
+      ),
+      plot.subtitle = ggplot2::element_text(
+        color = "#1c1c1c",
+        size = 14,
+        hjust = 0
+      ),
+      plot.caption = ggplot2::element_text(
+        size = 9,
+        hjust = 0,
+        face = "italic"
       )
-      data.table::set(EvaluationMetrics,
-                      i = i,
-                      j = 3L,
-                      value = NA)
-    }, error = function(x)
-      "skip")
+    )
   }
   
-  # Remove Features----
-  tryCatch({ValidationData[, ':=' (Metric  = NULL, 
-                         Metric1 = NULL,
-                         Metric2 = NULL,
-                         Metric3 = NULL)]}, 
-           error = function(x) "skip")
-  
-  # Regression Save EvaluationMetrics to File----
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-  if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_EvaluationMetrics.csv"))
+  # Data Manipulation----
+  if (!is.null(GroupVariables)) {
+    PlotData <- data.table::copy(UpdateData)
+    PlotData <- PlotData[, .(sum(get(TargetColumnName)),
+                             sum(Predictions)),
+                         by = eval(DateColumnName)]
+    data.table::setnames(PlotData, c("V1", "V2"), c(eval(TargetColumnName), "Predictions"))
+  } else {
+    PlotData <- data.table::copy(UpdateData)
+    data.table::set(
+      PlotData,
+      i = (data[, .N] + 1):PlotData[, .N],
+      j = 2,
+      value = NA
+    )
+    data.table::set(PlotData,
+                    i = 1:data[, .N],
+                    j = 3,
+                    value = NA)
   }
   
-  # Regression Partial Dependence----
-  ParDepPlots <- list()
-  j <- 0
-  ParDepBoxPlots <- list()
-  k <- 0
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-    if (!is.null(Alpha)) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            quantile(x,
-                     probs = Alpha,
-                     na.rm = TRUE)
+  # Plot Time Series----
+  TimeSeriesPlot <-
+    ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[[eval(DateColumnName)]])) +
+    ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetColumnName)]],
+                                    color = "Actual")) +
+    ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]],
+                                    color = "Forecast"))
+  
+  # Modify title----
+  if (!is.null(GroupVariables)) {
+    TimeSeriesPlot <- TimeSeriesPlot +
+      ggplot2::geom_vline(
+        xintercept = UpdateData[data[, .N, by = "GroupVar"][1, 2][[1]],
+                                max(get(DateColumnName), na.rm = TRUE)],
+        color = "#FF4F00",
+        lty = "dotted",
+        lwd = 1
+      ) +
+      #RemixTheme()
+      Temp()
+    TimeSeriesPlot <- TimeSeriesPlot +
+      ggplot2::labs(
+        title = paste0(
+          FC_Periods,
+          " - Period Forecast for Aggregate ",
+          eval(TargetColumnName)
+        ),
+        subtitle = paste0(
+          "H2O GBM Model: Mean Absolute Percentage Error = ",
+          paste0(round(EvalMetric, 3) * 100, "%")
+        ),
+        caption = "Forecast generated by Remix Institute's RemixAutoML R package"
+      ) +
+      ggplot2::scale_colour_manual(
+        "",
+        breaks = c("Actual", "Forecast"),
+        values = c("Actual" = "red", "Forecast" =
+                     "blue")
+      ) +
+      ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
+  } else {
+    TimeSeriesPlot <- TimeSeriesPlot +
+      ggplot2::geom_vline(
+        xintercept = UpdateData[data[, .N][[1]],
+                                max(get(DateColumnName), na.rm = TRUE)],
+        color = "#FF4F00",
+        lty = "dotted",
+        lwd = 1
+      ) +
+      Temp() +
+      ggplot2::labs(
+        title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
+        subtitle = paste0(
+          "H2O GBM Model: Mean Absolute Percentage Error = ",
+          paste0(round(EvalMetric, 3) * 100, "%")
+        ),
+        caption = "Forecast generated by Remix Institute's RemixAutoML R package"
+      ) +
+      ggplot2::scale_colour_manual("",
+                                   breaks = c(eval(TargetColumnName), "Forecast"),
+                                   values = c("red", "blue")) +
+      ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
+  }
+  
+  # Shut down H2O----
+  h2o::h2o.shutdown(prompt = FALSE)
+  
+  # Return data----
+  if (!is.null(GroupVariables)) {
+    # Variables to keep----
+    keep <-
+      c("GroupVar",
+        eval(DateColumnName),
+        eval(TargetColumnName),
+        "Predictions")
+    UpdateData <- UpdateData[, ..keep]
+    UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    if(TargetTransformation) {
+      return(
+        list(
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel,
+          TransformationDetail = TransformObject
         )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-          Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            quantile(x,
-                     probs = Alpha,
-                     na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
+      )
     } else {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
+      return(
+        list(
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel
         )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-          Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
+      )      
     }
-  }
-  
-  # Regression Save ParDepPlots to file----
-  if (SaveModelObjects) {
-    save(ParDepPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
-  }
-  
-  # Regression Save ParDepBoxPlots to file----
-  if (SaveModelObjects) {
-    save(ParDepBoxPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
-  }
-  
-  # Subset Transformation Object----
-  if(!is.null(TransformNumericColumns)) {
-    if(TargetColumnName == "Target") {
-      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
-    } else {
-      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
-    }    
-  }
-
-  # Regression Return Objects----
-  if (ReturnModelObjects) {
-    if(!is.null(TransformNumericColumns)) {
+  } else {
+    # Variables to keep----
+    if(TargetTransformation) {
       return(
         list(
-          Model = FinalModel,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          TransformationInformation = TransformationResults
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel,
+          TransformationDetail = TransformObject
         )
       )
     } else {
       return(
         list(
-          Model = FinalModel,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots
+          Forecast = UpdateData,
+          TimeSeriesPlot = TimeSeriesPlot,
+          ModelInformation = TestModel
         )
-      )
+      )      
     }
   }
 }
