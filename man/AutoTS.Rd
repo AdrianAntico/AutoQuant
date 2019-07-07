@@ -94,6 +94,7 @@ WinningModel <- output$TimeSeriesModel
 \seealso{
 Other Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oDRFCARMA}},
+  \code{\link{AutoH2oGBMCARMA}},
   \code{\link{AutoXGBoostCARMA}}
 }
 \author{

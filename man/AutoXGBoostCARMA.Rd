@@ -96,6 +96,7 @@ Results$ModelInformation$...
 }
 \seealso{
 Other Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoH2oDRFCARMA}}, \code{\link{AutoTS}}
+  \code{\link{AutoH2oDRFCARMA}},
+  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}}
 }
 \concept{Time Series}
