@@ -177,6 +177,7 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
   * Michal Menton
   * Weibull
   * Polynomial regression or monotonic regression
+  
 </p>
 </details>
 
