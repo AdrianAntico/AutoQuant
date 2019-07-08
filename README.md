@@ -159,11 +159,31 @@ Scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord
 </p>
 </details>
 
-#### Time Series Modeling:
+#### Nonlinear Regression Modeling:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
+##### **AutoNLS()**
+Automated nonlinear regression modeling. Automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
+* Models included:
+  * Asymptotic
+  * Asymptotic through origin
+  * Asymptotic with offset
+  * Bi-exponential
+  * Four parameter logistic
+  * Three parameter logistic
+  * Gompertz
+  * Michal Menton
+  * Weibull
+  * Polynomial regression or monotonic regression
+</p>
+</details>
+
+## Time Series Modeling Functions: 
+<details><summary>EXPAND</summary>
+<p>
+
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 Automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations) along with their variants. The variants mean that four models for each type will be tested. The variations include: 
   * user-specified time frequency + no historical series smoothing
@@ -192,33 +212,12 @@ AutoH2oDRFCARMA() operates identically to the AutoCatBoostCARMA() function excep
 
 ##### **AutoH2oGBMCARMA()**
 AutoH2oGBMCARMA() operates identically to the AutoCatBoostCARMA() function except that is utilizes H2O GBM instead of CatBoost
-</p>
-</details>
-
-#### Nonlinear Regression Modeling:
-____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
-<p>
   
-##### **AutoNLS()**
-Automated nonlinear regression modeling. Automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
-* Models included:
-  * Asymptotic
-  * Asymptotic through origin
-  * Asymptotic with offset
-  * Bi-exponential
-  * Four parameter logistic
-  * Three parameter logistic
-  * Gompertz
-  * Michal Menton
-  * Weibull
-  * Polynomial regression or monotonic regression
 </p>
 </details>
 
-#### Recommender Systems:
-____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+## Recommender System Functions: 
+<details><summary>EXPAND</summary>
 <p>
   
 ##### **AutoRecomDataCreate()**
@@ -237,9 +236,7 @@ Automatically score a recommender model from AutoRecommender
 
 ##### **AutoMarketBasketModel()**
 AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
-</p>
-</details>
-
+  
 </p>
 </details>
 
