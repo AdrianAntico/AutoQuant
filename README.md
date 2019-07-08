@@ -166,7 +166,7 @@ ________________________________________________________________________________
   
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 Automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below (using optimized Box-Cox transformations) along with their variants. The variants mean that four models for each type will be tested. The variations include: 
-  * user-specified time frequency + no historicaly series smoothing
+  * user-specified time frequency + no historical series smoothing
   * model-based time frequency + no historical smoothing
   * user-specified time frequency + historical series smoothing
   * model-based time frequency + historical smoothing 
