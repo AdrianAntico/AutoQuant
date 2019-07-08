@@ -181,6 +181,9 @@ Automated nonlinear regression modeling. Automatically finds the best model fit 
 </p>
 </details>
 
+</p>
+</details>
+
 ## Time Series Modeling Functions: 
 <details><summary>EXPAND</summary>
 <p>
