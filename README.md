@@ -304,16 +304,16 @@ The best model is chosen by looking at the lowest out-of-sample error, and the o
 <p>
 
 ##### **ParDepCalPlots()**
-Great for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
+<code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
 ##### **EvalPlot()**
-Two versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
+<code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
 ##### **threshOptim()**
-Great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
+<code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 ##### **RedYellowGreen()**
-Computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
+<code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
 </p>
 </details>
 
@@ -323,40 +323,40 @@ Computes optimal thresholds for binary classification models where "don't classi
 <p>
  
  ##### **AutoWordFreq()** 
-Creates a word frequency data.table and a word cloud
+<code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 ##### **AutoH2OTextPrepScoring()** 
-Prepares your data for scoring based on models built with Word2VecModel
+<code>AutoH2OTextPrepScoring()</code> prepares your data for scoring based on models built with AutoWord2VecModel and runs internally inside the AutoH2OScoring() function. It cleans and tokenizes your text data.
 
 ##### **ProblematicFeatures()**
-Identify columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
+<code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
 
 ##### **ProblematicRecords()**
-Automatically identify anomalous data records via Isolation Forests from H2O.
+<code>ProblematicRecords()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 ##### **RemixTheme()** 
-Fonts, colors, and style for plots.
+<code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
 
 ##### **ChartTheme()** 
-Fonts, colors, and style for plots.
+<code>ChartTheme()</code> is a specific font, set of colors, and style for plots.
 
 ##### **multiplot()** 
-Useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
+<code>multiplot()</code> is useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
 ##### **tokenizeH2O()** 
-Tokenize and H2O string column.
+<code>tokenizeH2O()</code> tokenizes an H2O string column.
 
 ##### **percRank()** 
-Inner function for calibration plots and partial dependence plots. Computes PercentRank for all numeric records in a column.
+<code>percRank()</code> is an inner function for calibration plots and partial dependence plots. It computes PercentRank for all numeric records in a column.
 
 ##### **SimpleCap()** 
-Apply proper case to text.
+<code>SimpleCap()</code> apply proper case to text.
 
 ##### **PrintObjectsSize()** 
-Print out objects and their sizes that are in the envrionment. Useful for debugging programs.
+<code>PrintObjectsSize()</code> prints out environment objects and their respective sizes. Useful for debugging programs.
 
 ##### **tempDatesFun()** 
-Special case for character conversion to date when importing from Excel.
+<code>tempDatesFun()</code> is a special case for character conversion to date when importing from Excel.
 </p>
 </details>
 
