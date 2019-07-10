@@ -190,13 +190,13 @@ ________________________________________________________________________________
 <p>
 
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
-<code>AutoTS()</code> is an automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below by utilizing optimal BoxCox transformations along with a stepwise procedue to test out possible values for lags and moving averages. All model parameters are optimally set to get the best possible performance out of each one. There are also four different versions for each model that can be tested and internally compared by setting <code>ModelFreq = TRUE</code> and setting <code>TSClean = TRUE</code>, resulting in four tested combinations: 
+<code>AutoTS()</code> is an automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below by utilizing optimal BoxCox transformations along with a stepwise procedue to test out possible values for lags and moving averages (user specifies upper bounds for lags and moving averages). All model parameters are optimally set to get the best possible performance out of each distinct model. There are also four different versions for each model that can be tested and internally compared by setting <code>ModelFreq = TRUE</code> and setting <code>TSClean = TRUE</code>, resulting in four tested combinations: 
   * user-specified time frequency + no historical series smoothing and imputation
   * model-based identified time frequency + no historical smoothing and imputation
   * user-specified time frequency + historical series smoothing and imputation
   * model-based identified time frequency + historical smoothing and imputation
 
-The best model is chosen by looking at the lowest out-of-sample error (user sets the number of periods for testing), the winning model is rebuild on all available data which is used to generate the forecasts. The output from <code>AutoTS()</code> includes the forecast values, model evaluation metrics and metadata for all models tested, along with the model object.
+The best model is chosen by looking at the lowest out-of-sample error (user sets the number of periods for testing along with the evaluation metric for evaluation), the winning model is rebuilt on all available data which is then used to generate the forecasts. The output from <code>AutoTS()</code> includes the forecast values, model evaluation metrics and metadata for all models tested, along with the model object.
 
 * Automated Time Series Models include:
   * DSHW: Double Seasonal Holt-Winters
