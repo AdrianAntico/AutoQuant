@@ -46,7 +46,7 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
-## Supervised Learning Functions: 
+## Supervised Learning Training Functions: 
 <details><summary>EXPAND</summary>
 <p>
 
@@ -117,22 +117,6 @@ ________________________________________________________________________________
 </p>
 </details>
 
-#### Scoring the Auto__() supervised learning models:
-____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
-<p>
-  
-##### **AutoCatBoostScoring()**
-<code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
-
-##### **AutoXGBoostScoring()**
-<code>AutoXGBoostScoring()</code> is an automated scoring function that compliments the AutoXGBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() functions to prepare your features for xgboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
-
-##### **AutoH2oScoring()**
-<code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
-</p>
-</details>
-
 #### General Purpose H2O Automated Modeling:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
@@ -147,16 +131,6 @@ ________________________________________________________________________________
   * XGBoost (for Linux)
   * LightGBM (for Linux)
   * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-</p>
-</details>
-
-#### Model Scoring:
-____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
-<p>
-  
-##### **AutoH2OScoring()**
-<code>AutoH2OScoring()</code> is for scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
 </p>
 </details>
 
@@ -182,6 +156,25 @@ ________________________________________________________________________________
 </p>
 </details>
 
+</p>
+</details>
+
+## Supervised Learning Scoring Functions: 
+<details><summary>EXPAND</summary>
+<p>
+
+##### **AutoCatBoostScoring()**
+<code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
+
+##### **AutoXGBoostScoring()**
+<code>AutoXGBoostScoring()</code> is an automated scoring function that compliments the AutoXGBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() functions to prepare your features for xgboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
+
+##### **AutoH2oScoring()**
+<code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
+
+##### **AutoH2OScoring()**
+<code>AutoH2OScoring()</code> is for scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores models either via mojo or the standard method by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well. 
+  
 </p>
 </details>
 
