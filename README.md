@@ -159,7 +159,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Supervised Learning Scoring Functions: 
+## Model Scoring Functions: 
 <details><summary>EXPAND</summary>
 <p>
 
