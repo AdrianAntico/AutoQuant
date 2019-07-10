@@ -190,7 +190,7 @@ ________________________________________________________________________________
 <p>
 
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
-<code>AutoTS()</code> is an automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below. Four different variations for each model can be tested via the ModelFreq and TSClean arguments: 
+<code>AutoTS()</code> is an automated time series modeling function. The function automatically finds the most accurate time series model from the list of models below. All model paramters are optimally set to get the best possible performance out of each one. There are also four different versions for each model that can be tested and internally compared by setting <code>ModelFreq = TRUE</code> and setting <code>TSClean = TRUE</code>, resulting in four tested combinations: 
   * user-specified time frequency + no historical series smoothing
   * model-based time frequency + no historical smoothing
   * user-specified time frequency + historical series smoothing
