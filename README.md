@@ -195,6 +195,7 @@ ________________________________________________________________________________
   * model-based time frequency + no historical smoothing
   * user-specified time frequency + historical series smoothing
   * model-based time frequency + historical smoothing 
+
 The best model is chosen by looking at the lowest out-of-sample error, and the output from <code>AutoTS()</code> includes forecasts, model evaluation metrics, and metadata on the competing models.
 
 * Automated Time Series Models include:
