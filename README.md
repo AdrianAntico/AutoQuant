@@ -5,7 +5,7 @@
 #### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
-to_install <- c("catboost", "caTools", "data.table", "doParallel", 
+to_install <- c("arules", "catboost", "caTools", "data.table", "doParallel", 
                 "foreach", "forecast", "ggplot2", "h2o", "itertools", 
                 "lubridate", "magick, "Matrix", "monreg", "nortest","pROC", "RColorBrewer", "recommenderlab", 
                 "ROCR", "scatterplot3d", "stringr", "sde", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
