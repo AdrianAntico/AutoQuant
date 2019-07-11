@@ -6,7 +6,6 @@
 #' @param data A data.table you want to run the function on
 #' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
 #' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
-#' @param statsFUNs Vector of functions for your rolling windows, such as mean, sd, min, max, quantile
 #' @param statsNames A character vector of the corresponding names to create for the rollings stats variables.
 #' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
 #' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
