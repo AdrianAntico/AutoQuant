@@ -32,7 +32,7 @@ data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
 data[, Adrian1 := log(pnorm(Correl * x1 +
                             sqrt(1-Correl^2) * qnorm(x2)))]
-data <- AutoTransformationScore(ScoringData,
+data <- AutoTransformationScore(data,
                                 FinalResults,
                                 Path = NULL,
                                 TransID = "Trans")

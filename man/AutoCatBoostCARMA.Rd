@@ -66,7 +66,7 @@ AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecas
 \examples{
 \donttest{
 Results <- AutoCatBoostCARMA(data,
-                             TargetColumnName = "Weekly_Sales",
+                             TargetColumnName = "Target",
                              DateColumnName = "Date",
                              GroupVariables = c("Store","Dept"),
                              FC_Periods = 52,

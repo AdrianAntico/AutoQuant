@@ -66,7 +66,7 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasti
 \examples{
 \donttest{
 Results <- AutoH2oDRFCARMA(data,
-                           TargetColumnName = "Weekly_Sales",
+                           TargetColumnName = "Target",
                            DateColumnName = "Date",
                            GroupVariables = c("Store","Dept"),
                            FC_Periods = 52,
