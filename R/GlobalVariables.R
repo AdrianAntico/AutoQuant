@@ -1,6 +1,18 @@
 utils::globalVariables(
   names = c(
     "Temporary",
+    "TimeTrend",
+    "ColumnName",
+    "MethodName",
+    "Lambda",
+    "ColumnName",
+    "N",
+    "Target_Buckets",
+    "var",
+    "buckets",
+    "UpdatedPrediction",
+    "StratCol",
+    "Weekly_Sales",
     "Predictions",
     "IDcols",
     "AbsoluteError",

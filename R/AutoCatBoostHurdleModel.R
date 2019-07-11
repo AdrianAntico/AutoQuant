@@ -9,6 +9,7 @@
 #' @param FeatureColNames Supply the column names or number of the features (not included the PrimaryDateColumn)
 #' @param PrimaryDateColumn Supply a date column if the data is functionally related to it
 #' @param IDcols Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions
+#' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
 #' @param ClassWeights Utilize these for the classifier model
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
 #' @param task_type Set to "GPU" or "CPU"
@@ -17,7 +18,7 @@
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 15000
 #' @param GridTune Set to TRUE if you want to grid tune the models
-#' @param NumberModelsInGrid Set to a numeric value for the number of models to try in grid tune
+#' @param MaxModelsInGrid Set to a numeric value for the number of models to try in grid tune
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
 #' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
@@ -32,6 +33,7 @@
 #'   FeatureColNames = 4:ncol(data),
 #'   PrimaryDateColumn = "PLND_STRT_DT",
 #'   IDcols = c(1,3),
+#'   TransformNumericColumns = NULL,
 #'   ClassWeights = NULL,
 #'   SplitRatios = c(0.7, 0.2, 0.1),
 #'   task_type = "GPU",
@@ -53,6 +55,7 @@ AutoCatBoostdHurdleModel <- function(data,
                                      FeatureColNames = 4:ncol(data),
                                      PrimaryDateColumn = NULL,
                                      IDcols = NULL,
+                                     TransformNumericColumns = NULL,
                                      ClassWeights = NULL,
                                      SplitRatios = c(0.70, 0.20, 0.10),
                                      task_type = "GPU",
@@ -437,6 +440,7 @@ AutoCatBoostdHurdleModel <- function(data,
             ValidationData = validBucket,
             TestData = testBucket,
             TargetColumnName = TargetColumnName,
+            TransformNumericColumns = TransformNumericColumns,
             FeatureColNames = FeatureNames,
             PrimaryDateColumn = PrimaryDateColumn,
             IDcols = IDcols,
@@ -459,6 +463,7 @@ AutoCatBoostdHurdleModel <- function(data,
             ValidationData = validBucket,
             TestData = testBucket,
             TargetColumnName = TargetColumnName,
+            TransformNumericColumns = TransformNumericColumns,
             FeatureColNames = FeatureNames,
             PrimaryDateColumn = PrimaryDateColumn,
             IDcols = IDcols,
@@ -479,6 +484,9 @@ AutoCatBoostdHurdleModel <- function(data,
         
         # Store Model----
         RegressionModel <- TestModel$Model
+        if(!is.null(TransformNumericColumns)) {
+          TransformationResults <- TestModel$TransformationResults
+        }
         rm(TestModel)
         
         # Garbage Collection----
@@ -486,37 +494,97 @@ AutoCatBoostdHurdleModel <- function(data,
         
         # Score TestData----
         if (bucket == max(seq_len(length(Buckets) + 1))) {
-          TestData <- AutoCatBoostScoring(
-            TargetType = "regression",
-            ScoringData = TestData,
-            FeatureColumnNames = FeatureNames,
-            IDcols = IDcolsModified,
-            Model = RegressionModel,
-            ModelPath = Path[buckets - 1],
-            ModelID = paste0("P6_", bucket - 1, "+"),
-            ReturnFeatures = TRUE,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = FALSE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1
-          )
+          if(!is.null(TransformNumericColumns)) {
+            TestData <- AutoCatBoostScoring(
+              TargetType = "regression",
+              ScoringData = TestData,
+              FeatureColumnNames = FeatureNames,
+              IDcols = IDcolsModified,
+              ModelObject = RegressionModel,
+              ModelPath = Path[buckets - 1],
+              ModelID = paste0("P6_", bucket - 1, "+"),
+              ReturnFeatures = TRUE,
+              TransformationObject = TransformationResults,
+              TargetColumnName = eval(TargetColumnName),
+              TransformNumeric = TRUE,
+              BackTransNumeric = TRUE,
+              TransID = NULL,
+              TransPath = NULL,
+              MDP_Impute = TRUE,
+              MDP_CharToFactor = TRUE,
+              MDP_RemoveDates = FALSE,
+              MDP_MissFactor = "0",
+              MDP_MissNum = -1
+            )
+          } else {
+            TestData <- AutoCatBoostScoring(
+              TargetType = "regression",
+              ScoringData = TestData,
+              FeatureColumnNames = FeatureNames,
+              IDcols = IDcolsModified,
+              ModelObject = RegressionModel,
+              ModelPath = Path[buckets - 1],
+              ModelID = paste0("P6_", bucket - 1, "+"),
+              ReturnFeatures = TRUE,
+              TransformNumeric = FALSE,
+              BackTransNumeric = FALSE,
+              TargetColumnName = eval(TargetColumnName),
+              TransformationObject = NULL,
+              TransID = NULL, 
+              TransPath = NULL,
+              MDP_Impute = TRUE,
+              MDP_CharToFactor = TRUE,
+              MDP_RemoveDates = FALSE,
+              MDP_MissFactor = "0",
+              MDP_MissNum = -1
+            )            
+          }
         } else {
-          TestData <- AutoCatBoostScoring(
-            TargetType = "regression",
-            ScoringData = TestData,
-            FeatureColumnNames = FeatureNames,
-            IDcols = IDcolsModified,
-            Model = RegressionModel,
-            ModelPath = Path[buckets],
-            ModelID = paste0("P6_", bucket),
-            ReturnFeatures = TRUE,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = FALSE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1
-          )
+          if(!is.null(TransformNumericColumns)) {
+            TestData <- AutoCatBoostScoring(
+              TargetType = "regression",
+              ScoringData = TestData,
+              FeatureColumnNames = FeatureNames,
+              IDcols = IDcolsModified,
+              ModelObject = RegressionModel,
+              ModelPath = Path[buckets],
+              ModelID = paste0("P6_", bucket),
+              ReturnFeatures = TRUE,
+              TransformNumeric = TRUE,
+              BackTransNumeric = TRUE,
+              TargetColumnName = eval(TargetColumnName),
+              TransformationObject = TransformationResults,
+              TransID = NULL,
+              TransPath = NULL,
+              MDP_Impute = TRUE,
+              MDP_CharToFactor = TRUE,
+              MDP_RemoveDates = FALSE,
+              MDP_MissFactor = "0",
+              MDP_MissNum = -1
+            )
+          } else {
+            TestData <- AutoCatBoostScoring(
+              TargetType = "regression",
+              ScoringData = TestData,
+              FeatureColumnNames = FeatureNames,
+              IDcols = IDcolsModified,
+              ModelObject = RegressionModel,
+              ModelPath = Path[buckets],
+              ModelID = paste0("P6_", bucket),
+              ReturnFeatures = TRUE,
+              TransformNumeric = TRUE,
+              BackTransNumeric = TRUE,
+              TargetColumnName = eval(TargetColumnName),
+              TransformationObject = NULL,
+              TransID = NULL,
+              TransPath = NULL,
+              MDP_Impute = TRUE,
+              MDP_CharToFactor = TRUE,
+              MDP_RemoveDates = FALSE,
+              MDP_MissFactor = "0",
+              MDP_MissNum = -1
+            )
+          }
         }
         
         # Clear TestModel From Memory----

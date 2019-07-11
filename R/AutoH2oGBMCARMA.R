@@ -27,7 +27,7 @@
 #' @examples
 #' \donttest{
 #' Results <- AutoH2oGBMCARMA(data,
-#'                            TargetColumnName = "Weekly_Sales",
+#'                            TargetColumnName = "Target",
 #'                            DateColumnName = "Date",
 #'                            GroupVariables = c("Store","Dept"),
 #'                            FC_Periods = 52,
@@ -524,7 +524,8 @@ AutoH2oGBMCARMA <- function(data,
       
       # Update data----
       UpdateData <- cbind(FutureDateData[1:N],
-                          data[, get(TargetColumnName)], Preds[, Weekly_Sales := NULL])
+                          data[, get(TargetColumnName)], 
+                          Preds[, eval(TargetColumnName) := NULL])
       data.table::setnames(UpdateData,
                            c("V1", "V2"),
                            c(eval(DateColumnName),
