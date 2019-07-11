@@ -22,6 +22,10 @@ AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
 
 \item{ClassVals}{Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.}
 
+\item{TextType}{"Individual" or "Combined" depending on how you build your word2vec models}
+
+\item{TextNames}{Column names for the text columns to convert to word2vec}
+
 \item{NThreads}{Number of available threads for H2O}
 
 \item{MaxMem}{Amount of memory to dedicate to H2O}
