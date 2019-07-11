@@ -220,8 +220,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (BackTransNumeric) {
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
-    grid_trans_results <-
-      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Append record for Predicted Column----
     data.table::set(
