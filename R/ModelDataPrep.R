@@ -68,7 +68,7 @@ ModelDataPrep <- function(data,
   # Impute missing values----
   if (Impute) {
     for (col in x) {
-      if (is.factor(data[[col]])) {
+      if (is.factor(data[[col]]) | is.character(data[[col]]) {
         data.table::set(data,
                         which(!(data[[col]] %in% levels(data[[col]]))),
                         col,
