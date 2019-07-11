@@ -24,6 +24,8 @@ test_that("DummifyDT", {
     SavePath = NULL,
     ImportFactorLevels = FALSE,
     OneHot = FALSE,
+    FactorLevelsList = NULL, 
+    ReturnFactorLevels = FALSE,
     ClustScore = FALSE
   )
 
@@ -51,6 +53,8 @@ test_that("DummifyDT", {
     SaveFactorLevels = FALSE,
     SavePath = NULL,
     ImportFactorLevels = FALSE,
+    FactorLevelsList = NULL, 
+    ReturnFactorLevels = FALSE,
     OneHot = FALSE,
     ClustScore = FALSE
   )
@@ -79,6 +83,8 @@ test_that("DummifyDT", {
     SaveFactorLevels = FALSE,
     SavePath = NULL,
     ImportFactorLevels = FALSE,
+    FactorLevelsList = NULL, 
+    ReturnFactorLevels = FALSE,
     OneHot = TRUE,
     ClustScore = FALSE
   )
@@ -105,6 +111,8 @@ test_that("DummifyDT", {
     cols = "FactorCol",
     KeepFactorCols = TRUE,
     SaveFactorLevels = FALSE,
+    FactorLevelsList = NULL, 
+    ReturnFactorLevels = FALSE,
     SavePath = NULL,
     ImportFactorLevels = FALSE,
     OneHot = TRUE,
