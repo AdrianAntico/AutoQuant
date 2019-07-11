@@ -46,8 +46,6 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 \item{AscRowRemove}{Set to TRUE to remove the AscRowByGroup column upon returning data.}
 
 \item{statsFUNs}{Vector of functions for your rolling windows, such as mean, sd, min, max, quantile}
-
-\item{SkipCols}{Defaults to NULL; otherwise supply a character vector of the names of columns to skip}
 }
 \value{
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
