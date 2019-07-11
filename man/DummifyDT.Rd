@@ -47,7 +47,7 @@ test <- data.table::data.table(Value = runif(100000),
                                       size = 100000,
                                       replace = TRUE))
 test <- DummifyDT(data = test,
-                  cols,
+                  cols = "FactorCol",
                   KeepFactorCols = FALSE,
                   OneHot = FALSE,
                   SaveFactorLevels = FALSE,
