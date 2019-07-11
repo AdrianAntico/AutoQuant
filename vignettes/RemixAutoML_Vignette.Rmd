@@ -45,7 +45,7 @@ Taking this a step further, there is a concept out there called target encoding.
 In other modeling frameworks, such as Python, you need to convert your categorical features into dummy variables. This means you need to take care of that coding task along with managing that in a production environment. With this package, categorical features are handled internally within the automated modeling functions. Turning your categorical features into dummy variables is problematic for high cardinality factor variables. There are other approaches and the automated modeling functions will actually test out the other methods to see which ones offer the best performance. So you don't have to deal with the coding and management of factor variables and you get better performance. Of course, if you're working with time-based data, I would recommend using the '_GDL_' suite of functions to convert your factor variables to numeric types to prevent forward leak and to not miss out on all that sweet information to be gained!
 
 ### **Handling text data**
-We are living in a world now where text data is becoming more readily available and your machine learning models aren't suited to handle them without first managing them. With this package, you can simply run the **AutoWord2VecModeler()** function, which builds skip-gram models, for all your text columns, thus replacing your text data with numerical vectors suitable for modeling. The function will save the models and recreate them on the fly with the **AutoH2OScoring()** function in your production setting.
+We are living in a world now where text data is becoming more readily available and your machine learning models aren't suited to handle them without first managing them. With this package, you can simply run the **AutoWord2VecModeler()** function, which builds skip-gram word2vec models from H2O, for all your text columns, thus replacing your text data with numerical vectors suitable for modeling. The function will save the model(s) and score new text data on the fly with the **AutoH2OScoring()** function in your production setting. You can choose to build a single model for each text column or a single model for all text columns.
 
 ### **Handling date data**
 Date columns can hold quite a bit of useful information but aren't typically used inside the ML algorithms. We need to extract information out of them. Currently, the package has a function to extract the time components such as second, minute, hour, weekday, day of month, day of year, week, month, quarter, and year. 
@@ -123,13 +123,13 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoRecommenderScoring()`
 - `AutoMarketBasketModel()`
 
-###### All purpose modeling and scoring
+###### General Purpose Modeling and Scoring
 - `AutoH2OModeler()`
 - `AutoH2OScoring()`
 
-#### **AutoCatBoostRegression()** 
-#### **AutoXGBoostRegression()** 
-#### **AutoH2oGBMRegression()** 
+#### **AutoCatBoostRegression()**
+#### **AutoXGBoostRegression()**
+#### **AutoH2oGBMRegression()**
 #### **AutoH2oDRFRegression()**
 The Auto__Regression() set are automated regression modeling function that runs a variety of steps. First, the functions will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation calibration plot, evaluation calibration boxplot, evaluation model metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid metrics, grid arguments, and column names used in model fitting. You can fit standard expected value regression (all of them) along with quantile regression (catboost and h2o gbm). 
 
