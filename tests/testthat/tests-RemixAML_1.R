@@ -566,7 +566,6 @@ test_that("DT_GDL_Feature_Engineering", {
     WindowingLag   = 1,
     Type           = "Lag",
     Timer          = TRUE,
-    SkipCols       = NULL,
     SimpleImpute   = TRUE,
     AscRowByGroup = "temp",
     RecordsKeep = 100
