@@ -25,7 +25,7 @@
 #'                                       size = 100000,
 #'                                       replace = TRUE))
 #' test <- DummifyDT(data = test,
-#'                   cols,
+#'                   cols = "FactorCol",
 #'                   KeepFactorCols = FALSE,
 #'                   OneHot = FALSE,
 #'                   SaveFactorLevels = FALSE,
