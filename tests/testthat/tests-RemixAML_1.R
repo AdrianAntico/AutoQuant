@@ -557,7 +557,6 @@ test_that("DT_GDL_Feature_Engineering", {
     data,
     lags           = c(seq(1, 1, 1)),
     periods        = c(3),
-    statsFUNs      = c("mean"),
     statsNames     = c("MA"),
     targets        = c("Target"),
     groupingVars   = NULL,
