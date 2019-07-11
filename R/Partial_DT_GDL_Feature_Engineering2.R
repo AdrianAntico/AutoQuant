@@ -16,7 +16,6 @@
 #' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
 #' @param Timer Set to TRUE if you percentage complete tracker printout
-#' @param SkipCols Defaults to NULL; otherwise supply a character vector of the names of columns to skip
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
 #' @param RecordsKeep List the number of records to retain (1 for last record, 2 for last 2 records, etc.)
@@ -161,12 +160,13 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
   # Define total runs----
   if (!is.null(groupingVars)) {
     runs <-
-      length(groupingVars) * tarNum * (length(periods) +
-                                         MaxCols)
+      length(groupingVars) * tarNum * (length(periods) *
+                                         length(statsNames) +
+                                         length(lags))
   } else {
     runs <-
-      tarNum * (length(periods) +
-                  MaxCols)
+      tarNum * (length(periods) * length(statsNames) +
+                  length(lags))
   }
   
   # Begin feature engineering----
@@ -253,7 +253,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
         
         # Difference the lag dates----
         if (WindowingLag != 0) {
-          for (l in seq_len(MaxCols)) {
+          for (l in lags) {
             if (l == 1) {
               data1[, paste0(groupingVars[i],
                              timeDiffTarget,
@@ -300,7 +300,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
             }
           }
         } else {
-          for (l in seq_along(lags)) {
+          for (l in lags) {
             if (l == 1) {
               data1[, paste0(groupingVars[i],
                              timeDiffTarget,
