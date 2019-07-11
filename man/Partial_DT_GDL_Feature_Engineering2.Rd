@@ -44,8 +44,6 @@ Partial_DT_GDL_Feature_Engineering2(data, lags = c(seq(1, 5, 1)),
 \item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
 
 \item{AscRowRemove}{Set to TRUE to remove the AscRowByGroup column upon returning data.}
-
-\item{statsFUNs}{Vector of functions for your rolling windows, such as mean, sd, min, max, quantile}
 }
 \value{
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
