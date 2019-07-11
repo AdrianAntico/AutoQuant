@@ -7,10 +7,11 @@
 AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = c(1, 5, 10, 20), TargetColumnName = "Target",
   FeatureColNames = 4:ncol(data), PrimaryDateColumn = NULL,
-  IDcols = NULL, ClassWeights = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  task_type = "GPU", ModelID = "ModelTest", Paths = NULL,
-  SaveModelObjects = TRUE, Trees = 15000, GridTune = TRUE,
-  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
+  IDcols = NULL, TransformNumericColumns = NULL, ClassWeights = NULL,
+  SplitRatios = c(0.7, 0.2, 0.1), task_type = "GPU",
+  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
+  Trees = 15000, GridTune = TRUE, MaxModelsInGrid = 1,
+  NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -29,6 +30,8 @@ AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
 
+\item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
+
 \item{ClassWeights}{Utilize these for the classifier model}
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
@@ -45,11 +48,11 @@ AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
+\item{MaxModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
+
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
 \item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
-
-\item{NumberModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
 }
 \value{
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
@@ -68,6 +71,7 @@ Output <- RemixAutoML::AutoCatBoostdHurdleModel(
   FeatureColNames = 4:ncol(data),
   PrimaryDateColumn = "PLND_STRT_DT",
   IDcols = c(1,3),
+  TransformNumericColumns = NULL,
   ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   task_type = "GPU",
