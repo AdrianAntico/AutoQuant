@@ -9,6 +9,8 @@
 #' @param ScoreMethod "Standard" or "Mojo": Mojo is available for supervised models; use standard for all others
 #' @param TargetType "Regression", "Classification", "Multinomial", "MultiOutcome", "Text", "Clustering". MultiOutcome must be two multinomial models, a count model (the count of outcomes, as a character value), and the multinomial model predicting the labels.
 #' @param ClassVals Choose from "p1", "Probs", "Label", or "All" for classification and multinomial models.
+#' @param TextType "Individual" or "Combined" depending on how you build your word2vec models
+#' @param TextNames Column names for the text columns to convert to word2vec
 #' @param NThreads Number of available threads for H2O
 #' @param MaxMem Amount of memory to dedicate to H2O
 #' @param JavaOptions Modify to your machine if the default doesn't work
