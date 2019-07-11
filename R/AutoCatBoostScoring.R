@@ -1,51 +1,3 @@
-#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
-#'
-#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
-#'
-#' @family Supervised Learning
-#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
-#' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
-#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
-#' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
-#' @param ModelObject Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.
-#' @param ModelPath Supply your path file used in the AutoCatBoost__() function
-#' @param ModelID Supply the model ID used in the AutoCatBoost__() function
-#' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
-#' @param TransformNumeric Set to TRUE if you have features that were transformed automatically from an Auto__Regression() model AND you haven't already transformed them.
-#' @param BackTransNumeric Set to TRUE to generate back-transformed predicted values. Also, if you return features, those will also be back-transformed.
-#' @param TargetColumnName Input your target column name used in training if you are utilizing the transformation service
-#' @param TransformationObject Set to NULL if you didn't use transformations or if you want the function to pull from the file output from the Auto__Regression() function. You can also supply the transformation data.table object with the transformation details versus having it pulled from file.
-#' @param TransID Set to the ID used for saving the transformation data.table object or set it to the ModelID if you are pulling from file from a build with Auto__Regression().
-#' @param TransPath Set the path file to the folder where your transformation data.table detail object is stored. If you used the Auto__Regression() to build, set it to the same path as ModelPath.
-#' @param MDP_Impute Set to TRUE if you did so for modeling and didn't do so before supplying ScoringData in this function
-#' @param MDP_CharToFactor Set to TRUE to turn your character columns to factors if you didn't do so to your ScoringData that you are supplying to this function
-#' @param MDP_RemoveDates Set to TRUE if you have date of timestamp columns in your ScoringData
-#' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
-#' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
-#' @examples
-#' \donttest{
-#' Preds <- AutoCatBoostScoring(TargetType = "regression",
-#'                              ScoringData = data,
-#'                              FeatureColumnNames = 2:12,
-#'                              IDcols = NULL,
-#'                              ModelObject = NULL,
-#'                              ModelPath = "home",
-#'                              ModelID = "ModelTest",
-#'                              ReturnFeatures = TRUE,
-#'                              TransformNumeric = FALSE,
-#'                              BackTransNumeric = FALSE,
-#'                              TargetColumnName = NULL,
-#'                              TransformationObject = NULL,
-#'                              TransID = NULL,
-#'                              TransPath = NULL,
-#'                              MDP_Impute = TRUE,
-#'                              MDP_CharToFactor = TRUE,
-#'                              MDP_RemoveDates = TRUE,
-#'                              MDP_MissFactor = "0",
-#'                              MDP_MissNum = -1)
-#' }
-#' @return A data.table of predicted values with the option to return model features as well.
-#' @export
 AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
                                 FeatureColumnNames = NULL,
@@ -166,7 +118,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
     }    
   } 
-
+  
   # Subset Columns Needed----
   keep1 <- c(FeatureColumnNames)
   if (!is.null(IDcols)) {
@@ -278,6 +230,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       j = "ColumnName",
       value = "Predictions"
     )
+    grid_trans_results <-
+      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
