@@ -553,7 +553,7 @@ test_that("DT_GDL_Feature_Engineering", {
   )
   data[, temp := seq(1:N)][, DateTime := DateTime - temp]
   data <- data[order(DateTime)]
-  data <- Partial_GDL_Feature_Engineering(
+  data <- Partial_DT_GDL_Feature_Engineering(
     data,
     lags           = c(seq(1, 1, 1)),
     periods        = c(3),
