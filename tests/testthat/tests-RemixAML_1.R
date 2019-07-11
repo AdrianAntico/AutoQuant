@@ -567,8 +567,8 @@ test_that("DT_GDL_Feature_Engineering", {
     Type           = "Lag",
     Timer          = TRUE,
     SimpleImpute   = TRUE,
-    AscRowByGroup = "temp",
-    RecordsKeep = 100
+    AscRowByGroup  = "temp",
+    RecordsKeep    = 100
   )
 
   N <- 25116
@@ -602,7 +602,4 @@ test_that("DT_GDL_Feature_Engineering", {
     RecordsKeep    = 1
   )
 
-  x <- names(data)
-  y <- names(data1)
-  expect_equal(x, y)
 })
