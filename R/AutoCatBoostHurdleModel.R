@@ -28,23 +28,23 @@
 #'   data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
-#'   Buckets = c(1, 5, 10, 20),
-#'   TargetColumnName = "PLND_LABOR_UNITS",
+#'   Buckets = 1,
+#'   TargetColumnName = "Target_Variable",
 #'   FeatureColNames = 4:ncol(data),
-#'   PrimaryDateColumn = "PLND_STRT_DT",
-#'   IDcols = c(1,3),
+#'   PrimaryDateColumn = "Date",
+#'   IDcols = 1:3,
 #'   TransformNumericColumns = NULL,
 #'   ClassWeights = NULL,
 #'   SplitRatios = c(0.7, 0.2, 0.1),
 #'   task_type = "GPU",
 #'   ModelID = "P6",
-#'   Paths = c(paste0(getwd(),"/P6_Buckets")),
+#'   Paths = getwd(),
 #'   SaveModelObjects = TRUE,
 #'   Trees = 5000,
 #'   GridTune = FALSE,
 #'   MaxModelsInGrid = 1,
 #'   NumOfParDepPlots = 10,
-#'   PassInGrid = grid)
+#'   PassInGrid = NULL)
 #' }
 #' @export
 AutoCatBoostdHurdleModel <- function(data,
@@ -221,8 +221,7 @@ AutoCatBoostdHurdleModel <- function(data,
       } else if (i == length(Buckets) + 1) {
         data.table::set(
           TestData,
-          i = which(TestData[[eval(TargetColumnName)]] > Buckets[i -
-                                                                   1]),
+          i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1]),
           j = "Target_Buckets",
           value = as.factor(paste0(Buckets[i - 1], "+"))
         )
