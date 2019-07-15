@@ -72,15 +72,6 @@ AutoCatBoostdHurdleModel <- function(data,
       is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
   }
-  # if (is.null(PassInGrid)) {
-  #   PassInGrid <- data.table::data.table(
-  #     l2_leaf_reg = 0,
-  #     boosting_type = "Plain",
-  #     learning_rate = 0.01,
-  #     bootstrap_type = "Bayesian",
-  #     depth = 4
-  #   )
-  # }
   if (!is.logical(SaveModelObjects)) {
     return("SaveModelOutput needs to be set to either TRUE or FALSE")
   }
@@ -629,17 +620,25 @@ AutoCatBoostdHurdleModel <- function(data,
   }
   
   # Rearrange Column order----
-  data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))
-  data.table::setcolorder(TestData, c(
-    1,
-    2,
-    (length(IDcols) + counter + 1),
-    (length(IDcols) + counter + 1 + counter +
-       1):ncol(TestData),
-    (length(IDcols) + 1):(length(IDcols) +
-                            counter),
-    (length(IDcols) + counter + 2):(length(IDcols) + counter + 1 + counter)
-  ))
+  if(length(IDcols) != 0) {
+    data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))    
+  } else {
+    data.table::setcolorder(TestData, c(counter+1, 1:counter, (counter+2):ncol(TestData)))
+  }
+  if(length(IDcols) != 0) {
+    data.table::setcolorder(TestData, c(
+      1:length(IDcols),
+      (length(IDcols) + counter + 1),
+      (length(IDcols) + counter + 1 + counter +
+         1):ncol(TestData),
+      (length(IDcols) + 1):(length(IDcols) +
+                              counter),
+      (length(IDcols) + counter + 2):(length(IDcols) + counter + 1 + counter)
+    ))
+  } else {
+    data.table::setcolorder(x, c(1,(counter*2+2):ncol(TestData),2:(counter*2+1)))
+  }
+  
   
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
