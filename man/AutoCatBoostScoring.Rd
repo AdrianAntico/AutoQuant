@@ -7,7 +7,7 @@
 AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
   FeatureColumnNames = NULL, IDcols = NULL, ModelObject = NULL,
   ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
-  MulitClassTargetLevels = NULL, TransformNumeric = FALSE,
+  MultiClassTargetLevels = NULL, TransformNumeric = FALSE,
   BackTransNumeric = FALSE, TargetColumnName = NULL,
   TransformationObject = NULL, TransID = NULL, TransPath = NULL,
   MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
@@ -30,7 +30,7 @@ AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
 
 \item{ReturnFeatures}{Set to TRUE to return your features with the predicted values.}
 
-\item{MulitClassTargetLevels}{For use with AutoCatBoostMultiClass(). If you saved model objects then this scoring function will locate the target levels file. If you didn't save model objects, you can supply the target levels returned from AutoCatBoostMultiClass().}
+\item{MultiClassTargetLevels}{For use with AutoCatBoostMultiClass(). If you saved model objects then this scoring function will locate the target levels file. If you did not save model objects, you can supply the target levels returned from AutoCatBoostMultiClass().}
 
 \item{TransformNumeric}{Set to TRUE if you have features that were transformed automatically from an Auto__Regression() model AND you haven't already transformed them.}
 
@@ -70,7 +70,7 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
                              ModelPath = "home",
                              ModelID = "ModelTest",
                              ReturnFeatures = TRUE,
-                             MulitClassTargetLevels = NULL,
+                             MultiClassTargetLevels = NULL,
                              TransformNumeric = FALSE,
                              BackTransNumeric = FALSE,
                              TargetColumnName = NULL,
