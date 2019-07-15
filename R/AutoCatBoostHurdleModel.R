@@ -72,15 +72,15 @@ AutoCatBoostdHurdleModel <- function(data,
       is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
   }
-  if (is.null(PassInGrid)) {
-    PassInGrid <- data.table::data.table(
-      l2_leaf_reg = 0,
-      boosting_type = "Plain",
-      learning_rate = 0.01,
-      bootstrap_type = "Bayesian",
-      depth = 4
-    )
-  }
+  # if (is.null(PassInGrid)) {
+  #   PassInGrid <- data.table::data.table(
+  #     l2_leaf_reg = 0,
+  #     boosting_type = "Plain",
+  #     learning_rate = 0.01,
+  #     bootstrap_type = "Bayesian",
+  #     depth = 4
+  #   )
+  # }
   if (!is.logical(SaveModelObjects)) {
     return("SaveModelOutput needs to be set to either TRUE or FALSE")
   }
@@ -146,32 +146,45 @@ AutoCatBoostdHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  data[, Target_Buckets := as.factor(Buckets[1])]
-  for (i in seq_len(length(Buckets) + 1)) {
-    if (i == 1) {
-      data.table::set(
-        data,
-        i = which(data[[eval(TargetColumnName)]] <= Buckets[i]),
-        j = "Target_Buckets",
-        value = as.factor(Buckets[i])
-      )
-    } else if (i == length(Buckets) + 1) {
-      data.table::set(
-        data,
-        i = which(data[[eval(TargetColumnName)]] > Buckets[i -
-                                                             1]),
-        j = "Target_Buckets",
-        value = as.factor(paste0(Buckets[i - 1], "+"))
-      )
-    } else {
-      data.table::set(
-        data,
-        i = which(data[[eval(TargetColumnName)]] <= Buckets[i] &
-                    data[[eval(TargetColumnName)]] > Buckets[i -
+  if(length(Buckets) == 1) {
+    data.table::set(
+      data,
+      i = which(data[[eval(TargetColumnName)]] <= Buckets[1]),
+      j = "Target_Buckets",
+      value = 0
+    )
+    data.table::set(
+      data,
+      i = which(data[[eval(TargetColumnName)]] > Buckets[1]),
+      j = "Target_Buckets",
+      value = 1
+    )
+  } else {
+    for (i in seq_len(length(Buckets) + 1)) {
+      if (i == 1) {
+        data.table::set(
+          data,
+          i = which(data[[eval(TargetColumnName)]] <= Buckets[i]),
+          j = "Target_Buckets",
+          value = as.factor(Buckets[i])
+        )
+      } else if (i == length(Buckets) + 1) {
+        data.table::set(
+          data,
+          i = which(data[[eval(TargetColumnName)]] > Buckets[i -
                                                                1]),
-        j = "Target_Buckets",
-        value = as.factor(Buckets[i])
-      )
+          j = "Target_Buckets",
+          value = as.factor(paste0(Buckets[i-1], "+"))
+        )
+      } else {
+        data.table::set(
+          data,
+          i = which(data[[eval(TargetColumnName)]] <= Buckets[i] &
+                      data[[eval(TargetColumnName)]] > Buckets[i-1]),
+          j = "Target_Buckets",
+          value = as.factor(Buckets[i])
+        )
+      }      
     }
   }
   
@@ -313,39 +326,34 @@ AutoCatBoostdHurdleModel <- function(data,
   
   # Score Classification Model----
   if (length(Buckets) == 1) {
-    TestData <- AutoCatBoostScoring(
-      TargetType = "classification",
-      ScoringData = TestData,
-      FeatureColumnNames = FeatureNames,
-      IDcols = IDcols,
-      ModelObject = ClassModel,
-      ModelPath = Paths[1],
-      ModelID = ModelID,
-      ReturnFeatures = TRUE,
-      MDP_Impute = FALSE,
-      MDP_CharToFactor = TRUE,
-      MDP_RemoveDates = FALSE,
-      MDP_MissFactor = "0",
-      MDP_MissNum = -1
-    )
+    TargetType <- "Classification"
   } else {
-    TestData <- AutoCatBoostScoring(
-      TargetType = "multiclass",
-      ScoringData = TestData,
-      FeatureColumnNames = FeatureNames,
-      IDcols = IDcols,
-      ModelObject = ClassModel,
-      ModelPath = Paths[1],
-      ModelID = ModelID,
-      ReturnFeatures = TRUE,
-      MDP_Impute = FALSE,
-      MDP_CharToFactor = TRUE,
-      MDP_RemoveDates = FALSE,
-      MDP_MissFactor = "0",
-      MDP_MissNum = -1
-    )
+    TargetType <- "Multiclass"
   }
-  
+   
+  # Model Scoring---- 
+  TestData <- AutoCatBoostScoring(
+    TargetType = TargetType,
+    ScoringData = TestData,
+    FeatureColumnNames = FeatureNames,
+    IDcols = IDcols,
+    ModelObject = ClassModel,
+    ModelPath = NULL,
+    ModelID = ModelID,
+    ReturnFeatures = TRUE,
+    TransformNumeric = FALSE, 
+    BackTransNumeric = FALSE, 
+    TargetColumnName = "Adrian", 
+    TransformationObject = NULL, 
+    TransID = NULL, 
+    TransPath = Path[1],
+    MDP_Impute = FALSE,
+    MDP_CharToFactor = TRUE,
+    MDP_RemoveDates = FALSE, 
+    MDP_MissFactor = "0",
+    MDP_MissNum = -1
+  )
+
   # Remove Model Object----
   rm(ClassModel)
   
@@ -357,7 +365,11 @@ AutoCatBoostdHurdleModel <- function(data,
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   
   # Change Name of Predicted MultiClass Column----
-  data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
+  if(length(Buckets) == 1) {
+    data.table::setnames(TestData, "Predictions", "Predictions_Classification")    
+  } else {
+    data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
+  }
   
   # Begin regression model building----
   counter <- 0
@@ -450,7 +462,7 @@ AutoCatBoostdHurdleModel <- function(data,
             Trees = Trees,
             GridTune = GridTune,
             model_path = Paths[bucket - 1],
-            ModelID = paste0("P6_", bucket - 1, "+"),
+            ModelID = paste0(ModelID,"_",bucket-1,"+"),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
@@ -473,11 +485,11 @@ AutoCatBoostdHurdleModel <- function(data,
             Trees = Trees,
             GridTune = GridTune,
             model_path = Paths[bucket],
-            ModelID = paste0("P6_", bucket),
+            ModelID = paste0(ModelID, "_", bucket),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
-            PassInGrid = PassInGrid
+            PassInGrid = NULL
           )
         }
         
@@ -501,7 +513,7 @@ AutoCatBoostdHurdleModel <- function(data,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
               ModelPath = Path[buckets - 1],
-              ModelID = paste0("P6_", bucket - 1, "+"),
+              ModelID = paste0(ModelID,"_",bucket-1,"+"),
               ReturnFeatures = TRUE,
               TransformationObject = TransformationResults,
               TargetColumnName = eval(TargetColumnName),
@@ -523,7 +535,7 @@ AutoCatBoostdHurdleModel <- function(data,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
               ModelPath = Path[buckets - 1],
-              ModelID = paste0("P6_", bucket - 1, "+"),
+              ModelID = paste0(ModelID, "_", bucket),
               ReturnFeatures = TRUE,
               TransformNumeric = FALSE,
               BackTransNumeric = FALSE,
