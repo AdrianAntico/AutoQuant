@@ -630,15 +630,42 @@ AutoCatBoostdHurdleModel <- function(data,
            1):ncol(TestData),
         (length(IDcols) + 1):(length(IDcols) +
                                 counter),
-        (length(IDcols) + counter + 2):(length(IDcols) + counter + 1 + counter)
+        (length(IDcols) + counter + 2):(length(IDcols)+counter+1+counter)
       ))
     } else {
-      data.table::setcolorder(TestData, c(counter+1, 1:counter, (counter+2):ncol(TestData)))
-      data.table::setcolorder(TestData, c(1,(counter*2+2):ncol(TestData),2:(counter*2+1)))
+      data.table::setcolorder(TestData, 
+                              c(counter+1, 
+                                1:counter, 
+                                (counter+2):ncol(TestData)))
+      data.table::setcolorder(TestData, 
+                              c(1,(counter*2+2):ncol(TestData),
+                                2:(counter*2+1)))
     }
-  } else if(counter == 2) {
+  } else if(counter == 2 & length(Buckets) == 1) {
     if(length(IDcols) != 0) {
-      
+      data.table::setcolorder(TestData, 
+                              c(2:(1+length(IDcols)),
+                                1,
+                                (2+length(IDcols)):ncol(TestData)))
+      data.table::setcolorder(TestData, 
+                              c(1:length(IDcols),
+                                (4+length(IDcols)):ncol(TestData),
+                                (1+length(IDcols)):(1+length(IDcols)+2)))
+    } else {
+      data.table::setcolorder(TestData, 
+                              c(4:ncol(TestData), 
+                                1:3))
+    }
+  } else if(counter == 2 & length(Buckets) != 1) {
+    if(length(IDcols) != 0) {
+      data.table::setcolorder(TestData, c(2:(1+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
+      data.table::setcolorder(TestData,
+                              c(1:length(IDcols),
+                                length(IDcols)+1+length(IDcols),(length(IDcols)+5+length(IDcols)):(ncol(TestData)-1),
+                                (4+length(IDcols)):(6+length(IDcols)),
+                                ncol(TestData),
+                                (1+length(IDcols)):(2+length(IDcols))
+                              ))
     } else {
       data.table::setcolorder(TestData, c(4:ncol(TestData), 1:3))
     }
@@ -658,41 +685,41 @@ AutoCatBoostdHurdleModel <- function(data,
   # Secondary logic: for i == 1, need to create the final column first
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
-  if(counter > 2) {
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (length(Buckets) == 1) {
-        if (i == 1) {
-          data.table::set(TestData,
-                          j = "UpdatedPrediction",
-                          value = TestData[[(Cols - (4 - i))]] *
-                            TestData[[Cols - (2 - i)]])
-        } else {
-          data.table::set(TestData,
-                          j = "UpdatedPrediction",
-                          value = TestData[["UpdatedPrediction"]] +
-                            TestData[[(Cols - (4 - i))]] *
-                            TestData[[(Cols - (2 - i))]])
-        }
+  if(counter > 2 | (counter == 2 & length(Buckets) != 1)) {
+    for (i in seq_len(length(Buckets)+1)) {
+      if (i == 1) {
+        data.table::set(TestData,
+                        j = "UpdatedPrediction",
+                        value = TestData[[(Cols - ((length(Buckets) + 1) * 2 - i))]] *
+                          TestData[[(Cols - ((length(Buckets) + 1) - i))]])
       } else {
-        if (i == 1) {
-          data.table::set(TestData,
-                          j = "UpdatedPrediction",
-                          value = TestData[[(Cols - ((length(Buckets) + 1) * 2 - i))]] *
-                            TestData[[(Cols - ((length(Buckets) + 1) - i))]])
-        } else {
-          data.table::set(TestData,
-                          j = "UpdatedPrediction",
-                          value = TestData[["UpdatedPrediction"]] +
-                            TestData[[(Cols - ((length(Buckets) + 1) * 2 - i))]] *
-                            TestData[[(Cols - ((length(Buckets) + 1) - i))]])
-        }
+        data.table::set(TestData,
+                        j = "UpdatedPrediction",
+                        value = TestData[["UpdatedPrediction"]] +
+                          TestData[[(Cols - ((length(Buckets) + 1) * 2 - i))]] *
+                          TestData[[(Cols - ((length(Buckets) + 1) - i))]])
       }
     }  
-  } else if(counter == 2) {
+  } else if(counter == 2 & length(Buckets) == 1) {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
                     value = (1-TestData[[ncol(TestData)]]) * TestData[[(ncol(TestData)-2)]] + 
                       TestData[[ncol(TestData)]] * (TestData[[(ncol(TestData)-1)]]))
+  } else if(counter == 2 & length(Buckets) != 1) {
+    for (i in seq_len(length(Buckets) + 1)) {
+      if (i == 1) {
+        data.table::set(TestData,
+                        j = "UpdatedPrediction",
+                        value = TestData[[(Cols - (4 - i))]] *
+                          TestData[[Cols - (1 - i)]])
+      } else {
+        data.table::set(TestData,
+                        j = "UpdatedPrediction",
+                        value = TestData[["UpdatedPrediction"]] +
+                          TestData[[(Cols - (4 - i))]] *
+                          TestData[[(Cols - (2 - i))]])
+      }      
+    }
   } else {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
