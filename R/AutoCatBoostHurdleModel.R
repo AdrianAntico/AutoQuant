@@ -641,7 +641,7 @@ AutoCatBoostdHurdleModel <- function(data,
       data.table::setcolorder(TestData, c(2:(1+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
       data.table::setcolorder(TestData, c(1:length(IDcols),(1+length(IDcols)+2):(ncol(TestData)-1),(1+length(IDcols)):(1+length(IDcols)+1),ncol(TestData)))
     } else {
-      data.table::setcolorder(TestData, c())
+      data.table::setcolorder(TestData, c(3:(ncol(TestData)-1), 1,2,ncol(TestData)))
     }
   }
 
