@@ -5,12 +5,12 @@
 \title{AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6}
 \usage{
 AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = c(1, 5, 10, 20), TargetColumnName = "Target",
-  FeatureColNames = 4:ncol(data), PrimaryDateColumn = NULL,
-  IDcols = NULL, TransformNumericColumns = NULL, ClassWeights = NULL,
+  Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
+  PrimaryDateColumn = NULL, IDcols = NULL,
+  TransformNumericColumns = NULL, ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1), task_type = "GPU",
   ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
-  Trees = 15000, GridTune = TRUE, MaxModelsInGrid = 1,
+  Trees = 1000, GridTune = TRUE, MaxModelsInGrid = 1,
   NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
@@ -76,9 +76,9 @@ Output <- RemixAutoML::AutoCatBoostdHurdleModel(
   SplitRatios = c(0.7, 0.2, 0.1),
   task_type = "GPU",
   ModelID = "ModelID",
-  Paths = getwd(),
+  Paths = NULL,
   SaveModelObjects = TRUE,
-  Trees = 5000,
+  Trees = 1000,
   GridTune = FALSE,
   MaxModelsInGrid = 1,
   NumOfParDepPlots = 10,
