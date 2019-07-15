@@ -75,7 +75,7 @@ Output <- RemixAutoML::AutoCatBoostdHurdleModel(
   ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   task_type = "GPU",
-  ModelID = "P6",
+  ModelID = "ModelID",
   Paths = getwd(),
   SaveModelObjects = TRUE,
   Trees = 5000,
