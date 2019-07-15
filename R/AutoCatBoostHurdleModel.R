@@ -620,7 +620,7 @@ AutoCatBoostdHurdleModel <- function(data,
   }
   
   # Rearrange Column order----
-  if(counter != 1) {
+  if(counter > 2) {
     if(length(IDcols) != 0) {
       data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))
       data.table::setcolorder(TestData, c(
@@ -635,6 +635,12 @@ AutoCatBoostdHurdleModel <- function(data,
     } else {
       data.table::setcolorder(TestData, c(counter+1, 1:counter, (counter+2):ncol(TestData)))
       data.table::setcolorder(TestData, c(1,(counter*2+2):ncol(TestData),2:(counter*2+1)))
+    }
+  } else if(counter == 2) {
+    if(length(IDcols) != 0) {
+      
+    } else {
+      data.table::setcolorder(TestData, c(4:ncol(TestData), 1:3))
     }
   } else {
     if(length(IDcols) != 0) {
@@ -652,7 +658,7 @@ AutoCatBoostdHurdleModel <- function(data,
   # Secondary logic: for i == 1, need to create the final column first
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
-  if(counter != 1) {
+  if(counter > 2) {
     for (i in seq_len(length(Buckets) + 1)) {
       if (length(Buckets) == 1) {
         if (i == 1) {
@@ -682,6 +688,11 @@ AutoCatBoostdHurdleModel <- function(data,
         }
       }
     }  
+  } else if(counter == 2) {
+    data.table::set(TestData,
+                    j = "UpdatedPrediction",
+                    value = (1-TestData[[ncol(TestData)]]) * TestData[[(ncol(TestData)-2)]] + 
+                      TestData[[ncol(TestData)]] * (TestData[[(ncol(TestData)-1)]]))
   } else {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
