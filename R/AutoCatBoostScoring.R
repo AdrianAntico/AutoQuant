@@ -11,7 +11,7 @@
 #' @param ModelPath Supply your path file used in the AutoCatBoost__() function
 #' @param ModelID Supply the model ID used in the AutoCatBoost__() function
 #' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
-#' @param MulitClassTargetLevels For use with AutoCatBoostMultiClass(). If you saved model objects then this scoring function will locate the target levels file. If you didn't save model objects, you can supply the target levels returned from AutoCatBoostMultiClass().
+#' @param MulitClassTargetLevels For use with AutoCatBoostMultiClass(). If you saved model objects then this scoring function will locate the target levels file. If you did not save model objects, you can supply the target levels returned from AutoCatBoostMultiClass().
 #' @param TransformNumeric Set to TRUE if you have features that were transformed automatically from an Auto__Regression() model AND you haven't already transformed them.
 #' @param BackTransNumeric Set to TRUE to generate back-transformed predicted values. Also, if you return features, those will also be back-transformed.
 #' @param TargetColumnName Input your target column name used in training if you are utilizing the transformation service
