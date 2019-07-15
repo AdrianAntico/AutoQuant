@@ -319,6 +319,11 @@ AutoCatBoostdHurdleModel <- function(data,
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
+  if(length(Buckets > 1)) {
+    TargetLevels <- ClassifierModel$TargetLevels
+  } else {
+    TargetLevels <- NULL
+  }
   rm(ClassifierModel)
   
   # Add Target to IDcols----
@@ -341,6 +346,7 @@ AutoCatBoostdHurdleModel <- function(data,
     ModelPath = NULL,
     ModelID = ModelID,
     ReturnFeatures = TRUE,
+    MultiClassTargetLevels = TargetLevels,
     TransformNumeric = FALSE, 
     BackTransNumeric = FALSE, 
     TargetColumnName = "Adrian", 
@@ -433,7 +439,7 @@ AutoCatBoostdHurdleModel <- function(data,
     
     # Create Modified IDcols----
     IDcolsModified <-
-      c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
+      c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)      
     
     # Load Winning Grid if it exists----
     if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
