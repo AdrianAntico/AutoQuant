@@ -876,7 +876,8 @@ AutoCatBoostMultiClass <- function(data,
           VariableImportance = VariableImportance,
           GridList = catboostGridList,
           GridMetrics = GridCollect,
-          ColNames = Names
+          ColNames = Names,
+          TargetLevels = TargetLevels
         )
       )
     }
@@ -888,7 +889,8 @@ AutoCatBoostMultiClass <- function(data,
           ValidationData = ValidationData,
           EvaluationMetrics = EvaluationMetrics,
           VariableImportance = VariableImportance,
-          ColNames = Names
+          ColNames = Names,
+          TargetLevels = TargetLevels
         )
       )
     }
