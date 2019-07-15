@@ -113,9 +113,14 @@ ________________________________________________________________________________
 <p>
   
 ##### **AutoCatBoostHurdleModel()**
-<code>AutoCatBoostHurdleModel()</code> is a modeling framework for building the necessary models for making predictions for hurdle modeling use-cases. It's generalized so that you can define any number of buckets. There are three cases that are handled with this function: 
+<code>AutoCatBoostHurdleModel()</code> is a modeling framework for building the necessary models for making predictions for hurdle modeling use-cases. It's generalized so that you can define any number of buckets. There are four cases that are handled with this function: 
+
+###### Single Entry Bucket
 * Pr(X = 0) * 0 + Pr(X > 0) * E(X | X > 0)  
 * Pr(X < x1) * E(X | X < x1) + Pr(X >= x1) * E(X | X > x1)
+
+###### Multiple Entry Bucket
+* Pr(X = 0) * 0 + Pr(X < x2)  * E(X | X < x2) + ... + Pr(X < xn) * E(X | X < xn) + Pr(X >= xn) * E(X | X > xn)
 * Pr(X < x1) * E(X | X < x1) + Pr(X < x2)  * E(X | X < x2) + ... + Pr(X < xn) * E(X | X < xn) + Pr(X >= xn) * E(X | X > xn)
 
 First step is to build either a binary classification model (in the case of a single bucket value, such as zero) or a multiclass model (for the case of multiple bucket values, such as zero and 10). The next step is to subset the data for the cases of: less than the first bucket, in between the first and second, second and third, ..., second to last and last, along with greater than last. For each data subset, a regression model is built for predicting values in the bucket ranges. The final compilation is to multiply the probabilities of being in each bucket times the values supplied by the regression values for each buckets.
