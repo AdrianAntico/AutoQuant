@@ -705,21 +705,6 @@ AutoCatBoostdHurdleModel <- function(data,
                     j = "UpdatedPrediction",
                     value = (1-TestData[[ncol(TestData)]]) * TestData[[(ncol(TestData)-2)]] + 
                       TestData[[ncol(TestData)]] * (TestData[[(ncol(TestData)-1)]]))
-  } else if(counter == 2 & length(Buckets) != 1) {
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (i == 1) {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[[(Cols - (4 - i))]] *
-                          TestData[[Cols - (1 - i)]])
-      } else {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[["UpdatedPrediction"]] +
-                          TestData[[(Cols - (4 - i))]] *
-                          TestData[[(Cols - (2 - i))]])
-      }      
-    }
   } else {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
