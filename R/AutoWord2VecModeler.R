@@ -114,7 +114,7 @@ AutoWord2VecModeler <- function(data,
     # Build model----
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
-      model_id           = model_id,
+      model_id           = BuildType,
       word_model         = "SkipGram",
       norm_model         = "HSM",
       vec_size           = vects,
@@ -133,7 +133,7 @@ AutoWord2VecModeler <- function(data,
         data.table::set(StoreFile,
                         i = 1L,
                         j = 1L,
-                        value = "combined")
+                        value = BuildType)
         data.table::set(StoreFile,
                         i = 1L,
                         j = 2L,
@@ -156,7 +156,7 @@ AutoWord2VecModeler <- function(data,
         data.table::set(StoreFile,
                         i = 1L,
                         j = 1L,
-                        value = model_id)
+                        value = BuildType)
         data.table::set(StoreFile,
                         i = 1L,
                         j = 2L,
