@@ -244,7 +244,7 @@ The best model is chosen by looking at the lowest out-of-sample error (user sets
 <code>AutoRecommenderScoring()</code> automatically score a recommender model from AutoRecommender
 
 ##### **AutoMarketBasketModel()**
-<code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within. 
+<code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not provided by the source pacakge. 
   
 </p>
 </details>
