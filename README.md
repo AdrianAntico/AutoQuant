@@ -233,7 +233,7 @@ The best model is chosen by looking at the lowest out-of-sample error (user sets
 <code>AutoRecomDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
 ##### **AutoRecommender()**
-<code>AutoRecommender()</code> automated collaborative filtering modeling where each model competes against each other
+<code>AutoRecommender()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
   * RandomItems
   * PopularItems
   * UserBasedCF  
@@ -241,7 +241,7 @@ The best model is chosen by looking at the lowest out-of-sample error (user sets
   * AssociationRules
   
 ##### **AutoRecommenderScoring()**
-<code>AutoRecommenderScoring()</code> automatically score a recommender model from AutoRecommender
+<code>AutoRecommenderScoring()</code> automatically score a recommender model from AutoRecommender()
 
 ##### **AutoMarketBasketModel()**
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not provided by the source pacakge. 
