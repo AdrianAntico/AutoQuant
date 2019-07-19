@@ -5,7 +5,8 @@
 \title{Utility maximizing thresholds for binary classification}
 \usage{
 threshOptim(data, actTar = "target", predTar = "p1", tpProfit = 0,
-  tnProfit = 0, fpProfit = -1, fnProfit = -2)
+  tnProfit = 0, fpProfit = -1, fnProfit = -2, MinThresh = 0.001,
+  MaxThresh = 0.999, ThresholdPrecision = 0.001)
 }
 \arguments{
 \item{data}{data is the data table you are building the modeling on}
@@ -21,6 +22,12 @@ threshOptim(data, actTar = "target", predTar = "p1", tpProfit = 0,
 \item{fpProfit}{This is the cost of generating a false positive prediction}
 
 \item{fnProfit}{This is the cost of generating a false negative prediction}
+
+\item{MinThresh}{Minimum value to consider for model threshold}
+
+\item{MaxThresh}{Maximum value to consider for model threshold}
+
+\item{ThresholdPrecision}{Incrementing value in search}
 }
 \value{
 Optimal threshold and corresponding utilities for the range of thresholds tested
@@ -41,7 +48,10 @@ data <- threshOptim(data     = data,
                     tpProfit = 0,
                     tnProfit = 0,
                     fpProfit = -1,
-                    fnProfit = -2)
+                    fnProfit = -2,
+                    MinThresh = 0.001,
+                    MaxThresh = 0.999,
+                    ThresholdPrecision = 0.001)
 optimalThreshold <- data$Thresholds
 allResults <- data$EvaluationTable
 }
