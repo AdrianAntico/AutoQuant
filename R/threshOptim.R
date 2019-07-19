@@ -36,8 +36,8 @@
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,
-                        actTar   = "target",
-                        predTar  = "p1",
+                        actTar = "target",
+                        predTar = "p1",
                         tpProfit = 0,
                         tnProfit = 0,
                         fpProfit = -1,
@@ -54,23 +54,23 @@ threshOptim <- function(data,
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
   
   # Optimize each column's classification threshold ::
-  popTrue <- base::mean(data[[(actTar)]])
+  popTrue <- mean(data[[(actTar)]])
   store   <- list()
   j <- 0
   options(warn = -1)
   for (i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
     j <- j + 1
     tp      <-
-      base::sum(ifelse(data[[actTar]] == 1 &
+      sum(ifelse(data[[actTar]] == 1 &
                          data[[predTar]] >= i, 1, 0))
     tn      <-
-      base::sum(ifelse(data[[actTar]] == 0 &
+      sum(ifelse(data[[actTar]] == 0 &
                          data[[predTar]] <  i, 1, 0))
     fp      <-
-      base::sum(ifelse(data[[actTar]] == 0 &
+      sum(ifelse(data[[actTar]] == 0 &
                          data[[predTar]] >= i, 1, 0))
     fn      <-
-      base::sum(ifelse(data[[actTar]] == 1 &
+      sum(ifelse(data[[actTar]] == 1 &
                          data[[predTar]] <  i, 1, 0))
     tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
     fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
