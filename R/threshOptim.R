@@ -11,6 +11,9 @@
 #' @param tnProfit This is the utility for generating a true negative prediction
 #' @param fpProfit This is the cost of generating a false positive prediction
 #' @param fnProfit This is the cost of generating a false negative prediction
+#' @param MinThresh Minimum value to consider for model threshold
+#' @param MaxThresh Maximum value to consider for model threshold
+#' @param ThresholdPrecision Incrementing value in search
 #' @examples
 #' data <- data.table::data.table(Target = runif(10))
 #' data[, x1 := qnorm(Target)]
@@ -24,7 +27,10 @@
 #'                     tpProfit = 0,
 #'                     tnProfit = 0,
 #'                     fpProfit = -1,
-#'                     fnProfit = -2)
+#'                     fnProfit = -2,
+#'                     MinThresh = 0.001,
+#'                     MaxThresh = 0.999,
+#'                     ThresholdPrecision = 0.001)
 #' optimalThreshold <- data$Thresholds
 #' allResults <- data$EvaluationTable
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
@@ -35,7 +41,10 @@ threshOptim <- function(data,
                         tpProfit = 0,
                         tnProfit = 0,
                         fpProfit = -1,
-                        fnProfit = -2) {
+                        fnProfit = -2,
+                        MinThresh = 0.001,
+                        MaxThresh = 0.999,
+                        ThresholdPrecision = 0.001) {
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -49,7 +58,7 @@ threshOptim <- function(data,
   store   <- list()
   j <- 0
   options(warn = -1)
-  for (i in seq(from = 0.01, to = 0.99, by = 0.01)) {
+  for (i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
     j <- j + 1
     tp      <-
       base::sum(ifelse(data[[actTar]] == 1 &
