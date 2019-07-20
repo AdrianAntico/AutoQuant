@@ -79,7 +79,7 @@
 #'                                    SaveModelObjects = FALSE,
 #'                                    PassInGrid = NULL)
 #' }
-#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
+#' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, GridList, and TargetLevels
 #' @export
 AutoXGBoostMultiClass <- function(data,
                                   ValidationData = NULL,
@@ -749,7 +749,8 @@ AutoXGBoostMultiClass <- function(data,
           VariableImportance = VariableImportance,
           GridList = grid_params,
           GridMetrics = GridCollect,
-          ColNames = Names
+          ColNames = Names,
+          TargetLevels = TargetLevels
         )
       )
     }
@@ -761,7 +762,8 @@ AutoXGBoostMultiClass <- function(data,
           ValidationData = ValidationData,
           EvaluationMetrics = EvaluationMetrics,
           VariableImportance = VariableImportance,
-          ColNames = Names
+          ColNames = Names,
+          TargetLevels = TargetLevels
         )
       )
     }
