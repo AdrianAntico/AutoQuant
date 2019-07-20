@@ -8,9 +8,10 @@ AutoXGBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
   eval_metric = "merror", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "merror", TreeMethod = "hist",
-  MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
-  ModelID = "FirstModel", Verbose = 0, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL)
+  Objective = "multi:softmax", MaxModelsInGrid = 10, NThreads = 8,
+  model_path = NULL, ModelID = "FirstModel", Verbose = 0,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -34,6 +35,8 @@ AutoXGBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{grid_eval_metric}{Set to "accuracy" (only option currently)}
 
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
+
+\item{Objective}{Choose from 'multi:softmax' or 'multi:softprob'}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
@@ -108,6 +111,7 @@ TestModel <- AutoXGBoostMultiClass(data,
                                    MaxModelsInGrid = 10,
                                    NThreads = 8,
                                    TreeMethod = "hist",
+                                   Objective = 'multi:softmax',
                                    model_path = getwd(),
                                    ModelID = "FirstModel",
                                    ReturnModelObjects = TRUE,
