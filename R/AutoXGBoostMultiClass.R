@@ -242,7 +242,10 @@ AutoXGBoostMultiClass <- function(data,
                                      "_TargetLevels.csv"))
   }
   
-  # MultiClass Convert Target to Numeric Factor
+  # Number of levels----
+  NumLevels <- TargetLevels[, .N]
+  
+  # MultiClass Convert Target to Numeric Factor----
   dataTrain <- merge(
     dataTrain,
     TargetLevels,
@@ -706,29 +709,63 @@ AutoXGBoostMultiClass <- function(data,
     predict <- stats::predict(model, datatest)
   } else {
     predict <- stats::predict(model, datavalidate)
-  }
+  }    
   
+  # Convert predict object if softprob----
+  if(Objective == "multi:softprob") {
+    for(counter in seq.int(NumLevels)) {
+      if(counter == 1) {
+        Final <- data.table::as.data.table(
+          predict[1:(length(predict)/NumLevels)])
+        data.table::setnames(x = Final, 
+                             old = "V1",
+                             new = as.character(TargetLevels[counter,OriginalLevels]))
+      } else {
+        temp <- data.table::as.data.table(
+          predict[(1 + (counter-1) * (length(predict)/NumLevels)):
+                    (counter * (length(predict)/NumLevels))])
+        data.table::setnames(x = temp, 
+                             old = "V1",
+                             new = as.character(TargetLevels[counter,OriginalLevels]))
+        Final <- cbind(Final, temp)
+      }
+    }
+  }
+
   # MultiClass Validation Data----
-  if (!is.null(TestData)) {
-    ValidationData <-
-      data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+  if(Objective == "multi:softprob") {
+    if (!is.null(TestData)) {
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Final))
+    } else {
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, Final))
+    }
   } else {
-    ValidationData <-
-      data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+    if (!is.null(TestData)) {
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+    } else {
+      ValidationData <-
+        data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+    }    
   }
-  
+
   # MultiClass Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = "Accuracy",
-                                              MetricValue = ValidationData[, mean(ifelse(p1 == eval(Target), 1, 0),
-                                                                                  na.rm = TRUE)])
-  
-  
+  if(Objective != "multi:softprob") {
+    EvaluationMetrics <- data.table::data.table(
+      Metric = "Accuracy",
+      MetricValue = ValidationData[, mean(ifelse(p1 == eval(Target), 1, 0),
+                                          na.rm = TRUE)])
+  }
   
   # Save EvaluationMetrics to File
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-  if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
+  if(Objective != "multi:softprob") {
+    if (SaveModelObjects) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
+    }
+    EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   }
   
   # MultiClass Variable Importance----
@@ -756,33 +793,61 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          GridList = grid_params,
-          GridMetrics = GridCollect,
-          ColNames = Names,
-          TargetLevels = TargetLevels,
-          FactorLevels = FactorLevels
+      if(Objective != "multi:softprob") {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            GridList = grid_params,
+            GridMetrics = GridCollect,
+            ColNames = Names,
+            TargetLevels = TargetLevels,
+            FactorLevels = FactorLevels
+          )
+        )        
+      } else {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            VariableImportance = VariableImportance,
+            GridList = grid_params,
+            GridMetrics = GridCollect,
+            ColNames = Names,
+            TargetLevels = TargetLevels,
+            FactorLevels = FactorLevels
+          )
         )
-      )
+      }
     }
   } else {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          ColNames = Names,
-          TargetLevels = TargetLevels,
-          FactorLevels = FactorLevels
+      if(Objective != "multi:softprob") {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            EvaluationMetrics = EvaluationMetrics,
+            VariableImportance = VariableImportance,
+            ColNames = Names,
+            TargetLevels = TargetLevels,
+            FactorLevels = FactorLevels
+          )
+        )        
+      } else {
+        return(
+          list(
+            Model = model,
+            ValidationData = ValidationData,
+            VariableImportance = VariableImportance,
+            ColNames = Names,
+            TargetLevels = TargetLevels,
+            FactorLevels = FactorLevels
+          )
         )
-      )
+      }
     }
   }
 }
