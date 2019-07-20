@@ -291,8 +291,11 @@ AutoXGBoostMultiClass <- function(data,
         OneHot = FALSE,
         SaveFactorLevels = TRUE,
         SavePath = model_path,
-        ImportFactorLevels = FALSE
+        ImportFactorLevels = FALSE, 
+        ReturnFactorLevels = TRUE
       )
+      FactorLevels <- temp$FactorLevelsList
+      temp <- temp$data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -320,8 +323,11 @@ AutoXGBoostMultiClass <- function(data,
         OneHot = FALSE,
         SaveFactorLevels = TRUE,
         SavePath = model_path,
-        ImportFactorLevels = FALSE
+        ImportFactorLevels = FALSE, 
+        ReturnFactorLevels = TRUE
       )
+      FactorLevels <- temp$FactorLevelsList
+      temp <- temp$data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -351,8 +357,11 @@ AutoXGBoostMultiClass <- function(data,
         OneHot = FALSE,
         SaveFactorLevels = FALSE,
         SavePath = NULL,
-        ImportFactorLevels = FALSE
+        ImportFactorLevels = FALSE, 
+        ReturnFactorLevels = TRUE
       )
+      FactorLevels <- temp$FactorLevelsList
+      temp <- temp$data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -381,8 +390,11 @@ AutoXGBoostMultiClass <- function(data,
         OneHot = FALSE,
         SaveFactorLevels = FALSE,
         SavePath = NULL,
-        ImportFactorLevels = FALSE
+        ImportFactorLevels = FALSE, 
+        ReturnFactorLevels = TRUE
       )
+      FactorLevels <- temp$FactorLevelsList
+      temp <- temp$data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
                       j = "ID_Factorizer",
@@ -750,7 +762,8 @@ AutoXGBoostMultiClass <- function(data,
           GridList = grid_params,
           GridMetrics = GridCollect,
           ColNames = Names,
-          TargetLevels = TargetLevels
+          TargetLevels = TargetLevels,
+          FactorLevels = FactorLevels
         )
       )
     }
@@ -763,7 +776,8 @@ AutoXGBoostMultiClass <- function(data,
           EvaluationMetrics = EvaluationMetrics,
           VariableImportance = VariableImportance,
           ColNames = Names,
-          TargetLevels = TargetLevels
+          TargetLevels = TargetLevels,
+          FactorLevels = FactorLevels
         )
       )
     }
