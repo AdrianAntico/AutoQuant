@@ -1,4 +1,4 @@
-#' AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
+#' AutoCatBoostdHurdleModel for generalized hurdle modeling
 #'
 #' @family Supervised Learning
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
