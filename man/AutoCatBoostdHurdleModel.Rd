@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostHurdleModel.R
 \name{AutoCatBoostdHurdleModel}
 \alias{AutoCatBoostdHurdleModel}
-\title{AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6}
+\title{AutoCatBoostdHurdleModel for generalized hurdle modeling}
 \usage{
 AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
@@ -58,7 +58,7 @@ AutoCatBoostdHurdleModel(data, ValidationData = NULL, TestData = NULL,
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 }
 \description{
-AutoCatBoostdHurdleModel is a Retrain Function for the Regression Models for the Subsetted Data in P6
+AutoCatBoostdHurdleModel for generalized hurdle modeling
 }
 \examples{
 \donttest{
