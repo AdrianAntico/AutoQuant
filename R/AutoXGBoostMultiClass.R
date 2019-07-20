@@ -14,6 +14,7 @@
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
+#' @param Objective Choose from 'multi:softmax' or 'multi:softprob'
 #' @param grid_eval_metric Set to "accuracy" (only option currently)
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
@@ -73,6 +74,7 @@
 #'                                    MaxModelsInGrid = 10,
 #'                                    NThreads = 8,
 #'                                    TreeMethod = "hist",
+#'                                    Objective = 'multi:softmax',
 #'                                    model_path = getwd(),
 #'                                    ModelID = "FirstModel",
 #'                                    ReturnModelObjects = TRUE,
@@ -92,6 +94,7 @@ AutoXGBoostMultiClass <- function(data,
                                   GridTune = FALSE,
                                   grid_eval_metric = "merror",
                                   TreeMethod = "hist",
+                                  Objective = 'multi:softmax',
                                   MaxModelsInGrid = 10,
                                   NThreads = 8,
                                   model_path = NULL,
@@ -502,7 +505,7 @@ AutoXGBoostMultiClass <- function(data,
       if (i == 1) {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -518,7 +521,7 @@ AutoXGBoostMultiClass <- function(data,
       } else {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -594,7 +597,7 @@ AutoXGBoostMultiClass <- function(data,
       if (BestGrid == 1) {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -611,7 +614,7 @@ AutoXGBoostMultiClass <- function(data,
       } else {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -628,7 +631,7 @@ AutoXGBoostMultiClass <- function(data,
       if (BestGrid == 1) {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -645,7 +648,7 @@ AutoXGBoostMultiClass <- function(data,
       } else {
         base_params <- list(
           booster = "gbtree",
-          objective = 'multi:softmax',
+          objective = Objective,
           eval_metric = tolower(eval_metric),
           num_class = (TargetLevels[, max(NewLevels)] +
                          1),
@@ -660,7 +663,7 @@ AutoXGBoostMultiClass <- function(data,
   } else {
     base_params <- list(
       booster = "gbtree",
-      objective = "multi:softmax",
+      objective = Objective,
       eval_metric = tolower(eval_metric),
       num_class = (TargetLevels[, max(NewLevels)] +
                      1),
