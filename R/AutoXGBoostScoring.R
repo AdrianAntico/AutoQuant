@@ -8,6 +8,7 @@
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
+#' @param TargetLevels Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.
 #' @param OneHot Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable
 #' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
@@ -31,6 +32,7 @@
 #'                             FeatureColumnNames = 2:12,
 #'                             IDcols = NULL,
 #'                             FactorLevelsList = NULL,
+#'                             TargetLevels = NULL,
 #'                             OneHot = FALSE,
 #'                             ModelObject = NULL,
 #'                             ModelPath = "home",
@@ -55,6 +57,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
                                FactorLevelsList = NULL,
+                               TargetLevels = NULL,
                                OneHot = FALSE,
                                ModelObject = NULL,
                                ModelPath = NULL,
@@ -225,16 +228,28 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if (tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if (tolower(TargetType) == "multiclass") {
-    TargetLevels <-
-      data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
-    data.table::setnames(predict, "V1", "Predictions")
-    predict <- merge(
-      predict,
-      TargetLevels,
-      by.x = "Predictions",
-      by.y = "NewLevels",
-      all = FALSE
-    )
+    if(!is.null(TargetLevels)) {
+      TargetLevels <- TargetLevels
+      data.table::setnames(predict, "V1", "Predictions")
+      predict <- merge(
+        predict,
+        TargetLevels,
+        by.x = "Predictions",
+        by.y = "NewLevels",
+        all = FALSE
+      )
+    } else {
+      TargetLevels <-
+        data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
+      data.table::setnames(predict, "V1", "Predictions")
+      predict <- merge(
+        predict,
+        TargetLevels,
+        by.x = "Predictions",
+        by.y = "NewLevels",
+        all = FALSE
+      )
+    }
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
   
