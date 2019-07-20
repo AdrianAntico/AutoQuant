@@ -6,8 +6,9 @@
 \usage{
 AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
   FeatureColumnNames = NULL, IDcols = NULL, FactorLevelsList = NULL,
-  OneHot = FALSE, ModelObject = NULL, ModelPath = NULL,
-  ModelID = NULL, ReturnFeatures = TRUE, TransformNumeric = FALSE,
+  TargetLevels = NULL, Objective = "multi:softmax", OneHot = FALSE,
+  ModelObject = NULL, ModelPath = NULL, ModelID = NULL,
+  ReturnFeatures = TRUE, TransformNumeric = FALSE,
   BackTransNumeric = FALSE, TargetColumnName = NULL,
   TransformationObject = NULL, TransID = NULL, TransPath = NULL,
   MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
@@ -23,6 +24,10 @@ AutoXGBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
 
 \item{FactorLevelsList}{Supply the factor variables' list from DummifyDT()}
+
+\item{TargetLevels}{Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.}
+
+\item{Objective}{Set to 'multi:softprobs' if you did so in training. Default is softmax}
 
 \item{OneHot}{Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable}
 
@@ -69,6 +74,8 @@ Preds <- AutoXGBoostScoring(TargetType = "regression",
                             FeatureColumnNames = 2:12,
                             IDcols = NULL,
                             FactorLevelsList = NULL,
+                            TargetLevels = NULL,
+                            Objective = "multi:softmax",
                             OneHot = FALSE,
                             ModelObject = NULL,
                             ModelPath = "home",
