@@ -231,6 +231,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if (tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if (tolower(TargetType) == "multiclass") {
+    if(is.null(TargetLevels)) {
+      TargetLevels <-
+        data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
+    }
     if(Objective == "multi:softprob") {
       for(counter in seq.int(NumLevels)) {
         if(counter == 1) {
@@ -251,28 +255,14 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       }
       predict <- Final
     } else {
-      if(!is.null(TargetLevels)) {
-        TargetLevels <- TargetLevels
-        data.table::setnames(predict, "V1", "Predictions")
-        predict <- merge(
-          predict,
-          TargetLevels,
-          by.x = "Predictions",
-          by.y = "NewLevels",
-          all = FALSE
-        )
-      } else {
-        TargetLevels <-
-          data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
-        data.table::setnames(predict, "V1", "Predictions")
-        predict <- merge(
-          predict,
-          TargetLevels,
-          by.x = "Predictions",
-          by.y = "NewLevels",
-          all = FALSE
-        )
-      }
+      data.table::setnames(predict, "V1", "Predictions")
+      predict <- merge(
+        predict,
+        TargetLevels,
+        by.x = "Predictions",
+        by.y = "NewLevels",
+        all = FALSE
+      )
       predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
     }
   }
