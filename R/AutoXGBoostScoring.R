@@ -248,7 +248,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         } else {
           temp <- data.table::as.data.table(
             predict[(1 + (counter-1) * (PredictLength/NumLevels)):
-                      (counter * (length(predict)/NumLevels))])
+                      (counter * (PredictLength/NumLevels))])
           data.table::setnames(x = temp, 
                                old = "V1",
                                new = as.character(TargetLevels[counter,OriginalLevels]))
