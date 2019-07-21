@@ -237,16 +237,17 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     }
     if(Objective == "multi:softprob") {
       NumLevels <- TargetLevels[, .N]
+      PredictLength <- predict[, .N]
       for(counter in seq.int(NumLevels)) {
         if(counter == 1) {
           Final <- data.table::as.data.table(
-            predict[1:(length(predict)/NumLevels)])
+            predict[1:(PredictLength/NumLevels)])
           data.table::setnames(x = Final, 
                                old = "V1",
                                new = as.character(TargetLevels[counter,OriginalLevels]))
         } else {
           temp <- data.table::as.data.table(
-            predict[(1 + (counter-1) * (length(predict)/NumLevels)):
+            predict[(1 + (counter-1) * (PredictLength/NumLevels)):
                       (counter * (length(predict)/NumLevels))])
           data.table::setnames(x = temp, 
                                old = "V1",
