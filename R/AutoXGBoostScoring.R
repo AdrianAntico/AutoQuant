@@ -236,6 +236,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
     }
     if(Objective == "multi:softprob") {
+      NumLevels <- TargetLevels[, .N]
       for(counter in seq.int(NumLevels)) {
         if(counter == 1) {
           Final <- data.table::as.data.table(
