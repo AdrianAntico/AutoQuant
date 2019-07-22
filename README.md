@@ -116,11 +116,11 @@ First step is to build either a binary classification model (in the case of a si
 
 ###### Single Entry Bucket
 * Pr(X = 0) * 0 + Pr(X > 0) * E(X | X >= 0)  
-* Pr(X < x1) * E(X | X < x1) + Pr(X >= x1) * E(X | X >= x1)
+* Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(X >= x<sub>1</sub>) * E(X | X >= x<sub>1</sub>)
 
 ###### Multiple Entry Bucket
-* Pr(X = 0) * 0 + Pr(X < x2) * E(X | X < x2) + ... + Pr(X < xn) * E(X | X < xn) + Pr(X >= xn) * E(X | X >= xn)
-* Pr(X < x1) * E(X | X < x1) + Pr(x1 <= X < x2) * E(X | x1 <= X < x2) + ... + Pr(xn-1 <= X < xn) * E(X | xn-1 <= X < xn) + Pr(X >= xn) * E(X | X >= xn)
+* Pr(X = 0) * 0 + Pr(X < x<sub>2</sub>) * E(X | X < x<sub>2</sub>) + ... + Pr(X < x<sub>n</sub>) * E(X | X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
+* Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(x<sub>1</sub> <= X < x<sub>2</sub>) * E(X | x<sub>1</sub> <= X < x<sub>2</sub>) + ... + Pr(x<sub>n-1</sub> <= X < x<sub>n</sub>) * E(X | x<sub>n-1</sub> <= X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
   
 ##### **AutoCatBoostHurdleModel()**
 <code>AutoCatBoostHurdleModel()</code> utilizes the CatBoost algorithm on the backend. 
