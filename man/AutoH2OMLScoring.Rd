@@ -103,6 +103,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoXGBoostClassifier}},
   \code{\link{AutoXGBoostMultiClass}},
   \code{\link{AutoXGBoostRegression}},
-  \code{\link{AutoXGBoostScoring}}
+  \code{\link{AutoXGBoostScoring}},
+  \code{\link{AutoXGBoostdHurdleModel}}
 }
 \concept{Supervised Learning}
