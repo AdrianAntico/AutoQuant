@@ -37,13 +37,13 @@
 #' @export
 GenTSAnomVars <- function(data,
                           ValueCol    = "Value",
-                          GroupVar1   = "SKU",
+                          GroupVar1   = NULL,
                           GroupVar2   = NULL,
                           DateVar     = "DATE",
                           HighThreshold = 1.96,
                           LowThreshold  = -1.96,
-                          KeepAllCols = FALSE,
-                          IsDataScaled  = TRUE) {
+                          KeepAllCols = TRUE,
+                          IsDataScaled  = FALSE) {
   # Check data.table
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
