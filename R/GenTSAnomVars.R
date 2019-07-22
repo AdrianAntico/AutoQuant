@@ -49,8 +49,9 @@ GenTSAnomVars <- function(data,
     data <- data.table::as.data.table(data)
   
   # Scale data if not already
+  newValueCol = paste(ValueCol, "zScaled", sep = "_")
   if (!IsDataScaled) {
-    data[, eval(ValueCol) := scale(get(ValueCol),
+    data[, eval(newValueCol) := scale(get(ValueCol),
                                    center = TRUE,
                                    scale = TRUE)]
   }
@@ -60,9 +61,9 @@ GenTSAnomVars <- function(data,
     if (is.null(GroupVar1) & is.null(GroupVar2)) {
       data <- data[order(get(DateVar))]
       data[, RowNumAsc := 1:.N]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
+      data[, AnomHigh := as.numeric(ifelse(get(newValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
+      data[, AnomLow := as.numeric(ifelse(get(newValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh)]
       data[, CumAnomLow := cumsum(AnomLow)]
@@ -80,9 +81,9 @@ GenTSAnomVars <- function(data,
     } else if (is.null(GroupVar2) & !is.null(GroupVar1)) {
       data <- data[order(get(GroupVar1), get(DateVar))]
       data[, RowNumAsc := 1:.N, by = get(GroupVar1)]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
+      data[, AnomHigh := as.numeric(ifelse(get(newValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
+      data[, AnomLow := as.numeric(ifelse(get(newValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh), by = get(GroupVar1)]
       data[, CumAnomLow := cumsum(AnomLow), by = get(GroupVar1)]
@@ -102,9 +103,9 @@ GenTSAnomVars <- function(data,
                          get(DateVar))]
       data[, RowNumAsc := 1:.N, by = list(get(GroupVar1),
                                           get(GroupVar2))]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
+      data[, AnomHigh := as.numeric(ifelse(get(newValueCol) > HighThreshold,
                                            1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
+      data[, AnomLow := as.numeric(ifelse(get(newValueCol) < LowThreshold,
                                           1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh),
            by = list(get(GroupVar1),
