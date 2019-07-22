@@ -1,19 +1,17 @@
-#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
+#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
 #'
-#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
+#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 #'
 #' @family Supervised Learning
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
-#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
+#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
-#' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
-#' @param TargetLevels Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.
-#' @param OneHot Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable
-#' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
-#' @param ModelPath Supply your path file used in the AutoXGBoost__() function
-#' @param ModelID Supply the model ID used in the AutoXGBoost__() function
+#' @param ModelObject Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.
+#' @param ModelPath Supply your path file used in the AutoCatBoost__() function
+#' @param ModelID Supply the model ID used in the AutoCatBoost__() function
 #' @param ReturnFeatures Set to TRUE to return your features with the predicted values.
+#' @param MultiClassTargetLevels For use with AutoCatBoostMultiClass(). If you saved model objects then this scoring function will locate the target levels file. If you did not save model objects, you can supply the target levels returned from AutoCatBoostMultiClass().
 #' @param TransformNumeric Set to TRUE if you have features that were transformed automatically from an Auto__Regression() model AND you haven't already transformed them.
 #' @param BackTransNumeric Set to TRUE to generate back-transformed predicted values. Also, if you return features, those will also be back-transformed.
 #' @param TargetColumnName Input your target column name used in training if you are utilizing the transformation service
@@ -27,59 +25,55 @@
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @examples
 #' \donttest{
-#' Preds <- AutoXGBoostScoring(TargetType = "regression",
-#'                             ScoringData = data,
-#'                             FeatureColumnNames = 2:12,
-#'                             IDcols = NULL,
-#'                             FactorLevelsList = NULL,
-#'                             TargetLevels = NULL,
-#'                             OneHot = FALSE,
-#'                             ModelObject = NULL,
-#'                             ModelPath = "home",
-#'                             ModelID = "ModelTest",
-#'                             ReturnFeatures = TRUE,
-#'                             TransformNumeric = FALSE,
-#'                             BackTransNumeric = FALSE,
-#'                             TargetColumnName = NULL,
-#'                             TransformationObject = NULL,
-#'                             TransID = NULL,
-#'                             TransPath = NULL,
-#'                             MDP_Impute = TRUE,
-#'                             MDP_CharToFactor = TRUE,
-#'                             MDP_RemoveDates = TRUE,
-#'                             MDP_MissFactor = "0",
-#'                             MDP_MissNum = -1)
+#' Preds <- AutoCatBoostScoring(TargetType = "regression",
+#'                              ScoringData = data,
+#'                              FeatureColumnNames = 2:12,
+#'                              IDcols = NULL,
+#'                              ModelObject = NULL,
+#'                              ModelPath = "home",
+#'                              ModelID = "ModelTest",
+#'                              ReturnFeatures = TRUE,
+#'                              MultiClassTargetLevels = NULL,
+#'                              TransformNumeric = FALSE,
+#'                              BackTransNumeric = FALSE,
+#'                              TargetColumnName = NULL,
+#'                              TransformationObject = NULL,
+#'                              TransID = NULL,
+#'                              TransPath = NULL,
+#'                              MDP_Impute = TRUE,
+#'                              MDP_CharToFactor = TRUE,
+#'                              MDP_RemoveDates = TRUE,
+#'                              MDP_MissFactor = "0",
+#'                              MDP_MissNum = -1)
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
-AutoXGBoostScoring <- function(TargetType = NULL,
-                               ScoringData = NULL,
-                               FeatureColumnNames = NULL,
-                               IDcols = NULL,
-                               FactorLevelsList = NULL,
-                               TargetLevels = NULL,
-                               OneHot = FALSE,
-                               ModelObject = NULL,
-                               ModelPath = NULL,
-                               ModelID = NULL,
-                               ReturnFeatures = TRUE,
-                               TransformNumeric = FALSE,
-                               BackTransNumeric = FALSE,
-                               TargetColumnName = NULL,
-                               TransformationObject = NULL,
-                               TransID = NULL,
-                               TransPath = NULL,
-                               MDP_Impute = TRUE,
-                               MDP_CharToFactor = TRUE,
-                               MDP_RemoveDates = TRUE,
-                               MDP_MissFactor = "0",
-                               MDP_MissNum = -1) {
+AutoCatBoostScoring <- function(TargetType = NULL,
+                                ScoringData = NULL,
+                                FeatureColumnNames = NULL,
+                                IDcols = NULL,
+                                ModelObject = NULL,
+                                ModelPath = NULL,
+                                ModelID = NULL,
+                                ReturnFeatures = TRUE,
+                                MultiClassTargetLevels = NULL,
+                                TransformNumeric = FALSE,
+                                BackTransNumeric = FALSE,
+                                TargetColumnName = NULL,
+                                TransformationObject = NULL,
+                                TransID = NULL,
+                                TransPath = NULL,
+                                MDP_Impute = TRUE,
+                                MDP_CharToFactor = TRUE,
+                                MDP_RemoveDates = TRUE,
+                                MDP_MissFactor = "0",
+                                MDP_MissNum = -1) {
+  # Load catboost----
+  loadNamespace(package = "catboost")
+  
   # Check arguments----
   if (is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
-  }
-  if (is.null(FeatureColumnNames)) {
-    warning("FeatureColumnNames cannot be NULL")
   }
   if (!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
@@ -100,98 +94,20 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     warning("MDP_MissNum should be a numeric or integer value")
   }
   
-  # IDcols conversion----
-  if (is.numeric(IDcols) | is.integer(IDcols)) {
-    IDcols <- names(data)[IDcols]
+  # Pull in ColNames----
+  if (is.null(FeatureColumnNames)) {
+    FeatureColumnNames <-
+      data.table::fread(file = paste0(ModelID, "_ColNames.csv"))
   }
   
-  # Apply Transform Numeric Variables----
-  if (TransformNumeric) {
-    if(!is.null(TransformationObject)) {
-      tempTrans <- data.table::copy(TransformationObject)
-      tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-      ScoringData <- AutoTransformationScore(
-        ScoringData = ScoringData,
-        FinalResults = tempTrans,
-        Type = "Apply",
-        TransID = TransID,
-        Path = NULL
-      )
-    } else {
-      ScoringData <- AutoTransformationScore(
-        ScoringData = ScoringData,
-        FinalResults = tempTrans,
-        Type = "Apply",
-        TransID = TransID,
-        Path = TransPath
-      )
-    }
-  }
-  
-  # Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) |
-      is.integer(FeatureColumnNames)) {
-    keep1 <- names(ScoringData)[c(FeatureColumnNames)]
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
-    } else {
-      keep <- c(keep1)
-    }
-    ScoringData <- ScoringData[, ..keep]
-  } else {
-    keep1 <- c(FeatureColumnNames)
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
-    } else {
-      keep <- c(FeatureColumnNames)
-    }
-    ScoringData <- ScoringData[, ..keep]
-  }
-  if (!is.null(IDcols)) {
-    ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1)
-    ScoringData <- ScoringData[, ..keep]
-  } else {
-    ScoringMerge <- data.table::copy(ScoringData)
-  }
-  
-  # Binary Identify column numbers for factor variables----
-  CatFeatures <-
-    sort(c(as.numeric(which(
-      sapply(ScoringData, is.factor)
-    )),
-    as.numeric(which(
-      sapply(ScoringData, is.character)
-    ))))
-  CatFeatures <- names(ScoringData)[CatFeatures]
-  
-  # DummifyDT categorical columns----
-  if(!is.null(CatFeatures)) {
-    if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = FALSE, 
-        FactorLevelsList = FactorLevelsList,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE
-      )
-    } else {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = TRUE,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE
-      )
+  # Pull In Transformation Object----
+  if (is.null(TransformationObject)) {
+    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+      if(is.null(TargetColumnName)) {
+        return("TargetColumnName needs to be supplied")
+      }
+      TransformationObject <-
+        data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
     }
   }
   
@@ -205,43 +121,150 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     MissNum = MDP_MissNum
   )
   
-  # Initialize XGBoost Data Conversion----
-  ScoringMatrix <-
-    xgboost::xgb.DMatrix(as.matrix(ScoringData))
+  # Identify column numbers for factor variables----
+  CatFeatures <-
+    sort(c(as.numeric(which(
+      sapply(ScoringData, is.factor)
+    )),
+    as.numeric(which(
+      sapply(ScoringData, is.character)
+    ))))
+  
+  # Convert CatFeatures to 1-indexed----
+  if (!is.null(CatFeatures)) {
+    for (i in seq_len(length(CatFeatures))) {
+      CatFeatures[i] <- CatFeatures[i] - 1
+    }
+  }
+  
+  # IDcols conversion----
+  if (is.numeric(IDcols) | is.integer(IDcols)) {
+    IDcols <- names(data)[IDcols]
+  }
+  
+  # Apply Transform Numeric Variables----
+  if (TransformNumeric) {
+    tempTrans <- data.table::copy(TransformationObject)
+    tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
+    ScoringData <- AutoTransformationScore(
+      ScoringData = ScoringData,
+      FinalResults = tempTrans,
+      Type = "Apply",
+      TransID = TransID,
+      Path = TransPath
+    )
+  }
+  
+  # Convert FeatureColumnNames to Character Names----
+  if (data.table::is.data.table(FeatureColumnNames)) {
+    FeatureColumnNames <- FeatureColumnNames[[1]]
+  } else if (is.numeric(FeatureColumnNames)) {
+    FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
+  }
+  
+  # Remove Target from FeatureColumnNames----
+  if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+    if(is.null(TargetColumnName)) {
+      if (TargetColumnName %chin% FeatureColumnNames) {
+        FeatureColumnNames <-
+          FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+      }    
+    }     
+  }
+  
+  # Subset Columns Needed----
+  keep1 <- c(FeatureColumnNames)
+  if (!is.null(IDcols)) {
+    keep <- c(IDcols, FeatureColumnNames)
+  } else {
+    keep <- c(FeatureColumnNames)
+  }
+  ScoringData <- ScoringData[, ..keep]
+  if (!is.null(IDcols)) {
+    ScoringMerge <- data.table::copy(ScoringData)
+    keep <- c(keep1)
+    ScoringData <- ScoringData[, ..keep]
+  } else {
+    ScoringMerge <- data.table::copy(ScoringData)
+  }
+  
+  # Initialize Catboost Data Conversion----
+  if (!is.null(CatFeatures)) {
+    ScoringPool <-
+      catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
+  } else {
+    ScoringPool <-
+      catboost::catboost.load_pool(ScoringData)
+  }
   
   # Load model----
   if (!is.null(ModelObject)) {
     model <- ModelObject
   } else {
     model <- tryCatch({
-      model <- xgboost::xgb.load(paste0(ModelPath, "/", ModelID))
+      catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))
     },
     error = function(x)
       return("Model not found in ModelPath"))
   }
   
   # Score model----
-  predict <-
-    data.table::as.data.table(stats::predict(model, ScoringMatrix))
+  if (tolower(TargetType) == "regression") {
+    predict <- data.table::as.data.table(
+      catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "RawFormulaVal",
+        thread_count = -1
+      )
+    )
+  } else if (tolower(TargetType) == "classification") {
+    predict <- data.table::as.data.table(
+      catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "Probability",
+        thread_count = -1
+      )
+    )
+  } else if (tolower(TargetType) == "multiclass") {
+    predict <- data.table::as.data.table(cbind(
+      1 + catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "Class"
+      ),
+      catboost::catboost.predict(
+        model = model,
+        pool = ScoringPool,
+        prediction_type = "Probability"
+      )
+    ))
+  }
   
   # Change Output Predictions Column Name----
   if (tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if (tolower(TargetType) == "multiclass") {
-    if(!is.null(TargetLevels)) {
-      TargetLevels <- TargetLevels
+    if(!is.null(MultiClassTargetLevels)) {
+      TargetLevels <- MultiClassTargetLevels
     } else {
       TargetLevels <-
-        data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))
-      data.table::setnames(predict, "V1", "Predictions")
-      predict <- merge(
-        predict,
-        TargetLevels,
-        by.x = "Predictions",
-        by.y = "NewLevels",
-        all = FALSE
-      )      
+        data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))      
     }
+    k <- 1
+    for (name in as.character(TargetLevels[[1]])) {
+      k <- k + 1
+      data.table::setnames(predict, paste0("V", k), name)
+    }
+    data.table::setnames(predict, "V1", "Predictions")
+    predict <- merge(
+      predict,
+      TargetLevels,
+      by.x = "Predictions",
+      by.y = "NewLevels",
+      all = FALSE
+    )
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
   
@@ -254,8 +277,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if (BackTransNumeric) {
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
-    grid_trans_results <-
-      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Append record for Predicted Column----
     data.table::set(
@@ -264,6 +285,8 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       j = "ColumnName",
       value = "Predictions"
     )
+    grid_trans_results <-
+      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
@@ -274,6 +297,9 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       Path = NULL
     )
   }
+  
+  # Garbage Collection----
+  gc()
   
   # Return data----
   return(predict)
