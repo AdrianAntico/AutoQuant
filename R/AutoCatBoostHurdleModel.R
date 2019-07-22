@@ -370,6 +370,7 @@ AutoCatBoostdHurdleModel <- function(data,
   
   # Begin regression model building----
   counter <- 0
+  Degenerate <- 0
   for (bucket in rev(seq_len(length(Buckets) + 1))) {
     # Filter By Buckets----
     if (bucket == max(seq_len(length(Buckets) + 1))) {
@@ -611,9 +612,13 @@ AutoCatBoostdHurdleModel <- function(data,
       } else {
         # Use single value for predictions in the case of zero variance----
         if (bucket == max(seq_len(length(Buckets) + 1))) {
+          Degenerate <- Degenerate + 1
           TestData[, paste0("Predictions", Buckets[bucket - 1], "+") := Buckets[bucket]]
+          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
         } else {
+          Degenerate <- Degenerate + 1
           TestData[, paste0("Predictions", Buckets[bucket]) := Buckets[bucket]]
+          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
         }
       }
     }
@@ -622,16 +627,27 @@ AutoCatBoostdHurdleModel <- function(data,
   # Rearrange Column order----
   if(counter > 2) {
     if(length(IDcols) != 0) {
-      data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData, c(
-        1:length(IDcols),
-        (length(IDcols) + counter + 1),
-        (length(IDcols) + counter + 1 + counter +
-           1):ncol(TestData),
-        (length(IDcols) + 1):(length(IDcols) +
-                                counter),
-        (length(IDcols) + counter + 2):(length(IDcols)+counter+1+counter)
-      ))
+      if(Degenerate == 0) {
+        data.table::setcolorder(TestData, c(2:(1 + length(IDcols)), 1, (2 + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(
+          1:length(IDcols),
+          (length(IDcols) + counter + 1),
+          (length(IDcols) + counter + 1 + counter +
+             1):ncol(TestData),
+          (length(IDcols) + 1):(length(IDcols) +
+                                  counter),
+          (length(IDcols) + counter + 2):(length(IDcols)+counter+1+counter)
+        ))        
+      } else {
+        data.table::setcolorder(TestData, c(3:(2 + length(IDcols)), 1:2, (3 + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(
+          1:length(IDcols),
+          (length(IDcols) + counter + 1 + Degenerate),
+          (length(IDcols) + counter + 3 + counter + Degenerate):ncol(TestData),
+          (length(IDcols) + 1):(length(IDcols) + counter + Degenerate),
+          (length(IDcols) + counter + 2 + Degenerate):(length(IDcols)+counter+counter+Degenerate+2)
+        ))
+      }
     } else {
       data.table::setcolorder(TestData, 
                               c(counter+1, 
