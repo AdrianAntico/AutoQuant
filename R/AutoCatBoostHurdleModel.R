@@ -655,12 +655,14 @@ AutoCatBoostdHurdleModel <- function(data,
       }
     } else {
       data.table::setcolorder(TestData, 
-                              c(counter+1, 
-                                1:counter, 
-                                (counter+2):ncol(TestData)))
+                              c(1:(counter+Degenerate),
+                              (2+counter+Degenerate):(1+2*(counter+Degenerate)),
+                              (1+counter+Degenerate),
+                              (2+2*(counter+Degenerate)):ncol(TestData)))
+      
       data.table::setcolorder(TestData, 
-                              c(1,(counter*2+2):ncol(TestData),
-                                2:(counter*2+1)))
+                              c((2*(counter+Degenerate)+1):ncol(TestData),
+                                1:(2*(counter+Degenerate))))
     }
   } else if(counter == 2 & length(Buckets) == 1) {
     if(length(IDcols) != 0) {
