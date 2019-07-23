@@ -41,7 +41,7 @@ ModelDataPrep <- function(data,
   }
   
   # Prepare columns for action----
-  x <- seq_along(data)
+  x <- as.integer(seq_along(data))
   if (!is.null(IgnoreCols)) {
     x <- setdiff(x, IgnoreCols)
   }
@@ -68,11 +68,22 @@ ModelDataPrep <- function(data,
   # Impute missing values----
   if (Impute) {
     for (col in x) {
-      if (is.factor(data[[col]]) | is.character(data[[col]])) {
+      if (is.factor(data[[col]])) {
+        
+        # Case factor
         data.table::set(data,
                         which(!(data[[col]] %in% levels(data[[col]]))),
                         col,
                         MissFactor)
+        
+        # Case character
+      } else if(is.character(data[[col]])) {
+        data.table::set(data,
+                        which(base::is.na(data[[col]])),
+                        col,
+                        MissFactor)
+        
+        # Case other
       } else {
         data.table::set(data,
                         which(base::is.na(data[[col]])),
