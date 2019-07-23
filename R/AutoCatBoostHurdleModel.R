@@ -350,6 +350,13 @@ AutoCatBoostdHurdleModel <- function(data,
     MDP_MissFactor = "0",
     MDP_MissNum = -1
   )
+  
+  # Change name for classification----
+  if(TargetType == "Classification") {
+    data.table::setnames(TestData, "Predictions","Predictions_C1")
+    TestData[, Predictions_C0 := 1 - Predictions_C1]
+    data.table::setcolorder(TestData, c(ncol(TestData),1, 2:(ncol(TestData)-1)))
+  }
 
   # Remove Model Object----
   rm(ClassModel)
@@ -362,9 +369,7 @@ AutoCatBoostdHurdleModel <- function(data,
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   
   # Change Name of Predicted MultiClass Column----
-  if(length(Buckets) == 1) {
-    data.table::setnames(TestData, "Predictions", "Predictions_Classification")    
-  } else {
+  if(length(Buckets) != 1) {
     data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   }
   
@@ -687,8 +692,10 @@ AutoCatBoostdHurdleModel <- function(data,
     }
   } else {
     if(length(IDcols) != 0) {
-      data.table::setcolorder(TestData, c(2:(1+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData, c(1:length(IDcols),(1+length(IDcols)+2):(ncol(TestData)-1),(1+length(IDcols)):(1+length(IDcols)+1),ncol(TestData)))
+      data.table::setcolorder(TestData, c(1:2, (3+length(IDcols)):((3+length(IDcols))+1),
+                                          3:(2+length(IDcols)),
+                                          (((3+length(IDcols))+2):ncol(TestData))))
+      data.table::setcolorder(TestData, c(5:ncol(TestData),1:4))
     } else {
       data.table::setcolorder(TestData, c(3:(ncol(TestData)-1), 1,2,ncol(TestData)))
     }
@@ -724,8 +731,8 @@ AutoCatBoostdHurdleModel <- function(data,
   } else {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
-                    value = TestData[[ncol(TestData)]] * (1 - TestData[[(ncol(TestData)-1)]]) + 
-                      TestData[[(ncol(TestData)-2)]] * (TestData[[(ncol(TestData)-1)]]))
+                    value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2)]] + 
+                      TestData[[(ncol(TestData)-1)]] * TestData[[(ncol(TestData)-3)]])
   }
   
   # Regression r2 via sqrt of correlation
