@@ -732,7 +732,7 @@ AutoCatBoostdHurdleModel <- function(data,
     data.table::set(TestData,
                     j = "UpdatedPrediction",
                     value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2)]] + 
-                      TestData[[(ncol(TestData)-1)]] * TestData[[(ncol(TestData)-1)]])
+                      TestData[[(ncol(TestData)-1)]] * TestData[[(ncol(TestData)-3)]])
   }
   
   # Regression r2 via sqrt of correlation
