@@ -670,8 +670,8 @@ AutoCatBoostdHurdleModel <- function(data,
                                 (2+length(IDcols)):ncol(TestData)))
       data.table::setcolorder(TestData, 
                               c(1:length(IDcols),
-                                (4+length(IDcols)):ncol(TestData),
-                                (1+length(IDcols)):(1+length(IDcols)+2)))
+                                (5+length(IDcols)):ncol(TestData),
+                                (1+length(IDcols)):(1+length(IDcols)+3)))
     } else {
       data.table::setcolorder(TestData, 
                               c(4:ncol(TestData), 
@@ -726,13 +726,13 @@ AutoCatBoostdHurdleModel <- function(data,
   } else if(counter == 2 & length(Buckets) == 1) {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
-                    value = (1-TestData[[ncol(TestData)]]) * TestData[[(ncol(TestData)-2)]] + 
-                      TestData[[ncol(TestData)]] * (TestData[[(ncol(TestData)-1)]]))
+                    value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2)]] + 
+                      TestData[[ncol(TestData)-1]] * (TestData[[(ncol(TestData)-3)]]))
   } else {
     data.table::set(TestData,
                     j = "UpdatedPrediction",
                     value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2)]] + 
-                      TestData[[(ncol(TestData)-1)]] * TestData[[(ncol(TestData)-3)]])
+                      TestData[[(ncol(TestData)-1)]] * TestData[[(ncol(TestData)-1)]])
   }
   
   # Regression r2 via sqrt of correlation
