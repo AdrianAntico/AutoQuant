@@ -84,7 +84,7 @@ ResidualOutliers <- function(data,
   
   # Convert to time series object
   tsData <- stats::ts(temp,
-                      start = temp[, min(get(DateColName))][[1]],
+                      start = temp[, min(as.POSIXct(get(DateColName)))][[1]],
                       frequency = freq)
   
   # Build the auto arimia
