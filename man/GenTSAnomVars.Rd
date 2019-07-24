@@ -4,18 +4,16 @@
 \alias{GenTSAnomVars}
 \title{GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure}
 \usage{
-GenTSAnomVars(data, ValueCol = "Value", GroupVar1 = NULL,
-  GroupVar2 = NULL, DateVar = "DATE", HighThreshold = 1.96,
-  LowThreshold = -1.96, KeepAllCols = TRUE, IsDataScaled = FALSE)
+GenTSAnomVars(data, ValueCol = "Value", GroupVars = NULL,
+  DateVar = "DATE", HighThreshold = 1.96, LowThreshold = -1.96,
+  KeepAllCols = TRUE, IsDataScaled = FALSE)
 }
 \arguments{
 \item{data}{the source residuals data.table}
 
 \item{ValueCol}{the numeric column to run anomaly detection over}
 
-\item{GroupVar1}{this is a group by variable}
-
-\item{GroupVar2}{this is another group by variable}
+\item{GroupVars}{this is a group by variable}
 
 \item{DateVar}{this is a time variable for grouping}
 
@@ -35,24 +33,26 @@ GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. 
 }
 \examples{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(10000,
-                               mean = 50,
-                               sd = 20),
-                         filter=rep(1,10),
-                         circular=TRUE))
+                            Target = stats::filter(rnorm(10000,
+                                                         mean = 50,
+                                                         sd = 20),
+                                                   filter=rep(1,10),
+                                                   circular=TRUE))
 data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 x <- data.table::as.data.table(sde::GBM(N=10000)*1000)
 data[, predicted := x[-1,]]
+data[, Fact1 := sample(letters, size = 10000, replace = TRUE)]
+data[, Fact2 := sample(letters, size = 10000, replace = TRUE)]
+data[, Fact3 := sample(letters, size = 10000, replace = TRUE)]
 stuff <- GenTSAnomVars(data,
-                       ValueCol = "Target",
-                       GroupVar1 = NULL,
-                       GroupVar2 = NULL,
-                       DateVar = "DateTime",
-                       HighThreshold = 1.96,
-                       LowThreshold = -1.96,
-                       KeepAllCols = TRUE,
-                       IsDataScaled  = FALSE)
+                    ValueCol = "Target",
+                    GroupVars = c("Fact1","Fact2","Fact3"),
+                    DateVar = "DateTime",
+                    HighThreshold = 1.96,
+                    LowThreshold = -1.96,
+                    KeepAllCols = TRUE,
+                    IsDataScaled  = FALSE)
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{AutoKMeans}},
