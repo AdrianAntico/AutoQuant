@@ -476,34 +476,37 @@ AutoH2oDRFMultiClass <- function(data,
   }
   
   # MultiClass Metrics Accuracy----
+  ValidationData[, eval(Target) := as.character(get(Target))]
+  ValidationData[, Predict := as.character(Predict)]
   MetricAcc <-
-    ValidationData[, mean(ifelse(as.character(eval(Target)) ==
-                                   as.character(Predict),
-                                 1.0,
-                                 0.0),
+    ValidationData[, mean(ifelse(get(Target) ==
+                                   Predict,
+                                 1,
+                                 0),
                           na.rm = TRUE)]
   
   # MultiClass Metrics MicroAUC----
-  y <- ValidationData[[eval(Target)]]
-  keep <-
-    names(ValidationData)[(ncol(data) + 2):(ncol(ValidationData))]
-  x <- as.matrix(ValidationData[, ..keep])
-  z <-
-    tryCatch({
-      pROC::multiclass.roc(response = y, predictor = x)
-    },
-    error = function(x)
-      0)
-  MetricAUC <- round(as.numeric(noquote(
-    stringr::str_extract(z$auc, "\\d+\\.*\\d*")
-  )), 4)
+  # y <- ValidationData[[eval(Target)]]
+  # keep <-
+  #   names(ValidationData)[(ncol(data) + 2):(ncol(ValidationData))]
+  # x <- as.matrix(ValidationData[, ..keep])
+  # z <-
+  #   tryCatch({
+  #     pROC::multiclass.roc(response = y, predictor = x)
+  #   },
+  #   error = function(x)
+  #     0)
+  # MetricAUC <- round(as.numeric(noquote(
+  #   stringr::str_extract(z$auc, "\\d+\\.*\\d*")
+  # )), 4)
   
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
     Metric = c("Accuracy", "MicroAUC", "temp"),
     Value = c(
       round(MetricAcc, 4),
-      round(MetricAUC, 4),
+      NA,
+      #round(MetricAUC, 4),
       round(EvalMetric, 4)
     )
   )
