@@ -1,4 +1,4 @@
-#' AutoXGBoostdHurdleModel is generalized hurdle modeling framework
+#' AutoXGBoostHurdleModel is generalized hurdle modeling framework
 #'
 #' @family Supervised Learning
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -24,7 +24,7 @@
 #' @return Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
 #' @examples
 #' \donttest{
-#' Output <- RemixAutoML::AutoXGBoostdHurdleModel(
+#' Output <- RemixAutoML::AutoXGBoostHurdleModel(
 #'   data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
@@ -47,26 +47,26 @@
 #'   PassInGrid = NULL)
 #' }
 #' @export
-AutoXGBoostdHurdleModel <- function(data,
-                                    ValidationData = NULL,
-                                    TestData = NULL,
-                                    Buckets = 0,
-                                    TargetColumnName = NULL,
-                                    FeatureColNames = NULL,
-                                    IDcols = NULL,
-                                    TransformNumericColumns = NULL,
-                                    ClassWeights = NULL,
-                                    SplitRatios = c(0.70, 0.20, 0.10),
-                                    TreeMethod = "hist",
-                                    NThreads = max(1, parallel::detectCores()-2),
-                                    ModelID = "ModelTest",
-                                    Paths = NULL,
-                                    SaveModelObjects = TRUE,
-                                    Trees = 1000,
-                                    GridTune = TRUE,
-                                    MaxModelsInGrid = 1,
-                                    NumOfParDepPlots = 10,
-                                    PassInGrid = NULL) {
+AutoXGBoostHurdleModel <- function(data,
+                                   ValidationData = NULL,
+                                   TestData = NULL,
+                                   Buckets = 0,
+                                   TargetColumnName = NULL,
+                                   FeatureColNames = NULL,
+                                   IDcols = NULL,
+                                   TransformNumericColumns = NULL,
+                                   ClassWeights = NULL,
+                                   SplitRatios = c(0.70, 0.20, 0.10),
+                                   TreeMethod = "hist",
+                                   NThreads = max(1, parallel::detectCores()-2),
+                                   ModelID = "ModelTest",
+                                   Paths = NULL,
+                                   SaveModelObjects = TRUE,
+                                   Trees = 1000,
+                                   GridTune = TRUE,
+                                   MaxModelsInGrid = 1,
+                                   NumOfParDepPlots = 10,
+                                   PassInGrid = NULL) {
   # Check args----
   if (is.character(Buckets) |
       is.factor(Buckets) | is.logical(Buckets)) {
@@ -290,7 +290,7 @@ AutoXGBoostdHurdleModel <- function(data,
       MaxModelsInGrid = MaxModelsInGrid,
       NThreads = NThreads,
       TreeMethod = TreeMethod,
-      model_path = getwd(),
+      model_path = Paths[1],
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
@@ -634,11 +634,11 @@ AutoXGBoostdHurdleModel <- function(data,
         if (bucket == max(seq_len(length(Buckets) + 1))) {
           Degenerate <- Degenerate + 1
           TestData[, paste0("Predictions_", Buckets[bucket - 1], "+") := Buckets[bucket]]
-          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))            
+          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
         } else {
           Degenerate <- Degenerate + 1
           TestData[, paste0("Predictions_", Buckets[bucket]) := Buckets[bucket]]
-          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))            
+          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
         }
       }
     }
