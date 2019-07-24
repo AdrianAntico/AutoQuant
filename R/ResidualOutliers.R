@@ -72,6 +72,9 @@ ResidualOutliers <- function(data,
                         cols = eval(DateColName),
                         order = 1)
   
+  # convert DateColName to POSIXct
+  data[, eval(DateColName) := as.POSIXct(get(DateColName))]
+  
   # Keep columns
   if (!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
@@ -82,9 +85,10 @@ ResidualOutliers <- function(data,
   temp <- data[, ..keep]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
   
+  
   # Convert to time series object
   tsData <- stats::ts(temp,
-                      start = temp[, min(as.POSIXct(get(DateColName)))][[1]],
+                      start = temp[, max(get(DateColName))][[1]],
                       frequency = freq)
   
   # Build the auto arimia
