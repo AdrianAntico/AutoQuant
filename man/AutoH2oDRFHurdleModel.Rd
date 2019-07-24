@@ -8,10 +8,10 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
   IDcols = NULL, TransformNumericColumns = NULL, ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1), TreeMethod = "hist",
-  NThreads = max(1, parallel::detectCores() - 2),
   ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
-  MaxMem = "28G", Trees = 1000, GridTune = TRUE,
-  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
+  MaxMem = "28G", NThreads = max(1, parallel::detectCores() - 2),
+  Trees = 1000, GridTune = TRUE, MaxModelsInGrid = 1,
+  NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -34,8 +34,6 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
 
-\item{NThreads}{Set to the number of threads you would like to dedicate to training}
-
 \item{ModelID}{Define a character name for your models}
 
 \item{Paths}{A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models}
@@ -43,6 +41,8 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
 \item{MaxMem}{Set the maximum memory your system can provide}
+
+\item{NThreads}{Set to the number of threads you would like to dedicate to training}
 
 \item{Trees}{Default 15000}
 
@@ -53,6 +53,8 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
 \item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
+
+\item{NThreads}{Set the number of threads you want to dedicate to the model building}
 }
 \value{
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used

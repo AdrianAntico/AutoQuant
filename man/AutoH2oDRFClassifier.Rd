@@ -7,10 +7,10 @@
 AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   eval_metric = "auc", Trees = 50, GridTune = FALSE,
-  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo")
+  MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2, model_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, IfSaveModel = "mojo")
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -30,6 +30,8 @@ AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
+
+\item{NThreads}{Set the number of threads you want to dedicate to the model building}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
@@ -94,6 +96,7 @@ TestModel <- AutoH2oDRFClassifier(data,
                                   Trees = 50,
                                   GridTune = FALSE,
                                   MaxMem = "32G",
+                                  NThreads = max(1, parallel::detectCores()-2),
                                   MaxModelsInGrid = 10,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
