@@ -13,6 +13,7 @@
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
+#' @param NThreads Set the number of threads you want to dedicate to the model building
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
@@ -64,6 +65,7 @@
 #'                                   Trees = 50,
 #'                                   GridTune = FALSE,
 #'                                   MaxMem = "32G",
+#'                                   NThreads = max(1, parallel::detectCores()-2),
 #'                                   MaxModelsInGrid = 10,
 #'                                   model_path = NULL,
 #'                                   ModelID = "FirstModel",
@@ -85,6 +87,7 @@ AutoH2oDRFRegression <- function(data,
                                  Trees = 50,
                                  GridTune = FALSE,
                                  MaxMem = "32G",
+                                 NThreads = max(1, parallel::detectCores()-2),
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
                                  ModelID = "FirstModel",
@@ -286,6 +289,7 @@ AutoH2oDRFRegression <- function(data,
   if (GridTune) {
     # Regression Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
+                  nthreads = NThreads,
                   enable_assertions = FALSE)
     
     # Regression Define data sets----
