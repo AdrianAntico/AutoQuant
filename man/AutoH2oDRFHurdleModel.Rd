@@ -6,9 +6,9 @@
 \usage{
 AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, TransformNumericColumns = NULL, ClassWeights = NULL,
-  SplitRatios = c(0.7, 0.2, 0.1), TreeMethod = "hist",
-  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
+  IDcols = NULL, TransformNumericColumns = NULL, SplitRatios = c(0.7,
+  0.2, 0.1), TreeMethod = "hist", ModelID = "ModelTest",
+  Paths = NULL, SaveModelObjects = TRUE, IfSaveModel = "mojo",
   MaxMem = "28G", NThreads = max(1, parallel::detectCores() - 2),
   Trees = 1000, GridTune = TRUE, MaxModelsInGrid = 1,
   NumOfParDepPlots = 10, PassInGrid = NULL)
@@ -28,8 +28,6 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
 
-\item{ClassWeights}{Utilize these for the classifier model}
-
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
 \item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
@@ -39,6 +37,8 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{Paths}{A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
+
+\item{IfSaveModel}{Save as "mojo" or "standard"}
 
 \item{MaxMem}{Set the maximum memory your system can provide}
 
@@ -73,13 +73,13 @@ Output <- RemixAutoML::AutoH2oDRFHurdleModel(
   FeatureColNames = 4:ncol(data),
   IDcols = 1:3,
   TransformNumericColumns = NULL,
-  ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores()-2),
   ModelID = "ModelID",
   Paths = NULL,
   SaveModelObjects = TRUE,
+  IfSaveModel = "mojo",
   Trees = 1000,
   GridTune = FALSE,
   MaxModelsInGrid = 1,

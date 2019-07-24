@@ -6,12 +6,11 @@
 \usage{
 AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, TransformNumericColumns = NULL, ClassWeights = NULL,
-  SplitRatios = c(0.7, 0.2, 0.1), TreeMethod = "hist",
-  NThreads = max(1, parallel::detectCores() - 2),
-  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
-  Trees = 1000, GridTune = TRUE, MaxModelsInGrid = 1,
-  NumOfParDepPlots = 10, PassInGrid = NULL)
+  IDcols = NULL, TransformNumericColumns = NULL, SplitRatios = c(0.7,
+  0.2, 0.1), TreeMethod = "hist", NThreads = max(1,
+  parallel::detectCores() - 2), ModelID = "ModelTest", Paths = NULL,
+  SaveModelObjects = TRUE, Trees = 1000, GridTune = TRUE,
+  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -29,8 +28,6 @@ AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
-
-\item{ClassWeights}{Utilize these for the classifier model}
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
@@ -71,7 +68,6 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
   FeatureColNames = 4:ncol(data),
   IDcols = 1:3,
   TransformNumericColumns = NULL,
-  ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores()-2),
