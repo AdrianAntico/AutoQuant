@@ -48,12 +48,18 @@ GenTSAnomVars <- function(data,
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)
   
-  # Scale data if not already
-  newValueCol = paste(ValueCol, "zScaled", sep = "_")
+  # Scale data if not already scaled
+  if (IsDataScaled == FALSE) {
+    newValueCol <- paste(ValueCol, "zScaled", sep = "_")
+  } else {
+    newValueCol <- ValueCol
+  }
   if (!IsDataScaled) {
     data[, eval(newValueCol) := scale(get(ValueCol),
                                    center = TRUE,
                                    scale = TRUE)]
+  } else {
+    data[, eval(newValueCol) := get(ValueCol)]
   }
   
   # Global check for date
