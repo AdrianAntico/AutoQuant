@@ -9,7 +9,6 @@
 #' @param FeatureColNames Supply the column names or number of the features (not included the PrimaryDateColumn)
 #' @param IDcols Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions
 #' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
-#' @param ClassWeights Utilize these for the classifier model
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
 #' @param TreeMethod Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing
 #' @param NThreads Set to the number of threads you would like to dedicate to training
@@ -33,7 +32,6 @@
 #'   FeatureColNames = 4:ncol(data),
 #'   IDcols = 1:3,
 #'   TransformNumericColumns = NULL,
-#'   ClassWeights = NULL,
 #'   SplitRatios = c(0.7, 0.2, 0.1),
 #'   TreeMethod = "hist",
 #'   NThreads = max(1, parallel::detectCores()-2),
@@ -55,7 +53,6 @@ AutoXGBoostHurdleModel <- function(data,
                                    FeatureColNames = NULL,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
-                                   ClassWeights = NULL,
                                    SplitRatios = c(0.70, 0.20, 0.10),
                                    TreeMethod = "hist",
                                    NThreads = max(1, parallel::detectCores()-2),
