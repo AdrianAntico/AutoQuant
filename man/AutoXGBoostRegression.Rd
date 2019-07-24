@@ -131,6 +131,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},
+  \code{\link{AutoH2oDRFHurdleModel}},
   \code{\link{AutoH2oDRFMultiClass}},
   \code{\link{AutoH2oDRFRegression}},
   \code{\link{AutoH2oGBMClassifier}},
@@ -138,9 +139,9 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoXGBoostClassifier}},
+  \code{\link{AutoXGBoostHurdleModel}},
   \code{\link{AutoXGBoostMultiClass}},
-  \code{\link{AutoXGBoostScoring}},
-  \code{\link{AutoXGBoostdHurdleModel}}
+  \code{\link{AutoXGBoostScoring}}
 }
 \author{
 Adrian Antico
