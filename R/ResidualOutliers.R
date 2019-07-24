@@ -62,20 +62,22 @@ ResidualOutliers <- function(data,
     quarter, or year")
   }
   
-  # Ensure data is a data.table
+  # Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
   
-  # Ensure data is sorted
+  # convert DateColName to POSIXct----
+  if(is.character(data[[eval(DateColName)]] | is.factor(data[[eval(DateColName)]])) {
+    data[, eval(DateColName) := as.POSIXct(get(DateColName))]
+  }
+    
+  # Ensure data is sorted----
   data.table::setorderv(x = data,
                         cols = eval(DateColName),
                         order = 1)
   
-  # convert DateColName to POSIXct
-  data[, eval(DateColName) := as.POSIXct(get(DateColName))]
-  
-  # Keep columns
+  # Keep columns----
   if (!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
   } else {
@@ -86,12 +88,12 @@ ResidualOutliers <- function(data,
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
   
   
-  # Convert to time series object
+  # Convert to time series object----
   tsData <- stats::ts(temp,
                       start = temp[, min(get(DateColName))][[1]],
                       frequency = freq)
   
-  # Build the auto arima
+  # Build the auto arima----
   if (MinVal > 0) {
     fit <-
       tryCatch({
@@ -132,10 +134,10 @@ ResidualOutliers <- function(data,
         "empty")
   }
   
-  # Store the arima parameters
+  # Store the arima parameters----
   pars  <- tsoutliers::coefs2poly(fit)
   
-  # Store the arima residuals
+  # Store the arima residuals----
   resid <- cbind(tsData, stats::residuals(fit))
   
   # Find the outliers
@@ -146,7 +148,7 @@ ResidualOutliers <- function(data,
     types = c("AO", "TC", "LS", "IO", "SLS")
   ))
   
-  # Merge back to source data
+  # Merge back to source data----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
   z[, ind := 1:.N]
@@ -158,6 +160,6 @@ ResidualOutliers <- function(data,
   data[, ':=' (ind = NULL, coefhat = NULL)]
   data[type == "<NA>", type := NA]
   
-  # Reorder data, remove the coefhat column to send to database or stakeholder
+  # Reorder data, remove the coefhat column to send to database or stakeholder----
   return(list(FullData = data, ARIMA_MODEL = fit))
 }
