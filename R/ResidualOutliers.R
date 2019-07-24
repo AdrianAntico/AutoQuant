@@ -68,10 +68,10 @@ ResidualOutliers <- function(data,
   }
   
   # convert DateColName to POSIXct----
-  if(is.character(data[[eval(DateColName)]] | is.factor(data[[eval(DateColName)]])) {
+  if(is.character(data[[eval(DateColName)]]) | is.factor(data[[eval(DateColName)]])) {
     data[, eval(DateColName) := as.POSIXct(get(DateColName))]
   }
-    
+  
   # Ensure data is sorted----
   data.table::setorderv(x = data,
                         cols = eval(DateColName),
