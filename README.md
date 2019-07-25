@@ -20,7 +20,7 @@ for (i in to_install) {
     for (pkg in pkgs) {
       if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
     }
-    install.packages("h2o", type="source", repos=(c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
+    install.packages("h2o")
   } else if (!requireNamespace(i)) {
     message(paste("     installing", i))
     install.packages(i)
