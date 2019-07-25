@@ -19,6 +19,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @param H2oShutdown Set to TRUE to have H2O shutdown after running this function
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -72,7 +73,8 @@
 #'                                   ModelID = "FirstModel",
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
-#'                                   IfSaveModel = "mojo")
+#'                                   IfSaveModel = "mojo",
+#'                                   H2oShutdown = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -91,7 +93,8 @@ AutoH2oDRFMultiClass <- function(data,
                                  ModelID = "FirstModel",
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
-                                 IfSaveModel = "mojo") {
+                                 IfSaveModel = "mojo",
+                                 H2oShutdown = FALSE) {
   # MultiClass Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
