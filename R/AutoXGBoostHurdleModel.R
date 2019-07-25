@@ -13,7 +13,7 @@
 #' @param TreeMethod Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing
 #' @param NThreads Set to the number of threads you would like to dedicate to training
 #' @param ModelID Define a character name for your models
-#' @param Paths A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models
+#' @param Paths The path to your folder where you want your model information saved
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 15000
 #' @param GridTune Set to TRUE if you want to grid tune the models
@@ -265,7 +265,7 @@ AutoXGBoostHurdleModel <- function(data,
       MaxModelsInGrid = MaxModelsInGrid,
       NThreads = NThreads,
       TreeMethod = TreeMethod,
-      model_path = Paths[1],
+      model_path = Paths,
       ModelID = ModelID,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
@@ -458,7 +458,7 @@ AutoXGBoostHurdleModel <- function(data,
             TreeMethod = TreeMethod,
             MaxModelsInGrid = MaxModelsInGrid,
             NThreads = NThreads,
-            model_path = Paths[bucket - 1],
+            model_path = Paths,
             ModelID = paste0(ModelID,"_",bucket-1,"+"),
             NumOfParDepPlots = NumOfParDepPlots,
             Verbose = 0,
@@ -483,7 +483,7 @@ AutoXGBoostHurdleModel <- function(data,
             TreeMethod = TreeMethod,
             MaxModelsInGrid = MaxModelsInGrid,
             NThreads = NThreads,
-            model_path = Paths[bucket],
+            model_path = Paths,
             ModelID = paste0(ModelID, "_", bucket),
             NumOfParDepPlots = NumOfParDepPlots,
             Verbose = 0,
