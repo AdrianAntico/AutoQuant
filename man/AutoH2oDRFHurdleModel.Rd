@@ -32,7 +32,7 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{ModelID}{Define a character name for your models}
 
-\item{Paths}{A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models}
+\item{Paths}{The path to your folder where you want your model information saved}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
