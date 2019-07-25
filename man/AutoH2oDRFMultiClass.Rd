@@ -10,7 +10,7 @@ AutoH2oDRFMultiClass(data, ValidationData = NULL, TestData = NULL,
   MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
   MaxModelsInGrid = 2, model_path = NULL, ModelID = "FirstModel",
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2oShutdown = FALSE)
+  IfSaveModel = "mojo", H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -45,7 +45,7 @@ AutoH2oDRFMultiClass(data, ValidationData = NULL, TestData = NULL,
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
-\item{H2oShutdown}{Set to TRUE to have H2O shutdown after running this function}
+\item{H2OShutdown}{Set to TRUE to have H2O shutdown after running this function}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -107,7 +107,7 @@ TestModel <- AutoH2oDRFMultiClass(data,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo",
-                                  H2oShutdown = FALSE)
+                                  H2OShutdown = FALSE)
 }
 }
 \seealso{
