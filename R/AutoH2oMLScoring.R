@@ -4,7 +4,6 @@
 #'
 #' @family Supervised Learning
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
-#' @param FeatureColumnNames Supply either column names or column numbers used in the AutoH2o__() function
 #' @param ModelObject Supply a model object from AutoH2oDRF__()
 #' @param ModelType Set to either "mojo" or "standard" depending on which version you saved
 #' @param H2OShutdown Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.
@@ -27,7 +26,6 @@
 #' @examples
 #' \donttest{
 #' Preds <- AutoH2OMLScoring(ScoringData = data,
-#'                           FeatureColumnNames = 2:12,
 #'                           ModelObject = NULL,
 #'                           ModelType = "mojo",
 #'                           H2OShutdown = TRUE,
@@ -51,7 +49,6 @@
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
 AutoH2OMLScoring <- function(ScoringData = NULL,
-                             FeatureColumnNames = NULL,
                              ModelObject = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
@@ -74,9 +71,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   # Check arguments----
   if (is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")
-  }
-  if (is.null(FeatureColumnNames)) {
-    warning("FeatureColumnNames cannot be NULL")
   }
   if (!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
@@ -123,8 +117,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   # Initialize H2O Data Conversion----
   if(!is.null(ModelType)) {
     if (tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
-      h2o::h2o.init(max_mem_size = MaxMem,
-                    enable_assertions = FALSE)
       ScoreData <- h2o::as.h2o(ScoringData)
     } else {
       ScoreData <- ScoringData
