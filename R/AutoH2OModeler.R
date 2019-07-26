@@ -69,7 +69,7 @@
 #'
 #' The SupplyData column lets you supply the data names for training and validation data. Set to NULL if you want the data partitioning to be done internally.
 #' @author Adrian Antico
-#' @family Supervised Learning
+#' @family Automated Model Scoring
 #' @param Construct Core instruction file for automation (see Details below for more information on this)
 #' @param max_memory The ceiling amount of memory H2O will utilize
 #' @param ratios The percentage of train samples from source data (remainder goes to validation set)

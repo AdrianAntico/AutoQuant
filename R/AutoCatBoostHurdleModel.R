@@ -1,6 +1,6 @@
 #' AutoCatBoostHurdleModel for generalized hurdle modeling
 #'
-#' @family Supervised Learning
+#' @family Automated Regression
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.

@@ -18,7 +18,7 @@
 #' TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Time Series
+#' @family Automated Time Series
 #' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
 #' @param TargetName is the name of the target variable in your data.table
 #' @param DateName is the name of the date column in your data.table

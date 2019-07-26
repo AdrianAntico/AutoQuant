@@ -2,7 +2,7 @@
 #'
 #' AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
-#' @family Time Series
+#' @family Automated Time Series
 #' @param data Supply your full series data set here
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
