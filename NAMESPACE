@@ -2,10 +2,10 @@
 
 export(AutoCatBoostCARMA)
 export(AutoCatBoostClassifier)
+export(AutoCatBoostHurdleModel)
 export(AutoCatBoostMultiClass)
 export(AutoCatBoostRegression)
 export(AutoCatBoostScoring)
-export(AutoCatBoostdHurdleModel)
 export(AutoDataPartition)
 export(AutoH2OMLScoring)
 export(AutoH2OModeler)
