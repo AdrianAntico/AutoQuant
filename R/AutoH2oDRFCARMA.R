@@ -84,7 +84,7 @@ AutoH2oDRFCARMA <- function(data,
   }
   
   # Ensure H2O Stays Running----
-  StopH2O <- FALSE
+  H2OShutdown <- FALSE
   
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
