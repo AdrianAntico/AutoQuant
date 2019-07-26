@@ -8,14 +8,14 @@
 #' @param TargetColumnName Supply the column name or number for the target variable
 #' @param FeatureColNames Supply the column names or number of the features (not included the PrimaryDateColumn)
 #' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
-#' @param ClassWeights Utilize these for the classifier model
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
-#' @param TreeMethod Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing
 #' @param NThreads Set to the number of threads you would like to dedicate to training
 #' @param ModelID Define a character name for your models
-#' @param Paths A character vector of the path file strings. EITHER SUPPLY 1 file path or N file paths for N models
+#' @param Paths The path to your folder where you want your model information saved
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
+#' @param IfSaveModel Save as "mojo" or "standard"
 #' @param MaxMem Set the maximum memory your system can provide
+#' @param NThreads Set the number of threads you want to dedicate to the model building
 #' @param Trees Default 15000
 #' @param GridTune Set to TRUE if you want to grid tune the models
 #' @param MaxModelsInGrid Set to a numeric value for the number of models to try in grid tune
@@ -31,15 +31,13 @@
 #'   Buckets = 1,
 #'   TargetColumnName = "Target_Variable",
 #'   FeatureColNames = 4:ncol(data),
-#'   IDcols = 1:3,
 #'   TransformNumericColumns = NULL,
-#'   ClassWeights = NULL,
 #'   SplitRatios = c(0.7, 0.2, 0.1),
-#'   TreeMethod = "hist",
 #'   NThreads = max(1, parallel::detectCores()-2),
 #'   ModelID = "ModelID",
 #'   Paths = NULL,
 #'   SaveModelObjects = TRUE,
+#'   IfSaveModel = "mojo",
 #'   Trees = 1000,
 #'   GridTune = FALSE,
 #'   MaxModelsInGrid = 1,
@@ -55,14 +53,13 @@ AutoH2oDRFHurdleModel <- function(data,
                                   FeatureColNames = NULL,
                                   IDcols = NULL,
                                   TransformNumericColumns = NULL,
-                                  ClassWeights = NULL,
                                   SplitRatios = c(0.70, 0.20, 0.10),
-                                  TreeMethod = "hist",
-                                  NThreads = max(1, parallel::detectCores()-2),
                                   ModelID = "ModelTest",
                                   Paths = NULL,
                                   SaveModelObjects = TRUE,
+                                  IfSaveModel = "mojo",
                                   MaxMem = "28G",
+                                  NThreads = max(1, parallel::detectCores()-2),
                                   Trees = 1000,
                                   GridTune = TRUE,
                                   MaxModelsInGrid = 1,
@@ -92,9 +89,14 @@ AutoH2oDRFHurdleModel <- function(data,
   # Update working directory----
   working_directory <- getwd()
   if (!is.null(Paths)) {
-    if (working_directory != Paths[1])
-      setwd(Paths[1])
+    if (working_directory != Paths)
+      setwd(Paths)
   }
+  
+  # Initialize H2O----
+  h2o::h2o.init(max_mem_size = MaxMem, 
+                nthreads = NThreads, 
+                enable_assertions = FALSE)
   
   # Initialize collection and counter----
   ModelInformationList <- list()
@@ -114,13 +116,6 @@ AutoH2oDRFHurdleModel <- function(data,
   if (!is.null(TestData)) {
     if (!data.table::is.data.table(TestData)) {
       TestData <- data.table::as.data.table(TestData)
-    }
-  }
-  
-  # IDcols to Names----
-  if (!is.null(IDcols)) {
-    if (is.numeric(IDcols) | is.integer(IDcols)) {
-      IDcols <- names(data)[IDcols]
     }
   }
   
@@ -255,28 +250,27 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Begin classification model building----
   if (length(Buckets) == 1) {
-    ClassifierModel <- AutoXGBoostClassifier(
+    ClassifierModel <- AutoH2oDRFClassifier(
       data = data,
       ValidationData = ValidationData,
       TestData = TestData,
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
-      IDcols = IDcols,
-      eval_metric = "AUC",
+      eval_metric = "auc",
       Trees = Trees,
       GridTune = GridTune,
-      grid_eval_metric = "auc",
-      MaxModelsInGrid = MaxModelsInGrid,
+      MaxMem = MaxMem,
       NThreads = NThreads,
-      TreeMethod = TreeMethod,
-      model_path = Paths[1],
+      MaxModelsInGrid = MaxModelsInGrid,
+      model_path = Paths,
       ModelID = ModelID,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL)
+      IfSaveModel = IfSaveModel,
+      H2OShutdown = FALSE)
   } else {
-    TestModel <- AutoH2oDRFMultiClass(
+    ClassifierModel <- AutoH2oDRFMultiClass(
       data = data,
       ValidationData = ValidationData,
       TestData = TestData,
@@ -285,78 +279,33 @@ AutoH2oDRFHurdleModel <- function(data,
       eval_metric = "logloss",
       Trees = Trees,
       GridTune = GridTune,
-      MaxMem = "32G",
-      MaxModelsInGrid = MaxModelsInGrid,
-      model_path = Paths[1],
-      ModelID = "FirstModel",
-      ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
-      IfSaveModel = "mojo")
-    
-    ClassifierModel <- AutoXGBoostMultiClass(
-      data = data,
-      ValidationData = ValidationData,
-      TestData = TestData,
-      TargetColumnName = "Target_Buckets",
-      FeatureColNames = FeatureNames,
-      IDcols = IDcols,
-      eval_metric = "merror",
-      Trees = Trees,
-      Objective = 'multi:softprob',
-      GridTune = GridTune,
-      grid_eval_metric = "accuracy",
-      MaxModelsInGrid = MaxModelsInGrid,
+      MaxMem = MaxMem,
       NThreads = NThreads,
-      TreeMethod = TreeMethod,
-      model_path = getwd(),
+      MaxModelsInGrid = MaxModelsInGrid,
+      model_path = Paths,
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL)
+      IfSaveModel = IfSaveModel,
+      H2OShutdown = FALSE)
   }
   
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets > 1)) {
-    TargetLevels <- ClassifierModel$TargetLevels
-  } else {
-    TargetLevels <- NULL
-  }
-  FactorLevelsListOutput <- ClassifierModel$FactorLevels
-  if(!is.null(FactorLevelsListOutput)) {
-    FactorLevelsList <- FactorLevelsListOutput
-  } else {
-    FactorLevelsList <- NULL
-  }
   rm(ClassifierModel)
   
-  # Add Target to IDcols----
-  IDcols <- c(IDcols, TargetColumnName)
-  
-  # Score Classification Model----
-  if (length(Buckets) == 1) {
-    TargetType <- "Classification"
-    Objective <- NULL
-  } else {
-    TargetType <- "Multiclass"
-    Objective <- "multi:softprob"
-  }
-  
   # Model Scoring----
-  TestData <- AutoXGBoostScoring(
-    TargetType = TargetType,
-    ScoringData = TestData,
-    FeatureColumnNames = FeatureNames,
-    IDcols = IDcols,
-    FactorLevelsList = FactorLevelsList,
-    TargetLevels = TargetLevels,
-    Objective = Objective,
-    OneHot = FALSE,
+  TestData <- AutoH2OMLScoring(
+    ScoringData = data,
     ModelObject = ClassModel,
-    ModelPath = NULL,
-    ModelID = ModelID,
+    ModelType = "mojo",
+    H2OShutdown = FALSE,
+    MaxMem = "28G",
+    JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+    ModelPath = Paths,
+    ModelID = "ModelTest",
     ReturnFeatures = TRUE,
     TransformNumeric = FALSE,
     BackTransNumeric = FALSE,
@@ -370,11 +319,21 @@ AutoH2oDRFHurdleModel <- function(data,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
   
+  # Remove classification Prediction----
+  TestData <- TestData[, Predictions := NULL]
+  
   # Change name for classification----
-  if(TargetType == "Classification") {
+  if(length(Buckets) == 1) {
     data.table::setnames(TestData, "Predictions","Predictions_C1")
     TestData[, Predictions_C0 := 1 - Predictions_C1]
     data.table::setcolorder(TestData, c(ncol(TestData),1, 2:(ncol(TestData)-1)))
+  } else {
+    data.table::setnames(TestData,
+                         names(TestData)[1:length(Buckets)],
+                         paste0("P_",gsub('[[:punct:] ]+',' ',names(TestData)[1:length(Buckets)])))
+    data.table::setnames(TestData,
+                         names(TestData)[length(Buckets)+1],
+                         paste0("P+_",gsub('[[:punct:] ]+',' ',names(TestData)[length(Buckets)+1])))
   }
 
   # Remove Model Object----
@@ -383,9 +342,6 @@ AutoH2oDRFHurdleModel <- function(data,
   # Remove Target_Buckets----
   data[, Target_Buckets := NULL]
   ValidationData[, Target_Buckets := NULL]
-  
-  # Remove Target From IDcols----
-  IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   
   # Begin regression model building----
   counter <- 0
@@ -448,10 +404,6 @@ AutoH2oDRFHurdleModel <- function(data,
       }
     }
     
-    # Create Modified IDcols----
-    IDcolsModified <-
-      c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)      
-    
     # Load Winning Grid if it exists----
     if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
       gridSaved <-
@@ -463,67 +415,53 @@ AutoH2oDRFHurdleModel <- function(data,
       if (var(trainBucket[[eval(TargetColumnName)]]) > 0) {
         counter <- counter + 1
         if (bucket == max(seq_len(length(Buckets) + 1))) {
-          TestModel <- RemixAutoML::AutoXGBoostRegression(
+          TestModel <- AutoH2oDRFRegression(
             data = trainBucket,
             ValidationData = validBucket,
             TestData = testBucket,
             TargetColumnName = TargetColumnName,
             FeatureColNames = FeatureNames,
-            IDcols = IDcols,
-            ReturnFactorLevels = TRUE,
             TransformNumericColumns = TransformNumericColumns,
             eval_metric = "RMSE",
             Trees = Trees,
             GridTune = GridTune,
-            grid_eval_metric = "r2",
-            TreeMethod = TreeMethod,
-            MaxModelsInGrid = MaxModelsInGrid,
+            MaxMem = MaxMem,
             NThreads = NThreads,
-            model_path = Paths[bucket - 1],
-            ModelID = paste0(ModelID,"_",bucket-1,"+"),
+            MaxModelsInGrid = MaxModelsInGrid,
+            model_path = Paths,
+            ModelID = paste0(ModelID,"_",bucket-1,"_"),
             NumOfParDepPlots = NumOfParDepPlots,
-            Verbose = 0,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
-            PassInGrid = PassInGrid
-          )
+            IfSaveModel = IfSaveModel,
+            StopH2O = FALSE)
         } else {
-          TestModel <- RemixAutoML::AutoXGBoostRegression(
+          TestModel <- AutoH2oDRFRegression(
             data = trainBucket,
             ValidationData = validBucket,
             TestData = testBucket,
             TargetColumnName = TargetColumnName,
             FeatureColNames = FeatureNames,
-            IDcols = IDcols,
-            ReturnFactorLevels = TRUE,
             TransformNumericColumns = TransformNumericColumns,
             eval_metric = "RMSE",
             Trees = Trees,
             GridTune = GridTune,
-            grid_eval_metric = "r2",
-            TreeMethod = TreeMethod,
-            MaxModelsInGrid = MaxModelsInGrid,
+            MaxMem = MaxMem,
             NThreads = NThreads,
-            model_path = Paths[bucket],
-            ModelID = paste0(ModelID, "_", bucket),
+            MaxModelsInGrid = MaxModelsInGrid,
+            model_path = Paths,
+            ModelID = ModelID,
             NumOfParDepPlots = NumOfParDepPlots,
-            Verbose = 0,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
-            PassInGrid = PassInGrid
-          )
+            IfSaveModel = IfSaveModel,
+            StopH2O = FALSE)
         }
         
         # Store Model----
         RegressionModel <- TestModel$Model
-        FactorLevelsListOutput <- TestModel$FactorLevelsList
         if(!is.null(TransformNumericColumns)) {
           TransformationResults <- TestModel$TransformationResults
-        }
-        if(!is.null(FactorLevelsListOutput)) {
-          FactorLevelsList <- FactorLevelsListOutput
-        } else {
-          FactorLevelsList <- NULL
         }
         rm(TestModel)
         
@@ -533,16 +471,15 @@ AutoH2oDRFHurdleModel <- function(data,
         # Score TestData----
         if (bucket == max(seq_len(length(Buckets) + 1))) {
           if(!is.null(TransformNumericColumns)) {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
+            TestData <- AutoH2OMLScoring(
+              ScoringData = data,
               ModelObject = RegressionModel,
-              ModelPath = Paths[bucket - 1],
-              ModelID = paste0(ModelID,"_",bucket-1,"+"),
+              ModelType = "mojo",
+              H2OShutdown = FALSE,
+              MaxMem = "28G",
+              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+              ModelPath = paste0(ModelID, "_", bucket,"_"),
+              ModelID = "ModelTest",
               ReturnFeatures = TRUE,
               TransformNumeric = TRUE,
               BackTransNumeric = TRUE,
@@ -552,21 +489,19 @@ AutoH2oDRFHurdleModel <- function(data,
               TransPath = NULL,
               MDP_Impute = TRUE,
               MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
+              MDP_RemoveDates = TRUE,
               MDP_MissFactor = "0",
-              MDP_MissNum = -1
-            )
+              MDP_MissNum = -1)
           } else {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
+            TestData <- AutoH2OMLScoring(
+              ScoringData = data,
               ModelObject = RegressionModel,
-              ModelPath = Paths[bucket - 1],
-              ModelID = paste0(ModelID,"_",bucket-1,"+"),
+              ModelType = "mojo",
+              H2OShutdown = FALSE,
+              MaxMem = "28G",
+              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+              ModelPath = Paths,
+              ModelID = paste0(ModelID, "_", bucket,"_"),
               ReturnFeatures = TRUE,
               TransformNumeric = FALSE,
               BackTransNumeric = FALSE,
@@ -576,23 +511,21 @@ AutoH2oDRFHurdleModel <- function(data,
               TransPath = NULL,
               MDP_Impute = TRUE,
               MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
+              MDP_RemoveDates = TRUE,
               MDP_MissFactor = "0",
-              MDP_MissNum = -1
-            )
+              MDP_MissNum = -1)
           }
         } else {
           if(!is.null(TransformNumericColumns)) {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
+            TestData <- AutoH2OMLScoring(
+              ScoringData = data,
               ModelObject = RegressionModel,
-              ModelPath = Paths[bucket],
-              ModelID = paste0(ModelID, "_", bucket),
+              ModelType = "mojo",
+              H2OShutdown = FALSE,
+              MaxMem = "28G",
+              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+              ModelPath = paste0(ModelID, "_", bucket),
+              ModelID = "ModelTest",
               ReturnFeatures = TRUE,
               TransformNumeric = TRUE,
               BackTransNumeric = TRUE,
@@ -602,20 +535,18 @@ AutoH2oDRFHurdleModel <- function(data,
               TransPath = NULL,
               MDP_Impute = TRUE,
               MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
+              MDP_RemoveDates = TRUE,
               MDP_MissFactor = "0",
-              MDP_MissNum = -1
-            )
+              MDP_MissNum = -1)
           } else {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
+            TestData <- AutoH2OMLScoring(
+              ScoringData = data,
               ModelObject = RegressionModel,
-              ModelPath = Paths[bucket],
+              ModelType = "mojo",
+              H2OShutdown = FALSE,
+              MaxMem = "28G",
+              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+              ModelPath = Paths,
               ModelID = paste0(ModelID, "_", bucket),
               ReturnFeatures = TRUE,
               TransformNumeric = FALSE,
@@ -626,10 +557,9 @@ AutoH2oDRFHurdleModel <- function(data,
               TransPath = NULL,
               MDP_Impute = TRUE,
               MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
+              MDP_RemoveDates = TRUE,
               MDP_MissFactor = "0",
-              MDP_MissNum = -1
-            )
+              MDP_MissNum = -1)
           }
         }
         
