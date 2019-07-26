@@ -128,6 +128,12 @@ First step is to build either a binary classification model (in the case of a si
 ##### **AutoXGBoostHurdleModel()**
 <code>AutoXGBoostHurdleModel()</code> utilizes the XGBoost algorithm on the backend. 
 
+##### **AutoH2oDRFHurdleModel()**
+<code>AutoH2oDRFHurdleModel()</code> utilizes the H2O distributed random forest algorithm on the backend. 
+
+##### **AutoH2oGBMHurdleModel()**
+<code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
+
 
 </p>
 </details>
