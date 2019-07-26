@@ -63,10 +63,10 @@ GenTSAnomVars <- function(data,
     if (is.null(GroupVars)) {
       data.table::setorderv(data,eval(DateVar))
       data[, RowNumAsc := 1:.N]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
-                                           1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
-                                          1, 0))]
+      data[, AnomHigh := as.numeric(
+        ifelse(get(ValueCol) > HighThreshold,1, 0))]
+      data[, AnomLow := as.numeric(
+        ifelse(get(ValueCol) < LowThreshold,1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh)]
       data[, CumAnomLow := cumsum(AnomLow)]
       data[, AnomHighRate := CumAnomHigh / RowNumAsc]
@@ -83,10 +83,10 @@ GenTSAnomVars <- function(data,
     } else {
       data.table::setorderv(data, cols = c(eval(GroupVars),eval(DateVar)))
       data[, RowNumAsc := 1:.N, by = c(eval(GroupVars))]
-      data[, AnomHigh := as.numeric(ifelse(get(ValueCol) > HighThreshold,
-                                           1, 0))]
-      data[, AnomLow := as.numeric(ifelse(get(ValueCol) < LowThreshold,
-                                          1, 0))]
+      data[, AnomHigh := as.numeric(
+        ifelse(get(ValueCol) > HighThreshold,1, 0))]
+      data[, AnomLow := as.numeric(
+        ifelse(get(ValueCol) < LowThreshold,1, 0))]
       data[, CumAnomHigh := cumsum(AnomHigh), by = c(eval(GroupVars))]
       data[, CumAnomLow := cumsum(AnomLow), by = c(eval(GroupVars))]
       data[, AnomHighRate := CumAnomHigh / RowNumAsc]

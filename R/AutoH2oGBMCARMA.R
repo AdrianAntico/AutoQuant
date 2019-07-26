@@ -310,6 +310,7 @@ AutoH2oGBMCARMA <- function(data,
     Trees = NTrees,
     GridTune = GridTune,
     MaxMem = MaxMem,
+    NThreads = NThreads,
     MaxModelsInGrid = ModelCount,
     model_path = getwd(),
     ModelID = "ModelTest",
@@ -317,7 +318,7 @@ AutoH2oGBMCARMA <- function(data,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     IfSaveModel = "mojo",
-    StopH2O = FALSE
+    H2OShutdown = FALSE
   )
   
   # Store Model----
