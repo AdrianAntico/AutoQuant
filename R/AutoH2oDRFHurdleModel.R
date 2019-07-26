@@ -472,7 +472,7 @@ AutoH2oDRFHurdleModel <- function(data,
         if (bucket == max(seq_len(length(Buckets) + 1))) {
           if(!is.null(TransformNumericColumns)) {
             TestData <- AutoH2OMLScoring(
-              ScoringData = data,
+              ScoringData = TestData,
               ModelObject = RegressionModel,
               ModelType = "mojo",
               H2OShutdown = FALSE,
@@ -494,7 +494,7 @@ AutoH2oDRFHurdleModel <- function(data,
               MDP_MissNum = -1)
           } else {
             TestData <- AutoH2OMLScoring(
-              ScoringData = data,
+              ScoringData = TestData,
               ModelObject = RegressionModel,
               ModelType = "mojo",
               H2OShutdown = FALSE,
@@ -518,7 +518,7 @@ AutoH2oDRFHurdleModel <- function(data,
         } else {
           if(!is.null(TransformNumericColumns)) {
             TestData <- AutoH2OMLScoring(
-              ScoringData = data,
+              ScoringData = TestData,
               ModelObject = RegressionModel,
               ModelType = "mojo",
               H2OShutdown = FALSE,
@@ -540,7 +540,7 @@ AutoH2oDRFHurdleModel <- function(data,
               MDP_MissNum = -1)
           } else {
             TestData <- AutoH2OMLScoring(
-              ScoringData = data,
+              ScoringData = TestData,
               ModelObject = RegressionModel,
               ModelType = "mojo",
               H2OShutdown = FALSE,
@@ -592,58 +592,6 @@ AutoH2oDRFHurdleModel <- function(data,
     }
   }
   
-  # Rearrange Column order----
-  if(counter > 2) {
-    if(length(IDcols) != 0) {
-      if(Degenerate == 0) {
-        data.table::setcolorder(TestData, 
-                                c(1, (2 + length(IDcols)):(2 + length(IDcols) + 2*counter-1),
-                                  2:(1 + length(IDcols)),
-                                  (3 + length(IDcols) + 2 * counter - 1):ncol(TestData)))
-      } else {
-        data.table::setcolorder(TestData, 
-                                c(1:2, (3 + length(IDcols)):(3 + length(IDcols) + 2*counter-1),
-                                  3:(2 + length(IDcols)),
-                                  (4 + length(IDcols) + 2 * counter - 1):ncol(TestData)))
-      }
-    }
-  } else if(counter == 2 & length(Buckets) == 1) {
-    if(length(IDcols) != 0) {
-      data.table::setcolorder(TestData, 
-                              c(1,
-                                (2+length(IDcols)):(4+length(IDcols)),
-                                2:(1+length(IDcols)),
-                                (5+length(IDcols)):ncol(TestData)))
-    } 
-  } else if(counter == 2 & length(Buckets) != 1) {
-    if(length(IDcols) != 0) {
-      if(Degenerate == 0) {
-        data.table::setcolorder(TestData, 
-                                c(ncol(TestData),
-                                  1, 
-                                  (2 + length(IDcols)):(3 + length(IDcols) + 2*counter-2),
-                                  2:(1 + length(IDcols)),
-                                  (3 + length(IDcols) + 2 * counter - 1):(ncol(TestData)-1)))
-      } else {
-        data.table::setcolorder(TestData, 
-                                c(1:2, 
-                                  (3 + length(IDcols)):(4 + length(IDcols) + 2*counter-2),
-                                  3:(2 + length(IDcols)),
-                                  (4 + length(IDcols) + 2 * counter - 1):(ncol(TestData)-1)))
-      }
-    } else {
-      data.table::setcolorder(TestData, c(ncol(TestData),1:(ncol(TestData)-1)))
-    }
-  } else {
-    if(length(IDcols) != 0) {
-      data.table::setcolorder(TestData,
-                              c(1:2, 
-                                (3+length(IDcols)):(4+length(IDcols)),
-                                3:(2+length(IDcols)),
-                                (5+length(IDcols)):ncol(TestData)))
-    } 
-  }
-
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
