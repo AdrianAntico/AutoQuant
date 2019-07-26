@@ -9,7 +9,8 @@ AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
   eval_metric = "logloss", Trees = 50, GridTune = FALSE,
   MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
   ModelID = "FirstModel", ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, IfSaveModel = "mojo")
+  SaveModelObjects = FALSE, IfSaveModel = "mojo",
+  H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -41,6 +42,8 @@ AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
+
+\item{H2OShutdown}{Set to TRUE to shutdown H2O when done with function}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -100,7 +103,8 @@ TestModel <- AutoH2oGBMMultiClass(data,
                                   ModelID = "FirstModel",
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo")
+                                  IfSaveModel = "mojo",
+                                  H2OShutdown = FALSE)
 }
 }
 \seealso{
@@ -117,6 +121,7 @@ Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oDRFMultiClass}},
   \code{\link{AutoH2oDRFRegression}},
   \code{\link{AutoH2oGBMClassifier}},
+  \code{\link{AutoH2oGBMHurdleModel}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoXGBoostClassifier}},
