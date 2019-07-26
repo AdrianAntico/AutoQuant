@@ -433,7 +433,7 @@ AutoH2oDRFHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            StopH2O = FALSE)
+            H2OShutdown = FALSE)
         } else {
           TestModel <- AutoH2oDRFRegression(
             data = trainBucket,
@@ -454,7 +454,7 @@ AutoH2oDRFHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            StopH2O = FALSE)
+            H2OShutdown = FALSE)
         }
         
         # Store Model----
