@@ -21,7 +21,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param StopH2O For use in other functions.
+#' @param H2OShutdown For use in other functions.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -73,7 +73,7 @@
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo",
-#'                                   StopH2O = TRUE)
+#'                                   H2OShutdown = TRUE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
@@ -95,7 +95,7 @@ AutoH2oDRFRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
-                                 StopH2O = TRUE) {
+                                 H2OShutdown = TRUE) {
   
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
@@ -553,7 +553,7 @@ AutoH2oDRFRegression <- function(data,
   )]
   
   # Regression H2O Shutdown----
-  if(StopH2O) {
+  if(H2OShutdown) {
     h2o::h2o.shutdown(prompt = FALSE)
   }
 
