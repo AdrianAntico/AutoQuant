@@ -7,10 +7,10 @@
 AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   eval_metric = "logloss", Trees = 50, GridTune = FALSE,
-  MaxMem = "32G", MaxModelsInGrid = 2, model_path = NULL,
-  ModelID = "FirstModel", ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, IfSaveModel = "mojo",
-  H2OShutdown = FALSE)
+  MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2, model_path = NULL, ModelID = "FirstModel",
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  IfSaveModel = "mojo", H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -30,6 +30,8 @@ AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
+
+\item{NThreads}{Set to the number of threads you want to use for running this function}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
@@ -98,6 +100,7 @@ TestModel <- AutoH2oGBMMultiClass(data,
                                   Trees = 50,
                                   GridTune = FALSE,
                                   MaxMem = "32G",
+                                  NThreads = max(1, parallel::detectCores()-2),
                                   MaxModelsInGrid = 10,
                                   model_path = NULL,
                                   ModelID = "FirstModel",
