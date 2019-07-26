@@ -92,16 +92,19 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
 
   # Apply Transform Numeric Variables----
-  if (TransformNumeric) {
-    tempTrans <- data.table::copy(TransformationObject)
-    tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-    ScoringData <- AutoTransformationScore(
-      ScoringData = ScoringData,
-      FinalResults = tempTrans,
-      Type = "Apply",
-      TransID = TransID,
-      Path = TransPath
-    )
+  # Pull In Transformation Object----
+  if (is.null(TransformationObject)) {
+    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+      tempTrans <- data.table::copy(TransformationObject)
+      tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
+      ScoringData <- AutoTransformationScore(
+        ScoringData = ScoringData,
+        FinalResults = tempTrans,
+        Type = "Apply",
+        TransID = TransID,
+        Path = TransPath
+      )
+    }
   }
   
   # ModelDataPrep Check----
