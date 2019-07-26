@@ -437,7 +437,7 @@ AutoH2oGBMHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            StopH2O = FALSE)
+            H2OShutdown = FALSE)
         } else {
           TestModel <- AutoH2oGBMRegression(
             data = trainBucket,
@@ -459,7 +459,7 @@ AutoH2oGBMHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            StopH2O = FALSE)
+            H2OShutdown = FALSE)
         }
         
         # Store Model----
