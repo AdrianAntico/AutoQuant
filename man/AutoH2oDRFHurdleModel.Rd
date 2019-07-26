@@ -6,12 +6,11 @@
 \usage{
 AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, TransformNumericColumns = NULL, SplitRatios = c(0.7,
-  0.2, 0.1), ModelID = "ModelTest", Paths = NULL,
-  SaveModelObjects = TRUE, IfSaveModel = "mojo", MaxMem = "28G",
-  NThreads = max(1, parallel::detectCores() - 2), Trees = 1000,
-  GridTune = TRUE, MaxModelsInGrid = 1, NumOfParDepPlots = 10,
-  PassInGrid = NULL)
+  TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
+  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
+  IfSaveModel = "mojo", MaxMem = "28G", NThreads = max(1,
+  parallel::detectCores() - 2), Trees = 1000, GridTune = TRUE,
+  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
