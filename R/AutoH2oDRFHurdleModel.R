@@ -461,7 +461,7 @@ AutoH2oDRFHurdleModel <- function(data,
         # Store Model----
         RegressionModel <- TestModel$Model
         if(!is.null(TransformNumericColumns)) {
-          TransformationResults <- TestModel$TransformationResults
+          TransformationResults <- TestModel$TransformationInformation
         }
         rm(TestModel)
         
