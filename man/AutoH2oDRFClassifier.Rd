@@ -10,7 +10,8 @@ AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
   MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
   MaxModelsInGrid = 2, model_path = NULL, ModelID = "FirstModel",
   NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, IfSaveModel = "mojo")
+  SaveModelObjects = FALSE, IfSaveModel = "mojo",
+  H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -46,6 +47,8 @@ AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
+
+\item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -103,7 +106,8 @@ TestModel <- AutoH2oDRFClassifier(data,
                                   NumOfParDepPlots = 3,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo")
+                                  IfSaveModel = "mojo",
+                                  H2OShutdown = FALSE)
 }
 }
 \seealso{
