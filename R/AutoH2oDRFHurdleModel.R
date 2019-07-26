@@ -9,7 +9,6 @@
 #' @param FeatureColNames Supply the column names or number of the features (not included the PrimaryDateColumn)
 #' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
-#' @param NThreads Set to the number of threads you would like to dedicate to training
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
