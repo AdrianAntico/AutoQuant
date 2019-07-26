@@ -20,6 +20,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -70,7 +71,8 @@
 #'                                   NumOfParDepPlots = 3,
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
-#'                                   IfSaveModel = "mojo")
+#'                                   IfSaveModel = "mojo",
+#'                                   H2OShutdown = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -90,7 +92,8 @@ AutoH2oDRFClassifier <- function(data,
                                  NumOfParDepPlots = 3,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
-                                 IfSaveModel = "mojo") {
+                                 IfSaveModel = "mojo",
+                                 H2OShutdown = FALSE) {
   # Binary Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
@@ -484,8 +487,10 @@ AutoH2oDRFClassifier <- function(data,
   }
   
   # Binary H2O Shutdown----
-  h2o::h2o.shutdown(prompt = FALSE)
-  
+  if(H2OShutdown) {
+    h2o::h2o.shutdown(prompt = FALSE)    
+  }
+
   # Binary Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
