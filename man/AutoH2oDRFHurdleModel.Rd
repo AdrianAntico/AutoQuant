@@ -39,7 +39,7 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{MaxMem}{Set the maximum memory your system can provide}
 
-\item{NThreads}{Set to the number of threads you would like to dedicate to training}
+\item{NThreads}{Set the number of threads you want to dedicate to the model building}
 
 \item{Trees}{Default 15000}
 
@@ -50,8 +50,6 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
 \item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
-
-\item{NThreads}{Set the number of threads you want to dedicate to the model building}
 }
 \value{
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
