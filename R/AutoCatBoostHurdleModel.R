@@ -1,4 +1,4 @@
-#' AutoCatBoostdHurdleModel for generalized hurdle modeling
+#' AutoCatBoostHurdleModel for generalized hurdle modeling
 #'
 #' @family Supervised Learning
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -24,7 +24,7 @@
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
 #' \donttest{
-#' Output <- RemixAutoML::AutoCatBoostdHurdleModel(
+#' Output <- RemixAutoML::AutoCatBoostHurdleModel(
 #'   data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
@@ -47,7 +47,7 @@
 #'   PassInGrid = NULL)
 #' }
 #' @export
-AutoCatBoostdHurdleModel <- function(data,
+AutoCatBoostHurdleModel <- function(data,
                                      ValidationData = NULL,
                                      TestData = NULL,
                                      Buckets = 0,
