@@ -324,9 +324,8 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Change name for classification----
   if(length(Buckets) == 1) {
-    data.table::setnames(TestData, "Predictions","Predictions_C1")
-    TestData[, Predictions_C0 := 1 - Predictions_C1]
-    data.table::setcolorder(TestData, c(ncol(TestData),1, 2:(ncol(TestData)-1)))
+    data.table::setnames(TestData, "p0","Predictions_C0")
+    data.table::setnames(TestData, "p1","Predictions_C1")
   } else {
     data.table::setnames(TestData,
                          names(TestData)[1:length(Buckets)],
