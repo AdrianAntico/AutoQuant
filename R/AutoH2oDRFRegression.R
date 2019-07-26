@@ -511,10 +511,9 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Score Final Test Data----
   if (!is.null(TestData)) {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datatest))
-    
+    Predict <- h2o::h2o.predict(object = FinalModel,
+                                                 newdata = datatest)
+    Predict <- data.table::as.data.table(Predict)
   } else {
     Predict <-
       data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
