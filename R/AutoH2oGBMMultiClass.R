@@ -12,12 +12,14 @@
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
+#' @param NThreads Set to the number of threads you want to use for running this function
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @param H2OShutdown Set to TRUE to shutdown H2O when done with function
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -65,12 +67,14 @@
 #'                                   Trees = 50,
 #'                                   GridTune = FALSE,
 #'                                   MaxMem = "32G",
+#'                                   NThreads = max(1, parallel::detectCores()-2),
 #'                                   MaxModelsInGrid = 10,
 #'                                   model_path = NULL,
 #'                                   ModelID = "FirstModel",
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
-#'                                   IfSaveModel = "mojo")
+#'                                   IfSaveModel = "mojo",
+#'                                   H2OShutdown = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -83,12 +87,14 @@ AutoH2oGBMMultiClass <- function(data,
                                  Trees = 50,
                                  GridTune = FALSE,
                                  MaxMem = "32G",
+                                 NThreads = max(1, parallel::detectCores()-2),
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
                                  ModelID = "FirstModel",
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
-                                 IfSaveModel = "mojo") {
+                                 IfSaveModel = "mojo",
+                                 H2OShutdown = FALSE) {
   # MultiClass Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
     warning("eval_metric not in AUC, logloss")
@@ -201,6 +207,7 @@ AutoH2oGBMMultiClass <- function(data,
   if (GridTune) {
     # MultiClass Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem,
+                  nthreads = NThreads,
                   enable_assertions = FALSE)
     
     # MultiClass Define data sets----
@@ -460,8 +467,10 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass H2O Shutdown----
-  h2o::h2o.shutdown(prompt = FALSE)
-  
+  if(H2OShutdown) {
+    h2o::h2o.shutdown(prompt = FALSE)    
+  }
+
   # MultiClass Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <-
