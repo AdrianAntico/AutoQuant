@@ -86,26 +86,13 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
-  \code{\link{AutoCatBoostMultiClass}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoH2OMLScoring}},
-  \code{\link{AutoH2OModeler}},
-  \code{\link{AutoH2OScoring}},
-  \code{\link{AutoH2oDRFClassifier}},
+Other Automated Regression: \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFMultiClass}},
   \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMClassifier}},
   \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostClassifier}},
   \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostMultiClass}},
-  \code{\link{AutoXGBoostRegression}},
-  \code{\link{AutoXGBoostScoring}}
+  \code{\link{AutoXGBoostRegression}}
 }
-\concept{Supervised Learning}
+\concept{Automated Regression}

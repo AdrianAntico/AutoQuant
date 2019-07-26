@@ -92,8 +92,8 @@ Results$ModelInformation$...
 }
 }
 \seealso{
-Other Time Series: \code{\link{AutoH2oDRFCARMA}},
+Other Automated Time Series: \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostCARMA}}
 }
-\concept{Time Series}
+\concept{Automated Time Series}
