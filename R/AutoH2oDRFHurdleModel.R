@@ -84,13 +84,6 @@ AutoH2oDRFHurdleModel <- function(data,
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
   
-  # Update working directory----
-  working_directory <- getwd()
-  if (!is.null(Paths)) {
-    if (working_directory != Paths)
-      setwd(Paths)
-  }
-  
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, 
                 nthreads = NThreads, 
