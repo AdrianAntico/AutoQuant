@@ -117,10 +117,10 @@ TestModel <- AutoCatBoostClassifier(data,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoCatBoostMultiClass}},
+Other Supervised Learning: \code{\link{AutoCatBoostHurdleModel}},
+  \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoCatBoostdHurdleModel}},
   \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},

@@ -121,10 +121,10 @@ TestModel <- AutoH2oGBMRegression(data,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostHurdleModel}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoCatBoostdHurdleModel}},
   \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},

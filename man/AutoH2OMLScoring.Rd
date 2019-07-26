@@ -87,10 +87,10 @@ Preds <- AutoH2OMLScoring(ScoringData = data,
 }
 \seealso{
 Other Supervised Learning: \code{\link{AutoCatBoostClassifier}},
+  \code{\link{AutoCatBoostHurdleModel}},
   \code{\link{AutoCatBoostMultiClass}},
   \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoCatBoostdHurdleModel}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoH2OScoring}},
   \code{\link{AutoH2oDRFClassifier}},
