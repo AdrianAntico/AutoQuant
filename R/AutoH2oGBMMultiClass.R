@@ -491,26 +491,27 @@ AutoH2oGBMMultiClass <- function(data,
                           na.rm = TRUE)]
   
   # MultiClass Metrics MicroAUC----
-  y <- ValidationData[[eval(Target)]]
-  keep <-
-    names(ValidationData)[(ncol(data) + 2):(ncol(ValidationData))]
-  x <- as.matrix(ValidationData[, ..keep])
-  z <-
-    tryCatch({
-      pROC::multiclass.roc(response = y, predictor = x)
-    },
-    error = function(x)
-      0)
-  MetricAUC <- round(as.numeric(noquote(
-    stringr::str_extract(z$auc, "\\d+\\.*\\d*")
-  )), 4)
+  # y <- ValidationData[[eval(Target)]]
+  # keep <-
+  #   names(ValidationData)[(ncol(data) + 2):(ncol(ValidationData))]
+  # x <- as.matrix(ValidationData[, ..keep])
+  # z <-
+  #   tryCatch({
+  #     pROC::multiclass.roc(response = y, predictor = x)
+  #   },
+  #   error = function(x)
+  #     0)
+  # MetricAUC <- round(as.numeric(noquote(
+  #   stringr::str_extract(z$auc, "\\d+\\.*\\d*")
+  # )), 4)
   
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
     Metric = c("Accuracy", "MicroAUC", "temp"),
     Value = c(
       round(MetricAcc, 4),
-      round(MetricAUC, 4),
+      NA,
+      #round(MetricAUC, 4),
       round(EvalMetric, 4)
     )
   )
