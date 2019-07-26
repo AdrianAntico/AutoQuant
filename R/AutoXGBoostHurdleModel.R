@@ -85,13 +85,6 @@ AutoXGBoostHurdleModel <- function(data,
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
   
-  # Update working directory----
-  working_directory <- getwd()
-  if (!is.null(Paths)) {
-    if (working_directory != Paths[1])
-      setwd(Paths[1])
-  }
-  
   # Initialize collection and counter----
   ModelInformationList <- list()
   if (length(Paths) == 1) {
