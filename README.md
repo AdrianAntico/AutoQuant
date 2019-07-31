@@ -282,18 +282,18 @@ ________________________________________________________________________________
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 
 For each of the models tested internally, several aspects should be noted:
-* Optimal Box-Cox transformations were used in every run where data was strictly positive. The optimal transformation could also be "no transformation". 
+* Optimal Box-Cox transformations are used in every run where data is strictly positive. The optimal transformation could also be "no transformation". 
 * Four different treatments are tested for each model:
   * user-specified time frequency + no historical series smoothing & imputation
   * model-based time frequency + no historical smoothing and imputation
   * user-specified time frequency + historical series smoothing & imputation
   * model-based time frequency + historical smoothing & imputation
 
-C) For the ARIMA, ARFIMA, and TBATS, up to 25 lags and moving averages along with up to 1 seasonal lags and seasonal moving averages are used (determined via stepwise)
+C) For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
 D) For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
 E) The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
-F) The neural network is setup to test out every combination of lags and seasonal lags up to 25 for each and the model with the best holdout score is selected
-G) The TBATS model utilizes up to 25 lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing
+F) The neural network is setup to test out every combination of lags and seasonal lags and the model with the best holdout score is selected
+G) The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
 H) The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
 ##### **AutoCatBoostCARMA()**
