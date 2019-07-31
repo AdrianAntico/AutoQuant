@@ -67,7 +67,7 @@ ________________________________________________________________________________
 ##### **AutoH2oDRFRegression()**
 <code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
   
-##### The Auto_Regression() models handle a multitude of tasks. In order:
+#### The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Transform your target variable using the best normalization method based on the AutoTransformationCreate() function
 3. Create train, validation, and test data if you didn't supply those directly to the function
@@ -110,7 +110,7 @@ ________________________________________________________________________________
 ##### **AutoH2oDRFClassifier()**
 <code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
   
-##### The Auto_Classifier() models handle a multitude of tasks. In order:
+#### The Auto_Classifier() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Create train, validation, and test data if you didn't supply those directly to the function
 3. Consoldate columns that are used for modeling and what is to be kept for data returned
@@ -151,7 +151,7 @@ ________________________________________________________________________________
 ##### **AutoH2oDRFMultiClass()**
 <code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
   
-##### The Auto_MultiClass() models handle a multitude of tasks. In order:
+#### The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Create train, validation, and test data if you didn't supply those directly to the function
 3. Consoldate columns that are used for modeling and what is to be kept for data returned
