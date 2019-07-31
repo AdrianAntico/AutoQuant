@@ -46,10 +46,15 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
+## Blogs about RemixAutoML: 
+![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
+
+![RedYellowGreen Blog](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
+
 ## Supervised Learning Training Functions: 
 <details><summary>EXPAND</summary>
 <p>
-
+  
 #### Regression:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
