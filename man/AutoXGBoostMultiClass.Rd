@@ -9,8 +9,8 @@ AutoXGBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
   eval_metric = "merror", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "merror", TreeMethod = "hist",
   Objective = "multi:softmax", MaxModelsInGrid = 10, NThreads = 8,
-  model_path = NULL, ModelID = "FirstModel", Verbose = 0,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
+  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL)
 }
 \arguments{
@@ -43,6 +43,8 @@ AutoXGBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -112,7 +114,8 @@ TestModel <- AutoXGBoostMultiClass(data,
                                    NThreads = 8,
                                    TreeMethod = "hist",
                                    Objective = 'multi:softmax',
-                                   model_path = getwd(),
+                                   model_path = NULL,
+                                   metadata_path = NULL,
                                    ModelID = "FirstModel",
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,

@@ -10,7 +10,7 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
   TransformNumericColumns = NULL, task_type = "GPU",
   eval_metric = "RMSE", Alpha = NULL, Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL)
 }
@@ -46,6 +46,8 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -112,6 +114,7 @@ TestModel <- AutoCatBoostRegression(data,
                                     Trees = 50,
                                     GridTune = FALSE,
                                     model_path = NULL,
+                                    metadata_path = NULL,
                                     ModelID = "ModelTest",
                                     NumOfParDepPlots = 3,
                                     ReturnModelObjects = TRUE,

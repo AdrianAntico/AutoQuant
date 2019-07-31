@@ -7,10 +7,11 @@
 AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
   Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
   TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
-  IfSaveModel = "mojo", MaxMem = "28G", NThreads = max(1,
-  parallel::detectCores() - 2), Trees = 1000, GridTune = TRUE,
-  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
+  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
+  SaveModelObjects = TRUE, IfSaveModel = "mojo", MaxMem = "28G",
+  NThreads = max(1, parallel::detectCores() - 2), Trees = 1000,
+  GridTune = TRUE, MaxModelsInGrid = 1, NumOfParDepPlots = 10,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -32,6 +33,8 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{ModelID}{Define a character name for your models}
 
 \item{Paths}{The path to your folder where you want your model information saved}
+
+\item{MetaDataPaths}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
@@ -71,6 +74,7 @@ Output <- RemixAutoML::AutoH2oDRFHurdleModel(
   NThreads = max(1, parallel::detectCores()-2),
   ModelID = "ModelID",
   Paths = NULL,
+  MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
   Trees = 1000,

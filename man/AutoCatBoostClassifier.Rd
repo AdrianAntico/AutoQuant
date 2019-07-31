@@ -9,9 +9,9 @@ AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
   PrimaryDateColumn = NULL, ClassWeights = NULL, IDcols = NULL,
   task_type = "GPU", eval_metric = "AUC", Trees = 50,
   GridTune = FALSE, grid_eval_metric = "f", MaxModelsInGrid = 10,
-  model_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -43,6 +43,8 @@ AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -109,6 +111,7 @@ TestModel <- AutoCatBoostClassifier(data,
                                     Trees = 50,
                                     GridTune = FALSE,
                                     model_path = NULL,
+                                    metadata_path = NULL,
                                     ModelID = "ModelTest",
                                     NumOfParDepPlots = 15,
                                     ReturnModelObjects = TRUE,

@@ -8,9 +8,10 @@ AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   eval_metric = "logloss", Trees = 50, GridTune = FALSE,
   MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2, model_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = FALSE)
+  MaxModelsInGrid = 2, model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, IfSaveModel = "mojo",
+  H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -36,6 +37,8 @@ AutoH2oGBMMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -103,6 +106,7 @@ TestModel <- AutoH2oGBMMultiClass(data,
                                   NThreads = max(1, parallel::detectCores()-2),
                                   MaxModelsInGrid = 10,
                                   model_path = NULL,
+                                  metadata_path = NULL,
                                   ModelID = "FirstModel",
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,

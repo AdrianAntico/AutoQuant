@@ -9,9 +9,9 @@ AutoCatBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
   PrimaryDateColumn = NULL, IDcols = NULL,
   TransformNumericColumns = NULL, ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1), task_type = "GPU",
-  ModelID = "ModelTest", Paths = NULL, SaveModelObjects = TRUE,
-  Trees = 1000, GridTune = TRUE, MaxModelsInGrid = 1,
-  NumOfParDepPlots = 10, PassInGrid = NULL)
+  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
+  SaveModelObjects = TRUE, Trees = 1000, GridTune = TRUE,
+  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -41,6 +41,8 @@ AutoCatBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 \item{ModelID}{Define a character name for your models}
 
 \item{Paths}{The path to your folder where you want your model information saved}
+
+\item{MetaDataPaths}{TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
@@ -77,6 +79,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   task_type = "GPU",
   ModelID = "ModelID",
   Paths = NULL,
+  MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   Trees = 1000,
   GridTune = FALSE,

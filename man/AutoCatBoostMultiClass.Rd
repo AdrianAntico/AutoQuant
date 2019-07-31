@@ -9,9 +9,9 @@ AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
   PrimaryDateColumn = NULL, ClassWeights = NULL, IDcols = NULL,
   task_type = "GPU", eval_metric = "MultiClassOneVsAll", Trees = 50,
   GridTune = FALSE, grid_eval_metric = "Accuracy",
-  MaxModelsInGrid = 10, model_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  MaxModelsInGrid = 10, model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -43,6 +43,8 @@ AutoCatBoostMultiClass(data, ValidationData = NULL, TestData = NULL,
 \item{MaxModelsInGrid}{Number of models to test from grid options. 1080 total possible options}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -106,6 +108,7 @@ TestModel <- AutoCatBoostMultiClass(data,
                                     Trees = 50,
                                     GridTune = FALSE,
                                     model_path = NULL,
+                                    metadata_path = NULL,
                                     ModelID = "ModelTest",
                                     ReturnModelObjects = TRUE,
                                     SaveModelObjects = FALSE,
