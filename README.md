@@ -272,7 +272,7 @@ ________________________________________________________________________________
 ##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
 
-* Automated Time Series Models include:
+* The models tested internally include:
   * DSHW: Double Seasonal Holt-Winters
   * ARFIMA: Auto Regressive Fractional Integrated Moving Average
   * ARIMA: Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
@@ -282,12 +282,12 @@ ________________________________________________________________________________
   * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 
 For each of the models tested internally, several aspects should be noted:
-A) Optimal Box-Cox transformations were used in every run where data was strictly positive. The optimal transformation could also be "no transformation". 
-B) Four different treatments are tested for each model:
-user-specified time frequency + no historical series smoothing & imputation
-model-based time frequency + no historical smoothing and imputation
-user-specified time frequency + historical series smoothing & imputation
-model-based time frequency + historical smoothing & imputation
+* Optimal Box-Cox transformations were used in every run where data was strictly positive. The optimal transformation could also be "no transformation". 
+* Four different treatments are tested for each model:
+  * user-specified time frequency + no historical series smoothing & imputation
+  * model-based time frequency + no historical smoothing and imputation
+  * user-specified time frequency + historical series smoothing & imputation
+  * model-based time frequency + historical smoothing & imputation
 
 C) For the ARIMA, ARFIMA, and TBATS, up to 25 lags and moving averages along with up to 1 seasonal lags and seasonal moving averages are used (determined via stepwise)
 D) For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
