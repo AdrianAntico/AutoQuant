@@ -55,6 +55,18 @@ ________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
   
+##### **AutoCatBoostRegression()** GPU + CPU
+<code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
+
+##### **AutoXGBoostRegression()** GPU + CPU
+<code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
+
+##### **AutoH2oGBMRegression()**
+<code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the below steps 
+
+##### **AutoH2oDRFRegression()**
+<code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
+  
 The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Transform your target variable using the best normalization method based on the AutoTransformationCreate() function
@@ -78,17 +90,6 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 20. Generate and save Partital Dependence Calibration Line Plots and Box-Plots
 21. Return all the objects generated in a named list for immediate use
  
-##### **AutoCatBoostRegression()** GPU + CPU
-<code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the above steps
-
-##### **AutoXGBoostRegression()** GPU + CPU
-<code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the above steps 
-
-##### **AutoH2oGBMRegression()**
-<code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the above steps 
-
-##### **AutoH2oDRFRegression()**
-<code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the above steps 
 </p>
 </details>
 
@@ -96,6 +97,18 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
+  
+##### **AutoCatBoostClassifier()** GPU + CPU
+<code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the below steps
+
+##### **AutoXGBoostClassifier()** GPU + CPU
+<code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the below steps
+
+##### **AutoH2oGBMClassifier()**
+<code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
+
+##### **AutoH2oDRFClassifier()**
+<code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
   
 The Auto_Classifier() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -118,17 +131,6 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 18. Generate and save Partital Dependence Calibration Line Plots
 19. Return all the objects generated in a named list for immediate use
 
-##### **AutoCatBoostClassifier()** GPU + CPU
-<code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the above steps
-
-##### **AutoXGBoostClassifier()** GPU + CPU
-<code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the above steps
-
-##### **AutoH2oGBMClassifier()**
-<code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the above steps
-
-##### **AutoH2oDRFClassifier()**
-<code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the above steps
 </p>
 </details>
 
@@ -136,6 +138,18 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 ____________________________________________________________________________________________________________________________________________
 <details><summary>expand</summary>
 <p>
+  
+##### **AutoCatBoostMultiClass()** GPU + CPU
+<code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
+
+##### **AutoXGBoostMultiClass()** GPU + CPU
+<code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
+
+##### **AutoH2oGBMMultiClass()**
+<code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
+
+##### **AutoH2oDRFMultiClass()**
+<code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
   
 The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -155,18 +169,7 @@ The Auto_MultiClass() models handle a multitude of tasks. In order:
 15. Store the final predictions with the associated test data and other columns you want included in that set
 16. Generate and save Variable Importance data
 17. Return all the objects generated in a named list for immediate use
-  
-##### **AutoCatBoostMultiClass()** GPU + CPU
-<code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the above steps
 
-##### **AutoXGBoostMultiClass()** GPU + CPU
-<code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the above steps
-
-##### **AutoH2oGBMMultiClass()**
-<code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the above steps
-
-##### **AutoH2oDRFMultiClass()**
-<code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the above steps
 </p>
 </details>
 
