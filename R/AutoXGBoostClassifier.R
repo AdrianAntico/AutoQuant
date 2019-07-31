@@ -17,6 +17,7 @@
 #' @param grid_eval_metric Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
@@ -70,7 +71,8 @@
 #'                                    MaxModelsInGrid = 10,
 #'                                    NThreads = 8,
 #'                                    TreeMethod = "hist",
-#'                                    model_path = getwd(),
+#'                                    model_path = NULL,
+#'                                    metadata_path = NULL,
 #'                                    ModelID = "FirstModel",
 #'                                    NumOfParDepPlots = 3,
 #'                                    ReturnModelObjects = TRUE,
@@ -93,6 +95,7 @@ AutoXGBoostClassifier <- function(data,
                                   MaxModelsInGrid = 10,
                                   NThreads = 8,
                                   model_path = NULL,
+                                  metadata_path = NULL,
                                   ModelID = "FirstModel",
                                   NumOfParDepPlots = 3,
                                   Verbose = 0,
@@ -129,6 +132,10 @@ AutoXGBoostClassifier <- function(data,
   if (!is.null(model_path)) {
     if (!is.character(model_path))
       warning("model_path needs to be a character type")
+  }
+  if (!is.null(metadata_path)) {
+    if (!is.character(metadata_path))
+      warning("metadata_path needs to be a character type")
   }
   if (!is.character(ModelID))
     warning("ModelID needs to be a character type")
@@ -419,7 +426,6 @@ AutoXGBoostClassifier <- function(data,
   } else {
     EvalSets <- list(train = datatrain, test = datavalidate)
   }
-  
   
   # Binary Grid Tune or Not Check----
   if (GridTune) {
@@ -775,10 +781,20 @@ AutoXGBoostClassifier <- function(data,
     )
   }
   
+  # Update working directory----
+  working_directory <- getwd()
+  if (!is.null(model_path)) {
+    if (working_directory != model_path)
+      setwd(model_path)
+  }
+  
   # Binary Save Model----
   if (SaveModelObjects) {
     xgboost::xgb.save(model = model, fname = ModelID)
   }
+  
+  # Revert Working Directory----
+  setwd(working_directory)
   
   # Binary Grid Score Model----
   if (!is.null(TestData)) {
@@ -848,9 +864,13 @@ AutoXGBoostClassifier <- function(data,
       ggplot2::ylab("Sensitivity")
   }
   
-  # Save plot to file
+  # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_ROC_Plot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))      
+    }
   }
   
   # Binary Evaluation Calibration Plot----
@@ -871,9 +891,13 @@ AutoXGBoostClassifier <- function(data,
       round(AUC_Metrics$auc, 3)
     ))
   
-  # Save plot to file
+  # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))      
+    }
   }
   
   # Evaluation Metrics at Optimial Threshold----
@@ -1015,8 +1039,13 @@ AutoXGBoostClassifier <- function(data,
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+    }
   }
   
   # Binary Variable Importance----
@@ -1030,10 +1059,17 @@ AutoXGBoostClassifier <- function(data,
       Frequency = round(Frequency, 4)
     )]
     if (SaveModelObjects) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))
+      } else {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))        
+      }
     }
     
     # Binary Partial Dependence----
@@ -1064,16 +1100,28 @@ AutoXGBoostClassifier <- function(data,
   
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
-    save(ParDepPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
+    if(!is.null(metadata_path)) {
+      save(ParDepPlots,
+           file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+    } else {
+      save(ParDepPlots,
+           file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+    }
   }
   
   # Binary Save GridCollect and GridList----
   if (SaveModelObjects & GridTune == TRUE) {
-    data.table::fwrite(grid_params,
-                       file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
-    data.table::fwrite(GridCollect,
-                       file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(grid_params,
+                         file = paste0(metadata_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
+    } else {
+      data.table::fwrite(grid_params,
+                         file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
+    }
   }
   
   # Binary Return Model Objects----

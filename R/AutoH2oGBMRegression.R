@@ -19,6 +19,7 @@
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param ModelID A character string to name your model and output
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
@@ -72,6 +73,7 @@
 #'                                   NThreads = max(1,parallel::detectCores()-2),
 #'                                   MaxModelsInGrid = 10,
 #'                                   model_path = NULL,
+#'                                   metadata_path = NULL,
 #'                                   ModelID = "FirstModel",
 #'                                   NumOfParDepPlots = 3,
 #'                                   ReturnModelObjects = TRUE,
@@ -96,6 +98,7 @@ AutoH2oGBMRegression <- function(data,
                                  NThreads = max(1,parallel::detectCores()-2),
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
+                                 metadata_path = NULL,
                                  ModelID = "FirstModel",
                                  NumOfParDepPlots = 3,
                                  ReturnModelObjects = TRUE,
@@ -117,6 +120,10 @@ AutoH2oGBMRegression <- function(data,
   if (!is.null(model_path)) {
     if (!is.character(model_path))
       warning("model_path needs to be a character type")
+  }
+  if (!is.null(metadata_path)) {
+    if (!is.character(metadata_path))
+      warning("metadata_path needs to be a character type")
   }
   if (!is.character(ModelID))
     warning("ModelID needs to be a character type")
@@ -606,10 +613,17 @@ AutoH2oGBMRegression <- function(data,
   VariableImportance <-
     data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
   if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_VariableImportance.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))
+    } else {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))      
+    }
   }
   
   # Regression Format Variable Importance Table----
@@ -696,11 +710,19 @@ AutoH2oGBMRegression <- function(data,
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
-    data.table::fwrite(ValidationData,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_ValidationData.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(ValidationData,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    } else {
+      data.table::fwrite(ValidationData,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -748,12 +770,19 @@ AutoH2oGBMRegression <- function(data,
       ))
   }
   
-  # Save plot to file
+  # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID,
-                           "_EvaluationPlot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationPlot.png"))      
+    }
   }
   
   # Regression Evaluation BoxPlot----
@@ -787,12 +816,19 @@ AutoH2oGBMRegression <- function(data,
       ))
   }
   
-  # Save plot to file
+  # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID,
-                           "_EvaluationBoxPlot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))      
+    }
   }
   
   # Regression Evaluation Metrics----
@@ -873,11 +909,19 @@ AutoH2oGBMRegression <- function(data,
   # Regression Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_EvaluationMetrics.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_EvaluationMetrics.csv"))      
+    }
   }
   
   # Regression Partial Dependence----
@@ -969,14 +1013,24 @@ AutoH2oGBMRegression <- function(data,
   
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
-    save(ParDepPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
+    if(!is.null(metadata_path)) {
+      save(ParDepPlots,
+           file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+    } else {
+      save(ParDepPlots,
+           file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+    }
   }
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    save(ParDepBoxPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(metadata_path)) {
+      save(ParDepBoxPlots,
+           file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+    } else {
+      save(ParDepBoxPlots,
+           file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+    }
   }
   
   # Subset Transformation Object----

@@ -11,6 +11,7 @@
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
+#' @param MetaDataPaths A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param IfSaveModel Save as "mojo" or "standard"
 #' @param MaxMem Set the maximum memory your system can provide
@@ -35,6 +36,7 @@
 #'   NThreads = max(1, parallel::detectCores()-2),
 #'   ModelID = "ModelID",
 #'   Paths = NULL,
+#'   MetaDataPaths = NULL,
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "mojo",
 #'   Trees = 1000,
@@ -54,6 +56,7 @@ AutoH2oDRFHurdleModel <- function(data,
                                   SplitRatios = c(0.70, 0.20, 0.10),
                                   ModelID = "ModelTest",
                                   Paths = NULL,
+                                  MetaDataPaths = NULL,
                                   SaveModelObjects = TRUE,
                                   IfSaveModel = "mojo",
                                   MaxMem = "28G",
@@ -91,10 +94,17 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if (length(Paths) == 1) {
-    Paths <- rep(Paths, length(Buckets) + 1)
+  if(!is.null(Paths)) {
+    if (length(Paths) == 1) {
+      Paths <- rep(Paths, length(Buckets) + 1)
+    }    
   }
-  
+  if(!is.null(MetaDataPaths)) {
+    if (length(MetaDataPaths) == 1) {
+      MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1)
+    }    
+  }
+
   # Data.table check----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -253,7 +263,8 @@ AutoH2oDRFHurdleModel <- function(data,
       MaxMem = MaxMem,
       NThreads = NThreads,
       MaxModelsInGrid = MaxModelsInGrid,
-      model_path = Paths,
+      model_path = Paths[1],
+      metadata_path = MetaDataPaths[1],
       ModelID = ModelID,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
@@ -273,7 +284,8 @@ AutoH2oDRFHurdleModel <- function(data,
       MaxMem = MaxMem,
       NThreads = NThreads,
       MaxModelsInGrid = MaxModelsInGrid,
-      model_path = Paths,
+      model_path = Paths[1],
+      metadata_path = MetaDataPaths[1],
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
@@ -295,7 +307,7 @@ AutoH2oDRFHurdleModel <- function(data,
     H2OShutdown = FALSE,
     MaxMem = "28G",
     JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-    ModelPath = Paths,
+    ModelPath = Paths[1],
     ModelID = "ModelTest",
     ReturnFeatures = TRUE,
     TransformNumeric = FALSE,
@@ -399,6 +411,10 @@ AutoH2oDRFHurdleModel <- function(data,
       gridSaved <-
         data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
+    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
+      gridSaved <-
+        data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+    }
     
     # AutoCatBoostRegression()----
     if (trainBucket[, .N] != 0) {
@@ -418,7 +434,8 @@ AutoH2oDRFHurdleModel <- function(data,
             MaxMem = MaxMem,
             NThreads = NThreads,
             MaxModelsInGrid = MaxModelsInGrid,
-            model_path = Paths,
+            model_path = Paths[1],
+            metadata_path = MetaDataPaths[1],
             ModelID = paste0(ModelID,"_",bucket-1,"_"),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
@@ -440,6 +457,7 @@ AutoH2oDRFHurdleModel <- function(data,
             NThreads = NThreads,
             MaxModelsInGrid = MaxModelsInGrid,
             model_path = Paths,
+            metadata_path = MetaDataPaths[1],
             ModelID = paste0(ModelID,"_",bucket-1),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
@@ -637,11 +655,19 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
-    data.table::fwrite(TestData,
-                       file = paste0(Paths[1],
-                                     "/",
-                                     ModelID,
-                                     "_ValidationData.csv"))
+    if(!is.null(MetaDataPaths[1])) {
+      data.table::fwrite(TestData,
+                         file = paste0(MetaDataPaths[1],
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    } else {
+      data.table::fwrite(TestData,
+                         file = paste0(Paths[1],
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -662,9 +688,15 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(Paths[1],
-                           "/",
-                           ModelID, "_EvaluationPlot.png"))
+    if(!is.null(MetaDataPaths[1])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1],
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(Paths[1],
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -685,10 +717,17 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(Paths[1],
-                           "/",
-                           ModelID,
-                           "_EvaluationBoxPlot.png"))
+    if(!is.null(MetaDataPaths[1])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1],
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(Paths[1],
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))      
+    }
   }
   
   # Regression Evaluation Metrics----
@@ -779,10 +818,17 @@ AutoH2oDRFHurdleModel <- function(data,
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(Paths[1],
-                                     "/",
-                                     ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(MetaDataPaths[1])) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(MetaDataPaths[1],
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(Paths[1],
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))      
+    }
   }
   
   # Regression Partial Dependence----
@@ -831,8 +877,13 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    save(ParDepBoxPlots,
-         file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(MetaDataPaths[1])) {
+      save(ParDepBoxPlots,
+           file = paste0(MetaDataPaths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    } else {
+      save(ParDepBoxPlots,
+           file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))      
+    }
   }
   
   # Reset workding directory

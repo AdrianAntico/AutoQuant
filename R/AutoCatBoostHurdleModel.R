@@ -15,6 +15,7 @@
 #' @param task_type Set to "GPU" or "CPU"
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
+#' @param MetaDataPaths TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 15000
 #' @param GridTune Set to TRUE if you want to grid tune the models
@@ -39,6 +40,7 @@
 #'   task_type = "GPU",
 #'   ModelID = "ModelID",
 #'   Paths = NULL,
+#'   MetaDataPaths = NULL,
 #'   SaveModelObjects = TRUE,
 #'   Trees = 1000,
 #'   GridTune = FALSE,
@@ -48,25 +50,26 @@
 #' }
 #' @export
 AutoCatBoostHurdleModel <- function(data,
-                                     ValidationData = NULL,
-                                     TestData = NULL,
-                                     Buckets = 0,
-                                     TargetColumnName = NULL,
-                                     FeatureColNames = NULL,
-                                     PrimaryDateColumn = NULL,
-                                     IDcols = NULL,
-                                     TransformNumericColumns = NULL,
-                                     ClassWeights = NULL,
-                                     SplitRatios = c(0.70, 0.20, 0.10),
-                                     task_type = "GPU",
-                                     ModelID = "ModelTest",
-                                     Paths = NULL,
-                                     SaveModelObjects = TRUE,
-                                     Trees = 1000,
-                                     GridTune = TRUE,
-                                     MaxModelsInGrid = 1,
-                                     NumOfParDepPlots = 10,
-                                     PassInGrid = NULL) {
+                                    ValidationData = NULL,
+                                    TestData = NULL,
+                                    Buckets = 0,
+                                    TargetColumnName = NULL,
+                                    FeatureColNames = NULL,
+                                    PrimaryDateColumn = NULL,
+                                    IDcols = NULL,
+                                    TransformNumericColumns = NULL,
+                                    ClassWeights = NULL,
+                                    SplitRatios = c(0.70, 0.20, 0.10),
+                                    task_type = "GPU",
+                                    ModelID = "ModelTest",
+                                    Paths = NULL,
+                                    MetaDataPaths = NULL,
+                                    SaveModelObjects = TRUE,
+                                    Trees = 1000,
+                                    GridTune = TRUE,
+                                    MaxModelsInGrid = 1,
+                                    NumOfParDepPlots = 10,
+                                    PassInGrid = NULL) {
   # Check args----
   if (is.character(Buckets) |
       is.factor(Buckets) | is.logical(Buckets)) {
@@ -97,10 +100,19 @@ AutoCatBoostHurdleModel <- function(data,
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if (length(Paths) == 1) {
-    Paths <- rep(Paths, length(Buckets) + 1)
+  if(!is.null(Paths)) {
+    if (length(Paths) == 1) {
+      Paths <- rep(Paths, length(Buckets) + 1)
+    }    
   }
-  
+
+  # Initialize collection and counter----
+  if(!is.null(MetaDataPaths)) {
+    if (length(MetaDataPaths) == 1) {
+      MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1)
+    }    
+  }
+
   # Data.table check----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -275,7 +287,8 @@ AutoCatBoostHurdleModel <- function(data,
       grid_eval_metric = "auc",
       Trees = Trees,
       GridTune = GridTune,
-      model_path = Paths,
+      model_path = Paths[1],
+      metadata_path = MetaDataPaths[1],
       ModelID = ModelID,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = TRUE,
@@ -298,7 +311,8 @@ AutoCatBoostHurdleModel <- function(data,
       grid_eval_metric = "Accuracy",
       Trees = Trees,
       GridTune = GridTune,
-      model_path = Paths,
+      model_path = Paths[1],
+      metadata_path = MetaDataPaths[1],
       ModelID = ModelID,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
@@ -334,7 +348,7 @@ AutoCatBoostHurdleModel <- function(data,
     FeatureColumnNames = FeatureNames,
     IDcols = IDcols,
     ModelObject = ClassModel,
-    ModelPath = NULL,
+    ModelPath = Paths[1],
     ModelID = ModelID,
     ReturnFeatures = TRUE,
     MultiClassTargetLevels = TargetLevels,
@@ -343,7 +357,7 @@ AutoCatBoostHurdleModel <- function(data,
     TargetColumnName = NULL, 
     TransformationObject = NULL, 
     TransID = NULL, 
-    TransPath = Path[1],
+    TransPath = Paths[1],
     MDP_Impute = FALSE,
     MDP_CharToFactor = TRUE,
     MDP_RemoveDates = FALSE, 
@@ -443,6 +457,10 @@ AutoCatBoostHurdleModel <- function(data,
       gridSaved <-
         data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
+    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
+      gridSaved <-
+        data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+    }
     
     # AutoCatBoostRegression()----
     if (trainBucket[, .N] != 0) {
@@ -464,7 +482,8 @@ AutoCatBoostHurdleModel <- function(data,
             grid_eval_metric = "r2",
             Trees = Trees,
             GridTune = GridTune,
-            model_path = Paths,
+            model_path = Paths[1],
+            metadata_path = MetaDataPaths[1],
             ModelID = paste0(ModelID,"_",bucket-1,"+"),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
@@ -487,7 +506,8 @@ AutoCatBoostHurdleModel <- function(data,
             grid_eval_metric = "r2",
             Trees = Trees,
             GridTune = GridTune,
-            model_path = Paths,
+            model_path = Paths[1],
+            metadata_path = MetaDataPaths[1],
             ModelID = paste0(ModelID, "_", bucket),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
@@ -515,7 +535,7 @@ AutoCatBoostHurdleModel <- function(data,
               FeatureColumnNames = FeatureNames,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
-              ModelPath = Paths,
+              ModelPath = Paths[1],
               ModelID = paste0(ModelID,"_",bucket-1,"+"),
               ReturnFeatures = TRUE,
               TransformationObject = TransformationResults,
@@ -537,7 +557,7 @@ AutoCatBoostHurdleModel <- function(data,
               FeatureColumnNames = FeatureNames,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
-              ModelPath = Paths,
+              ModelPath = Paths[1],
               ModelID = paste0(ModelID,"_",bucket-1,"+"),
               ReturnFeatures = TRUE,
               TransformNumeric = FALSE,
@@ -561,7 +581,7 @@ AutoCatBoostHurdleModel <- function(data,
               FeatureColumnNames = FeatureNames,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
-              ModelPath = Paths,
+              ModelPath = Paths[1],
               ModelID = paste0(ModelID, "_", bucket),
               ReturnFeatures = TRUE,
               TransformNumeric = TRUE,
@@ -583,7 +603,7 @@ AutoCatBoostHurdleModel <- function(data,
               FeatureColumnNames = FeatureNames,
               IDcols = IDcolsModified,
               ModelObject = RegressionModel,
-              ModelPath = Paths,
+              ModelPath = Paths[1],
               ModelID = paste0(ModelID, "_", bucket),
               ReturnFeatures = TRUE,
               TransformNumeric = FALSE,
@@ -743,11 +763,19 @@ AutoCatBoostHurdleModel <- function(data,
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
-    data.table::fwrite(TestData,
-                       file = paste0(Paths[1],
-                                     "/",
-                                     ModelID,
-                                     "_ValidationData.csv"))
+    if(!is.null(MetaDataPaths[1])) {
+      data.table::fwrite(TestData,
+                         file = paste0(MetaDataPaths[1],
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    } else {
+      data.table::fwrite(TestData,
+                         file = paste0(Paths[1],
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -768,9 +796,15 @@ AutoCatBoostHurdleModel <- function(data,
   
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(Paths[1],
-                           "/",
-                           ModelID, "_EvaluationPlot.png"))
+    if(!is.null(MetaDataPaths[1])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1],
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(Paths[1],
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -791,10 +825,17 @@ AutoCatBoostHurdleModel <- function(data,
   
   # Save plot to file----
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(Paths[1],
-                           "/",
-                           ModelID,
-                           "_EvaluationBoxPlot.png"))
+    if(!is.null(MetaDataPaths[1])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1],
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(Paths[1],
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))      
+    }
   }
   
   # Regression Evaluation Metrics----
@@ -885,10 +926,17 @@ AutoCatBoostHurdleModel <- function(data,
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(Paths[1],
-                                     "/",
-                                     ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(MetaDataPaths[1])) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(MetaDataPaths[1],
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(Paths[1],
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))      
+    }
   }
   
   # Regression Partial Dependence----
@@ -937,8 +985,13 @@ AutoCatBoostHurdleModel <- function(data,
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    save(ParDepBoxPlots,
-         file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(MetaDataPaths[1])) {
+      save(ParDepBoxPlots,
+           file = paste0(MetaDataPaths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    } else {
+      save(ParDepBoxPlots,
+           file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))      
+    }
   }
   
   # Reset workding directory

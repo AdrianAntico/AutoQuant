@@ -19,6 +19,7 @@
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
@@ -73,7 +74,8 @@
 #'                                    MaxModelsInGrid = 10,
 #'                                    NThreads = max(1, parallel::detectCores()-2),
 #'                                    TreeMethod = "hist",
-#'                                    model_path = getwd(),
+#'                                    model_path = NULL,
+#'                                    metadata_path = NULL,
 #'                                    ModelID = "FirstModel",
 #'                                    NumOfParDepPlots = 3,
 #'                                    ReturnModelObjects = TRUE,
@@ -99,6 +101,7 @@ AutoXGBoostRegression <- function(data,
                                   MaxModelsInGrid = 10,
                                   NThreads = max(1, parallel::detectCores()-2),
                                   model_path = NULL,
+                                  metadata_path = NULL,
                                   ModelID = "FirstModel",
                                   NumOfParDepPlots = 3,
                                   Verbose = 0,
@@ -121,6 +124,10 @@ AutoXGBoostRegression <- function(data,
   if (!is.null(model_path)) {
     if (!is.character(model_path))
       warning("model_path needs to be a character type")
+  }
+  if (!is.null(metadata_path)) {
+    if (!is.character(metadata_path))
+      warning("metadata_path needs to be a character type")
   }
   if (!is.character(ModelID))
     warning("ModelID needs to be a character type")
@@ -883,11 +890,19 @@ AutoXGBoostRegression <- function(data,
   
   # Save Validation Data to File----
   if (SaveModelObjects) {
-    data.table::fwrite(ValidationData,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_ValidationData.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(ValidationData,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))
+    } else {
+      data.table::fwrite(ValidationData,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_ValidationData.csv"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -908,9 +923,15 @@ AutoXGBoostRegression <- function(data,
   
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID, "_EvaluationPlot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path,
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path,
+                             "/",
+                             ModelID, "_EvaluationPlot.png"))      
+    }
   }
   
   # Regression Evaluation Calibration Plot----
@@ -931,10 +952,17 @@ AutoXGBoostRegression <- function(data,
   
   # Save plot to file
   if (SaveModelObjects) {
-    ggplot2::ggsave(paste0(model_path,
-                           "/",
-                           ModelID,
-                           "_EvaluationBoxPlot.png"))
+    if(!is.null(metadata_path)) {
+      ggplot2::ggsave(paste0(metadata_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))
+    } else {
+      ggplot2::ggsave(paste0(model_path,
+                             "/",
+                             ModelID,
+                             "_EvaluationBoxPlot.png"))      
+    }
   }
   
   # Regression Evaluation Metrics----
@@ -1002,10 +1030,17 @@ AutoXGBoostRegression <- function(data,
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID, "_EvaluationMetrics.csv"))      
+    }
   }
   
   # Regression Variable Importance----
@@ -1019,10 +1054,17 @@ AutoXGBoostRegression <- function(data,
       Frequency = round(Frequency, 4)
     )]
     if (SaveModelObjects) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))
+      } else {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))        
+      }
     }
     
     # Regression Partial Dependence----
@@ -1074,28 +1116,51 @@ AutoXGBoostRegression <- function(data,
   
   # Regression Save ParDepPlots to file----
   if (SaveModelObjects) {
-    save(ParDepPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
+    if(!is.null(metadata_path)) {
+      save(ParDepPlots,
+           file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+    } else {
+      save(ParDepPlots,
+           file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+    }
   }
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    save(ParDepBoxPlots,
-         file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(metadata_path)) {
+      save(ParDepBoxPlots,
+           file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+    } else {
+      save(ParDepBoxPlots,
+           file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+    }
   }
   
   # Regression Save GridCollect and GridList----
   if (SaveModelObjects & GridTune == TRUE) {
-    data.table::fwrite(grid_params,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_grid_params.csv"))
-    data.table::fwrite(GridCollect,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_GridCollect.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(grid_params,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_GridCollect.csv"))
+    } else {
+      data.table::fwrite(grid_params,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_GridCollect.csv"))      
+    }
   }
   
   # Regression Remove Extraneous Variables----

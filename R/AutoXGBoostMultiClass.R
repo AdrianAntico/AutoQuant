@@ -18,6 +18,7 @@
 #' @param grid_eval_metric Set to "accuracy" (only option currently)
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
@@ -75,7 +76,8 @@
 #'                                    NThreads = 8,
 #'                                    TreeMethod = "hist",
 #'                                    Objective = 'multi:softmax',
-#'                                    model_path = getwd(),
+#'                                    model_path = NULL,
+#'                                    metadata_path = NULL,
 #'                                    ModelID = "FirstModel",
 #'                                    ReturnModelObjects = TRUE,
 #'                                    SaveModelObjects = FALSE,
@@ -98,6 +100,7 @@ AutoXGBoostMultiClass <- function(data,
                                   MaxModelsInGrid = 10,
                                   NThreads = 8,
                                   model_path = NULL,
+                                  metadata_path = NULL,
                                   ModelID = "FirstModel",
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
@@ -118,6 +121,10 @@ AutoXGBoostMultiClass <- function(data,
   if (!is.null(model_path)) {
     if (!is.character(model_path))
       warning("model_path needs to be a character type")
+  }
+  if (!is.null(metadata_path)) {
+    if (!is.character(metadata_path))
+      warning("metadata_path needs to be a character type")
   }
   if (!is.character(ModelID))
     warning("ModelID needs to be a character type")
@@ -761,11 +768,16 @@ AutoXGBoostMultiClass <- function(data,
   
   # Save EvaluationMetrics to File
   if(Objective != "multi:softprob") {
-    if (SaveModelObjects) {
-      data.table::fwrite(EvaluationMetrics,
-                         file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
-    }
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvaluationMetrics,
+                           file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+      } else {
+        data.table::fwrite(EvaluationMetrics,
+                           file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))        
+      }
+    }
   }
   
   # MultiClass Variable Importance----
@@ -776,18 +788,32 @@ AutoXGBoostMultiClass <- function(data,
     Frequency = round(Frequency, 4)
   )]
   if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID, "_VariableImportance.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))
+    } else {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID, "_VariableImportance.csv"))      
+    }
   }
   
   # MultiClass Save GridCollect and grid_metrics----
   if (SaveModelObjects & GridTune == TRUE) {
-    data.table::fwrite(grid_params,
-                       file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
-    data.table::fwrite(GridCollect,
-                       file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(grid_params,
+                         file = paste0(metadata_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
+    } else {
+      data.table::fwrite(grid_params,
+                         file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
+    }
   }
   
   # MultiClass Return Model Objects----

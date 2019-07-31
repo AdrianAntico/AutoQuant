@@ -18,6 +18,7 @@
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options. 1080 total possible options
 #' @param model_path A character string of your path file to where you want your output saved
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
@@ -70,6 +71,7 @@
 #'                                     Trees = 50,
 #'                                     GridTune = FALSE,
 #'                                     model_path = NULL,
+#'                                     metadata_path = NULL,
 #'                                     ModelID = "ModelTest",
 #'                                     ReturnModelObjects = TRUE,
 #'                                     SaveModelObjects = FALSE,
@@ -92,6 +94,7 @@ AutoCatBoostMultiClass <- function(data,
                                    grid_eval_metric = "Accuracy",
                                    MaxModelsInGrid = 10,
                                    model_path = NULL,
+                                   metadata_path = NULL,
                                    ModelID = "FirstModel",
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
@@ -124,6 +127,10 @@ AutoCatBoostMultiClass <- function(data,
   if (!is.null(model_path)) {
     if (!is.character(model_path))
       warning("model_path needs to be a character type")
+  }
+  if (!is.null(metadata_path)) {
+    if (!is.character(metadata_path))
+      warning("metadata_path needs to be a character type")
   }
   if (!is.character(ModelID))
     warning("ModelID needs to be a character type")
@@ -814,8 +821,13 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
-    data.table::fwrite(ValidationData,
-                       file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))
+    if (!is.null(metadata_path)) {
+      data.table::fwrite(ValidationData,
+                         file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
+    } else {
+      data.table::fwrite(ValidationData,
+                         file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
+    }
   }
   
   # MultiClass Evaluation Metrics----
@@ -827,8 +839,13 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Save EvaluationMetrics to File
   if (SaveModelObjects) {
-    data.table::fwrite(EvaluationMetrics,
-                       file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
+    if (!is.null(metadata_path)) {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+    } else {
+      data.table::fwrite(EvaluationMetrics,
+                         file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+    }
   }
   
   # MultiClass Variable Importance----
@@ -839,22 +856,40 @@ AutoCatBoostMultiClass <- function(data,
   VariableImportance[, Importance := round(as.numeric(Importance), 4)]
   VariableImportance <- VariableImportance[order(-Importance)]
   if (SaveModelObjects) {
-    data.table::fwrite(VariableImportance,
-                       file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))
+    if (!is.null(metadata_path)) {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+    } else {
+      data.table::fwrite(VariableImportance,
+                         file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+    }
   }
   
   # MultiClass Save GridCollect and catboostGridList----
   if (SaveModelObjects & GridTune == TRUE) {
-    data.table::fwrite(catboostGridList,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_catboostGridList.csv"))
-    data.table::fwrite(GridCollect,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_GridCollect.csv"))
+    if (!is.null(metadata_path)) {
+      data.table::fwrite(catboostGridList,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_catboostGridList.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(metadata_path,
+                                       "/",
+                                       ModelID,
+                                       "_GridCollect.csv"))
+    } else {
+      data.table::fwrite(catboostGridList,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_catboostGridList.csv"))
+      data.table::fwrite(GridCollect,
+                         file = paste0(model_path,
+                                       "/",
+                                       ModelID,
+                                       "_GridCollect.csv"))      
+    }
   }
   
   # Final Garbage Collection----
