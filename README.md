@@ -8,7 +8,7 @@ library(devtools)
 to_install <- c("arules", "catboost", "caTools", "data.table", "doParallel", 
                 "foreach", "forecast", "ggplot2", "h2o", "itertools", 
                 "lubridate", "magick", "Matrix", "monreg", "nortest","pROC", "RColorBrewer", "recommenderlab", 
-                "ROCR", "scatterplot3d", "stringr", "sde", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
+                "ROCR", "scatterplot3d", "stringr", "sde", "timeDate", "tm", "tsoutliers", "wordcloud", "xgboost", "zoo")
 for (i in to_install) {
   message(paste("looking for ", i))
   if(i == "catboost" & !requireNamespace(i)) {
