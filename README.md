@@ -2,8 +2,6 @@
 
 # How to Install the Package for R:
 
-![Build status](http://localhost/api/projects/status/1vpdi9wjncau3d10?svg=true)
-
 #### 1. First, run the following R script to download dependencies (YOU MAY HAVE TO INSTALL A FEW OF THESE LINE BY LINE)
 ```
 library(devtools)
