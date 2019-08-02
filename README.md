@@ -1,4 +1,4 @@
-[![Build status](http://localhost/api/projects/status/1vpdi9wjncau3d10?svg=true)](http://localhost/project/AppVeyor/remixautoml)
+![Build status](http://localhost/api/projects/status/1vpdi9wjncau3d10)
 
 
 
