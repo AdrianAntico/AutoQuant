@@ -2,7 +2,7 @@
 
 # How to Install the Package for R:
 
-[![Build status](http://localhost/api/projects/status/1vpdi9wjncau3d10?svg=true)](http://localhost/project/AppVeyor/remixautoml)
+[![Build status](http://ci.appveyor.com/api/projects/status/1vpdi9wjncau3d10?svg=true)](http://ci.appveyor.com/project/AppVeyor/remixautoml)
 
 #### 1. First, run the following R script to download dependencies (YOU MAY HAVE TO INSTALL A FEW OF THESE LINE BY LINE)
 ```
