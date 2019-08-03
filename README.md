@@ -305,6 +305,8 @@ For each of the models tested internally, several aspects should be noted:
 * The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
 * The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
+#### The CARMA Suite
+
 ##### **AutoCatBoostCARMA()**
 <code>AutoCatBoostCARMA()</code> 
 
@@ -317,7 +319,7 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoH2oGBMCARMA()**
 <code>AutoH2oGBMCARMA()</code> operates identically to the AutoCatBoostCARMA() function except that is utilizes H2O GBM instead of CatBoost
 
-###### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
+##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
 **Feature engineering:** I use a time trend, calendar variables, holiday counts, lags and moving averages. Internally, the CARMA functions utilize several RemixAutoML functions, all written using data.table for fast and memory efficient processing: 
   * DT_GDL_Feature_Engineering() - creates lags and moving average features (also creates lags and moving averages off of time between records)
@@ -333,7 +335,7 @@ For each of the models tested internally, several aspects should be noted:
   * arcsin(sqrt(x)): proportion data only
   * logit(x): proportion data only
 
-###### The functions used to create these and generate them for scoring models come from RemixAutoML:
+##### The functions used to create these and generate them for scoring models come from RemixAutoML:
 * AutoTransformationCreate()
 * AutoTransformationScore()
 
