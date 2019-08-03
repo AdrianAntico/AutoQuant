@@ -8,6 +8,7 @@
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
 #' @param TimeUnit Supply a character value for the time unit your date columns are in, such as 'day'
+#' @import timeDate
 #' @examples
 #' data <- data.table::data.table(Date = "2018-01-01 00:00:00")
 #' data <- CreateHolidayVariables(data,
@@ -25,6 +26,9 @@ CreateHolidayVariables <- function(data,
                                                      "ChristmasGroup",
                                                      "OtherEcclesticalFeasts"),
                                    Holidays = NULL) {
+  
+  # Require namespace----
+  requireNamespace("timeDate", quietly = TRUE)
   
   # Function for exapanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) {
@@ -120,6 +124,7 @@ CreateHolidayVariables <- function(data,
   }
   
   # Run holiday function to get unique dates----
+  library(timeDate)
   Holidays <- unique(as.Date(timeDate::holiday(
     year = unique(lubridate::year(data[[eval(DateCols)]])), 
     Holiday = Holidays)))
@@ -162,7 +167,12 @@ CreateHolidayVariables <- function(data,
                       value = HolidayCountsInRange(
                         Start = StartDateVector[j],
                         End = EndDateVector[j],
-                        Values = Holidays))      
+                        Values = Holidays))
+      
+      # Remove Lag1date----
+      data.table::set(data, 
+                      j = eval(paste0("Lag1_",DateCols[i])), 
+                      value = NULL)
     }
   }
   return(data)
