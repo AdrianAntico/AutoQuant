@@ -1,6 +1,6 @@
-#' AutoH2oGBMCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting
+#' AutoH2oGBMCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting
 #'
-#' AutoH2oDRFCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+#' AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
@@ -13,6 +13,7 @@
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
+#' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
@@ -36,6 +37,7 @@
 #'                            Lags = c(1:5,52),
 #'                            MA_Periods = c(1:5,52),
 #'                            CalendarVariables = TRUE,
+#'                            HolidayVariable = TRUE,
 #'                            TimeTrendVariable = TRUE,
 #'                            DataTruncate = FALSE,
 #'                            SplitRatios = c(1-2*30/143,30/143,30/143),
@@ -63,6 +65,7 @@ AutoH2oGBMCARMA <- function(data,
                             Lags = c(1:5),
                             MA_Periods = c(1:5),
                             CalendarVariables = FALSE,
+                            HolidayVariable = TRUE,
                             TimeTrendVariable = FALSE,
                             DataTruncate = FALSE,
                             SplitRatios = c(0.7, 0.2, 0.1),
@@ -143,7 +146,7 @@ AutoH2oGBMCARMA <- function(data,
   
   # Create Calendar Variables----
   if (CalendarVariables) {
-    data <- RemixAutoML::CreateCalendarVariables(
+    data <- RemixAutoML::CreateCalendarVariables(1``
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
@@ -161,6 +164,17 @@ AutoH2oGBMCARMA <- function(data,
         "year"
       )
     )
+  }
+  
+  # Create Holiday Variables----
+  if (HolidayVariable) {
+    data <- CreateHolidayVariables(
+      data,
+      DateCols = eval(DateColumnName),
+      TimeUnit = TimeUnit,
+      HolidayGroups = c("USPublicHolidays","EasterGroup",
+                        "ChristmasGroup","OtherEcclesticalFeasts"),
+      Holidays = NULL)
   }
   
   # Target Transformation----
@@ -649,6 +663,17 @@ AutoH2oGBMCARMA <- function(data,
           "year"
         )
       )
+    }
+    
+    # Update holiday feature----
+    if (HolidayVariable) {
+      CalendarFeatures <- CreateHolidayVariables(
+        CalendarFeatures,
+        DateCols = eval(DateColumnName),
+        TimeUnit = TimeUnit,
+        HolidayGroups = c("USPublicHolidays","EasterGroup",
+                          "ChristmasGroup","OtherEcclesticalFeasts"),
+        Holidays = NULL) 
     }
     
     # Add TimeTrendVariable----
