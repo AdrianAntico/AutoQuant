@@ -2,13 +2,13 @@
 % Please edit documentation in R/AutoCatBoostCARMA.R
 \name{AutoCatBoostCARMA}
 \alias{AutoCatBoostCARMA}
-\title{AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting}
+\title{AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
 \usage{
 AutoCatBoostCARMA(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
-  TimeTrendVariable = FALSE, DataTruncate = FALSE,
+  HolidayVariable = TRUE, TimeTrendVariable = FALSE, DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1), TaskType = "GPU",
   EvalMetric = "MAPE", GridTune = FALSE, GridEvalMetric = "mape",
   ModelCount = 1, NTrees = 1000, PartitionType = "timeseries",
@@ -34,6 +34,8 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 \item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
 
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
+
+\item{HolidayVariables}{Set to TRUE to have a holiday counter variable created.}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
@@ -61,7 +63,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 }
 \description{
-AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 }
 \examples{
 \donttest{
@@ -75,6 +77,7 @@ Results <- AutoCatBoostCARMA(data,
                              Lags = c(1:5,52),
                              MA_Periods = c(1:5,52),
                              CalendarVariables = TRUE,
+                             HolidayVariable = TRUE, 
                              TimeTrendVariable = TRUE,
                              DataTruncate = FALSE,
                              SplitRatios = c(1-2*30/143,30/143,30/143),
