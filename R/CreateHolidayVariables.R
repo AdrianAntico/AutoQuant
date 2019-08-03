@@ -168,12 +168,12 @@ CreateHolidayVariables <- function(data,
                         Start = StartDateVector[j],
                         End = EndDateVector[j],
                         Values = Holidays))
-      
-      # Remove Lag1date----
-      data.table::set(data, 
-                      j = eval(paste0("Lag1_",DateCols[i])), 
-                      value = NULL)
     }
+    
+    # Remove Lag1date----
+    data.table::set(data, 
+                    j = eval(paste0("Lag1_",DateCols[i])), 
+                    value = NULL)
   }
   return(data)
 }
