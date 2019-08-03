@@ -31,7 +31,7 @@ Depends: R (>= 3.5.0)
 Imports: arules, catboost, caTools, data.table, doParallel, foreach, forecast,
         ggplot2, grid, h2o, itertools, lubridate, Matrix, magick, methods,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
-        scatterplot3d, stats, stringr, tm, tsoutliers, utils,
+        scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, utils,
         wordcloud, xgboost, zoo
 Suggests: knitr, rmarkdown, sde, testthat
 VignetteBuilder: knitr
