@@ -317,7 +317,8 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoH2oGBMCARMA()**
 <code>AutoH2oGBMCARMA()</code> operates identically to the AutoCatBoostCARMA() function except that is utilizes H2O GBM instead of CatBoost
 
-The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts. 
+###### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
+
 **Feature engineering:** I use a time trend, calendar variables, holiday counts, lags and moving averages. Internally, the CARMA functions utilize several RemixAutoML functions, all written using data.table for fast and memory efficient processing: 
   * DT_GDL_Feature_Engineering() - creates lags and moving average features (also creates lags and moving averages off of time between records)
   * Scoring_GDL_Feature_Engineering() - creates lags and moving average features for a single record (along with the time between vars)
@@ -332,7 +333,7 @@ The CARMA suite utilizes several features to ensure proper models are built to g
   * arcsin(sqrt(x)): proportion data only
   * logit(x): proportion data only
 
-The functions used to create these and generate them for scoring models come from RemixAutoML:
+###### The functions used to create these and generate them for scoring models come from RemixAutoML:
 * AutoTransformationCreate()
 * AutoTransformationScore()
 
@@ -342,12 +343,11 @@ The functions used to create these and generate them for scoring models come fro
 * AutoH2oDRFRegression()
 * AutoH2oGBMRegression()
 
-You can view all the 21 process steps in those functions on the GitHub page README under the section titled, "Supervised Learning Models" in the "Regression" sub-section.
-* GPU: With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I ran them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
-* One model for all series: I built the forecasts for all the store and department combinations with a single model by simply specifying c("Store","Dept") in the GroupVariables argument, which provides superior results compared to building a single model for each series.
+**GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I ran them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
 
-* Data partitioning: for creating the training, validation, and test data, the CARMA functions utilize the RemixAutoML::AutoDataPartition() function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
-* Forecasting: Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
+**Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the RemixAutoML::AutoDataPartition() function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
+
+**Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
   
 </p>
 </details>
