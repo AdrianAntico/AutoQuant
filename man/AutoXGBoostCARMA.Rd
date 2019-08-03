@@ -2,13 +2,13 @@
 % Please edit documentation in R/AutoXGBoostCARMA.R
 \name{AutoXGBoostCARMA}
 \alias{AutoXGBoostCARMA}
-\title{AutoXGBoostCARMA Automated XGBoost Calendar, ARMA, and Trend Variables Forecasting}
+\title{AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
 \usage{
 AutoXGBoostCARMA(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
-  TimeTrendVariable = FALSE, DataTruncate = FALSE,
+  HolidayVariable = TRUE, TimeTrendVariable = FALSE, DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1), TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores() - 2), EvalMetric = "MAPE",
   GridTune = FALSE, GridEvalMetric = "mape", ModelCount = 1,
@@ -63,7 +63,7 @@ AutoXGBoostCARMA(data, TargetColumnName = "Target",
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 }
 \description{
-AutoXGBoostCARMA Automated XGBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 }
 \examples{
 \donttest{
@@ -77,6 +77,7 @@ Results <- AutoXGBoostCARMA(data,
                             Lags = c(1:5),
                             MA_Periods = c(1:5),
                             CalendarVariables = FALSE,
+                            HolidayVariable = TRUE, 
                             TimeTrendVariable = FALSE,
                             DataTruncate = FALSE,
                             SplitRatios = c(0.7, 0.2, 0.1),
