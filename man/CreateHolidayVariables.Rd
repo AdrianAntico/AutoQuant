@@ -4,7 +4,7 @@
 \alias{CreateHolidayVariables}
 \title{CreateHolidayVariables Create Holiday Count Columns}
 \usage{
-CreateHolidayVariables(data, DateCols = "DateTime", TimeUnit = "day",
+CreateHolidayVariables(data, DateCols = "DateTime",
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
   "OtherEcclesticalFeasts"), Holidays = NULL)
 }
@@ -13,9 +13,9 @@ CreateHolidayVariables(data, DateCols = "DateTime", TimeUnit = "day",
 
 \item{DateCols}{Supply either column names or column numbers of your date columns you want to use for creating calendar variables}
 
-\item{TimeUnit}{Supply a character value for the time unit your date columns are in, such as 'day'}
+\item{HolidayGroups}{Pick groups}
 
-\item{AsFactor}{Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned}
+\item{Holidays}{Pick holidays}
 }
 \value{
 Returns your data.table with the added holiday indicator variable
@@ -24,10 +24,9 @@ Returns your data.table with the added holiday indicator variable
 CreateHolidayVariables Rapidly creates holiday count variables based on the date columns you provide
 }
 \examples{
-data <- data.table::data.table(Date = "2018-01-01 00:00:00")
+data <- data.table::data.table(Date = '2018-01-01 00:00:00')
 data <- CreateHolidayVariables(data,
                                DateCols = "DateTime",
-                               TimeUnit = "day",
                                HolidayGroups = c("USPublicHolidays","EasterGroup",
                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
                                Holidays = NULL)
