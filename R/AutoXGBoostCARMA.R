@@ -8,7 +8,7 @@
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param TimeUnit List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"
+#' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "year"
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
@@ -123,7 +123,7 @@ AutoXGBoostCARMA <- function(data,
   }
   
   # Convert to lubridate as_date() or POSIXct----
-  if (tolower(TimeUnit) != "hour") {
+  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -669,6 +669,21 @@ AutoXGBoostCARMA <- function(data,
     if (tolower(TimeUnit) == "hour") {
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::hours(1))
+    } else if (tolower(TimeUnit) == "1min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(1))
+    } else if (tolower(TimeUnit) == "5min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(5))
+    } else if (tolower(TimeUnit) == "10min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(10))
+    } else if (tolower(TimeUnit) == "15min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(15))
+    } else if (tolower(TimeUnit) == "30min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(30))
     } else if (tolower(TimeUnit) == "day") {
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::days(1))
@@ -732,7 +747,7 @@ AutoXGBoostCARMA <- function(data,
     # Update features for next run----
     if (i != max(FC_Periods)) {
       temp <- cbind(CalendarFeatures, 1)
-      if (tolower(TimeUnit) != "hour") {
+      if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
         temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       } else {
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
