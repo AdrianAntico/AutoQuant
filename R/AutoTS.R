@@ -25,7 +25,7 @@
 #' @param FCPeriods is the number of periods into the future you wish to forecast
 #' @param HoldOutPeriods is the number of periods to use for validation testing
 #' @param EvaluationMetric Set this to either "MAPE", "MSE", or "MAE". Default is "MAPE"
-#' @param TimeUnit is the level of aggregation your dataset comes in
+#' @param TimeUnit is the level of aggregation your dataset comes in. Choices include: hour, day, week, month, quarter, year, 1Min, 5Min, 10Min, 15Min, and 30Min
 #' @param Lags is the number of lags you wish to test in various models (same as moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
 #' @param NumCores is the number of cores available on your computer
@@ -158,6 +158,21 @@ AutoTS <- function(data,
   if (tolower(TimeUnit) == "hour") {
     freq <- 24
     FC_Data[, Date := MaxDate + lubridate::hours(Date)]
+  } else if(tolower(TimeUnit) == "1min") {
+    freq <- 60
+    FC_Data[, Date := MaxDate + lubridate::minute(Date)]
+  } else if(tolower(TimeUnit) == "5min") {
+    freq <- 12
+    FC_Data[, Date := MaxDate + lubridate::minute(5 * Date)]
+  } else if(tolower(TimeUnit) == "10min") {
+    freq <- 6
+    FC_Data[, Date := MaxDate + lubridate::minute(10 * Date)]
+  } else if(tolower(TimeUnit) == "15min") {
+    freq <- 4
+    FC_Data[, Date := MaxDate + lubridate::minute(15 * Date)]
+  } else if(tolower(TimeUnit) == "30min") {
+    freq <- 2
+    FC_Data[, Date := MaxDate + lubridate::minute(30 * Date)]
   } else if (tolower(TimeUnit) == "day") {
     freq <- 365
     FC_Data[, Date := MaxDate + lubridate::days(Date)]
