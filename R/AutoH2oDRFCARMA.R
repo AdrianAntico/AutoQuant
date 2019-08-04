@@ -171,7 +171,6 @@ AutoH2oDRFCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      TimeUnit = TimeUnit,
       HolidayGroups = c("USPublicHolidays","EasterGroup",
                         "ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
@@ -668,7 +667,6 @@ AutoH2oDRFCARMA <- function(data,
       CalendarFeatures <- CreateHolidayVariables(
         CalendarFeatures,
         DateCols = eval(DateColumnName),
-        TimeUnit = TimeUnit,
         HolidayGroups = c("USPublicHolidays","EasterGroup",
                           "ChristmasGroup","OtherEcclesticalFeasts"),
         Holidays = NULL) 
