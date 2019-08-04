@@ -172,7 +172,6 @@ AutoXGBoostCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      TimeUnit = TimeUnit,
       HolidayGroups = c("USPublicHolidays","EasterGroup",
                         "ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
@@ -720,7 +719,6 @@ AutoXGBoostCARMA <- function(data,
       CalendarFeatures <- CreateHolidayVariables(
         CalendarFeatures,
         DateCols = eval(DateColumnName),
-        TimeUnit = TimeUnit,
         HolidayGroups = c("USPublicHolidays","EasterGroup",
                           "ChristmasGroup","OtherEcclesticalFeasts"),
         Holidays = NULL) 
