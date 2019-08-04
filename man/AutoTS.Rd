@@ -23,7 +23,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{EvaluationMetric}{Set this to either "MAPE", "MSE", or "MAE". Default is "MAPE"}
 
-\item{TimeUnit}{is the level of aggregation your dataset comes in}
+\item{TimeUnit}{is the level of aggregation your dataset comes in. Choices include: hour, day, week, month, quarter, year, 1Min, 5Min, 10Min, 15Min, and 30Min}
 
 \item{Lags}{is the number of lags you wish to test in various models (same as moving averages)}
 
