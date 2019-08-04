@@ -146,7 +146,7 @@ AutoH2oGBMCARMA <- function(data,
   
   # Create Calendar Variables----
   if (CalendarVariables) {
-    data <- RemixAutoML::CreateCalendarVariables(1``
+    data <- RemixAutoML::CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
