@@ -8,11 +8,11 @@ AutoH2oDRFCARMA(data, TargetColumnName = "Target",
   DateColumnName = "DateTime", GroupVariables = NULL,
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
-  HolidayVariable = TRUE, TimeTrendVariable = FALSE, DataTruncate = FALSE,
-  SplitRatios = c(0.7, 0.2, 0.1), EvalMetric = "MAE",
-  GridTune = FALSE, ModelCount = 1, NTrees = 1000,
-  PartitionType = "timeseries", MaxMem = "32G", NThreads = max(1,
-  parallel::detectCores() - 2), Timer = TRUE)
+  HolidayVariable = TRUE, TimeTrendVariable = FALSE,
+  DataTruncate = FALSE, SplitRatios = c(0.7, 0.2, 0.1),
+  EvalMetric = "MAE", GridTune = FALSE, ModelCount = 1,
+  NTrees = 1000, PartitionType = "timeseries", MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2), Timer = TRUE)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
@@ -25,7 +25,7 @@ AutoH2oDRFCARMA(data, TargetColumnName = "Target",
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "hour", "day", "week", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "year"}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
@@ -35,7 +35,7 @@ AutoH2oDRFCARMA(data, TargetColumnName = "Target",
 
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
 
-\item{HolidayVariables}{Set to TRUE to have a holiday counter variable created.}
+\item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
@@ -77,7 +77,7 @@ Results <- AutoH2oDRFCARMA(data,
                            Lags = c(1:5,52),
                            MA_Periods = c(1:5,52),
                            CalendarVariables = TRUE,
-                           HolidayVariable = TRUE, 
+                           HolidayVariable = TRUE,
                            TimeTrendVariable = TRUE,
                            DataTruncate = FALSE,
                            SplitRatios = c(1-2*30/143,30/143,30/143),
