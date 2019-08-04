@@ -6,14 +6,13 @@
 #' @family Feature Engineering
 #' @param data This is your data
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
-#' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
-#' @param TimeUnit Supply a character value for the time unit your date columns are in, such as 'day'
+#' @param HolidayGroups Pick groups
+#' @param Holidays Pick holidays
 #' @import timeDate
 #' @examples
-#' data <- data.table::data.table(Date = "2018-01-01 00:00:00")
+#' data <- data.table::data.table(Date = '2018-01-01 00:00:00')
 #' data <- CreateHolidayVariables(data,
 #'                                DateCols = "DateTime",
-#'                                TimeUnit = "day",
 #'                                HolidayGroups = c("USPublicHolidays","EasterGroup",
 #'                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
 #'                                Holidays = NULL)
@@ -21,7 +20,6 @@
 #' @export
 CreateHolidayVariables <- function(data,
                                    DateCols = "DateTime",
-                                   TimeUnit = "day",
                                    HolidayGroups = c("USPublicHolidays","EasterGroup",
                                                      "ChristmasGroup",
                                                      "OtherEcclesticalFeasts"),
@@ -42,25 +40,6 @@ CreateHolidayVariables <- function(data,
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
-  }
-  
-  # Check args----
-  if (!(any(
-    tolower(TimeUnit) %chin% c(
-      "second",
-      "minute",
-      "hour",
-      "day",
-      "week",
-      "month",
-      "quarter",
-      "year"
-    )
-  ))) {
-    warning(
-      "TimeUnit needs to be one of 'minute', 'hour', 'wday',
-            'mday', 'yday','week', 'month', 'quarter', 'year'"
-    )
   }
   
   # Store individual holidays if HolidayGroups is specified----
