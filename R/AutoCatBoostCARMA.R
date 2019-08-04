@@ -1,6 +1,6 @@
-#' AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting
+#' AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting
 #'
-#' AutoCatBoostCARMA Automated CatBoost Calendar, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+#' AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
@@ -171,7 +171,6 @@ AutoCatBoostCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      TimeUnit = TimeUnit,
       HolidayGroups = c("USPublicHolidays","EasterGroup",
                         "ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
@@ -362,7 +361,7 @@ AutoCatBoostCARMA <- function(data,
       Path = NULL
     )    
   }
-
+  
   MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
   if (!is.null(GroupVariables)) {
     Metric <-
@@ -594,11 +593,11 @@ AutoCatBoostCARMA <- function(data,
           TargetType = "regression",
           ScoringData = UpdateData[.N, ],
           FeatureColumnNames = setdiff(names(UpdateData),
-                                    c(
-                                      "Predictions",
-                                      eval(DateColumnName),
-                                      eval(TargetColumnName)
-                                    )),
+                                       c(
+                                         "Predictions",
+                                         eval(DateColumnName),
+                                         eval(TargetColumnName)
+                                       )),
           IDcols = NULL,
           ModelObject = Model,
           ModelPath = getwd(),
@@ -635,6 +634,21 @@ AutoCatBoostCARMA <- function(data,
     if (tolower(TimeUnit) == "hour") {
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::hours(1))
+    } else if (tolower(TimeUnit) == "1min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(1))
+    } else if (tolower(TimeUnit) == "5min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(5))
+    } else if (tolower(TimeUnit) == "10min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(10))
+    } else if (tolower(TimeUnit) == "15min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(15))
+    } else if (tolower(TimeUnit) == "30min") {
+      CalendarFeatures <-
+        data.table::as.data.table(d + lubridate::minute(30))
     } else if (tolower(TimeUnit) == "day") {
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::days(1))
@@ -679,13 +693,12 @@ AutoCatBoostCARMA <- function(data,
         )
       )
     }
-      
+    
     # Update holiday feature----
     if (HolidayVariable) {
       CalendarFeatures <- CreateHolidayVariables(
         CalendarFeatures,
         DateCols = eval(DateColumnName),
-        TimeUnit = TimeUnit,
         HolidayGroups = c("USPublicHolidays","EasterGroup",
                           "ChristmasGroup","OtherEcclesticalFeasts"),
         Holidays = NULL) 
