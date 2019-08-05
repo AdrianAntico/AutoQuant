@@ -278,7 +278,7 @@ ________________________________________________________________________________
 <details><summary>EXPAND</summary>
 <p>
 
-##### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
+### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
 
 * The models tested internally include:
@@ -305,7 +305,7 @@ For each of the models tested internally, several aspects should be noted:
 * The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
 * The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
-#### The CARMA Suite
+### The CARMA Suite
 
 ##### **AutoCatBoostCARMA()**
 <code>AutoCatBoostCARMA()</code> 
