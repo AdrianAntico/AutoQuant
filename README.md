@@ -308,16 +308,16 @@ For each of the models tested internally, several aspects should be noted:
 ### The CARMA Suite
 
 ##### **AutoCatBoostCARMA()**
-<code>AutoCatBoostCARMA()</code> 
+<code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
 
 ##### **AutoXGBoostCARMA()**
-<code>AutoXGBoostCARMA()</code> operates identically to the AutoCatBoostCARMA() function except that is utilizes XGBoost instead of CatBoost.
+<code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
 
 ##### **AutoH2oDRFCARMA()**
-<code>AutoH2oDRFCARMA()</code> operates identically to the AutoCatBoostCARMA() function except that is utilizes H2O Distributed Random Forest instead of CatBoost
+<code>AutoH2oDRFCARMA()</code> utilizes the H2O Distributed Random Forest alorithm
 
 ##### **AutoH2oGBMCARMA()**
-<code>AutoH2oGBMCARMA()</code> operates identically to the AutoCatBoostCARMA() function except that is utilizes H2O GBM instead of CatBoost
+<code>AutoH2oGBMCARMA()</code> utilizes the H2O Gradient Boosting Machine alorithm
 
 ##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
@@ -411,6 +411,12 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **AutoWord2VecModeler()**
 <code>AutoWord2VecModeler()</code> generates a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process. You can choose to build individual models for each columns or one model for all your columns.
+
+##### **CreateCalendarVariables()**
+<code>ModelDataPrep()</code> This functions creates new columns that extract the calendar information from date columns, such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+
+##### **CreateHolidayVariable()**
+<code>ModelDataPrep()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp.
 
 ##### **ModelDataPrep()**
 <code>ModelDataPrep()</code> rapidly convert "inf" values to NA, convert character columns to factor columns, and impute with specified values for factor and numeric columns.
