@@ -350,6 +350,9 @@ For each of the models tested internally, several aspects should be noted:
 **Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the RemixAutoML::AutoDataPartition() function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
 
 **Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
+* AutoCatBoostScoring()
+* AutoXGBoostScoring()
+* AutoH2oMLScoring()
   
 </p>
 </details>
