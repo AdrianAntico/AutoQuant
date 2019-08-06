@@ -3240,9 +3240,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(DSHW_Model,
-                                                                              h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods))]
     # Store model
     model <- DSHW_Model
     
@@ -3311,9 +3312,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARFIMA_model,
-                                                                              h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods))]
     # Store model
     model <- ARFIMA_model
     
@@ -3394,9 +3396,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(ARIMA_model,
-                                                                              h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods))]
     # Store model
     model <- ARIMA_model
     
@@ -3453,9 +3456,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model,
-                                                                              h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods))]
     # Store model
     model <- EXPSMOOTH_model
     
@@ -3495,9 +3499,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TBATS_model,
-                                                                              h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods))]
     # Store model
     model <- TBATS_model
     
@@ -3519,7 +3524,10 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods))]
     
     # Store model
     model <- TSLM_model
@@ -3610,8 +3618,11 @@ AutoTS <- function(data,
         "empty")
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_", BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
-    
+    FC_Data[, paste0(rep("Forecast_",3), 
+                     BestModel, 
+                     paste0(BestModel,"_80"),
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)]
+
     # Store model
     model <- NNETAR_model
     
@@ -3633,6 +3644,8 @@ AutoTS <- function(data,
     ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
     ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
     ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "#1c1c1c") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "#1c1c1c") +                                                            
     ggplot2::geom_vline(
       xintercept = max(data_test[[eval(DateName)]],
                        na.rm = TRUE),
