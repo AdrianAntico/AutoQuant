@@ -3178,8 +3178,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- DSHW_Model
@@ -3252,8 +3252,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$upper)[2]]
 
     # Store model
     model <- ARFIMA_model
@@ -3338,8 +3338,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- ARIMA_model
@@ -3400,8 +3400,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- EXPSMOOTH_model
@@ -3445,8 +3445,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- TBATS_model
@@ -3472,8 +3472,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- TSLM_model
@@ -3567,8 +3567,8 @@ AutoTS <- function(data,
     FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[1]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[2]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[1]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$upper)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$upper)[2]]
     
     # Store model
     model <- NNETAR_model
