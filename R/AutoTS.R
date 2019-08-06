@@ -1,68 +1,3 @@
-#' AutoTS is an automated time series modeling function
-#'
-#' Step 1 is to build all the models and evaluate them on the number of HoldOutPeriods periods you specify. Step 2 is to pick the winner and rebuild the winning model on the full data set. Step 3 is to generate forecasts with the final model for FCPeriods that you specify.
-#' AutoTS builds the best time series models for each type, using optimized box-cox transformations and using a user-supplied frequency for the ts data conversion along with a model-based frequency for the ts data conversion, compares all types, selects the winner, and generates a forecast. Models include:
-#'
-#' DSHW: Double Seasonal Holt Winters
-#'
-#' ARFIMA: Auto Regressive Fractional Integrated Moving Average
-#'
-#' ARIMIA: Stepwise Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-#'
-#' ETS: Additive and Multiplicitive Exponential Smoothing and Holt Winters
-#'
-#' NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
-#'
-#' TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
-#'
-#' TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-#'
-#' @author Adrian Antico and Douglas Pestana
-#' @family Automated Time Series
-#' @param data is the source time series data as a data.table - or a data structure that can be converted to a data.table
-#' @param TargetName is the name of the target variable in your data.table
-#' @param DateName is the name of the date column in your data.table
-#' @param FCPeriods is the number of periods into the future you wish to forecast
-#' @param HoldOutPeriods is the number of periods to use for validation testing
-#' @param EvaluationMetric Set this to either "MAPE", "MSE", or "MAE". Default is "MAPE"
-#' @param TimeUnit is the level of aggregation your dataset comes in. Choices include: hour, day, week, month, quarter, year, 1Min, 5Min, 10Min, 15Min, and 30Min
-#' @param Lags is the number of lags you wish to test in various models (same as moving averages)
-#' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
-#' @param NumCores is the number of cores available on your computer
-#' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
-#' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
-#' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
-#' @param ModelFreq Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically
-#' @param PrintUpdates Set to TRUE for a print to console of function progress
-#' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(100,
-#'                                mean = 50,
-#'                                sd = 20),
-#'                          filter=rep(1,10),
-#'                          circular=TRUE))
-#' data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
-#' data <- data[order(DateTime)]
-#' output <-   AutoTS(data,
-#'                    TargetName       = "Target",
-#'                    DateName         = "DateTime",
-#'                    FCPeriods        = 1,
-#'                    HoldOutPeriods   = 1,
-#'                    EvaluationMetric = "MAPE",
-#'                    TimeUnit         = "day",
-#'                    Lags             = 1,
-#'                    SLags            = 1,
-#'                    NumCores         = 4,
-#'                    SkipModels       = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-#'                    StepWise         = TRUE,
-#'                    TSClean          = FALSE,
-#'                    ModelFreq        = TRUE,
-#'                    PrintUpdates     = FALSE)
-#' ForecastData <- output$Forecast
-#' ModelEval    <- output$EvaluationMetrics
-#' WinningModel <- output$TimeSeriesModel
-#' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model; 5. A time series ggplot with historical values and forecasted values.
-#' @export
 AutoTS <- function(data,
                    TargetName     = "Target",
                    DateName       = "DateTime",
@@ -3240,10 +3175,12 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(DSHW_Model, h = FCPeriods)$lower)[2]]
+    
     # Store model
     model <- DSHW_Model
     
@@ -3312,10 +3249,12 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARFIMA_model, h = FCPeriods)$lower)[2]]
+
     # Store model
     model <- ARFIMA_model
     
@@ -3396,10 +3335,12 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[2]]
+    
     # Store model
     model <- ARIMA_model
     
@@ -3456,10 +3397,12 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(EXPSMOOTH_model, h = FCPeriods)$lower)[2]]
+    
     # Store model
     model <- EXPSMOOTH_model
     
@@ -3499,10 +3442,12 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TBATS_model, h = FCPeriods)$lower)[2]]
+    
     # Store model
     model <- TBATS_model
     
@@ -3524,10 +3469,11 @@ AutoTS <- function(data,
     }
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods))]
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(TSLM_model, h = FCPeriods)$lower)[2]]
     
     # Store model
     model <- TSLM_model
@@ -3618,11 +3564,12 @@ AutoTS <- function(data,
         "empty")
     
     # Forecast with new model
-    FC_Data[, paste0(rep("Forecast_",3), 
-                     BestModel, 
-                     paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods))]
-
+    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
+    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[2]]
+    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[1]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$lower)[2]]
+    
     # Store model
     model <- NNETAR_model
     
@@ -3645,7 +3592,9 @@ AutoTS <- function(data,
     ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
     ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
     ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "#1c1c1c") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "#1c1c1c") +                                                            
+    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "#1c1c1c") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "#1c1c1c") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "#1c1c1c") +
     ggplot2::geom_vline(
       xintercept = max(data_test[[eval(DateName)]],
                        na.rm = TRUE),
