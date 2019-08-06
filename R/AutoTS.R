@@ -3621,7 +3621,7 @@ AutoTS <- function(data,
     FC_Data[, paste0(rep("Forecast_",3), 
                      BestModel, 
                      paste0(BestModel,"_80"),
-                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)]
+                     paste0(BestModel,"_95")) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods))]
 
     # Store model
     model <- NNETAR_model
