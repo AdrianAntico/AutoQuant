@@ -3657,10 +3657,10 @@ AutoTS <- function(data,
     ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
     ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
     ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "#1c1c1c") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "#1c1c1c") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "#1c1c1c") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "#1c1c1c") +
-    ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "#1c1c1c") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "#596DD5") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "#D5DBFF") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "#596DD5") +
+    ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "#D5DBFF") +
     ggplot2::geom_vline(
       xintercept = max(data_test[[eval(DateName)]],
                        na.rm = TRUE),
