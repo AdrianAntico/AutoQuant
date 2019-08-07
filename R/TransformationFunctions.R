@@ -728,6 +728,7 @@ AutoTransformationCreate <- function(data,
 #' @param TransID Set to a character value that corresponds with your modeling project
 #' @return data with transformed columns
 #' @examples
+#' \donttest{
 #' Correl <- 0.85
 #' N <- 1000
 #' data <- data.table::data.table(Adrian = runif(N))
@@ -739,6 +740,7 @@ AutoTransformationCreate <- function(data,
 #'                                 FinalResults,
 #'                                 Path = NULL,
 #'                                 TransID = "Trans")
+#' }
 #' @export
 AutoTransformationScore <- function(ScoringData,
                                     FinalResults,
@@ -751,7 +753,7 @@ AutoTransformationScore <- function(ScoringData,
   }
   
   # Pull in Results File----
-  if (is.null(Path) | is.null(TransID)) {
+  if (!is.null(FinalResults)) {
     Results <- FinalResults
   } else {
     Results <- data.table::fread(file = paste0(Path,
