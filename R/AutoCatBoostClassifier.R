@@ -199,10 +199,12 @@ AutoCatBoostClassifier <- function(data,
   
   # Update working directory----
   working_directory <- getwd()
+  print(working_directory)
   if (!is.null(model_path)) {
     if (working_directory != model_path)
       setwd(model_path)
   }
+  print(working_directory)
   
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -256,7 +258,6 @@ AutoCatBoostClassifier <- function(data,
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
     if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      # data[, eval(PrimaryDateColumn) := NULL]
       data.table::set(data,
                       j = eval(PrimaryDateColumn),
                       value = NULL)
