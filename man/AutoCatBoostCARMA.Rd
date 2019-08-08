@@ -10,8 +10,8 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
   DataTruncate = FALSE, SplitRatios = c(0.7, 0.2, 0.1),
-  TaskType = "GPU", EvalMetric = "MAPE", GridTune = FALSE,
-  GridEvalMetric = "mape", ModelCount = 1, NTrees = 1000,
+  TaskType = "GPU", EvalMetric = "MAE", GridTune = FALSE,
+  GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
   PartitionType = "timeseries", Timer = TRUE)
 }
 \arguments{

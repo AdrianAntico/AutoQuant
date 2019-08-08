@@ -27,6 +27,7 @@ CreateHolidayVariables Rapidly creates holiday count variables based on the date
 data <- data.table::data.table(Date = '2018-01-01 00:00:00')
 data <- CreateHolidayVariables(data,
                                DateCols = "DateTime",
+                               TimeUnit = "day",
                                HolidayGroups = c("USPublicHolidays","EasterGroup",
                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
                                Holidays = NULL)
