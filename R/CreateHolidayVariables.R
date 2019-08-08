@@ -129,7 +129,8 @@ CreateHolidayVariables <- function(data,
   }
   
   # Enforce the missing lagged date to equal the regular date minus a constant----
-  x <- data[2, get(DateCols[1])] - data[2, get(paste0("Lag1_",eval(DateCols[1])))]
+  x <- data[, quantile(get(DateCols[1]) - get(paste0("Lag1_",eval(DateCols[1]))), probs = 0.99)]
+  data[, eval(paste0("Lag1_",DateCols[i])) := get(DateCols[i]) - x]
   
   # Build Features----
   for (i in seq_len(length(DateCols))) {
