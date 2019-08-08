@@ -198,13 +198,13 @@ AutoCatBoostClassifier <- function(data,
     warning("SaveModelObjects needs to be TRUE or FALSE")
   
   # Update working directory----
-  # working_directory <- getwd()
-  # print(working_directory)
-  # if (!is.null(model_path)) {
-  #   if (working_directory != model_path)
-  #     setwd(model_path)
-  # }
-  # print(working_directory)
+  working_directory <- getwd()
+  print(working_directory)
+  if (!is.null(model_path)) {
+    if (working_directory != model_path)
+      setwd(model_path)
+  }
+  print(working_directory)
   
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -377,6 +377,7 @@ AutoCatBoostClassifier <- function(data,
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
+    print(getwd())
     data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
