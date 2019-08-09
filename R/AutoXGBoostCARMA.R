@@ -73,9 +73,9 @@ AutoXGBoostCARMA <- function(data,
                              SplitRatios = c(0.7, 0.2, 0.1),
                              TreeMethod = "hist",
                              NThreads = max(1, parallel::detectCores()-2),
-                             EvalMetric = "MAPE",
+                             EvalMetric = "MAE",
                              GridTune = FALSE,
-                             GridEvalMetric = "mape",
+                             GridEvalMetric = "mae",
                              ModelCount = 1,
                              NTrees = 1000,
                              PartitionType = "timeseries",
@@ -842,7 +842,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Metrics----
   EvalMetric <-
-    TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
+    TestModel$EvaluationMetrics[Metric == eval(EvalMetric), MetricValue]
   
   # Define plot theme----
   Temp <- function () {
