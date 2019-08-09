@@ -842,7 +842,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Metrics----
   EvalMetric <-
-    TestModel$EvaluationMetrics[Metric == eval(EvalMetric), MetricValue]
+    TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
   
   # Define plot theme----
   Temp <- function () {
