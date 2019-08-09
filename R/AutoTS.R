@@ -204,6 +204,8 @@ AutoTS <- function(data,
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = freq)
+  ddataTSTrain <- forecast::ndiffs(x = dataTSTrain) 
+  DdataTSTrain <- forecast::nsdiffs(x = dataTSTrain)
   
   # TSClean Version----
   if (TSClean) {
@@ -216,15 +218,22 @@ AutoTS <- function(data,
                                   replace.missing = TRUE,
                                   lambda = NULL)
     }
+    dTarget <- forecast::ndiffs(x = Target)
+    DTarget <- forecast::nsdiffs(x = Target)
   }
   
   # Model-Based Frequency----
-  SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
-  dataTSTrain1 <-
-    stats::ts(data = data_train,
-              start = data_train[, min(get(DateName))][[1]],
-              frequency = SFreq)
-  
+  if(ModelFreq) {
+    SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
+    dataTSTrain1 <-
+      stats::ts(data = data_train,
+                start = data_train[, min(get(DateName))][[1]],
+                frequency = SFreq)
+    
+    ddataTSTrain1 <- forecast::ndiffs(x = dataTSTrain1)
+    DdataTSTrain1 <- forecast::nsdiffs(x = dataTSTrain1)
+  }
+
   # TSClean Version
   if (TSClean) {
     if (MinVal > 0) {
@@ -236,17 +245,11 @@ AutoTS <- function(data,
                                     replace.missing = TRUE,
                                     lambda = NULL)
     }
+    
+    # Differencing----
+    dTSClean <- forecast::ndiffs(x = TargetMB)
+    DTSClean <- forecast::nsdiffs(x = TargetMB)
   }
-  
-  # Define differences----
-  dTSClean <- forecast::ndiffs(x = TargetMB)
-  DTSClean <- forecast::nsdiffs(x = TargetMB)
-  ddataTSTrain1 <- forecast::ndiffs(x = dataTSTrain1)
-  DdataTSTrain1 <- forecast::nsdiffs(x = dataTSTrain1)
-  ddataTSTrain <- forecast::ndiffs(x = dataTSTrain) 
-  DdataTSTrain <- forecast::nsdiffs(x = dataTSTrain)
-  dTarget <- forecast::ndiffs(x = Target)
-  DTarget <- forecast::nsdiffs(x = Target)
   
   # DSHW-------------
   if (!("DSHW" %in% toupper(SkipModels))) {
