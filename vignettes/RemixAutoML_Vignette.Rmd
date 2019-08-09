@@ -430,6 +430,7 @@ output <- RemixAutoML::AutoTS(data,
                               SkipModels       = NULL,
                               StepWise         = TRUE,
                               TSClean          = TRUE, 
+                              ModelFreq        = TRUE,
                               PrintUpdates     = TRUE)
 
 # Print the evaluation metric and model makeup
