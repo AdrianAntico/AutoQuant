@@ -782,11 +782,11 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Update working directory----
-  working_directory <- getwd()
-  if (!is.null(model_path)) {
-    if (working_directory != model_path)
-      setwd(model_path)
-  }
+  # working_directory <- getwd()
+  # if (!is.null(model_path)) {
+  #   if (working_directory != model_path)
+  #     setwd(model_path)
+  # }
   
   # Binary Save Model----
   if (SaveModelObjects) {
@@ -794,7 +794,7 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Revert Working Directory----
-  setwd(working_directory)
+  # setwd(working_directory)
   
   # Binary Grid Score Model----
   if (!is.null(TestData)) {

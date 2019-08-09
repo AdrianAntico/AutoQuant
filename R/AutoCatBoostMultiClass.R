@@ -465,7 +465,7 @@ AutoCatBoostMultiClass <- function(data,
         l2_leaf_reg = c(0, 1, 2, 3),
         learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
         bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:12)
+        depth = c(4:8)
       )
       if (tolower(task_type) != "gpu") {
         catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
