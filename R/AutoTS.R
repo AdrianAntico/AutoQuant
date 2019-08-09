@@ -35,6 +35,7 @@
 #' @param ModelFreq Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically
 #' @param PrintUpdates Set to TRUE for a print to console of function progress
 #' @examples
+#' \donttest{
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(100,
 #'                                mean = 50,
@@ -61,6 +62,7 @@
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
+#' }
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model; 5. A time series ggplot with historical values and forecasted values.
 #' @export
 AutoTS <- function(data,
