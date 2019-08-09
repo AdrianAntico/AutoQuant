@@ -11,7 +11,7 @@ AutoXGBoostCARMA(data, TargetColumnName = "Target",
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
   DataTruncate = FALSE, SplitRatios = c(0.7, 0.2, 0.1),
   TreeMethod = "hist", NThreads = max(1, parallel::detectCores() - 2),
-  EvalMetric = "MAPE", GridTune = FALSE, GridEvalMetric = "mape",
+  EvalMetric = "MAE", GridTune = FALSE, GridEvalMetric = "mae",
   ModelCount = 1, NTrees = 1000, PartitionType = "timeseries",
   Timer = TRUE)
 }
