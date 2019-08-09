@@ -325,7 +325,7 @@ For each of the models tested internally, several aspects should be noted:
   * DT_GDL_Feature_Engineering() - creates lags and moving average features (also creates lags and moving averages off of time between records)
   * Scoring_GDL_Feature_Engineering() - creates lags and moving average features for a single record (along with the time between vars)
   * CreateCalendarVariables() - creates numeric features identifying various time units based on date columns
-  * CreateHolidayFeatures() - creates count features based on the specified holiday groups you want to track and the date columns you supply
+  * CreateHolidayVariables() - creates count features based on the specified holiday groups you want to track and the date columns you supply
 
 **Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
   * YeoJohnson
