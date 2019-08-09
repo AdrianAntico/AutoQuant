@@ -25,6 +25,7 @@ data with transformed columns
 AutoTransformationScore() is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
 }
 \examples{
+\donttest{
 Correl <- 0.85
 N <- 1000
 data <- data.table::data.table(Adrian = runif(N))
@@ -36,6 +37,7 @@ data <- AutoTransformationScore(data,
                                 FinalResults,
                                 Path = NULL,
                                 TransID = "Trans")
+}
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
