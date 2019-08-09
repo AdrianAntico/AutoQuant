@@ -639,7 +639,7 @@ AutoCatBoostRegression <- function(data,
       if (!is.null(TransformNumericColumns)) {
         # Make copy of TransformationResults----
         grid_trans_results <-
-          data.table::copy(TransformationResults)
+          data.table::copy(TransformResults)
         
         # Append record for Predicted Column----
         data.table::set(
@@ -755,7 +755,6 @@ AutoCatBoostRegression <- function(data,
         base_params <- list(
           iterations           = Trees,
           learning_rate        = 0.01,
-          depth                = 10,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
@@ -774,7 +773,6 @@ AutoCatBoostRegression <- function(data,
     base_params <- list(
       iterations           = Trees,
       learning_rate        = 0.01,
-      depth                = 10,
       loss_function        = "RMSE",
       eval_metric          = eval_metric,
       use_best_model       = TRUE,
