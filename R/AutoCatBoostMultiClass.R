@@ -140,11 +140,11 @@ AutoCatBoostMultiClass <- function(data,
     warning("SaveModelObjects needs to be TRUE or FALSE")
   
   # Update working directory----
-  working_directory <- getwd()
-  if (!is.null(model_path)) {
-    if (working_directory != model_path)
-      setwd(model_path)
-  }
+  # working_directory <- getwd()
+  # if (!is.null(model_path)) {
+  #   if (working_directory != model_path)
+  #     setwd(model_path)
+  # }
   
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -898,7 +898,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Reset working directory----
-  setwd(working_directory)
+  # setwd(working_directory)
   
   # MultiClass Return Model Objects----
   if (GridTune) {
