@@ -885,11 +885,7 @@ AutoH2oDRFHurdleModel <- function(data,
            file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))      
     }
   }
-  
-  # Reset workding directory
-  # Update working directory----
-  setwd(working_directory)
-  
+
   # Return Output----
   return(
     list(
