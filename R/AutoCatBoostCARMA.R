@@ -808,7 +808,7 @@ AutoCatBoostCARMA <- function(data,
   
   # Metrics----
   EvalMetric <-
-    TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
+    TestModel$EvaluationMetrics[Metric == eval(EvalMetric), MetricValue]
   
   # Define plot theme----
   Temp <- function () {
