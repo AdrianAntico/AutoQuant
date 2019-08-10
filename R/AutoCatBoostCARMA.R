@@ -171,8 +171,7 @@ AutoCatBoostCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup",
-                        "ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = c("USPublicHolidays"),
       Holidays = NULL)
   }
   
@@ -257,7 +256,7 @@ AutoCatBoostCARMA <- function(data,
       Ratios = SplitRatios,
       PartitionType = "timeseries",
       StratifyColumnNames = "GroupVar",
-      TimeColumnName = NULL
+      TimeColumnName = eval(DateColumnName)
     )
   } else if (tolower(PartitionType) == "random") {
     if (!is.null(GroupVariables)) {
@@ -329,6 +328,7 @@ AutoCatBoostCARMA <- function(data,
     Trees = NTrees,
     GridTune = GridTune,
     model_path = getwd(),
+    metadata_path = getwd(),
     ModelID = "ModelTest",
     NumOfParDepPlots = 1,
     ReturnModelObjects = TRUE,
@@ -699,9 +699,8 @@ AutoCatBoostCARMA <- function(data,
       CalendarFeatures <- CreateHolidayVariables(
         CalendarFeatures,
         DateCols = eval(DateColumnName),
-        HolidayGroups = c("USPublicHolidays","EasterGroup",
-                          "ChristmasGroup","OtherEcclesticalFeasts"),
-        Holidays = NULL) 
+        HolidayGroups = c("USPublicHolidays"),
+        Holidays = NULL)
     }
     
     # Update Time Trend feature----

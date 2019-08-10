@@ -257,7 +257,7 @@ AutoH2oGBMCARMA <- function(data,
       Ratios = SplitRatios,
       PartitionType = "timeseries",
       StratifyColumnNames = "GroupVar",
-      TimeColumnName = NULL
+      TimeColumnName = eval(DateColumnName)
     )
   } else if (tolower(PartitionType) == "random") {
     if (!is.null(GroupVariables)) {
