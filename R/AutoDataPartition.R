@@ -207,7 +207,7 @@ AutoDataPartition <- function(data,
           data[ID %in% (RowEnd - NumRows + 1):RowEnd]
         DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
           DataCollect[[paste0("TestData", NumDataSets - 2)]][, ID := NULL]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)]
       }
     }
   } else {
