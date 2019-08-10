@@ -191,7 +191,7 @@ AutoDataPartition <- function(data,
           data[ID %in% (RowEnd - NumRows + 1):RowEnd]
         DataCollect[["ValidationData"]] <-
           DataCollect[["ValidationData"]][, ID := NULL]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)][, ID := NULL]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)][, ID := NULL]
       } else if (i == 3) {
         RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
         NumRows <- floor(Ratios[i] * Rows)
@@ -199,7 +199,7 @@ AutoDataPartition <- function(data,
           data[ID %in% (RowEnd - NumRows + 1):RowEnd]
         DataCollect[["TestData"]] <-
           DataCollect[["TestData"]][, ID := NULL]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)]
       } else {
         RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
         NumRows <- floor(Ratios[i] * Rows)
