@@ -289,6 +289,11 @@ AutoCatBoostCARMA <- function(data,
     )
   }
   
+  # Remove ID Column----
+  if (tolower(PartitionType) == "timeseries") {
+    data.table::set(data, j = "ID", value = NULL) 
+  }
+  
   # Define data sets----
   if (NumSets == 2) {
     train <- DataSets$TrainData
@@ -299,6 +304,9 @@ AutoCatBoostCARMA <- function(data,
     valid <- DataSets$ValidationData
     test  <- DataSets$TestData
   }
+  
+  # Remove DataSets----
+  rm(DataSets)
   
   # IDcols----
   if(!is.null(GroupVariables)) {

@@ -50,6 +50,9 @@ AutoDataPartition <- function(data,
   if (length(Ratios) != NumDataSets) {
     warning("You need to supply the percentage of data used for each data set.")
   }
+  if (sum(Ratios) != 1.0) {
+    warning("The sum of Ratios needs to equal 1.0")
+  }
   if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
     warning("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
   }

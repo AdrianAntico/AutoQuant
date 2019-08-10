@@ -290,6 +290,11 @@ AutoH2oDRFCARMA <- function(data,
     )
   }
   
+  # Remove ID Column----
+  if (tolower(PartitionType) == "timeseries") {
+    data.table::set(data, j = "ID", value = NULL) 
+  }
+  
   # Define data sets----
   if (NumSets == 2) {
     train <- DataSets$TrainData
