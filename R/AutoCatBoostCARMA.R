@@ -344,6 +344,8 @@ AutoCatBoostCARMA <- function(data,
     PassInGrid = NULL
   )
   
+  TestModel$EvaluationPlot
+  
   # Store Model----
   Model <- TestModel$Model
   
