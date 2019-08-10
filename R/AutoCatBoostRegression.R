@@ -739,7 +739,7 @@ AutoCatBoostRegression <- function(data,
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
         base_params <- list(
           iterations           = Trees,
-          learning_rate        = 0.01,
+          learning_rate        = 0.03,
           depth                = 10,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
@@ -770,7 +770,7 @@ AutoCatBoostRegression <- function(data,
         BestThresh <- GridCollect[order(EvalStat)][1, EvalStat]
         base_params <- list(
           iterations           = Trees,
-          learning_rate        = 0.01,
+          learning_rate        = 0.03,
           loss_function        = "RMSE",
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
@@ -800,7 +800,7 @@ AutoCatBoostRegression <- function(data,
   } else {
     base_params <- list(
       iterations           = Trees,
-      learning_rate        = 0.01,
+      learning_rate        = 0.03,
       depth                = 10,
       loss_function        = "RMSE",
       eval_metric          = eval_metric,
