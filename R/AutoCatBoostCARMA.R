@@ -171,7 +171,9 @@ AutoCatBoostCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays"),
+      HolidayGroups = c("USPublicHolidays","EasterGroup",
+                        "ChristmasGroup",
+                        "OtherEcclesticalFeasts"),
       Holidays = NULL)
   }
   
@@ -709,7 +711,9 @@ AutoCatBoostCARMA <- function(data,
       CalendarFeatures <- CreateHolidayVariables(
         CalendarFeatures,
         DateCols = eval(DateColumnName),
-        HolidayGroups = c("USPublicHolidays"),
+        HolidayGroups = c("USPublicHolidays","EasterGroup",
+                          "ChristmasGroup",
+                          "OtherEcclesticalFeasts"),
         Holidays = NULL)
     }
     
