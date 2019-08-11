@@ -329,10 +329,10 @@ For each of the models tested internally, several aspects should be noted:
 ##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
 **Feature engineering:** I use a time trend, calendar variables, holiday counts, lags and moving averages. Internally, the CARMA functions utilize several RemixAutoML functions, all written using data.table for fast and memory efficient processing: 
-  * DT_GDL_Feature_Engineering() - creates lags and moving average features (also creates lags and moving averages off of time between records)
-  * Scoring_GDL_Feature_Engineering() - creates lags and moving average features for a single record (along with the time between vars)
-  * CreateCalendarVariables() - creates numeric features identifying various time units based on date columns
-  * CreateHolidayVariables() - creates count features based on the specified holiday groups you want to track and the date columns you supply
+  * <code>DT_GDL_Feature_Engineering()</code> - creates lags and moving average features (also creates lags and moving averages off of time between records)
+  * <code>Scoring_GDL_Feature_Engineering()</code> - creates lags and moving average features for a single record (along with the time between vars)
+  * <code>CreateCalendarVariables()</code> - creates numeric features identifying various time units based on date columns
+  * <code>CreateHolidayVariables()</code> - creates count features based on the specified holiday groups you want to track and the date columns you supply
 
 **Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
   * YeoJohnson
@@ -343,23 +343,23 @@ For each of the models tested internally, several aspects should be noted:
   * logit(x): proportion data only
 
 ##### The functions used to create these and generate them for scoring models come from RemixAutoML:
-* AutoTransformationCreate()
-* AutoTransformationScore()
+* <code>AutoTransformationCreate()</code>
+* <code>AutoTransformationScore()</code>
 
 **Models:** there are four CARMA functions and each use a different algorithm for the model fitting. The models used to fit the time series data come from RemixAutoML and include: 
-* AutoCatBoostRegression()
-* AutoXGBoostRegression()
-* AutoH2oDRFRegression()
-* AutoH2oGBMRegression()
+* <code>AutoCatBoostRegression()</code>
+* <code>AutoXGBoostRegression()</code>
+* <code>AutoH2oDRFRegression()</code>
+* <code>AutoH2oGBMRegression()</code>
 
 **GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I ran them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
 
-**Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the RemixAutoML::AutoDataPartition() function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
+**Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the <code>AutoDataPartition()</code> function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
 
 **Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
-* AutoCatBoostScoring()
-* AutoXGBoostScoring()
-* AutoH2oMLScoring()
+* <code>AutoCatBoostScoring()</code>
+* <code>AutoXGBoostScoring()</code>
+* <code>AutoH2oMLScoring()</code>
   
 </p>
 </details>
