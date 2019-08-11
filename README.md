@@ -37,13 +37,6 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 #### 3. If you're having trouble installing, see if this issue helps you out.
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
-#### 4. Heads up about catboost:
-
-As of 8-10-2019, I've seen issues with the catboost latest release, v0.16.2, in that the accuracies on model builds took a signiciant hit. Installing catboost in the method above will install their latest release. In the installation code below, note the argument "INSTALL_opts". The first few attempts I used, "args" where "INSTALL_opts" is located in the code. I'll be staying on top of catboost for newer versions or corrected versions as they are released. There have been several complaints from others about model accuracies being inferior to v15.2. I noticed these myself and made the update as I found it.
-```
-devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.15.2/catboost-R-Windows-0.15.2.tgz',INSTALL_opts = c("--no-multiarch","--no-test-load"))
-```
-
 # RemixAutoML <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/RemixAutoML-hexSticker.png" align="right" width="120" />
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). To see them in action, check out the free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a> or the blogs listed below.
 
