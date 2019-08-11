@@ -37,7 +37,9 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 #### 3. If you're having trouble installing, see if this issue helps you out.
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
-#### 4. As of 8-10-2019, I've seen issues with catboost latest release. Try the method of installing a slightly older version below. Note, "INSTALL_opts" was the last one I tried which ran successfully. The first few attempts I used, "args" where "INSTALL_opts" is in the code. I'll be staying on top of catboost for newer versions or corrected versions as they are released. There have been several complaints from others about runtime performance along with model accuracies being inferior to v15.2. I noticed these myself and made the update as I found it.
+#### 4. Heads up about catboost:
+
+As of 8-10-2019, I've seen issues with catboost latest release. Try the method of installing a slightly older version below. Note, "INSTALL_opts" was the last one I tried which ran successfully. The first few attempts I used, "args" where "INSTALL_opts" is in the code. I'll be staying on top of catboost for newer versions or corrected versions as they are released. There have been several complaints from others about runtime performance along with model accuracies being inferior to v15.2. I noticed these myself and made the update as I found it.
 ```
 devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.15.2/catboost-R-Windows-0.15.2.tgz',INSTALL_opts = c("--no-multiarch","--no-test-load"))
 ```
