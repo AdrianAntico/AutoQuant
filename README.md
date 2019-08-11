@@ -39,7 +39,7 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 
 #### 4. Heads up about catboost:
 
-As of 8-10-2019, I've seen issues with catboost latest release. Try the method of installing a slightly older version below. Note, "INSTALL_opts" was the last one I tried which ran successfully. The first few attempts I used, "args" where "INSTALL_opts" is in the code. I'll be staying on top of catboost for newer versions or corrected versions as they are released. There have been several complaints from others about runtime performance along with model accuracies being inferior to v15.2. I noticed these myself and made the update as I found it.
+As of 8-10-2019, I've seen issues with the catboost latest release, v0.16.2, in that the accuracies on model builds took a signiciant hit. Installing catboost in the method above will install their latest release. In the installation code below, note the argument "INSTALL_opts". The first few attempts I used, "args" where "INSTALL_opts" is located in the code. I'll be staying on top of catboost for newer versions or corrected versions as they are released. There have been several complaints from others about model accuracies being inferior to v15.2. I noticed these myself and made the update as I found it.
 ```
 devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.15.2/catboost-R-Windows-0.15.2.tgz',INSTALL_opts = c("--no-multiarch","--no-test-load"))
 ```
@@ -85,16 +85,16 @@ ________________________________________________________________________________
   
 #### The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
-2. Transform your target variable using the best normalization method based on the AutoTransformationCreate() function
+2. Transform your target variable using the best normalization method based on the <code>AutoTransformationCreate()</code> function
 3. Create train, validation, and test data if you didn't supply those directly to the function
 4. Consoldate columns that are used for modeling and what is to be kept for data returned
-5. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
-6. Saves the final column names for modeling to a csv for later reference
+5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
+6. Save the final modeling column names for later reference
 7. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-8. Build out a random hyperparameter set for a random grid search for model tuning (includes the default model hyperparameters) if you want to utilize that feature
-9. Build the grid tuned models
+8. Build out a random hyperparameter set for a random grid search for model tuning (includes the default model hyperparameters) if you choose to grid tune
+9. Loop through the grid-tuning process
 10. Collect the evaluation metrics for each grid tune run
-11. Identify the best model of the set of models built in the grid tuning setup
+11. Identify the best model of the set of models built in the grid tuning search
 12. Save the hyperparameters from the winning grid tuned model
 13. Build the final model based on the best model from the grid tuning model search
 14. Back-transform your predictions based on the best transformation used earlier in the process
@@ -102,7 +102,7 @@ ________________________________________________________________________________
 16. Store the final predictions with the associated test data and other columns you want included in that set
 17. Save your transformation metadata for recreating them in a scoring process
 18. Build out and save an Evaluation Calibration Line Plot and Box-Plot
-19. Generate and save Variable Importance data
+19. Generate and save Variable Importance
 20. Generate and save Partital Dependence Calibration Line Plots and Box-Plots
 21. Return all the objects generated in a named list for immediate use
  
