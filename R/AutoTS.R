@@ -220,8 +220,8 @@ AutoTS <- function(data,
                                   replace.missing = TRUE,
                                   lambda = NULL)
     }
-    dTarget <- forecast::ndiffs(x = Target)
-    DTarget <- forecast::nsdiffs(x = Target)
+    dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0)
+    DTarget <- tryCatch({forecast::nsdiffs(x = Target)},error = function(x) 0)
   }
   
   # Model-Based Frequency----
@@ -232,8 +232,8 @@ AutoTS <- function(data,
                 start = data_train[, min(get(DateName))][[1]],
                 frequency = SFreq)
     
-    ddataTSTrain1 <- forecast::ndiffs(x = dataTSTrain1)
-    DdataTSTrain1 <- forecast::nsdiffs(x = dataTSTrain1)
+    ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0)
+    DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0)
   }
 
   # TSClean Version
@@ -249,8 +249,8 @@ AutoTS <- function(data,
     }
     
     # Differencing----
-    dTSClean <- forecast::ndiffs(x = TargetMB)
-    DTSClean <- forecast::nsdiffs(x = TargetMB)
+    dTSClean <- tryCatch({forecast::ndiffs(x = TargetMB)},error = function(x) 0)
+    DTSClean <- tryCatch({forecast::nsdiffs(x = TargetMB)},error = function(x) 0)
   }
   
   # DSHW-------------
