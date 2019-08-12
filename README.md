@@ -345,7 +345,7 @@ For each of the models tested internally, several aspects should be noted:
 * <code>AutoH2oDRFRegression()</code>
 * <code>AutoH2oGBMRegression()</code>
 
-**GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I ran them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
+**GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I run them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
 
 **Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the <code>AutoDataPartition()</code> function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
 
