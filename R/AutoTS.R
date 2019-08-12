@@ -444,7 +444,7 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
-    if (tolower(class(DSHW_Model)) == "forecast") {
+    if ("forecast" %chin% tolower(class(DSHW_Model))) {
       tryCatch({
         data_test_DSHW <- data.table::copy(data_test)
         data_test_DSHW[, ':=' (
@@ -478,7 +478,7 @@ AutoTS <- function(data,
     
     # 2: Model-Supplied-Freq
     if (ModelFreq) {
-      if (tolower(class(DSHW_Model1)) == "forecast") {
+      if ("forecast" %chin% tolower(class(DSHW_Model1))) {
         tryCatch({
           data_test_DSHW1 <- data.table::copy(data_test)
           data_test_DSHW1[, ':=' (
@@ -514,7 +514,7 @@ AutoTS <- function(data,
     # If TSClean is TRUE
     if (TSClean) {
       # 2: Model-Supplied-Freq
-      if (tolower(class(DSHW_Model2)) == "forecast") {
+      if ("forecast" %chin% tolower(class(DSHW_Model2))) {
         tryCatch({
           data_test_DSHW2 <- data.table::copy(data_test)
           data_test_DSHW2[, ':=' (
@@ -548,7 +548,7 @@ AutoTS <- function(data,
       
       # 2: Model-Supplied-Freq
       if (ModelFreq) {
-        if (tolower(class(DSHW_Model3)) == "forecast") {
+        if ("forecast" %chin% tolower(class(DSHW_Model3))) {
           tryCatch({
             data_test_DSHW3 <- data.table::copy(data_test)
             data_test_DSHW3[, ':=' (
@@ -938,7 +938,7 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
-    if (tolower(class(ARFIMA_model)) == "fracdiff") {
+    if ("fracdiff" %chin% tolower(class(ARFIMA_model))) {
       tryCatch({
         data_test_ARF <- data.table::copy(data_test)
         data_test_ARF[, ':=' (
@@ -972,7 +972,7 @@ AutoTS <- function(data,
     
     # 2: Model-Supplied-Freq
     if (ModelFreq) {
-      if (tolower(class(ARFIMA_model1)) == "fracdiff") {
+      if ("fracdiff" %chin% tolower(class(ARFIMA_model1))) {
         tryCatch({
           data_test_ARF1 <- data.table::copy(data_test)
           data_test_ARF1[, ':=' (
@@ -1008,7 +1008,7 @@ AutoTS <- function(data,
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
-      if (tolower(class(ARFIMA_model2)) == "fracdiff") {
+      if ("fracdiff" %chin% tolower(class(ARFIMA_model2))) {
         tryCatch({
           data_test_ARF2 <- data.table::copy(data_test)
           data_test_ARF2[, ':=' (
@@ -1042,7 +1042,7 @@ AutoTS <- function(data,
       
       # 2: Model-Supplied-Freq
       if (ModelFreq) {
-        if (tolower(class(ARFIMA_model3)) == "fracdiff") {
+        if ("fracdiff" %chin% tolower(class(ARFIMA_model3))) {
           tryCatch({
             data_test_ARF3 <- data.table::copy(data_test)
             data_test_ARF3[, ':=' (
@@ -1463,7 +1463,7 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
-    if (tolower(class(ARIMA_model)[1]) == "arima") {
+    if ("arima" %chin% tolower(class(ARIMA_model))) {
       tryCatch({
         data_test_ARI <- data.table::copy(data_test)
         data_test_ARI[, ':=' (
@@ -1497,7 +1497,7 @@ AutoTS <- function(data,
     
     # Model-Supplied-Freq
     if (ModelFreq) {
-      if (tolower(class(ARIMA_model1)[1]) == "arima") {
+      if ("arima" %chin% tolower(class(ARIMA_model1))) {
         tryCatch({
           data_test_ARI1 <- data.table::copy(data_test)
           data_test_ARI1[, ':=' (
@@ -1533,7 +1533,7 @@ AutoTS <- function(data,
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
-      if (tolower(class(ARIMA_model2)[1]) == "arima") {
+      if ("arima" %chin% tolower(class(ARIMA_model2))) {
         tryCatch({
           data_test_ARI2 <- data.table::copy(data_test)
           data_test_ARI2[, ':=' (
@@ -1567,7 +1567,7 @@ AutoTS <- function(data,
       
       # Model-Supplied-Freq
       if (ModelFreq) {
-        if (tolower(class(ARIMA_model3)[1]) == "arima") {
+        if ("arima" %chin% tolower(class(ARIMA_model3))) {
           tryCatch({
             data_test_ARI3 <- data.table::copy(data_test)
             data_test_ARI3[, ':=' (
@@ -1871,7 +1871,7 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
-    if (tolower(class(EXPSMOOTH_model)) == "ets") {
+    if ("ets" %chin% tolower(class(EXPSMOOTH_model))) {
       tryCatch({
         data_test_ETS <- data.table::copy(data_test)
         data_test_ETS[, ':=' (
@@ -1905,7 +1905,7 @@ AutoTS <- function(data,
     
     # 2: Model-Based-Freq
     if (ModelFreq) {
-      if (tolower(class(EXPSMOOTH_model1)) == "ets") {
+      if ("ets" %chin% tolower(class(EXPSMOOTH_model1))) {
         tryCatch({
           data_test_ETS1 <- data.table::copy(data_test)
           data_test_ETS1[, ':=' (
@@ -1941,7 +1941,7 @@ AutoTS <- function(data,
     # TSClean Version
     if (TSClean) {
       # 2: User-Supplied-Freq
-      if (tolower(class(EXPSMOOTH_model2)) == "ets") {
+      if ("ets" %chin% tolower(class(EXPSMOOTH_model2))) {
         tryCatch({
           data_test_ETS2 <- data.table::copy(data_test)
           data_test_ETS2[, ':=' (
@@ -1975,7 +1975,7 @@ AutoTS <- function(data,
       
       # 2: Model-Based-Freq
       if (ModelFreq) {
-        if (tolower(class(EXPSMOOTH_model3)) == "ets") {
+        if ("ets" %chin% tolower(class(EXPSMOOTH_model3))) {
           tryCatch({
             data_test_ETS3 <- data.table::copy(data_test)
             data_test_ETS3[, ':=' (
@@ -2161,8 +2161,7 @@ AutoTS <- function(data,
     }
     
     # User-Supplied-Freq
-    if (class(TBATS_model)[1] == "tbats" |
-        class(TBATS_model)[1] == "bats") {
+    if (any(c("tbats","bats") %chin% class(TBATS_model))) {
       tryCatch({
         # Collect Test Data for Model Comparison
         # 2)
@@ -2198,8 +2197,7 @@ AutoTS <- function(data,
     
     # Model-Supplied-Freq
     if (ModelFreq) {
-      if (class(TBATS_model1)[1] == "tbats" |
-          class(TBATS_model1)[1] == "bats") {
+      if (any(c("tbats","bats") %chin% class(TBATS_model1))) {
         tryCatch({
           # Collect Test Data for Model Comparison
           # 2)
@@ -2237,8 +2235,7 @@ AutoTS <- function(data,
     # TSClean Version
     if (TSClean) {
       # User-Supplied-Freq
-      if (class(TBATS_model2)[1] == "tbats" |
-          class(TBATS_model2)[1] == "bats") {
+      if (any(c("tbats","bats") %chin% class(TBATS_model2))) {
         tryCatch({
           # Collect Test Data for Model Comparison
           # 2)
@@ -2274,8 +2271,7 @@ AutoTS <- function(data,
       
       # Model-Supplied-Freq
       if (ModelFreq) {
-        if (class(TBATS_model3)[1] == "tbats" |
-            class(TBATS_model3)[1] == "bats") {
+        if (any(c("tbats","bats") %chin% class(TBATS_model3))) {
           tryCatch({
             # Collect Test Data for Model Comparison
             # 2)
@@ -2414,7 +2410,7 @@ AutoTS <- function(data,
     }
     
     # User-Supplied-Freq
-    if (tolower(class(TSLM_model)[1]) == "tslm") {
+    if (any(c("tslm","lm") %chin% tolower(class(TSLM_model)))) {
       tryCatch({
         # Collect Test Data for Model Comparison
         # 2)
@@ -2451,7 +2447,7 @@ AutoTS <- function(data,
     
     # Model-Supplied-Freq
     if (ModelFreq) {
-      if (tolower(class(TSLM_model1)[1]) == "tslm") {
+      if (any(c("tslm","lm") %chin% tolower(class(TSLM_model1)))) {
         tryCatch({
           # Collect Test Data for Model Comparison
           # 2)
@@ -2490,7 +2486,7 @@ AutoTS <- function(data,
     # TSClean Version
     if (TSClean) {
       # User-Supplied-Freq
-      if (tolower(class(TSLM_model2)[1]) == "tslm") {
+      if (any(c("tslm","lm") %chin% tolower(class(TSLM_model2)))) {
         tryCatch({
           # Collect Test Data for Model Comparison
           # 2)
@@ -2527,7 +2523,7 @@ AutoTS <- function(data,
       
       # Model-Supplied-Freq
       if (ModelFreq) {
-        if (tolower(class(TSLM_model3)[1]) == "tslm") {
+        if (any(c("tslm","lm") %chin% tolower(class(TSLM_model3)))) {
           tryCatch({
             # Collect Test Data for Model Comparison
             # 2)
@@ -2774,7 +2770,7 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2)
-    if (tolower(class(NNETAR_model1)) == "nnetar") {
+    if ("nnetar" %chin% tolower(class(NNETAR_model1))) {
       tryCatch({
         data_test_NN1 <- data.table::copy(data_test)
         data_test_NN1[, ':=' (
@@ -2895,7 +2891,7 @@ AutoTS <- function(data,
       
       # Collect Test Data for Model Comparison
       # 2)
-      if (tolower(class(NNETAR_model2)) == "nnetar") {
+      if ("nnetar" %chin% tolower(class(NNETAR_model2))) {
         tryCatch({
           data_test_NN2 <- data.table::copy(data_test)
           data_test_NN2[, ':=' (
@@ -3014,7 +3010,7 @@ AutoTS <- function(data,
       
       # Collect Test Data for Model Comparison
       # 2)
-      if (tolower(class(NNETAR_model3)) == "nnetar") {
+      if ("nnetar" %chin% tolower(class(NNETAR_model3))) {
         tryCatch({
           data_test_NN3 <- data.table::copy(data_test)
           data_test_NN3[, ':=' (
