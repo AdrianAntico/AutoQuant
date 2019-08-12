@@ -639,7 +639,7 @@ AutoCatBoostRegression <- function(data,
       if (!is.null(TransformNumericColumns)) {
         # Make copy of TransformationResults----
         grid_trans_results <-
-          data.table::copy(TransformResults)
+          data.table::copy(TransformationResults)
         
         # Append record for Predicted Column----
         data.table::set(
