@@ -3609,7 +3609,7 @@ AutoTS <- function(data,
     FC_Data[, paste0(BestModel, "_Low80") := as.numeric(xx$lower)[1:FCPeriods]]
     FC_Data[, paste0(BestModel,"_Low95") := as.numeric(xx$lower)[(FCPeriods+1):(2*FCPeriods)]]
     FC_Data[, paste0(BestModel,"_High80") := as.numeric(xx$upper)[1:FCPeriods]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(x$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    FC_Data[, paste0(BestModel,"_High95") := as.numeric(xx$upper)[(FCPeriods+1):(2*FCPeriods)]]
     
     # Store model
     model <- NNETAR_model
