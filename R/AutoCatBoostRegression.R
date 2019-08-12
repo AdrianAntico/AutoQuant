@@ -572,7 +572,7 @@ AutoCatBoostRegression <- function(data,
           eval_metric != "LogLinQuantile") {
         base_params <- list(
           iterations           = Trees,
-          loss_function        = 'RMSE',
+          loss_function        = eval_metric,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           has_time             = HasTime,
