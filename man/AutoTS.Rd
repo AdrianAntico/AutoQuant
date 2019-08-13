@@ -8,7 +8,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, EvaluationMetric = "MAPE",
   TimeUnit = "day", Lags = 25, SLags = 2, NumCores = 4,
   SkipModels = NULL, StepWise = TRUE, TSClean = TRUE,
-  ModelFreq = TRUE, PrintUpdates = FALSE)
+  ModelFreq = TRUE, PlotPredictionIntervals = TRUE, PrintUpdates = FALSE)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -38,6 +38,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 \item{TSClean}{Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set}
 
 \item{ModelFreq}{Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically}
+
+\item{PlotPredictionIntervals}{Set to FALSE not to print the prediction intervals}
 
 \item{PrintUpdates}{Set to TRUE for a print to console of function progress}
 }
@@ -74,20 +76,21 @@ data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 output <-   AutoTS(data,
-                   TargetName       = "Target",
-                   DateName         = "DateTime",
-                   FCPeriods        = 1,
-                   HoldOutPeriods   = 1,
-                   EvaluationMetric = "MAPE",
-                   TimeUnit         = "day",
-                   Lags             = 1,
-                   SLags            = 1,
-                   NumCores         = 4,
-                   SkipModels       = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-                   StepWise         = TRUE,
-                   TSClean          = FALSE,
-                   ModelFreq        = TRUE,
-                   PrintUpdates     = FALSE)
+                   TargetName              = "Target",
+                   DateName                = "DateTime",
+                   FCPeriods               = 1,
+                   HoldOutPeriods          = 1,
+                   EvaluationMetric        = "MAPE",
+                   TimeUnit                = "day",
+                   Lags                    = 1,
+                   SLags                   = 1,
+                   NumCores                = 4,
+                   SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
+                   StepWise                = TRUE,
+                   TSClean                 = FALSE,
+                   ModelFreq               = TRUE,
+                   PlotPredictionIntervals = TRUE,
+                   PrintUpdates            = FALSE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel
