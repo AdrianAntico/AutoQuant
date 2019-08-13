@@ -235,7 +235,7 @@ AutoTS <- function(data,
     ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0)
     DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0)
   }
-
+  
   # TSClean Version
   if (TSClean) {
     if (MinVal > 0) {
@@ -3111,7 +3111,7 @@ AutoTS <- function(data,
           stats::ts(data = data_train,
                     start = data_train[, min(get(DateName))][[1]],
                     frequency = SFreq)
-
+        
         # TSClean Version
         dataTSTrain <-
           forecast::tsclean(x = dataTSTrain[, TargetName],
@@ -3651,13 +3651,17 @@ AutoTS <- function(data,
     ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TempTargetName))
   
   TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
-    ggplot2::aes(ymin = z[[5]], 
-                 ymax = z[[7]]),
-    fill = "blue", alpha = 1)
+    ggplot2::aes(ymin = z[[5]],
+                 ymax = z[[4]]),
+    fill = "peachpuff1", alpha = 0.25)
   TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
     ggplot2::aes(ymin = z[[4]], 
                  ymax = z[[6]]),
-    fill = "lightblue1", alpha = 1) + 
+    fill = "aquamarine1", alpha = 0.25)
+  TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
+    ggplot2::aes(ymin = z[[7]],
+                 ymax = z[[6]]),
+    fill = "peachpuff1", alpha = 0.25) +
     ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "black", lwd = 1) +
     ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "black", lwd = 0.25) +
     ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "black", lwd = 0.25) +
