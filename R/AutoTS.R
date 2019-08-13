@@ -59,7 +59,7 @@
 #'                    StepWise                = TRUE,
 #'                    TSClean                 = FALSE,
 #'                    ModelFreq               = TRUE,
-#'                    PlotPredictionIntervals = TRUE
+#'                    PlotPredictionIntervals = TRUE,
 #'                    PrintUpdates            = FALSE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
@@ -81,7 +81,7 @@ AutoTS <- function(data,
                    StepWise                = TRUE,
                    TSClean                 = TRUE,
                    ModelFreq               = TRUE,
-                   PlotPredictionIntervals = TRUE
+                   PlotPredictionIntervals = TRUE,
                    PrintUpdates            = FALSE) {
   # Check arguments----
   if (!is.character(TargetName)) {
