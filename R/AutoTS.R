@@ -33,6 +33,7 @@
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
 #' @param TSClean Set to TRUE to have missing values interpolated and outliers replaced with interpolated values: creates separate models for a larger comparison set
 #' @param ModelFreq Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically
+#' @param PlotPredictionIntervals Set to FALSE to not print prediction intervals on your plot output
 #' @param PrintUpdates Set to TRUE for a print to console of function progress
 #' @examples
 #' \donttest{
@@ -45,20 +46,21 @@
 #' data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
 #' data <- data[order(DateTime)]
 #' output <-   AutoTS(data,
-#'                    TargetName       = "Target",
-#'                    DateName         = "DateTime",
-#'                    FCPeriods        = 1,
-#'                    HoldOutPeriods   = 1,
-#'                    EvaluationMetric = "MAPE",
-#'                    TimeUnit         = "day",
-#'                    Lags             = 1,
-#'                    SLags            = 1,
-#'                    NumCores         = 4,
-#'                    SkipModels       = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-#'                    StepWise         = TRUE,
-#'                    TSClean          = FALSE,
-#'                    ModelFreq        = TRUE,
-#'                    PrintUpdates     = FALSE)
+#'                    TargetName              = "Target",
+#'                    DateName                = "DateTime",
+#'                    FCPeriods               = 1,
+#'                    HoldOutPeriods          = 1,
+#'                    EvaluationMetric        = "MAPE",
+#'                    TimeUnit                = "day",
+#'                    Lags                    = 1,
+#'                    SLags                   = 1,
+#'                    NumCores                = 4,
+#'                    SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
+#'                    StepWise                = TRUE,
+#'                    TSClean                 = FALSE,
+#'                    ModelFreq               = TRUE,
+#'                    PlotPredictionIntervals = TRUE
+#'                    PrintUpdates            = FALSE)
 #' ForecastData <- output$Forecast
 #' ModelEval    <- output$EvaluationMetrics
 #' WinningModel <- output$TimeSeriesModel
@@ -66,20 +68,21 @@
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model; 5. A time series ggplot with historical values and forecasted values.
 #' @export
 AutoTS <- function(data,
-                   TargetName     = "Target",
-                   DateName       = "DateTime",
-                   FCPeriods      = 30,
-                   HoldOutPeriods = 30,
-                   EvaluationMetric = "MAPE",
-                   TimeUnit       = "day",
-                   Lags           = 25,
-                   SLags          = 2,
-                   NumCores       = 4,
-                   SkipModels     = NULL,
-                   StepWise       = TRUE,
-                   TSClean        = TRUE,
-                   ModelFreq      = TRUE,
-                   PrintUpdates   = FALSE) {
+                   TargetName              = "Target",
+                   DateName                = "DateTime",
+                   FCPeriods               = 30,
+                   HoldOutPeriods          = 30,
+                   EvaluationMetric          = "MAPE",
+                   TimeUnit                = "day",
+                   Lags                    = 25,
+                   SLags                   = 2,
+                   NumCores                = 4,
+                   SkipModels              = NULL,
+                   StepWise                = TRUE,
+                   TSClean                 = TRUE,
+                   ModelFreq               = TRUE,
+                   PlotPredictionIntervals = TRUE
+                   PrintUpdates            = FALSE) {
   # Check arguments----
   if (!is.character(TargetName)) {
     warning("TargetName needs to be a character value")
@@ -3650,24 +3653,26 @@ AutoTS <- function(data,
     ) +
     ggplot2::xlab(eval(DateName)) + ggplot2::ylab(eval(TempTargetName))
   
-  TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
-    ggplot2::aes(ymin = z[[5]],
-                 ymax = z[[4]]),
-    fill = "peachpuff1", alpha = 0.25)
-  TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
-    ggplot2::aes(ymin = z[[4]], 
-                 ymax = z[[6]]),
-    fill = "aquamarine1", alpha = 0.25)
-  TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
-    ggplot2::aes(ymin = z[[7]],
-                 ymax = z[[6]]),
-    fill = "peachpuff1", alpha = 0.25) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "black", lwd = 1) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "black", lwd = 0.25) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "black", lwd = 0.25) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "black", lwd = 0.25) +
-    ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "black", lwd = 0.25)
-  
+  if(PlotPredictionIntervals) {
+    TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = z[[5]],
+                   ymax = z[[4]]),
+      fill = "peachpuff1", alpha = 0.25)
+    TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = z[[4]], 
+                   ymax = z[[6]]),
+      fill = "aquamarine1", alpha = 0.25)
+    TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = z[[7]],
+                   ymax = z[[6]]),
+      fill = "peachpuff1", alpha = 0.25) +
+      ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "black", lwd = 1) +
+      ggplot2::geom_line(ggplot2::aes(y = z[[4]]), color = "black", lwd = 0.25) +
+      ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "black", lwd = 0.25) +
+      ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "black", lwd = 0.25) +
+      ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "black", lwd = 0.25)    
+  }
+
   # Get back to adding image to plot----
   # TimeSeriesPlot
   # grid::grid.raster(logo, x = .73, y = 0.01, just = c('left', 'bottom'), width = 0.25)
