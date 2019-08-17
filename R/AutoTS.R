@@ -3671,8 +3671,10 @@ AutoTS <- function(data,
       ggplot2::geom_line(ggplot2::aes(y = z[[5]]), color = "black", lwd = 0.25) +
       ggplot2::geom_line(ggplot2::aes(y = z[[6]]), color = "black", lwd = 0.25) +
       ggplot2::geom_line(ggplot2::aes(y = z[[7]]), color = "black", lwd = 0.25)    
+  } else {
+    TimeSeriesPlot <- TimeSeriesPlot + ggplot2::geom_line(ggplot2::aes(y = z[[3]]), color = "black", lwd = 1)
   }
-
+  
   # Get back to adding image to plot----
   # TimeSeriesPlot
   # grid::grid.raster(logo, x = .73, y = 0.01, just = c('left', 'bottom'), width = 0.25)
