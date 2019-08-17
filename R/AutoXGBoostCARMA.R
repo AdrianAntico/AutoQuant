@@ -698,7 +698,7 @@ AutoXGBoostCARMA <- function(data,
     } else if (tolower(TimeUnit) == "month") {
       CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
     } else if (tolower(TimeUnit) == "quarter") {
-      CalendarFeatures <- data.table::as.data.table(d %m+% months(4))
+      CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
     } else if (tolower(TimeUnit) == "year") {
       CalendarFeatures <-
         data.table::as.data.table(d + lubridate::years(1))
