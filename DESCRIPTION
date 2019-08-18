@@ -33,7 +33,7 @@ Imports: arules, catboost, caTools, data.table, doParallel, foreach, forecast,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
         scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, utils,
         wordcloud, xgboost, zoo
-Suggests: knitr, rmarkdown, sde, testthat
+Suggests: knitr, rmarkdown, sde, testthat, fpp
 VignetteBuilder: knitr
 Additional_repositories:
         https://github.com/catboost/catboost/tree/master/catboost/R-package
