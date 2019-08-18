@@ -261,7 +261,7 @@ ________________________________________________________________________________
 <details><summary>EXPAND</summary>
 <p>
   
-![ScoringCatBoost](https://user-images.githubusercontent.com/42076988/55656390-94dc4b00-57ab-11e9-9e3f-06b049b796d5.png)
+![ScoringCatBoost](<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/ScoringCatBoost.png" align="center" width="300" />)
 
 ##### **AutoCatBoostScoring()**
 <code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
