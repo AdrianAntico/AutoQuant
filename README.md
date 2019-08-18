@@ -2,7 +2,7 @@
 
 # How to Install the Package for R:
 
-#### 1. First, run the following R script to download dependencies (YOU MAY HAVE TO INSTALL A FEW OF THESE LINE BY LINE)
+#### 1. First, run the following R script to download dependencies
 ```
 library(devtools)
 to_install <- c("arules", "catboost", "caTools", "data.table", "doParallel", 
