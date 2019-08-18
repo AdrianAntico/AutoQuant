@@ -28,6 +28,7 @@
 #' @param TimeUnit is the level of aggregation your dataset comes in. Choices include: hour, day, week, month, quarter, year, 1Min, 5Min, 10Min, 15Min, and 30Min
 #' @param Lags is the number of lags you wish to test in various models (same as moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
+#' @param MaxFourierPairs Set the number of Fourier pair of terms to test. (ARIMA only currently)
 #' @param NumCores is the number of cores available on your computer
 #' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
@@ -54,6 +55,7 @@
 #'                    TimeUnit                = "day",
 #'                    Lags                    = 1,
 #'                    SLags                   = 1,
+#'                    MaxFourierPairs         = 0,
 #'                    NumCores                = 4,
 #'                    SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
 #'                    StepWise                = TRUE,
@@ -68,21 +70,23 @@
 #' @return Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model; 5. A time series ggplot with historical values and forecasted values.
 #' @export
 AutoTS <- function(data,
-                   TargetName              = "Target",
-                   DateName                = "DateTime",
-                   FCPeriods               = 30,
-                   HoldOutPeriods          = 30,
-                   EvaluationMetric          = "MAPE",
-                   TimeUnit                = "day",
-                   Lags                    = 25,
-                   SLags                   = 2,
-                   NumCores                = 4,
-                   SkipModels              = NULL,
-                   StepWise                = TRUE,
-                   TSClean                 = TRUE,
-                   ModelFreq               = TRUE,
-                   PlotPredictionIntervals = TRUE,
-                   PrintUpdates            = FALSE) {
+                   TargetName       = "Target",
+                   DateName         = "DateTime",
+                   FCPeriods        = 30,
+                   HoldOutPeriods   = 30,
+                   EvaluationMetric = "MAPE",
+                   InnerEval        = "AICc",
+                   TimeUnit         = "day",
+                   Lags             = 25,
+                   SLags            = 2,
+                   MaxFourierPairs  = 0, 
+                   NumCores         = 4,
+                   SkipModels       = NULL,
+                   StepWise         = TRUE,
+                   TSClean          = TRUE,
+                   ModelFreq        = TRUE,
+                   PrintUpdates     = FALSE,
+                   PlotPredictionIntervals = TRUE) {
   # Check arguments----
   if (!is.character(TargetName)) {
     warning("TargetName needs to be a character value")
@@ -154,6 +158,7 @@ AutoTS <- function(data,
   
   # Create Test data----
   data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
+  data_test_fourier <- data
   
   # Check for different time aggregations
   MaxDate <- data[, max(get(DateName))]
@@ -189,7 +194,7 @@ AutoTS <- function(data,
     FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
   } else if (tolower(TimeUnit) == "quarter") {
     freq <- 4
-    FC_Data[, Date := as.Date(MaxDate)  %m+% months(3 * Date)]
+    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4 * Date)]
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
     FC_Data[, Date := MaxDate + lubridate::years(Date)]
@@ -240,7 +245,7 @@ AutoTS <- function(data,
   }
   
   # TSClean Version
-  if (TSClean) {
+  if (TSClean | ModelFreq) {
     if (MinVal > 0) {
       TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
@@ -605,7 +610,7 @@ AutoTS <- function(data,
               max.q = Lags,
               max.d = ddataTSTrain,
               max.D = DdataTSTrain,
-              ic = "bic",
+              ic = tolower(InnerEval),
               stepwise = StepWise,
               num.cores = NumCores
             )
@@ -625,7 +630,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = ddataTSTrain1,
                 max.D = DdataTSTrain1,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 num.cores = NumCores
               )
@@ -647,7 +652,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = dTarget,
                 max.D = DTarget,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 num.cores = NumCores
               )
@@ -667,7 +672,7 @@ AutoTS <- function(data,
                   max.q = Lags,
                   max.d = dTSClean,
                   max.D = DTSClean,
-                  ic = "bic",
+                  ic = tolower(InnerEval),
                   stepwise = StepWise,
                   num.cores = NumCores
                 )
@@ -688,7 +693,7 @@ AutoTS <- function(data,
               max.q = Lags,
               max.d = ddataTSTrain,
               max.D = DdataTSTrain,
-              ic = "bic",
+              ic = tolower(InnerEval),
               stepwise = StepWise,
               num.cores = NumCores
             )
@@ -708,7 +713,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = ddataTSTrain1,
                 max.D = DdataTSTrain1,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 num.cores = NumCores
               )
@@ -730,7 +735,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = dTarget,
                 max.D = DTarget,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 num.cores = NumCores
               )
@@ -750,7 +755,7 @@ AutoTS <- function(data,
                   max.q = Lags,
                   max.d = dTSClean,
                   max.D = DTSClean,
-                  ic = "bic",
+                  ic = tolower(InnerEval),
                   stepwise = StepWise,
                   num.cores = NumCores
                 )
@@ -773,7 +778,7 @@ AutoTS <- function(data,
               max.q = Lags,
               max.d = ddataTSTrain,
               max.D = DdataTSTrain,
-              ic = "bic",
+              ic = tolower(InnerEval),
               stepwise = StepWise,
               parallel = TRUE,
               num.cores = NumCores
@@ -794,7 +799,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = ddataTSTrain1,
                 max.D = DdataTSTrain1,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 parallel = TRUE,
                 num.cores = NumCores
@@ -817,7 +822,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = dTarget,
                 max.D = DTarget,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 parallel = TRUE,
                 num.cores = NumCores
@@ -838,7 +843,7 @@ AutoTS <- function(data,
                   max.q = Lags,
                   max.d = dTSClean,
                   max.D = DTSClean,
-                  ic = "bic",
+                  ic = tolower(InnerEval),
                   stepwise = StepWise,
                   parallel = TRUE,
                   num.cores = NumCores
@@ -860,7 +865,7 @@ AutoTS <- function(data,
               max.q = Lags,
               max.d = ddataTSTrain,
               max.D = DdataTSTrain,
-              ic = "bic",
+              ic = tolower(InnerEval),
               stepwise = StepWise,
               parallel = TRUE,
               num.cores = NumCores
@@ -881,7 +886,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = ddataTSTrain1,
                 max.D = DdataTSTrain1,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 parallel = TRUE,
                 num.cores = NumCores
@@ -904,7 +909,7 @@ AutoTS <- function(data,
                 max.q = Lags,
                 max.d = dTarget,
                 max.D = DTarget,
-                ic = "bic",
+                ic = tolower(InnerEval),
                 stepwise = StepWise,
                 parallel = TRUE,
                 num.cores = NumCores
@@ -925,7 +930,7 @@ AutoTS <- function(data,
                   max.q = Lags,
                   max.d = dTSClean,
                   max.D = DTSClean,
-                  ic = "bic",
+                  ic = tolower(InnerEval),
                   stepwise = StepWise,
                   parallel = TRUE,
                   num.cores = NumCores
@@ -1089,85 +1094,330 @@ AutoTS <- function(data,
     if (StepWise) {
       if (MinVal > 0) {
         # User-Supplied-Freq
-        ARIMA_model <-
-          tryCatch({
-            forecast::auto.arima(
-              y = dataTSTrain[, TargetName],
-              max.p = Lags,
-              max.q = Lags,
-              max.P = SLags,
-              max.Q = SLags,
-              max.d = ddataTSTrain,
-              max.D = DdataTSTrain,
-              ic = "bic",
-              lambda = TRUE,
-              biasadj = TRUE,
-              stepwise = StepWise,
-              num.cores = NumCores
-            )
-          },
-          error = function(x)
-            "empty")
-        
-        # Model-Supplied-Freq
-        if (ModelFreq) {
-          ARIMA_model1 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = dataTSTrain1[, TargetName],
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = ddataTSTrain1,
-                max.D = DdataTSTrain1,
-                ic = "bic",
-                lambda = TRUE,
-                biasadj = TRUE,
-                stepwise = StepWise,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
+        final_metrics <- data.table::copy(data_test)
+        final_metrics[, Target := as.numeric(Target)]
+        temp_metrics <- data.table::copy(final_metrics)
+        j <- 0
+        for(i in 0:MaxFourierPairs) {
+          if(i == 0) {
+            XREG <- 1
+            XREGFC <- 1
+          } else {
+            XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i)}, error = function(x) FALSE)
+            XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+          }
+          if(is.numeric(XREG) & is.numeric(XREGFC)) {
+            if(i == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+            
+            if("arima" %chin% tolower(class(ARIMA_model))) {
+              j <- j + 1
+              if(j == 1 & i == 0) {
+                x <- as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean)
+                final_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              } else {
+                x <- as.numeric(forecast::forecast(ARIMA_model, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                temp_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              }
+              
+              # Add metrics----
+              if(ncol(final_metrics) != 9) {
+                final_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Final_metrics <- final_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+              } else {
+                temp_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Temp_metrics <- temp_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+                Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+              }
+              data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+            }
+          }
         }
         
-        # TSClean Verison
-        if (TSClean) {
-          # User-Supplied-Freq
-          ARIMA_model2 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = Target,
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = dTarget,
-                max.D = DTarget,
-                ic = "bic",
-                lambda = TRUE,
-                biasadj = TRUE,
-                stepwise = StepWise,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
-          
-          # Model-Supplied-Freq
-          if (ModelFreq) {
-            ARIMA_model3 <-
+        # Final build----
+        if(ncol(Final_metrics) != 2) {
+          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+          Final_metrics[, Name := "ARIMA_model"]
+          WinningArimaMetrics <- Final_metrics[1,]
+          k <- Final_metrics[1,K]
+          if(k == 0) {
+            ARIMA_model <-
               tryCatch({
                 forecast::auto.arima(
-                  y = TargetMB,
+                  y = dataTSTrain[, TargetName],
                   max.p = Lags,
                   max.q = Lags,
                   max.P = SLags,
                   max.Q = SLags,
-                  max.d = dTSClean,
-                  max.D = DTSClean,
-                  ic = "bic",
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  ic = tolower(InnerEval),
+                  lambda = TRUE,
+                  biasadj = TRUE,
+                  stepwise = StepWise,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")  
+          } else {
+            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+            ARIMA_model <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
+                  lambda = TRUE,
+                  biasadj = TRUE,
+                  stepwise = StepWise,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")  
+          }
+        }
+        
+        # Model-Supplied-Freq
+        final_metrics <- data.table::copy(data_test)
+        final_metrics[, Target := as.numeric(Target)]
+        temp_metrics <- data.table::copy(final_metrics)
+        j <- 0
+        for(i in 0:MaxFourierPairs) {
+          if(i == 0) {
+            XREG <- 1
+            XREGFC <- 1
+          } else {
+            XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i)}, error = function(x) FALSE)
+            XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+          }
+          if(is.numeric(XREG) & is.numeric(XREGFC)) {
+            if(i == 0) {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+            
+            if("arima" %chin% tolower(class(ARIMA_model1))) {
+              j <- j + 1
+              if(j == 1 & i == 0) {
+                x <- as.numeric(forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean)
+                final_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              } else {
+                x <- as.numeric(forecast::forecast(ARIMA_model1, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                temp_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              }
+              
+              # Add metrics----
+              if(ncol(final_metrics) != 9) {
+                final_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Final_metrics <- final_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+              } else {
+                temp_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Temp_metrics <- temp_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+                Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+              }
+              data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+            }
+          }
+        }
+        
+        # Final build----
+        if(ncol(Final_metrics) != 2) {
+          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+          Final_metrics[, Name := "ARIMA_model1"]
+          if(exists("WinningArimaMetrics")) {
+            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+          } else {
+            WinningArimaMetrics <- Final_metrics[1,]
+          }
+          k <- Final_metrics[1,K]
+          if(k == 0) {
+            ARIMA_model1 <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain1[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  ic = tolower(InnerEval),
+                  lambda = TRUE,
+                  biasadj = TRUE,
+                  stepwise = StepWise,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")
+          } else {
+            XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+            ARIMA_model1 <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain1[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
                   lambda = TRUE,
                   biasadj = TRUE,
                   stepwise = StepWise,
@@ -1178,87 +1428,489 @@ AutoTS <- function(data,
                 "empty")
           }
         }
-      } else {
-        # User-Supplied-Freq
-        ARIMA_model <-
-          tryCatch({
-            forecast::auto.arima(
-              y = dataTSTrain[, TargetName],
-              max.p = Lags,
-              max.q = Lags,
-              max.P = SLags,
-              max.Q = SLags,
-              max.d = ddataTSTrain,
-              max.D = DdataTSTrain,
-              ic = "bic",
-              lambda = FALSE,
-              biasadj = FALSE,
-              stepwise = StepWise,
-              num.cores = NumCores
-            )
-          },
-          error = function(x)
-            "empty")
         
-        # Model-Supplied-Freq
-        if (ModelFreq) {
-          ARIMA_model1 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = dataTSTrain1[, TargetName],
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = ddataTSTrain1,
-                max.D = DdataTSTrain1,
-                ic = "bic",
-                lambda = FALSE,
-                biasadj = FALSE,
-                stepwise = StepWise,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
-        }
-        
-        # TSClean Version
+        # TSClean Verison
         if (TSClean) {
           # User-Supplied-Freq
-          ARIMA_model2 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = Target,
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = dTarget,
-                max.D = DTarget,
-                ic = "bic",
-                lambda = FALSE,
-                biasadj = FALSE,
-                stepwise = StepWise,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(Target, K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(Target, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model2))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model2"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(Target, K = k)
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
           
           # Model-Supplied-Freq
           if (ModelFreq) {
-            ARIMA_model3 <-
+            final_metrics <- data.table::copy(data_test)
+            final_metrics[, Target := as.numeric(Target)]
+            temp_metrics <- data.table::copy(final_metrics)
+            j <- 0
+            for(i in 0:MaxFourierPairs) {
+              if(i == 0) {
+                XREG <- 1
+                XREGFC <- 1
+              } else {
+                XREG <- tryCatch({forecast::fourier(TargetMB, K = i)}, error = function(x) FALSE)
+                XREGFC <- tryCatch({forecast::fourier(TargetMB, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+              }
+              if(is.numeric(XREG) & is.numeric(XREGFC)) {
+                if(i == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")  
+                } else {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+                
+                if("arima" %chin% tolower(class(ARIMA_model3))) {
+                  j <- j + 1
+                  if(j == 1 & i == 0) {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean)
+                    final_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  } else {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                    temp_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  }
+                  
+                  # Add metrics----
+                  if(ncol(final_metrics) != 9) {
+                    final_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Final_metrics <- final_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  } else {
+                    temp_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Temp_metrics <- temp_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                    Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                  }
+                  data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+                }
+              }
+            }
+            
+            # Final build----
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model3"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(TargetMB, K = k)
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }
+          }
+        }
+      } else {
+        # User-Supplied-Freq
+        final_metrics <- data.table::copy(data_test)
+        final_metrics[, Target := as.numeric(Target)]
+        temp_metrics <- data.table::copy(final_metrics)
+        j <- 0
+        for(i in 0:MaxFourierPairs) {
+          if(i == 0) {
+            XREG <- 1
+            XREGFC <- 1
+          } else {
+            XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i)}, error = function(x) FALSE)
+            XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+          }
+          if(is.numeric(XREG) & is.numeric(XREGFC)) {
+            if(i == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            } else {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+            
+            if("arima" %chin% tolower(class(ARIMA_model))) {
+              j <- j + 1
+              if(j == 1 & i == 0) {
+                x <- as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean)
+                final_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              } else {
+                x <- as.numeric(forecast::forecast(ARIMA_model, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                temp_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              }
+              
+              # Add metrics----
+              if(ncol(final_metrics) != 9) {
+                final_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Final_metrics <- final_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+              } else {
+                temp_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Temp_metrics <- temp_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+                Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+              }
+              data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+            }
+          }
+        }
+        
+        # Final build----
+        if(ncol(Final_metrics) != 2) {
+          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+          Final_metrics[, Name := "ARIMA_model"]
+          if(exists("WinningArimaMetrics")) {
+            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+          } else {
+            WinningArimaMetrics <- Final_metrics[1,]
+          }
+          k <- Final_metrics[1,K]
+          if(k == 0) {
+            ARIMA_model <-
               tryCatch({
                 forecast::auto.arima(
-                  y = TargetMB,
+                  y = dataTSTrain[, TargetName],
                   max.p = Lags,
                   max.q = Lags,
                   max.P = SLags,
                   max.Q = SLags,
-                  max.d = dTSClean,
-                  max.D = DTSClean,
-                  ic = "bic",
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  ic = tolower(InnerEval),
                   lambda = FALSE,
                   biasadj = FALSE,
                   stepwise = StepWise,
@@ -1266,95 +1918,713 @@ AutoTS <- function(data,
                 )
               },
               error = function(x)
-                "empty")
+                "empty")  
+          } else {
+            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+            ARIMA_model <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
+                  lambda = FALSE,
+                  biasadj = FALSE,
+                  stepwise = StepWise,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")  
+          }
+        }
+        
+        # Model-Supplied-Freq
+        if (ModelFreq) {
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")  
+              } else {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model1))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model1"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty") 
+            } else {
+              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty") 
+            }
+          }
+        }
+        
+        # TSClean Version
+        if (TSClean) {
+          # User-Supplied-Freq
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(Target, K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(Target, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model2))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model2"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(Target, K = k)
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
+          
+          # Model-Supplied-Freq
+          if (ModelFreq) {
+            final_metrics <- data.table::copy(data_test)
+            final_metrics[, Target := as.numeric(Target)]
+            temp_metrics <- data.table::copy(final_metrics)
+            j <- 0
+            for(i in 0:MaxFourierPairs) {
+              if(i == 0) {
+                XREG <- 1
+                XREGFC <- 1
+              } else {
+                XREG <- tryCatch({forecast::fourier(TargetMB, K = i)}, error = function(x) FALSE)
+                XREGFC <- tryCatch({forecast::fourier(TargetMB, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+              }
+              if(is.numeric(XREG) & is.numeric(XREGFC)) {
+                if(i == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+                
+                if("arima" %chin% tolower(class(ARIMA_model3))) {
+                  j <- j + 1
+                  if(j == 1 & i == 0) {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean)
+                    final_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  } else {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                    temp_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  }
+                  
+                  # Add metrics----
+                  if(ncol(final_metrics) != 9) {
+                    final_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Final_metrics <- final_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  } else {
+                    temp_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Temp_metrics <- temp_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                    Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                  }
+                  data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+                }
+              }
+            }
+            
+            # Final build----
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model3"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(TargetMB, K = k)
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }
           }
         }
       }
     } else {
       if (MinVal > 0) {
         # User-Supplied-Freq
-        ARIMA_model <-
-          tryCatch({
-            forecast::auto.arima(
-              y = dataTSTrain[, TargetName],
-              max.p = Lags,
-              max.q = Lags,
-              max.P = SLags,
-              max.Q = SLags,
-              max.d = ddataTSTrain,
-              max.D = DdataTSTrain,
-              ic = "bic",
-              lambda = TRUE,
-              biasadj = TRUE,
-              stepwise = StepWise,
-              parallel = TRUE,
-              num.cores = NumCores
-            )
-          },
-          error = function(x)
-            "empty")
-        
-        # Model-Supplied-Freq
-        if (ModelFreq) {
-          ARIMA_model1 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = dataTSTrain1[, TargetName],
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = ddataTSTrain1,
-                max.D = DdataTSTrain1,
-                ic = "bic",
-                lambda = TRUE,
-                biasadj = TRUE,
-                stepwise = StepWise,
-                parallel = TRUE,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
+        final_metrics <- data.table::copy(data_test)
+        final_metrics[, Target := as.numeric(Target)]
+        temp_metrics <- data.table::copy(final_metrics)
+        j <- 0
+        for(i in 0:MaxFourierPairs) {
+          if(i == 0) {
+            XREG <- 1
+            XREGFC <- 1
+          } else {
+            XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i)}, error = function(x) FALSE)
+            XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+          }
+          if(is.numeric(XREG) & is.numeric(XREGFC)) {
+            if(i == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            } else {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+            
+            if("arima" %chin% tolower(class(ARIMA_model))) {
+              j <- j + 1
+              if(j == 1 & i == 0) {
+                x <- as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean) 
+                final_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              } else {
+                x <- as.numeric(forecast::forecast(ARIMA_model, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                temp_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              }
+              
+              # Add metrics----
+              if(ncol(final_metrics) != 9) {
+                final_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Final_metrics <- final_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+              } else {
+                temp_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Temp_metrics <- temp_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+                Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+              }
+              data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+            }
+          }
         }
         
-        # TSClean Version
-        if (TSClean) {
-          # User-Supplied-Freq
-          ARIMA_model2 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = Target,
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = dTarget,
-                max.D = DTarget,
-                ic = "bic",
-                lambda = TRUE,
-                biasadj = TRUE,
-                stepwise = StepWise,
-                parallel = TRUE,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
-          
-          # Model-Supplied-Freq
-          if (ModelFreq) {
-            ARIMA_model3 <-
+        # Final build----
+        if(ncol(Final_metrics) != 2) {
+          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+          Final_metrics[, Name := "ARIMA_model"]
+          if(exists("WinningArimaMetrics")) {
+            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+          } else {
+            WinningArimaMetrics <- Final_metrics[1,]
+          }
+          k <- Final_metrics[1,K]
+          if(k == 0) {
+            ARIMA_model <-
               tryCatch({
                 forecast::auto.arima(
-                  y = TargetMB,
+                  y = dataTSTrain[, TargetName],
                   max.p = Lags,
                   max.q = Lags,
                   max.P = SLags,
                   max.Q = SLags,
-                  max.d = dTSClean,
-                  max.D = DTSClean,
-                  ic = "bic",
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  ic = tolower(InnerEval),
+                  lambda = TRUE,
+                  biasadj = TRUE,
+                  stepwise = StepWise,
+                  parallel = TRUE,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")
+          } else {
+            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+            ARIMA_model <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = ddataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
                   lambda = TRUE,
                   biasadj = TRUE,
                   stepwise = StepWise,
@@ -1366,90 +2636,676 @@ AutoTS <- function(data,
                 "empty")
           }
         }
-      } else {
-        # User-Supplied-Freq
-        ARIMA_model <-
-          tryCatch({
-            forecast::auto.arima(
-              y = dataTSTrain[, TargetName],
-              max.p = Lags,
-              max.q = Lags,
-              max.P = SLags,
-              max.Q = SLags,
-              max.d = dataTSTrain,
-              max.D = DdataTSTrain,
-              ic = "bic",
-              lambda = FALSE,
-              biasadj = FALSE,
-              stepwise = StepWise,
-              parallel = TRUE,
-              num.cores = NumCores
-            )
-          },
-          error = function(x)
-            "empty")
         
-        # Model-Supplied-Freq
+        # Model-Supplied-Freq----
         if (ModelFreq) {
-          ARIMA_model1 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = dataTSTrain1[, TargetName],
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = ddataTSTrain1,
-                max.D = DdataTSTrain1,
-                ic = "bic",
-                lambda = FALSE,
-                biasadj = FALSE,
-                stepwise = StepWise,
-                parallel = TRUE,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")  
+              } else {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model1))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model1"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
         }
         
         # TSClean Version
         if (TSClean) {
           # User-Supplied-Freq
-          ARIMA_model2 <-
-            tryCatch({
-              forecast::auto.arima(
-                y = Target,
-                max.p = Lags,
-                max.q = Lags,
-                max.P = SLags,
-                max.Q = SLags,
-                max.d = dTarget,
-                max.D = DTarget,
-                ic = "bic",
-                lambda = FALSE,
-                biasadj = FALSE,
-                stepwise = StepWise,
-                parallel = TRUE,
-                num.cores = NumCores
-              )
-            },
-            error = function(x)
-              "empty")
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(Target, K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(Target, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model2))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model2"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(Target, K = k)
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
           
           # Model-Supplied-Freq
           if (ModelFreq) {
-            ARIMA_model3 <-
+            final_metrics <- data.table::copy(data_test)
+            final_metrics[, Target := as.numeric(Target)]
+            temp_metrics <- data.table::copy(final_metrics)
+            j <- 0
+            for(i in 0:MaxFourierPairs) {
+              if(i == 0) {
+                XREG <- 1
+                XREGFC <- 1
+              } else {
+                XREG <- tryCatch({forecast::fourier(TargetMB, K = i)}, error = function(x) FALSE)
+                XREGFC <- tryCatch({forecast::fourier(TargetMB, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+              }
+              if(is.numeric(XREG) & is.numeric(XREGFC)) {
+                if(i == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+                
+                if("arima" %chin% tolower(class(ARIMA_model3))) {
+                  j <- j + 1
+                  if(j == 1 & i == 0) {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean)
+                    final_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  } else {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                    temp_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  }
+                  
+                  # Add metrics----
+                  if(ncol(final_metrics) != 9) {
+                    final_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Final_metrics <- final_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  } else {
+                    temp_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Temp_metrics <- temp_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                    Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                  }
+                  data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+                }
+              }
+            }
+            
+            # Final build----
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model3"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(TargetMB, K = k)
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }
+          }
+        }
+      } else {
+        # User-Supplied-Freq
+        final_metrics <- data.table::copy(data_test)
+        final_metrics[, Target := as.numeric(Target)]
+        temp_metrics <- data.table::copy(final_metrics)
+        j <- 0
+        for(i in 0:MaxFourierPairs) {
+          if(i == 0) {
+            XREG <- 1
+            XREGFC <- 1
+          } else {
+            XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i)}, error = function(x) FALSE)
+            XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+          }
+          if(is.numeric(XREG) & is.numeric(XREGFC)) {
+            if(i == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+            
+            if("arima" %chin% tolower(class(ARIMA_model))) {
+              j <- j + 1
+              if(j == 1 & i == 0) {
+                x <- as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean)
+                final_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              } else {
+                x <- as.numeric(forecast::forecast(ARIMA_model, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                temp_metrics[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("ARIMA", HoldOutPeriods),
+                  FC_Eval = x
+                )]
+              }
+              
+              # Add metrics----
+              if(ncol(final_metrics) != 9) {
+                final_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Final_metrics <- final_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+              } else {
+                temp_metrics[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval +
+                                                      1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                Temp_metrics <- temp_metrics[, .(
+                  Resid = mean(Resid, na.rm = TRUE),
+                  PercentError = mean(PercentError, na.rm = TRUE),
+                  AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                  AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                  SquaredError = mean(SquaredError, na.rm = TRUE))]
+                Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+              }
+              data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+            }
+          }
+        }
+        
+        # Final build----
+        if(ncol(Final_metrics) != 2) {
+          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+          Final_metrics[, Name := "ARIMA_model"]
+          if(exists("WinningArimaMetrics")) {
+            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+          } else {
+            WinningArimaMetrics <- Final_metrics[1,]
+          }
+          k <- Final_metrics[1,K]
+          if(k == 0) {
+            ARIMA_model <-
               tryCatch({
                 forecast::auto.arima(
-                  y = TargetMB,
+                  y = dataTSTrain[, TargetName],
                   max.p = Lags,
                   max.q = Lags,
                   max.P = SLags,
                   max.Q = SLags,
-                  max.d = dTSClean,
-                  max.D = DTSClean,
-                  ic = "bic",
+                  max.d = dataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
                   lambda = FALSE,
                   biasadj = FALSE,
                   stepwise = StepWise,
@@ -1459,6 +3315,560 @@ AutoTS <- function(data,
               },
               error = function(x)
                 "empty")
+          } else {
+            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+            ARIMA_model <-
+              tryCatch({
+                forecast::auto.arima(
+                  y = dataTSTrain[, TargetName],
+                  max.p = Lags,
+                  max.q = Lags,
+                  max.P = SLags,
+                  max.Q = SLags,
+                  max.d = dataTSTrain,
+                  max.D = DdataTSTrain,
+                  xreg = XREG,
+                  ic = tolower(InnerEval),
+                  lambda = FALSE,
+                  biasadj = FALSE,
+                  stepwise = StepWise,
+                  parallel = TRUE,
+                  num.cores = NumCores
+                )
+              },
+              error = function(x)
+                "empty")
+          }
+        }
+        
+        # Model-Supplied-Freq
+        if (ModelFreq) {
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model1))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model1, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model1"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain1,
+                    max.D = DdataTSTrain1,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
+        }
+        
+        # TSClean Version
+        if (TSClean) {
+          # User-Supplied-Freq
+          final_metrics <- data.table::copy(data_test)
+          final_metrics[, Target := as.numeric(Target)]
+          temp_metrics <- data.table::copy(final_metrics)
+          j <- 0
+          for(i in 0:MaxFourierPairs) {
+            if(i == 0) {
+              XREG <- 1
+              XREGFC <- 1
+            } else {
+              XREG <- tryCatch({forecast::fourier(Target, K = i)}, error = function(x) FALSE)
+              XREGFC <- tryCatch({forecast::fourier(Target, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+            }
+            if(is.numeric(XREG) & is.numeric(XREGFC)) {
+              if(i == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+              
+              if("arima" %chin% tolower(class(ARIMA_model2))) {
+                j <- j + 1
+                if(j == 1 & i == 0) {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean)
+                  final_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                } else {
+                  x <- as.numeric(forecast::forecast(ARIMA_model2, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                  temp_metrics[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("ARIMA", HoldOutPeriods),
+                    FC_Eval = x
+                  )]
+                }
+                
+                # Add metrics----
+                if(ncol(final_metrics) != 9) {
+                  final_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Final_metrics <- final_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                } else {
+                  temp_metrics[, ':=' (
+                    Resid = get(TargetName) - FC_Eval,
+                    PercentError = get(TargetName) / (FC_Eval +
+                                                        1) - 1,
+                    AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                    1) - 1),
+                    AbsoluteError = abs(get(TargetName) - FC_Eval),
+                    SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                  )]
+                  Temp_metrics <- temp_metrics[, .(
+                    Resid = mean(Resid, na.rm = TRUE),
+                    PercentError = mean(PercentError, na.rm = TRUE),
+                    AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                    AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                    SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                }
+                data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+              }
+            }
+          }
+          
+          # Final build----
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model2"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(Target, K = k)
+              ARIMA_model2 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = Target,
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dTarget,
+                    max.D = DTarget,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }
+          
+          # Model-Supplied-Freq
+          if (ModelFreq) {
+            final_metrics <- data.table::copy(data_test)
+            final_metrics[, Target := as.numeric(Target)]
+            temp_metrics <- data.table::copy(final_metrics)
+            j <- 0
+            for(i in 0:MaxFourierPairs) {
+              if(i == 0) {
+                XREG <- 1
+                XREGFC <- 1
+              } else {
+                XREG <- tryCatch({forecast::fourier(TargetMB, K = i)}, error = function(x) FALSE)
+                XREGFC <- tryCatch({forecast::fourier(TargetMB, K = i, h = HoldOutPeriods)}, error = function(x) FALSE)
+              }
+              if(is.numeric(XREG) & is.numeric(XREGFC)) {
+                if(i == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+                
+                print("rigth here motherfucker15")
+                
+                if("arima" %chin% tolower(class(ARIMA_model3))) {
+                  j <- j + 1
+                  if(j == 1 & i == 0) {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean)
+                    final_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  } else {
+                    x <- as.numeric(forecast::forecast(ARIMA_model3, xreg = XREGFC, h = HoldOutPeriods)$mean)
+                    temp_metrics[, ':=' (
+                      Target = as.numeric(Target),
+                      ModelName = rep("ARIMA", HoldOutPeriods),
+                      FC_Eval = x
+                    )]
+                  }
+                  
+                  # Add metrics----
+                  if(ncol(final_metrics) != 9) {
+                    final_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Final_metrics <- final_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                  } else {
+                    temp_metrics[, ':=' (
+                      Resid = get(TargetName) - FC_Eval,
+                      PercentError = get(TargetName) / (FC_Eval +
+                                                          1) - 1,
+                      AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                      1) - 1),
+                      AbsoluteError = abs(get(TargetName) - FC_Eval),
+                      SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                    )]
+                    Temp_metrics <- temp_metrics[, .(
+                      Resid = mean(Resid, na.rm = TRUE),
+                      PercentError = mean(PercentError, na.rm = TRUE),
+                      AbsolutePercentError = mean(AbsolutePercentError, na.rm = TRUE),
+                      AbsoluteError = mean(AbsoluteError, na.rm = TRUE),
+                      SquaredError = mean(SquaredError, na.rm = TRUE))]
+                    Final_metrics <- data.table::rbindlist(list(Final_metrics, Temp_metrics), fill = TRUE)
+                  }
+                  data.table::set(Final_metrics, i = (i + 1), j = "K", value = eval(i))
+                }
+              }
+            }
+            
+            # Final build----
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model3"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(TargetMB, K = k)
+                ARIMA_model3 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = TargetMB,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTSClean,
+                      max.D = DTSClean,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }
           }
         }
       }
@@ -1466,16 +3876,35 @@ AutoTS <- function(data,
     
     # Collect Test Data for Model Comparison
     # 2: User-Supplied-Freq
+    i <- 1
+    k_table <- data.table::data.table(MinError = rep(999999999,4), K = rep(999999999,4))
     if ("arima" %chin% tolower(class(ARIMA_model))) {
+      data.table::set(k_table, 
+                      i = i, 
+                      j = "K", 
+                      value = as.numeric(WinningArimaMetrics[Name == "ARIMA_model"][, K]))
       tryCatch({
-        data_test_ARI <- data.table::copy(data_test)
-        data_test_ARI[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("ARIMA", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean
-          )
-        )]
+        if(WinningArimaMetrics[Name == "ARIMA_model"][, K] == 0) {
+          data_test_ARI <- data.table::copy(data_test)
+          x <- as.numeric(forecast::forecast(ARIMA_model, h = HoldOutPeriods)$mean)
+          data_test_ARI[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARIMA", HoldOutPeriods),
+            FC_Eval = x
+          )]          
+        } else {
+          data_test_ARI <- data.table::copy(data_test)
+          x <- as.numeric(forecast::forecast(ARIMA_model, 
+                                             xreg = forecast::fourier(dataTSTrain[, TargetName], 
+                                                                      K = WinningArimaMetrics[Name == "ARIMA_model"][, K],
+                                                                      h = HoldOutPeriods),
+                                             h = HoldOutPeriods)$mean)
+          data_test_ARI[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("ARIMA", HoldOutPeriods),
+            FC_Eval = x
+          )]
+        }
         
         # Add Evaluation Columns
         # 3)
@@ -1489,11 +3918,32 @@ AutoTS <- function(data,
           SquaredError = (get(TargetName) - FC_Eval) ^ 2
         )]
         
-        # Increment
-        i <- i + 1
+        # Store min value
+        if(toupper(EvaluationMetric) == "MSE") {
+          data.table::set(k_table, 
+                          i = i, 
+                          j = "MinError", 
+                          value = as.numeric(data_test_ARI[, mean(SquaredError,na.rm = TRUE)]))
+        } else if(toupper(EvaluationMetric) == "MAE") {
+          data.table::set(k_table, 
+                          i = i, 
+                          j = "MinError", 
+                          value = as.numeric(data_test_ARI[, mean(AbsoluteError)]))
+        } else {
+          data.table::set(k_table, 
+                          i = i, 
+                          j = "MinError", 
+                          value = as.numeric(data_test_ARI[, mean(AbsolutePercentError,na.rm = TRUE)]))          
+        }
+        
+        
         
         # Collect model filename
         EvalList[[i]] <- data_test_ARI
+        
+        # Increment
+        i <- i + 1
+        
       }, error = function(x)
         "skip")
     }
@@ -1501,15 +3951,32 @@ AutoTS <- function(data,
     # Model-Supplied-Freq
     if (ModelFreq) {
       if ("arima" %chin% tolower(class(ARIMA_model1))) {
+        data.table::set(k_table, 
+                        i = i, 
+                        j = "K", 
+                        value = as.numeric(WinningArimaMetrics[Name == "ARIMA_model1"][, K]))
         tryCatch({
-          data_test_ARI1 <- data.table::copy(data_test)
-          data_test_ARI1[, ':=' (
-            Target = as.numeric(Target),
-            ModelName = rep("ARIMA_ModelFreq", HoldOutPeriods),
-            FC_Eval = as.numeric(
-              forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean
-            )
-          )]
+          if(WinningArimaMetrics[Name == "ARIMA_model1"][, K] == 0) {
+            data_test_ARI1 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model1, h = HoldOutPeriods)$mean)
+            data_test_ARI1[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("ARIMA_ModelFreq", HoldOutPeriods),
+              FC_Eval = x
+            )]  
+          } else {
+            data_test_ARI1 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model1, 
+                                               h = HoldOutPeriods, 
+                                               xreg = forecast::fourier(dataTSTrain1[, TargetName], 
+                                                                        K = WinningArimaMetrics[Name == "ARIMA_model1"][, K],
+                                                                        h = HoldOutPeriods))$mean)
+            data_test_ARI1[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("ARIMA_ModelFreq", HoldOutPeriods),
+              FC_Eval = x
+            )]
+          }
           
           # Add Evaluation Columns
           # 3)
@@ -1523,11 +3990,30 @@ AutoTS <- function(data,
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
           
-          # Increment
-          i <- i + 1
+          # Store min value
+          if(toupper(EvaluationMetric) == "MSE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI1[, mean(SquaredError,na.rm = TRUE)]))
+          } else if(toupper(EvaluationMetric) == "MAE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI1[, mean(AbsoluteError,na.rm = TRUE)]))
+          } else {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI1[, mean(AbsolutePercentError,na.rm = TRUE)]))          
+          }
           
           # Collect model filename
           EvalList[[i]] <- data_test_ARI1
+          
+          # Increment
+          i <- i + 1
+          
         }, error = function(x)
           "skip")
       }
@@ -1537,15 +4023,32 @@ AutoTS <- function(data,
     if (TSClean) {
       # 2: User-Supplied-Freq
       if ("arima" %chin% tolower(class(ARIMA_model2))) {
+        data.table::set(k_table, 
+                        i = i, 
+                        j = "K", 
+                        value = as.numeric(WinningArimaMetrics[Name == "ARIMA_model2"][, K]))
         tryCatch({
-          data_test_ARI2 <- data.table::copy(data_test)
-          data_test_ARI2[, ':=' (
-            Target = as.numeric(Target),
-            ModelName = rep("ARIMA_TSC", HoldOutPeriods),
-            FC_Eval = as.numeric(
-              forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean
-            )
-          )]
+          if(WinningArimaMetrics[Name == "ARIMA_model2"][, K] == 0) {
+            data_test_ARI2 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model2, h = HoldOutPeriods)$mean)
+            data_test_ARI2[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("ARIMA_TSC", HoldOutPeriods),
+              FC_Eval = x
+            )]            
+          } else {
+            data_test_ARI2 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model2, 
+                                               h = HoldOutPeriods,
+                                               xreg = forecast::fourier(Target, 
+                                                                        K = WinningArimaMetrics[Name == "ARIMA_model2"][, K], 
+                                                                        h = HoldOutPeriods))$mean)
+            data_test_ARI2[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("ARIMA_TSC", HoldOutPeriods),
+              FC_Eval = x
+            )]
+          }
           
           # Add Evaluation Columns
           # 3)
@@ -1559,50 +4062,107 @@ AutoTS <- function(data,
             SquaredError = (get(TargetName) - FC_Eval) ^ 2
           )]
           
-          # Increment
-          i <- i + 1
+          # Store min value
+          if(toupper(EvaluationMetric) == "MSE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI2[, mean(SquaredError,na.rm = TRUE)]))
+          } else if(toupper(EvaluationMetric) == "MAE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI2[, mean(AbsoluteError,na.rm = TRUE)]))
+          } else {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI2[, mean(AbsolutePercentError,na.rm = TRUE)]))
+          }
           
           # Collect model filename
           EvalList[[i]] <- data_test_ARI2
+          
+          # Increment
+          i <- i + 1
+          
         }, error = function(x)
           "skip")
       }
-      
-      # Model-Supplied-Freq
-      if (ModelFreq) {
-        if ("arima" %chin% tolower(class(ARIMA_model3))) {
-          tryCatch({
+    }
+    
+    # Model-Supplied-Freq
+    if (ModelFreq == TRUE & TSClean == TRUE) {
+      if ("arima" %chin% tolower(class(ARIMA_model3))) {
+        data.table::set(k_table, 
+                        i = i, 
+                        j = "K", 
+                        value = as.numeric(WinningArimaMetrics[Name == "ARIMA_model3"][, K]))
+        tryCatch({
+          if(WinningArimaMetrics[Name == "ARIMA_model3"][, K] == 0) {
             data_test_ARI3 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean)
             data_test_ARI3[, ':=' (
               Target = as.numeric(Target),
               ModelName = rep("ARIMA_ModelFreqTSC", HoldOutPeriods),
-              FC_Eval = as.numeric(
-                forecast::forecast(ARIMA_model3, h = HoldOutPeriods)$mean
-              )
-            )]
-            
-            # Add Evaluation Columns
-            # 3)
+              FC_Eval = x
+            )]  
+          } else {
+            data_test_ARI3 <- data.table::copy(data_test)
+            x <- as.numeric(forecast::forecast(ARIMA_model3, 
+                                               h = HoldOutPeriods,
+                                               xreg = forecast::fourier(TargetMB, 
+                                                                        K = WinningArimaMetrics[Name == "ARIMA_model3"][, K], 
+                                                                        h = HoldOutPeriods))$mean)
             data_test_ARI3[, ':=' (
-              Resid = get(TargetName) - FC_Eval,
-              PercentError = get(TargetName) / (FC_Eval +
-                                                  1) - 1,
-              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                              1) - 1),
-              AbsoluteError = abs(get(TargetName) - FC_Eval),
-              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+              Target = as.numeric(Target),
+              ModelName = rep("ARIMA_ModelFreqTSC", HoldOutPeriods),
+              FC_Eval = x
             )]
-            
-            # Increment
-            i <- i + 1
-            
-            # Collect model filename
-            EvalList[[i]] <- data_test_ARI3
-          }, error = function(x)
-            "skip")
-        }
+          }
+          
+          # Add Evaluation Columns
+          # 3)
+          data_test_ARI3[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval +
+                                                1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval) ^ 2
+          )]
+          
+          # Store min value
+          if(toupper(EvaluationMetric) == "MSE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI3[, mean(SquaredError,na.rm = TRUE)]))
+          } else if(toupper(EvaluationMetric) == "MAE") {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI3[, mean(AbsoluteError,na.rm = TRUE)]))
+          } else {
+            data.table::set(k_table, 
+                            i = i, 
+                            j = "MinError", 
+                            value = as.numeric(data_test_ARI3[, mean(AbsolutePercentError,na.rm = TRUE)]))
+          }
+          
+          # Collect model filename
+          EvalList[[i]] <- data_test_ARI3
+          
+          # Increment
+          i <- i + 1
+          
+        }, error = function(x)
+          "skip")
       }
     }
+    data.table::setorderv(k_table, cols = "MinError", order = 1, na.last = TRUE)
+    K <- k_table[1,K]
   }
   
   # ETS----
@@ -3176,7 +5736,7 @@ AutoTS <- function(data,
   d <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0)
   D <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0)
   
-  # Retrain best model
+  # Retrain best model----
   if (grepl(pattern = "DSHW", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA DSHW FITTING")
@@ -3249,7 +5809,7 @@ AutoTS <- function(data,
           max.q = Lags,
           max.d = d,
           max.D = D,
-          ic = "bic",
+          ic = tolower(InnerEval),
           stepwise = StepWise,
           num.cores = NumCores
         )
@@ -3262,7 +5822,7 @@ AutoTS <- function(data,
           max.q = Lags,
           max.d = d,
           max.D = D,
-          ic = "bic",
+          ic = tolower(InnerEval),
           stepwise = StepWise,
           num.cores = NumCores
         )
@@ -3277,7 +5837,7 @@ AutoTS <- function(data,
           max.q = Lags,
           max.d = d,
           max.D = D,
-          ic = "bic",
+          ic = tolower(InnerEval),
           stepwise = StepWise,
           parallel = TRUE,
           num.cores = NumCores
@@ -3291,7 +5851,7 @@ AutoTS <- function(data,
           max.q = Lags,
           max.d = d,
           max.D = D,
-          ic = "bic",
+          ic = tolower(InnerEval),
           stepwise = StepWise,
           parallel = TRUE,
           num.cores = NumCores
@@ -3313,84 +5873,171 @@ AutoTS <- function(data,
     if (PrintUpdates)
       message("FULL DATA ARIMA FITTING")
     # Rebuild model on full data
-    if (StepWise) {
-      if (MinVal > 0) {
-        ARIMA_model <-
-          forecast::auto.arima(
-            y     = dataTSTrain,
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = d,
-            max.D = D,
-            ic = "bic",
-            lambda = TRUE,
-            biasadj = TRUE,
-            stepwise = StepWise,
-            num.cores = NumCores
-          )
+    if(K > 0) {
+      XREG <- forecast::fourier(dataTSTrain, K = K)
+      if (StepWise) {
+        if (MinVal > 0) {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              xreg  = XREG,
+              ic = tolower(InnerEval),
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+        } else {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              xreg = XREG,
+              ic = tolower(InnerEval),
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+        }
       } else {
-        ARIMA_model <-
-          forecast::auto.arima(
-            y     = dataTSTrain,
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = d,
-            max.D = D,
-            ic = "bic",
-            lambda = FALSE,
-            biasadj = FALSE,
-            stepwise = StepWise,
-            num.cores = NumCores
-          )
+        if (MinVal > 0) {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              xreg = XREG,
+              ic = tolower(InnerEval),
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+        } else {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              xreg = XREG,
+              ic = tolower(InnerEval),
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+        }
       }
     } else {
-      if (MinVal > 0) {
-        ARIMA_model <-
-          forecast::auto.arima(
-            y     = dataTSTrain,
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = d,
-            max.D = D,
-            ic = "bic",
-            lambda = TRUE,
-            biasadj = TRUE,
-            stepwise = StepWise,
-            parallel = TRUE,
-            num.cores = NumCores
-          )
+      if (StepWise) {
+        if (MinVal > 0) {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              ic = tolower(InnerEval),
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+        } else {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              ic = tolower(InnerEval),
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              num.cores = NumCores
+            )
+        }
       } else {
-        ARIMA_model <-
-          forecast::auto.arima(
-            y     = dataTSTrain,
-            max.p = Lags,
-            max.q = Lags,
-            max.P = SLags,
-            max.Q = SLags,
-            max.d = d,
-            max.D = D,
-            ic = "bic",
-            lambda = FALSE,
-            biasadj = FALSE,
-            stepwise = StepWise,
-            parallel = TRUE,
-            num.cores = NumCores
-          )
+        if (MinVal > 0) {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              ic = tolower(InnerEval),
+              lambda = TRUE,
+              biasadj = TRUE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+        } else {
+          ARIMA_model <-
+            forecast::auto.arima(
+              y     = dataTSTrain,
+              max.p = Lags,
+              max.q = Lags,
+              max.P = SLags,
+              max.Q = SLags,
+              max.d = d,
+              max.D = D,
+              ic = tolower(InnerEval),
+              lambda = FALSE,
+              biasadj = FALSE,
+              stepwise = StepWise,
+              parallel = TRUE,
+              num.cores = NumCores
+            )
+        }
       }
     }
     
     # Forecast with new model
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
-    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1:FCPeriods]]
-    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[1:FCPeriods]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    if(K > 0) {
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods, xreg = forecast::fourier(dataTSTrain, K = K, h = FCPeriods))$mean)]
+      FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods, xreg = forecast::fourier(dataTSTrain, K = K, h = FCPeriods))$lower)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods, xreg = forecast::fourier(dataTSTrain, K = K, h = FCPeriods))$lower)[(FCPeriods+1):(2*FCPeriods)]]
+      FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods, xreg = forecast::fourier(dataTSTrain, K = K, h = FCPeriods))$upper)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods, xreg = forecast::fourier(dataTSTrain, K = K, h = FCPeriods))$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    } else {
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$mean)]
+      FC_Data[, paste0(BestModel, "_Low80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_Low95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
+      FC_Data[, paste0(BestModel,"_High80") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_High95") := as.numeric(forecast::forecast(ARIMA_model, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]      
+    }
     
     # Store model
     model <- ARIMA_model
