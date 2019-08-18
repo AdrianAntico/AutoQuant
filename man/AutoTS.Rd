@@ -6,9 +6,10 @@
 \usage{
 AutoTS(data, TargetName = "Target", DateName = "DateTime",
   FCPeriods = 30, HoldOutPeriods = 30, EvaluationMetric = "MAPE",
-  TimeUnit = "day", Lags = 25, SLags = 2, NumCores = 4,
-  SkipModels = NULL, StepWise = TRUE, TSClean = TRUE,
-  ModelFreq = TRUE, PlotPredictionIntervals = TRUE, PrintUpdates = FALSE)
+  InnerEval = "AICc", TimeUnit = "day", Lags = 25, SLags = 2,
+  MaxFourierPairs = 0, NumCores = 4, SkipModels = NULL,
+  StepWise = TRUE, TSClean = TRUE, ModelFreq = TRUE,
+  PrintUpdates = FALSE, PlotPredictionIntervals = TRUE)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -29,6 +30,8 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{SLags}{is the number of seasonal lags you wish to test in various models (same as moving averages)}
 
+\item{MaxFourierPairs}{Set the number of Fourier pair of terms to test. (ARIMA only currently)}
+
 \item{NumCores}{is the number of cores available on your computer}
 
 \item{SkipModels}{Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"}
@@ -39,9 +42,9 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{ModelFreq}{Set to TRUE to run a separate version of all models where the time series frequency is chosen algorithmically}
 
-\item{PlotPredictionIntervals}{Set to FALSE not to print the prediction intervals}
-
 \item{PrintUpdates}{Set to TRUE for a print to console of function progress}
+
+\item{PlotPredictionIntervals}{Set to FALSE to not print prediction intervals on your plot output}
 }
 \value{
 Returns a list containing 1: A data.table object with a date column and the forecasted values; 2: The model evaluation results; 3: The champion model for later use if desired; 4: The name of the champion model; 5. A time series ggplot with historical values and forecasted values.
@@ -84,6 +87,7 @@ output <-   AutoTS(data,
                    TimeUnit                = "day",
                    Lags                    = 1,
                    SLags                   = 1,
+                   MaxFourierPairs         = 0,
                    NumCores                = 4,
                    SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
                    StepWise                = TRUE,
