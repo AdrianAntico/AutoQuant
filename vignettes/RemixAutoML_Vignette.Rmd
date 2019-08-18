@@ -917,6 +917,7 @@ This suite of functions are what will take your models to the next level. The co
 - `Scoring_GDL_Feature_Engineering()`
 - `AutoWord2VecModeler()`
 - `CreateCalendarVariables()`
+- `CreateHolidayVariables()`
 - `ModelDataPrep()`
 - `DummifyDT()`
 - `AutoDataPartition()`
