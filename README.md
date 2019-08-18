@@ -283,6 +283,13 @@ ________________________________________________________________________________
 ### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
 
+* Returns a list containing 
+  * A data.table object with a date column and the forecasted values
+  * The model evaluation results
+  * The champion model for later use if desired
+  * The name of the champion model
+  * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
+
 * The models tested internally include:
   * DSHW: Double Seasonal Holt-Winters
   * ARFIMA: Auto Regressive Fractional Integrated Moving Average
@@ -300,6 +307,7 @@ For each of the models tested internally, several aspects should be noted:
   * user-specified time frequency + historical series smoothing & imputation
   * model-based time frequency + historical smoothing & imputation
 
+* For ARIMA only (for releases >= 0.9.1) you can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy.
 * For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
 * For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
 * The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
