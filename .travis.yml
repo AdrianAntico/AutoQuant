@@ -2,10 +2,15 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
-cache: packages
-=======
-# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: R
-cache: packages
->>>>>>> fee41ea71ad1b2dd0708bab4a58c843bd9c3db81
+install:
+- R -e "install.packages('knitr', dependencies = TRUE);warnings()"
+- R -e "install.packages(c('data.table','foreach','doParallel','itertools', 'recommenderlab', 'lubridate', 'zoo', 'caTools', 'pROC', 'scatterplot3d', 'monreg', 'tm', 'wordcloud'), dependencies = TRUE)"
+- R -e "install.packages(c('h2o','forecast', 'tsoutliers', 'xgboost'), dependencies = TRUE)"
+- R -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')"
+- R -e "install.packages(c('arules','Matrix','RColorBrewer','magick','nortest'))"
+- R -e "devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)"
+
+script:
+- R CMD build RemixAutoML
+- R CMD check RemixAutoML_0.9.1.tar.gz
