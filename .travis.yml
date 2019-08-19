@@ -2,6 +2,8 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
+r:
+  - release
 
 install:
 - R -e "install.packages('knitr', dependencies = TRUE);warnings()"
