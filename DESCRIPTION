@@ -33,7 +33,7 @@ Imports: arules, caTools, data.table, doParallel, foreach, forecast,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
         scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, utils,
         wordcloud, xgboost, zoo
-Remotes: catboost
+Remotes: catboost/catboost
 Suggests: knitr, rmarkdown, sde, testthat, fpp
 VignetteBuilder: knitr
 Additional_repositories:
