@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
 cache: packages
+=======
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+cache: packages
+>>>>>>> fee41ea71ad1b2dd0708bab4a58c843bd9c3db81
