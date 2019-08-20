@@ -28,7 +28,7 @@
 #' @param TimeUnit is the level of aggregation your dataset comes in. Choices include: hour, day, week, month, quarter, year, 1Min, 5Min, 10Min, 15Min, and 30Min
 #' @param Lags is the number of lags you wish to test in various models (same as moving averages)
 #' @param SLags is the number of seasonal lags you wish to test in various models (same as moving averages)
-#' @param MaxFourierPairs Set the number of Fourier pair of terms to test. (ARIMA only currently)
+#' @param MaxFourierPairs Set the max number of Fourier terms to test out. They will be utilized in the ARIMA and NN models.
 #' @param NumCores is the number of cores available on your computer
 #' @param SkipModels Don't run specified models - e.g. exclude all models "DSHW" "ARFIMA" "ARIMA" "ETS" "NNET" "TBATS" "TSLM"
 #' @param StepWise Set to TRUE to have ARIMA and ARFIMA run a stepwise selection process. Otherwise, all models will be generated in parallel execution, but still run much slower.
@@ -245,7 +245,7 @@ AutoTS <- function(data,
   }
   
   # TSClean Version
-  if (TSClean | ModelFreq) {
+  if (TSClean & ModelFreq) {
     if (MinVal > 0) {
       TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
@@ -5133,475 +5133,946 @@ AutoTS <- function(data,
     k <- 0L
     temp <-
       data.table::data.table(
-        Lag = rep(1L, Lags * SLags),
-        Slag = rep(1L, Lags * SLags),
-        meanResid = rnorm(Lags * SLags),
-        sdResid = rnorm(Lags * SLags)
+        Lag = rep(100000L, Lags * SLags * (MaxFourierPairs + 1)),
+        Slag = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+        meanResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+        sdResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+        K = rep(1L, Lags * SLags * (MaxFourierPairs + 1))
       )
-    for (lags in seq_len(Lags)) {
-      for (slags in seq_len(SLags)) {
-        k <- k + 1L
-        if (PrintUpdates)
-          print(paste0("NNet Iteration: ", k))
-        NNETAR_model_temp <-
-          tryCatch({
-            forecast::nnetar(
-              y = dataTSTrain[, TargetName],
-              p = lags,
-              P = slags,
-              lambda = "auto"
-            )
-          }, error = function(x)
-            "error")
-        
-        if (length(NNETAR_model_temp) == 1) {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(temp,
-                          i = k,
-                          j = 3L,
-                          value = 999999999)
-          data.table::set(temp,
-                          i = k,
-                          j = 4L,
-                          value = 999999999)
-          
-        } else {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(
-            temp,
-            i = k,
-            j = 3L,
-            value = base::mean(abs(NNETAR_model_temp$residuals),
-                               na.rm = TRUE)
-          )
-          data.table::set(
-            temp,
-            i = k,
-            j = 4L,
-            value = sd(NNETAR_model_temp$residuals,
-                       na.rm = TRUE)
-          )
+    for(fp in 0:MaxFourierPairs) {
+      if(fp == 0) {
+        XREG <- 1
+        XREGFC <- 1
+      } else {
+        XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = fp)}, error = function(x) FALSE)
+        XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+      }
+      if(is.numeric(XREG) & is.numeric(XREGFC)) {
+        for (lags in seq_len(Lags)) {
+          for (slags in seq_len(SLags)) {
+            k <- k + 1L
+            if (PrintUpdates)
+              print(paste0("NNet Iteration: ", k))
+            if(fp == 0) {
+              NNETAR_model_temp <-
+                tryCatch({
+                  forecast::nnetar(
+                    y = dataTSTrain[, TargetName],
+                    p = lags,
+                    P = slags,
+                    lambda = "auto"
+                  )
+                }, error = function(x)
+                  "error")            
+            } else {
+              NNETAR_model_temp <-
+                tryCatch({
+                  forecast::nnetar(
+                    y = dataTSTrain[, TargetName],
+                    p = lags,
+                    P = slags,
+                    xreg = XREG,
+                    lambda = "auto"
+                  )
+                }, error = function(x)
+                  "error")
+            }
+            
+            if (length(NNETAR_model_temp) == 1) {
+              data.table::set(temp,
+                              i = k,
+                              j = 1L,
+                              value = lags)
+              data.table::set(temp,
+                              i = k,
+                              j = 2L,
+                              value = slags)
+              data.table::set(temp,
+                              i = k,
+                              j = 3L,
+                              value = 999999999)
+              data.table::set(temp,
+                              i = k,
+                              j = 4L,
+                              value = 999999999)
+              data.table::set(temp,
+                              i = k,
+                              j = 5L,
+                              value = fp)
+              
+            } else {
+              data.table::set(temp,
+                              i = k,
+                              j = 1L,
+                              value = lags)
+              data.table::set(temp,
+                              i = k,
+                              j = 2L,
+                              value = slags)
+              data.table::set(temp,
+                              i = k,
+                              j = 5L,
+                              value = fp)
+              
+              # Add in holdout metrics for evaluation
+              data_test_NN <- data.table::copy(data_test)
+              if(fp != 0) {
+                data_test_NN[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("NN", HoldOutPeriods),
+                  FC_Eval = as.numeric(
+                    forecast::forecast(NNETAR_model_temp, xreg = XREGFC, h = HoldOutPeriods)$mean
+                  )
+                )]
+              } else {
+                data_test_NN[, ':=' (
+                  Target = as.numeric(Target),
+                  ModelName = rep("NN", HoldOutPeriods),
+                  FC_Eval = as.numeric(
+                    forecast::forecast(NNETAR_model_temp, h = HoldOutPeriods)$mean
+                  )
+                )]
+              }
+              
+              data_test_NN[, ':=' (
+                Resid = get(TargetName) - FC_Eval,
+                PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+                AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                1) - 1),
+                AbsoluteError = abs(get(TargetName) - FC_Eval),
+                SquaredError = (get(TargetName) - FC_Eval) ^ 2
+              )]
+              data.table::set(
+                temp,
+                i = k,
+                j = 3L,
+                value = data_test_NN[, mean(AbsoluteError)]
+              )
+              data.table::set(
+                temp,
+                i = k,
+                j = 4L,
+                value = data_test_NN[, sd(AbsoluteError)]
+              )
+            }
+          }
         }
       }
     }
     
+    # Remove Empty Data
+    temp <- temp[Lag != 100000]
+    
     # Identify best model and retrain it
     LagNN <- temp[order(meanResid)][1,][, 1][[1]]
     SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-    NNETAR_model <-
-      tryCatch({
-        forecast::nnetar(
-          y = dataTSTrain[, TargetName],
-          p = LagNN,
-          P = SLagNN,
-          lambda = "auto"
-        )
-      },
-      error = function(x)
-        "empty")
+    fp <- temp[order(meanResid)][1,][, 5][[1]]
+    NN_FP1 <- fp
+    NN_Lags1 <- LagNN
+    NN_SLags1 <- SLagNN
+    XREG <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = fp)}, error = function(x) FALSE)
+    XREGFC <- tryCatch({forecast::fourier(dataTSTrain[, TargetName], K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+    if(fp == 0) {
+      NNETAR_model <-
+        tryCatch({
+          forecast::nnetar(
+            y = dataTSTrain[, TargetName],
+            p = LagNN,
+            P = SLagNN,
+            lambda = "auto"
+          )
+        },
+        error = function(x)
+          "empty")      
+    } else {
+      NNETAR_model <-
+        tryCatch({
+          forecast::nnetar(
+            y = dataTSTrain[, TargetName],
+            p = LagNN,
+            P = SLagNN,
+            xreg = XREG,
+            lambda = "auto"
+          )
+        },
+        error = function(x)
+          "empty")
+    }
     
     # Collect Test Data for Model Comparison
     # 2)
-    if (tolower(class(NNETAR_model)) == "nnetar") {
-      tryCatch({
-        data_test_NN <- data.table::copy(data_test)
-        data_test_NN[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("NN", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
-          )
-        )]
-        
-        # Add Evaluation Columns
-        # 3)
-        data_test_NN[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1),
-          AbsoluteError = abs(get(TargetName) - FC_Eval),
-          SquaredError = (get(TargetName) - FC_Eval) ^ 2
-        )]
-        
-        # Increment
-        i <- i + 1
-        
-        # Collect model filename
-        EvalList[[i]] <- data_test_NN
-      }, error = function(x)
-        "skip")
+    if(fp == 0) {
+      if (tolower(class(NNETAR_model)) == "nnetar") {
+        tryCatch({
+          data_test_NN <- data.table::copy(data_test)
+          data_test_NN[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("NN", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(NNETAR_model, h = HoldOutPeriods)$mean
+            )
+          )]
+          
+          # Add Evaluation Columns
+          # 3)
+          data_test_NN[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval) ^ 2
+          )]
+          
+          # Increment
+          i <- i + 1
+          
+          # Collect model filename
+          EvalList[[i]] <- data_test_NN
+        }, error = function(x)
+          "skip")
+      }
+    } else {
+      if (tolower(class(NNETAR_model)) == "nnetar") {
+        tryCatch({
+          data_test_NN <- data.table::copy(data_test)
+          data_test_NN[, ':=' (
+            Target = as.numeric(Target),
+            ModelName = rep("NN", HoldOutPeriods),
+            FC_Eval = as.numeric(
+              forecast::forecast(NNETAR_model, xreg = XREGFC, h = HoldOutPeriods)$mean
+            )
+          )]
+          
+          # Add Evaluation Columns
+          # 3)
+          data_test_NN[, ':=' (
+            Resid = get(TargetName) - FC_Eval,
+            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                            1) - 1),
+            AbsoluteError = abs(get(TargetName) - FC_Eval),
+            SquaredError = (get(TargetName) - FC_Eval) ^ 2
+          )]
+          
+          # Increment
+          i <- i + 1
+          
+          # Collect model filename
+          EvalList[[i]] <- data_test_NN
+        }, error = function(x)
+          "skip")
+      }
     }
     
-    k <- 0L
-    temp <-
-      data.table::data.table(
-        Lag = rep(1L, Lags * SLags),
-        Slag = rep(1L, Lags * SLags),
-        meanResid = rnorm(Lags * SLags),
-        sdResid = rnorm(Lags * SLags)
-      )
-    for (lags in seq_len(Lags)) {
-      for (slags in seq_len(SLags)) {
-        k <- k + 1L
-        if (PrintUpdates)
-          print(paste0("NNet 2 Iteration: ", k))
-        NNETAR_model_temp <-
+    # dataTrain1----
+    if(ModelFreq) {
+      k <- 0L
+      temp <-
+        data.table::data.table(
+          Lag = rep(100000L, Lags * SLags * (MaxFourierPairs + 1)),
+          Slag = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          meanResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          sdResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          K = rep(1L, Lags * SLags * (MaxFourierPairs + 1))
+        )
+      for(fp in 0:MaxFourierPairs) {
+        if(fp == 0) {
+          XREG <- 1
+          XREGFC <- 1
+        } else {
+          XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = fp)}, error = function(x) FALSE)
+          XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+        }
+        if(is.numeric(XREG) & is.numeric(XREGFC)) {
+          for (lags in seq_len(Lags)) {
+            for (slags in seq_len(SLags)) {
+              k <- k + 1L
+              if (PrintUpdates)
+                print(paste0("NNet 2 Iteration: ", k))
+              if(fp == 0) {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = dataTSTrain1[, TargetName],
+                      p = lags,
+                      P = slags,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")            
+              } else {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = dataTSTrain1[, TargetName],
+                      p = lags,
+                      P = slags,
+                      xreg = XREG,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")
+              }
+              if (length(NNETAR_model_temp) == 1) {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 3L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 4L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+              } else {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+                # Add in holdout metrics for evaluation
+                data_test_NN <- data.table::copy(data_test)
+                if(fp != 0) {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, xreg = XREGFC, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                } else {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                }
+                
+                data_test_NN[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 3L,
+                  value = data_test_NN[, mean(AbsoluteError)]
+                )
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 4L,
+                  value = data_test_NN[, sd(AbsoluteError)]
+                )
+              }
+            }
+          }
+        }
+      }
+      
+      # Remove Empty Data
+      temp <- temp[Lag != 100000]
+      
+      # Identify best model and retrain it
+      LagNN <- temp[order(meanResid)][1,][, 1][[1]]
+      SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
+      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      NN_FP2 <- fp
+      NN_Lags2 <- LagNN
+      NN_SLags2 <- SLagNN
+      XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = fp)}, error = function(x) FALSE)
+      XREGFC <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+      if(fp == 0) {
+        NNETAR_model1 <-
           tryCatch({
             forecast::nnetar(
               y = dataTSTrain1[, TargetName],
-              p = lags,
-              P = slags,
+              p = LagNN,
+              P = SLagNN,
               lambda = "auto"
             )
+          },
+          error = function(x)
+            "empty")      
+      } else {
+        NNETAR_model1 <-
+          tryCatch({
+            forecast::nnetar(
+              y = dataTSTrain1[, TargetName],
+              p = LagNN,
+              P = SLagNN,
+              xreg = XREG,
+              lambda = "auto"
+            )
+          },
+          error = function(x)
+            "empty")
+      }
+      
+      # Collect Test Data for Model Comparison
+      # 2)
+      if(fp == 0) {
+        if (tolower(class(NNETAR_model1)) == "nnetar") {
+          tryCatch({
+            data_test_NN1 <- data.table::copy(data_test)
+            data_test_NN1[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_ModelFreq", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN1[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN1
           }, error = function(x)
-            "error")
-        
-        if (length(NNETAR_model_temp) == 1) {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(temp,
-                          i = k,
-                          j = 3L,
-                          value = 999999999)
-          data.table::set(temp,
-                          i = k,
-                          j = 4L,
-                          value = 999999999)
-          
+            "skip")
+        }
+      } else {
+        if (tolower(class(NNETAR_model1)) == "nnetar") {
+          tryCatch({
+            data_test_NN1 <- data.table::copy(data_test)
+            data_test_NN1[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_ModelFreq", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model1, xreg = XREGFC, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN1[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN1
+          }, error = function(x)
+            "skip")
+        }
+      }
+    }
+    
+    # Target version----
+    if(TSClean) {
+      k <- 0L
+      temp <-
+        data.table::data.table(
+          Lag = rep(100000L, Lags * SLags * (MaxFourierPairs + 1)),
+          Slag = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          meanResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          sdResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          K = rep(1L, Lags * SLags * (MaxFourierPairs + 1))
+        )
+      for(fp in 0:MaxFourierPairs) {
+        if(fp == 0) {
+          XREG <- 1
+          XREGFC <- 1
         } else {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(
-            temp,
-            i = k,
-            j = 3L,
-            value = base::mean(abs(NNETAR_model_temp$residuals),
-                               na.rm = TRUE)
-          )
-          data.table::set(
-            temp,
-            i = k,
-            j = 4L,
-            value = sd(NNETAR_model_temp$residuals,
-                       na.rm = TRUE)
-          )
+          XREG <- tryCatch({forecast::fourier(Target, K = fp)}, error = function(x) FALSE)
+          XREGFC <- tryCatch({forecast::fourier(Target, K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
         }
-      }
-    }
-    
-    # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-    NNETAR_model1 <-
-      tryCatch({
-        forecast::nnetar(
-          y = dataTSTrain1[, TargetName],
-          p = LagNN,
-          P = SLagNN,
-          lambda = "auto"
-        )
-      },
-      error = function(x)
-        "empty")
-    
-    # Collect Test Data for Model Comparison
-    # 2)
-    if ("nnetar" %chin% tolower(class(NNETAR_model1))) {
-      tryCatch({
-        data_test_NN1 <- data.table::copy(data_test)
-        data_test_NN1[, ':=' (
-          Target = as.numeric(Target),
-          ModelName = rep("NN_ModelFreq", HoldOutPeriods),
-          FC_Eval = as.numeric(
-            forecast::forecast(NNETAR_model1, h = HoldOutPeriods)$mean
-          )
-        )]
-        
-        # Add Evaluation Columns
-        # 3)
-        data_test_NN1[, ':=' (
-          Resid = get(TargetName) - FC_Eval,
-          PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-          AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                          1) - 1),
-          AbsoluteError = abs(get(TargetName) - FC_Eval),
-          SquaredError = (get(TargetName) - FC_Eval) ^ 2
-        )]
-        
-        # Increment
-        i <- i + 1
-        
-        # Collect model filename
-        EvalList[[i]] <- data_test_NN1
-      }, error = function(x)
-        "skip")
-    }
-    
-    # TSClean Version
-    if (TSClean) {
-      k <- 0L
-      temp <-
-        data.table::data.table(
-          Lag = rep(1L, Lags * SLags),
-          Slag = rep(1L, Lags * SLags),
-          meanResid = rnorm(Lags * SLags),
-          sdResid = rnorm(Lags * SLags)
-        )
-      for (lags in seq_len(Lags)) {
-        for (slags in seq_len(SLags)) {
-          k <- k + 1L
-          if (PrintUpdates)
-            print(paste0("NNet 3 Iteration: ", k))
-          NNETAR_model_temp <-
-            tryCatch({
-              forecast::nnetar(
-                y = Target,
-                p = lags,
-                P = slags,
-                lambda = "auto"
-              )
-            }, error = function(x)
-              "error")
-          
-          if (length(NNETAR_model_temp) == 1) {
-            data.table::set(temp,
-                            i = k,
-                            j = 1L,
-                            value = lags)
-            data.table::set(temp,
-                            i = k,
-                            j = 2L,
-                            value = slags)
-            data.table::set(temp,
-                            i = k,
-                            j = 3L,
-                            value = 999999999)
-            data.table::set(temp,
-                            i = k,
-                            j = 4L,
-                            value = 999999999)
-            
-          } else {
-            data.table::set(temp,
-                            i = k,
-                            j = 1L,
-                            value = lags)
-            data.table::set(temp,
-                            i = k,
-                            j = 2L,
-                            value = slags)
-            data.table::set(
-              temp,
-              i = k,
-              j = 3L,
-              value = base::mean(abs(
-                NNETAR_model_temp$residuals
-              ),
-              na.rm = TRUE)
-            )
-            data.table::set(
-              temp,
-              i = k,
-              j = 4L,
-              value = sd(NNETAR_model_temp$residuals,
-                         na.rm = TRUE)
-            )
+        if(is.numeric(XREG) & is.numeric(XREGFC)) {
+          for (lags in seq_len(Lags)) {
+            for (slags in seq_len(SLags)) {
+              k <- k + 1L
+              if (PrintUpdates)
+                print(paste0("NNet 2 Iteration: ", k))
+              if(fp == 0) {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = Target,
+                      p = lags,
+                      P = slags,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")            
+              } else {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = Target,
+                      p = lags,
+                      P = slags,
+                      xreg = XREG,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")
+              }
+              if (length(NNETAR_model_temp) == 1) {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 3L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 4L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+              } else {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+                # Add in holdout metrics for evaluation
+                data_test_NN <- data.table::copy(data_test)
+                if(fp != 0) {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, xreg = XREGFC, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                } else {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                }
+                
+                data_test_NN[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 3L,
+                  value = data_test_NN[, mean(AbsoluteError)]
+                )
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 4L,
+                  value = data_test_NN[, sd(AbsoluteError)]
+                )
+              }
+            }
           }
         }
       }
       
+      # Remove Empty Data
+      temp <- temp[Lag != 100000]
+      
       # Identify best model and retrain it
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-      NNETAR_model2 <-
-        tryCatch({
-          forecast::nnetar(
-            y = Target,
-            p = LagNN,
-            P = SLagNN,
-            lambda = "auto"
-          )
-        },
-        error = function(x)
-          "empty")
+      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      NN_FP3 <- fp
+      NN_Lags3 <- LagNN
+      NN_SLags3 <- SLagNN
+      XREG <- tryCatch({forecast::fourier(Target, K = fp)}, error = function(x) FALSE)
+      XREGFC <- tryCatch({forecast::fourier(Target, K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+      if(fp == 0) {
+        NNETAR_model2 <-
+          tryCatch({
+            forecast::nnetar(
+              y = Target,
+              p = LagNN,
+              P = SLagNN,
+              lambda = "auto"
+            )
+          },
+          error = function(x)
+            "empty")      
+      } else {
+        NNETAR_model2 <-
+          tryCatch({
+            forecast::nnetar(
+              y = Target,
+              p = LagNN,
+              P = SLagNN,
+              xreg = XREG,
+              lambda = "auto"
+            )
+          },
+          error = function(x)
+            "empty")
+      }
       
       # Collect Test Data for Model Comparison
       # 2)
-      if ("nnetar" %chin% tolower(class(NNETAR_model2))) {
-        tryCatch({
-          data_test_NN2 <- data.table::copy(data_test)
-          data_test_NN2[, ':=' (
-            Target = as.numeric(Target),
-            ModelName = rep("NN_TSC", HoldOutPeriods),
-            FC_Eval = as.numeric(
-              forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
-            )
-          )]
-          
-          # Add Evaluation Columns
-          # 3)
-          data_test_NN2[, ':=' (
-            Resid = get(TargetName) - FC_Eval,
-            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1),
-            AbsoluteError = abs(get(TargetName) - FC_Eval),
-            SquaredError = (get(TargetName) - FC_Eval) ^ 2
-          )]
-          
-          # Increment
-          i <- i + 1
-          
-          # Collect model filename
-          EvalList[[i]] <- data_test_NN2
-        }, error = function(x)
-          "skip")
+      if(fp == 0) {
+        if (tolower(class(NNETAR_model2)) == "nnetar") {
+          tryCatch({
+            data_test_NN2 <- data.table::copy(data_test)
+            data_test_NN2[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_TSClean", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model2, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN2[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN2
+          }, error = function(x)
+            "skip")
+        }
+      } else {
+        if (tolower(class(NNETAR_model2)) == "nnetar") {
+          tryCatch({
+            data_test_NN2 <- data.table::copy(data_test)
+            data_test_NN2[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_TSClean", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model2, xreg = XREGFC, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN2[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN2
+          }, error = function(x)
+            "skip")
+        }
       }
-      
+    }
+    
+    # Target version----
+    if(TSClean == TRUE & ModelFreq == TRUE) {
       k <- 0L
       temp <-
         data.table::data.table(
-          Lag = rep(1L, Lags * SLags),
-          Slag = rep(1L, Lags * SLags),
-          meanResid = rnorm(Lags * SLags),
-          sdResid = rnorm(Lags * SLags)
+          Lag = rep(100000L, Lags * SLags * (MaxFourierPairs + 1)),
+          Slag = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          meanResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          sdResid = rep(1L, Lags * SLags * (MaxFourierPairs + 1)),
+          K = rep(1L, Lags * SLags * (MaxFourierPairs + 1))
         )
-      for (lags in seq_len(Lags)) {
-        for (slags in seq_len(SLags)) {
-          k <- k + 1L
-          if (PrintUpdates)
-            print(paste0("NNet 4 Iteration: ", k))
-          NNETAR_model_temp <-
-            tryCatch({
-              forecast::nnetar(
-                y = TargetMB,
-                p = lags,
-                P = slags,
-                lambda = "auto"
-              )
-            }, error = function(x)
-              "error")
-          
-          if (length(NNETAR_model_temp) == 1) {
-            data.table::set(temp,
-                            i = k,
-                            j = 1L,
-                            value = lags)
-            data.table::set(temp,
-                            i = k,
-                            j = 2L,
-                            value = slags)
-            data.table::set(temp,
-                            i = k,
-                            j = 3L,
-                            value = 999999999)
-            data.table::set(temp,
-                            i = k,
-                            j = 4L,
-                            value = 999999999)
-            
-          } else {
-            data.table::set(temp,
-                            i = k,
-                            j = 1L,
-                            value = lags)
-            data.table::set(temp,
-                            i = k,
-                            j = 2L,
-                            value = slags)
-            data.table::set(
-              temp,
-              i = k,
-              j = 3L,
-              value = base::mean(abs(
-                NNETAR_model_temp$residuals
-              ),
-              na.rm = TRUE)
-            )
-            data.table::set(
-              temp,
-              i = k,
-              j = 4L,
-              value = sd(NNETAR_model_temp$residuals,
-                         na.rm = TRUE)
-            )
+      for(fp in 0:MaxFourierPairs) {
+        if(fp == 0) {
+          XREG <- 1
+          XREGFC <- 1
+        } else {
+          XREG <- tryCatch({forecast::fourier(Target, K = fp)}, error = function(x) FALSE)
+          XREGFC <- tryCatch({forecast::fourier(Target, K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+        }
+        if(is.numeric(XREG) & is.numeric(XREGFC)) {
+          for (lags in seq_len(Lags)) {
+            for (slags in seq_len(SLags)) {
+              k <- k + 1L
+              if (PrintUpdates)
+                print(paste0("NNet 3 Iteration: ", k))
+              if(fp == 0) {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = Target,
+                      p = lags,
+                      P = slags,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")            
+              } else {
+                NNETAR_model_temp <-
+                  tryCatch({
+                    forecast::nnetar(
+                      y = Target,
+                      p = lags,
+                      P = slags,
+                      xreg = XREG,
+                      lambda = "auto"
+                    )
+                  }, error = function(x)
+                    "error")
+              }
+              if (length(NNETAR_model_temp) == 1) {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 3L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 4L,
+                                value = 999999999)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+              } else {
+                data.table::set(temp,
+                                i = k,
+                                j = 1L,
+                                value = lags)
+                data.table::set(temp,
+                                i = k,
+                                j = 2L,
+                                value = slags)
+                data.table::set(temp,
+                                i = k,
+                                j = 5L,
+                                value = fp)
+                
+                # Add in holdout metrics for evaluation
+                data_test_NN <- data.table::copy(data_test)
+                if(fp != 0) {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, xreg = XREGFC, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                } else {
+                  data_test_NN[, ':=' (
+                    Target = as.numeric(Target),
+                    ModelName = rep("NN", HoldOutPeriods),
+                    FC_Eval = as.numeric(
+                      forecast::forecast(NNETAR_model_temp, h = HoldOutPeriods)$mean
+                    )
+                  )]
+                }
+                
+                data_test_NN[, ':=' (
+                  Resid = get(TargetName) - FC_Eval,
+                  PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+                  AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                                  1) - 1),
+                  AbsoluteError = abs(get(TargetName) - FC_Eval),
+                  SquaredError = (get(TargetName) - FC_Eval) ^ 2
+                )]
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 3L,
+                  value = data_test_NN[, mean(AbsoluteError)]
+                )
+                data.table::set(
+                  temp,
+                  i = k,
+                  j = 4L,
+                  value = data_test_NN[, sd(AbsoluteError)]
+                )
+              }
+            }
           }
         }
       }
       
+      # Remove Empty Data
+      temp <- temp[Lag != 100000]
+      
       # Identify best model and retrain it
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-      NNETAR_model3 <-
-        tryCatch({
-          forecast::nnetar(
-            y = dataTSTrain1[, TargetName],
-            p = LagNN,
-            P = SLagNN,
-            lambda = "auto"
-          )
-        },
-        error = function(x)
-          "empty")
+      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      NN_FP4 <- fp
+      NN_Lags4 <- LagNN
+      NN_SLags4 <- SLagNN
+      XREG <- tryCatch({forecast::fourier(TargetMB, K = fp)}, error = function(x) FALSE)
+      XREGFC <- tryCatch({forecast::fourier(TargetMB, K = fp, h = HoldOutPeriods)}, error = function(x) FALSE)
+      if(fp == 0) {
+        NNETAR_model3 <-
+          tryCatch({
+            forecast::nnetar(
+              y = TargetMB,
+              p = LagNN,
+              P = SLagNN,
+              lambda = "auto"
+            )
+          },
+          error = function(x)
+            "empty")      
+      } else {
+        NNETAR_model3 <-
+          tryCatch({
+            forecast::nnetar(
+              y = TargetMB,
+              p = LagNN,
+              P = SLagNN,
+              xreg = XREG,
+              lambda = "auto"
+            )
+          },
+          error = function(x)
+            "empty")
+      }
       
       # Collect Test Data for Model Comparison
       # 2)
-      if ("nnetar" %chin% tolower(class(NNETAR_model3))) {
-        tryCatch({
-          data_test_NN3 <- data.table::copy(data_test)
-          data_test_NN3[, ':=' (
-            Target = as.numeric(Target),
-            ModelName = rep("NN_ModelFreqTSC", HoldOutPeriods),
-            FC_Eval = as.numeric(
-              forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
-            )
-          )]
-          
-          # Add Evaluation Columns
-          # 3)
-          data_test_NN3[, ':=' (
-            Resid = get(TargetName) - FC_Eval,
-            PercentError = get(TargetName) / (FC_Eval + 1) - 1,
-            AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
-                                                            1) - 1),
-            AbsoluteError = abs(get(TargetName) - FC_Eval),
-            SquaredError = (get(TargetName) - FC_Eval) ^ 2
-          )]
-          
-          # Increment
-          i <- i + 1
-          
-          # Collect model filename
-          EvalList[[i]] <- data_test_NN3
-        }, error = function(x)
-          "skip")
+      if(fp == 0) {
+        if (tolower(class(NNETAR_model3)) == "nnetar") {
+          tryCatch({
+            data_test_NN3 <- data.table::copy(data_test)
+            data_test_NN3[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_ModelFreq_TSClean", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model3, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN3[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN2
+          }, error = function(x)
+            "skip")
+        }
+      } else {
+        if (tolower(class(NNETAR_model3)) == "nnetar") {
+          tryCatch({
+            data_test_NN3 <- data.table::copy(data_test)
+            data_test_NN3[, ':=' (
+              Target = as.numeric(Target),
+              ModelName = rep("NN_ModelFreq_TSClean", HoldOutPeriods),
+              FC_Eval = as.numeric(
+                forecast::forecast(NNETAR_model3, xreg = XREGFC, h = HoldOutPeriods)$mean
+              )
+            )]
+            
+            # Add Evaluation Columns
+            # 3)
+            data_test_NN3[, ':=' (
+              Resid = get(TargetName) - FC_Eval,
+              PercentError = get(TargetName) / (FC_Eval + 1) - 1,
+              AbsolutePercentError = abs(get(TargetName) / (FC_Eval +
+                                                              1) - 1),
+              AbsoluteError = abs(get(TargetName) - FC_Eval),
+              SquaredError = (get(TargetName) - FC_Eval) ^ 2
+            )]
+            
+            # Increment
+            i <- i + 1
+            
+            # Collect model filename
+            EvalList[[i]] <- data_test_NN3
+          }, error = function(x)
+            "skip")
+        }
       }
     }
   }
@@ -5653,7 +6124,13 @@ AutoTS <- function(data,
   
   # Create Full Training Data for Final Rebruild----
   if (grepl("ModelFreq", BestModel)) {
+    fp <- NN_FP2
+    LagsNN <- NN_Lags2
+    SLagNN <- NN_SLags2
     if (grepl("TSC", BestModel)) {
+      fp <- NN_FP4
+      LagNN <- NN_Lags4
+      SLagNN <- NN_SLags4
       if (MinVal > 0) {
         # Model-Supplied-Freq
         SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
@@ -5694,7 +6171,13 @@ AutoTS <- function(data,
       dataTSTrain <- dataTSTrain[, TargetName]
     }
   } else {
+    fp <- NN_FP1
+    LagNN <- NN_Lags1
+    SLagNN <- NN_SLags1
     if (grepl("TSC", BestModel)) {
+      fp <- NN_FP3
+      LagNN <- NN_Lags3
+      SLagNN <- NN_SLags3
       if (MinVal > 0) {
         # User-Supplied-Freq
         dataTSTrain <-
@@ -6171,95 +6654,40 @@ AutoTS <- function(data,
   } else if (grepl(pattern = "NN", BestModel)) {
     if (PrintUpdates)
       message("FULL DATA NN FITTING")
-    # Rebuild model on full data
-    k <- 0L
-    temp <-
-      data.table::data.table(
-        Lag = rep(1L, Lags * SLags),
-        Slag = rep(1L, Lags * SLags),
-        meanResid = rnorm(Lags * SLags),
-        sdResid = rnorm(Lags * SLags)
-      )
-    for (lags in seq_len(Lags)) {
-      for (slags in seq_len(SLags)) {
-        k <- k + 1L
-        if (PrintUpdates)
-          print(k)
-        NNETAR_model_temp <-
-          tryCatch({
-            forecast::nnetar(
-              y = dataTSTrain,
-              p = lags,
-              P = slags,
-              lambda = "auto"
-            )
-          }, error = function(x)
-            "error")
-        
-        if (length(NNETAR_model_temp) == 1) {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(temp,
-                          i = k,
-                          j = 3L,
-                          value = 999999999)
-          data.table::set(temp,
-                          i = k,
-                          j = 4L,
-                          value = 999999999)
-          
-        } else {
-          data.table::set(temp,
-                          i = k,
-                          j = 1L,
-                          value = lags)
-          data.table::set(temp,
-                          i = k,
-                          j = 2L,
-                          value = slags)
-          data.table::set(
-            temp,
-            i = k,
-            j = 3L,
-            value = base::mean(abs(NNETAR_model_temp$residuals),
-                               na.rm = TRUE)
-          )
-          data.table::set(
-            temp,
-            i = k,
-            j = 4L,
-            value = sd(NNETAR_model_temp$residuals,
-                       na.rm = TRUE)
-          )
-        }
-      }
-    }
     
     # Identify best model and retrain it
-    LagNN <- temp[order(meanResid)][1,][, 1][[1]]
-    SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-    NNETAR_model <-
-      tryCatch({
+    fp <- NN_FP1
+    LagNN <- NN_Lags1
+    SLagNN <- NN_SLags1
+    if(fp == 0) {
+      NNETAR_model <-
         forecast::nnetar(y = dataTSTrain,
                          p = LagNN,
                          P = SLagNN)
-      },
-      error = function(x)
-        "empty")
+    } else {
+      NNETAR_model <-
+        forecast::nnetar(y = dataTSTrain,
+                         p = LagNN,
+                         P = SLagNN,
+                         xreg = fourier(dataTSTrain, K = fp))
+    }
     
     # Forecast with new model
-    xx <- forecast::forecast(NNETAR_model, PI=TRUE, h = FCPeriods)
-    FC_Data[, paste0("Forecast_",BestModel) := as.numeric(forecast::forecast(NNETAR_model, h = FCPeriods)$mean)]
-    FC_Data[, paste0(BestModel, "_Low80") := as.numeric(xx$lower)[1:FCPeriods]]
-    FC_Data[, paste0(BestModel,"_Low95") := as.numeric(xx$lower)[(FCPeriods+1):(2*FCPeriods)]]
-    FC_Data[, paste0(BestModel,"_High80") := as.numeric(xx$upper)[1:FCPeriods]]
-    FC_Data[, paste0(BestModel,"_High95") := as.numeric(xx$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    if(fp == 0) {
+      xx <- forecast::forecast(NNETAR_model, PI=TRUE, h = FCPeriods)
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(xx$mean)]
+      FC_Data[, paste0(BestModel, "_Low80") := as.numeric(xx$lower)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_Low95") := as.numeric(xx$lower)[(FCPeriods+1):(2*FCPeriods)]]
+      FC_Data[, paste0(BestModel,"_High80") := as.numeric(xx$upper)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_High95") := as.numeric(xx$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    } else {
+      xx <- forecast::forecast(NNETAR_model, xreg = fourier(dataTSTrain, K = fp, h = FCPeriods), PI=TRUE, h = FCPeriods)
+      FC_Data[, paste0("Forecast_",BestModel) := as.numeric(xx$mean)]
+      FC_Data[, paste0(BestModel, "_Low80") := as.numeric(xx$lower)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_Low95") := as.numeric(xx$lower)[(FCPeriods+1):(2*FCPeriods)]]
+      FC_Data[, paste0(BestModel,"_High80") := as.numeric(xx$upper)[1:FCPeriods]]
+      FC_Data[, paste0(BestModel,"_High95") := as.numeric(xx$upper)[(FCPeriods+1):(2*FCPeriods)]]
+    }
     
     # Store model
     model <- NNETAR_model
