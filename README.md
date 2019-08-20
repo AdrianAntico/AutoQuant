@@ -309,7 +309,7 @@ For each of the models tested internally, several aspects should be noted:
   * user-specified time frequency + historical series smoothing & imputation
   * model-based time frequency + historical smoothing & imputation
 
-* For ARIMA only (for releases >= 0.9.1) you can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy.
+* You can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy. The Fourier terms will be applied to the ARIMA and NNetar models only.
 * For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
 * For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
 * The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
