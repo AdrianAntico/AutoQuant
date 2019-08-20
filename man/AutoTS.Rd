@@ -30,7 +30,7 @@ AutoTS(data, TargetName = "Target", DateName = "DateTime",
 
 \item{SLags}{is the number of seasonal lags you wish to test in various models (same as moving averages)}
 
-\item{MaxFourierPairs}{Set the number of Fourier pair of terms to test. (ARIMA only currently)}
+\item{MaxFourierPairs}{Set the max number of Fourier terms to test out. They will be utilized in the ARIMA and NN models.}
 
 \item{NumCores}{is the number of cores available on your computer}
 

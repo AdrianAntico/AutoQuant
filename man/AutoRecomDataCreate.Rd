@@ -35,11 +35,11 @@ RatingsMatrix <- AutoRecomDataCreate(data,
 }
 }
 \seealso{
-Other Recommender Systems: \code{\link{AutoMarketBasketModel}},
+Other Marketing Modeling: \code{\link{AutoMarketBasketModel}},
   \code{\link{AutoRecommenderScoring}},
   \code{\link{AutoRecommender}}
 }
 \author{
 Adrian Antico and Douglas Pestana
 }
-\concept{Recommender Systems}
+\concept{Marketing Modeling}
