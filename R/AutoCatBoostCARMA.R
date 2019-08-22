@@ -88,6 +88,9 @@ AutoCatBoostCARMA <- function(data,
       is.null(GroupVariables)) {
     PartitionType <- "time"
   }
+  if(FC_Periods <= 1) {
+     FC_Periods <- 2
+  }
   
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
