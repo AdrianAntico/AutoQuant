@@ -85,6 +85,9 @@ AutoH2oGBMCARMA <- function(data,
       is.null(GroupVariables)) {
     PartitionType <- "time"
   }
+  if(FC_Periods <= 1) {
+     FC_Periods <- 2
+  }
   
   # Ensure H2O Stays Running----
   H2OShutdown <- FALSE
