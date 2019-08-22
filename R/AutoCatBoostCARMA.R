@@ -907,7 +907,7 @@ AutoCatBoostCARMA <- function(data,
     TimeSeriesPlot <- TimeSeriesPlot +
       ggplot2::labs(
         title = paste0(
-          FC_Periods,
+          FC_Periods-1,
           " - Period Forecast for Aggregate ",
           eval(TargetColumnName)
         ),
