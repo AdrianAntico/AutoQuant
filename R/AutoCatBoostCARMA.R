@@ -935,7 +935,7 @@ AutoCatBoostCARMA <- function(data,
       ) +
       Temp() +
       ggplot2::labs(
-        title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
+        title = paste0(FC_Periods-1, " - Period Forecast for ", eval(TargetColumnName)),
         subtitle = paste0(
           "Catboost Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
