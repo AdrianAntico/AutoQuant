@@ -895,7 +895,7 @@ AutoH2oDRFCARMA <- function(data,
     TimeSeriesPlot <- TimeSeriesPlot +
       ggplot2::labs(
         title = paste0(
-          FC_Periods,
+          FC_Periods-1,
           " - Period Forecast for Aggregate ",
           eval(TargetColumnName)
         ),
@@ -923,7 +923,7 @@ AutoH2oDRFCARMA <- function(data,
       ) +
       Temp() +
       ggplot2::labs(
-        title = paste0(FC_Periods, " - Period Forecast for ", eval(TargetColumnName)),
+        title = paste0(FC_Periods-1, " - Period Forecast for ", eval(TargetColumnName)),
         subtitle = paste0(
           "H2O DRF Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
