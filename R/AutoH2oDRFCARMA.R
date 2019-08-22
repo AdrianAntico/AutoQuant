@@ -619,7 +619,7 @@ AutoH2oDRFCARMA <- function(data,
     
     # Timer----
     if (Timer) {
-      print(paste("Forecast future step: ", i))
+      if(i != 1) print(paste("Forecast future step: ", i-1))
     }
     
     # Create single future record----
