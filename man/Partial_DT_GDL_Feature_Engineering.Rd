@@ -89,7 +89,6 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{DummifyDT}},
   \code{\link{GDL_Feature_Engineering}},
   \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering2}},
   \code{\link{Scoring_GDL_Feature_Engineering}}
 }
 \author{
