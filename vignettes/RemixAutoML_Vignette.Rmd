@@ -404,67 +404,74 @@ library(data.table)
 
 # Create Growth Data
 data <-
-    data.table::data.table(Target = seq(1, 500, 1),
-                           Variable = rep(1, 500))
-  for (i in as.integer(1:500)) {
-    if (i == 1) {
-      var <- data[i, "Target"][[1]]
-      data.table::set(data,
-                      i = i,
-                      j = 2L,
-                      value = var * (1 + runif(1) / 100))
-    } else {
-      var <- data[i - 1, "Variable"][[1]]
-      data.table::set(data,
-                      i = i,
-                      j = 2L,
-                      value = var * (1 + runif(1) / 100))
-    }
+  data.table::data.table(Target = seq(1, 500, 1),
+                         Variable = rep(1, 500))
+for (i in as.integer(1:500)) {
+  if (i == 1) {
+    var <- data[i, "Target"][[1]]
+    data.table::set(data,
+                    i = i,
+                    j = 2L,
+                    value = var * (1 + runif(1) / 100))
+  } else {
+    var <- data[i - 1, "Variable"][[1]]
+    data.table::set(data,
+                    i = i,
+                    j = 2L,
+                    value = var * (1 + runif(1) / 100))
   }
+}
 
-  # Add jitter to Target
-  data[, Target := jitter(Target,
-                          factor = 0.50)]
+# To keep original values
+data1 <- data.table::copy(data)
 
-  # To keep original values
-  data1 <- data.table::copy(data)
+# Merge and Model data
+data11 <- RemixAutoML::AutoNLS(
+  data = data,
+  y = "Target",
+  x = "Variable",
+  monotonic = FALSE
+)
 
-  # Build models
-  data11 <- AutoNLS(
-    data = data,
-    y = "Target",
-    x = "Variable",
-    monotonic = TRUE
-  )
+data2 <- merge(
+  data1,
+  data11$PredictionData,
+  by = "Variable",
+  all = FALSE
+)
 
-  # Join predictions to source data
-  data2 <- merge(
-    data1,
-    data11$PredictionData,
-    by = "Variable",
-    all = FALSE
-  )
-  
-# Plot output
+# Model Evaluation Metrics
+Metrics <- data11$EvaluationMetrics[, MeanAbsError := round(MeanAbsError, 2)]
+
+# Plot graphs of predicted vs actual
 ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], 
-                                  color = "Target")) +
-  ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], 
-                                  color = "Predicted")) +
+  ggplot2::geom_point(
+    ggplot2::aes(y = jitter(
+      data2[["Target.x"]], 
+      factor = 100),color = "Actuals")) +
+  ggplot2::geom_line(
+    ggplot2::aes(y = data2[["Target.y"]],
+    color = "AutoNLS"), lwd = 1.25) +
   RemixAutoML::ChartTheme(Size = 12) + 
-  ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
-                          data11$ModelName)) +
-  ggplot2::ylab("Target Variable") + 
-  ggplot2::xlab("Independent Variable") +
-  ggplot2::scale_colour_manual("Values", 
-                               breaks = c("Target", 
-                                          "Predicted"),
-                               values = c("red", 
-                                          "blue"))
-
-# Print model makeup and evaluation metrics
-summary(data11$ModelObject)
-data11$EvaluationMetrics
+  ggplot2::ggtitle(
+    paste0("Growth Models Winner = ", 
+           data11$ModelName)) +
+  ggplot2::ylab("Target Variable") +
+  ggplot2::xlab("Independent Variable") + 
+  ggplot2::annotation_custom(
+    gridExtra::tableGrob(
+      d = Metrics, 
+      theme = gridExtra::ttheme_minimal(
+        base_size = 10, 
+        base_colour = "gray10")), 
+    xmin = 8,
+    xmax = 12,
+    ymin = -1,
+    ymax = 250) + 
+  ggplot2::scale_colour_manual(
+    "",
+    breaks = c("AutoNLS", "Actuals"),
+    values=c("blue","red"))
 ```
 
 ### Example of **AutoTS()**
