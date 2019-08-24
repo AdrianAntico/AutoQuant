@@ -297,7 +297,9 @@ ________________________________________________________________________________
   * The name of the champion model
   * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
   
+  
 <img src="Images/AutoTSPlot.png" align="center" width="300" />
+
 
 * The models tested internally include:
   * DSHW: Double Seasonal Holt-Winters
