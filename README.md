@@ -464,6 +464,8 @@ For each of the models tested internally, several aspects should be noted:
 ##### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
+<img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="300" />
+
 ![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
 
 ##### **EvalPlot()**
