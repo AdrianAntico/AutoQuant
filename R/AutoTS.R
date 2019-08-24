@@ -5266,7 +5266,9 @@ AutoTS <- function(data,
     # Identify best model and retrain it
     LagNN <- temp[order(meanResid)][1,][, 1][[1]]
     SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-    fp <- temp[order(meanResid)][1,][, 5][[1]]
+    fp <- ifelse(is.na(temp[order(meanResid)][1,][, 5][[1]]),
+                 0,
+                 temp[order(meanResid)][1,][, 5][[1]])
     NN_FP1 <- fp
     NN_Lags1 <- LagNN
     NN_SLags1 <- SLagNN
@@ -5502,7 +5504,9 @@ AutoTS <- function(data,
       # Identify best model and retrain it
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      fp <- ifelse(is.na(temp[order(meanResid)][1,][, 5][[1]]),
+                   0,
+                   temp[order(meanResid)][1,][, 5][[1]])
       NN_FP2 <- fp
       NN_Lags2 <- LagNN
       NN_SLags2 <- SLagNN
@@ -5739,7 +5743,9 @@ AutoTS <- function(data,
       # Identify best model and retrain it
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      fp <- ifelse(is.na(temp[order(meanResid)][1,][, 5][[1]]),
+                   0,
+                   temp[order(meanResid)][1,][, 5][[1]])
       NN_FP3 <- fp
       NN_Lags3 <- LagNN
       NN_SLags3 <- SLagNN
@@ -5976,7 +5982,9 @@ AutoTS <- function(data,
       # Identify best model and retrain it
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
-      fp <- temp[order(meanResid)][1,][, 5][[1]]
+      fp <- ifelse(is.na(temp[order(meanResid)][1,][, 5][[1]]),
+                         0,
+                         temp[order(meanResid)][1,][, 5][[1]])
       NN_FP4 <- fp
       NN_Lags4 <- LagNN
       NN_SLags4 <- SLagNN
