@@ -112,7 +112,6 @@ DT_GDL_Feature_Engineering <- function(data,
   }
   
   # Set up counter for countdown----
-  CounterIndicator <- 0
   if (!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
   } else {
@@ -371,10 +370,6 @@ DT_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           }
         }
       } else {
