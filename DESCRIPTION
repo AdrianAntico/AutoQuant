@@ -10,7 +10,8 @@ Authors@R:
       person(given = "Douglas",
              family = "Pestana",
              role = "aut",
-             email = "douglas.pestana@remix.institute"))
+             email = "douglas.pestana@remix.institute"),
+      person("Jan","Gorecki", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Description: Automates and ensures high quality output for most
     of your machine learning and data science tasks. The package contains
