@@ -6132,13 +6132,17 @@ AutoTS <- function(data,
   
   # Create Full Training Data for Final Rebruild----
   if (grepl("ModelFreq", BestModel)) {
-    fp <- NN_FP2
-    LagsNN <- NN_Lags2
-    SLagNN <- NN_SLags2
+    if(NN %in% SkipModels) {
+      fp <- NN_FP2
+      LagsNN <- NN_Lags2
+      SLagNN <- NN_SLags2
+    }
     if (grepl("TSC", BestModel)) {
-      fp <- NN_FP4
-      LagNN <- NN_Lags4
-      SLagNN <- NN_SLags4
+      if(NN %in% SkipModels) {
+        fp <- NN_FP4
+        LagNN <- NN_Lags4
+        SLagNN <- NN_SLags4
+      } 
       if (MinVal > 0) {
         # Model-Supplied-Freq
         SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
@@ -6179,13 +6183,17 @@ AutoTS <- function(data,
       dataTSTrain <- dataTSTrain[, TargetName]
     }
   } else {
-    fp <- NN_FP1
-    LagNN <- NN_Lags1
-    SLagNN <- NN_SLags1
+    if(NN %in% SkipModels) {
+      fp <- NN_FP1
+      LagNN <- NN_Lags1
+      SLagNN <- NN_SLags1
+    } 
     if (grepl("TSC", BestModel)) {
-      fp <- NN_FP3
-      LagNN <- NN_Lags3
-      SLagNN <- NN_SLags3
+      if(NN %in% SkipModels) {
+        fp <- NN_FP3
+        LagNN <- NN_Lags3
+        SLagNN <- NN_SLags3
+      }
       if (MinVal > 0) {
         # User-Supplied-Freq
         dataTSTrain <-
