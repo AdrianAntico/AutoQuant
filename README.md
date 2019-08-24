@@ -460,7 +460,7 @@ For each of the models tested internally, several aspects should be noted:
 ## Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 <details><summary>EXPAND</summary>
 <p>
-
+  
 ##### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
@@ -468,6 +468,8 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **EvalPlot()**
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
+
+<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="left" width="300" />
 
 ##### **threshOptim()**
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
