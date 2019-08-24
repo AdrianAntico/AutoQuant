@@ -286,6 +286,8 @@ ________________________________________________________________________________
 ## Time Series Modeling Functions: 
 <details><summary>EXPAND</summary>
 <p>
+  
+<img src="Images/AutoTSPlot.png" align="center" width="300" />
 
 ### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
@@ -296,11 +298,6 @@ ________________________________________________________________________________
   * The champion model for later use if desired
   * The name of the champion model
   * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
-  
-  
-<img src="Images/AutoTSPlot.png" align="center" width="300" />
-
-
 * The models tested internally include:
   * DSHW: Double Seasonal Holt-Winters
   * ARFIMA: Auto Regressive Fractional Integrated Moving Average
