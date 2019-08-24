@@ -339,7 +339,9 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoH2oGBMCARMA()**
 <code>AutoH2oGBMCARMA()</code> utilizes the H2O Gradient Boosting Machine alorithm
 
-<img src="Images/CatBoost30.png" align="center" width="300" />
+
+<img src="Images/Catboost30.png" align="center" width="300" />
+
 
 ##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
