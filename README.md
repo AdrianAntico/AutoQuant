@@ -284,7 +284,7 @@ ________________________________________________________________________________
 <details><summary>EXPAND</summary>
 <p>
 
-### **AutoTS()** <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/AutoTS.png" align="right" width="300" />
+### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
 
 * Returns a list containing 
