@@ -1,6 +1,8 @@
 utils::globalVariables(
   names = c(
     "Temporary",
+    "runs",
+    
     "TimeTrend",
     "ColumnName",
     "MethodName",

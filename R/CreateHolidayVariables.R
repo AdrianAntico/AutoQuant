@@ -10,12 +10,14 @@
 #' @param Holidays Pick holidays
 #' @import timeDate
 #' @examples
+#' \donttest{
 #' data <- data.table::data.table(Date = '2018-01-01 00:00:00')
 #' data <- CreateHolidayVariables(data,
 #'                                DateCols = "DateTime",
 #'                                HolidayGroups = c("USPublicHolidays","EasterGroup",
 #'                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
 #'                                Holidays = NULL)
+#' }
 #' @return Returns your data.table with the added holiday indicator variable
 #' @export
 CreateHolidayVariables <- function(data,
