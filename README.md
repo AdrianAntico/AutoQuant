@@ -241,7 +241,7 @@ ________________________________________________________________________________
   
 ##### **AutoNLS()**
 
-<img src="Images/AutoNLS_Image.png" align="center" width="300" />
+<img src="Images/AutoNLS_Image.png" align="center" width="400" />
 
 <code>AutoNLS()</code> is an automated nonlinear regression modeling. This function automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
 * Models included:
@@ -266,7 +266,7 @@ ________________________________________________________________________________
 <details><summary>EXPAND</summary>
 <p>
   
-<img src="Images/ScoringCatBoost.png" align="center" width="300" />
+<img src="Images/ScoringCatBoost.png" align="center" width="400" />
 
 ##### **AutoCatBoostScoring()**
 <code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
@@ -323,7 +323,7 @@ For each of the models tested internally, several aspects should be noted:
 * The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
 * The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
-### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="300" />
+### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="400" />
 <code>AutoTS()</code>
 
 ##### **AutoCatBoostCARMA()**
@@ -414,7 +414,7 @@ For each of the models tested internally, several aspects should be noted:
 ##### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
-<img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="300" />
+<img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="400" />
 
 ##### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
@@ -474,14 +474,14 @@ For each of the models tested internally, several aspects should be noted:
 ##### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
-<img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="300" />
+<img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="400" />
 
 ![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
 
 ##### **EvalPlot()**
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
-<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="300" />
+<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="400" />
 
 ##### **threshOptim()**
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
@@ -489,7 +489,7 @@ For each of the models tested internally, several aspects should be noted:
 ##### **RedYellowGreen()**
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
 
-<img src="Images/RedYellowGreenPic.png" align="center" width="300" />
+<img src="Images/RedYellowGreenPic.png" align="center" width="400" />
 
 ![RedYellowGreen Blog](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
@@ -504,7 +504,7 @@ For each of the models tested internally, several aspects should be noted:
  ##### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
-<img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="300" />
+<img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
 
 ##### **AutoH2OTextPrepScoring()** 
 <code>AutoH2OTextPrepScoring()</code> prepares your data for scoring based on models built with AutoWord2VecModel and runs internally inside the AutoH2OScoring() function. It cleans and tokenizes your text data.
