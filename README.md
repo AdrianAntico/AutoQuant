@@ -240,6 +240,9 @@ ________________________________________________________________________________
 <p>
   
 ##### **AutoNLS()**
+
+<img src="Images/AutoNLS_Image.png" align="center" width="300" />
+
 <code>AutoNLS()</code> is an automated nonlinear regression modeling. This function automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
 * Models included:
   * Asymptotic
@@ -293,6 +296,8 @@ ________________________________________________________________________________
   * The champion model for later use if desired
   * The name of the champion model
   * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
+  
+<img src="Images/AutoTSPlot.png" align="center" width="300" />
 
 * The models tested internally include:
   * DSHW: Double Seasonal Holt-Winters
@@ -333,6 +338,8 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **AutoH2oGBMCARMA()**
 <code>AutoH2oGBMCARMA()</code> utilizes the H2O Gradient Boosting Machine alorithm
+
+<img src="Images/CatBoost30.png" align="center" width="300" />
 
 ##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
@@ -406,6 +413,8 @@ For each of the models tested internally, several aspects should be noted:
 ##### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
+<img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="300" />
+
 ##### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 </p>
@@ -471,13 +480,15 @@ For each of the models tested internally, several aspects should be noted:
 ##### **EvalPlot()**
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
-<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="left" width="300" />
+<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="300" />
 
 ##### **threshOptim()**
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 ##### **RedYellowGreen()**
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
+
+<img src="Images/RedYellowGreenPic.png" align="center" width="300" />
 
 ![RedYellowGreen Blog](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
@@ -491,6 +502,8 @@ For each of the models tested internally, several aspects should be noted:
  
  ##### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
+
+<img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="300" />
 
 ##### **AutoH2OTextPrepScoring()** 
 <code>AutoH2OTextPrepScoring()</code> prepares your data for scoring based on models built with AutoWord2VecModel and runs internally inside the AutoH2OScoring() function. It cleans and tokenizes your text data.
