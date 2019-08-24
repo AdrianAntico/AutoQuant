@@ -429,7 +429,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = c("days"),
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE
   )
 
@@ -468,7 +467,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = "days",
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -505,7 +503,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = c("days"),
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE
   )
 
@@ -534,7 +531,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = "days",
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
@@ -570,7 +566,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = c("days"),
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 100
@@ -601,7 +596,6 @@ test_that("DT_GDL_Feature_Engineering", {
     timeAgg        = "days",
     WindowingLag   = 1,
     Type           = "Lag",
-    Timer          = TRUE,
     SimpleImpute   = TRUE,
     AscRowByGroup  = "temp",
     RecordsKeep    = 1
