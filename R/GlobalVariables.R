@@ -2,7 +2,9 @@ utils::globalVariables(
   names = c(
     "Temporary",
     "runs",
-    
+    "Name",
+    "Lag",
+    "fourier",
     "TimeTrend",
     "ColumnName",
     "MethodName",

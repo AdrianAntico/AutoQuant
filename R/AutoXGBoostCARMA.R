@@ -812,7 +812,7 @@ AutoXGBoostCARMA <- function(data,
           names(CalendarFeatures)
         ))
         Temporary <- data.table::copy(UpdateData[, ..keep])
-        Temporary <- Partial_GDL_Feature_Engineering(
+        Temporary <- Partial_DT_GDL_Feature_Engineering(
           data           = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
