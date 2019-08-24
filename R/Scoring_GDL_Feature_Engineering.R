@@ -132,37 +132,22 @@ Scoring_GDL_Feature_Engineering <- function(data,
   }
   
   # Ensure enough columns are allocated beforehand----
-  if(!is.null(groupingVars)) {
-    if(max(max(lags + 1), max(periods + 1)) * 
-       length(groupingVars) * 
-       tarNum > data.table::truelength(data)) {
+  if(is.null(timeDiffTarget)) {
+    if(ncol(data) +
+       (max(lags + 1) + max(periods + 1)) * tarNum > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, 
                             n = ncol(data) +
-                              max(max(lags + 1), max(periods + 1)) *
-                              length(groupingVars) * 
-                              tarNum)
+                              (max(lags + 1) + max(periods + 1)) * tarNum)
     }
   } else {
-    if(max(max(lags + 1), max(periods + 1)) > 1000) {
+    if(ncol(data) +
+       (max(lags + 1) + max(periods + 1)) * tarNum * 2 > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, 
-                            n = ncol(data) + 
-                              MaxCols * 
-                              tarNum)
+                            n = ncol(data) +
+                              (max(lags + 1) + max(periods + 1)) * tarNum * 2)
     }
   }
-  
-  # Define total runs----
-  if (!is.null(groupingVars)) {
-    runs <-
-      length(groupingVars) * tarNum * (length(periods) *
-                                         length(statsNames) +
-                                         length(lags))
-  } else {
-    runs <-
-      tarNum * (length(periods) * length(statsNames) +
-                  length(lags))
-  }
-  
+
   # Begin feature engineering----
   if (!is.null(groupingVars)) {
     for (i in seq_along(groupingVars)) {
@@ -180,19 +165,17 @@ Scoring_GDL_Feature_Engineering <- function(data,
       tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
       
       # Lags
+      LAG_Names <- c()
       for (l in seq_along(lags)) {
         for (t in Targets) {
-          tempData[, paste0(groupingVars[i],
-                            "_LAG_",
-                            lags[l], "_", t) := data.table::shift(get(t), n = lags[l], type = "lag"),
-                   by = get(groupingVars[i])]
-          CounterIndicator <- CounterIndicator + 1
-          if (Timer) {
-            print(CounterIndicator / runs)
-          }
+          LAG_Names <- c(LAG_Names, paste0(groupingVars[i],"_LAG_", lags, "_", t))
         }
       }
       
+      # Build lags----
+      tempData[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"),
+               by = get(groupingVars[i]), .SDcols = Targets]
+            
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first
@@ -217,10 +200,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                   )),
                                   units = eval(timeAgg)
                                 )), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             } else {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
@@ -231,10 +210,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                   paste0(groupingVars[i], "TEMP", lags[l])
                                 ),
                                 units = eval(timeAgg))), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             }
           }
         } else {
@@ -249,10 +224,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                   )),
                                   units = eval(timeAgg)
                                 )), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             } else {
               tempData[, paste0(groupingVars[i],
                                 timeDiffTarget,
@@ -263,10 +234,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                                   paste0(groupingVars[i], "TEMP", lags[l])
                                 ),
                                 units = eval(timeAgg))), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             }
           }
         }
@@ -299,13 +266,12 @@ Scoring_GDL_Feature_Engineering <- function(data,
       }
       
       # Keep final values----
-      tempData1 <-
-        tempData#[get(AscRowByGroup) <= eval(RecordsKeep)]
+      tempData1 <- tempData
       
       # Moving stats----
-      for (j in seq_along(periods)) {
-        for (k in seq_along(statsNames)) {
-          for (t in Targets) {
+      for (t in Targets) {
+        for (j in seq_along(periods)) {
+          for (k in seq_along(statsNames)) {
             keep <- c(groupingVars[i], t, AscRowByGroup)
             temp2 <-
               tempData[get(AscRowByGroup) <= MAX_RECORDS_ROLL][, ..keep]
@@ -317,10 +283,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
                              "_",
                              t) :=  lapply(.SD, mean, na.rm = TRUE),
                     by = get(groupingVars[i]), .SDcols = eval(t)]
-            if (Timer) {
-              CounterIndicator <- CounterIndicator + 1
-              print(CounterIndicator / runs)
-            }
+
             # Merge files----
             temp4 <-
               temp3[get(AscRowByGroup) <=
@@ -383,22 +346,16 @@ Scoring_GDL_Feature_Engineering <- function(data,
     # Remove records----
     tempData <- data[get(AscRowByGroup) <= MAX_RECORDS_FULL]
     
-    # Lags
-    for (l in seq_along(lags)) {
-      for (t in Targets) {
-        data.table::set(
-          tempData,
-          j = paste0("LAG_", lags[l], "_", t),
-          value = data.table::shift(tempData[[eval(t)]],
-                                    n = lags[l],
-                                    type = "lag")
-        )
-        CounterIndicator <- CounterIndicator + 1
-        if (Timer) {
-          print(CounterIndicator / runs)
-        }
-      }
+    # Build features----
+    LagCols <- c()
+    for(t in Targets) {
+      for(l in lags) {
+        LagCols <- c(LagCols, paste0("LAG_", l, "_", t))
+      } 
     }
+    
+    # Build features----
+    tempData[, paste0(LagCols) := data.table::shift(.SD, n = lags, type = "lag"), .SDcols = Targets]
     
     # Time lags----
     if (!is.null(timeDiffTarget)) {
@@ -426,10 +383,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           } else {
             data.table::set(
               tempData,
@@ -440,10 +393,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           }
         }
       } else {
@@ -458,10 +407,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           } else {
             data.table::set(
               tempData,
@@ -472,10 +417,6 @@ Scoring_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           }
         }
       }
@@ -513,9 +454,9 @@ Scoring_GDL_Feature_Engineering <- function(data,
     tempData1 <- tempData[get(AscRowByGroup) <= eval(RecordsKeep)]
     
     # Moving stats----
-    for (j in seq_along(periods)) {
-      for (k in seq_along(statsNames)) {
-        for (t in Targets) {
+    for (t in Targets) {
+      for (j in seq_along(periods)) {
+        for (k in seq_along(statsNames)) {
           keep <- c(t, AscRowByGroup)
           temp2 <-
             tempData[get(AscRowByGroup) <=
@@ -525,10 +466,7 @@ Scoring_GDL_Feature_Engineering <- function(data,
             j = paste0(statsNames[k], "_", periods[j], "_", t),
             value = mean(temp2[[eval(t)]], na.rm = TRUE)
           )
-          if (Timer) {
-            CounterIndicator <- CounterIndicator + 1
-            print(CounterIndicator / runs)
-          }
+
           # Merge files----
           temp4 <-
             temp2[get(AscRowByGroup) <=

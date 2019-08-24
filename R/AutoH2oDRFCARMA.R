@@ -727,7 +727,7 @@ AutoH2oDRFCARMA <- function(data,
           names(CalendarFeatures)
         ))
         Temporary <- data.table::copy(UpdateData[, ..keep])
-        Temporary <- Scoring_GDL_Feature_Engineering(
+        Temporary <- Partial_DT_GDL_Feature_Engineering(
           data           = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
@@ -742,7 +742,8 @@ AutoH2oDRFCARMA <- function(data,
           Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
-          RecordsKeep    = 1
+          RecordsKeep    = 1,
+          AscRowRemove   = FALSE
         )
         
         # Not lining up - Updatedata and Temporary
@@ -764,7 +765,7 @@ AutoH2oDRFCARMA <- function(data,
           names(CalendarFeatures)
         ))
         Temporary <- data.table::copy(UpdateData[, ..keep])
-        Temporary <- Scoring_GDL_Feature_Engineering(
+        Temporary <- Partial_DT_GDL_Feature_Engineering(
           data = Temporary,
           lags           = c(Lags),
           periods        = c(MA_Periods),
@@ -779,7 +780,8 @@ AutoH2oDRFCARMA <- function(data,
           Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
-          RecordsKeep    = 1
+          RecordsKeep    = 1,
+          AscRowRemove   = FALSE
         )
         UpdateData <-
           data.table::rbindlist(

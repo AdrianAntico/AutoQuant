@@ -107,7 +107,9 @@ DT_GDL_Feature_Engineering <- function(data,
     data <- data.table::as.data.table(data)
   
   # Ensure target is numeric----
-  data[, eval(targets) := as.numeric(get(targets))]
+  for(t in targets) {
+    data[, eval(t) := as.numeric(get(t))]    
+  }
   
   # Set up counter for countdown----
   CounterIndicator <- 0
@@ -118,35 +120,20 @@ DT_GDL_Feature_Engineering <- function(data,
   }
   
   # Ensure enough columns are allocated beforehand----
-  if(!is.null(groupingVars)) {
-    if(max(max(lags + 1), max(periods + 1)) * 
-       length(groupingVars) * 
-       tarNum > data.table::truelength(data)) {
+  if(is.null(timeDiffTarget)) {
+    if(ncol(data) +
+       (max(lags + 1) + max(periods + 1)) * tarNum > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, 
                             n = ncol(data) +
-                              max(max(lags + 1), max(periods + 1)) *
-                              length(groupingVars) * 
-                              tarNum)
+                              (max(lags + 1) + max(periods + 1)) * tarNum)
     }
   } else {
-    if(max(max(lags + 1), max(periods + 1)) > 1000) {
+    if(ncol(data) +
+       (max(lags + 1) + max(periods + 1)) * tarNum * 2 > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, 
-                            n = ncol(data) + 
-                              MaxCols * 
-                              tarNum)
+                            n = ncol(data) +
+                              (max(lags + 1) + max(periods + 1)) * tarNum * 2)
     }
-  }
-  
-  # Define total runs----
-  if (!is.null(groupingVars)) {
-    runs <-
-      length(groupingVars) * tarNum * (length(periods) *
-                                         length(statsNames) +
-                                         length(lags))
-  } else {
-    runs <-
-      tarNum * (length(periods) * length(statsNames) +
-                  length(lags))
   }
   
   # Begin feature engineering----
@@ -164,34 +151,26 @@ DT_GDL_Feature_Engineering <- function(data,
       }
       
       # Lags----
-      for (l in seq_along(lags)) {
-        for (t in Targets) {
-          data[, paste0(groupingVars[i],
-                        "_LAG_",
-                        lags[l],
-                        "_",
-                        t) := data.table::shift(get(t),
-                                                n = lags[l],
-                                                type = "lag"),
-               by = get(groupingVars[i])]
-          CounterIndicator <- CounterIndicator + 1
-          if (Timer) {
-            print(CounterIndicator / runs)
-          }
-        }
+      LAG_Names <- c()
+      for (t in Targets) {
+        LAG_Names <- c(LAG_Names, paste0(groupingVars[i],"_LAG_", lags, "_", t))
       }
+      
+      # Build features----
+      data[, paste0(LAG_Names) := data.table::shift(.SD, 
+                                                    n = lags, 
+                                                    type = "lag"), 
+           by = get(groupingVars[i]), .SDcols = Targets]
       
       # Time lags----
       if (!is.null(timeDiffTarget)) {
         # Lag the dates first----
-        for (l in seq_along(lags)) {
-          data[, paste0(groupingVars[i],
-                        "TEMP",
-                        lags[l]) := data.table::shift(get(sortDateName),
-                                                      n = lags[l],
-                                                      type = "lag"),
-               by = get(groupingVars[i])]
-        }
+        data[, paste0(groupingVars[i],
+                      "TEMP",
+                      lags) := data.table::shift(get(sortDateName),
+                                                 n = lags,
+                                                 type = "lag"),
+             by = get(groupingVars[i])]
         
         # Difference the lag dates----
         if (WindowingLag != 0) {
@@ -206,10 +185,6 @@ DT_GDL_Feature_Engineering <- function(data,
                               )),
                               units = eval(timeAgg)
                             )), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             } else {
               data[, paste0(groupingVars[i],
                             timeDiffTarget,
@@ -220,10 +195,6 @@ DT_GDL_Feature_Engineering <- function(data,
                               paste0(groupingVars[i], "TEMP", lags[l])
                             ),
                             units = eval(timeAgg))), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             }
           }
         } else {
@@ -238,10 +209,6 @@ DT_GDL_Feature_Engineering <- function(data,
                               )),
                               units = eval(timeAgg)
                             )), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             } else {
               data[, paste0(groupingVars[i],
                             timeDiffTarget,
@@ -252,10 +219,6 @@ DT_GDL_Feature_Engineering <- function(data,
                               paste0(groupingVars[i], "TEMP", lags[l])
                             ),
                             units = eval(timeAgg))), by = get(groupingVars[i])]
-              CounterIndicator <- CounterIndicator + 1
-              if (Timer) {
-                print(CounterIndicator / runs)
-              }
             }
           }
         }
@@ -298,32 +261,31 @@ DT_GDL_Feature_Engineering <- function(data,
       }
       
       # Moving stats----
-      for (j in seq_along(periods)) {
-        for (k in seq_along(statsNames)) {
-          for (t in Targets) {
-            data[, paste0(groupingVars[i],
-                          statsNames[k],
-                          "_",
-                          periods[j],
-                          "_",
-                          t) := data.table::frollmean(
-                            x = get(t),
-                            n = periods[j],
-                            fill = NA,
-                            algo = "fast",
-                            align = "right",
-                            na.rm = TRUE,
-                            hasNA = TRUE,
-                            adaptive = FALSE
-                          ),
-                 by = get(groupingVars[i])]
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
+      MA_Names <- c()
+      for (t in Targets) {
+        for (j in seq_along(periods)) {
+          for (k in seq_along(statsNames)) {
+            MA_Names <- c(MA_Names,
+                          paste0(groupingVars[i],
+                                 statsNames[k],
+                                 "_",
+                                 periods[j],
+                                 "_",
+                                 t))
           }
         }
       }
+      data[, paste0(MA_Names) := data.table::frollmean(
+        x = .SD,
+        n = periods,
+        fill = NA,
+        algo = "fast",
+        align = "right",
+        na.rm = TRUE,
+        hasNA = TRUE,
+        adaptive = FALSE
+      ),
+      by = get(groupingVars[i]), .SDcols = Targets]
     }
     
     # Replace any inf values with NA----
@@ -355,9 +317,6 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Done!!----
-    if (Timer) {
-      print(CounterIndicator)
-    }
     return(data)
     
   } else {
@@ -370,31 +329,24 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     Targets <- targets
     
-    # Lags----
-    for (l in seq_along(lags)) {
-      for (t in Targets) {
-        data.table::set(
-          data,
-          j = paste0("LAG_", lags[l], "_", t),
-          value = data.table::shift(data[[eval(t)]], n = lags[l], type = "lag")
-        )
-        CounterIndicator <- CounterIndicator + 1
-        if (Timer) {
-          print(CounterIndicator / runs)
-        }
-      }
+    # Build features----
+    for(t in Targets) {
+      data.table::set(
+        data,
+        j = paste0("LAG_", lags, "_", t),
+        value = data.table::shift(data[[eval(t)]], n = lags, type = "lag")
+      )      
     }
     
     # Time lags----
-    if (!is.null(timeDiffTarget)) {
-      # Lag the dates first
-      for (l in seq_along(lags)) {
-        data.table::set(
-          data,
-          j = paste0("TEMP", lags[l]),
-          value = data.table::shift(data[[eval(sortDateName)]], n = lags[l], type = "lag")
-        )
-      }
+    if(!is.null(timeDiffTarget)) {
+      
+      # Build Features----
+      data.table::set(
+        data,
+        j = paste0("TEMP", lags),
+        value = data.table::shift(data[[eval(sortDateName)]], n = lags, type = "lag")
+      )
       
       # Difference the lag dates----
       if (WindowingLag != 0) {
@@ -441,10 +393,6 @@ DT_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           } else {
             data.table::set(
               data,
@@ -455,21 +403,15 @@ DT_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           }
         }
       }
       
       # Remove temporary lagged dates----
-      for (l in seq_along(lags)) {
-        data.table::set(data, j = paste0("TEMP", lags[l]), value = NULL)
-      }
+      data.table::set(data, j = paste0("TEMP", lags), value = NULL)
       
       # Store new target----
-      timeTarget <- paste0(timeDiffTarget, "_1")
+      timeTarget <- paste0(timeDiffTarget, "_1")      
     }
     
     # Define targets----
@@ -491,29 +433,21 @@ DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Moving stats----
-    for (j in seq_along(periods)) {
-      for (k in seq_along(statsNames)) {
-        for (t in Targets) {
-          data.table::set(
-            data,
-            j = paste0(statsNames[k], "_", periods[j], "_", t),
-            value = data.table::frollmean(
-              x = data[[eval(t)]],
-              n = periods[j],
-              fill = NA,
-              algo = "fast",
-              align = "right",
-              na.rm = TRUE,
-              hasNA = TRUE,
-              adaptive = FALSE
-            )
-          )
-          CounterIndicator <- CounterIndicator + 1
-          if (Timer) {
-            print(CounterIndicator / runs)
-          }
-        }
-      }
+    for (t in seq_along(Targets)) {
+      data.table::set(
+        data,
+        j = paste0(statsNames, "_", periods, "_", Targets[t]),
+        value = data.table::frollmean(
+          x = data[[eval(Targets[t])]],
+          n = periods,
+          fill = NA,
+          algo = "fast",
+          align = "right",
+          na.rm = TRUE,
+          hasNA = TRUE,
+          adaptive = FALSE
+        )
+      )      
     }
     
     # Replace any inf values with NA----

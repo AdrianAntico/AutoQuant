@@ -179,6 +179,10 @@ AutoXGBoostRegression <- function(data,
     sapply(data, is.character)
   ))))
   CatFeatures <- names(data)[CatFeatures]
+  if(length(CatFeatures)==0) {
+    CatFeatures <- NULL
+  }
+  
   
   # Transform data, ValidationData, and TestData----
   if (!is.null(ValidationData) &
@@ -345,29 +349,37 @@ AutoXGBoostRegression <- function(data,
       temp <-
         data.table::rbindlist(list(dataTrain, dataTest, TestData))
       if(ReturnFactorLevels) {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = TRUE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = model_path,
-          ImportFactorLevels = FALSE
-        )
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = TRUE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = model_path,
+            ImportFactorLevels = FALSE
+          )
+          FactorLevelsList <- temp$FactorLevelsList
+          temp <- temp$data
+        } else {
+          FactorLevelsList <- NULL
+        }
       } else {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = FALSE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = model_path,
-          ImportFactorLevels = FALSE
-        )
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = FALSE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = model_path,
+            ImportFactorLevels = FALSE
+          )          
+        } else {
+          FactorLevelsList <- NULL
+        }
       }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -390,29 +402,37 @@ AutoXGBoostRegression <- function(data,
                       value = "TRAIN")
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
       if(ReturnFactorLevels) {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = TRUE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = model_path,
-          ImportFactorLevels = FALSE
-        )
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = TRUE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = model_path,
+            ImportFactorLevels = FALSE
+          )
+          FactorLevelsList <- temp$FactorLevelsList
+          temp <- temp$data          
+        } else {
+          FactorLevelsList <- NULL
+        }
       } else {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = TRUE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = model_path,
-          ImportFactorLevels = FALSE
-        )  
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = TRUE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = model_path,
+            ImportFactorLevels = FALSE
+          )          
+        } else {
+          FactorLevelsList <- NULL
+        }
       }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
@@ -437,29 +457,38 @@ AutoXGBoostRegression <- function(data,
       temp <-
         data.table::rbindlist(list(dataTrain, dataTest, TestData))
       if(ReturnFactorLevels) {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = FALSE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = NULL,
-          ImportFactorLevels = FALSE
-        )
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = FALSE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            FactorLevelsList = NULL,
+            SavePath = NULL,
+            ImportFactorLevels = FALSE
+          )
+          FactorLevelsList <- temp$FactorLevelsList
+          temp <- temp$data          
+        } else {
+          FactorLevelsList <- NULL
+        }
       } else {
-        temp <- DummifyDT(
-          data = temp,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = FALSE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = NULL,
-          ImportFactorLevels = FALSE
-        )        
+        if(!is.null(CatFeatures)) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = FALSE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = NULL,
+            ImportFactorLevels = FALSE
+          )
+        } else {
+          FactorLevelsList <- NULL
+        }
       }
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
       data.table::set(dataTrain,
