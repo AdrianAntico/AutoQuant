@@ -361,10 +361,6 @@ DT_GDL_Feature_Engineering <- function(data,
                 units = eval(timeAgg)
               ))
             )
-            CounterIndicator <- CounterIndicator + 1
-            if (Timer) {
-              print(CounterIndicator / runs)
-            }
           } else {
             data.table::set(
               data,
