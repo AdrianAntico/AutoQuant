@@ -23,14 +23,14 @@ RUN cd /usr/share/ca-certificates && mkdir pnw && cd pnw \
 # have to do the below command to add r dependent packages
 RUN echo "deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran35/" >> /etc/apt/sources.list \
 && apt-get -y update \
-&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-base-core_3.6.0-1xenial_amd64.deb \
-&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-recommended_3.6.0-1xenial_all.deb \
-&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-base_3.6.0-1xenial_all.deb \
-&& gdebi --non-interactive r-base-core_3.6.0-1xenial_amd64.deb \
-&& gdebi --non-interactive r-recommended_3.6.0-1xenial_all.deb \
-&& gdebi --non-interactive r-base_3.6.0-1xenial_all.deb \
-&& rm -f r-base-core_3.6.0-1xenial_amd64.deb \ 
-&& rm -f r-recommended_3.6.0-1xenial_all.deb \
+&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-base-core_3.6.1-1xenial_amd64.deb \
+&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-recommended_3.6.1-1xenial_all.deb \
+&& wget https://cran.cnr.berkeley.edu/bin/linux/ubuntu/xenial-cran35/r-base_3.6.1-1xenial_all.deb \
+&& gdebi --non-interactive r-base-core_3.6.1-1xenial_amd64.deb \
+&& gdebi --non-interactive r-recommended_3.6.1-1xenial_all.deb \
+&& gdebi --non-interactive r-base_3.6.1-1xenial_all.deb \
+&& rm -f r-base-core_3.6.1-1xenial_amd64.deb \ 
+&& rm -f r-recommended_3.6.1-1xenial_all.deb \
 && rm -f r-base_3.6.0-1xenial_all.deb \
 && echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.cnr.berkeley.edu'; options(repos = r);" > ~/.Rprofile
 
@@ -58,7 +58,7 @@ RUN Rscript -e "devtools::install_github('catboost/catboost', subdir = 'catboost
 
 # INSTALL LOCAL PACKAGES - https://kbroman.org/pkg_primer/pages/build.html
 # COPY includes/r-packages /tmp/r-packages
-RUN /usr/bin/Rscript -e "install.packages(c('arules','Matrix','RColorBrewer','magick','nortest'));"
+RUN /usr/bin/Rscript -e "install.packages(c('arules','Matrix','RColorBrewer','magick','nortest','fpp'));"
 
 # RUN R CMD build /tmp/r-packages/RemixAutoML && R CMD INSTALL RemixAutoML_0.5.0.tar.gz
 RUN Rscript -e "devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE);"
