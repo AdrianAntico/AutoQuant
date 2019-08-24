@@ -59,7 +59,7 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
-## Supervised Learning Training Functions: 
+## Automated Supervised Learning Training Functions: 
 <details><summary>EXPAND</summary>
 <p>
   
@@ -262,7 +262,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Model Scoring Functions: 
+## Automated Model Scoring Functions: 
 <details><summary>EXPAND</summary>
 <p>
   
@@ -283,7 +283,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Time Series Modeling Functions: 
+## Automated Time Series Modeling Functions: 
 <details><summary>EXPAND</summary>
 <p>
   
@@ -380,7 +380,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Recommender System Functions: 
+## Automated Recommender System Functions: 
 <details><summary>EXPAND</summary>
 <p>
   
@@ -404,7 +404,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Unsupervised Learning Functions: 
+## Automated Unsupervised Learning Functions: 
 <details><summary>EXPAND</summary>
 <p>
 
@@ -421,7 +421,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Feature Engineering Functions: 
+## Automated Feature Engineering Functions: 
 <details><summary>EXPAND</summary>
 <p>
 
@@ -467,7 +467,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 
-## Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
+## Automated Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
 <details><summary>EXPAND</summary>
 <p>
   
@@ -497,11 +497,11 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 
-## Utilities and Misc. Functions:
+## Utilities, EDA, and Misc. Functions:
 <details><summary>EXPAND</summary>
 <p>
  
- ##### **AutoWordFreq()** 
+##### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
