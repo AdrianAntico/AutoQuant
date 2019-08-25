@@ -334,7 +334,7 @@ DT_GDL_Feature_Engineering <- function(data,
         data,
         j = paste0("LAG_", lags, "_", t),
         value = data.table::shift(data[[eval(t)]], n = lags, type = "lag")
-      )      
+      )
     }
     
     # Time lags----
