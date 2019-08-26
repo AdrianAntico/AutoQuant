@@ -11,7 +11,7 @@
 #' @examples
 #' \donttest{
 #' data <- TimeSeriesFill(data,
-#'                        DateColumnName = "Date"
+#'                        DateColumnName = "Date",
 #'                        GroupVariables = "GroupVar",
 #'                        TimeUnit = "days",
 #'                        FillType = "inner")

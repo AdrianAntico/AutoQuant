@@ -27,7 +27,7 @@ TimeSeriesFill For Completing Time Series Data For Single Series or Time Series 
 \examples{
 \donttest{
 data <- TimeSeriesFill(data,
-                       DateColumnName = "Date"
+                       DateColumnName = "Date",
                        GroupVariables = "GroupVar",
                        TimeUnit = "days",
                        FillType = "inner")
