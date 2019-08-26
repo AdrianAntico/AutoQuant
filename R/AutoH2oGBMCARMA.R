@@ -16,6 +16,7 @@
 #' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
+#' @param ZeroPadSeries Set to TRUE to force a complete series (fill missing records with zeros)
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
 #' @param GridTune Set to TRUE to run a grid tune
@@ -40,6 +41,7 @@
 #'                            HolidayVariable = TRUE,
 #'                            TimeTrendVariable = TRUE,
 #'                            DataTruncate = FALSE,
+#'                            ZeroPadSeries = TRUE,
 #'                            SplitRatios = c(1-2*30/143,30/143,30/143),
 #'                            EvalMetric = "MAE",
 #'                            GridTune = FALSE,
@@ -68,6 +70,7 @@ AutoH2oGBMCARMA <- function(data,
                             HolidayVariable = TRUE,
                             TimeTrendVariable = FALSE,
                             DataTruncate = FALSE,
+                            ZeroPadSeries = TRUE,
                             SplitRatios = c(0.7, 0.2, 0.1),
                             EvalMetric = "MAE",
                             GridTune = FALSE,
@@ -107,6 +110,23 @@ AutoH2oGBMCARMA <- function(data,
   if (!is.null(GroupVariables)) {
     data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     data[, eval(GroupVariables) := NULL]
+  }
+  
+  # Zero pad missing dates----
+  if(ZeroPadSeries) {
+    if (!is.null(GroupVariables)) {
+      data <- TimeSeriesFill(data,
+                             DateColumnName = "Date",
+                             GroupVariables = "GroupVar",
+                             TimeUnit = TimeUnit,
+                             FillType = "inner")      
+    } else {
+      data <- TimeSeriesFill(data,
+                             DateColumnName = "Date",
+                             GroupVariables = NULL,
+                             TimeUnit = TimeUnit,
+                             FillType = "inner")
+    }
   }
   
   # Get unique set of GroupVar----
