@@ -10,7 +10,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
   ZeroPadSeries = TRUE, DataTruncate = FALSE, SplitRatios = c(0.7,
-  0.2, 0.1), TaskType = "GPU", EvalMetric = "MAE", GridTune = FALSE,
+  0.2, 0.1), TaskType = "GPU", EvalMetric = "RMSE", GridTune = FALSE,
   GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
   PartitionType = "timeseries", Timer = TRUE)
 }
