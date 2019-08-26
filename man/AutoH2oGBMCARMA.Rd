@@ -9,8 +9,8 @@ AutoH2oGBMCARMA(data, TargetColumnName = "Target",
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
-  DataTruncate = FALSE, SplitRatios = c(0.7, 0.2, 0.1),
-  EvalMetric = "MAE", GridTune = FALSE, ModelCount = 1,
+  DataTruncate = FALSE, ZeroPadSeries = TRUE, SplitRatios = c(0.7,
+  0.2, 0.1), EvalMetric = "MAE", GridTune = FALSE, ModelCount = 1,
   NTrees = 1000, PartitionType = "timeseries", MaxMem = "32G",
   NThreads = max(1, parallel::detectCores() - 2), Timer = TRUE)
 }
@@ -40,6 +40,8 @@ AutoH2oGBMCARMA(data, TargetColumnName = "Target",
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
+
+\item{ZeroPadSeries}{Set to TRUE to force a complete series (fill missing records with zeros)}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
@@ -80,6 +82,7 @@ Results <- AutoH2oGBMCARMA(data,
                            HolidayVariable = TRUE,
                            TimeTrendVariable = TRUE,
                            DataTruncate = FALSE,
+                           ZeroPadSeries = TRUE,
                            SplitRatios = c(1-2*30/143,30/143,30/143),
                            EvalMetric = "MAE",
                            GridTune = FALSE,
