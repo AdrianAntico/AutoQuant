@@ -73,7 +73,7 @@ AutoCatBoostCARMA <- function(data,
                               DataTruncate = FALSE,
                               SplitRatios = c(0.7, 0.2, 0.1),
                               TaskType = "GPU",
-                              EvalMetric = "MAE",
+                              EvalMetric = "RMSE",
                               GridTune = FALSE,
                               GridEvalMetric = "mae",
                               ModelCount = 1,
@@ -116,13 +116,13 @@ AutoCatBoostCARMA <- function(data,
   if(ZeroPadSeries) {
     if (!is.null(GroupVariables)) {
       data <- TimeSeriesFill(data,
-                             DateColumnName = "Date",
+                             DateColumnName = eval(DateColumnName),
                              GroupVariables = "GroupVar",
                              TimeUnit = TimeUnit,
                              FillType = "inner")      
     } else {
       data <- TimeSeriesFill(data,
-                             DateColumnName = "Date",
+                             DateColumnName = eval(DateColumnName),
                              GroupVariables = NULL,
                              TimeUnit = TimeUnit,
                              FillType = "inner")

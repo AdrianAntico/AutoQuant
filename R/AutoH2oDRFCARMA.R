@@ -116,13 +116,13 @@ AutoH2oDRFCARMA <- function(data,
   if(ZeroPadSeries) {
     if (!is.null(GroupVariables)) {
       data <- TimeSeriesFill(data,
-                             DateColumnName = "Date",
+                             DateColumnName = eval(DateColumnName),
                              GroupVariables = "GroupVar",
                              TimeUnit = TimeUnit,
                              FillType = "inner")      
     } else {
       data <- TimeSeriesFill(data,
-                             DateColumnName = "Date",
+                             DateColumnName = eval(DateColumnName),
                              GroupVariables = NULL,
                              TimeUnit = TimeUnit,
                              FillType = "inner")
