@@ -118,6 +118,7 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoXGBoostCARMA()`
 - `AutoH2oDRFCARMA()`
 - `AutoH2oGBMCARMA()`
+- `TimeSeriesFill()`
 
 ###### Non Linear Regression
 - `AutoNLS()`
