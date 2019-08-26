@@ -101,6 +101,7 @@ Results$ModelInformation$...
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}}
+  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
+  \code{\link{TimeSeriesFill}}
 }
 \concept{Automated Time Series}

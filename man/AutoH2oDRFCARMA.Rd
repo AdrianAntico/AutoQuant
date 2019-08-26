@@ -97,6 +97,7 @@ Results$ModelInformation$...
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{TimeSeriesFill}}
 }
 \concept{Automated Time Series}

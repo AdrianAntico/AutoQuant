@@ -30,7 +30,7 @@ CreateHolidayVariables <- function(data,
   # Require namespace----
   requireNamespace("timeDate", quietly = TRUE)
   
-  # Function for exapanding dates, vectorize----
+  # Function for expanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) {
     DateRange <- seq(as.Date(Start), 
                      as.Date(End), 

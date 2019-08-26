@@ -25,7 +25,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
@@ -97,6 +97,7 @@ Results$ModelInformation$...
 \seealso{
 Other Automated Time Series: \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{TimeSeriesFill}}
 }
 \concept{Automated Time Series}

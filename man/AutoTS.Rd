@@ -107,7 +107,8 @@ WinningModel <- output$TimeSeriesModel
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoXGBoostCARMA}}
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{TimeSeriesFill}}
 }
 \author{
 Adrian Antico and Douglas Pestana
