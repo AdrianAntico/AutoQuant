@@ -16,7 +16,7 @@
 #' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
-#' @param ZeroPadSeries Set to TRUE to force a complete series (fill missing records with zeros)
+#' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
@@ -41,7 +41,7 @@
 #'                              HolidayVariable = TRUE, 
 #'                              TimeTrendVariable = TRUE,
 #'                              DataTruncate = FALSE,
-#'                              ZeroPadSeries = TRUE,
+#'                              ZeroPadSeries = "all",
 #'                              SplitRatios = c(1-2*30/143,30/143,30/143),
 #'                              TaskType = "GPU",
 #'                              EvalMetric = "MAE",
@@ -69,7 +69,7 @@ AutoCatBoostCARMA <- function(data,
                               CalendarVariables = FALSE,
                               HolidayVariable = TRUE,
                               TimeTrendVariable = FALSE,
-                              ZeroPadSeries = TRUE,
+                              ZeroPadSeries = "all",
                               DataTruncate = FALSE,
                               SplitRatios = c(0.7, 0.2, 0.1),
                               TaskType = "GPU",
@@ -113,19 +113,29 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # Zero pad missing dates----
-  if(ZeroPadSeries) {
+  if(!is.null(ZeroPadSeries)) {
     if (!is.null(GroupVariables)) {
-      data <- TimeSeriesFill(data,
-                             DateColumnName = eval(DateColumnName),
-                             GroupVariables = "GroupVar",
-                             TimeUnit = TimeUnit,
-                             FillType = "inner")      
+      if(tolower(ZeroPadSeries) == "all") {
+        data <- TimeSeriesFill(data,
+                               DateColumnName = eval(DateColumnName),
+                               GroupVariables = "GroupVar",
+                               TimeUnit = TimeUnit,
+                               FillType = "all")        
+      } else {
+        data <- TimeSeriesFill(data,
+                               DateColumnName = eval(DateColumnName),
+                               GroupVariables = "GroupVar",
+                               TimeUnit = TimeUnit,
+                               FillType = "inner")
+      }
     } else {
-      data <- TimeSeriesFill(data,
-                             DateColumnName = eval(DateColumnName),
-                             GroupVariables = NULL,
-                             TimeUnit = TimeUnit,
-                             FillType = "inner")
+      if(tolower(ZeroPadSeries) == "all") {
+        data <- TimeSeriesFill(data,
+                               DateColumnName = eval(DateColumnName),
+                               GroupVariables = NULL,
+                               TimeUnit = TimeUnit,
+                               FillType = "all")        
+      }
     }
   }
   
