@@ -425,6 +425,10 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
+
+##### **ProblematicRecords()**
+<code>ProblematicRecords()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
+
 </p>
 </details>
 
@@ -515,9 +519,6 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **ProblematicFeatures()**
 <code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
-
-##### **ProblematicRecords()**
-<code>ProblematicRecords()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 ##### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
