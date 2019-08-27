@@ -3,7 +3,7 @@
 #' ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
 #'
 #' @author Adrian Antico
-#' @family EDA
+#' @family Unsupervised Learning
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
 #' @param Threshold Quantile value to find the cutoff value for classifying outliers
