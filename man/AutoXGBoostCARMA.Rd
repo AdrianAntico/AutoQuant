@@ -9,7 +9,7 @@ AutoXGBoostCARMA(data, TargetColumnName = "Target",
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
-  DataTruncate = FALSE, ZeroPadSeries = TRUE, SplitRatios = c(0.7,
+  DataTruncate = FALSE, ZeroPadSeries = "all", SplitRatios = c(0.7,
   0.2, 0.1), TreeMethod = "hist", NThreads = max(1,
   parallel::detectCores() - 2), EvalMetric = "MAE", GridTune = FALSE,
   GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
@@ -42,7 +42,7 @@ AutoXGBoostCARMA(data, TargetColumnName = "Target",
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
-\item{ZeroPadSeries}{Set to TRUE to force a complete series (fill missing records with zeros)}
+\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
@@ -85,7 +85,7 @@ Results <- AutoXGBoostCARMA(data,
                             HolidayVariable = TRUE,
                             TimeTrendVariable = FALSE,
                             DataTruncate = FALSE,
-                            ZeroPadSeries = TRUE,
+                            ZeroPadSeries = "all",
                             SplitRatios = c(0.7, 0.2, 0.1),
                             TreeMethod = "hist",
                             NThreads = max(1, parallel::detectCores()-2),

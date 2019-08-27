@@ -9,7 +9,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
-  ZeroPadSeries = TRUE, DataTruncate = FALSE, SplitRatios = c(0.7,
+  ZeroPadSeries = "all", DataTruncate = FALSE, SplitRatios = c(0.7,
   0.2, 0.1), TaskType = "GPU", EvalMetric = "RMSE", GridTune = FALSE,
   GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
   PartitionType = "timeseries", Timer = TRUE)
@@ -39,7 +39,7 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
-\item{ZeroPadSeries}{Set to TRUE to force a complete series (fill missing records with zeros)}
+\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
@@ -82,7 +82,7 @@ Results <- AutoCatBoostCARMA(data,
                              HolidayVariable = TRUE, 
                              TimeTrendVariable = TRUE,
                              DataTruncate = FALSE,
-                             ZeroPadSeries = TRUE,
+                             ZeroPadSeries = "all",
                              SplitRatios = c(1-2*30/143,30/143,30/143),
                              TaskType = "GPU",
                              EvalMetric = "MAE",
