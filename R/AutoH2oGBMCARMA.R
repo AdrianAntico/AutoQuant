@@ -993,7 +993,9 @@ AutoH2oGBMCARMA <- function(data,
         eval(TargetColumnName),
         "Predictions")
     UpdateData <- UpdateData[, ..keep]
-    UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    if(GroupVariables > 1) {
+      UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]      
+    }
     if(TargetTransformation) {
       return(
         list(
