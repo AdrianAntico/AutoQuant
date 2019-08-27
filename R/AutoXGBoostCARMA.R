@@ -138,6 +138,15 @@ AutoXGBoostCARMA <- function(data,
                                FillType = "all")        
       }
     }
+    
+    # Convert TimeUnit back if particular ones----
+    if(TimeUnit == "weeks") {
+      TimeUnit <- "week"
+    } else if(TimeUnit == "secs") {
+      TimeUnit <- "second"
+    } else if(TimeUnit == "min") {
+      TimeUnit <- "minute"
+    }
   }
   
   # Get unique set of GroupVar----
@@ -529,12 +538,14 @@ AutoXGBoostCARMA <- function(data,
   
   # Update GroupVar with Original Columns, reorder columns, add to model objects----
   if (!is.null(GroupVariables)) {
-    MetricCollection[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-    NumGroupVars <- length(GroupVariables)
-    data.table::setcolorder(MetricCollection,
-                            c((ncol(MetricCollection) - NumGroupVars + 1):ncol(MetricCollection),
-                              1:(ncol(MetricCollection) - NumGroupVars)
-                            ))
+    if(length(GroupVariables) > 1) {
+      MetricCollection[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+      NumGroupVars <- length(GroupVariables)
+      data.table::setcolorder(MetricCollection,
+                              c((ncol(MetricCollection) - NumGroupVars + 1):ncol(MetricCollection),
+                                1:(ncol(MetricCollection) - NumGroupVars)
+                              ))      
+    }
     TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
     TestModel$EvaluationMetricsByGroup
   }
