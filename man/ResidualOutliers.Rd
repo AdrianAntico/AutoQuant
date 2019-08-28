@@ -56,7 +56,8 @@ outliers <- data[type != "<NA>"]
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{AutoKMeans}},
-  \code{\link{GenTSAnomVars}}
+  \code{\link{GenTSAnomVars}},
+  \code{\link{ProblematicRecords}}
 }
 \author{
 Adrian Antico

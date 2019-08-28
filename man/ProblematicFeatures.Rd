@@ -45,8 +45,7 @@ ProblematicFeatures(test,
                     HighSkewThresh = 10)
 }
 \seealso{
-Other EDA: \code{\link{AutoWordFreq}},
-  \code{\link{ProblematicRecords}}
+Other EDA: \code{\link{AutoWordFreq}}
 }
 \author{
 Adrian Antico

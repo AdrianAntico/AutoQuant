@@ -75,10 +75,11 @@ Outliers <- ProblematicRecords(data,
 }
 }
 \seealso{
-Other EDA: \code{\link{AutoWordFreq}},
-  \code{\link{ProblematicFeatures}}
+Other Unsupervised Learning: \code{\link{AutoKMeans}},
+  \code{\link{GenTSAnomVars}},
+  \code{\link{ResidualOutliers}}
 }
 \author{
 Adrian Antico
 }
-\concept{EDA}
+\concept{Unsupervised Learning}

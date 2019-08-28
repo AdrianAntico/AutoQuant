@@ -48,8 +48,7 @@ data <- AutoWordFreq(data,
                      StopWords = c("Bla"))
 }
 \seealso{
-Other EDA: \code{\link{ProblematicFeatures}},
-  \code{\link{ProblematicRecords}}
+Other EDA: \code{\link{ProblematicFeatures}}
 }
 \author{
 Adrian Antico

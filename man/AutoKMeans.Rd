@@ -84,6 +84,7 @@ data[, mean(Acc)][[1]]
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{GenTSAnomVars}},
+  \code{\link{ProblematicRecords}},
   \code{\link{ResidualOutliers}}
 }
 \author{

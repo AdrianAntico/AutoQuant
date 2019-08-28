@@ -56,6 +56,7 @@ stuff <- GenTSAnomVars(data,
 }
 \seealso{
 Other Unsupervised Learning: \code{\link{AutoKMeans}},
+  \code{\link{ProblematicRecords}},
   \code{\link{ResidualOutliers}}
 }
 \author{
