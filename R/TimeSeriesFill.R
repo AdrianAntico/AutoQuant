@@ -6,7 +6,7 @@
 #' @param data Supply your full series data set here
 #' @param DateColumnName Supply the name of your date column
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")
-#' @param TimeUnit Choose from "hour", "day", "week", "month", "quarter", "year"
+#' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
 #' @param FillType Choose from "all" or "inner". Only relevant for when you have GroupVariables. The "all" option will take the max date and the min date of the entire data set and fill according to those. The "inner" option will grab the max and min dates by group levels and fill each group level based on those.
 #' @examples
 #' \donttest{
@@ -38,7 +38,7 @@ TimeSeriesFill <- function(data = data,
     warning("TimeUnit is not one of 'all' 'inner'")
     return(data)
   }
-  if(!(TimeUnit %chin% c("hour", "day", "week", "month", "quarter", "year"))) {
+  if(!(TimeUnit %chin% c("second","minute","hour", "day", "week", "month", "quarter", "year"))) {
     warning("TimeUnit needs to be one of 'hour' 'day' 'week' 'month' 'quarter' 'year'")
     return(data)
   }
@@ -78,14 +78,8 @@ TimeSeriesFill <- function(data = data,
     # Define date range----
     MinRange <- data[, min(get(DateColumnName))]
     MaxRange <- data[, max(get(DateColumnName))]
-    
-    # Store logical----
-    Rows <- length(
-      seq(from = MinRange, 
-          to = MaxRange, 
-          by = TimeUnit)) * length(unique(data[, GroupVar])) != data[, .N]
-    
-    
+
+    # Create groups----
     if(Rows) {
       # Figure out which series need treatment
       FullSeriesLength <- length(seq(from = MinRange, to = MaxRange, by = TimeUnit))

@@ -14,7 +14,7 @@ TimeSeriesFill(data = data, DateColumnName = "Date",
 
 \item{GroupVariables}{Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")}
 
-\item{TimeUnit}{Choose from "hour", "day", "week", "month", "quarter", "year"}
+\item{TimeUnit}{Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"}
 
 \item{FillType}{Choose from "all" or "inner". Only relevant for when you have GroupVariables. The "all" option will take the max date and the min date of the entire data set and fill according to those. The "inner" option will grab the max and min dates by group levels and fill each group level based on those.}
 }
