@@ -83,25 +83,25 @@ ________________________________________________________________________________
 #### The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Transform your target variable using the best normalization method based on the <code>AutoTransformationCreate()</code> function
-3. Create train, validation, and test data if you didn't supply those directly to the function
-4. Consoldate columns that are used for modeling and what is to be kept for data returned
-5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
-6. Save the final modeling column names for later reference
-7. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-8. Build out a random hyperparameter set for a random grid search for model tuning (includes the default model hyperparameters) if you choose to grid tune
-9. Loop through the grid-tuning process
+3. Create train, validation, and test data, utilizing the <code>AutoDataPartition()</code> function, if you didn't supply those directly to the function
+4. Consoldate columns that are used for modeling and what metadata you want returned in your test data with predictions
+5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets, utilizing the <code>DummifyDT()</code> function
+6. Save the final modeling column names for reference
+7. Handles the data conversion to the appropriate modeling type, such as CatBoost, H2O, and XGBoost
+8. Build out a random hyperparameter set for a random grid search for model grid tuning (which includes the default model hyperparameters) if you choose to run a grid tune
+9. Loop through the grid-tuning process, building N models
 10. Collect the evaluation metrics for each grid tune run
 11. Identify the best model of the set of models built in the grid tuning search
 12. Save the hyperparameters from the winning grid tuned model
-13. Build the final model based on the best model from the grid tuning model search
+13. Build the final model based on the best model from the grid tuning model search (I remove each model after evaluation metrics are generated in the grid tune to avoid memory overflow)
 14. Back-transform your predictions based on the best transformation used earlier in the process
 15. Collect evaluation metrics based on performance on test data (based on back-transformed data)
 16. Store the final predictions with the associated test data and other columns you want included in that set
 17. Save your transformation metadata for recreating them in a scoring process
-18. Build out and save an Evaluation Calibration Line Plot and Box-Plot
+18. Build out and save an Evaluation Calibration Line Plot and Evaluation Calibration Box-Plot, using the <code>EvalPlot()</code> function
 19. Generate and save Variable Importance
-20. Generate and save Partital Dependence Calibration Line Plots and Box-Plots
-21. Return all the objects generated in a named list for immediate use
+20. Generate and save Partital Dependence Calibration Line Plots and Partital Dependence Calibration Box-Plots, using the <code>ParDepPlots()</code> function
+21. Return all the objects generated in a named list for immediate use and evaluation
  
 </p>
 </details>
