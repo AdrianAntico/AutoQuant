@@ -132,20 +132,38 @@ Scoring_GDL_Feature_Engineering <- function(data,
   }
   
   # Ensure enough columns are allocated beforehand----
-  if(is.null(timeDiffTarget)) {
-    if(ncol(data) +
-       (max(lags + 1) + max(periods + 1)) * tarNum > data.table::truelength(data)) {
-      data.table::alloc.col(DT = data, 
-                            n = ncol(data) +
-                              (max(lags + 1) + max(periods + 1)) * tarNum)
+  if(!is.null(groupingVars)) {
+    if(is.null(timeDiffTarget)) {
+      if(ncol(data) +
+         (length(lags) + length(periods)) * tarNum * length(groupingVars) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, 
+                              n = ncol(data) +
+                                (length(lags) + length(periods)) * tarNum * length(groupingVars))
+      }
+    } else {
+      if(ncol(data) +
+         (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, 
+                              n = ncol(data) +
+                                (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars))
+      }
     }
   } else {
-    if(ncol(data) +
-       (max(lags + 1) + max(periods + 1)) * tarNum * 2 > data.table::truelength(data)) {
-      data.table::alloc.col(DT = data, 
-                            n = ncol(data) +
-                              (max(lags + 1) + max(periods + 1)) * tarNum * 2)
-    }
+    if(is.null(timeDiffTarget)) {
+      if(ncol(data) +
+         (length(lags) + length(periods)) * tarNum > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, 
+                              n = ncol(data) +
+                                (length(lags) + length(periods)) * tarNum)
+      }
+    } else {
+      if(ncol(data) +
+         (length(lags) + length(periods)) * tarNum * 2 > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, 
+                              n = ncol(data) +
+                                (length(lags) + length(periods)) * tarNum * 2)
+      }
+    }  
   }
 
   # Begin feature engineering----
