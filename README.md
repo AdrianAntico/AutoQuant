@@ -1,4 +1,4 @@
-<img src="RemixAutoMLLogoPurple.png" align="center" width="600" />
+<img src="Images/RemixAutoMLLogoPurple.png" align="center" width="600" />
 
 # How to Install the Package for R:
 
