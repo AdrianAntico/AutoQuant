@@ -84,7 +84,7 @@ ModelDataPrep <- function(data,
                         MissFactor)
         
         # Case other
-      } else if(is.numeric(data[[col]] | is.integer(data[[col]])) {
+      } else if(is.numeric(data[[col]]) | is.integer(data[[col]])) {
         data.table::set(data,
                         which(base::is.na(data[[col]])),
                         col,
