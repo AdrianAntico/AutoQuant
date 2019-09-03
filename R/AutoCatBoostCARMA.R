@@ -251,7 +251,6 @@ AutoCatBoostCARMA <- function(data,
       timeAgg        = NULL,
       WindowingLag   = 1,
       Type           = "Lag",
-      Timer          = FALSE,
       SimpleImpute   = TRUE
     )
   } else {
@@ -267,7 +266,6 @@ AutoCatBoostCARMA <- function(data,
       timeAgg        = NULL,
       WindowingLag   = 1,
       Type           = "Lag",
-      Timer          = FALSE,
       SimpleImpute   = TRUE
     )
   }
@@ -802,7 +800,6 @@ AutoCatBoostCARMA <- function(data,
           timeAgg        = NULL,
           WindowingLag   = 1,
           Type           = "Lag",
-          Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1,
@@ -835,7 +832,6 @@ AutoCatBoostCARMA <- function(data,
           timeAgg        = NULL,
           WindowingLag   = 1,
           Type           = "Lag",
-          Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1,

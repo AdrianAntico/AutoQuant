@@ -249,7 +249,6 @@ AutoH2oGBMCARMA <- function(data,
       timeAgg        = NULL,
       WindowingLag   = 1,
       Type           = "Lag",
-      Timer          = FALSE,
       SimpleImpute   = TRUE
     )
   } else {
@@ -265,7 +264,6 @@ AutoH2oGBMCARMA <- function(data,
       timeAgg        = NULL,
       WindowingLag   = 1,
       Type           = "Lag",
-      Timer          = FALSE,
       SimpleImpute   = TRUE
     )
   }
@@ -783,7 +781,6 @@ AutoH2oGBMCARMA <- function(data,
           timeAgg        = NULL,
           WindowingLag   = 1,
           Type           = "Lag",
-          Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1,
@@ -821,7 +818,6 @@ AutoH2oGBMCARMA <- function(data,
           timeAgg        = NULL,
           WindowingLag   = 1,
           Type           = "Lag",
-          Timer          = FALSE,
           SimpleImpute   = TRUE,
           AscRowByGroup  = "ID",
           RecordsKeep    = 1,
