@@ -60,7 +60,7 @@ AutoCatBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 }
 \description{
-AutoCatBoostHurdleModel for generalized hurdle modeling
+AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
 }
 \examples{
 \donttest{
@@ -97,5 +97,8 @@ Other Automated Regression: \code{\link{AutoCatBoostRegression}},
   \code{\link{AutoNLS}},
   \code{\link{AutoXGBoostHurdleModel}},
   \code{\link{AutoXGBoostRegression}}
+}
+\author{
+Adrian Antico
 }
 \concept{Automated Regression}

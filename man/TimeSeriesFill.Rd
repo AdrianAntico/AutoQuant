@@ -35,8 +35,11 @@ data <- TimeSeriesFill(data,
 }
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{IntermittentDemandDataGenerator}},
+  \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \concept{Automated Time Series}

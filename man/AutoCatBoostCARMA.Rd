@@ -98,9 +98,15 @@ Results$ModelInformation$...
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoH2oDRFCARMA}},
+Other Automated Time Series: \code{\link{AutoCatBoostSizeFreqDist}},
+  \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostCARMA}},
+  \code{\link{IntermittentDemandDataGenerator}},
+  \code{\link{IntermittentDemandScoringDataGenerator}},
   \code{\link{TimeSeriesFill}}
+}
+\author{
+Adrian Antico
 }
 \concept{Automated Time Series}

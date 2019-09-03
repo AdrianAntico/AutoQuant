@@ -2,6 +2,7 @@
 #'
 #' AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring.
 #'
+#' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param ModelObject Supply a model object from AutoH2oDRF__()

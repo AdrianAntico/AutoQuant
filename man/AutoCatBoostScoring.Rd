@@ -89,4 +89,7 @@ Other Automated Model Scoring: \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}},
   \code{\link{AutoXGBoostScoring}}
 }
+\author{
+Adrian Antico
+}
 \concept{Automated Model Scoring}

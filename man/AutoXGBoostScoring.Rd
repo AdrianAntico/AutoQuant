@@ -99,4 +99,7 @@ Other Automated Model Scoring: \code{\link{AutoCatBoostScoring}},
   \code{\link{AutoH2OMLScoring}},
   \code{\link{AutoH2OModeler}}
 }
+\author{
+Adrian Antico
+}
 \concept{Automated Model Scoring}

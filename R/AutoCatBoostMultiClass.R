@@ -1,6 +1,7 @@
 #' AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system
 #'
 #' AutoCatBoostMultiClass is an automated modeling function that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting. You can download the catboost package using devtools, via: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package').
+#' 
 #' @author Adrian Antico
 #' @family Automated MultiClass Classification
 #' @param data This is your data set for training and testing your model

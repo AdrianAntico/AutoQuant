@@ -109,8 +109,9 @@ AutoCatBoostRegression <- function(data,
   loadNamespace(package = "catboost")
   
   # Regression Check Arguments----
-  if (!(tolower(task_type) %chin% c("gpu", "cpu")))
-    warning("task_type needs to be either 'GPU' or 'CPU'")
+  if (!(tolower(task_type) %chin% c("gpu", "cpu"))) {
+    warning("task_type needs to be either 'GPU' or 'CPU'")    
+  }
   if (!(
     tolower(eval_metric) %chin% c(
       "rmse",
@@ -169,13 +170,6 @@ AutoCatBoostRegression <- function(data,
     warning("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE)))
     warning("SaveModelObjects needs to be TRUE or FALSE")
-  
-  # Update working directory----
-  # working_directory <- getwd()
-  # if (!is.null(model_path)) {
-  #   if (working_directory != model_path)
-  #     setwd(model_path)
-  # }
   
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
