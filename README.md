@@ -5,6 +5,7 @@
 [![star this repo](http://githubbadges.com/star.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML)
 [![fork this repo](http://githubbadges.com/fork.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML/fork)
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
 
 <img src="Images/RemixAutoMLLogoPurple.png" align="center" width="900" />
