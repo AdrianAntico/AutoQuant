@@ -166,6 +166,136 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     data.table::fwrite(datax, file = file.path(FilePath,"ScoringData.csv"))
   }
   
+  # Back-transform GroupingVariables----
+  if(length(ReverseGroupingVariables) > 1) {
+    datax[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][
+      , GroupVar := NULL]
+  } else {
+    data.table::setnames(datax, eval(GroupingVariables), eval(ReverseGroupingVariables))
+  }
+  
   # Return datax----
   return(datax)
+}
+
+#' AutoCatBoostFreqSizeScoring
+#' 
+#' AutoCatBoostFreqSizeScoring
+#' 
+#' @author Adrian Antico
+#' @family Automated Time Series
+#' @param data The scoring data returned from IntermittentDemandScoringDataGenerator()
+#' @param TargetColumnNames A character or numeric vector of the target names. E.g. c("Counts","TARGET_qty")
+#' @param FeatureColumnNames A character vector of column names or column numbers
+#' @param IDcols ID columns you want returned with the data that is not a model feature
+#' @param CountQuantiles
+#' @param SizeQuantiles
+#' @param ModelPath
+#' @param ModelIDs
+#' @param KeepFeatures
+#' @param 
+#' @param 
+#' @param 
+#' @examples 
+#' @return 
+#' @export
+AutoCatBoostFreqSizeScoring <- function(data,
+                                        TargetColumnNames = NULL,
+                                        FeatureColumnNames = NULL,
+                                        IDcols = NULL,
+                                        CountQuantiles = seq(0.10,0.90,0.10), 
+                                        SizeQuantiles = seq(0.10,0.90,0.10),
+                                        ModelPath = NULL,
+                                        ModelIDs = c("CountModel","SizeModel"),
+                                        KeepFeatures = TRUE) {
+  
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+  
+  # Score count models----
+  Counter <- 1
+  for(Count in CountQuantiles) {
+    data <- AutoCatBoostScoring(
+      TargetType = "regression",
+      ScoringData = ScoringData,
+      FeatureColumnNames = FeatureColumnNames,
+      IDcols = IDcols,
+      ModelObject = NULL,
+      ModelPath = ModelPath,
+      ModelID = paste0(ModelIDs[1],"_",Count),
+      ReturnFeatures = TRUE,
+      MultiClassTargetLevels = NULL,
+      TransformNumeric = FALSE,
+      BackTransNumeric = TRUE,
+      TargetColumnName = TargetColumnName[1],
+      TransformationObject = NULL,
+      TransID = paste0(ModelIDs[1],"_",Count),
+      TransPath = ModelPath,
+      MDP_Impute = TRUE,
+      MDP_CharToFactor = TRUE,
+      MDP_RemoveDates = TRUE,
+      MDP_MissFactor = "0",
+      MDP_MissNum = -1
+    )
+    
+    # Rearrange Column Ordering, change names, cbind----
+    data.table::setcolorder(data, c(2:ncol(data),1))
+    if(Count == min(CountQuantiles)) {
+      data.table::setnames(data, "Predictions", paste0("CountPredictions_",Count))
+      FinalData <- data      
+    } else {
+      FinalData <- cbind(FinalData, data[[paste0("Predictions")]])
+      data.table::setnames(FinalData, "V2", paste0("CountPredictions_",Count))
+    }
+    
+    # Update timer----
+    print(paste0("Count model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
+    Counter <- Counter + 1
+  }
+  
+  # Score size models----
+  Counter <- 1
+  for(Size in SizeQuantiles) {
+    data <- AutoCatBoostScoring(
+      TargetType = "regression",
+      ScoringData = ScoringData,
+      FeatureColumnNames = FeatureColumnNames,
+      IDcols = IDcols,
+      ModelObject = NULL,
+      ModelPath = ModelPath,
+      ModelID = paste0(ModelIDs[2],"_",Size),
+      ReturnFeatures = TRUE,
+      MultiClassTargetLevels = NULL,
+      TransformNumeric = FALSE,
+      BackTransNumeric = TRUE,
+      TargetColumnName = TargetColumnName[2],
+      TransformationObject = NULL,
+      TransID = paste0(ModelIDs[2],"_",Size),
+      TransPath = ModelPath,
+      MDP_Impute = TRUE,
+      MDP_CharToFactor = TRUE,
+      MDP_RemoveDates = TRUE,
+      MDP_MissFactor = "0",
+      MDP_MissNum = -1
+    )
+    
+    # Rearrange Column Ordering, change names, cbind----
+    data.table::setcolorder(data, c(2:ncol(data),1))
+    if(Count == min(CountQuantiles)) {
+      data.table::setnames(data, "Predictions", paste0("SizePredictions_",Count))
+      FinalData <- data      
+    } else {
+      FinalData <- cbind(FinalData, data[[paste0("Predictions")]])
+      data.table::setnames(FinalData, "V2", paste0("SizePredictions_",Count))
+    }
+    
+    # Update timer----
+    print(paste0("Size model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
+    Counter <- Counter + 1
+  }
+  
+  # Return FinalData----
+  return(FinalData)
 }
