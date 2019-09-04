@@ -399,7 +399,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Recommender System Functions: 
+## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage.png" align="center" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
