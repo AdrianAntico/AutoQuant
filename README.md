@@ -487,7 +487,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 
-## Automated Model Evaluation, Interpretation, and Cost-Sensitive Functions: 
+## Automated Model Evaluation: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
@@ -521,7 +521,7 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>EXPAND</summary>
 <p>
  
-##### **AutoWordFreq()** 
+##### **AutoWordFreq()** <img src="Images/MiscImage.png" align="right" width="80" />
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
