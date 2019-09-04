@@ -60,7 +60,7 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
-## RemixAutoML Blogs: <img src="Images/BlogsImage.png" align="center" width="80" />
+## RemixAutoML Blogs: <img src="Images/BlogsImage.png" align="right" width="80" />
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
 
 [Build Thousands of Automated Demand Forecasts in 15 Minutes Using AutoCatBoostCARMA in R](https://www.remixinstitute.com/blog/automated-demand-forecasts-using-autocatboostcarma-in-r/#.XUIO1ntlCDM)
@@ -71,7 +71,7 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
-## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="center" width="80" />
+## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
@@ -274,7 +274,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="center" width="80" />
+## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
@@ -295,7 +295,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage.png" align="center" width="100" />
+## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage.png" align="right" width="100" />
 <details><summary>EXPAND</summary>
 <p>
   
@@ -399,7 +399,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage.png" align="center" width="80" />
+## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
@@ -423,7 +423,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Unsupervised Learning Functions: 
+## Automated Unsupervised Learning Functions: <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
 
