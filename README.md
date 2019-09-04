@@ -14,7 +14,7 @@
 
 # How to Install the Package for R:
 
-#### 1. First, run the following R script to download dependencies
+### 1. First, make sure you have all the dependencies installed:
 ```
 library(devtools)
 to_install <- c("arules","catboost","caTools","data.table","doParallel",,"xgboost"
@@ -40,13 +40,13 @@ for (i in to_install) {
 }
 ```
 
-#### 2. Next, Install RemixAutoML package from GitHub
+### 2. Next, Install RemixAutoML package from GitHub
 ```
 # Install via:
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
-#### 3. If you're having trouble installing, see if this issue helps you out.
+### 3. If you're having trouble installing, see if this issue helps you out.
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
