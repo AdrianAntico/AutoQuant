@@ -295,7 +295,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Time Series Modeling Functions: 
+## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage.png" align="center" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
