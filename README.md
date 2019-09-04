@@ -276,7 +276,6 @@ ________________________________________________________________________________
 
 ## Automated Model Scoring Functions: 
 <details><summary>EXPAND</summary>
-<details><summary>EXPAND</summary>
 <p>
   
 <img src="Images/ScoringCatBoost.png" align="center" width="400" />
