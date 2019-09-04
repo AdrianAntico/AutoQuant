@@ -1,6 +1,6 @@
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 ![Version: 0.10.0](https://img.shields.io/static/v1?label=Version&message=0.10.0&color=blue)
-![Build: Passing](https://img.shields.io/static/v1?label=Build&message=Passing&color=Yellow)
+![Build: Passing](https://img.shields.io/static/v1?label=Build&message=Passing&color=green)
 <img src="Images/RemixAutoMLLogoPurple.png" align="center" width="900" />
 
 # How to Install the Package for R:
