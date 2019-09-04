@@ -1,9 +1,9 @@
 ![Version: 0.10.0](https://img.shields.io/static/v1?label=Version&message=0.10.0&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=Passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+![Contributors: 4](https://img.shields.io/static/v1?label=Contributors&message=4&color=Orange)
 [![star this repo](http://githubbadges.com/star.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML)
 [![fork this repo](http://githubbadges.com/fork.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML/fork)
-![Contributors: 4](https://img.shields.io/static/v1?label=Contributors&message=4&color=Orange)
 
 
 <img src="Images/RemixAutoMLLogoPurple.png" align="center" width="900" />
