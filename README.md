@@ -517,11 +517,11 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 
-## Utilities, EDA, and Misc. Functions:
+## Utilities, EDA, and Misc. Functions: <img src="Images/MiscImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
  
-##### **AutoWordFreq()** <img src="Images/MiscImage.png" align="right" width="80" />
+##### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
