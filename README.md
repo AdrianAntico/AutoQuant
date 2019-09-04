@@ -423,7 +423,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Unsupervised Learning Functions: 
+## Automated Unsupervised Learning Functions: <img src="Images/UnsupervisedLearningImage.png" align="center" width="80" />
 <details><summary>EXPAND</summary>
 <p>
 
