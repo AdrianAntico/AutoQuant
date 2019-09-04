@@ -274,7 +274,8 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Model Scoring Functions: 
+## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="center" width="80" />
+<details><summary>EXPAND</summary>
 <details><summary>EXPAND</summary>
 <p>
   
