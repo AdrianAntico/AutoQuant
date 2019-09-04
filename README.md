@@ -1,5 +1,5 @@
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-        
+[![Version: 0.10.0](https://img.shields.io/static/v1?label=Verions&message=0.10.0&color=blue)
 <img src="Images/RemixAutoMLLogoPurple.png" align="center" width="900" />
 
 # How to Install the Package for R:
