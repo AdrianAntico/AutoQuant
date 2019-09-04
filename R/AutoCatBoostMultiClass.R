@@ -820,6 +820,23 @@ AutoCatBoostMultiClass <- function(data,
     stringr::str_extract(z$auc, "\\d+\\.*\\d*")
   )), 4)
   
+  # Logloss----
+  temp <- ValidationData[, 1]
+  temp[, Truth := Target]
+  temp <- DummifyDT(
+    data = temp, 
+    cols = "Target", 
+    KeepFactorCols = FALSE, 
+    OneHot = FALSE, 
+    SaveFactorLevels = FALSE, 
+    SavePath = NULL, 
+    ImportFactorLevels = FALSE,
+    FactorLevelsList = FALSE, 
+    ClustScore = FALSE, 
+    ReturnFactorLevels = FALSE)
+  N <- TargetLevels[, .N]
+  logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData[, 3:(2+N)]), y_true = as.matrix(temp[, 2:(1+N)]))
+  
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
     if (!is.null(metadata_path)) {
@@ -834,8 +851,8 @@ AutoCatBoostMultiClass <- function(data,
   # MultiClass Evaluation Metrics----
   EvaluationMetrics <-
     data.table::data.table(
-      Metric = c("AUC", "Accuracy"),
-      MetricValue = c(MetricAUC, MetricAcc)
+      Metric = c("AUC", "Accuracy","LogLoss"),
+      MetricValue = c(MetricAUC, MetricAcc,logloss)
     )
   
   # MultiClass Save EvaluationMetrics to File
