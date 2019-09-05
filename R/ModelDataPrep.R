@@ -7,6 +7,7 @@
 #' @param data This is your source data you'd like to modify
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
+#' @param IntToNumeric Defaults to TRUE which tells the function to convert integers to numeric
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
@@ -24,6 +25,7 @@
 #' data <- ModelDataPrep(data,
 #'                       Impute = TRUE,
 #'                       CharToFactor = TRUE,
+#'                       IntToNumeric = TRUE,
 #'                       MissFactor = "0",
 #'                       MissNum    = -1)
 #' @return Returns the original data table with corrected values
@@ -31,6 +33,7 @@
 ModelDataPrep <- function(data,
                           Impute       = TRUE,
                           CharToFactor = TRUE,
+                          IntToNumeric = TRUE,
                           RemoveDates  = FALSE,
                           MissFactor   = "0",
                           MissNum      = -1,
@@ -61,6 +64,17 @@ ModelDataPrep <- function(data,
         data.table::set(data,
                         j = col,
                         value = as.factor(data[[col]]))
+      }
+    }
+  }
+  
+  # Turn integers columns into numeric----
+  if (IntToNumeric) {
+    for (col in x) {
+      if (is.integer(data[[col]])) {
+        data.table::set(data,
+                        j = col,
+                        value = as.numeric(data[[col]]))
       }
     }
   }
