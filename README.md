@@ -293,7 +293,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage.png" align="right" width="100" />
+## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage2.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
