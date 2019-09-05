@@ -7,7 +7,6 @@
 [![fork this repo](http://githubbadges.com/fork.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML/fork)
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
-[![GitHub followers](https://img.shields.io/github/followers/Naereen.svg?style=social&label=Follow&maxAge=2592000)](https://github.com/Naereen?tab=followers)
 
 
 
