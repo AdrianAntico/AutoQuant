@@ -9,7 +9,7 @@
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 [![HitCount](http://hits.dwyl.io/AdrianAntico/badges.svg)](http://hits.dwyl.io/AdrianAntico/badges)
-<!-- badges: start -->use_lifecycle_badge(Stable)<!-- badges: end -->
+<!-- badges: start -->use_lifecycle_badge("Stable")<!-- badges: end -->
 
 
 <img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="850" />
