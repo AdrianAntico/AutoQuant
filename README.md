@@ -442,7 +442,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage.png" align="right" width="80" />
+## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
 
