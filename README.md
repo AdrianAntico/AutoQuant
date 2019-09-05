@@ -8,6 +8,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
+[![HitCount](http://hits.dwyl.io/Naereen/badges.svg)](http://hits.dwyl.io/Naereen/badges)
 
 
 
