@@ -58,7 +58,7 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
-## RemixAutoML Blogs: <img src="Images/BlogsImage3.png" align="right" width="80" />
+## RemixAutoML Blogs: <img src="Images/BlogsImage3.png" align="right" width="120" />
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
 
 [Build Thousands of Automated Demand Forecasts in 15 Minutes Using AutoCatBoostCARMA in R](https://www.remixinstitute.com/blog/automated-demand-forecasts-using-autocatboostcarma-in-r/#.XUIO1ntlCDM)
