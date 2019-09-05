@@ -71,8 +71,8 @@ Hex sticker rendered via the <code>hexSticker</code> package in R: https://githu
 
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
-## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<img src="Images/SupervisedLearningImage.png" align="left" width="80" />
+<details><summary>EXPAND</summary> ## Automated Supervised Learning Training Functions: 
 <p>
   
 #### Regression:
