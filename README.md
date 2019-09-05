@@ -397,7 +397,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
+## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
