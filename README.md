@@ -7,6 +7,8 @@
 [![fork this repo](http://githubbadges.com/fork.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML/fork)
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
+[![HitCount](http://hits.dwyl.io/AdrianAntico/badges.svg)](http://hits.dwyl.io/AdrianAntico/badges)
 
 
 
@@ -50,7 +52,7 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
-> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make development and production easy, reliable, and low latency.** To see them in action, check out the free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a>, the blogs listed below, or the reference manual and vignette in the vignette folder above.
+> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make development and production easy, reliable, and low latency.** To see them in action, check out the free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a> or the reference manual and vignette in the vignette folder above.
 
 Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" target="_blank">RemixInstitute.ai</a> for data science, machine learning, and AI content.
 
@@ -58,7 +60,7 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
 
-## RemixAutoML Blogs: <img src="Images/BlogsImage3.png" align="right" width="120" />
+## RemixAutoML Blogs: <img src="Images/BlogsImage4.png" align="right" width="180" />
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
 
 [Build Thousands of Automated Demand Forecasts in 15 Minutes Using AutoCatBoostCARMA in R](https://www.remixinstitute.com/blog/automated-demand-forecasts-using-autocatboostcarma-in-r/#.XUIO1ntlCDM)
@@ -293,7 +295,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Time Series Modeling Functions: <img src="Images/TimeSeriesImage2.png" align="right" width="80" />
+## Automated Time Series Modeling Functions: <img src="Images/AutoTSPlot.png" align="right" width="80" />
 <details><summary>EXPAND</summary>
 <p>
   
