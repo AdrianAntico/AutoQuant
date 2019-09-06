@@ -12,7 +12,7 @@
 
 
 
-<img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="700" />
+<img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="800" />
 
 # How to Install the Package for R:
 
