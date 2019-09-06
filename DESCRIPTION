@@ -12,7 +12,7 @@ Authors@R:
              role = "aut",
              email = "douglas.pestana@remix.institute"),
       person("Jan","Gorecki", role="ctb"),
-      person("Soloman","Daner", role="ctb"))
+      person("Solomon","Daner", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Description: Automates and ensures high quality output for most
     of your machine learning and data science tasks. The package contains
