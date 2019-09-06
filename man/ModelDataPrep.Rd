@@ -5,8 +5,8 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  IntToNumeric = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1,
-  IgnoreCols = NULL)
+  IntToNumeric = TRUE, RemoveDates = FALSE, MissFactor = "0",
+  MissNum = -1, IgnoreCols = NULL)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}

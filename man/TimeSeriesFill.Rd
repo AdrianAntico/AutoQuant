@@ -35,6 +35,7 @@ data <- TimeSeriesFill(data,
 }
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},

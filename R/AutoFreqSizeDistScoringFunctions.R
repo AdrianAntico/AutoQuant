@@ -178,9 +178,9 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   return(datax)
 }
 
-#' AutoCatBoostFreqSizeScoring
+#' AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist()
 #' 
-#' AutoCatBoostFreqSizeScoring
+#' AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
 #' 
 #' @author Adrian Antico
 #' @family Automated Time Series
@@ -188,15 +188,24 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #' @param TargetColumnNames A character or numeric vector of the target names. E.g. c("Counts","TARGET_qty")
 #' @param FeatureColumnNames A character vector of column names or column numbers
 #' @param IDcols ID columns you want returned with the data that is not a model feature
-#' @param CountQuantiles
-#' @param SizeQuantiles
-#' @param ModelPath
-#' @param ModelIDs
-#' @param KeepFeatures
-#' @param 
-#' @param 
-#' @param 
+#' @param CountQuantiles A numerical vector of the quantiles used in model building
+#' @param SizeQuantiles A numerical vector of the quantiles used in model building
+#' @param ModelPath The path file to where you models were saved
+#' @param ModelIDs The ID's used in model building
+#' @param KeepFeatures Set to TRUE to return the features with the predicted values
 #' @examples 
+#' \donttest{
+#' FinalData <- AutoCatBoostFreqSizeScoring(
+#'   data = ScoringData,
+#'   TargetColumnNames = c("Counts","TARGET_qty"),
+#'   FeatureColumnNames = 1:ncol(ScoringData),
+#'   IDcols = NULL,
+#'   CountQuantiles = seq(0.10,0.90,0.10), 
+#'   SizeQuantiles = seq(0.10,0.90,0.10),
+#'   ModelPath = getwd(),
+#'   ModelIDs = c("CountModel","SizeModel"),
+#'   KeepFeatures = TRUE)
+#' }
 #' @return 
 #' @export
 AutoCatBoostFreqSizeScoring <- function(data,

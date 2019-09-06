@@ -94,6 +94,7 @@ AutoCatBoostSizeFreqDist(CountData = CountData,
 }
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostCARMA}},

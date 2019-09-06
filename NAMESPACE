@@ -2,6 +2,7 @@
 
 export(AutoCatBoostCARMA)
 export(AutoCatBoostClassifier)
+export(AutoCatBoostFreqSizeScoring)
 export(AutoCatBoostHurdleModel)
 export(AutoCatBoostMultiClass)
 export(AutoCatBoostRegression)

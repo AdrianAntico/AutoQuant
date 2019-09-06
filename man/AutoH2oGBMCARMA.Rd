@@ -99,6 +99,7 @@ Results$ModelInformation$...
 }
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}}, \code{\link{AutoTS}},
   \code{\link{AutoXGBoostCARMA}},
