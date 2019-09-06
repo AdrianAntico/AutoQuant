@@ -117,7 +117,7 @@ AutoDataPartition <- function(data,
           temp <- copy_data
         } else {
           x <-
-            copy_data[, .I[sample(.N, min(1,.N * RatioList[i]))], by = list(get(keep))]$V1
+            copy_data[, .I[sample(.N, max(1,.N * RatioList[i]))], by = list(get(keep))]$V1
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
