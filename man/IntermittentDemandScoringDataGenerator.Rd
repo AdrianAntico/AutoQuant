@@ -15,6 +15,8 @@ IntermittentDemandScoringDataGenerator(data = NULL, FC_Periods = 52,
 \arguments{
 \item{data}{This is your source data}
 
+\item{FC_Periods}{The number of periods you set up to forecast}
+
 \item{SaveData}{Set to TRUE to save the output data to file}
 
 \item{FilePath}{Set a path file have the data saved there}
@@ -76,9 +78,7 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandDataGenerator}},
-  \code{\link{TimeSeriesFill}}
+  \code{\link{AutoXGBoostCARMA}}, \code{\link{Demand}}
 }
 \author{
 Adrian Antico

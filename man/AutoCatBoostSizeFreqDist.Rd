@@ -97,10 +97,8 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandDataGenerator}},
-  \code{\link{IntermittentDemandScoringDataGenerator}},
-  \code{\link{TimeSeriesFill}}
+  \code{\link{AutoXGBoostCARMA}}, \code{\link{Demand}},
+  \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \author{
 Adrian Antico

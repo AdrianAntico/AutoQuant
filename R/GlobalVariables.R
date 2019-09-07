@@ -2,7 +2,15 @@ utils::globalVariables(
   names = c(
     "Temporary",
     "runs",
+    "ScoringData",
+    
     "Name",
+    "Truth",
+    "txn",
+    "Txns",
+    "TimeSinceLastDemand",
+    "Date_Range",
+    "TargetColumnName",
     "FullLength",
     "Length",
     "MinDate",

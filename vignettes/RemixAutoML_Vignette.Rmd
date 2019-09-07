@@ -475,58 +475,6 @@ ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
     values=c("blue","red"))
 ```
 
-### Example of **AutoTS()**
-
-Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
-
-```{r, fig.show='hold', fig.width=8, fig.height=5}
-library(RemixAutoML)
-library(data.table)
-library(fpp)
-library(lubridate)
-
-# fpp data
-MinDate <- as.Date("1982-01-01")
-data <- fpp::cafe
-data <- data.table::as.data.table(data)
-data.table::setnames(data, "x", "Weekly_Sales")
-data[, Date := 0:114]
-data[, Date := MinDate %m+% months(3 * Date)]
-
-# Build ARIMA with Fourier Pairs
-output <- AutoTS(
-  data,
-  TargetName              = "Weekly_Sales",
-  DateName                = "Date",
-  FCPeriods               = 36,
-  HoldOutPeriods          = 15,
-  EvaluationMetric        = "MAPE",
-  InnerEval               = "aicc",
-  TimeUnit                = "quarter",
-  Lags                    = 10,
-  SLags                   = 1,
-  MaxFourierPairs         = 3,
-  NumCores                = 4,
-  SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-  StepWise                = FALSE,
-  TSClean                 = FALSE,
-  ModelFreq               = TRUE,
-  PrintUpdates            = TRUE,
-  PlotPredictionIntervals = TRUE)
-
-# Forecast snippet
-knitr::kable(head(output$Forecast))
-
-# Evaluation Metrics
-output$EvaluationMetrics
-
-# Model Architecture
-output$TimeSeriesModel
-
-# Forecast plot
-output$TimeSeriesPlot
-```
-
 ## **Automated Unsupervised Learning Functions**
 The suite of functions in this category currently handle optimized row-clustering and anomaly detection. For the row-clustering, we utilize H2O's Generalized Low Rank Model and their KMeans algorithm, with hyper-parameter tuning for both. The function automatically adds the clusters to your data and can save the models for scoring new data with the **AutoH2OScoring** function. We have a few others currently in development and will release those when they are complete. The anomaly detection functions we have currently are for time series applications. We have a control chart methodology version that lets you build upper and lower confidence bounds by up to two grouping variables along with a time series modeling version. The clustering function and the control chart method function update your data set that you feed in with new columns that store the clusterID or anomaly information. The time series function updates your data, supplies you with the final time series model built, and a data.table that only contains anomalies.
 
@@ -972,7 +920,6 @@ ModelData <- RemixAutoML::DT_GDL_Feature_Engineering(
   timeAgg        = c("days"),
   WindowingLag   = 1,
   Type           = "Lag",
-  Timer          = FALSE,
   SimpleImpute   = TRUE)
 
 # Build data for feature engineering for scoring
@@ -1006,7 +953,6 @@ ScoringData <- RemixAutoML::Scoring_GDL_Feature_Engineering(
   timeAgg        = "days",
   WindowingLag   = 1,
   Type           = "Lag",
-  Timer          = FALSE,
   SimpleImpute   = TRUE,
   AscRowByGroup  = "temp",
   RecordsKeep    = 1

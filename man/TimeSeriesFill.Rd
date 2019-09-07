@@ -34,13 +34,18 @@ data <- TimeSeriesFill(data,
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoTransformationCreate}},
+  \code{\link{AutoTransformationScore}},
+  \code{\link{AutoWord2VecModeler}},
+  \code{\link{CreateCalendarVariables}},
+  \code{\link{CreateHolidayVariables}},
+  \code{\link{DT_GDL_Feature_Engineering}},
+  \code{\link{DummifyDT}},
+  \code{\link{GDL_Feature_Engineering}},
   \code{\link{IntermittentDemandDataGenerator}},
-  \code{\link{IntermittentDemandScoringDataGenerator}}
+  \code{\link{ModelDataPrep}},
+  \code{\link{Partial_DT_GDL_Feature_Engineering}},
+  \code{\link{Scoring_GDL_Feature_Engineering}}
 }
-\concept{Automated Time Series}
+\concept{Feature Engineering}

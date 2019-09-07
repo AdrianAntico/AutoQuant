@@ -3,7 +3,7 @@
 #' IntermittentDemandDataGenerator for frequency and size data sets. This function generates count and size data sets for various future window sizes.
 #'
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Feature Engineering
 #' @param data This is your transactional level data
 #' @param FC_Periods The number of future periods to collect data on
 #' @param SaveData Set to TRUE to save the MetaData and final modeling data sets to file
@@ -19,10 +19,8 @@
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayGroups Input the holiday groups of your choice from the CreateHolidayVariable() function in this package
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
-#' @param TimeUnit Set to "day", "week", or "month"
-#' @param CalendarVariables Select the set of calendar variables you want to have built
-#' @param HolidayGroups Select from c("USPublicHolidays", "EasterGroup", "ChristmasGroup","OtherEcclesticalFeasts")
 #' @param SampleRate Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of SampleRate. 
+#' @param PrintSteps Set to TRUE to have operation steps printed to the console 
 #' @examples
 #' \donttest{
 #' DataSets <- IntermittentDemandDataGenerator(data,

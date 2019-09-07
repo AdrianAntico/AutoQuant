@@ -47,11 +47,7 @@ IntermittentDemandDataGenerator(data, FC_Periods = 52,
 
 \item{SampleRate}{Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of SampleRate.}
 
-\item{TimeUnit}{Set to "day", "week", or "month"}
-
-\item{CalendarVariables}{Select the set of calendar variables you want to have built}
-
-\item{HolidayGroups}{Select from c("USPublicHolidays", "EasterGroup", "ChristmasGroup","OtherEcclesticalFeasts")}
+\item{PrintSteps}{Set to TRUE to have operation steps printed to the console}
 }
 \value{
 Returns two data.table data sets: The first is a modeling data set for the count distribution while the second data set if for the size model data set.
@@ -90,16 +86,21 @@ rm(DataSets)
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandScoringDataGenerator}},
+Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoTransformationCreate}},
+  \code{\link{AutoTransformationScore}},
+  \code{\link{AutoWord2VecModeler}},
+  \code{\link{CreateCalendarVariables}},
+  \code{\link{CreateHolidayVariables}},
+  \code{\link{DT_GDL_Feature_Engineering}},
+  \code{\link{DummifyDT}},
+  \code{\link{GDL_Feature_Engineering}},
+  \code{\link{ModelDataPrep}},
+  \code{\link{Partial_DT_GDL_Feature_Engineering}},
+  \code{\link{Scoring_GDL_Feature_Engineering}},
   \code{\link{TimeSeriesFill}}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Time Series}
+\concept{Feature Engineering}

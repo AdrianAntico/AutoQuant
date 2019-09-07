@@ -216,8 +216,8 @@ AutoTS <- function(data,
     stats::ts(data = data_train,
               start = data_train[, min(get(DateName))][[1]],
               frequency = freq)
-  ddataTSTrain <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0)
-  DdataTSTrain <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0)
+  ddataTSTrain <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0L)
+  DdataTSTrain <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0L)
   
   # TSClean Version----
   if (TSClean) {
@@ -230,8 +230,8 @@ AutoTS <- function(data,
                                   replace.missing = TRUE,
                                   lambda = NULL)
     }
-    dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0)
-    DTarget <- tryCatch({forecast::nsdiffs(x = Target)},error = function(x) 0)
+    dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0L)
+    DTarget <- tryCatch({forecast::nsdiffs(x = Target)},error = function(x) 0L)
   }
   
   # Model-Based Frequency----
@@ -242,8 +242,8 @@ AutoTS <- function(data,
                 start = data_train[, min(get(DateName))][[1]],
                 frequency = SFreq)
     
-    ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0)
-    DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0)
+    ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0L)
+    DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0L)
   }
   
   # TSClean Version
@@ -259,8 +259,8 @@ AutoTS <- function(data,
     }
     
     # Differencing----
-    dTSClean <- tryCatch({forecast::ndiffs(x = TargetMB)},error = function(x) 0)
-    DTSClean <- tryCatch({forecast::nsdiffs(x = TargetMB)},error = function(x) 0)
+    dTSClean <- tryCatch({forecast::ndiffs(x = TargetMB)},error = function(x) 0L)
+    DTSClean <- tryCatch({forecast::nsdiffs(x = TargetMB)},error = function(x) 0L)
   }
   
   # DSHW-------------
@@ -6234,8 +6234,8 @@ AutoTS <- function(data,
   }
   
   # Diffs----
-  d <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0)
-  D <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0)
+  d <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0L)
+  D <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0L)
   
   # Retrain best model----
   if (grepl(pattern = "DSHW", BestModel)) {

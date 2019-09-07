@@ -53,9 +53,11 @@ Other Feature Engineering: \code{\link{AutoTransformationCreate}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
   \code{\link{GDL_Feature_Engineering}},
+  \code{\link{IntermittentDemandDataGenerator}},
   \code{\link{ModelDataPrep}},
   \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{Scoring_GDL_Feature_Engineering}}
+  \code{\link{Scoring_GDL_Feature_Engineering}},
+  \code{\link{TimeSeriesFill}}
 }
 \author{
 Adrian Antico and Douglas Pestana

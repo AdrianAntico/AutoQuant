@@ -5,6 +5,8 @@
 #' @importFrom foreach %dopar%
 #' @importFrom stats optimize pchisq
 #' @import doParallel
+#' @importFrom Rcpp evalCpp
+#' @useDynLib RemixAutoML
 NULL
 
 .datatable.aware = TRUE

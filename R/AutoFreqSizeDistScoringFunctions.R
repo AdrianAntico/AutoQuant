@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data This is your source data
+#' @param FC_Periods The number of periods you set up to forecast
 #' @param SaveData Set to TRUE to save the output data to file
 #' @param FilePath Set a path file have the data saved there
 #' @param TargetVariableName Name or column number of your target variable
@@ -206,7 +207,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #'   ModelIDs = c("CountModel","SizeModel"),
 #'   KeepFeatures = TRUE)
 #' }
-#' @return 
+#' @return Returns a list of CountData scores and SizeData scores
 #' @export
 AutoCatBoostFreqSizeScoring <- function(data,
                                         TargetColumnNames = NULL,
@@ -253,10 +254,10 @@ AutoCatBoostFreqSizeScoring <- function(data,
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Count == min(CountQuantiles)) {
       data.table::setnames(data, "Predictions", paste0("CountPredictions_",Count))
-      FinalData <- data      
+      CountData <- data      
     } else {
-      FinalData <- cbind(FinalData, data[[paste0("Predictions")]])
-      data.table::setnames(FinalData, "V2", paste0("CountPredictions_",Count))
+      CountData <- cbind(CountData, data[[paste0("Predictions")]])
+      data.table::setnames(CountData, "V2", paste0("CountPredictions_",Count))
     }
     
     # Update timer----
@@ -294,10 +295,10 @@ AutoCatBoostFreqSizeScoring <- function(data,
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Count == min(CountQuantiles)) {
       data.table::setnames(data, "Predictions", paste0("SizePredictions_",Count))
-      FinalData <- data      
+      SizeData <- data      
     } else {
-      FinalData <- cbind(FinalData, data[[paste0("Predictions")]])
-      data.table::setnames(FinalData, "V2", paste0("SizePredictions_",Count))
+      SizeData <- cbind(SizeData, data[[paste0("Predictions")]])
+      data.table::setnames(SizeData, "V2", paste0("SizePredictions_",Count))
     }
     
     # Update timer----
@@ -306,5 +307,5 @@ AutoCatBoostFreqSizeScoring <- function(data,
   }
   
   # Return FinalData----
-  return(FinalData)
+  return(list(CountData,SizeData))
 }

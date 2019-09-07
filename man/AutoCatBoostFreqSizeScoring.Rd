@@ -28,6 +28,9 @@ AutoCatBoostFreqSizeScoring(data, TargetColumnNames = NULL,
 
 \item{KeepFeatures}{Set to TRUE to return the features with the predicted values}
 }
+\value{
+Returns a list of CountData scores and SizeData scores
+}
 \description{
 AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
 }
@@ -50,10 +53,8 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandDataGenerator}},
-  \code{\link{IntermittentDemandScoringDataGenerator}},
-  \code{\link{TimeSeriesFill}}
+  \code{\link{AutoXGBoostCARMA}}, \code{\link{Demand}},
+  \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \author{
 Adrian Antico
