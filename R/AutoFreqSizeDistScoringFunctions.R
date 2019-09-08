@@ -153,7 +153,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   
   # Add in the time since last demand instance from RandomStartDate----
   datax <- datax[order(-get(DateVariableName))][
-    , TimeSinceLastDemand := difftime(CurrentDate, get(DateVariableName), units = TimeUnit)]
+    , TimeSinceLastDemand := as.numeric(difftime(CurrentDate, get(DateVariableName), units = TimeUnit))]
   
   # Subset data----
   datax <- datax[TimeTrend == 1]
