@@ -212,7 +212,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #'   ModelIDs = c("CountModel","SizeModel"),
 #'   KeepFeatures = TRUE)
 #' }
-#' @return Returns a list of CountData scores and SizeData scores
+#' @return Returns a list of CountData scores, SizeData scores, along with count and size prediction column names
 #' @export
 AutoCatBoostFreqSizeScoring <- function(ScoringData,
                                         TargetColumnNames = NULL,
@@ -311,7 +311,17 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
     Counter <- Counter + 1
   }
   
+  # Column names of predictions----
+  CountPredNames <- which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))
+  SizePredNames <- which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))
+  
   # Return FinalData----
   return(list(CountData = CountData,
-              SizeData = SizeData))
+              SizeData = SizeData,
+              CountPredNames = CountPredNames,
+              SizePredNames = SizePredNames))
 }
+
+CountData <- FinalData$CountData
+
+
