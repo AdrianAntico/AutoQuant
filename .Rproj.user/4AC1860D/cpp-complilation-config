@@ -1,0 +1,12 @@
+{
+    "args" : [
+        "-IC:/Program Files/RStudio/resources/libclang/builtin-headers/5.0.2",
+        "-IC:/Program Files/RStudio/resources/libclang/builtin-headers/libc++/5.0.2",
+        "-IC:/RBuildTools/3.5/bin/R/R-3.6.1/library/Rcpp/include",
+        "-IC:/RBUILD~1/3.5/bin/R/R-36~1.1/include",
+        "-DNDEBUG"
+    ],
+    "hash" : "1567887215",
+    "is_cpp" : true,
+    "pch" : "Rcpp"
+}
