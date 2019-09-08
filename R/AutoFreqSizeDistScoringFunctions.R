@@ -321,7 +321,3 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
               CountPredNames = CountPredNames,
               SizePredNames = SizePredNames))
 }
-
-CountData <- FinalData$CountData
-
-
