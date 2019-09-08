@@ -79,7 +79,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
       CurrentDate <- lubridate::floor_date(x = Sys.Date(), unit = "month")
     }
   }
-
+  
   # Ensure is data.table----
   if(!data.table::is.data.table(datax)) {
     datax <- data.table::as.data.table(datax)
@@ -106,7 +106,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   
   # Ensure data is aggregated to proper time unit----
   datax <- datax[, sum(get(TargetVariableName)), 
-               by = c(eval(GroupingVariables), eval(DateVariableName))]
+                 by = c(eval(GroupingVariables), eval(DateVariableName))]
   data.table::setnames(datax, "V1", eval(TargetVariableName))
   
   # Add Calendar Variables----
@@ -126,7 +126,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
       HolidayGroups = HolidayGroups, 
       Holidays = NULL)    
   }
-
+  
   # Add in the time varying features----
   datax <- DT_GDL_Feature_Engineering(
     datax,
@@ -153,7 +153,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   
   # Add in the time since last demand instance from RandomStartDate----
   datax <- datax[order(-get(DateVariableName))][
-      , TimeSinceLastDemand := difftime(CurrentDate, get(DateVariableName), units = TimeUnit)]
+    , TimeSinceLastDemand := difftime(CurrentDate, get(DateVariableName), units = TimeUnit)]
   
   # Subset data----
   datax <- datax[TimeTrend == 1]
@@ -239,7 +239,7 @@ AutoCatBoostFreqSizeScoring <- function(data,
       MultiClassTargetLevels = NULL,
       TransformNumeric = FALSE,
       BackTransNumeric = TRUE,
-      TargetColumnName = TargetColumnName[1],
+      TargetColumnName = TargetColumnNames[1],
       TransformationObject = NULL,
       TransID = paste0(ModelIDs[1],"_",Count),
       TransPath = ModelPath,
@@ -280,7 +280,7 @@ AutoCatBoostFreqSizeScoring <- function(data,
       MultiClassTargetLevels = NULL,
       TransformNumeric = FALSE,
       BackTransNumeric = TRUE,
-      TargetColumnName = TargetColumnName[2],
+      TargetColumnName = TargetColumnNames[2],
       TransformationObject = NULL,
       TransID = paste0(ModelIDs[2],"_",Size),
       TransPath = ModelPath,
