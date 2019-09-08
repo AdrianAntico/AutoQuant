@@ -4,13 +4,13 @@
 \alias{AutoCatBoostFreqSizeScoring}
 \title{AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist()}
 \usage{
-AutoCatBoostFreqSizeScoring(data, TargetColumnNames = NULL,
+AutoCatBoostFreqSizeScoring(ScoringData, TargetColumnNames = NULL,
   FeatureColumnNames = NULL, IDcols = NULL, CountQuantiles = seq(0.1,
   0.9, 0.1), SizeQuantiles = seq(0.1, 0.9, 0.1), ModelPath = NULL,
   ModelIDs = c("CountModel", "SizeModel"), KeepFeatures = TRUE)
 }
 \arguments{
-\item{data}{The scoring data returned from IntermittentDemandScoringDataGenerator()}
+\item{ScoringData}{The scoring data returned from IntermittentDemandScoringDataGenerator()}
 
 \item{TargetColumnNames}{A character or numeric vector of the target names. E.g. c("Counts","TARGET_qty")}
 
@@ -37,7 +37,7 @@ AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSiz
 \examples{
 \donttest{
 FinalData <- AutoCatBoostFreqSizeScoring(
-  data = ScoringData,
+  ScoringData,
   TargetColumnNames = c("Counts","TARGET_qty"),
   FeatureColumnNames = 1:ncol(ScoringData),
   IDcols = NULL,
