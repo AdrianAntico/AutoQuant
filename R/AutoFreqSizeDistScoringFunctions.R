@@ -225,8 +225,8 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
                                         KeepFeatures = TRUE) {
   
   # Ensure data.table----
-  if(!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(ScoringData)) {
+    ScoringData <- data.table::as.data.table(ScoringData)
   }
   
   # Score count models----
@@ -298,7 +298,7 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
     
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
-    if(Count == min(CountQuantiles)) {
+    if(Size == min(SizeQuantiles)) {
       data.table::setnames(data, "Predictions", paste0("SizePredictions_",Count))
       SizeData <- data      
     } else {
