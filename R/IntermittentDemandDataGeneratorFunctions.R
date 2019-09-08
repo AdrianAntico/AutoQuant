@@ -352,7 +352,7 @@ ID_TrainingDataGenerator <- function(data,
   
   # Add in the time since last demand instance from RandomStartDate----
   histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-    , TimeSinceLastDemand := difftime(RandomStartDate,get(DateVariableName), units = TimeUnit)]
+    , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
   
   # Remove meta data for feature creation set----
   features <- histDemandRaw[order(-get(DateVariableName))][
