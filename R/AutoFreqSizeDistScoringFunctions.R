@@ -258,11 +258,11 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Count == min(CountQuantiles)) {
-      data.table::setnames(data, "Predictions", paste0("CountPredictions_",Count))
+      data.table::setnames(data, "Predictions", paste0(ModelIDs[1],"_",Count))
       CountData <- data      
     } else {
       CountData <- cbind(CountData, data[[paste0("Predictions")]])
-      data.table::setnames(CountData, "V2", paste0("CountPredictions_",Count))
+      data.table::setnames(CountData, "V2", paste0(ModelIDs[1],"_",Count))
     }
     
     # Update timer----
@@ -299,11 +299,11 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Size == min(SizeQuantiles)) {
-      data.table::setnames(data, "Predictions", paste0("SizePredictions_",Count))
+      data.table::setnames(data, "Predictions", paste0(ModelIDs[1],"_",Count))
       SizeData <- data      
     } else {
       SizeData <- cbind(SizeData, data[[paste0("Predictions")]])
-      data.table::setnames(SizeData, "V2", paste0("SizePredictions_",Count))
+      data.table::setnames(SizeData, "V2", paste0(ModelIDs[1],"_",Count))
     }
     
     # Update timer----
