@@ -4,8 +4,9 @@
 \alias{ID_SingleLevelGibbsSampler}
 \title{ID_SingleLevelGibbsSampler for collapsed gibbs sampler}
 \usage{
-ID_SingleLevelGibbsSampler(CountDataLevel, SizeDataLevel, FC_Periods,
-  nSims, CountList, SizeList)
+ID_SingleLevelGibbsSampler(CountDataLevel, SizeDataLevel,
+  FC_Periods = NULL, nSims = 5000, CountList = NULL,
+  SizeList = NULL)
 }
 \arguments{
 \item{CountDataLevel}{Single record of predicted values from Count quantile regressions in a numeric vector form}

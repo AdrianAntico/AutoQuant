@@ -35,10 +35,12 @@ QRGibbsSim <- function(CountScore,
 #' @export
 ID_SingleLevelGibbsSampler <- function(CountDataLevel,
                                        SizeDataLevel,
-                                       FC_Periods, 
-                                       nSims,
-                                       CountList,
-                                       SizeList){
+                                       FC_Periods = NULL, 
+                                       nSims = 5000,
+                                       CountList = NULL,
+                                       SizeList = NULL){
+  
+  # Loop through FC_Periods----
   simResults <- lapply(1:weeksOut, function(w){
     temp <- as.numeric(score[TargetWindow == w])
     QRGibbsSim(CountScore,
