@@ -312,5 +312,6 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
   }
   
   # Return FinalData----
-  return(list(CountData,SizeData))
+  return(list(CountData = CountData,
+              SizeData = SizeData))
 }
