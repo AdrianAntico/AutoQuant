@@ -185,7 +185,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #' 
 #' @author Adrian Antico
 #' @family Automated Time Series
-#' @param data The scoring data returned from IntermittentDemandScoringDataGenerator()
+#' @param ScoringData The scoring data returned from IntermittentDemandScoringDataGenerator()
 #' @param TargetColumnNames A character or numeric vector of the target names. E.g. c("Counts","TARGET_qty")
 #' @param FeatureColumnNames A character vector of column names or column numbers
 #' @param IDcols ID columns you want returned with the data that is not a model feature
@@ -197,7 +197,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #' @examples 
 #' \donttest{
 #' FinalData <- AutoCatBoostFreqSizeScoring(
-#'   data = ScoringData,
+#'   ScoringData,
 #'   TargetColumnNames = c("Counts","TARGET_qty"),
 #'   FeatureColumnNames = 1:ncol(ScoringData),
 #'   IDcols = NULL,
@@ -209,7 +209,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #' }
 #' @return Returns a list of CountData scores and SizeData scores
 #' @export
-AutoCatBoostFreqSizeScoring <- function(data,
+AutoCatBoostFreqSizeScoring <- function(ScoringData,
                                         TargetColumnNames = NULL,
                                         FeatureColumnNames = NULL,
                                         IDcols = NULL,
