@@ -162,6 +162,11 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   temp <- data.table::CJ(GroupVar = as.character(datax[["GroupVar"]]), FC_Window = seq_len(FC_Periods))
   datax <- merge(datax, temp, by = "GroupVar", all = FALSE)
   
+  # Remove any date variables----
+  if(!is.null(DateVariableName)) {
+    data.table::set(datax, j = eval(DateVariableName), value = NULL)
+  }
+  
   # Save data----
   if(SaveData) {
     data.table::fwrite(datax, file = file.path(FilePath,"ScoringData.csv"))
