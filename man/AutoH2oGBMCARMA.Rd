@@ -102,7 +102,8 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}, \code{\link{Demand}},
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{ID_SingleLevelGibbsSampler}},
   \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \author{

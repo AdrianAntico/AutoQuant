@@ -19,27 +19,30 @@ QRGibbsSim <- function(CountScore,
     .Call('_RemixAutoML_QRGibbsSim', PACKAGE = 'RemixAutoML', CountScore, SizeScore, CountList, SizeList, nSims)
 }
 
-#' IntermittentDemandSimulator
+#' ID_SingleLevelGibbsSampler for collapsed gibbs sampler 
 #' 
-#' IntermittentDemandSimulator
+#' ID_SingleLevelGibbsSampler for collapsed gibbs sampler from quantile regressions
 #' 
 #' @author Adrian Antico
 #' @family Automated Time Series
-#' @param
-#' @param
-#' @param
-#' @examples 
-#' @return 
+#' @param CountDataLevel Single record of predicted values from Count quantile regressions in a numeric vector form
+#' @param SizeDataLevel Single record of predicted values from Size quantile regressions in a numeric vector form
+#' @param FC_Periods The number of periods you set up to forecast
+#' @param nSims The number of simulations you want to have run for each period in 1 to FC_Periods
+#' @param CountList A numeric vector of the quantiles used for Count modeling
+#' @param SizeList A numeric vector of the quantiles used for Size modeling
+#' @return The posterior predicted distribution of simulated values
 #' @export
-Demand <- function(sku,
-                   FC_Periods, 
-                   nSims,
-                   CountList,
-                   SizeList){
-  score <- singleSKU_UD(sku, TargetWindows = 1:weeksOut)
+ID_SingleLevelGibbsSampler <- function(CountDataLevel,
+                                       SizeDataLevel,
+                                       FC_Periods, 
+                                       nSims,
+                                       CountList,
+                                       SizeList){
   simResults <- lapply(1:weeksOut, function(w){
     temp <- as.numeric(score[TargetWindow == w])
-    QRGibbsSim(temp, 
+    QRGibbsSim(CountScore,
+               SizeScore,
                CountList = CountList,
                SizeList = SizeList,
                nSims = nSims)
