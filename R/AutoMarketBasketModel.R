@@ -44,7 +44,7 @@ AutoMarketBasketModel <- function(data,
   }
   
   # Total number of unique OrderIDColumns----
-  n <- length(unique(data[, OrderNumber]))
+  n <- length(unique(data[, get(OrderIDColumnName)]))
   
   # Check args----
   if (!is.character(OrderIDColumnName)) {
@@ -67,12 +67,12 @@ AutoMarketBasketModel <- function(data,
   }
   
   # Subset data----
-  data <- data[, .(OrderNumber, ItemNumber)]
+  data <- data[, .(get(OrderIDColumnName), get(ItemIDColumnName))]
   
   
   # Look into data.table split----
-  TransactionData <- methods::as(split(data[["ItemNumber"]],
-                                       data[["OrderNumber"]]),
+  TransactionData <- methods::as(split(data[[eval(ItemIDColumnName)]],
+                                       data[[eval(OrderIDColumnName)]]),
                                  "transactions")
   
   # Association rules----
