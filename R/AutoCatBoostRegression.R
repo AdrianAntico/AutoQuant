@@ -562,31 +562,16 @@ AutoCatBoostRegression <- function(data,
       print(i)
       
       # Regression Grid Define Base Parameters----
-      if (eval_metric != "Quantile" &
-          eval_metric != "LogLinQuantile") {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-        )
-      } else {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = 'Quantile',
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          alpha                = Alpha,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-        )
-      }
+     base_params <- list(
+        iterations           = Trees,
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        use_best_model       = TRUE,
+        has_time             = HasTime,
+        best_model_min_trees = 10,
+        metric_period        = 10,
+        task_type            = task_type
+      )
       
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
