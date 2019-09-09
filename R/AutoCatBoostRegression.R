@@ -13,7 +13,6 @@
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
 #' @param grid_eval_metric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -69,7 +68,6 @@
 #'                                     MaxModelsInGrid = 1,
 #'                                     task_type = "GPU",
 #'                                     eval_metric = "RMSE",
-#'                                     Alpha = NULL,
 #'                                     grid_eval_metric = "r2",
 #'                                     Trees = 50,
 #'                                     GridTune = FALSE,
@@ -93,7 +91,6 @@ AutoCatBoostRegression <- function(data,
                                    TransformNumericColumns = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
-                                   Alpha = NULL,
                                    Trees = 50,
                                    GridTune = FALSE,
                                    grid_eval_metric = "mae",
