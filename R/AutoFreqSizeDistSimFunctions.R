@@ -45,15 +45,12 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
   for(fc in seq_len(FC_Periods)) {
     CountScoreSingle <- as.numeric(CountDataLevel[FC_Window == fc])[2:length(CountDataLevel)]
     SizeScoreSingle <- as.numeric(SizeDataLevel[FC_Window == fc])[2:length(SizeDataLevel)]
-    QRGibbsSim(CountScore = CountScoreSingle,
+    SimResults[[fc]] <- QRGibbsSim(CountScore = CountScoreSingle,
                SizeScore = SizeScoreSingle,
                CountList = CountList,
                SizeList = SizeList,
                nSims = nSims)
   }
-  simResults <- lapply(1:weeksOut, function(w){
-    
-  })
   return(
     data.table::rbindlist(
       list(
