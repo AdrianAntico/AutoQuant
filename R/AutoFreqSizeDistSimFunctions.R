@@ -59,17 +59,3 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
       list(
         simResults)))
 }
-
-
-CountNames <- FinalData$CountPredNames
-CountDataLevel <- FinalData$CountData[order(-qty)][sku == "23843", ..CountNames]
-SizeNames <- FinalData$SizePredNames
-SizeDataLevel <- FinalData$SizeData[sku == "23843", ..SizeNames]
-
-ID_SingleLevelGibbsSampler(
-  CountDataLevel = CountDataLevel,
-  SizeDataLevel = SizeLevelData, 
-  FC_Periods = 52, 
-  nSims = 500, 
-  CountList = seq(0.1,0.9,0.1),
-  SizeList = seq(0.1,0.9,0.1))
