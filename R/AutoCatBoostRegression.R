@@ -106,31 +106,6 @@ AutoCatBoostRegression <- function(data,
   loadNamespace(package = "catboost")
   
   # Regression Check Arguments----
-  if (!(tolower(task_type) %chin% c("gpu", "cpu"))) {
-    warning("task_type needs to be either 'GPU' or 'CPU'")    
-  }
-  if (!(
-    tolower(eval_metric) %chin% c(
-      "rmse",
-      "mae",
-      "mape",
-      "poisson",
-      "quantile",
-      "loglinquantile",
-      "lq",
-      "numerrors",
-      "smape",
-      "r2",
-      "msle",
-      "medianabsoluteerror"
-    )
-  )) {
-    warning(
-      "eval_metric not in c(RMSE,MAE,MAPE,Poisson,Quantile,
-         LogLinQuantile,Lq,NumErrors,SMAPE,R2,MSLE,MedianAbsoluteError)"
-    )
-    
-  }
   if (!is.null(PrimaryDateColumn)) {
     HasTime <- TRUE
   } else {
@@ -559,7 +534,7 @@ AutoCatBoostRegression <- function(data,
       print(i)
       
       # Regression Grid Define Base Parameters----
-     base_params <- list(
+      base_params <- list(
         iterations           = Trees,
         loss_function        = eval_metric,
         eval_metric          = eval_metric,
@@ -569,7 +544,7 @@ AutoCatBoostRegression <- function(data,
         metric_period        = 10,
         task_type            = task_type
       )
-      
+
       # Regression Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
