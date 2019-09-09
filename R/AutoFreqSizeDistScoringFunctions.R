@@ -312,8 +312,8 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
   }
   
   # Column names of predictions----
-  CountPredNames <- names(CountData)[which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))]
-  SizePredNames <- names(SizeData)[which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))]
+  CountPredNames <- c("FC_Window", names(CountData)[which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))])
+  SizePredNames <- c("FC_Window", names(SizeData)[which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))])
   
   # Return FinalData----
   return(list(CountData = CountData,
