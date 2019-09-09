@@ -9,7 +9,7 @@ AutoH2oDRFCARMA(data, TargetColumnName = "Target",
   FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
   Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
   HolidayVariable = TRUE, TimeTrendVariable = FALSE,
-  DataTruncate = FALSE, ZeroPadSeries = "all", SplitRatios = c(0.7,
+  DataTruncate = FALSE, ZeroPadSeries = NULL, SplitRatios = c(0.7,
   0.2, 0.1), EvalMetric = "MAE", GridTune = FALSE, ModelCount = 1,
   NTrees = 1000, PartitionType = "timeseries", MaxMem = "32G",
   NThreads = max(1, parallel::detectCores() - 2), Timer = TRUE)
@@ -101,8 +101,9 @@ Results$ModelInformation$...
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{AutoH2oGBMCARMA}},
+  \code{\link{AutoH2oGBMSizeFreqDist}},
+  \code{\link{AutoTS}}, \code{\link{AutoXGBoostCARMA}},
   \code{\link{ID_SingleLevelGibbsSampler}},
   \code{\link{IntermittentDemandScoringDataGenerator}}
 }

@@ -8,7 +8,7 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
   TargetColumnName = NULL, FeatureColNames = NULL,
   PrimaryDateColumn = NULL, IDcols = NULL,
   TransformNumericColumns = NULL, task_type = "GPU",
-  eval_metric = "RMSE", Alpha = NULL, Trees = 50, GridTune = FALSE,
+  eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
@@ -34,8 +34,6 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
-
-\item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
 \item{Trees}{The maximum number of trees you want in your models}
 
@@ -109,7 +107,6 @@ TestModel <- AutoCatBoostRegression(data,
                                     MaxModelsInGrid = 1,
                                     task_type = "GPU",
                                     eval_metric = "RMSE",
-                                    Alpha = NULL,
                                     grid_eval_metric = "r2",
                                     Trees = 50,
                                     GridTune = FALSE,
