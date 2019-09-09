@@ -15,7 +15,6 @@
 #' @param NThreads The max threads to use. E.g. 4
 #' @param EvalMetric Set to "Quantile". Alternative quantile methods may become available in the future. 
 #' @param GridTune The default is set to FALSE. If you set to TRUE, make sure to specify MaxModelsGrid to a number greater than 1.
-#' @param GridEvalMetric The default is set to "mae". Choose from 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'.
 #' @param CountTargetColumnName Column names or column numbers
 #' @param SizeTargetColumnName Column names or column numbers
 #' @param CountFeatureColNames Column names or column numbers
@@ -39,7 +38,6 @@
 #'                        NThreads = max(1, parallel::detectCores()-2),
 #'                        EvalMetric = "Quantile",
 #'                        GridTune = FALSE,
-#'                        GridEvalMetric = "mae",
 #'                        CountTargetColumnName = NULL,
 #'                        SizeTargetColumnName = NULL,
 #'                        CountFeatureColNames = NULL,
@@ -62,7 +60,6 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    NThreads = max(1, parallel::detectCores()-2),
                                    EvalMetric = "Quantile",
                                    GridTune = FALSE,
-                                   GridEvalMetric = "mae",
                                    CountTargetColumnName = NULL,
                                    SizeTargetColumnName = NULL,
                                    CountFeatureColNames = NULL,

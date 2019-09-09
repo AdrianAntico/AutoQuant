@@ -9,11 +9,11 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
   0.1), AutoTransform = TRUE, DataPartitionRatios = c(0.75, 0.2, 0.05),
   NTrees = 1500, Maxmem = "28G", NThreads = max(1,
   parallel::detectCores() - 2), EvalMetric = "Quantile",
-  GridTune = FALSE, GridEvalMetric = "mae",
-  CountTargetColumnName = NULL, SizeTargetColumnName = NULL,
-  CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
-  ModelIDs = c("CountModel", "SizeModel"), MaxModelsGrid = 5,
-  ModelPath = NULL, MetaDataPath = NULL, NumOfParDepPlots = 1)
+  GridTune = FALSE, CountTargetColumnName = NULL,
+  SizeTargetColumnName = NULL, CountFeatureColNames = NULL,
+  SizeFeatureColNames = NULL, ModelIDs = c("CountModel", "SizeModel"),
+  MaxModelsGrid = 5, ModelPath = NULL, MetaDataPath = NULL,
+  NumOfParDepPlots = 1)
 }
 \arguments{
 \item{CountData}{This is your CountData generated from the IntermittentDemandBootStrapper() function}
@@ -35,8 +35,6 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
 \item{EvalMetric}{Set to "Quantile". Alternative quantile methods may become available in the future.}
 
 \item{GridTune}{The default is set to FALSE. If you set to TRUE, make sure to specify MaxModelsGrid to a number greater than 1.}
-
-\item{GridEvalMetric}{The default is set to "mae". Choose from 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'.}
 
 \item{CountTargetColumnName}{Column names or column numbers}
 
@@ -66,8 +64,8 @@ AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantil
 }
 \examples{
 \donttest{
-AutoH2oGBMSizeFreqDist(CountData = CountData,
-                       SizeData = SizeData,
+AutoH2oGBMSizeFreqDist(CountData = NULL, 
+                       SizeData = NULL,
                        CountQuantiles = seq(0.10,0.90,0.10), 
                        SizeQuantiles = seq(0.10,0.90,0.10), 
                        AutoTransform = TRUE, 
@@ -77,15 +75,14 @@ AutoH2oGBMSizeFreqDist(CountData = CountData,
                        NThreads = max(1, parallel::detectCores()-2),
                        EvalMetric = "Quantile",
                        GridTune = FALSE,
-                       GridEvalMetric = "mae",
-                       CountTargetColumnName = "Counts",
-                       SizeTargetColumnName = "Target_qty",
-                       CountFeatureColNames = 2:ncol(CountData),
-                       SizeFeatureColNames = 2:ncol(SizeData),
+                       CountTargetColumnName = NULL,
+                       SizeTargetColumnName = NULL,
+                       CountFeatureColNames = NULL,
+                       SizeFeatureColNames = NULL,
                        ModelIDs = c("CountModel","SizeModel"),
                        MaxModelsGrid = 5,
-                       ModelPath = getwd(),
-                       MetaDataPath = paste0(getwd(),"/ModelMetaData"),
+                       ModelPath = NULL,
+                       MetaDataPath = NULL,
                        NumOfParDepPlots = 1)
 }
 }
