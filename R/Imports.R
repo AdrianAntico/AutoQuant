@@ -6,6 +6,7 @@
 #' @importFrom stats optimize pchisq
 #' @import doParallel
 #' @importFrom Rcpp evalCpp
+#' @importClassesFrom arules transactions
 #' @useDynLib RemixAutoML
 NULL
 
