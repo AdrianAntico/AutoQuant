@@ -19,9 +19,9 @@
 ### 1. First, make sure you have all the dependencies installed:
 ```
 library(devtools)
-to_install <- c("arules","catboost","caTools","data.table","doParallel",,"xgboost"
+to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
   "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
-  "magick","Matrix","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
+  "magick","Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
   "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud")
 for (i in to_install) {
   message(paste("looking for ", i))
