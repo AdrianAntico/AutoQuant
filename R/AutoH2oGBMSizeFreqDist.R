@@ -34,7 +34,7 @@
 #'                        AutoTransform = TRUE, 
 #'                        DataPartitionRatios = c(0.75,0.20,0.05),
 #'                        NTrees = 1500,
-#'                        Maxmem = "28G",
+#'                        MaxMem = "28G",
 #'                        NThreads = max(1, parallel::detectCores()-2),
 #'                        EvalMetric = "Quantile",
 #'                        GridTune = FALSE,
