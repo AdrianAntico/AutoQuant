@@ -10,6 +10,7 @@
 #' @param SizeQuantiles The default are deciles, i.e. seq(0.10,0.90,0.10). More granularity the better, but it will take longer to run.
 #' @param AutoTransform Set to FALSE not to have the your target variables automatically transformed for the best normalization.
 #' @param DataPartitionRatios The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.
+#' @param StratifyColumnNames Specify grouping variables to stratify by
 #' @param NTrees Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.
 #' @param TaskType The default is set to "GPU". If you do not have a GPU, set it to "CPU".
 #' @param EvalMetric Set to "Quantile". Alternative quantile methods may become available in the future. 
@@ -35,6 +36,7 @@
 #'                          SizeQuantiles = seq(0.10,0.90,0.10), 
 #'                          AutoTransform = TRUE, 
 #'                          DataPartitionRatios = c(0.75,0.20,0.05),
+#'                          StratifyColumnNames = NULL,
 #'                          NTrees = 1500,
 #'                          TaskType = "GPU",
 #'                          EvalMetric = "Quantile",
@@ -59,6 +61,7 @@ AutoCatBoostSizeFreqDist <- function(CountData = NULL,
                                      SizeQuantiles = seq(0.10,0.90,0.10), 
                                      AutoTransform = TRUE, 
                                      DataPartitionRatios = c(0.75,0.20,0.05),
+                                     StratifyColumnNames = NULL,
                                      NTrees = 1500,
                                      TaskType = "GPU",
                                      EvalMetric = "Quantile",

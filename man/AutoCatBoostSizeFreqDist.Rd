@@ -7,8 +7,8 @@
 AutoCatBoostSizeFreqDist(CountData = NULL, SizeData = NULL,
   CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
   0.1), AutoTransform = TRUE, DataPartitionRatios = c(0.75, 0.2, 0.05),
-  NTrees = 1500, TaskType = "GPU", EvalMetric = "Quantile",
-  GridTune = FALSE, GridEvalMetric = "mae",
+  StratifyColumnNames = NULL, NTrees = 1500, TaskType = "GPU",
+  EvalMetric = "Quantile", GridTune = FALSE, GridEvalMetric = "mae",
   CountTargetColumnName = NULL, SizeTargetColumnName = NULL,
   CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
   CountIDcols = NULL, SizeIDcols = NULL, ModelIDs = c("CountModel",
@@ -27,6 +27,8 @@ AutoCatBoostSizeFreqDist(CountData = NULL, SizeData = NULL,
 \item{AutoTransform}{Set to FALSE not to have the your target variables automatically transformed for the best normalization.}
 
 \item{DataPartitionRatios}{The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.}
+
+\item{StratifyColumnNames}{Specify grouping variables to stratify by}
 
 \item{NTrees}{Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.}
 
@@ -74,6 +76,7 @@ AutoCatBoostSizeFreqDist(CountData = CountData,
                          SizeQuantiles = seq(0.10,0.90,0.10), 
                          AutoTransform = TRUE, 
                          DataPartitionRatios = c(0.75,0.20,0.05),
+                         StratifyColumnNames = NULL,
                          NTrees = 1500,
                          TaskType = "GPU",
                          EvalMetric = "Quantile",
