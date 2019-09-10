@@ -7,7 +7,7 @@
 AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
   CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
   0.1), AutoTransform = TRUE, DataPartitionRatios = c(0.75, 0.2, 0.05),
-  NTrees = 1500, Maxmem = "28G", NThreads = max(1,
+  NTrees = 1500, MaxMem = "28G", NThreads = max(1,
   parallel::detectCores() - 2), EvalMetric = "Quantile",
   GridTune = FALSE, CountTargetColumnName = NULL,
   SizeTargetColumnName = NULL, CountFeatureColNames = NULL,
@@ -29,6 +29,8 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
 \item{DataPartitionRatios}{The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.}
 
 \item{NTrees}{Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.}
+
+\item{MaxMem}{The max memory allocation. E.g. "28G"}
 
 \item{NThreads}{The max threads to use. E.g. 4}
 
@@ -53,8 +55,6 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
 \item{MetaDataPath}{A separate path to store the model metadata for evaluation.}
 
 \item{NumOfParDepPlots}{Set to a number greater than or equal to 1 to see the relationships between your features and targets.}
-
-\item{MaxMem}{The max memory allocation. E.g. "28G"}
 }
 \value{
 This function does not return anything. It can only store your models and model evaluation metadata to file.
@@ -71,7 +71,7 @@ AutoH2oGBMSizeFreqDist(CountData = NULL,
                        AutoTransform = TRUE, 
                        DataPartitionRatios = c(0.75,0.20,0.05),
                        NTrees = 1500,
-                       Maxmem = "28G",
+                       MaxMem = "28G",
                        NThreads = max(1, parallel::detectCores()-2),
                        EvalMetric = "Quantile",
                        GridTune = FALSE,
@@ -91,8 +91,9 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoCatBoostFreqSizeScoring}},
   \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{AutoH2oGBMCARMA}},
+  \code{\link{AutoH2oGBMFreqSizeScoring}},
+  \code{\link{AutoTS}}, \code{\link{AutoXGBoostCARMA}},
   \code{\link{ID_SingleLevelGibbsSampler}},
   \code{\link{IntermittentDemandScoringDataGenerator}}
 }
