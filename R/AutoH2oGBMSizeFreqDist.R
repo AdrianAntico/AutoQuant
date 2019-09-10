@@ -10,6 +10,7 @@
 #' @param SizeQuantiles The default are deciles, i.e. seq(0.10,0.90,0.10). More granularity the better, but it will take longer to run.
 #' @param AutoTransform Set to FALSE not to have the your target variables automatically transformed for the best normalization.
 #' @param DataPartitionRatios The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.
+#' @param StratifyColumnName You can specify grouping columns to stratify by
 #' @param NTrees Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.
 #' @param MaxMem The max memory allocation. E.g. "28G"
 #' @param NThreads The max threads to use. E.g. 4
@@ -33,6 +34,7 @@
 #'                        SizeQuantiles = seq(0.10,0.90,0.10), 
 #'                        AutoTransform = TRUE, 
 #'                        DataPartitionRatios = c(0.75,0.20,0.05),
+#'                        StratifyColumnName = NULL,
 #'                        NTrees = 1500,
 #'                        MaxMem = "28G",
 #'                        NThreads = max(1, parallel::detectCores()-2),
@@ -55,6 +57,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    SizeQuantiles = seq(0.10,0.90,0.10), 
                                    AutoTransform = TRUE, 
                                    DataPartitionRatios = c(0.75,0.20,0.05),
+                                   StratifyColumnName = NULL,
                                    NTrees = 1500,
                                    MaxMem = "28G",
                                    NThreads = max(1, parallel::detectCores()-2),
@@ -88,7 +91,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     NumDataSets = 3,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
-    StratifyColumnNames = NULL,
+    StratifyColumnNames = StratifyColumnName,
     StratifyNumericTarget = NULL,
     StratTargetPrecision = NULL,
     TimeColumnName = NULL)
