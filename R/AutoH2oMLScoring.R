@@ -9,6 +9,7 @@
 #' @param ModelType Set to either "mojo" or "standard" depending on which version you saved
 #' @param H2OShutdown Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.
 #' @param MaxMem Set to you dedicated amount of memory. E.g. "28G"
+#' @param NThreads Default set to max(1, parallel::detectCores()-2)
 #' @param JavaOptions Change the default to your machines specification if needed. Default is '-Xmx1g -XX:ReservedCodeCacheSize=256m',
 #' @param ModelPath Supply your path file used in the AutoH2o__() function
 #' @param ModelID Supply the model ID used in the AutoH2o__() function
@@ -31,6 +32,7 @@
 #'                           ModelType = "mojo",
 #'                           H2OShutdown = TRUE,
 #'                           MaxMem = "28G",
+#'                           NThreads = max(1, parallel::detectCores()-2),
 #'                           JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
 #'                           ModelPath = NULL,
 #'                           ModelID = "ModelTest",
@@ -54,6 +56,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
                              MaxMem = "28G",
+                             NThreads = max(1, parallel::detectCores()-2),
                              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
                              ModelPath = NULL,
                              ModelID = NULL,
@@ -116,6 +119,11 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
         Path = TransPath
       )
     }
+  }
+  
+  # Initialize H2O----
+  if(tolower(ModelType) == "standard") {
+    h2o::h2o.init(enable_assertions = FALSE, nthreads = NThreads)
   }
   
   # ModelDataPrep Check----

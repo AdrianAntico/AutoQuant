@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoFreqSizeDistScoringFunctions.R
 \name{AutoH2oGBMFreqSizeScoring}
 \alias{AutoH2oGBMFreqSizeScoring}
-\title{AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist()}
+\title{AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist()}
 \usage{
 AutoH2oGBMFreqSizeScoring(ScoringData, TargetColumnNames = NULL,
   CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
@@ -31,7 +31,7 @@ AutoH2oGBMFreqSizeScoring(ScoringData, TargetColumnNames = NULL,
 Returns a list of CountData scores, SizeData scores, along with count and size prediction column names
 }
 \description{
-AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
+AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
 }
 \examples{
 \donttest{

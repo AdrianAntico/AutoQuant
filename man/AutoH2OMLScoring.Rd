@@ -6,6 +6,7 @@
 \usage{
 AutoH2OMLScoring(ScoringData = NULL, ModelObject = NULL,
   ModelType = "mojo", H2OShutdown = TRUE, MaxMem = "28G",
+  NThreads = max(1, parallel::detectCores() - 2),
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
   ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
   TransformNumeric = FALSE, BackTransNumeric = FALSE,
@@ -24,6 +25,8 @@ AutoH2OMLScoring(ScoringData = NULL, ModelObject = NULL,
 \item{H2OShutdown}{Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.}
 
 \item{MaxMem}{Set to you dedicated amount of memory. E.g. "28G"}
+
+\item{NThreads}{Default set to max(1, parallel::detectCores()-2)}
 
 \item{JavaOptions}{Change the default to your machines specification if needed. Default is '-Xmx1g -XX:ReservedCodeCacheSize=256m',}
 
@@ -68,6 +71,7 @@ Preds <- AutoH2OMLScoring(ScoringData = data,
                           ModelType = "mojo",
                           H2OShutdown = TRUE,
                           MaxMem = "28G",
+                          NThreads = max(1, parallel::detectCores()-2),
                           JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
                           ModelPath = NULL,
                           ModelID = "ModelTest",
