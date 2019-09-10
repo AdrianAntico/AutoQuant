@@ -389,14 +389,14 @@ For each of the models tested internally, several aspects should be noted:
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoH2oMLScoring()</code>
   
+### Intermittent Demand Forecasting Functions
+
 ##### **TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are three ways to use this function:
 * Grouped data 1 - find the minimum and maximum dates regardless of grouping variables and use those values to ensure all group levels have all the dates represented within the series bounds (if missing, fill with zeros)
 * Grouped data 2 - find the minimum and maximum dates with respect to each unique grouping variable level (grouping variables must be hierarchical) and zero pads missing dates within in each group level.
 * Single series - Zero pad any missing dates within series bounds
 * Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
-
-### Intermittent Demand Forecasting Functions
 
 ##### **IntermittentDemandDataGenerator()**
 <code>IntermittentDemandDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
