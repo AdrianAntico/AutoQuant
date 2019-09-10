@@ -54,5 +54,5 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
   return(
     data.table::rbindlist(
       list(
-        simResults)))
+        SimResults)))
 }
