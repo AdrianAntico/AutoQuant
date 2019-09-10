@@ -389,29 +389,31 @@ For each of the models tested internally, several aspects should be noted:
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoH2oMLScoring()</code>
   
-### **TimeSeriesFill()**
+##### **TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are three ways to use this function:
 * Grouped data 1 - find the minimum and maximum dates regardless of grouping variables and use those values to ensure all group levels have all the dates represented within the series bounds (if missing, fill with zeros)
 * Grouped data 2 - find the minimum and maximum dates with respect to each unique grouping variable level (grouping variables must be hierarchical) and zero pads missing dates within in each group level.
 * Single series - Zero pad any missing dates within series bounds
 * Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
 
-### **IntermittentDemandDataGenerator()**
+### Intermittent Demand Forecasting Functions
+
+##### **IntermittentDemandDataGenerator()**
 <code>IntermittentDemandDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
 
-### **AutoCatBoostSizeFreqDist()**
+##### **AutoCatBoostSizeFreqDist()**
 <code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
 
-### **AutoH2oGBMSizeFreqDist()**
+##### **AutoH2oGBMSizeFreqDist()**
 <code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
 
-### **AutoCatBoostFreqSizeScoring()**
+##### **AutoCatBoostFreqSizeScoring()**
 <code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostFreqSizeScoring()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
-### **AutoH2oGBMFreqSizeScoring()**
+##### **AutoH2oGBMFreqSizeScoring()**
 <code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
-### **ID_SingleLevelGibbsSampler()**
+##### **ID_SingleLevelGibbsSampler()**
 <code>ID_SingleLevelGibbsSampler()</code> is for simulating via a collapsed gibbs sampler from the quantile regressions built with <code>Auto_SizeFreqDist()</code> functions.
 
 </p>
