@@ -58,8 +58,6 @@ Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" targe
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see the package reference manual and a vignette with some background and examples. If you want to be a contributer, contact me via LinkedIn email.
 
-Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
-
 ## RemixAutoML Blogs: <img src="Images/BlogsImage4.png" align="right" width="180" />
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
 
@@ -389,12 +387,32 @@ For each of the models tested internally, several aspects should be noted:
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoH2oMLScoring()</code>
   
-### **TimeSeriesFill()**
+### Intermittent Demand Forecasting Functions
+
+##### **TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are three ways to use this function:
 * Grouped data 1 - find the minimum and maximum dates regardless of grouping variables and use those values to ensure all group levels have all the dates represented within the series bounds (if missing, fill with zeros)
 * Grouped data 2 - find the minimum and maximum dates with respect to each unique grouping variable level (grouping variables must be hierarchical) and zero pads missing dates within in each group level.
 * Single series - Zero pad any missing dates within series bounds
 * Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
+
+##### **IntermittentDemandDataGenerator()**
+<code>IntermittentDemandDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
+
+##### **AutoCatBoostSizeFreqDist()**
+<code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+##### **AutoH2oGBMSizeFreqDist()**
+<code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+##### **AutoCatBoostFreqSizeScoring()**
+<code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostFreqSizeScoring()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
+##### **AutoH2oGBMFreqSizeScoring()**
+<code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
+##### **ID_SingleLevelGibbsSampler()**
+<code>ID_SingleLevelGibbsSampler()</code> is for simulating via a collapsed gibbs sampler from the quantile regressions built with <code>Auto_SizeFreqDist()</code> functions.
 
 </p>
 </details>
