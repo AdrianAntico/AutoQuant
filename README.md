@@ -58,8 +58,6 @@ Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" targe
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see the package reference manual and a vignette with some background and examples. If you want to be a contributer, contact me via LinkedIn email.
 
-Hex sticker rendered via the <code>hexSticker</code> package in R: https://github.com/GuangchuangYu/hexSticker
-
 ## RemixAutoML Blogs: <img src="Images/BlogsImage4.png" align="right" width="180" />
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
 
