@@ -127,7 +127,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
-      IfSaveModel = "mojo",
+      IfSaveModel = "standard",
       H2OShutdown = FALSE)
 
     # Pause Runs by 10 seconds
@@ -189,7 +189,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
-      IfSaveModel = "mojo",
+      IfSaveModel = "standard",
       H2OShutdown = FALSE)
     
     # Pause Runs by 10 seconds
