@@ -1,6 +1,6 @@
 #' AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantile regressions
 #'
-#' AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build. Use this with the AutoQuantileGibbsSampler function to simulate the joint distribution.
+#' AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build. Use this with the ID_SingleLevelGibbsSampler function to simulate the joint distribution.
 #'
 #' @author Adrian Antico
 #' @family Automated Time Series

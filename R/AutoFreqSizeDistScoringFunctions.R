@@ -317,9 +317,9 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
               SizePredNames = SizePredNames))
 }
 
-#' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist()
+#' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist()
 #' 
-#' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
+#' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
 #' 
 #' @author Adrian Antico
 #' @family Automated Time Series

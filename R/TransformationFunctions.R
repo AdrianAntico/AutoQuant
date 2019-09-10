@@ -777,8 +777,8 @@ AutoTransformationScore <- function(ScoringData,
         data.table::set(
           ScoringData,
           j = eval(colNames),
-          value = InvApply_YeoJohnson(ScoringData[[eval(colNames)]],
-                                      Results[ColumnName == eval(colNames), Lambda])
+          value = InvApply_YeoJohnson(x = ScoringData[[eval(colNames)]],
+                                      lambda = Results[ColumnName == eval(colNames), Lambda])
         )
       }
     }

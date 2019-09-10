@@ -92,9 +92,19 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     warning("MDP_MissNum should be a numeric or integer value")
   }
 
-  # Apply Transform Numeric Variables----
   # Pull In Transformation Object----
-  if (!is.null(TransformationObject)) {
+  if (is.null(TransformationObject)) {
+    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+      if(is.null(TargetColumnName)) {
+        return("TargetColumnName needs to be supplied")
+      }
+      TransformationObject <-
+        data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
+    }
+  }
+
+  # Apply Transform Numeric Variables----
+  if (is.null(TransformationObject)) {
     if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
@@ -153,11 +163,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   # Change column name----
   data.table::setnames(predict, "predict", "Predictions")
   
-  # Merge features----
-  if (ReturnFeatures) {
-    ReturnPreds <- cbind(predict, ScoringData)
-  }
-  
   # Shut down H2O----
   if (tolower(ModelType) != "mojo") {
     if (H2OShutdown) {
@@ -172,6 +177,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   
   # Back Transform Numeric Variables----
   if (BackTransNumeric) {
+    
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <-
