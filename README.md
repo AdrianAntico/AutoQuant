@@ -396,6 +396,24 @@ For each of the models tested internally, several aspects should be noted:
 * Single series - Zero pad any missing dates within series bounds
 * Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
 
+### **IntermittentDemandDataGenerator()**
+<code>IntermittentDemandDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
+
+### **AutoCatBoostSizeFreqDist()**
+<code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+### **AutoH2oGBMSizeFreqDist()**
+<code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+### **AutoCatBoostFreqSizeScoring()**
+<code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostFreqSizeScoring()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
+### **AutoH2oGBMFreqSizeScoring()**
+<code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
+### **ID_SingleLevelGibbsSampler()**
+<code>ID_SingleLevelGibbsSampler()</code> is for simulating via a collapsed gibbs sampler from the quantile regressions built with <code>Auto_SizeFreqDist()</code> functions.
+
 </p>
 </details>
 
