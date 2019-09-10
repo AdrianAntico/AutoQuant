@@ -94,7 +94,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
   # Apply Transform Numeric Variables----
   # Pull In Transformation Object----
-  if (is.null(TransformationObject)) {
+  if (!is.null(TransformationObject)) {
     if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
