@@ -439,7 +439,7 @@ ID_BuildTrainDataSets <- function(MetaData,
     
     # Set iterations----
     issuances  <- as.numeric(ceiling(MetaData[get(GroupingVariables) == eval(level), "Txns"][[1]]))
-    iterations <- ceiling(issuances^SampleRate)
+    iterations <- ceiling(issuances*SampleRate)
     
     # Check to ensure issuances and iterations exist----
     if(length(issuances) == 0 | length(iterations) == 0) next
