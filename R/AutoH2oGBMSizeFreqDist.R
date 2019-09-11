@@ -131,7 +131,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
-      H2OShutdown = FALSE)
+      H2OShutdown = TRUE)
 
     # Pause Runs by 10 seconds
     Sys.sleep(10)
@@ -193,7 +193,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
-      H2OShutdown = FALSE)
+      H2OShutdown = TRUE)
     
     # Pause Runs by 10 seconds
     Sys.sleep(10)
