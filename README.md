@@ -4,7 +4,6 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 ![Contributors: 4](https://img.shields.io/static/v1?label=Contributors&message=4&color=Orange)
 [![star this repo](http://githubbadges.com/star.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML)
-[![fork this repo](http://githubbadges.com/fork.svg?user=AdrianAntico&repo=RemixAutoML&style=default)](https://github.com/AdrianAntico/RemixAutoML/fork)
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
