@@ -12,7 +12,8 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  PassInGrid = NULL, Methods = c("BoxCox", "YeoJohnson", "Asinh",
+  "Asin", "Logit"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -56,6 +57,8 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
+
+\item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -116,7 +119,12 @@ TestModel <- AutoCatBoostRegression(data,
                                     NumOfParDepPlots = 3,
                                     ReturnModelObjects = TRUE,
                                     SaveModelObjects = FALSE,
-                                    PassInGrid = NULL)
+                                    PassInGrid = NULL,
+                                    Methods = c("BoxCox",
+                                                "YeoJohnson",
+                                                "Asinh",
+                                                "Asin",
+                                                "Logit"))
 }
 }
 \seealso{

@@ -24,6 +24,7 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
+#' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -77,7 +78,12 @@
 #'                                     NumOfParDepPlots = 3,
 #'                                     ReturnModelObjects = TRUE,
 #'                                     SaveModelObjects = FALSE,
-#'                                     PassInGrid = NULL)
+#'                                     PassInGrid = NULL,
+#'                                     Methods = c("BoxCox",
+#'                                                 "YeoJohnson",
+#'                                                 "Asinh",
+#'                                                 "Asin",
+#'                                                 "Logit"))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
@@ -101,7 +107,12 @@ AutoCatBoostRegression <- function(data,
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
-                                   PassInGrid = NULL) {
+                                   PassInGrid = NULL,
+                                   Methods = c("BoxCox",
+                                               "YeoJohnson",
+                                               "Asinh",
+                                               "Asin",
+                                               "Logit")) {
   # Load catboost----
   loadNamespace(package = "catboost")
   
@@ -176,11 +187,7 @@ AutoCatBoostRegression <- function(data,
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
-      Methods = c("BoxCox",
-                  "YeoJohnson",
-                  "Asinh",
-                  "Asin",
-                  "Logit"),
+      Methods = Methods,
       Path = model_path,
       TransID = ModelID,
       SaveOutput = SaveModelObjects
@@ -246,11 +253,7 @@ AutoCatBoostRegression <- function(data,
       Output <- AutoTransformationCreate(
         data,
         ColumnNames = TransformNumericColumns,
-        Methods = c("BoxCox",
-                    "YeoJohnson",
-                    "Asinh",
-                    "Asin",
-                    "Logit"),
+        Methods = Methods,
         Path = model_path,
         TransID = ModelID,
         SaveOutput = SaveModelObjects
