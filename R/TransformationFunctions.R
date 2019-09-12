@@ -469,15 +469,25 @@ AutoTransformationCreate <- function(data,
   
   # Loop through ColumnNames----
   for (colNames in as.integer(seq_along(ColumnNames))) {
+    
     # Collection Object----
-    EvaluationTable <- data.table::data.table(
-      ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods) + 1)),
-      MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods) +
-                                                          1)),
-      Lambda = rep(1.0, length(ColumnNames) * (length(Methods) + 1)),
-      NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods) +
-                                                               1))
-    )
+    if(length(Methods) < 5) {
+      EvaluationTable <- data.table::data.table(
+        ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods))),
+        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods))),
+        Lambda = rep(1.0, length(ColumnNames) * (length(Methods))),
+        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods)))
+      )
+    } else {
+      EvaluationTable <- data.table::data.table(
+        ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods) + 1)),
+        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods) +
+                                                            1)),
+        Lambda = rep(1.0, length(ColumnNames) * (length(Methods) + 1)),
+        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods) +
+                                                                 1))
+      )
+    }
     DataCollection <- list()
     Counter <- 0L
     
@@ -661,31 +671,33 @@ AutoTransformationCreate <- function(data,
     }
     
     # Identity----
-    Counter <- Counter + 1L
-    data.table::set(
-      EvaluationTable,
-      i = Counter,
-      j = "ColumnName",
-      value = eval(ColumnNames[colNames])
-    )
-    output <- Test_Identity(x)
-    DataCollection[["identity"]] <- output$Data
-    data.table::set(EvaluationTable,
-                    i = Counter,
-                    j = "MethodName",
-                    value = output$Name)
-    data.table::set(
-      EvaluationTable,
-      i = Counter,
-      j = "Lambda",
-      value = output$Lambda
-    )
-    data.table::set(
-      EvaluationTable,
-      i = Counter,
-      j = "NormalizedStatistics",
-      value = output$Normalized_Statistic
-    )
+    if (length(Methods) < 5) {
+      Counter <- Counter + 1L
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
+      output <- Test_Identity(x)
+      DataCollection[["identity"]] <- output$Data
+      data.table::set(EvaluationTable,
+                      i = Counter,
+                      j = "MethodName",
+                      value = output$Name)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )  
+    }
     
     # Pick winner----
     EvaluationTable <- EvaluationTable[MethodName != "BLABLA"]
