@@ -473,10 +473,10 @@ AutoTransformationCreate <- function(data,
     # Collection Object----
     if(length(Methods) < 5) {
       EvaluationTable <- data.table::data.table(
-        ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods))),
-        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods))),
-        Lambda = rep(1.0, length(ColumnNames) * (length(Methods))),
-        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods)))
+        ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods)+1)),
+        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods)+1)),
+        Lambda = rep(1.0, length(ColumnNames) * (length(Methods)+1)),
+        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods)+1))
       )
     } else {
       EvaluationTable <- data.table::data.table(
