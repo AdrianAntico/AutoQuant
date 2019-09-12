@@ -136,7 +136,8 @@ AutoCatBoostSizeFreqDist <- function(CountData = NULL,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
-      PassInGrid = NULL)
+      PassInGrid = NULL,
+      Methods = "Asinh")
     
     # Clear GPU garbage----
     gc()
@@ -200,7 +201,8 @@ AutoCatBoostSizeFreqDist <- function(CountData = NULL,
       NumOfParDepPlots = NumOfParDepPlots,
       ReturnModelObjects = FALSE,
       SaveModelObjects = TRUE,
-      PassInGrid = NULL)
+      PassInGrid = NULL,
+      Methods = "Asinh")
     
     # Clear GPU garbage----
     gc()
