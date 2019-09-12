@@ -25,6 +25,7 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to FALSE to keep H2O running after you build your model
+#' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
@@ -79,7 +80,12 @@
 #'                                   ReturnModelObjects = TRUE,
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo",
-#'                                   H2OShutdown = TRUE)
+#'                                   H2OShutdown = TRUE,
+#'                                   Methods = c("BoxCox",
+#'                                               "YeoJohnson",
+#'                                               "Asinh",
+#'                                               "Asin",
+#'                                               "Logit"))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
 #' @export
@@ -104,7 +110,12 @@ AutoH2oGBMRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
-                                 H2OShutdown = TRUE) {
+                                 H2OShutdown = TRUE,
+                                 Methods = c("BoxCox",
+                                             "YeoJohnson",
+                                             "Asinh",
+                                             "Asin",
+                                             "Logit")) {
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
@@ -167,11 +178,7 @@ AutoH2oGBMRegression <- function(data,
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
-      Methods = c("BoxCox",
-                  "YeoJohnson",
-                  "Asinh",
-                  "Asin",
-                  "Logit"),
+      Methods = Methods,
       Path = model_path,
       TransID = ModelID,
       SaveOutput = SaveModelObjects
@@ -223,11 +230,7 @@ AutoH2oGBMRegression <- function(data,
       Output <- AutoTransformationCreate(
         data,
         ColumnNames = TransformNumericColumns,
-        Methods = c("BoxCox",
-                    "YeoJohnson",
-                    "Asinh",
-                    "Asin",
-                    "Logit"),
+        Methods = Methods,
         Path = model_path,
         TransID = ModelID,
         SaveOutput = SaveModelObjects

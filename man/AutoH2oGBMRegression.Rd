@@ -12,7 +12,8 @@ AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
   parallel::detectCores() - 2), MaxModelsInGrid = 2, model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = TRUE)
+  IfSaveModel = "mojo", H2OShutdown = TRUE, Methods = c("BoxCox",
+  "YeoJohnson", "Asinh", "Asin", "Logit"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -58,6 +59,8 @@ AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to FALSE to keep H2O running after you build your model}
+
+\item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
@@ -119,7 +122,12 @@ TestModel <- AutoH2oGBMRegression(data,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo",
-                                  H2OShutdown = TRUE)
+                                  H2OShutdown = TRUE,
+                                  Methods = c("BoxCox",
+                                              "YeoJohnson",
+                                              "Asinh",
+                                              "Asin",
+                                              "Logit"))
 }
 }
 \seealso{
