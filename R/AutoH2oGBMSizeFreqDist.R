@@ -132,7 +132,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
       H2OShutdown = TRUE,
-      Methods = "Asinh")
+      Methods = "LogPlus1")
 
     # Pause Runs by 10 seconds
     Sys.sleep(10)
@@ -170,7 +170,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   # Clear GPU garbage----
   gc()
   
-  # Build Count Models----
+  # Build Size Models----
   for(quan in SizeQuantiles) {
     TestModel <- AutoH2oGBMRegression(
       data = SizeDataTrain,
@@ -195,7 +195,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
       H2OShutdown = TRUE,
-      Methods = "Asinh")
+      Methods = "Log")
     
     # Pause Runs by 10 seconds
     Sys.sleep(10)
