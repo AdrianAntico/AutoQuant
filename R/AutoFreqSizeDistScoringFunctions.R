@@ -362,7 +362,7 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
   # Score count models----
   Counter <- 1
   for(Count in CountQuantiles) {
-    CountData <- AutoH2OMLScoring(
+    data <- AutoH2OMLScoring(
       ScoringData = ScoringData,
       ModelObject = NULL,
       ModelType = "standard",
@@ -402,7 +402,7 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
   # Score size models----
   Counter <- 1
   for(Size in SizeQuantiles) {
-    SizeData <- AutoH2OMLScoring(
+    data <- AutoH2OMLScoring(
       ScoringData = ScoringData,
       ModelObject = NULL,
       ModelType = "standard",
