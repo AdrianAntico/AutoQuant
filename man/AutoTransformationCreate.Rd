@@ -6,14 +6,15 @@
 \usage{
 AutoTransformationCreate(data, ColumnNames = NULL,
   Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Asin",
-  "Logit"), Path = NULL, TransID = "ModelID", SaveOutput = FALSE)
+  "Logit", "Identity"), Path = NULL, TransID = "ModelID",
+  SaveOutput = FALSE)
 }
 \arguments{
 \item{data}{This is your source data}
 
 \item{ColumnNames}{List your columns names in a vector, for example, c("Target", "IV1")}
 
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Asin", and "Logit". "Identity" is always run.}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity".}
 
 \item{Path}{Set to the directly where you want to save all of your modeling files}
 
@@ -37,7 +38,14 @@ data[, Adrian1 := log(pnorm(Correl * x1 +
                             sqrt(1-Correl^2) * qnorm(x2)))]
 data <- AutoTransformationCreate(data,
                                  ColumnNames = "Sample",
-                                 Methods = c("BoxCox","Asin"),
+                                 Methods = c("BoxCox",
+                                             "YeoJohnson",
+                                             "Asinh",
+                                             "Log",
+                                             "LogPlus1",
+                                             "Asin",
+                                             "Logit",
+                                             "Identity"),
                                  Path = NULL,
                                  TransID = "Trans",
                                  SaveOutput = FALSE)

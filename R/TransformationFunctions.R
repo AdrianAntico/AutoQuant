@@ -464,7 +464,7 @@ InvApply_Log <- function(x) {
 #' @family Feature Engineering
 #' @noRd
 #' @param x The data in numerical vector form
-#' @return Log results
+#' @return LogPlus1 results
 Test_LogPlus1 <- function(x) {
   stopifnot(is.numeric(x))
   trans_data <- log(x+1)
@@ -511,7 +511,7 @@ InvApply_LogPlus1 <- function(x) {
 #' @family Feature Engineering
 #' @param data This is your source data
 #' @param ColumnNames List your columns names in a vector, for example, c("Target", "IV1")
-#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Asin", and "Logit". "Identity" is always run.
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity".
 #' @param Path Set to the directly where you want to save all of your modeling files
 #' @param TransID Set to a character value that corresponds with your modeling project
 #' @param SaveOutput Set to TRUE to save necessary file to run AutoTransformationScore()
@@ -526,7 +526,14 @@ InvApply_LogPlus1 <- function(x) {
 #'                             sqrt(1-Correl^2) * qnorm(x2)))]
 #' data <- AutoTransformationCreate(data,
 #'                                  ColumnNames = "Sample",
-#'                                  Methods = c("BoxCox","Asin"),
+#'                                  Methods = c("BoxCox",
+#'                                              "YeoJohnson",
+#'                                              "Asinh",
+#'                                              "Log",
+#'                                              "LogPlus1",
+#'                                              "Asin",
+#'                                              "Logit",
+#'                                              "Identity"),
 #'                                  Path = NULL,
 #'                                  TransID = "Trans",
 #'                                  SaveOutput = FALSE)
@@ -539,7 +546,8 @@ AutoTransformationCreate <- function(data,
                                                  "Log",
                                                  "LogPlus1",
                                                  "Asin",
-                                                 "Logit"),
+                                                 "Logit",
+                                                 "Identity"),
                                      Path = NULL,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
@@ -647,7 +655,7 @@ AutoTransformationCreate <- function(data,
         j = "ColumnName",
         value = eval(ColumnNames[colNames])
       )
-      output <- Test_YeoJohnson(x)
+      output <- Test_Log(x)
       DataCollection[["log"]] <- output$Data
       data.table::set(
         EvaluationTable,
@@ -678,7 +686,7 @@ AutoTransformationCreate <- function(data,
         j = "ColumnName",
         value = eval(ColumnNames[colNames])
       )
-      output <- Test_YeoJohnson(x)
+      output <- Test_LogPlus1(x)
       DataCollection[["logplus1"]] <- output$Data
       data.table::set(
         EvaluationTable,
@@ -825,7 +833,7 @@ AutoTransformationCreate <- function(data,
     }
     
     # Identity----
-    if (length(Methods) < 5) {
+    if (any(tolower(FinalMethods) %chin% "identity")) {
       Counter <- Counter + 1L
       data.table::set(
         EvaluationTable,
