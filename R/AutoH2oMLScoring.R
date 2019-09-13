@@ -107,7 +107,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
 
   # Apply Transform Numeric Variables----
-  if (is.null(TransformationObject)) {
+  if (!is.null(TransformationObject)) {
     if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
@@ -188,8 +188,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
-    grid_trans_results <-
-      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Append record for Predicted Column----
     data.table::set(
@@ -198,6 +196,10 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       j = "ColumnName",
       value = "Predictions"
     )
+    
+    # Remove target variable----
+    grid_trans_results <-
+      grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
