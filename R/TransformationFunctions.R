@@ -315,7 +315,7 @@ Test_Asin <- function(x) {
   trans_data_standardized <- (trans_data - mu) / sigma
   ptest <- nortest::pearson.test(trans_data_standardized)
   val <- list(
-    Name = "Asinh",
+    Name = "Asin",
     Data = trans_data,
     Lambda = NA,
     Normalized_Statistic = unname(ptest$statistic / ptest$df)
@@ -360,7 +360,7 @@ Test_Logit <- function(x) {
   trans_data_standardized <- (trans_data - mu) / sigma
   ptest <- nortest::pearson.test(trans_data_standardized)
   val <- list(
-    Name = "Asinh",
+    Name = "Logit",
     Data = trans_data,
     Lambda = NA,
     Normalized_Statistic = unname(ptest$statistic / ptest$df)
@@ -413,6 +413,96 @@ Test_Identity <- function(x) {
   val
 }
 
+#' Test Log Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+Test_Log <- function(x) {
+  stopifnot(is.numeric(x))
+  trans_data <- log(x)
+  mu <- mean(trans_data, na.rm = TRUE)
+  sigma <- sd(trans_data, na.rm = TRUE)
+  trans_data_standardized <- (trans_data - mu) / sigma
+  ptest <- nortest::pearson.test(trans_data_standardized)
+  val <- list(
+    Name = "Log",
+    Data = trans_data,
+    Lambda = NA,
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
+  return(val)
+}
+
+#' Apply Log Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+Apply_Log <- function(x) {
+  return(log(x))
+}
+
+#' Inverse Log Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+InvApply_Log <- function(x) {
+  return(exp(x))
+}
+
+#' Test LogPlus1 Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+Test_LogPlus1 <- function(x) {
+  stopifnot(is.numeric(x))
+  trans_data <- log(x+1)
+  mu <- mean(trans_data, na.rm = TRUE)
+  sigma <- sd(trans_data, na.rm = TRUE)
+  trans_data_standardized <- (trans_data - mu) / sigma
+  ptest <- nortest::pearson.test(trans_data_standardized)
+  val <- list(
+    Name = "LogPlus1",
+    Data = trans_data,
+    Lambda = NA,
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
+  return(val)
+}
+
+#' Apply LogPlus1 Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+Apply_LogPlus1 <- function(x) {
+  return(log(x+1))
+}
+
+#' Inverse LogPlus1 Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+InvApply_LogPlus1 <- function(x) {
+  return(exp(x)-1)
+}
+
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.
 #'
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Asin, and Logit) and find the one that produces data that is the closest to normally distributed data. It then makes the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects (always) or saving them to file (optional).
@@ -446,6 +536,8 @@ AutoTransformationCreate <- function(data,
                                      Methods = c("BoxCox",
                                                  "YeoJohnson",
                                                  "Asinh",
+                                                 "Log",
+                                                 "LogPlus1",
                                                  "Asin",
                                                  "Logit"),
                                      Path = NULL,
@@ -455,7 +547,7 @@ AutoTransformationCreate <- function(data,
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-  if (!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "asin", "logit"))) {
+  if (!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "log", "logplus1", "asin", "logit"))) {
     warning("Methods not supported")
   }
   if (is.numeric(ColumnNames) | is.integer(ColumnNames)) {
@@ -501,11 +593,11 @@ AutoTransformationCreate <- function(data,
     # Update Methods----
     if (MinVal <= 0) {
       FinalMethods <-
-        FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox"))]
+        FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log"))]
     }
     if (MinVal < 0) {
       FinalMethods <-
-        FinalMethods[!(tolower(FinalMethods) %chin% c("asinh"))]
+        FinalMethods[!(tolower(FinalMethods) %chin% c("asinh","logplus1"))]
     }
     if (MaxVal - MinVal > 1) {
       FinalMethods <-
@@ -537,6 +629,68 @@ AutoTransformationCreate <- function(data,
         i = Counter,
         j = "Lambda",
         value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
+    }
+    
+    # Log----
+    if (any(tolower(FinalMethods) %chin% "log")) {
+      Counter <- Counter + 1L
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
+      output <- Test_YeoJohnson(x)
+      DataCollection[["log"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = NA
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
+    }
+    
+    # LogPlus1----
+    if (any(tolower(FinalMethods) %chin% "logplus1")) {
+      Counter <- Counter + 1L
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
+      output <- Test_YeoJohnson(x)
+      DataCollection[["logplus1"]] <- output$Data
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = NA
       )
       data.table::set(
         EvaluationTable,
@@ -775,6 +929,7 @@ AutoTransformationScore <- function(ScoringData,
   
   # Loop through ColumnNames----
   for (colNames in Results[["ColumnName"]]) {
+    
     # YeoJohnson----
     if (Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
       if (tolower(Type) != "inverse") {
@@ -790,6 +945,40 @@ AutoTransformationScore <- function(ScoringData,
           j = eval(colNames),
           value = InvApply_YeoJohnson(x = ScoringData[[eval(colNames)]],
                                       lambda = Results[ColumnName == eval(colNames), Lambda])
+        )
+      }
+    }
+    
+    # Log----
+    if (Results[ColumnName == eval(colNames), MethodName] == "Log") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_Log(ScoringData[[eval(colNames)]])
+        )
+      } else {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_Log(x = ScoringData[[eval(colNames)]])
+        )
+      }
+    }
+    
+    # LogPlus1----
+    if (Results[ColumnName == eval(colNames), MethodName] == "LogPlus1") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_LogPlus1(ScoringData[[eval(colNames)]])
+        )
+      } else {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_LogPlus1(x = ScoringData[[eval(colNames)]])
         )
       }
     }

@@ -5,8 +5,8 @@
 \title{AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.}
 \usage{
 AutoTransformationCreate(data, ColumnNames = NULL,
-  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Asin", "Logit"),
-  Path = NULL, TransID = "ModelID", SaveOutput = FALSE)
+  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Asin",
+  "Logit"), Path = NULL, TransID = "ModelID", SaveOutput = FALSE)
 }
 \arguments{
 \item{data}{This is your source data}
