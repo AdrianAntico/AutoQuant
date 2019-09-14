@@ -31,7 +31,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
     if (count > 0) {
       sumQ = 0;
       
-      Size Quantiles Loop
+      //Size Quantiles Loop
         for (j=0; j < count; j++) {
           sumq = 0;
           rn2 = rand() / (RAND_MAX + 1.);
@@ -46,9 +46,9 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
             sumQ += sumq;
           }
         store[i] = sumQ;
-      } else {
-        store[i] = 0;
-      }
+    } else {
+      store[i] = 0;
+    }
   }
   return store;
 }
