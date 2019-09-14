@@ -5,8 +5,8 @@ using namespace Rcpp;
 NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, NumericVector CountList, NumericVector SizeList, int nSims) {
   
   // Initial variables
-  int i,j,k,l,CountLoops,SizeLoops,count;
-  double rn1,rn2,count_min_val,count_max_val,sumQ,sumq,size_min_val,size_max_val;
+  int i,j,k,l,CountLoops,SizeLoops;
+  double rn1,rn2,count_min_val,count,count_max_val,sumQ,sumq,size_min_val,size_max_val;
   CountLoops = CountList.size();
   SizeLoops = SizeList.size();
   count_min_val = CountList[0];
@@ -27,6 +27,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
       count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow(CountScore[k+1]/CountScore[k],(rn1 - CountList[k])/(CountList[k+1]-CountList[k])) - 1) - 1);
     }
     
+    // Continue if count is positive
     if (count > 0) {
       sumQ = 0;
       
