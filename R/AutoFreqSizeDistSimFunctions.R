@@ -38,7 +38,7 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
                                        FC_Periods = NULL, 
                                        nSims = 5000,
                                        CountList = NULL,
-                                       SizeList = NULL){
+                                       SizeList = NULL) {
   
   # Loop through FC_Periods----
   SimResults <- list()
