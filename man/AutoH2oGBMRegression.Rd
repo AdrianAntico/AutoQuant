@@ -13,7 +13,7 @@ AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo", H2OShutdown = TRUE, Methods = c("BoxCox",
-  "YeoJohnson", "Asinh", "Asin", "Logit"))
+  "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -123,11 +123,7 @@ TestModel <- AutoH2oGBMRegression(data,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo",
                                   H2OShutdown = TRUE,
-                                  Methods = c("BoxCox",
-                                              "YeoJohnson",
-                                              "Asinh",
-                                              "Asin",
-                                              "Logit"))
+                                  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
 }
 }
 \seealso{

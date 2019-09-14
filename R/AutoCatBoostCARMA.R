@@ -228,7 +228,7 @@ AutoCatBoostCARMA <- function(data,
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
-      Methods = c("BoxCox", "Asinh", "Asin", "Logit", "YeoJohnson"),
+      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
       SaveOutput = FALSE

@@ -81,11 +81,7 @@
 #'                                   SaveModelObjects = FALSE,
 #'                                   IfSaveModel = "mojo",
 #'                                   H2OShutdown = TRUE,
-#'                                   Methods = c("BoxCox",
-#'                                               "YeoJohnson",
-#'                                               "Asinh",
-#'                                               "Asin",
-#'                                               "Logit"))
+#'                                   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
 #' @export
@@ -111,11 +107,7 @@ AutoH2oGBMRegression <- function(data,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = TRUE,
-                                 Methods = c("BoxCox",
-                                             "YeoJohnson",
-                                             "Asinh",
-                                             "Asin",
-                                             "Logit")) {
+                                 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")) {
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     warning("eval_metric not in MSE, RMSE, MAE, RMSLE")

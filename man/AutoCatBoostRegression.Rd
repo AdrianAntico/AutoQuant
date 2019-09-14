@@ -12,8 +12,8 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, Methods = c("BoxCox", "YeoJohnson", "Asinh",
-  "Asin", "Logit"))
+  PassInGrid = NULL, Methods = c("BoxCox", "Asinh", "Asin", "Log",
+  "LogPlus1", "Logit", "YeoJohnson"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -120,11 +120,7 @@ TestModel <- AutoCatBoostRegression(data,
                                     ReturnModelObjects = TRUE,
                                     SaveModelObjects = FALSE,
                                     PassInGrid = NULL,
-                                    Methods = c("BoxCox",
-                                                "YeoJohnson",
-                                                "Asinh",
-                                                "Asin",
-                                                "Logit"))
+                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
 }
 }
 \seealso{
