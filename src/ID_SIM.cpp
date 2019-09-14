@@ -20,9 +20,9 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
     rn1 = rand() / (RAND_MAX + 1.);
     k = ceil(rn1 * (CountLoops-1));
     if(rn1 <= count_min_val) {
-      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[0]) - 1) - 1;
+      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[0]) - 1);
     } else if (rn1 >= count_max_val) {
-      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[CountLoops]) - 1) - 1;
+      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[CountLoops]) - 1);
     } else {
       count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow(CountScore[k+1]/CountScore[k],(rn1 - CountList[k])/(CountList[k+1]-CountList[k])) - 1) - 1);
     }
