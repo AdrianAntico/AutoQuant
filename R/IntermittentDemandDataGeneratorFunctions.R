@@ -224,6 +224,7 @@ IntermittentDemandDataGenerator <- function(data,
   # Store individual file outputs----
   CountModelData <- ModelDataSets$CountModelData
   SizeModelData <- ModelDataSets$SizeModelData
+  SizeModelData <- SizeData[get(paste0("Target_",eval(TargetVariableName))) != 0]
   rm(ModelDataSets)
   
   # Back-transform GroupingVariables----
