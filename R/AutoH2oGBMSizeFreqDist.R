@@ -85,6 +85,9 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     TransFormCols <- NULL
   }
   
+  # Clear GPU garbage----
+  gc()
+  
   # Count Model AutoDataPartition----
   CountDataSets <- AutoDataPartition(
     data = CountData,
@@ -101,18 +104,19 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   CountDataValidate <- CountDataSets$ValidationData
   CountDataTest <- CountDataSets$TestData
   
-  # Clear data that isn't needed----
-  rm(CountDataSets,CountData)
-  
-  # Clear GPU garbage----
-  gc()
-  
   # Build Count Models----
   for(quan in CountQuantiles) {
+    
+    # Copy data sets----
+    CountDataTrainCopy <- data.table::copy(CountDataTrain)
+    CountDataValidateCopy <- data.table::copy(CountDataValidate)
+    CountDataTestCopy <- data.table::copy(CountDataTest)
+    
+    # Build Model----
     TestModel <- AutoH2oGBMRegression(
-      data = CountDataTrain,
-      ValidationData = CountDataValidate,
-      TestData = CountDataTest,
+      data = CountDataTrainCopy,
+      ValidationData = CountDataValidateCopy,
+      TestData = CountDataTestCopy,
       TargetColumnName = CountTargetColumnName,
       FeatureColNames = CountFeatureColNames,
       TransformNumericColumns = TransFormCols,
@@ -139,7 +143,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   }
   
   # Clear Count Model Data----
-  rm(CountDataTrain,CountDataValidate,CountDataTest)
+  rm(CountDataSets,CountData,CountDataTrain,CountDataValidate,CountDataTest)
   
   # Size Model AutoTransform----
   if(AutoTransform) {
@@ -164,18 +168,22 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   SizeDataValidate <- SizeDataSets$ValidationData
   SizeDataTest <- SizeDataSets$TestData
   
-  # Clear data that isn't needed----
-  rm(SizeDataSets,SizeData)
-  
   # Clear GPU garbage----
   gc()
   
   # Build Size Models----
   for(quan in SizeQuantiles) {
+    
+    # Copy data----
+    SizeDataTrainCopy <- data.table::copy(SizeDataTrain)
+    SizeDataValidateCopy <- data.table::copy(SizeDataValidate)
+    SizeDataTestCopy <- data.table::copy(SizeDataTest)
+    
+    # Build Models----
     TestModel <- AutoH2oGBMRegression(
-      data = SizeDataTrain,
-      ValidationData = SizeDataValidate,
-      TestData = SizeDataTest,
+      data = SizeDataTrainCopy,
+      ValidationData = SizeDataValidateCopy,
+      TestData = SizeDataTestCopy,
       TargetColumnName = SizeTargetColumnName,
       FeatureColNames = SizeFeatureColNames,
       TransformNumericColumns = TransFormCols,
