@@ -4,13 +4,21 @@
 \alias{ID_Forecast}
 \title{ID_Forecast for forecasting intermittent demand data}
 \usage{
-ID_Forecast(CountData, SizeData, GroupVar = NULL, FC_Periods = 26,
-  NumSims = 1000, PredictionIntervals = c(0.05, 0.2, 0.8, 0.95))
+ID_Forecast(CountData = FinalData$CountData,
+  SizeData = FinalData$SizeData,
+  CountDataNames = FinalData$CountPredNames,
+  SizeDataNames = FinalData$SizePredNames, GroupVar = NULL,
+  FC_Periods = 26, NumSims = 1000, PredictionIntervals = c(0.05, 0.2,
+  0.8, 0.95))
 }
 \arguments{
 \item{CountData}{This is the count data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()}
 
 \item{SizeData}{This is the size data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()}
+
+\item{CountDataNames}{This is the count data names returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()}
+
+\item{SizeDataNames}{This is the size data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()}
 
 \item{GroupVar}{This is your grouping variable. E.g. sku as being the name of the column that contains all skus}
 
