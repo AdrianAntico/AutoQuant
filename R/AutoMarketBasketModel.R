@@ -85,9 +85,9 @@ AutoMarketBasketModel <- function(data,
       support = Support,
       confidence = Confidence,
       target = "rules",
-      minlen = 2,
-      maxlen = 3,
-      maxtime = 5
+      minlen = MinLength,
+      maxlen = MaxLength,
+      maxtime = MaxTime
     )
   )
   options(warn = 0)
