@@ -24,7 +24,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
     } else if (rn1 >= count_max_val) {
       count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[CountLoops]) - 1);
     } else {
-      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow(CountScore[k+1]/CountScore[k],(rn1 - CountList[k])/(CountList[k+1]-CountList[k])) - 1) - 1);
+      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow(CountScore[k+1]/CountScore[k],(rn1 - CountList[k])/(CountList[k+1]-CountList[k]))));
     }
     
     //Continue if count is positive
@@ -41,7 +41,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
           } else if (rn2 >= size_max_val) {
             sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[SizeLoops-1]));
           } else {
-            sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[l]*pow(SizeScore[l+1]/SizeScore[l],(rn2 - SizeList[l])/(SizeList[l+1] - SizeList[l]))) - 1);
+            sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[l]*pow(SizeScore[l+1]/SizeScore[l],(rn2 - SizeList[l])/(SizeList[l+1] - SizeList[l]))));
           }
             sumQ += sumq;
           }
