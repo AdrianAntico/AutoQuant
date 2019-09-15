@@ -66,6 +66,8 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
 #' @author Adrian Antico
 #' @param CountData This is the count data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()
 #' @param SizeData This is the size data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()
+#' @param CountDataNames This is the count data names returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()
+#' @param SizeDataNames This is the size data returned from AutoCatBoostFreqSizeScoring() or AutoH2oGBMFreqSizeScoring()
 #' @param GroupVar This is your grouping variable. E.g. sku as being the name of the column that contains all skus
 #' @param FC_Periods The max period of your forecast. E.g. if you want 52 weeks of forecasts, set to 52
 #' @param NumSims Set the number of collapsed gibbs simulations to run for each time unit forecast. E.g. if you want 52 weeks of forecasts, the simulations will run NumSims for each period up to 52.
@@ -82,8 +84,10 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
 #' }
 #' @return Returns your entire set of groupvar forecasts in a single data.table
 #' @export
-ID_Forecast <- function(CountData, 
-                        SizeData, 
+ID_Forecast <- function(CountData = FinalData$CountData,
+                        SizeData = FinalData$SizeData,
+                        CountDataNames = FinalData$CountPredNames,
+                        SizeDataNames = FinalData$SizePredNames,
                         GroupVar = NULL, 
                         FC_Periods = 26, 
                         NumSims = 1000, 
@@ -100,6 +104,8 @@ ID_Forecast <- function(CountData,
   # Forecast----
   Counter = 0L
   GroupVariable <- CountData[[eval(GroupVar)]]
+  CountDataNamesFinal <- CountDataNames[2:length(CountDataNames)]
+  SizeDataNamesFinal <- SizeDataNames[2:length(SizeDataNames)]
   for(Level in GroupVariable) {
     
     # Increment counter----
@@ -108,8 +114,8 @@ ID_Forecast <- function(CountData,
     
     # Run ID_SIngleLevelGibbsSampler()----
     SingleLevelData <- ID_SingleLevelGibbsSampler(
-      CountDataLevel = CountData[get(GroupVar) == eval(Level)],
-      SizeDataLevel = SizeData[get(GroupVar) == eval(Level)],
+      CountDataLevel = CountData[get(GroupVar) == eval(Level)][, ..CountDataNamesFinal],
+      SizeDataLevel = SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal],
       FC_Periods = FC_Periods, 
       nSims = NumSims, 
       CountList = seq(0.1,0.9,0.1),
