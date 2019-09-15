@@ -69,6 +69,7 @@ AutoMarketBasketModel <- function(data,
   
   # Subset data----
   data <- data[, .(get(OrderIDColumnName), get(ItemIDColumnName))]
+  data.table::setnames(data, c("V1", "V2"), c(eval(OrderIDColumnName),eval(ItemIDColumnName)))
   
   
   # Look into data.table split----
