@@ -439,6 +439,9 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
     Counter <- Counter + 1
   }
   
+  # Shut down H2O----
+  h2o::h2o.shutdown(prompt = FALSE)
+  
   # Column names of predictions----
   CountPredNames <- c("FC_Window", names(CountData)[which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))])
   SizePredNames <- c("FC_Window", names(SizeData)[which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))])
