@@ -104,6 +104,7 @@ ID_Forecast <- function(CountData,
     
     # Increment counter----
     Counter <- Counter + 1L
+    print(Counter)
     
     # Run ID_SIngleLevelGibbsSampler()----
     SingleLevelData <- ID_SingleLevelGibbsSampler(
