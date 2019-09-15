@@ -6,6 +6,7 @@
 #'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Marketing Modeling
+#' @importClassesFrom arules transactions
 #' @param data This is your transactions data set
 #' @param OrderIDColumnName Supply your column name for the Order ID Values
 #' @param ItemIDColumnName Supply your column name for the Item ID Values
