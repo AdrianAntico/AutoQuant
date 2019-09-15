@@ -54,6 +54,7 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oGBMCARMA}},
   \code{\link{AutoH2oGBMSizeFreqDist}},
   \code{\link{AutoTS}}, \code{\link{AutoXGBoostCARMA}},
+  \code{\link{ID_Forecast}},
   \code{\link{ID_SingleLevelGibbsSampler}},
   \code{\link{IntermittentDemandScoringDataGenerator}}
 }
