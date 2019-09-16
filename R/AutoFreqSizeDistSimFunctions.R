@@ -162,4 +162,7 @@ ID_Forecast <- function(CountData = FinalData$CountData,
           FinalData))
     }
   }
+  
+  # Return results----
+  return(FinalDataReturn)
 }
