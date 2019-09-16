@@ -921,111 +921,113 @@ AutoH2oGBMRegression <- function(data,
   
   # Regression Partial Dependence----
   ParDepPlots <- list()
-  j <- 0
   ParDepBoxPlots <- list()
-  k <- 0
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-    if (!is.null(Alpha)) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            quantile(x,
-                     probs = Alpha,
-                     na.rm = TRUE)
-        )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-          Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            quantile(x,
-                     probs = Alpha,
-                     na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
-    } else {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-          Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
+  if(NumOfParDepPlots == 0) {
+    j <- 0
+    k <- 0
+    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      if (!is.null(Alpha)) {
+        tryCatch({
+          Out <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = Target,
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "calibration",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              quantile(x,
+                       probs = Alpha,
+                       na.rm = TRUE)
+          )
+          
+          j <- j + 1
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
+            Out
+        }, error = function(x)
+          "skip")
+        tryCatch({
+          Out1 <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = Target,
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "boxplot",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              quantile(x,
+                       probs = Alpha,
+                       na.rm = TRUE)
+          )
+          
+          k <- k + 1
+          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
+            Out1
+        }, error = function(x)
+          "skip")
+      } else {
+        tryCatch({
+          Out <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = Target,
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "calibration",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          j <- j + 1
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
+            Out
+        }, error = function(x)
+          "skip")
+        tryCatch({
+          Out1 <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = Target,
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "boxplot",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          k <- k + 1
+          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
+            Out1
+        }, error = function(x)
+          "skip")
+      }
     }
-  }
-  
-  # Regression Save ParDepPlots to file----
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      save(ParDepPlots,
-           file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
-    } else {
-      save(ParDepPlots,
-           file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+    
+    # Regression Save ParDepPlots to file----
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        save(ParDepPlots,
+             file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+      } else {
+        save(ParDepPlots,
+             file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+      }
     }
-  }
-  
-  # Regression Save ParDepBoxPlots to file----
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      save(ParDepBoxPlots,
-           file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
-    } else {
-      save(ParDepBoxPlots,
-           file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
-    }
+    
+    # Regression Save ParDepBoxPlots to file----
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        save(ParDepBoxPlots,
+             file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+      } else {
+        save(ParDepBoxPlots,
+             file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+      }
+    }  
   }
   
   # Subset Transformation Object----

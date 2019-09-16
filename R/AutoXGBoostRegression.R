@@ -1090,45 +1090,47 @@ AutoXGBoostRegression <- function(data,
     
     # Regression Partial Dependence----
     ParDepPlots <- list()
-    j <- 0
     ParDepBoxPlots <- list()
-    k <- 0
-    for (i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = eval(TargetColumnName),
-          IndepVar = VariableImportance[i, Feature],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = eval(TargetColumnName),
-          IndepVar = VariableImportance[i, Feature],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
+    if(NumOfParDepPlots == 0) {
+      j <- 0
+      k <- 0
+      for (i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
+        tryCatch({
+          Out <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = eval(TargetColumnName),
+            IndepVar = VariableImportance[i, Feature],
+            GraphType = "calibration",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          j <- j + 1
+          ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+        }, error = function(x)
+          "skip")
+        tryCatch({
+          Out1 <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = eval(TargetColumnName),
+            IndepVar = VariableImportance[i, Feature],
+            GraphType = "boxplot",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          k <- k + 1
+          ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <-
+            Out1
+        }, error = function(x)
+          "skip")
+      }
     }
   } else {
     ParDepPlots <- list()
