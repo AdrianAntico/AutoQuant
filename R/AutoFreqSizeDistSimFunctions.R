@@ -103,9 +103,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
   
   # Forecast----
   Counter = 0L
-  GroupVariable <- CountData[[eval(GroupVar)]]
-  CountDataNamesFinal <- CountDataNames[2:length(CountDataNames)]
-  SizeDataNamesFinal <- SizeDataNames[2:length(SizeDataNames)]
+  GroupVariable <- as.character(unique(CountData[[eval(GroupVar)]]))
+  CountDataNamesFinal <- CountDataNames[1:length(CountDataNames)]
+  SizeDataNamesFinal <- SizeDataNames[1:length(SizeDataNames)]
   for(Level in GroupVariable) {
     
     # Increment counter----
