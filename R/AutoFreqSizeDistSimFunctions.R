@@ -51,13 +51,12 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
   for(fc in seq_len(FC_Periods)) {
     CountScoreSingle <- as.numeric(CountDataLevel[FC_Window == fc])[2:length(CountDataLevel)]
     SizeScoreSingle <- as.numeric(SizeDataLevel[FC_Window == fc])[2:length(SizeDataLevel)]
-    SimResults[[fc]] <- tryCatch({QRGibbsSim(
+    SimResults[[fc]] <- QRGibbsSim(
       CountScore = CountScoreSingle,
       SizeScore = SizeScoreSingle,
       CountList = CountList,
       SizeList = SizeList,
-      nSims = nSims)},
-      error = function(x) rep(0, nSims))
+      nSims = nSims)
   }
   return(
     data.table::rbindlist(
@@ -110,7 +109,7 @@ ID_Forecast <- function(CountData = FinalData$CountData,
   
   # Forecast----
   Counter = 0L
-  GroupVariable <- as.character(unique(CountData[[eval(GroupVar)]]))
+  GroupVariable <- sort(as.character(unique(CountData[[eval(GroupVar)]])))
   CountDataNamesFinal <- CountDataNames[1:length(CountDataNames)]
   SizeDataNamesFinal <- SizeDataNames[1:length(SizeDataNames)]
   for(Level in GroupVariable) {
@@ -119,10 +118,28 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     Counter <- Counter + 1L
     print(Counter)
     
+    # Modify Count Data----
+    CountDataSim <- CountData[get(GroupVar) == eval(Level)][, ..CountDataNamesFinal]
+    for(col in as.integer(2:ncol(CountDataSim))) {
+      data.table::set(CountDataSim, 
+                      i = which(CountDataSim[[col]] < 0.50),
+                      j = col,
+                      value = 0)
+    }
+    
+    # Modify size data----
+    SizeDataSim <- SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal]
+    for(col in as.integer(2:ncol(SizeDataSim))) {
+      data.table::set(SizeDataSim, 
+                      i = which(SizeDataSim[[col]] < 0.50),
+                      j = col,
+                      value = 0)
+    }
+    
     # Run ID_SIngleLevelGibbsSampler()----
     SingleLevelData <- ID_SingleLevelGibbsSampler(
-      CountDataLevel = CountData[get(GroupVar) == eval(Level)][, ..CountDataNamesFinal],
-      SizeDataLevel = SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal],
+      CountDataLevel = CountDataSim,
+      SizeDataLevel = 
       FC_Periods = FC_Periods, 
       nSims = NumSims, 
       CountList = seq(0.1,0.9,0.1),
