@@ -131,9 +131,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     }
 
     # Create Final Data----
-    FinalData <- data.table::data.table(GroupVar = Level, Periods = 1:FC_Periods, Mean = 0)
+    ReturnData <- data.table::data.table(GroupVar = Level, Periods = 1:FC_Periods, Mean = 0)
     for(PI in PredictionIntervals) {
-      data.table::set(FinalData, j = paste0("PI_",PI*100), value = 0)
+      data.table::set(ReturnData, j = paste0("PI_",PI*100), value = 0)
     }
     
     # Fill out data----
@@ -141,25 +141,25 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       
       # Fill out mean value----
       data.table::set(
-        x = FinalData,
+        x = ReturnData,
         i = period,
         j = "Mean",
         value = mean(SingleLevelData[[paste0("V",period)]]))
       
       # Fill out percentiles----
       for(PI in PredictionIntervals) {
-        data.table::set(FinalData, i = period, j = paste0("PI_",PI*100), value = quantile(x = SingleLevelData[[paste0("V",period)]],probs = PI))
+        data.table::set(ReturnData, i = period, j = paste0("PI_",PI*100), value = quantile(x = SingleLevelData[[paste0("V",period)]],probs = PI))
       }      
     }
     
     # Combine data----
     if(Counter == 1L) {
-      FinalDataReturn <- FinalData
+      FinalDataReturn <- ReturnData
     } else {
       FinalDataReturn <- data.table::rbindlist(
         list(
           FinalDataReturn, 
-          FinalData))
+          ReturnData))
     }
   }
   
