@@ -16,7 +16,13 @@ QRGibbsSim <- function(CountScore,
                        CountList, 
                        SizeList, 
                        nSims) {
-    .Call('_RemixAutoML_QRGibbsSim', PACKAGE = 'RemixAutoML', CountScore, SizeScore, CountList, SizeList, nSims)
+    .Call('_RemixAutoML_QRGibbsSim', 
+          PACKAGE = 'RemixAutoML', 
+          CountScore, 
+          SizeScore, 
+          CountList, 
+          SizeList, 
+          nSims)
 }
 
 #' ID_SingleLevelGibbsSampler for collapsed gibbs sampler 
@@ -45,11 +51,13 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
   for(fc in seq_len(FC_Periods)) {
     CountScoreSingle <- as.numeric(CountDataLevel[FC_Window == fc])[2:length(CountDataLevel)]
     SizeScoreSingle <- as.numeric(SizeDataLevel[FC_Window == fc])[2:length(SizeDataLevel)]
-    SimResults[[fc]] <- QRGibbsSim(CountScore = CountScoreSingle,
-               SizeScore = SizeScoreSingle,
-               CountList = CountList,
-               SizeList = SizeList,
-               nSims = nSims)
+    SimResults[[fc]] <- tryCatch({QRGibbsSim(
+      CountScore = CountScoreSingle,
+      SizeScore = SizeScoreSingle,
+      CountList = CountList,
+      SizeList = SizeList,
+      nSims = nSims)},
+      error = function(x) rep(0, nSims))
   }
   return(
     data.table::rbindlist(
