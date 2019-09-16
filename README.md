@@ -409,8 +409,8 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoH2oGBMFreqSizeScoring()**
 <code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
-##### **ID_SingleLevelGibbsSampler()**
-<code>ID_SingleLevelGibbsSampler()</code> is for simulating via a collapsed gibbs sampler from the quantile regressions built with <code>Auto_SizeFreqDist()</code> functions.
+##### **ID_Forecast()**
+<code>ID_Forecast()</code> is for simulating via a collapsed gibbs sampler from the quantile regressions built with <code>Auto_SizeFreqDist()</code> functions.
 
 </p>
 </details>
