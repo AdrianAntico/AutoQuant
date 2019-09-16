@@ -24,11 +24,11 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
     } else if (rn1 >= count_max_val) {
       count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[CountLoops]));
     } else {
-      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow((CountScore[k+1]+1)/(CountScore[k]+1),(rn1 - CountList[k])/(CountList[k+1]-CountList[k]))));
+      count = floor(rand() / (RAND_MAX + 1.) + ceil(CountScore[k]*pow((CountScore[k+1])/(CountScore[k]),(rn1 - CountList[k])/(CountList[k+1]-CountList[k]))));
     }
     
     // Continue if count is positive
-    if (count > 0) {
+    if (count >= 1) {
       sumQ = 0;
       
       // Size Quantiles Loop
@@ -41,7 +41,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
         } else if (rn2 >= size_max_val) {
           sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[SizeLoops-1]));
         } else {
-          sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[l]*pow((SizeScore[l+1]+1)/(SizeScore[l]+1),(rn2 - SizeList[l])/(SizeList[l+1] - SizeList[l]))));
+          sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[l]*pow((SizeScore[l+1])/(SizeScore[l]),(rn2 - SizeList[l])/(SizeList[l+1] - SizeList[l]))));
         }
         if(sumq <= 1) {
           sumQ += 1;
