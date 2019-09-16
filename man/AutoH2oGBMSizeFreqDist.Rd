@@ -13,7 +13,7 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
   CountTargetColumnName = NULL, SizeTargetColumnName = NULL,
   CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
   ModelIDs = c("CountModel", "SizeModel"), MaxModelsGrid = 5,
-  ModelPath = NULL, MetaDataPath = NULL, NumOfParDepPlots = 1)
+  ModelPath = NULL, MetaDataPath = NULL, NumOfParDepPlots = 0)
 }
 \arguments{
 \item{CountData}{This is your CountData generated from the IntermittentDemandBootStrapper() function}
@@ -86,7 +86,7 @@ AutoH2oGBMSizeFreqDist(CountData = NULL,
                        MaxModelsGrid = 5,
                        ModelPath = NULL,
                        MetaDataPath = NULL,
-                       NumOfParDepPlots = 1)
+                       NumOfParDepPlots = 0)
 }
 }
 \seealso{

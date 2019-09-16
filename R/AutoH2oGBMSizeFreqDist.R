@@ -48,7 +48,7 @@
 #'                        MaxModelsGrid = 5,
 #'                        ModelPath = NULL,
 #'                        MetaDataPath = NULL,
-#'                        NumOfParDepPlots = 1)
+#'                        NumOfParDepPlots = 0)
 #' }
 #' @export
 AutoH2oGBMSizeFreqDist <- function(CountData = NULL, 
@@ -71,7 +71,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    MaxModelsGrid = 5,
                                    ModelPath = NULL,
                                    MetaDataPath = NULL,
-                                   NumOfParDepPlots = 1) {
+                                   NumOfParDepPlots = 0) {
   
   # Return immediately if no paths are given----
   if(is.null(ModelPath)) {

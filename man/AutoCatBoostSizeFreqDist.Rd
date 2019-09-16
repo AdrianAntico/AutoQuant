@@ -13,7 +13,7 @@ AutoCatBoostSizeFreqDist(CountData = NULL, SizeData = NULL,
   CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
   CountIDcols = NULL, SizeIDcols = NULL, ModelIDs = c("CountModel",
   "SizeModel"), MaxModelsGrid = 5, ModelPath = NULL,
-  MetaDataPath = NULL, NumOfParDepPlots = 1)
+  MetaDataPath = NULL, NumOfParDepPlots = 0)
 }
 \arguments{
 \item{CountData}{This is your CountData generated from the IntermittentDemandBootStrapper() function}
