@@ -43,7 +43,6 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
   # Loop through FC_Periods----
   SimResults <- list()
   for(fc in seq_len(FC_Periods)) {
-    print(fc)
     CountScoreSingle <- as.numeric(CountDataLevel[FC_Window == fc])[2:length(CountDataLevel)]
     SizeScoreSingle <- as.numeric(SizeDataLevel[FC_Window == fc])[2:length(SizeDataLevel)]
     SimResults[[fc]] <- QRGibbsSim(CountScore = CountScoreSingle,
