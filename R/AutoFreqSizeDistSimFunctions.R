@@ -139,7 +139,7 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     # Run ID_SIngleLevelGibbsSampler()----
     SingleLevelData <- ID_SingleLevelGibbsSampler(
       CountDataLevel = CountDataSim,
-      SizeDataLevel = 
+      SizeDataLevel = SizeDataSim,
       FC_Periods = FC_Periods, 
       nSims = NumSims, 
       CountList = seq(0.1,0.9,0.1),
