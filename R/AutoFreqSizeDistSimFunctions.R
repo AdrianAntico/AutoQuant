@@ -137,9 +137,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     SizeDataSim <- SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal]
     for(col in as.integer(2:ncol(SizeDataSim))) {
       data.table::set(SizeDataSim, 
-                      i = which(SizeDataSim[[col]] < 0.50),
+                      i = which(SizeDataSim[[col]] < 1),
                       j = col,
-                      value = 0)
+                      value = 1)
     }
     
     # Run ID_SIngleLevelGibbsSampler()----
