@@ -119,6 +119,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     print(Counter)
     
     # Modify Count Data----
+    
+    print("Modify Count Data")
+    
     CountDataSim <- CountData[get(GroupVar) == eval(Level)][, ..CountDataNamesFinal]
     for(col in as.integer(2:ncol(CountDataSim))) {
       data.table::set(CountDataSim, 
@@ -128,6 +131,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     }
     
     # Modify size data----
+    
+    print("Modify Size Data")
+    
     SizeDataSim <- SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal]
     for(col in as.integer(2:ncol(SizeDataSim))) {
       data.table::set(SizeDataSim, 
@@ -137,6 +143,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     }
     
     # Run ID_SIngleLevelGibbsSampler()----
+    
+    print("Run ID_SingleLevelGibbsSampler")
+    
     SingleLevelData <- ID_SingleLevelGibbsSampler(
       CountDataLevel = CountDataSim,
       SizeDataLevel = SizeDataSim,
@@ -146,6 +155,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       SizeList = seq(0.1,0.9,0.1))
     
     # Replace all NaN with 0----
+    
+    print("Replace all NaN with 0")
+    
     for(miss in seq_len(FC_Periods)) {
       data.table::set(
         SingleLevelData, 
@@ -155,12 +167,18 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     }
 
     # Create Final Data----
+    
+    print("Create Final Data")
+    
     ReturnData <- data.table::data.table(GroupVar = Level, Periods = 1:FC_Periods, Mean = 0)
     for(PI in PredictionIntervals) {
       data.table::set(ReturnData, j = paste0("PI_",PI*100), value = 0)
     }
     
     # Fill out data----
+    
+    print("Fill out data")
+    
     for(period in as.integer(seq_len(FC_Periods))) {
       
       # Fill out mean value----
