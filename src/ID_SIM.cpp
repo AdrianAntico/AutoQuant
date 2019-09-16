@@ -44,7 +44,7 @@ NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, Nume
           sumq = floor(rand() / (RAND_MAX + 1.) + ceil(SizeScore[l]*pow((SizeScore[l+1]+1)/(SizeScore[l]+1),(rn2 - SizeList[l])/(SizeList[l+1] - SizeList[l]))));
         }
         if(sumq <= 1) {
-          sumQ += 1
+          sumQ += 1;
         } else {
           sumQ += sumq;          
         }
