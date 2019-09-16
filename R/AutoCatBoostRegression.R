@@ -1037,8 +1037,8 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Partial Dependence----
   ParDepBoxPlots <- list()
+  ParDepPlots <- list()
   if(NumOfParDepPlots == 0) {
-    ParDepPlots <- list()
     j <- 0
     k <- 0
     for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
