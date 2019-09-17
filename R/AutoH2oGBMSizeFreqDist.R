@@ -136,7 +136,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
       H2OShutdown = TRUE,
-      Methods = "LogPlus1")
+      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
 
     # Pause Runs by 10 seconds
     Sys.sleep(10)
@@ -203,7 +203,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       SaveModelObjects = TRUE,
       IfSaveModel = "standard",
       H2OShutdown = TRUE,
-      Methods = "Log")
+      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
     
     # Pause Runs by 10 seconds
     Sys.sleep(10)
