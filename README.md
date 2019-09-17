@@ -15,7 +15,7 @@
 # How to Install the Package for R:
 
 ### 1. First, make sure you have all the dependencies installed:
-<details><summary>EXPAND</summary> 
+<details><summary>Expand to see code snippet</summary> 
 <p>
   
 ```
