@@ -15,6 +15,9 @@
 # How to Install the Package for R:
 
 ### 1. First, make sure you have all the dependencies installed:
+<details><summary>EXPAND</summary> 
+<p>
+  
 ```
 library(devtools)
 to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
@@ -39,6 +42,9 @@ for (i in to_install) {
   }
 }
 ```
+
+</p>
+</details>
 
 ### 2. Next, Install RemixAutoML package from GitHub
 ```
