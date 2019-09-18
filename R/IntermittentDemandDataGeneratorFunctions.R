@@ -19,7 +19,8 @@
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayGroups Input the holiday groups of your choice from the CreateHolidayVariable() function in this package
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
-#' @param SampleRate Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of SampleRate. 
+#' @param PowerRate 
+#' @param SampleRate Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate. 
 #' @param PrintSteps Set to TRUE to have operation steps printed to the console 
 #' @examples
 #' \donttest{
@@ -44,7 +45,8 @@
 #'                                                                   "month",
 #'                                                                   "quarter",
 #'                                                                   "year"),
-#'                                             HolidayGroups = "USPublicHolidays",                  
+#'                                             HolidayGroups = "USPublicHolidays",
+#'                                             PowerRate = 5,             
 #'                                             SampleRate = 0.50)
 #' CountModelData <- DataSets$CountModelData
 #' SizeModelData <- DataSets$SizeModelData
@@ -74,6 +76,7 @@ IntermittentDemandDataGenerator <- function(data,
                                                                   "quarter",
                                                                   "year"),
                                             HolidayGroups = "USPublicHolidays",
+                                            PowerRate = 5,
                                             SampleRate = 0.50,
                                             PrintSteps = TRUE) {
   
@@ -218,6 +221,7 @@ IntermittentDemandDataGenerator <- function(data,
     GroupingVariables = GroupingVariables,
     FC_Periods = FC_Periods,
     TimeUnit = TimeUnit,
+    PowerRate = PowerRate,
     SampleRate = SampleRate
   )
   
@@ -403,6 +407,7 @@ ID_TrainingDataGenerator <- function(data,
 #' @param GroupingVariables Your grouping variables
 #' @param FC_Periods The number of periods to forecast
 #' @param TimeUnit The time period unit, such as "day", "week", or "month"
+#' @param PowerRate The calculated for determining the total samples is number of records to the power of PowerRate. Then that values is multiplied by the SampleRate. This ensures that a more representative sample is generated across the data set. 
 #' @param SampleRate The value used to sample from each level of the grouping variables
 #' @noRd
 #' @return Returns the count modeling data and the size modeling data
@@ -413,7 +418,8 @@ ID_BuildTrainDataSets <- function(MetaData,
                                   GroupingVariables = NULL,
                                   FC_Periods,
                                   TimeUnit = "week",
-                                  SampleRate = 0.75) {
+                                  PowerRate = 0.5,
+                                  SampleRate = 5) {
   
   # Define DateUnit----
   if(TimeUnit == "week") {
@@ -440,7 +446,7 @@ ID_BuildTrainDataSets <- function(MetaData,
     
     # Set iterations----
     issuances  <- as.numeric(ceiling(MetaData[get(GroupingVariables) == eval(level), "Txns"][[1]]))
-    iterations <- ceiling(issuances*SampleRate)
+    iterations <- ceiling((issuances^PowerRate)*SampleRate)
     
     # Check to ensure issuances and iterations exist----
     if(length(issuances) == 0 | length(iterations) == 0) next

@@ -11,8 +11,8 @@ IntermittentDemandDataGenerator(data, FC_Periods = 52,
   MovingAverages = seq(7, 28, 7), TimeTrendVariable = TRUE,
   TimeUnit = "day", CalendarVariables = c("wday", "mday", "yday",
   "week", "isoweek", "month", "quarter", "year"),
-  HolidayGroups = "USPublicHolidays", SampleRate = 0.5,
-  PrintSteps = TRUE)
+  HolidayGroups = "USPublicHolidays", PowerRate = 5,
+  SampleRate = 0.5, PrintSteps = TRUE)
 }
 \arguments{
 \item{data}{This is your transactional level data}
@@ -45,7 +45,9 @@ IntermittentDemandDataGenerator(data, FC_Periods = 52,
 
 \item{HolidayGroups}{Input the holiday groups of your choice from the CreateHolidayVariable() function in this package}
 
-\item{SampleRate}{Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of SampleRate.}
+\item{PowerRate}{}
+
+\item{SampleRate}{Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate.}
 
 \item{PrintSteps}{Set to TRUE to have operation steps printed to the console}
 }
@@ -78,7 +80,8 @@ DataSets <- IntermittentDemandDataGenerator(data,
                                                                   "month",
                                                                   "quarter",
                                                                   "year"),
-                                            HolidayGroups = "USPublicHolidays",                  
+                                            HolidayGroups = "USPublicHolidays",
+                                            PowerRate = 5,             
                                             SampleRate = 0.50)
 CountModelData <- DataSets$CountModelData
 SizeModelData <- DataSets$SizeModelData
