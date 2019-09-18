@@ -3,7 +3,10 @@ utils::globalVariables(
     "Temporary",
     "runs",
     "ScoringData",
-    
+    "FinalData",
+    "..CountDataNamesFinal",
+    "FC_Window",
+    "..SizeDataNamesFinal",
     "Name",
     "Truth",
     "txn",

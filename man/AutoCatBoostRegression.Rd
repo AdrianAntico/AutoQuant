@@ -120,7 +120,13 @@ TestModel <- AutoCatBoostRegression(data,
                                     ReturnModelObjects = TRUE,
                                     SaveModelObjects = FALSE,
                                     PassInGrid = NULL,
-                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+                                    Methods = c("BoxCox", 
+                                                "Asinh", 
+                                                "Asin",
+                                                "Log",
+                                                "LogPlus1",
+                                                "Logit",
+                                                "YeoJohnson"))
 }
 }
 \seealso{

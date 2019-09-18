@@ -123,7 +123,13 @@ TestModel <- AutoH2oGBMRegression(data,
                                   SaveModelObjects = FALSE,
                                   IfSaveModel = "mojo",
                                   H2OShutdown = TRUE,
-                                  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+                                  Methods = c("BoxCox", 
+                                              "Asinh", 
+                                              "Asin",
+                                              "Log",
+                                              "LogPlus1", 
+                                              "Logit", 
+                                              "YeoJohnson"))
 }
 }
 \seealso{
