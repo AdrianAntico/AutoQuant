@@ -11,7 +11,7 @@ AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
   BackTransNumeric = FALSE, TargetColumnName = NULL,
   TransformationObject = NULL, TransID = NULL, TransPath = NULL,
   MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
-  MDP_MissFactor = "0", MDP_MissNum = -1)
+  MDP_MissFactor = "0", MDP_MissNum = -1, RemoveModel = FALSE)
 }
 \arguments{
 \item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
@@ -53,6 +53,8 @@ AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
 \item{MDP_MissFactor}{If you set MDP_Impute to TRUE, supply the character values to replace missing values with}
 
 \item{MDP_MissNum}{If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with}
+
+\item{RemoveModel}{Set to TRUE if you want the model removed immediately after scoring}
 }
 \value{
 A data.table of predicted values with the option to return model features as well.
@@ -81,7 +83,8 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
                              MDP_CharToFactor = TRUE,
                              MDP_RemoveDates = TRUE,
                              MDP_MissFactor = "0",
-                             MDP_MissNum = -1)
+                             MDP_MissNum = -1,
+                             RemoveModel = FALSE)
 }
 }
 \seealso{

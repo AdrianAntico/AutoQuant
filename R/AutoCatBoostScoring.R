@@ -24,6 +24,7 @@
 #' @param MDP_RemoveDates Set to TRUE if you have date of timestamp columns in your ScoringData
 #' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
+#' @param RemoveModel Set to TRUE if you want the model removed immediately after scoring
 #' @examples
 #' \donttest{
 #' Preds <- AutoCatBoostScoring(TargetType = "regression",
@@ -45,7 +46,8 @@
 #'                              MDP_CharToFactor = TRUE,
 #'                              MDP_RemoveDates = TRUE,
 #'                              MDP_MissFactor = "0",
-#'                              MDP_MissNum = -1)
+#'                              MDP_MissNum = -1,
+#'                              RemoveModel = FALSE)
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
@@ -68,7 +70,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 MDP_CharToFactor = TRUE,
                                 MDP_RemoveDates = TRUE,
                                 MDP_MissFactor = "0",
-                                MDP_MissNum = -1) {
+                                MDP_MissNum = -1,
+                                RemoveModel = FALSE) {
   # Load catboost----
   loadNamespace(package = "catboost")
   
@@ -241,6 +244,11 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         prediction_type = "Probability"
       )
     ))
+  }
+  
+  # Remove Model----
+  if(RemoveModel) {
+    rm(model)
   }
   
   # Change Output Predictions Column Name----
