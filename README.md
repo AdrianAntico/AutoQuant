@@ -12,9 +12,9 @@
 
 <img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="800" />
 
-# How to Install the Package for R:
+# Installing RemixAutoML:
 
-### 1. First, make sure you have all the dependencies installed:
+### Install pacakge dependecies and install RemixAutoML:
 <details><summary>Expand to see code snippet</summary> 
 <p>
   
@@ -41,18 +41,16 @@ for (i in to_install) {
     install.packages(i)
   }
 }
+
+# Install RemixAutoML:
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+
 ```
 
 </p>
 </details>
 
-### 2. Next, Install RemixAutoML package from GitHub
-```
-# Install via:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
-```
-
-### 3. If you're having trouble installing, see if this issue helps you out.
+### If you're having trouble installing, see if this issue helps you out.
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
