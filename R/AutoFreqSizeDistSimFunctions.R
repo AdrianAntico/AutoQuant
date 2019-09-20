@@ -81,8 +81,12 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
 #' @examples 
 #' \donttest{
 #' Results <- ID_Forecast(
-#'   CountData, 
-#'   SizeData, 
+#'   CountData = FinalData$CountData,
+#'   SizeData = FinalData$SizeData,
+#'   CountDataNames = FinalData$CountPredNames,
+#'   SizeDataNames = FinalData$SizePredNames,
+#'   CountQuantiles = seq(0.05,0.95,0.05),
+#'   SizeQuantiles = seq(0.05,0.95,0.05),
 #'   GroupVar = "sku", 
 #'   FC_Periods = 26, 
 #'   NumSims = 1000, 
@@ -94,6 +98,8 @@ ID_Forecast <- function(CountData = FinalData$CountData,
                         SizeData = FinalData$SizeData,
                         CountDataNames = FinalData$CountPredNames,
                         SizeDataNames = FinalData$SizePredNames,
+                        CountQuantiles = seq(0.05,0.95,0.05),
+                        SizeQuantiles = seq(0.05,0.95,0.05),
                         GroupVar = NULL, 
                         FC_Periods = 26, 
                         NumSims = 1000, 
@@ -142,8 +148,8 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       SizeDataLevel = SizeDataSim,
       FC_Periods = FC_Periods, 
       nSims = NumSims, 
-      CountList = seq(0.1,0.9,0.1),
-      SizeList = seq(0.1,0.9,0.1))
+      CountList = CountQuantiles,
+      SizeList = SizeQuantiles)
     
     # Replace all NaN with 0----
     for(miss in seq_len(FC_Periods)) {

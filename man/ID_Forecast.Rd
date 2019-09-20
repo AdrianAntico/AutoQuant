@@ -7,7 +7,8 @@
 ID_Forecast(CountData = FinalData$CountData,
   SizeData = FinalData$SizeData,
   CountDataNames = FinalData$CountPredNames,
-  SizeDataNames = FinalData$SizePredNames, GroupVar = NULL,
+  SizeDataNames = FinalData$SizePredNames, CountQuantiles = seq(0.05,
+  0.95, 0.05), SizeQuantiles = seq(0.05, 0.95, 0.05), GroupVar = NULL,
   FC_Periods = 26, NumSims = 1000, PredictionIntervals = c(0.05, 0.2,
   0.8, 0.95))
 }
@@ -37,8 +38,12 @@ ID_Forecast for forecasting intermittent demand data. It runs collapsed gibbs sa
 \examples{
 \donttest{
 Results <- ID_Forecast(
-  CountData, 
-  SizeData, 
+  CountData = FinalData$CountData,
+  SizeData = FinalData$SizeData,
+  CountDataNames = FinalData$CountPredNames,
+  SizeDataNames = FinalData$SizePredNames,
+  CountQuantiles = seq(0.05,0.95,0.05),
+  SizeQuantiles = seq(0.05,0.95,0.05),
   GroupVar = "sku", 
   FC_Periods = 26, 
   NumSims = 1000, 
