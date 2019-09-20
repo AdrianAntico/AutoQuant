@@ -15,14 +15,18 @@ QRGibbsSim <- function(CountScore,
                        SizeScore, 
                        CountList, 
                        SizeList, 
-                       nSims) {
+                       nSims,
+                       CountVectorSize,
+                       SizeVectorSize) {
     .Call('_RemixAutoML_QRGibbsSim', 
           PACKAGE = 'RemixAutoML', 
           CountScore, 
           SizeScore, 
           CountList, 
           SizeList, 
-          nSims)
+          nSims,
+          CountVectorSize,
+          SizeVectorSize)
 }
 
 #' ID_SingleLevelGibbsSampler for collapsed gibbs sampler 
