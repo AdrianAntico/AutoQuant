@@ -160,7 +160,9 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       FC_Periods = FC_Periods, 
       nSims = NumSims, 
       CountList = CountQuantiles,
-      SizeList = SizeQuantiles)
+      SizeList = SizeQuantiles, 
+      CountVectorSize = length(CountList), 
+      SizeVectorSize = length(SizeList))
     
     # Replace all NaN with 0----
     for(miss in seq_len(FC_Periods)) {
