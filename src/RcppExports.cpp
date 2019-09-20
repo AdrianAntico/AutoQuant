@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // QRGibbsSim
-NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, NumericVector CountList, NumericVector SizeList, int nSims);
-RcppExport SEXP _RemixAutoML_QRGibbsSim(SEXP CountScoreSEXP, SEXP SizeScoreSEXP, SEXP CountListSEXP, SEXP SizeListSEXP, SEXP nSimsSEXP) {
+NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, NumericVector CountList, NumericVector SizeList, int nSims, int CountVectorSize, int SizeVectorSize);
+RcppExport SEXP _RemixAutoML_QRGibbsSim(SEXP CountScoreSEXP, SEXP SizeScoreSEXP, SEXP CountListSEXP, SEXP SizeListSEXP, SEXP nSimsSEXP, SEXP CountVectorSizeSEXP, SEXP SizeVectorSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,13 +16,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type CountList(CountListSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type SizeList(SizeListSEXP);
     Rcpp::traits::input_parameter< int >::type nSims(nSimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(QRGibbsSim(CountScore, SizeScore, CountList, SizeList, nSims));
+    Rcpp::traits::input_parameter< int >::type CountVectorSize(CountVectorSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type SizeVectorSize(SizeVectorSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(QRGibbsSim(CountScore, SizeScore, CountList, SizeList, nSims, CountVectorSize, SizeVectorSize));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RemixAutoML_QRGibbsSim", (DL_FUNC) &_RemixAutoML_QRGibbsSim, 5},
+    {"_RemixAutoML_QRGibbsSim", (DL_FUNC) &_RemixAutoML_QRGibbsSim, 7},
     {NULL, NULL, 0}
 };
 

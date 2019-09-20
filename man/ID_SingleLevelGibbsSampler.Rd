@@ -6,7 +6,8 @@
 \usage{
 ID_SingleLevelGibbsSampler(CountDataLevel, SizeDataLevel,
   FC_Periods = NULL, nSims = 5000, CountList = NULL,
-  SizeList = NULL)
+  SizeList = NULL, CountVectorSize = length(CountList),
+  SizeVectorSize = length(SizeVectorList))
 }
 \arguments{
 \item{CountDataLevel}{Single record of predicted values from Count quantile regressions in a numeric vector form}
@@ -20,6 +21,10 @@ ID_SingleLevelGibbsSampler(CountDataLevel, SizeDataLevel,
 \item{CountList}{A numeric vector of the quantiles used for Count modeling}
 
 \item{SizeList}{A numeric vector of the quantiles used for Size modeling}
+
+\item{CountVectorSize}{length of CountList}
+
+\item{SizeVectorSize}{length of SizeList}
 }
 \value{
 The posterior predicted distribution of simulated values

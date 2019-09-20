@@ -2,13 +2,13 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, NumericVector CountList, NumericVector SizeList, int nSims) {
+NumericVector QRGibbsSim(NumericVector CountScore, NumericVector SizeScore, NumericVector CountList, NumericVector SizeList, int nSims, int CountVectorSize, int SizeVectorSize) {
   
   // Initial variables
-  int i,j,k,l,CountLoops,SizeLoops;
-  double rn1,rn2,count_min_val,count,count_max_val,sumQ,sumq,size_min_val,size_max_val;
-  CountLoops = CountList.size();
-  SizeLoops = SizeList.size();
+  int i,j,k,l,CountLoops,SizeLoops,size_min_val,size_max_val,sumQ,sumq,count,count_min_val,count_max_val;
+  double rn1,rn2;
+  CountLoops = CountVectorSize;
+  SizeLoops = SizeVectorSize;
   count_min_val = CountList[0];
   count_max_val = CountList[CountLoops-1];
   size_min_val = SizeList[0];

@@ -37,6 +37,8 @@ QRGibbsSim <- function(CountScore,
 #' @param nSims The number of simulations you want to have run for each period in 1 to FC_Periods
 #' @param CountList A numeric vector of the quantiles used for Count modeling
 #' @param SizeList A numeric vector of the quantiles used for Size modeling
+#' @param CountVectorSize length of CountList
+#' @param SizeVectorSize length of SizeList
 #' @return The posterior predicted distribution of simulated values
 #' @export
 ID_SingleLevelGibbsSampler <- function(CountDataLevel,
@@ -44,10 +46,13 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
                                        FC_Periods = NULL, 
                                        nSims = 5000,
                                        CountList = NULL,
-                                       SizeList = NULL) {
+                                       SizeList = NULL,
+                                       CountVectorSize = length(CountList),
+                                       SizeVectorSize = length(SizeVectorList)) {
   
   # Loop through FC_Periods----
   SimResults <- list()
+  
   for(fc in seq_len(FC_Periods)) {
     CountScoreSingle <- as.numeric(CountDataLevel[FC_Window == fc])[2:length(CountDataLevel)]
     SizeScoreSingle <- as.numeric(SizeDataLevel[FC_Window == fc])[2:length(SizeDataLevel)]
@@ -56,7 +61,9 @@ ID_SingleLevelGibbsSampler <- function(CountDataLevel,
       SizeScore = SizeScoreSingle,
       CountList = CountList,
       SizeList = SizeList,
-      nSims = nSims)
+      nSims = nSims,
+      CountVectorSize = CountVectorSize,
+      SizeVectorSize = SizeVectorSize)
   }
   return(
     data.table::rbindlist(
