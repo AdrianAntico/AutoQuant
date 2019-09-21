@@ -46,8 +46,10 @@
 #'                                                                   "quarter",
 #'                                                                   "year"),
 #'                                             HolidayGroups = "USPublicHolidays",
-#'                                             PowerRate = 5,             
-#'                                             SampleRate = 0.50)
+#'                                             PowerRate = 0.5,             
+#'                                             SampleRate = 5,
+#'                                             TargetWindowSamples = 5,
+#'                                             PrintSteps = TRUE)
 #' CountModelData <- DataSets$CountModelData
 #' SizeModelData <- DataSets$SizeModelData
 #' rm(DataSets)
@@ -76,8 +78,9 @@ IntermittentDemandDataGenerator <- function(data,
                                                                   "quarter",
                                                                   "year"),
                                             HolidayGroups = "USPublicHolidays",
-                                            PowerRate = 5,
-                                            SampleRate = 0.50,
+                                            PowerRate = 0.5,
+                                            SampleRate = 5,
+                                            TargetWindowSamples = 5,
                                             PrintSteps = TRUE) {
   
   # Print Steps----
@@ -222,7 +225,8 @@ IntermittentDemandDataGenerator <- function(data,
     FC_Periods = FC_Periods,
     TimeUnit = TimeUnit,
     PowerRate = PowerRate,
-    SampleRate = SampleRate
+    SampleRate = SampleRate,
+    TargetWindowSamples = TargetWindowSamples
   )
   
   # Store individual file outputs----
@@ -351,49 +355,62 @@ ID_TrainingDataGenerator <- function(data,
   histDemandRaw <- data[as.Date(date) < RandomStartDate]
   
   # Data within target window----
-  targetDemand  <- data[
-    get(DateVariableName) >= eval(RandomStartDate) &
-      get(DateVariableName) - eval(TargetWindow) <= eval(RandomStartDate)]
-  
-  # Add in the time since last demand instance from RandomStartDate----
-  histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-    , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
-  
-  # Remove meta data for feature creation set----
-  features <- histDemandRaw[order(-get(DateVariableName))][
-    , paste0(eval(DateVariableName)) := NULL][1,]
-  data.table::set(features, 
-                  j = "FC_Window", 
-                  value = TargetWindow)
-  
-  # Remove data and rename target variable----
-  keep <- eval(TargetVariableName)
-  targetDemand <- targetDemand[, ..keep]
-  data.table::setnames(targetDemand, 
-                       old = eval(TargetVariableName), 
-                       new = paste0("Target_", eval(TargetVariableName)))
-  
-  # Merge Features and Targets----
-  if(nrow(targetDemand) != 0) {
-    TargetCount <- cbind(targetDemand[, .(Counts = .N)],
-                         features)
-    TargetSize  <- cbind(targetDemand,
-                         features)
-  } else {
-    TargetCount <- cbind(data.table(Counts = 0),
-                         features)
-    TargetSize  <- cbind(data.table::data.table(Temp = 0),
-                         features)
-    data.table::setnames(TargetSize, 
-                         "Temp", 
-                         paste0("Target_",eval(TargetVariableName)))
+  counter <- 0L
+  for (tar in TargetWindow) {
+    targetDemand  <- data[
+      get(DateVariableName) >= eval(RandomStartDate) &
+        get(DateVariableName) - eval(tar) <= eval(RandomStartDate)]
+    
+    # Add in the time since last demand instance from RandomStartDate----
+    histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
+      , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
+    
+    # Remove meta data for feature creation set----
+    features <- histDemandRaw[order(-get(DateVariableName))][
+      , paste0(eval(DateVariableName)) := NULL][1,]
+    data.table::set(features, 
+                    j = "FC_Window", 
+                    value = tar)
+    
+    # Remove data and rename target variable----
+    keep <- eval(TargetVariableName)
+    targetDemand <- targetDemand[, ..keep]
+    data.table::setnames(targetDemand, 
+                         old = eval(TargetVariableName), 
+                         new = paste0("Target_", eval(TargetVariableName)))
+    
+    # Merge Features and Targets----
+    if(nrow(targetDemand) != 0) {
+      TargetCount <- cbind(targetDemand[, .(Counts = .N)],
+                           features)
+      TargetSize  <- cbind(targetDemand,
+                           features)
+    } else {
+      TargetCount <- cbind(data.table(Counts = 0),
+                           features)
+      TargetSize  <- cbind(data.table::data.table(Temp = 0),
+                           features)
+      data.table::setnames(TargetSize, 
+                           "Temp", 
+                           paste0("Target_",eval(TargetVariableName)))
+    }
+    
+    # Combine data sets----
+    counter <- counter + 1L
+    if(counter == 1L) {
+      CountFinal <- TargetCount
+      SizeFinal <- TargetSize
+    } else {
+      CountFinal <- data.table::rbindlist(list(CountFinal,TargetCount))
+      SizeFinal <- data.table::rbindlist(list(SizeFinal,TargetSize))
+    }
   }
-  
+
   # Output data file----
   return(
     list(
-      CountData = TargetCount, 
-      SizeData = TargetSize))
+      CountData = CountFinal, 
+      SizeData = SizeFinal))
 }
 
 #' ID_BuildTrainDataSets for assembling data
@@ -409,6 +426,7 @@ ID_TrainingDataGenerator <- function(data,
 #' @param TimeUnit The time period unit, such as "day", "week", or "month"
 #' @param PowerRate The calculated for determining the total samples is number of records to the power of PowerRate. Then that values is multiplied by the SampleRate. This ensures that a more representative sample is generated across the data set. 
 #' @param SampleRate The value used to sample from each level of the grouping variables
+#' @param TargetWindowSamples The number of different targets to utilize for a single random start date
 #' @noRd
 #' @return Returns the count modeling data and the size modeling data
 ID_BuildTrainDataSets <- function(MetaData,
@@ -419,7 +437,8 @@ ID_BuildTrainDataSets <- function(MetaData,
                                   FC_Periods,
                                   TimeUnit = "week",
                                   PowerRate = 0.5,
-                                  SampleRate = 5) {
+                                  SampleRate = 5,
+                                  TargetWindowSamples = 5) {
   
   # Define DateUnit----
   if(TimeUnit == "week") {
@@ -484,7 +503,8 @@ ID_BuildTrainDataSets <- function(MetaData,
           FC_Periods))
       
       # Set Target Window----
-      TargetWindow <- sample(1:TargetWindowMax,1)
+      TargetWindow <- sample(x = 1:TargetWindowMax, 
+                             size = TargetWindowSamples)
       
       # Create samples----
       SampleData <- ID_TrainingDataGenerator(
