@@ -165,13 +165,13 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       SizeVectorSize = length(SizeList))
     
     # Replace all NaN with 0----
-    # for(miss in seq_len(FC_Periods)) {
-    #   data.table::set(
-    #     SingleLevelData, 
-    #     i = which(is.na(SingleLevelData[[paste0("V",miss)]])), 
-    #     j = paste0("V",miss), 
-    #     value = 0)
-    # }
+    for(miss in seq_len(FC_Periods)) {
+      data.table::set(
+        SingleLevelData,
+        i = which(is.na(SingleLevelData[[paste0("V",miss)]])),
+        j = paste0("V",miss),
+        value = 0)
+    }
 
     # Create Final Data----
     ReturnData <- data.table::data.table(GroupVar = Level, Periods = 1:FC_Periods, Mean = 0)
