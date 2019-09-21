@@ -11,8 +11,8 @@ IntermittentDemandDataGenerator(data, FC_Periods = 52,
   MovingAverages = seq(7, 28, 7), TimeTrendVariable = TRUE,
   TimeUnit = "day", CalendarVariables = c("wday", "mday", "yday",
   "week", "isoweek", "month", "quarter", "year"),
-  HolidayGroups = "USPublicHolidays", PowerRate = 5,
-  SampleRate = 0.5, PrintSteps = TRUE)
+  HolidayGroups = "USPublicHolidays", PowerRate = 0.5,
+  SampleRate = 5, TargetWindowSamples = 5, PrintSteps = TRUE)
 }
 \arguments{
 \item{data}{This is your transactional level data}
@@ -81,8 +81,10 @@ DataSets <- IntermittentDemandDataGenerator(data,
                                                                   "quarter",
                                                                   "year"),
                                             HolidayGroups = "USPublicHolidays",
-                                            PowerRate = 5,             
-                                            SampleRate = 0.50)
+                                            PowerRate = 0.5,             
+                                            SampleRate = 5,
+                                            TargetWindowSamples = 5,
+                                            PrintSteps = TRUE)
 CountModelData <- DataSets$CountModelData
 SizeModelData <- DataSets$SizeModelData
 rm(DataSets)
