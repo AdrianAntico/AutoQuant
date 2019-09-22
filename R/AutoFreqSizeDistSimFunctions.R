@@ -147,10 +147,11 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     # Modify size data----
     SizeDataSim <- SizeData[get(GroupVar) == eval(Level)][, ..SizeDataNamesFinal]
     for(col in as.integer(2:ncol(SizeDataSim))) {
-      data.table::set(SizeDataSim, 
-                      i = which(SizeDataSim[[col]] < 1),
-                      j = col,
-                      value = 1)
+      data.table::set(
+        SizeDataSim, 
+        i = which(SizeDataSim[[col]] < 1),
+        j = col,
+        value = 1)
     }
     
     # Run ID_SIngleLevelGibbsSampler()----
@@ -174,9 +175,15 @@ ID_Forecast <- function(CountData = FinalData$CountData,
     }
 
     # Create Final Data----
-    ReturnData <- data.table::data.table(GroupVar = Level, Periods = 1:FC_Periods, Mean = 0)
+    ReturnData <- data.table::data.table(
+      GroupVar = Level, 
+      Forecast_Periods = 1:FC_Periods, 
+      Mean = 0)
     for(PI in PredictionIntervals) {
-      data.table::set(ReturnData, j = paste0("PI_",PI*100), value = 0)
+      data.table::set(
+        ReturnData, 
+        j = paste0("PI_",PI*100), 
+        value = 0)
     }
     
     # Fill out data----
@@ -191,7 +198,11 @@ ID_Forecast <- function(CountData = FinalData$CountData,
       
       # Fill out percentiles----
       for(PI in PredictionIntervals) {
-        data.table::set(ReturnData, i = period, j = paste0("PI_",PI*100), value = quantile(x = SingleLevelData[[paste0("V",period)]],probs = PI))
+        data.table::set(
+          ReturnData, 
+          i = period, 
+          j = paste0("PI_",PI*100), 
+          value = quantile(x = SingleLevelData[[paste0("V",period)]],probs = PI))
       }      
     }
     
@@ -204,6 +215,13 @@ ID_Forecast <- function(CountData = FinalData$CountData,
           FinalDataReturn, 
           ReturnData))
     }
+  }
+  
+  # Convert GroupVar back to Original Name----
+  if(length(GroupVar) > 1) {
+    FinalDataReturn[, eval(GroupVar) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]      
+  } else {
+    data.table::setnames(FinalDataReturn, old = "GroupVar", new = eval(GroupVar))
   }
   
   # Return results----
