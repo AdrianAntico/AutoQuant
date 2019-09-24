@@ -22,35 +22,35 @@
 #' @param PathFile Set to folder where you will keep the models
 #' @examples
 #' \donttest{
-#' data <- data.table::as.data.table(iris)
-#' data <- AutoKMeans(data,
-#'                    nthreads = 8,
-#'                    MaxMem = "28G",
-#'                    SaveModels = NULL,
-#'                    PathFile = NULL,
-#'                    GridTuneGLRM = TRUE,
-#'                    GridTuneKMeans = TRUE,
-#'                    glrmCols = 1:(ncol(data)-1),
-#'                    IgnoreConstCols = TRUE,
-#'                    glrmFactors = 2,
-#'                    Loss = "Absolute",
-#'                    glrmMaxIters = 1000,
-#'                    SVDMethod = "Randomized",
-#'                    MaxRunTimeSecs = 3600,
-#'                    KMeansK = 5,
-#'                    KMeansMetric = "totss")
-#' unique(data[["Species"]])
-#' unique(data[["ClusterID"]])
-#' temp <- data[, mean(ClusterID), by = "Species"]
-#' Setosa <- round(temp[Species == "setosa", V1][[1]],0)
-#' Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
-#' Virginica <- round(temp[Species == "virginica", V1][[1]],0)
-#' data[, Check := "a"]
-#' data[ClusterID == eval(Setosa), Check := "setosa"]
-#' data[ClusterID == eval(Virginica), Check := "virginica"]
-#' data[ClusterID == eval(Versicolor), Check := "versicolor"]
-#' data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
-#' data[, mean(Acc)][[1]]
+# data <- data.table::as.data.table(iris)
+# data <- AutoKMeans(data,
+#                    nthreads = 8,
+#                    MaxMem = "28G",
+#                    SaveModels = NULL,
+#                    PathFile = NULL,
+#                    GridTuneGLRM = TRUE,
+#                    GridTuneKMeans = TRUE,
+#                    glrmCols = 1:(ncol(data)-1),
+#                    IgnoreConstCols = TRUE,
+#                    glrmFactors = 2,
+#                    Loss = "Absolute",
+#                    glrmMaxIters = 1000,
+#                    SVDMethod = "Randomized",
+#                    MaxRunTimeSecs = 3600,
+#                    KMeansK = 5,
+#                    KMeansMetric = "totss")
+# unique(data[["Species"]])
+# unique(data[["ClusterID"]])
+# temp <- data[, mean(ClusterID), by = "Species"]
+# Setosa <- round(temp[Species == "setosa", V1][[1]],0)
+# Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
+# Virginica <- round(temp[Species == "virginica", V1][[1]],0)
+# data[, Check := "a"]
+# data[ClusterID == eval(Setosa), Check := "setosa"]
+# data[ClusterID == eval(Virginica), Check := "virginica"]
+# data[ClusterID == eval(Versicolor), Check := "versicolor"]
+# data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
+# data[, mean(Acc)][[1]]
 #' }
 #' @return Original data.table with added column with cluster number identifier
 #' @export
