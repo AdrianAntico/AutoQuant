@@ -82,9 +82,9 @@ AutoKMeans <- function(data,
       warning("SaveModels needs to be either NULL, 'mojo', or 'standard'")
     }
   }
-  if (!is.null(FilePath)) {
-    if (!is.character(FilePath)) {
-      warning("FilePath needs to resolve to a character value. E.g. getwd()")
+  if (!is.null(PathFile)) {
+    if (!is.character(PathFile)) {
+      warning("PathFile needs to resolve to a character value. E.g. getwd()")
     }
   }
   if (!is.logical(GridTuneGLRM)) {
