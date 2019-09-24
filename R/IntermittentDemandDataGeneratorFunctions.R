@@ -363,7 +363,7 @@ ID_TrainingDataGenerator <- function(data,
                                      TargetWindow) {
   
   # historical data <--> point in time <--> target window----
-  histDemandRaw <- data[as.Date(DateVariableName) < RandomStartDate]
+  histDemandRaw <- data[get(as.Date(DateVariableName)) < RandomStartDate]
   
   # Data within target window----
   counter <- 0L
