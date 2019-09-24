@@ -364,17 +364,9 @@ ID_TrainingDataGenerator <- function(data,
                                      RandomStartDate = NULL,
                                      TimeUnit = NULL,
                                      TargetWindow) {
-  
-  print("line ID_TrainingDataGenerator 365")
-  print(DateVariableName)
-  print(RandomStartDate)
-  print(head(data))
-  print(str(data))
-  
+
   # historical data <--> point in time <--> target window----
   histDemandRaw <- data[get(DateVariableName) < eval(RandomStartDate)]
-  
-  print("line ID_TrainingDataGenerator 370")
   
   # Data within target window----
   counter <- 0L
@@ -427,8 +419,6 @@ ID_TrainingDataGenerator <- function(data,
       SizeFinal <- data.table::rbindlist(list(SizeFinal,TargetSize))
     }
   }
-  
-  print("line ID_TrainingDataGenerator 424")
 
   # Output data file----
   return(
@@ -516,13 +506,6 @@ ID_BuildTrainDataSets <- function(MetaData,
         DateUnit * ceiling(sample(1:1*DateRange, 1))
       
       # Set Target Window Max Sample Window----
-      print("line 506")
-      print(GroupingVariables)
-      print(level)
-      print(TimeUnit)
-      print(RandomStartDate)
-      print(FC_Periods)
-      
       TargetWindowMax <- ceiling(
         min(
           as.numeric(
@@ -533,14 +516,10 @@ ID_BuildTrainDataSets <- function(MetaData,
               units = TimeUnit)),
           FC_Periods))
       
-      print("line 518")
-      
       # Set Target Window----
       TargetWindow <- sample(x = 1:TargetWindowMax, 
                              size = TargetWindowSamples, 
                              replace = TRUE)
-      
-      print("line 525")
       
       # Create samples----
       SampleData <- ID_TrainingDataGenerator(
