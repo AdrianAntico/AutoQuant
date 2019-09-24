@@ -87,24 +87,32 @@ IntermittentDemandDataGenerator <- function(data,
   if(PrintSteps) {
     print("Running initial data prep") 
   }
-  
+
   # Ensure is data.table----
   if(!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
-  
+
   # Ensure Date Column is a Date----
   if(is.character(data[[eval(DateVariableName)]])) {
-    data[, eval(DateVariableName) := as.Date(get(DateVariableName))]
+    data.table::set(
+      data, 
+      j = eval(DateVariableName), 
+      value = as.Date(data[[eval(DateVariableName)]]))
   }
-  
+
   # Round up dates----
-  data[, paste0(eval(DateVariableName)) := lubridate::floor_date(
-    get(DateVariableName),
-    unit = TimeUnit)]
-  
+  data.table::set(
+    data, 
+    j = eval(DateVariableName), 
+    value = lubridate::floor_date(
+      data[[eval(DateVariableName)]], 
+      unit = TimeUnit))
+
   # Copy data----
   datax <- data.table::copy(data)
+  
+  print("here4")
   
   # Group Concatenation----
   if (!is.null(GroupingVariables)) {
@@ -119,12 +127,12 @@ IntermittentDemandDataGenerator <- function(data,
     ReverseGroupingVariables <- GroupingVariables
     GroupingVariables <- "GroupVar"
   }
-  
+
   # Ensure datax is aggregated to proper time unit----
   datax <- datax[, sum(get(TargetVariableName)), 
                by = c(eval(GroupingVariables), eval(DateVariableName))]
   data.table::setnames(datax, "V1", eval(TargetVariableName))
-  
+
   # Print Steps----
   if(PrintSteps) {
     print("Running ID_MetadataGenerator()") 
