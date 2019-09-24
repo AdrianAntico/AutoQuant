@@ -515,7 +515,8 @@ ID_BuildTrainDataSets <- function(MetaData,
       
       # Set Target Window----
       TargetWindow <- sample(x = 1:TargetWindowMax, 
-                             size = TargetWindowSamples)
+                             size = TargetWindowSamples, 
+                             replace = TRUE)
       
       # Create samples----
       SampleData <- ID_TrainingDataGenerator(
