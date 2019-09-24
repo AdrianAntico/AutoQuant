@@ -262,9 +262,9 @@ IntermittentDemandDataGenerator <- function(data,
   # Save Data----
   if(SaveData) {
     data.table::fwrite(
-      CountModelData, file = file.path(FilePath, "CountModelData.csv"))
+      CountModelData, file = paste0(FilePath, "CountModelData.csv"))
     data.table::fwrite(
-      SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
+      SizeModelData, file = paste0(FilePath, "SizeModelData.csv"))
   }
   
   # Return CountModelData and SizeModelData----
