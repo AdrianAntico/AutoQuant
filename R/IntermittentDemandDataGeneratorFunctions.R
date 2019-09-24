@@ -112,8 +112,6 @@ IntermittentDemandDataGenerator <- function(data,
   # Copy data----
   datax <- data.table::copy(data)
   
-  print("here4")
-  
   # Group Concatenation----
   if (!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
