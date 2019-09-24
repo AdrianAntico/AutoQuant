@@ -93,6 +93,11 @@ IntermittentDemandDataGenerator <- function(data,
     data <- data.table::as.data.table(data)
   }
   
+  # Ensure Date Column is a Date----
+  if(is.character(data[[eval(DateVariableName)]])) {
+    data[, eval(DateVariableName) := as.Date(get(DateVariableName))]
+  }
+  
   # Round up dates----
   data[, paste0(eval(DateVariableName)) := lubridate::floor_date(
     get(DateVariableName),
