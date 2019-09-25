@@ -256,13 +256,13 @@ IntermittentDemandDataGenerator <- function(data,
     data.table::setnames(CountModelData, eval(GroupingVariables), eval(ReverseGroupingVariables))
     data.table::setnames(SizeModelData, eval(GroupingVariables), eval(ReverseGroupingVariables))
   }
-  
+
   # Save Data----
   if(SaveData) {
     data.table::fwrite(
-      CountModelData, file = paste0(FilePath, "CountModelData.csv"))
+      CountModelData, file = file.path(FilePath, "CountModelData.csv"))
     data.table::fwrite(
-      SizeModelData, file = paste0(FilePath, "SizeModelData.csv"))
+      SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
   }
   
   # Return CountModelData and SizeModelData----
