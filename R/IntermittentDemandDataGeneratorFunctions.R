@@ -391,7 +391,7 @@ ID_TrainingDataGenerator <- function(data,
     targetDemand <- targetDemand[, ..keep]
     data.table::setnames(targetDemand, 
                          old = eval(TargetVariableName), 
-                         new = paste0("Target_", eval(TargetVariableName)))
+                         new = "Size")
     
     # Merge Features and Targets----
     if(nrow(targetDemand) != 0) {
@@ -406,7 +406,7 @@ ID_TrainingDataGenerator <- function(data,
                            features)
       data.table::setnames(TargetSize, 
                            "Temp", 
-                           paste0("Target_",eval(TargetVariableName)))
+                           "Size")
     }
     
     # Combine data sets----
