@@ -193,6 +193,8 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     SizeDataValidateCopy <- data.table::copy(SizeDataValidate)
     SizeDataTestCopy <- data.table::copy(SizeDataTest)
     
+    print("Moving on to Size Models 8")
+    
     # Build Models----
     TestModel <- AutoH2oGBMRegression(
       data = SizeDataTrainCopy,
