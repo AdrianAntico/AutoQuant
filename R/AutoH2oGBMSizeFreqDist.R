@@ -142,8 +142,12 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     Sys.sleep(10)
   }
   
+  print("Moving on to Size Models 1")
+  
   # Clear Count Model Data----
   rm(CountDataSets,CountData,CountDataTrain,CountDataValidate,CountDataTest)
+  
+  print("Moving on to Size Models 2")
   
   # Size Model AutoTransform----
   if(AutoTransform) {
@@ -151,6 +155,8 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   } else {
     TransFormCols <- NULL
   }
+  
+  print("Moving on to Size Models 3")
   
   # Size Model AutoDataPartition----
   SizeDataSets <- AutoDataPartition(
@@ -163,16 +169,24 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     StratTargetPrecision = NULL,
     TimeColumnName = NULL)
   
+  print("Moving on to Size Models 4")
+  
   # Store data sets----
   SizeDataTrain <- SizeDataSets$TrainData
   SizeDataValidate <- SizeDataSets$ValidationData
   SizeDataTest <- SizeDataSets$TestData
   
+  print("Moving on to Size Models 5")
+  
   # Clear GPU garbage----
   gc()
   
+  print("Moving on to Size Models 6")
+  
   # Build Size Models----
   for(quan in SizeQuantiles) {
+    
+    print("Moving on to Size Models 7")
     
     # Copy data----
     SizeDataTrainCopy <- data.table::copy(SizeDataTrain)
@@ -207,5 +221,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     
     # Pause Runs by 10 seconds
     Sys.sleep(10)
+    
+    print("Moving on to Size Models 8")
   }
 }
