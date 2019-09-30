@@ -11,6 +11,7 @@
 #' @param AutoTransform Set to FALSE not to have the your target variables automatically transformed for the best normalization.
 #' @param DataPartitionRatios The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.
 #' @param StratifyColumnName You can specify grouping columns to stratify by
+#' @param StratifyTargets Set to TRUE to stratify by the target variables to ensure the a more even allocation for potentially highly skewed data
 #' @param NTrees Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.
 #' @param MaxMem The max memory allocation. E.g. "28G"
 #' @param NThreads The max threads to use. E.g. 4
@@ -35,6 +36,7 @@
 #'                        AutoTransform = TRUE, 
 #'                        DataPartitionRatios = c(0.75,0.20,0.05),
 #'                        StratifyColumnName = NULL,
+#'                        StratifyTargets = FALSE,
 #'                        NTrees = 1500,
 #'                        MaxMem = "28G",
 #'                        NThreads = max(1, parallel::detectCores()-2),
@@ -58,6 +60,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    AutoTransform = TRUE, 
                                    DataPartitionRatios = c(0.75,0.20,0.05),
                                    StratifyColumnName = NULL,
+                                   StratifyTargets = FALSE,
                                    NTrees = 1500,
                                    MaxMem = "28G",
                                    NThreads = max(1, parallel::detectCores()-2),
@@ -88,6 +91,15 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   # Clear GPU garbage----
   gc()
   
+  # Target stratification----
+  if(StratifyTargets) {
+    StratTargetColumns <- "Counts"
+    StratTargetPrecision <- 0.001
+  } else {
+    StratTargetColumns <- NULL
+    StratTargetPrecision <- NULL
+  }
+  
   # Count Model AutoDataPartition----
   CountDataSets <- AutoDataPartition(
     data = CountData,
@@ -95,8 +107,8 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = StratifyColumnName,
-    StratifyNumericTarget = NULL,
-    StratTargetPrecision = NULL,
+    StratifyNumericTarget = StratTargetColumns,
+    StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
   
   # Store data sets----
@@ -152,6 +164,15 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     TransFormCols <- NULL
   }
   
+  # Target stratification----
+  if(StratifyTargets) {
+    StratTargetColumns <- "Size"
+    StratTargetPrecision <- 0.001
+  } else {
+    StratTargetColumns <- NULL
+    StratTargetPrecision <- NULL
+  }
+  
   # Size Model AutoDataPartition----
   SizeDataSets <- AutoDataPartition(
     data = SizeData,
@@ -159,8 +180,8 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = NULL,
-    StratifyNumericTarget = NULL,
-    StratTargetPrecision = NULL,
+    StratifyNumericTarget = StratTargetColumns,
+    StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
   
   # Store data sets----

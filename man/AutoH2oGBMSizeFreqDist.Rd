@@ -7,8 +7,8 @@
 AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
   CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
   0.1), AutoTransform = TRUE, DataPartitionRatios = c(0.75, 0.2, 0.05),
-  StratifyColumnName = NULL, NTrees = 1500, MaxMem = "28G",
-  NThreads = max(1, parallel::detectCores() - 2),
+  StratifyColumnName = NULL, StratifyTargets = FALSE, NTrees = 1500,
+  MaxMem = "28G", NThreads = max(1, parallel::detectCores() - 2),
   EvalMetric = "Quantile", GridTune = FALSE,
   CountTargetColumnName = NULL, SizeTargetColumnName = NULL,
   CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
@@ -29,6 +29,8 @@ AutoH2oGBMSizeFreqDist(CountData = NULL, SizeData = NULL,
 \item{DataPartitionRatios}{The default is c(0.75,0.20,0.05). With CatBoost, you should allocate a decent amount to the validation data (second input). Three inputs are required.}
 
 \item{StratifyColumnName}{You can specify grouping columns to stratify by}
+
+\item{StratifyTargets}{Set to TRUE to stratify by the target variables to ensure the a more even allocation for potentially highly skewed data}
 
 \item{NTrees}{Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.}
 
@@ -73,6 +75,7 @@ AutoH2oGBMSizeFreqDist(CountData = NULL,
                        AutoTransform = TRUE, 
                        DataPartitionRatios = c(0.75,0.20,0.05),
                        StratifyColumnName = NULL,
+                       StratifyTargets = FALSE,
                        NTrees = 1500,
                        MaxMem = "28G",
                        NThreads = max(1, parallel::detectCores()-2),
