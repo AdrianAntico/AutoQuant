@@ -69,6 +69,11 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   # Copy data----
   datax <- data.table::copy(data)
   
+  # Convert DateVariableName to Date Type----
+  if(is.character(datax[[eval(DateVariableName)]])) {
+    data.table::set(datax, j = eval(DateVariableName), value = as.Date(datax[[eval(DateVariableName)]]))
+  }
+  
   # Current date calculated like data gen process----
   if(is.null(CurrentDate)) {
     if(tolower(TimeUnit) == "day") {
@@ -78,6 +83,8 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     } else if(tolower(TimeUnit) == "month") {
       CurrentDate <- lubridate::floor_date(x = Sys.Date(), unit = "month")
     }
+  } else {
+    CurrentDate <- as.Date(CurrentDate)
   }
   
   # Ensure is data.table----
@@ -85,11 +92,14 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     datax <- data.table::as.data.table(datax)
   }
   
-  # Round up dates----
-  datax[, paste0(eval(DateVariableName)) := lubridate::floor_date(
-    get(DateVariableName),
-    unit = TimeUnit)]
-  
+  # Round down dates----
+  data.table::set(
+    datax, 
+    j = eval(DateVariableName), 
+    value = lubridate::floor_date(
+      datax[[eval(DateVariableName)]], 
+      unit = eval(TimeUnit)))
+
   # Group Concatenation----
   if (!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
@@ -161,7 +171,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   # Add FC_Window----
   temp <- data.table::CJ(GroupVar = as.character(datax[["GroupVar"]]), FC_Window = seq_len(FC_Periods))
   datax <- merge(datax, temp, by = "GroupVar", all = FALSE)
-  
+
   # Save data----
   if(SaveData) {
     data.table::fwrite(datax, file = file.path(FilePath,"ScoringData.csv"))

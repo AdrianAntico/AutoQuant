@@ -97,9 +97,10 @@ DT_GDL_Feature_Engineering <- function(data,
   }
   
   # Convert to data.table if not already----
-  if (!data.table::is.data.table(data))
-    data <- data.table::as.data.table(data)
-  
+  if (!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)    
+  }
+
   # Ensure target is numeric----
   for(t in targets) {
     data[, eval(t) := as.numeric(get(t))]    

@@ -150,7 +150,7 @@ IntermittentDemandDataGenerator <- function(data,
   # Save Data----
   if(SaveData) {
     data.table::fwrite(
-      MetaData, file = paste0(FilePath, "/MetaData.csv"))
+      MetaData, file = file.path(FilePath, "MetaData.csv"))
   }
   
   # Add Calendar Variables----
