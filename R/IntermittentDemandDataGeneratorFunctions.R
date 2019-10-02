@@ -517,8 +517,8 @@ ID_BuildTrainDataSets <- function(MetaData,
           FC_Periods))
       
       # Set Target Window----
-      TargetWindow <- sample(x = 1:TargetWindowMax, 
-                             size = TargetWindowSamples, 
+      TargetWindow <- sample(x = seq_len(TargetWindowMax),
+                             size = TargetWindowSamples,
                              replace = TRUE)
       
       # Create samples----
