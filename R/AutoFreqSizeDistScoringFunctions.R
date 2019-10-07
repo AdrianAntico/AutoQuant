@@ -445,7 +445,7 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
     }
     
     # Update timer----
-    print(paste0("Size model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
+    print(paste0("Size model scoring is ",100*round(Counter/length(SizeQuantiles),2),"% complete"))
     Counter <- Counter + 1
   }
   

@@ -227,6 +227,20 @@ IntermittentDemandDataGenerator <- function(data,
   }
   
   # Run Final Build----
+  
+  print("here 00")
+  
+  print(head(MetaData))
+  print(head(datax))
+  print(TargetVariableName)
+  print(DateVariableName)
+  print(GroupingVariables)
+  print(FC_Periods)
+  print(TimeUnit)
+  print(PowerRate)
+  print(SampleRate)
+  print(TargetWindowSamples)
+  
   ModelDataSets <- ID_BuildTrainDataSets(
     MetaData = MetaData, 
     data = datax, 
@@ -243,7 +257,13 @@ IntermittentDemandDataGenerator <- function(data,
   # Store individual file outputs----
   CountModelData <- ModelDataSets$CountModelData
   SizeModelData <- ModelDataSets$SizeModelData
+  
+  print("here 1")
+  print(head(SizeModelData))
+  
   SizeModelData <- SizeModelData[Size != 0]
+  print("here 2")
+  
   rm(ModelDataSets)
   
   # Back-transform GroupingVariables----
@@ -515,6 +535,8 @@ ID_BuildTrainDataSets <- function(MetaData,
               RandomStartDate, 
               units = TimeUnit)),
           FC_Periods))
+      
+      print("here 2")
       
       # Set Target Window----
       TargetWindow <- sample(x = seq_len(TargetWindowMax),

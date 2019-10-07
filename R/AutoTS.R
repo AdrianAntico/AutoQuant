@@ -593,7 +593,7 @@ AutoTS <- function(data,
     }
   }
   
-  # ARFIMA Modeling----
+  # ARFIMA----
   if (!("ARFIMA" %in% toupper(SkipModels))) {
     # ARFIMA-------------
     # 1)
@@ -1087,7 +1087,7 @@ AutoTS <- function(data,
     }
   }
   
-  # Arima----
+  # ARIMA----
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
