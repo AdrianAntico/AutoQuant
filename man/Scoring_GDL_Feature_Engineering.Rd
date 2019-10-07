@@ -84,7 +84,6 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
   \code{\link{GDL_Feature_Engineering}},
-  \code{\link{IntermittentDemandDataGenerator}},
   \code{\link{ModelDataPrep}},
   \code{\link{Partial_DT_GDL_Feature_Engineering}},
   \code{\link{TimeSeriesFill}}
