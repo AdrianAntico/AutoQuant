@@ -581,7 +581,7 @@ AutoH2oGBMCARMA <- function(data,
         TransPath = NULL,
         MDP_Impute = TRUE,
         MDP_CharToFactor = TRUE,
-        MDP_RemoveDates = TRUE,
+        MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
       
@@ -648,7 +648,7 @@ AutoH2oGBMCARMA <- function(data,
           TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = TRUE,
+          MDP_RemoveDates = FALSE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
         
@@ -825,7 +825,7 @@ AutoH2oGBMCARMA <- function(data,
           AscRowRemove   = FALSE
         )
         if(i == 1) {
-          data.table::set(UpdateData, j = 1L, value = NULL)          
+          data.table::set(UpdateData, j = 1L, value = NULL)
         }
         UpdateData <-
           data.table::rbindlist(
