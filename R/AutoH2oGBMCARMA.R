@@ -387,7 +387,6 @@ AutoH2oGBMCARMA <- function(data,
   
   # Update ValidationData and Create Metrics Data----
   TestDataEval <- TestModel$ValidationData
-  TestDataEval[, Target := NULL]
   TestDataEval[, eval(DateColumnName) := NULL]
   if(TargetTransformation) {
     TransformObject <- data.table::rbindlist(list(
@@ -629,6 +628,8 @@ AutoH2oGBMCARMA <- function(data,
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         UpdateData[, ID := NULL]
       } else {
+        temp <- data.table::copy(UpdateData[, ID := 1:.N])
+        temp <- temp[ID == N][, ID := NULL]
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
           ModelObject = Model,
@@ -654,7 +655,7 @@ AutoH2oGBMCARMA <- function(data,
         # Update data non-group case----
         data.table::set(UpdateData,
                         i = N,
-                        j = 2:3,
+                        j = 1:2,
                         value = Preds[[1]])
       }
     }
@@ -823,6 +824,9 @@ AutoH2oGBMCARMA <- function(data,
           RecordsKeep    = 1,
           AscRowRemove   = FALSE
         )
+        if(i == 1) {
+          data.table::set(UpdateData, j = 1L, value = NULL)          
+        }
         UpdateData <-
           data.table::rbindlist(
             list(
@@ -905,12 +909,12 @@ AutoH2oGBMCARMA <- function(data,
     data.table::set(
       PlotData,
       i = (data[, .N] + 1):PlotData[, .N],
-      j = 2,
+      j = 1L,
       value = NA
     )
     data.table::set(PlotData,
                     i = 1:data[, .N],
-                    j = 3,
+                    j = 2L,
                     value = NA)
   }
   
