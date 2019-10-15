@@ -45,7 +45,7 @@ AutoH2oDRFCARMA(data, TargetColumnName = "Target",
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
-\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
+\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
