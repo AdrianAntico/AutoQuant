@@ -1,4 +1,4 @@
-#' AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting
+#' AutoH2oGBMCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting
 #'
 #' AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 #'
@@ -19,7 +19,7 @@
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
-#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
@@ -29,7 +29,7 @@
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @examples
 #' \donttest{
-#' Results <- AutoH2oDRFCARMA(data,
+#' Results <- AutoH2oGBMCARMA(data,
 #'                            TargetColumnName = "Target",
 #'                            DateColumnName = "Date",
 #'                            GroupVariables = c("Store","Dept"),
@@ -58,7 +58,7 @@
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoH2oDRFCARMA <- function(data,
+AutoH2oGBMCARMA <- function(data,
                             TargetColumnName = "Target",
                             DateColumnName = "DateTime",
                             GroupVariables = NULL,
@@ -358,7 +358,7 @@ AutoH2oDRFCARMA <- function(data,
                 enable_assertions = FALSE)
   
   # Build Model----
-  TestModel <- AutoH2oDRFRegression(
+  TestModel <- AutoH2oGBMRegression(
     data = train,
     ValidationData = valid,
     TestData = test,
@@ -367,6 +367,7 @@ AutoH2oDRFCARMA <- function(data,
                               eval(TargetColumnName)),
     TransformNumericColumns = NULL,
     eval_metric = EvalMetric,
+    Distribution = "gaussian",
     Trees = NTrees,
     GridTune = GridTune,
     MaxMem = MaxMem,
@@ -548,16 +549,16 @@ AutoH2oDRFCARMA <- function(data,
   
   # Row Count----
   if (!is.null(GroupVariables)) {
-    N <- data[, .N, by = "GroupVar"][, max(N)]
+    N <- as.integer(data[, .N, by = "GroupVar"][, max(N)])
   } else {
-    N <- data[, .N]
+    N <- as.integer(data[, .N])
   }
   
   # Begin loop for generating forecasts----
   for (i in seq_len(FC_Periods)) {
     # Row counts----
     if (i != 1) {
-      N <- N + 1
+      N <- as.integer(N + 1)
     }
     
     # Generate predictions----
@@ -586,7 +587,8 @@ AutoH2oDRFCARMA <- function(data,
       
       # Update data----
       UpdateData <- cbind(FutureDateData[1:N],
-                          data[, get(TargetColumnName)], Preds[, eval(TargetColumnName) := NULL])
+                          data[, get(TargetColumnName)], 
+                          Preds[, eval(TargetColumnName) := NULL])
       data.table::setnames(UpdateData,
                            c("V1", "V2"),
                            c(eval(DateColumnName),
@@ -613,7 +615,7 @@ AutoH2oDRFCARMA <- function(data,
           TransPath = NULL,
           MDP_Impute = TRUE,
           MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = FALSE,
+          MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
         
@@ -652,7 +654,7 @@ AutoH2oDRFCARMA <- function(data,
         
         # Update data non-group case----
         data.table::set(UpdateData,
-                        i = as.integer(N),
+                        i = N,
                         j = 1:2,
                         value = Preds[[1]])
       }
@@ -823,7 +825,7 @@ AutoH2oDRFCARMA <- function(data,
           AscRowRemove   = FALSE
         )
         if(i == 1) {
-          data.table::set(UpdateData, j = 1L, value = NULL)          
+          data.table::set(UpdateData, j = 1L, value = NULL)
         }
         UpdateData <-
           data.table::rbindlist(
@@ -944,7 +946,7 @@ AutoH2oDRFCARMA <- function(data,
           eval(TargetColumnName)
         ),
         subtitle = paste0(
-          "H2O DRF Model: Mean Absolute Percentage Error = ",
+          "H2O GBM Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
         ),
         caption = "Forecast generated by Remix Institute's RemixAutoML R package"
@@ -969,7 +971,7 @@ AutoH2oDRFCARMA <- function(data,
       ggplot2::labs(
         title = paste0(FC_Periods-1, " - Period Forecast for ", eval(TargetColumnName)),
         subtitle = paste0(
-          "H2O DRF Model: Mean Absolute Percentage Error = ",
+          "H2O GBM Model: Mean Absolute Percentage Error = ",
           paste0(round(EvalMetric, 3) * 100, "%")
         ),
         caption = "Forecast generated by Remix Institute's RemixAutoML R package"
@@ -993,7 +995,7 @@ AutoH2oDRFCARMA <- function(data,
         "Predictions")
     UpdateData <- UpdateData[, ..keep]
     if(length(GroupVariables) > 1) {
-      UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]  
+      UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]      
     }
     if(TargetTransformation) {
       return(
