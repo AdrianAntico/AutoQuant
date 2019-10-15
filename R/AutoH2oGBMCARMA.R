@@ -19,7 +19,7 @@
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
-#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
@@ -549,16 +549,16 @@ AutoH2oGBMCARMA <- function(data,
   
   # Row Count----
   if (!is.null(GroupVariables)) {
-    N <- data[, .N, by = "GroupVar"][, max(N)]
+    N <- as.integer(data[, .N, by = "GroupVar"][, max(N)])
   } else {
-    N <- data[, .N]
+    N <- as.integer(data[, .N])
   }
   
   # Begin loop for generating forecasts----
   for (i in seq_len(FC_Periods)) {
     # Row counts----
     if (i != 1) {
-      N <- N + 1
+      N <- as.integer(N + 1)
     }
     
     # Generate predictions----
