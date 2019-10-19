@@ -180,13 +180,13 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Binary Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(
-    sapply(data, is.factor)
-  )),
-  as.numeric(which(
-    sapply(data, is.character)
-  ))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                        as.numeric(which(sapply(data, is.character)))))
   CatFeatures <- names(data)[CatFeatures]
+  CatFeatures <- CatFeatures[CatFeatures != IDcols]
+  if(length(CatFeatures)==0) {
+    CatFeatures <- NULL
+  }
   
   # Binary Data Partition----
   if (is.null(ValidationData) & is.null(TestData)) {
