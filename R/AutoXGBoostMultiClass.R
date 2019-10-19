@@ -167,13 +167,13 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(
-    sapply(data, is.factor)
-  )),
-  as.numeric(which(
-    sapply(data, is.character)
-  ))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
+                        as.numeric(which(sapply(data, is.character)))))
   CatFeatures <- names(data)[CatFeatures]
+  CatFeatures <- CatFeatures[CatFeatures != IDcols]
+  if(length(CatFeatures)==0) {
+    CatFeatures <- NULL
+  }
   CatFeatures <- setdiff(CatFeatures, Target)
   
   # MultiClass Data Partition----
@@ -586,7 +586,7 @@ AutoXGBoostMultiClass <- function(data,
       
       # MultiClass Accuracy
       Metric <-
-        calibEval[, mean(ifelse(p1 == eval(Target), 1, 0), na.rm = TRUE)]
+        calibEval[, mean(data.table::fifelse(p1 == eval(Target), 1, 0), na.rm = TRUE)]
       
       # MultiClass Store Output Information----
       data.table::set(GridCollect,
@@ -762,7 +762,7 @@ AutoXGBoostMultiClass <- function(data,
   if(Objective != "multi:softprob") {
     EvaluationMetrics <- data.table::data.table(
       Metric = "Accuracy",
-      MetricValue = ValidationData[, mean(ifelse(p1 == eval(Target), 1, 0),
+      MetricValue = ValidationData[, mean(data.table::fifelse(p1 == eval(Target), 1, 0),
                                           na.rm = TRUE)])
   }
   
