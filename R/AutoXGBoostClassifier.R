@@ -84,7 +84,6 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
-# Train code
 AutoXGBoostRegression <- function(data,
                                   ValidationData = NULL,
                                   TestData = NULL,
