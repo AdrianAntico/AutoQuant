@@ -6720,9 +6720,6 @@ AutoTS <- function(data,
     data.table::rbindlist(list(data[, Date := NULL], temp[, Date := NULL]), fill = TRUE)
   z <- cbind(Time, z)
   z[, eval(TargetName) := as.numeric(get(TargetName))]
-  logo = magick::image_read(
-    "https://www.remixinstitute.com/wp-content/uploads/7b-Cheetah_Charcoal_Inline_No_Sub_No_BG.png"
-  )
   TimeSeriesPlot <-
     ggplot2::ggplot(z, ggplot2::aes(x = z[["Date"]])) +
     ggplot2::geom_line(ggplot2::aes(y = z[[eval(TargetName)]]), color = "#005B80") +
