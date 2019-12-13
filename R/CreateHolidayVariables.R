@@ -44,6 +44,14 @@ CreateHolidayVariables <- function(data,
     data <- data.table::as.data.table(data)
   }
   
+  # Sort by group and date----
+  if(!is.null(GroupingVars)) {
+    if(class(data[[eval(DateCols)]]) != "Date") {
+      data[, eval(DateCols) := as.POSIXct(data[[eval(DateCols)]])]  
+    }
+    data <- data[order(get(GroupingVars),get(DateCols))]
+  }
+  
   # Store individual holidays if HolidayGroups is specified----
   if(!is.null(HolidayGroups)) {
     for(counter in seq_len(length(HolidayGroups))) {
