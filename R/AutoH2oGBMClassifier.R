@@ -4,6 +4,7 @@
 #' @author Adrian Antico
 #' @family Automated Binary Classification
 #' @param data This is your data set for training and testing your model
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
@@ -57,6 +58,7 @@
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 #' TestModel <- AutoH2oGBMClassifier(data,
+#'                                   TrainOnFull = FALSE,
 #'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
@@ -79,6 +81,7 @@
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
 AutoH2oGBMClassifier <- function(data,
+                                 TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
@@ -674,6 +677,25 @@ AutoH2oGBMClassifier <- function(data,
            file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
     }
   }
+             
+  # VI_Plot_Function
+  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+    ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, ScaledImportance), y = ScaledImportance, fill = ScaledImportance)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::scale_fill_gradient2(
+        mid = ColorLow,
+        high = ColorHigh) +
+      RemixAutoAI::ChartTheme(
+        Size = 12,
+        AngleX = 0,
+        LegendPosition = "right"
+      ) +
+      ggplot2::coord_flip() +
+      ggplot2::labs(
+        title = "Global Variable Importance") +
+      ggplot2::xlab("Top Model Features") +
+      ggplot2::ylab("Value")
+  }
   
   # Binary Return Objects----
   if (ReturnModelObjects) {
@@ -685,6 +707,7 @@ AutoH2oGBMClassifier <- function(data,
         EvaluationPlot = EvaluationPlot,
         EvaluationMetrics = FinalThresholdTable,
         VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots
       )
     )
