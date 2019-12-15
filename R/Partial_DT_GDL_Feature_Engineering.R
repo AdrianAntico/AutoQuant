@@ -214,28 +214,34 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       # Lags----
       # data1 <- data.table::copy(datax)
       LagKeep <- c()
+      LagKeeps <- list()
       LagCols <- c()
+      LagColss <- list()
       for (t in Targets) {
         for (l in seq_len(MaxCols)) {
         
           # lag columns to create
           LagCols <- c(LagCols,
                        paste0(groupingVars[i],
-                              "_LAG_",
-                              l, "_", t))
+                       "_LAG_",
+                       l, "_", t))
           
           # lag columns to keep
           if(l %in% lags) {
             LagKeep <- c(LagKeep,
                          paste0(groupingVars[i],
-                                "_LAG_",
-                                l, "_", t))
+                         "_LAG_",
+                         l, "_", t))
           }
         }
+        LagColss[[t]] <- LagCols
+        LagKeeps[[t]] <- LagKeep
+        LagCols <- c()
+        LagKeep <- c()
       }
       
       # Build features----
-      data1[, paste0(LagCols) := data.table::shift(.SD, 
+      data1[, paste0(unlist(LagColss)) := data.table::shift(.SD, 
                                                    n = 1:MaxCols, 
                                                    type = "lag"),
             by = eval(groupingVars[i]), .SDcols = Targets]
@@ -387,12 +393,15 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       
       # Moving stats----
       incre <- 0L
+      TargetN <- 0L
       for (t in Targets) {
+        TargetN <- TargetN + 1L
         for (j in periods) {
           for (k in seq_along(statsNames)) {
             
             # Increment----
             incre <- incre + 1L
+            
             
             # Check if target is for time between records or not----
             if(!is.null(timeDiffTarget)) {
@@ -450,7 +459,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                   "_",
                                   j,
                                   "_",
-                                  t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+                                  t)) := Matrix::rowMeans(.SD), .SDcols = LagColss[[TargetN]][1:j]]
               if(incre == 1) {
                 PeriodKeep <-  paste0(groupingVars[i],
                                       statsNames[k],
@@ -480,10 +489,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       # Only keep requested columns----
       if(is.null(timeDiffTarget)) {
         if(i == 1) {
-          keep <- c(ColKeep, LagKeep, PeriodKeep)
+          keep <- c(ColKeep, unlist(LagKeeps), PeriodKeep)
           FinalData <- data1[, ..keep]
         } else {
-          keep <- c(AscRowByGroup, LagKeep, PeriodKeep)
+          keep <- c(AscRowByGroup, unlist(LagKeeps), PeriodKeep)
           FinalData <- merge(FinalData, 
                              data1[, ..keep], 
                              by = eval(AscRowByGroup), 
@@ -491,10 +500,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         }        
       } else {
         if(i == 1) {
-          keep <- c(ColKeep, LagKeep, TimeLagKeep, PeriodKeep)
+          keep <- c(ColKeep, unlist(LagKeeps), TimeLagKeep, PeriodKeep)
           FinalData <- data1[, ..keep]
         } else {
-          keep <- c(AscRowByGroup, LagKeep, TimeLagKeep, PeriodKeep)
+          keep <- c(AscRowByGroup, unlist(LagKeeps), TimeLagKeep, PeriodKeep)
           FinalData <- merge(FinalData, 
                              data1[, ..keep], 
                              by = eval(AscRowByGroup), 
@@ -578,7 +587,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Lags----
     LagCols <- c()
+    LagColss <- list()
     LagKeep <- c()
+    LagKeeps <- list()
     for (t in Targets) {
       for (l in seq_len(MaxCols)) {
       
@@ -594,10 +605,14 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                               l, "_", t))
         }
       }
+      LagColss[[t]] <- LagCols
+      LagCols <- c()
+      LagKeeps[[t]] <- LagKeep
+      LagKeep <- c()
     }
     
     # Build features----
-    data[, paste0(LagCols) := data.table::shift(.SD, n = seq_len(MaxCols), type = "lag"), 
+    data[, paste0(unlist(LagColss)) := data.table::shift(.SD, n = seq_len(MaxCols), type = "lag"), 
          .SDcols = Targets]
     
     # Time lags----
@@ -715,7 +730,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Moving stats----
     incre <- 0L
+    TargetN <- 0L
     for (t in Targets) {
+      TargetN <- TargetN + 1L
       for (j in periods) {
         for (k in seq_along(statsNames)) {
           
@@ -749,7 +766,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                  "_",
                                  j,
                                  "_",
-                                 t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+                                 t)) := Matrix::rowMeans(.SD), .SDcols = LagColss[[TargetN]][1:j]]
               if(incre == 1) {
                 PeriodKeep <-  paste0(statsNames[k],
                                       "_",
@@ -770,7 +787,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                "_",
                                j,
                                "_",
-                               t)) := Matrix::rowMeans(.SD), .SDcols = LagCols[1:j]]
+                               t)) := Matrix::rowMeans(.SD), .SDcols = LagColss[[TargetN]][1:j]]
             if(incre == 1) {
               PeriodKeep <-  paste0(statsNames[k],
                                     "_",
@@ -799,10 +816,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
 
     # Only keep requested columns----
     if(is.null(timeDiffTarget)) {
-      keep <- c(ColKeep, LagKeep, PeriodKeep)
+      keep <- c(ColKeep, unlist(LagKeeps), PeriodKeep)
       data <- data[, ..keep]
     } else {
-      keep <- c(ColKeep, LagKeep, TimeLagKeep, PeriodKeep)
+      keep <- c(ColKeep, unlist(LagKeeps), TimeLagKeep, PeriodKeep)
       data <- data[, ..keep]
     }
     
