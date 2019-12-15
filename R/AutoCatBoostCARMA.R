@@ -171,7 +171,11 @@ AutoCatBoostCARMA <- function(data,
   
   # Convert to lubridate as_date() or POSIXct----
   if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-    data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+    if(is.character(data[[eval(DateColumnName)]])) {
+      x <- data[1,get(DateColumnName)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+    }
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
   }
