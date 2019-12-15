@@ -8,6 +8,7 @@
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param HolidayGroups Pick groups
 #' @param Holidays Pick holidays
+#' @param GroupingVars Grouping variable names
 #' @import timeDate
 #' @examples
 #' \donttest{
@@ -16,7 +17,8 @@
 #'                                DateCols = "DateTime",
 #'                                HolidayGroups = c("USPublicHolidays","EasterGroup",
 #'                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
-#'                                Holidays = NULL)
+#'                                Holidays = NULL,
+#'                                GroupingVars = NULL)
 #' }
 #' @return Returns your data.table with the added holiday indicator variable
 #' @export
@@ -25,7 +27,8 @@ CreateHolidayVariables <- function(data,
                                    HolidayGroups = c("USPublicHolidays","EasterGroup",
                                                      "ChristmasGroup",
                                                      "OtherEcclesticalFeasts"),
-                                   Holidays = NULL) {
+                                   Holidays = NULL,
+                                   GroupingVars = NULL) {
   
   # Require namespace----
   requireNamespace("timeDate", quietly = TRUE)
@@ -37,7 +40,6 @@ CreateHolidayVariables <- function(data,
                      by = "days")
     return(as.integer(length(which(x = Values %in% DateRange))))
   }
-  
   
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
@@ -139,8 +141,13 @@ CreateHolidayVariables <- function(data,
   }
   
   # Enforce the missing lagged date to equal the regular date minus a constant----
-  x <- data[, quantile(get(DateCols[1]) - get(paste0("Lag1_",eval(DateCols[1]))), probs = 0.99)]
+  x <- data[, quantile(x = (data[[eval(DateCols[1])]] - data[[(paste0("Lag1_",eval(DateCols[1])))]]), probs = 0.99)]
   data[, eval(paste0("Lag1_",DateCols[i])) := get(DateCols[i]) - x]
+  
+  # Sort by group and date----
+  if(!is.null(GroupingVars)) {
+    data <- data[order(get(GroupingVars),get(DateCols))]
+  }
   
   # Build Features----
   for (i in seq_len(length(DateCols))) {
