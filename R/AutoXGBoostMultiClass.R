@@ -4,6 +4,7 @@
 #' @author Adrian Antico
 #' @family Automated MultiClass Classification
 #' @param data This is your data set for training and testing your model
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Target should be in factor or character form.
@@ -63,6 +64,7 @@
 #'                      ifelse(Independent_Variable2 < 0.75,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoXGBoostMultiClass(data,
+#'                                    TrainOnFull = FALSE,
 #'                                    ValidationData = NULL,
 #'                                    TestData = NULL,
 #'                                    TargetColumnName = 1,
@@ -80,12 +82,14 @@
 #'                                    metadata_path = NULL,
 #'                                    ModelID = "FirstModel",
 #'                                    ReturnModelObjects = TRUE,
+#'                                    ReturnFactorLevels = TRUE,
 #'                                    SaveModelObjects = FALSE,
 #'                                    PassInGrid = NULL)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, GridList, and TargetLevels
 #' @export
 AutoXGBoostMultiClass <- function(data,
+                                  TrainOnFull = FALSE,
                                   ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
@@ -104,34 +108,27 @@ AutoXGBoostMultiClass <- function(data,
                                   ModelID = "FirstModel",
                                   Verbose = 0,
                                   ReturnModelObjects = TRUE,
+                                  ReturnFactorLevels = TRUE,
                                   SaveModelObjects = FALSE,
                                   PassInGrid = NULL) {
   # MultiClass Check Arguments----
   if (!(tolower(grid_eval_metric) %chin% c("accuracy"))) {
-    warning("grid_eval_metric not accuracy")
+    stop("grid_eval_metric not accuracy")
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
-  if (MaxModelsInGrid < 1 |
-      MaxModelsInGrid > 1080 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
+  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if (MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
+    stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   }
   if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
+    if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
   if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path))
-      warning("metadata_path needs to be a character type")
+    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
+  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -167,25 +164,23 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   CatFeatures <- names(data)[CatFeatures]
-  CatFeatures <- CatFeatures[CatFeatures != IDcols]
+  CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols]
   if(length(CatFeatures)==0) {
     CatFeatures <- NULL
   }
   CatFeatures <- setdiff(CatFeatures, Target)
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = Target,
-      TimeColumnName = NULL
-    )
+      TimeColumnName = NULL)
     data <- dataSets$TrainData
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
@@ -196,11 +191,19 @@ AutoXGBoostMultiClass <- function(data,
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
-    dataTest <- ValidationData[, ..keep]
-  } else {
+    if(!TrainOnFull) {
+      dataTest <- ValidationData[, ..keep] 
+    } else {
+      dataTest <- NULL
+    }
+  } else if(!TrainOnFull) {
     keep <- c(FeatureColNames, Target)
     dataTrain <- data[, ..keep]
-    dataTest <- ValidationData[, ..keep]
+    if(!TrainOnFull) {
+      dataTest <- ValidationData[, ..keep] 
+    } else {
+      dataTest <- NULL
+    }
   }
   
   # MultiClass TestData Subset Columns Needed----
@@ -234,19 +237,16 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Obtain Unique Target Levels
   if (!is.null(TestData)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-  } else {
+  } else if(!TrainOnFull) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest))
+  } else {
+    temp <- dataTrain
   }
-  TargetLevels <-
-    data.table::as.data.table(sort(unique(temp[[eval(Target)]])))
+  TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(Target)]])))
   data.table::setnames(TargetLevels, "V1", "OriginalLevels")
   TargetLevels[, NewLevels := 0:(.N - 1)]
   if (SaveModelObjects) {
-    data.table::fwrite(TargetLevels,
-                       file = paste0(model_path,
-                                     "/",
-                                     ModelID,
-                                     "_TargetLevels.csv"))
+    data.table::fwrite(TargetLevels, file = paste0(model_path, "/", ModelID, "_TargetLevels.csv"))
   }
   
   # Number of levels----
@@ -258,217 +258,267 @@ AutoXGBoostMultiClass <- function(data,
     TargetLevels,
     by.x = eval(Target),
     by.y = "OriginalLevels",
-    all = FALSE
-  )
+    all = FALSE)
   dataTrain[, paste0(Target) := NewLevels]
   dataTrain[, NewLevels := NULL]
-  dataTest <- merge(
-    dataTest,
-    TargetLevels,
-    by.x = eval(Target),
-    by.y = "OriginalLevels",
-    all = FALSE
-  )
-  dataTest[, paste0(Target) := NewLevels]
-  dataTest[, NewLevels := NULL]
-  if (!is.null(TestData)) {
-    TestData <- merge(
-      TestData,
+  if(!TrainOnFull) {
+    dataTest <- merge(
+      dataTest,
       TargetLevels,
       by.x = eval(Target),
       by.y = "OriginalLevels",
-      all = FALSE
-    )
-    TestData[, paste0(Target) := NewLevels]
-    TestData[, NewLevels := NULL]
+      all = FALSE)
+    dataTest[, paste0(Target) := NewLevels]
+    dataTest[, NewLevels := NULL]
+    if (!is.null(TestData)) {
+      TestData <- merge(
+        TestData,
+        TargetLevels,
+        by.x = eval(Target),
+        by.y = "OriginalLevels",
+        all = FALSE
+      )
+      TestData[, paste0(Target) := NewLevels]
+      TestData[, NewLevels := NULL]
+    }  
   }
   
   # MultiClass Dummify dataTrain Categorical Features----
-  if (SaveModelObjects) {
-    if (!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = "VALIDATE")
-      data.table::set(TestData,
-                      j = "ID_Factorizer",
-                      value = "TEST")
-      temp <-
-        data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE, 
-        ReturnFactorLevels = TRUE
-      )
-      FactorLevels <- temp$FactorLevelsList
-      temp <- temp$data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData,
-                      j = "ID_Factorizer",
-                      value = NULL)
+  if(!is.null(CatFeatures)) {
+    if (SaveModelObjects) {
+      if (!is.null(dataTest) & !is.null(TestData) & TrainOnFull == FALSE) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+        data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+        if(ReturnFactorLevels) {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = TRUE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              SavePath = model_path,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+            FactorLevelsList <- temp$FactorLevelsList
+            temp <- temp$data
+          } else {
+            FactorLevelsList <- NULL
+          }
+        } else {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = FALSE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              SavePath = model_path,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+          } else {
+            FactorLevelsList <- NULL
+          }
+        }
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        dataTest <- temp[ID_Factorizer == "VALIDATE"]
+        data.table::set(dataTest, j = "ID_Factorizer", value = NULL) 
+        TestData <- temp[ID_Factorizer == "TEST"]
+        data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+      } else {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        
+        if(!TrainOnFull) {
+          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))        
+        } else {
+          temp <- dataTrain
+        }
+        if(ReturnFactorLevels) {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = TRUE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              SavePath = model_path,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+            FactorLevelsList <- temp$FactorLevelsList
+            temp <- temp$data          
+          } else {
+            FactorLevelsList <- NULL
+          }
+        } else {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = TRUE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              SavePath = model_path,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+          } else {
+            FactorLevelsList <- NULL
+          }
+        }
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)        
+        }
+      }
     } else {
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = TRUE,
-        SavePath = model_path,
-        ImportFactorLevels = FALSE, 
-        ReturnFactorLevels = TRUE
-      )
-      FactorLevels <- temp$FactorLevelsList
-      temp <- temp$data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = NULL)
-    }
-  } else {
-    if (!is.null(dataTest) & !is.null(TestData)) {
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = "VALIDATE")
-      data.table::set(TestData,
-                      j = "ID_Factorizer",
-                      value = "TEST")
-      temp <-
-        data.table::rbindlist(list(dataTrain, dataTest, TestData))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = FALSE,
-        SavePath = NULL,
-        ImportFactorLevels = FALSE, 
-        ReturnFactorLevels = TRUE
-      )
-      FactorLevels <- temp$FactorLevelsList
-      temp <- temp$data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      TestData <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      
-    } else {
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = "TRAIN")
-      temp <- data.table::rbindlist(list(dataTrain, dataTest))
-      temp <- DummifyDT(
-        data = temp,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = FALSE,
-        SavePath = NULL,
-        ImportFactorLevels = FALSE, 
-        ReturnFactorLevels = TRUE
-      )
-      FactorLevels <- temp$FactorLevelsList
-      temp <- temp$data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain,
-                      j = "ID_Factorizer",
-                      value = NULL)
-      dataTest <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(dataTest,
-                      j = "ID_Factorizer",
-                      value = NULL)
-    }
+      if (!is.null(dataTest)) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull) {
+          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+          if(!is.null(TestData)) {
+            data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+          } else {
+            temp <- data.table::rbindlist(list(dataTrain, dataTest))
+          }
+        } else {
+          temp <- dataTrain
+        }
+        if(ReturnFactorLevels) {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = FALSE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              FactorLevelsList = NULL,
+              SavePath = NULL,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+            FactorLevelsList <- temp$FactorLevelsList
+            temp <- temp$data          
+          } else {
+            FactorLevelsList <- NULL
+          }
+        } else {
+          if(!is.null(CatFeatures)) {
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = FALSE,
+              ReturnFactorLevels = ReturnFactorLevels,
+              SavePath = NULL,
+              ImportFactorLevels = FALSE)
+            IDcols <- c(IDcols,CatFeatures)
+          } else {
+            FactorLevelsList <- NULL
+          }
+        }
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+          if(!is.null(TestData)) {
+            TestData <- temp[ID_Factorizer == "TEST"]
+            data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+          }
+        }
+      } else {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        
+        if(!TrainOnFull) {
+          data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
+          FactorLevelsList <- temp$FactorLevelsList
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))  
+        } else {
+          temp <- dataTrain
+          FactorLevelsList <- NULL
+        }
+        if(ReturnFactorLevels) {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = FALSE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = NULL,
+            ImportFactorLevels = FALSE)
+        } else {
+          temp <- DummifyDT(
+            data = temp,
+            cols = CatFeatures,
+            KeepFactorCols = FALSE,
+            OneHot = FALSE,
+            SaveFactorLevels = FALSE,
+            ReturnFactorLevels = ReturnFactorLevels,
+            SavePath = NULL,
+            ImportFactorLevels = FALSE)
+        }
+        IDcols <- c(IDcols,CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)        
+        }
+      }
+    }  
   }
   
   # MultiClass Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path,
-                                     "/"
-                                     , ModelID, "_ColNames.csv"))
+    data.table::fwrite(Names, paste0(model_path, "/" , ModelID, "_ColNames.csv"))
   }
   
   # MultiClass Subset Target Variables----
-  TrainTarget <-
-    tryCatch({
-      dataTrain[, get(Target)]
-    }, error = function(x)
-      dataTrain[, eval(Target)])
-  TestTarget <-
-    tryCatch({
-      dataTest[, get(Target)]
-    }, error = function(x)
-      dataTest[, eval(Target)])
+  TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
+  if(!TrainOnFull) TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
   if (!is.null(TestData)) {
-    FinalTestTarget <-
-      tryCatch({
-        TestData[, get(Target)]
-      }, error = function(x)
-        TestData[, eval(Target)])
+    FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
   }
   
   # MultiClass Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
-  dataTest[, eval(Target) := NULL]
+  if(!TrainOnFull) dataTest[, eval(Target) := NULL]
   if (!is.null(TestData)) {
     TestData[, eval(Target) := NULL]
   }
   
   # MultiClass Initialize XGBoost Data Conversion----
-  datatrain <-
-    xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
-  datavalidate <-
-    xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
+  datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
+  if(!TrainOnFull) datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
   if (!is.null(TestData)) {
-    datatest <-
-      xgboost::xgb.DMatrix(as.matrix(TestData), label = FinalTestTarget)
+    datatest <- xgboost::xgb.DMatrix(as.matrix(TestData), label = FinalTestTarget)
     EvalSets <- list(train = datavalidate, test = datatest)
-  } else {
+  } else if(!TrainOnFull) {
     EvalSets <- list(train = datatrain, test = datavalidate)
+  } else {
+    EvalSets <- list(train = datatrain, test = datatrain)
   }
   
   # MultiClass Grid Tune or Not Check----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
+    
     # MultiClass Grid Create data.table To Store Results----
     GridCollect <-
       data.table::data.table(
@@ -601,7 +651,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Define Final Model Parameters----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (eval_metric %chin% c("merror", "mlogloss")) {
       BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
       if (BestGrid == 1) {
@@ -609,8 +659,7 @@ AutoXGBoostMultiClass <- function(data,
           booster = "gbtree",
           objective = Objective,
           eval_metric = tolower(eval_metric),
-          num_class = (TargetLevels[, max(NewLevels)] +
-                         1),
+          num_class = (TargetLevels[, max(NewLevels)] +1),
           eta = 0.30,
           max_depth = 6,
           min_child_weight = 1,
@@ -618,22 +667,17 @@ AutoXGBoostMultiClass <- function(data,
           colsample_bytree = 1,
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
-        
+          tree_method = TreeMethod)
       } else {
         base_params <- list(
           booster = "gbtree",
           objective = Objective,
           eval_metric = tolower(eval_metric),
-          num_class = (TargetLevels[, max(NewLevels)] +
-                         1),
+          num_class = (TargetLevels[, max(NewLevels)] +1),
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
-        base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          tree_method = TreeMethod)
+        base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -643,8 +687,7 @@ AutoXGBoostMultiClass <- function(data,
           booster = "gbtree",
           objective = Objective,
           eval_metric = tolower(eval_metric),
-          num_class = (TargetLevels[, max(NewLevels)] +
-                         1),
+          num_class = (TargetLevels[, max(NewLevels)] + 1),
           eta = 0.30,
           max_depth = 6,
           min_child_weight = 1,
@@ -652,22 +695,17 @@ AutoXGBoostMultiClass <- function(data,
           colsample_bytree = 1,
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
-        
+          tree_method = TreeMethod)
       } else {
         base_params <- list(
           booster = "gbtree",
           objective = Objective,
           eval_metric = tolower(eval_metric),
-          num_class = (TargetLevels[, max(NewLevels)] +
-                         1),
+          num_class = (TargetLevels[, max(NewLevels)] + 1),
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
-        base_params <-
-          c(as.list(grid_params[BestGrid, ]), base_params)
+          tree_method = TreeMethod)
+        base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
     }
   } else {
@@ -675,12 +713,10 @@ AutoXGBoostMultiClass <- function(data,
       booster = "gbtree",
       objective = Objective,
       eval_metric = tolower(eval_metric),
-      num_class = (TargetLevels[, max(NewLevels)] +
-                     1),
+      num_class = (TargetLevels[, max(NewLevels)] + 1),
       nthread = NThreads,
       max_bin = 64,
-      tree_method = TreeMethod
-    )
+      tree_method = TreeMethod)
     if (!is.null(PassInGrid)) {
       base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
@@ -694,16 +730,14 @@ AutoXGBoostMultiClass <- function(data,
       watchlist = EvalSets,
       nrounds = Trees,
       verbose = Verbose,
-      early_stopping_rounds = 10
-    )
+      early_stopping_rounds = 10)
   } else {
     model <- xgboost::xgb.train(
       params = base_params,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
-      early_stopping_rounds = 10
-    )
+      early_stopping_rounds = 10)
   }
   
   # MultiClass Save Model----
@@ -714,26 +748,21 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
-  } else {
+  } else if(!TrainOnFull) {
     predict <- stats::predict(model, datavalidate)
-  }    
+  } else {
+    predict <- stats::predict(model, datatrain)
+  }
   
   # Convert predict object if softprob----
   if(Objective == "multi:softprob") {
     for(counter in seq.int(NumLevels)) {
       if(counter == 1) {
-        Final <- data.table::as.data.table(
-          predict[1:(length(predict)/NumLevels)])
-        data.table::setnames(x = Final, 
-                             old = "V1",
-                             new = as.character(TargetLevels[counter,OriginalLevels]))
+        Final <- data.table::as.data.table(predict[1:(length(predict)/NumLevels)])
+        data.table::setnames(x = Final, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
       } else {
-        temp <- data.table::as.data.table(
-          predict[(1 + (counter-1) * (length(predict)/NumLevels)):
-                    (counter * (length(predict)/NumLevels))])
-        data.table::setnames(x = temp, 
-                             old = "V1",
-                             new = as.character(TargetLevels[counter,OriginalLevels]))
+        temp <- data.table::as.data.table(predict[(1 + (counter-1) * (length(predict)/NumLevels)):(counter * (length(predict)/NumLevels))])
+        data.table::setnames(x = temp, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
         Final <- cbind(Final, temp)
       }
     }
@@ -742,28 +771,27 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Validation Data----
   if(Objective == "multi:softprob") {
     if (!is.null(TestData)) {
-      ValidationData <-
-        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Final))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Final))
+    } else if(!TrainOnFull) {
+      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Final))
     } else {
-      ValidationData <-
-        data.table::as.data.table(cbind(Target = TestTarget, dataTest, Final))
+      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, Final))
     }
   } else {
     if (!is.null(TestData)) {
-      ValidationData <-
-        data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+    } else if(!TrainOnFull) {
+      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
     } else {
-      ValidationData <-
-        data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
-    }    
+      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, p1 = predict))
+    }
   }
 
   # MultiClass Evaluation Metrics----
   if(Objective != "multi:softprob") {
     EvaluationMetrics <- data.table::data.table(
       Metric = "Accuracy",
-      MetricValue = ValidationData[, mean(data.table::fifelse(p1 == eval(Target), 1, 0),
-                                          na.rm = TRUE)])
+      MetricValue = ValidationData[, mean(data.table::fifelse(p1 == eval(Target), 1, 0),na.rm = TRUE)])
   }
   
   # Save EvaluationMetrics to File
@@ -771,11 +799,9 @@ AutoXGBoostMultiClass <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
       } else {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))        
+        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))        
       }
     }
   }
@@ -785,35 +811,41 @@ AutoXGBoostMultiClass <- function(data,
   VariableImportance[, ':=' (
     Gain = round(Gain, 4),
     Cover = round(Cover, 4),
-    Frequency = round(Frequency, 4)
-  )]
+    Frequency = round(Frequency, 4))]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
     } else {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
     }
   }
   
   # MultiClass Save GridCollect and grid_metrics----
   if (SaveModelObjects & GridTune == TRUE) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(grid_params,
-                         file = paste0(metadata_path, "/", ModelID, "_grid_params.csv"))
-      data.table::fwrite(GridCollect,
-                         file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
+      data.table::fwrite(grid_params, file = paste0(metadata_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect, file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
     } else {
-      data.table::fwrite(grid_params,
-                         file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
-      data.table::fwrite(GridCollect,
-                         file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
+      data.table::fwrite(grid_params, file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
+      data.table::fwrite(GridCollect, file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
     }
+  }
+  
+  # VI_Plot_Function
+  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+    ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+      RemixAutoAI::ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      ggplot2::coord_flip() +
+      ggplot2::labs(title = "Global Variable Importance") +
+      ggplot2::xlab("Top Model Features") +
+      ggplot2::ylab("Value")
+  }
+  
+  # MultiClass Return Model Objects----
+  if(!exists("FactorLevelsList")) {
+    FactorLevelsList <- NULL
   }
   
   # MultiClass Return Model Objects----
@@ -826,11 +858,12 @@ AutoXGBoostMultiClass <- function(data,
             ValidationData = ValidationData,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VI_Data = VariableImportance),
             GridList = grid_params,
             GridMetrics = GridCollect,
             ColNames = Names,
             TargetLevels = TargetLevels,
-            FactorLevels = FactorLevels
+            FactorLevels = FactorLevelsList
           )
         )        
       } else {
@@ -839,11 +872,12 @@ AutoXGBoostMultiClass <- function(data,
             Model = model,
             ValidationData = ValidationData,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VI_Data = VariableImportance),
             GridList = grid_params,
             GridMetrics = GridCollect,
             ColNames = Names,
             TargetLevels = TargetLevels,
-            FactorLevels = FactorLevels
+            FactorLevels = FactorLevelsList
           )
         )
       }
@@ -857,9 +891,10 @@ AutoXGBoostMultiClass <- function(data,
             ValidationData = ValidationData,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VI_Data = VariableImportance),
             ColNames = Names,
             TargetLevels = TargetLevels,
-            FactorLevels = FactorLevels
+            FactorLevels = FactorLevelsList
           )
         )        
       } else {
@@ -868,9 +903,10 @@ AutoXGBoostMultiClass <- function(data,
             Model = model,
             ValidationData = ValidationData,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VI_Data = VariableImportance),
             ColNames = Names,
             TargetLevels = TargetLevels,
-            FactorLevels = FactorLevels
+            FactorLevels = FactorLevelsList
           )
         )
       }
