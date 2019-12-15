@@ -4,6 +4,7 @@
 #' @author Adrian Antico
 #' @family Automated Regression
 #' @param data This is your data set for training and testing your model
+#' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
@@ -59,6 +60,7 @@
 #'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoCatBoostRegression(data,
+#'                                     TrainOnFull = FALSE,
 #'                                     ValidationData = NULL,
 #'                                     TestData = NULL,
 #'                                     TargetColumnName = "Target",
@@ -90,6 +92,7 @@
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
 AutoCatBoostRegression <- function(data,
+                                   TrainOnFull = FALSE,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
@@ -120,37 +123,24 @@ AutoCatBoostRegression <- function(data,
   } else {
     HasTime <- FALSE
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
-  if (!(
-    tolower(grid_eval_metric) %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")
-  )) {
-    warning(
-      "grid_eval_metric not in c('poisson','mae','mape','mse','msle','kl','cs','r2')"
-    )
+  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if (!(tolower(grid_eval_metric) %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2"))) {
+    stop("grid_eval_metric not in c('poisson','mae','mape','mse','msle','kl','cs','r2')")
   }
-  if (MaxModelsInGrid < 1 |
-      MaxModelsInGrid > 1080 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1 and less than 1080")
+  if((MaxModelsInGrid < 1 | MaxModelsInGrid > 1080) & GridTune == TRUE) {
+    stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   }
   if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
+    if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
   if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path))
-      warning("metadata_path needs to be a character type")
+    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (NumOfParDepPlots < 0)
-    warning("NumOfParDepPlots needs to be a positive number")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
+  if(!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
+  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -181,7 +171,7 @@ AutoCatBoostRegression <- function(data,
   # Transform data, ValidationData, and TestData----
   if (!is.null(ValidationData) &
       !is.null(TransformNumericColumns)) {
-    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+    MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
@@ -229,9 +219,8 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Data Partition----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
     if (!is.null(TransformNumericColumns)) {
-      # Partition----
       dataSets <- AutoDataPartition(
         data,
         NumDataSets = 3,
@@ -245,7 +234,7 @@ AutoCatBoostRegression <- function(data,
       TestData <- dataSets$TestData
       
       # Mean of data----
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
       
       # Transform data sets----
       Output <- AutoTransformationCreate(
@@ -290,7 +279,7 @@ AutoCatBoostRegression <- function(data,
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
     }
   }
   
@@ -305,7 +294,7 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Sort ValidationData if PrimaryDateColumn----
-  if (!is.null(PrimaryDateColumn)) {
+  if (!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
     if (!(eval(PrimaryDateColumn) %in% IDcols)) {
       data.table::set(ValidationData,
@@ -315,7 +304,7 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Sort TestData if PrimaryDateColumn----
-  if (!is.null(TestData)) {
+  if (!is.null(TestData) & TrainOnFull != TRUE) {
     if (!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
       if (!(eval(PrimaryDateColumn) %in% IDcols)) {
@@ -331,11 +320,11 @@ AutoCatBoostRegression <- function(data,
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
-    dataTest <- ValidationData[, ..keep]
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep]
   } else {
     keep <- c(FeatureColNames, Target)
     dataTrain <- data[, ..keep]
-    dataTest <- ValidationData[, ..keep]
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep]
   }
   
   # Regression TestData Subset Columns Needed----
@@ -367,13 +356,8 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Identify column numbers for factor variables----
-  CatFeatures <-
-    sort(c(as.numeric(which(
-      sapply(dataTrain, is.factor)
-    )),
-    as.numeric(which(
-      sapply(dataTrain, is.character)
-    ))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))),
+                        as.numeric(which(sapply(dataTrain, is.character)))))
   
   # Regression Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
@@ -393,15 +377,18 @@ AutoCatBoostRegression <- function(data,
   )
   
   # Regression Validation ModelDataPrep----
-  dataTest <- ModelDataPrep(
-    data = dataTest,
-    Impute = TRUE,
-    CharToFactor = TRUE,
-    RemoveDates = TRUE,
-    MissFactor = "0",
-    MissNum = -1
-  )
-  
+  if(TrainOnFull != TRUE) {
+    if(!is.null(dataTest)) {
+      dataTest <- ModelDataPrep(
+        data = dataTest,
+        Impute = TRUE,
+        CharToFactor = TRUE,
+        RemoveDates = TRUE,
+        MissFactor = "0",
+        MissNum = -1)    
+    }    
+  }
+
   # Regression Test ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(
@@ -410,90 +397,71 @@ AutoCatBoostRegression <- function(data,
       CharToFactor = TRUE,
       RemoveDates = TRUE,
       MissFactor = "0",
-      MissNum = -1
-    )
+      MissNum = -1)
   }
   
   # Regression Save Names of data----
   Names <- data.table::as.data.table(names(data))
   data.table::setnames(Names, "V1", "ColNames")
   if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path,
-                                     "/"
-                                     , ModelID, "_ColNames.csv"))
+    data.table::fwrite(Names, paste0(model_path,"/", ModelID, "_ColNames.csv"))
   }
   
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
   
   # Regression Subset Target Variables----
-  TrainTarget <-
-    tryCatch({
-      dataTrain[, get(Target)]
-    }, error = function(x)
-      dataTrain[, eval(Target)])
-  TestTarget <-
-    tryCatch({
-      dataTest[, get(Target)]
-    }, error = function(x)
-      dataTest[, eval(Target)])
-  if (!is.null(TestData)) {
-    FinalTestTarget <-
-      tryCatch({
-        TestData[, get(Target)]
-      }, error = function(x)
-        TestData[, eval(Target)])
+  TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1]]
+  if(TrainOnFull != TRUE) {
+    TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1]]
+    if (!is.null(TestData)) {
+      FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1]]
+    }
   }
-  
+
   # Regression eval_metric checks
-  if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0 |
-                                           min(TestTarget) < 0)) {
-    warning("eval_metric Poisson requires positive values for Target")
+  if(TrainOnFull != TRUE) {
+    if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0 |
+                                             min(TestTarget) < 0)) {
+      warning("eval_metric Poisson requires positive values for Target")
+    }    
   }
   
   # Regression Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
-      TrainPool <-
-        catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                     label = TrainTarget,
-                                     cat_features = CatFeatures)
-      TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
-      FinalTestPool <-
-        catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
+                                                label = TrainTarget,
+                                                cat_features = CatFeatures)
+      
+      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
+      if(TrainOnFull != TRUE) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
-      TrainPool <-
-        catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                     label = TrainTarget,
-                                     cat_features = CatFeatures)
-      TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
+                                                label = TrainTarget,
+                                                cat_features = CatFeatures)
+      
+      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
     }
   } else {
     if (!is.null(TestData)) {
-      TrainPool <-
-        catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-      TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
-      FinalTestPool <-
-        catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
+      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
+      if(TrainOnFull != TRUE) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
     } else {
-      TrainPool <-
-        catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-      TestPool <-
-        catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
+      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
   
   # Regression Grid Tune or Not Check----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
+    
     # Regression Grid Create data.table To Store Results----
-    GridCollect <-
-      data.table::data.table(
-        ParamRow = 1:(MaxModelsInGrid + 1),
-        EvalStat = rep(9999999, MaxModelsInGrid + 1)
-      )
+    GridCollect <- data.table::data.table(
+      ParamRow = 1:(MaxModelsInGrid + 1),
+      EvalStat = rep(9999999, MaxModelsInGrid + 1)
+    )
     
     # Regression Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
@@ -544,6 +512,8 @@ AutoCatBoostRegression <- function(data,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type
+        #, early_stopping_rounds = TRUE
+        #, od_wait = 50
       )
 
       # Regression Grid Merge Model Parameters----
@@ -565,13 +535,19 @@ AutoCatBoostRegression <- function(data,
           prediction_type = "RawFormulaVal",
           thread_count = -1
         )
-      } else {
+      } else if(!is.null(dataTest)) {
         predict <- catboost::catboost.predict(
           model = model,
           pool = TestPool,
           prediction_type = "RawFormulaVal",
           thread_count = -1
         )
+      } else {
+        predict <- catboost::catboost.predict(
+          model = model,
+          pool = TrainPool,
+          prediction_type = "RawFormulaVal",
+          thread_count = -1)
       }
       
       # Regression Remove Model and Collect Garbage----
@@ -684,7 +660,7 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Define Final Model Parameters----
-  if (GridTune) {
+  if (GridTune & TrainOnFull == FALSE) {
     if (grid_eval_metric %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
       BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
       if (BestGrid == 1) {
@@ -700,6 +676,8 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
+          #, early_stopping_rounds = TRUE
+          #, od_wait = 50
         )
       } else {
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
@@ -712,6 +690,8 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
+          #, early_stopping_rounds = TRUE
+          #, od_wait = 50
         )
         base_params <-
           c(as.list(catboostGridList[BestGrid, ]), base_params)
@@ -730,6 +710,8 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
+          #, early_stopping_rounds = TRUE
+          #, od_wait = 50
         )
         base_params <- c(as.list(catboostGridList[BestGrid, ]),
                          base_params)
@@ -743,6 +725,8 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10,
           metric_period        = 10,
           task_type            = task_type
+          #, early_stopping_rounds = TRUE
+          #, od_wait = 50
         )
         base_params <-
           c(as.list(catboostGridList[BestGrid, ]), base_params)
@@ -761,6 +745,8 @@ AutoCatBoostRegression <- function(data,
       best_model_min_trees = 10,
       metric_period        = 10,
       task_type            = task_type
+      #, early_stopping_rounds = TRUE
+      #, od_wait = 50
     )
     if (!is.null(PassInGrid)) {
       base_params <- c(base_params, as.list(PassInGrid[1,]))
@@ -768,9 +754,14 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Train Final Model----
-  model <- catboost::catboost.train(learn_pool = TrainPool,
-                                    test_pool  = TestPool,
-                                    params     = base_params)
+  if(TrainOnFull) {
+    model <- catboost::catboost.train(learn_pool = TrainPool,
+                                      params     = base_params)    
+  } else {
+    model <- catboost::catboost.train(learn_pool = TrainPool,
+                                      test_pool  = TestPool,
+                                      params     = base_params)
+  }
   
   # Regression Save Model----
   if (SaveModelObjects) {
@@ -784,365 +775,392 @@ AutoCatBoostRegression <- function(data,
       model = model,
       pool = FinalTestPool,
       prediction_type = "RawFormulaVal",
-      thread_count = -1
-    )
+      thread_count = -1)
+  } else if(TrainOnFull) {
+    predict <- catboost::catboost.predict(
+      model = model,
+      pool = TrainPool,
+      prediction_type = "RawFormulaVal",
+      thread_count = -1)
   } else {
     predict <- catboost::catboost.predict(
       model = model,
       pool = TestPool,
       prediction_type = "RawFormulaVal",
-      thread_count = -1
-    )
+      thread_count = -1)
   }
   
   # Regression Validation Data----
-  if (!is.null(TestData)) {
-    ValidationData <-
-      data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+  if(!TrainOnFull) {
+    if (!is.null(TestData)) {
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+      data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+    } else {
+      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+      data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+    }    
   } else {
-    ValidationData <-
-      data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+    data <- data.table::as.data.table(cbind(Target = TrainTarget, data, Predict = predict)) 
+    data.table::setnames(data, "Target",eval(TargetColumnName))
   }
   
   # Inverse Transform----
   if (!is.null(TransformNumericColumns)) {
+    
     # Append record for Predicted Column----
-    if (GridTune) {
-      TransformationResults <-
-        TransformationResults[ColumnName != "Predicted"]
+    if (GridTune & TrainOnFull == FALSE) {
+      TransformationResults <- TransformationResults[ColumnName != "Predicted"]
     }
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
-        ColumnName = c("Predict", "Target"),
+        ColumnName = c("Predict", eval(TargetColumnName)),
         MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
                                                MethodName], 2),
         Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
                                            Lambda], 2),
-        NormalizedStatistics = rep(0, 2)
-      )
-    ))
+        NormalizedStatistics = rep(0, 2))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
     if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
       temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
       temp1 <- which(names(ValidationData) == temp)[1]
-      ValidationData[, eval(names(data)[temp1]) := NULL]
+      if(!TrainOnFull) {
+        ValidationData[, eval(names(data)[temp1]) := NULL]
+      } else {
+        data[, eval(names(data)[temp1]) := NULL]
+      }
       TransformationResults <- TransformationResults[, ID := 1:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
-      
-      
     }
     
     # Transform Target and Predicted Value----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
-      Type = "Inverse",
-      FinalResults = TransformationResults,
-      TransID = NULL,
-      Path = NULL
-    )
+    if(!TrainOnFull) {
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Inverse",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )      
+    } else {
+      data <- AutoTransformationScore(
+        ScoringData = data,
+        Type = "Inverse",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL
+      )
+    }
   }
   
   # Regression r2 via sqrt of correlation
-  r_squared <- (ValidationData[, stats::cor(Target, Predict)]) ^ 2
+  if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(ValidationData[[eval(TargetColumnName)]], Predict)]) ^ 2
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))
+      if(!TrainOnFull) {
+        data.table::fwrite(ValidationData,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID,
+                                         "_ValidationData.csv"))        
+      } else {
+        data.table::fwrite(data,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID,
+                                         "_FullDataPredictions.csv"))
+      }
     } else {
-      data.table::fwrite(ValidationData,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))      
+      if(!TrainOnFull) {
+        data.table::fwrite(ValidationData,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID,
+                                         "_ValidationData.csv"))
+      } else {
+        data.table::fwrite(data,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID,
+                                         "_FullDataPredictions.csv"))
+      }
     }
   }
   
   # Regression Evaluation Calibration Plot----
-  EvaluationPlot <- EvalPlot(
-    data = ValidationData,
-    PredictionColName = "Predict",
-    TargetColName = "Target",
-    GraphType = "calibration",
-    PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
-  
+  if(!TrainOnFull) {
+    EvaluationPlot <- EvalPlot(
+      data = ValidationData,
+      PredictionColName = "Predict",
+      TargetColName = eval(TargetColumnName),
+      GraphType = "calibration",
+      PercentileBucket = 0.05,
+      aggrfun = function(x)
+        mean(x, na.rm = TRUE)
+    )    
+  }
+
   # Add Number of Trees to Title
-  EvaluationPlot <- EvaluationPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
-                            round(r_squared, 3)))
+  if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
   
   # Save plot to file
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      ggplot2::ggsave(paste0(metadata_path,
-                             "/",
-                             ModelID, "_EvaluationPlot.png"))
-    } else {
-      ggplot2::ggsave(paste0(model_path,
-                             "/",
-                             ModelID, "_EvaluationPlot.png"))      
-    }
-  }
-  
-  # Regression Evaluation Calibration Plot----
-  EvaluationBoxPlot <- EvalPlot(
-    data = ValidationData,
-    PredictionColName = "Predict",
-    TargetColName = "Target",
-    GraphType = "boxplot",
-    PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
-  
-  # Add Number of Trees to Title
-  EvaluationBoxPlot <- EvaluationBoxPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
-                            round(r_squared, 3)))
-  
-  # Save plot to file
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      ggplot2::ggsave(paste0(metadata_path,
-                             "/",
-                             ModelID,
-                             "_EvaluationBoxPlot.png"))
-    } else {
-      ggplot2::ggsave(paste0(model_path,
-                             "/",
-                             ModelID,
-                             "_EvaluationBoxPlot.png"))      
-    }
-  }
-  
-  # Regression Evaluation Metrics----
-  EvaluationMetrics <-
-    data.table::data.table(
-      Metric = c("Poisson", "MAE",
-                 "MAPE", "MSE", "MSLE",
-                 "KL", "CS", "R2"),
-      MetricValue = rep(999999, 8)
-    )
-  i <- 0
-  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1)
-    tryCatch({
-      # Regression Grid Evaluation Metrics----
-      if (tolower(metric) == "poisson") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Predict - Target * log(Predict + 1)]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "mae") {
-        ValidationData[, Metric := abs(Target - Predict)]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mape") {
-        ValidationData[, Metric := abs((Target - Predict) / (Target + 1))]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mse") {
-        ValidationData[, Metric := (Target - Predict) ^ 2]
-        Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "msle") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := (log(Target + 1) - log(Predict + 1)) ^ 2]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "kl") {
-        if (MinVal > 0 &
-            min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-          ValidationData[, Metric := Target * log((Target + 1) /
-                                                    (Predict + 1))]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "cs") {
-        ValidationData[, ':=' (
-          Metric1 = Target * Predict,
-          Metric2 = Target ^ 2,
-          Metric3 = Predict ^ 2
-        )]
-        Metric <-
-          ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                            sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(metric) == "r2") {
-        ValidationData[, ':=' (
-          Metric1 = (Target - MeanTrainTarget) ^ 2,
-          Metric2 = (Target - Predict) ^ 2
-        )]
-        Metric <-
-          1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
-          ValidationData[, sum(Metric1, na.rm = TRUE)]
-      }
-      data.table::set(
-        EvaluationMetrics,
-        i = i,
-        j = 2L,
-        value = round(Metric, 4)
-      )
-      data.table::set(EvaluationMetrics,
-                      i = i,
-                      j = 3L,
-                      value = NA)
-    }, error = function(x)
-      "skip")
-  }
-  
-  # Remove Cols
-  ValidationData[, ':=' (
-    Metric = NULL,
-    Metric1 = NULL,
-    Metric2 = NULL,
-    Metric3 = NULL
-  )]
-  
-  # Save EvaluationMetrics to File
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(EvaluationMetrics,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID, "_EvaluationMetrics.csv"))
-    } else {
-      data.table::fwrite(EvaluationMetrics,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_EvaluationMetrics.csv"))      
-    }
-  }
-  
-  # Regression Variable Importance----
-  temp <- catboost::catboost.get_feature_importance(model)
-  VariableImportance <-
-    data.table::data.table(cbind(Variable = row.names(temp), temp))
-  data.table::setnames(VariableImportance, "V2", "Importance")
-  VariableImportance[, Importance := round(as.numeric(Importance), 4)]
-  VariableImportance <- VariableImportance[order(-Importance)]
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
-    } else {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))      
-    }
-  }
-  
-  # Regression Partial Dependence----
-  ParDepBoxPlots <- list()
-  ParDepPlots <- list()
-  if(NumOfParDepPlots == 0) {
-    j <- 0
-    k <- 0
-    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = "Target",
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        j <- j + 1
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-          Out
-      }, error = function(x)
-        "skip")
-      tryCatch({
-        Out1 <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = "Target",
-          IndepVar = VariableImportance[i, Variable],
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          FactLevels = 10,
-          Function = function(x)
-            mean(x, na.rm = TRUE)
-        )
-        
-        k <- k + 1
-        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-          Out1
-      }, error = function(x)
-        "skip")
-    }
-    
-    # Regression Save ParDepPlots to file----
+  if(!TrainOnFull) {
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        save(ParDepPlots,
-             file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+        ggplot2::ggsave(paste0(metadata_path,
+                               "/",
+                               ModelID, "_EvaluationPlot.png"))
       } else {
-        save(ParDepPlots,
-             file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
-      }
-    }
-    
-    # Regression Save ParDepBoxPlots to file----
-    if (SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        save(ParDepBoxPlots,
-             file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
-      } else {
-        save(ParDepBoxPlots,
-             file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+        ggplot2::ggsave(paste0(model_path,
+                               "/",
+                               ModelID, "_EvaluationPlot.png"))      
       }
     }    
   }
 
-  # Regression Save GridCollect and catboostGridList----
-  if (SaveModelObjects & GridTune == TRUE) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(catboostGridList,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_catboostGridList.csv"))
-      data.table::fwrite(GridCollect,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_GridCollect.csv"))
-    } else {
-      data.table::fwrite(catboostGridList,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_catboostGridList.csv"))
-      data.table::fwrite(GridCollect,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_GridCollect.csv"))      
+  # Regression Evaluation Calibration Plot----
+  if(!TrainOnFull) {
+    EvaluationBoxPlot <- EvalPlot(
+      data = ValidationData,
+      PredictionColName = "Predict",
+      TargetColName = eval(TargetColumnName),
+      GraphType = "boxplot",
+      PercentileBucket = 0.05,
+      aggrfun = function(x)
+        mean(x, na.rm = TRUE)
+    )    
+  }
+
+  # Add Number of Trees to Title
+  if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
+  
+  # Save plot to file
+  if(!TrainOnFull) {
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        ggplot2::ggsave(paste0(metadata_path,
+                               "/",
+                               ModelID,
+                               "_EvaluationBoxPlot.png"))
+      } else {
+        ggplot2::ggsave(paste0(model_path,
+                               "/",
+                               ModelID,
+                               "_EvaluationBoxPlot.png"))      
+      }
     }
   }
-  
+
+  # Regression Evaluation Metrics----
+  if(!TrainOnFull) {
+    EvaluationMetrics <-
+      data.table::data.table(
+        Metric = c("MAE","MAPE","MSE","R2"),
+        MetricValue = rep(999999, 8))
+    i <- 0L
+    for (metric in c("mae", "mape", "mse", "r2")) {
+      i <- as.integer(i + 1)
+      tryCatch({
+        # Regression Grid Evaluation Metrics----
+        if (tolower(metric) == "poisson") {
+          if (MinVal > 0 &
+              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+            ValidationData[, Metric := Predict - ValidationData[[eval(TargetColumnName)]] * log(Predict + 1)]
+            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          }
+        } else if (tolower(metric) == "mae") {
+          ValidationData[, Metric := abs(ValidationData[[eval(TargetColumnName)]] - Predict)]
+          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+        } else if (tolower(metric) == "mape") {
+          ValidationData[, Metric := abs((ValidationData[[eval(TargetColumnName)]] - Predict) / (ValidationData[[eval(TargetColumnName)]] + 1))]
+          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+        } else if (tolower(metric) == "mse") {
+          ValidationData[, Metric := (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2]
+          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+        } else if (tolower(metric) == "msle") {
+          if (MinVal > 0 &
+              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+            ValidationData[, Metric := (log(ValidationData[[eval(TargetColumnName)]] + 1) - log(Predict + 1)) ^ 2]
+            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          }
+        } else if (tolower(metric) == "kl") {
+          if (MinVal > 0 &
+              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+            ValidationData[, Metric := ValidationData[[eval(TargetColumnName)]] * log((ValidationData[[eval(TargetColumnName)]] + 1) /
+                                                      (Predict + 1))]
+            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          }
+        } else if (tolower(metric) == "cs") {
+          ValidationData[, ':=' (
+            Metric1 = ValidationData[[eval(TargetColumnName)]] * Predict,
+            Metric2 = ValidationData[[eval(TargetColumnName)]] ^ 2,
+            Metric3 = Predict ^ 2
+          )]
+          Metric <-
+            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+        } else if (tolower(metric) == "r2") {
+          ValidationData[, ':=' (
+            Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2,
+            Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2
+          )]
+          Metric <-
+            1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
+            ValidationData[, sum(Metric1, na.rm = TRUE)]
+        }
+        data.table::set(
+          EvaluationMetrics,
+          i = i,
+          j = 2L,
+          value = round(Metric, 4))
+      }, error = function(x)
+        "skip")
+    }
+    
+    # Remove Cols
+    ValidationData[, ':=' (
+      Metric = NULL
+    )]
+    
+    # Save EvaluationMetrics to File
+    EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvaluationMetrics,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID, "_EvaluationMetrics.csv"))
+      } else {
+        data.table::fwrite(EvaluationMetrics,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID, "_EvaluationMetrics.csv"))      
+      }
+    }
+    
+    # Regression Variable Importance----
+    temp <- catboost::catboost.get_feature_importance(model)
+    VariableImportance <-
+      data.table::data.table(cbind(Variable = row.names(temp), temp))
+    data.table::setnames(VariableImportance, "V2", "Importance")
+    VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+    VariableImportance <- VariableImportance[order(-Importance)]
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))
+      } else {
+        data.table::fwrite(VariableImportance,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID, "_VariableImportance.csv"))      
+      }
+    }
+    
+    # Regression Partial Dependence----
+    ParDepBoxPlots <- list()
+    ParDepPlots <- list()
+    if(NumOfParDepPlots == 0) {
+      j <- 0
+      k <- 0
+      for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+        tryCatch({
+          Out <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = eval(TargetColumnName),
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "calibration",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          j <- j + 1
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
+            Out
+        }, error = function(x)
+          "skip")
+        tryCatch({
+          Out1 <- ParDepCalPlots(
+            data = ValidationData,
+            PredictionColName = "Predict",
+            TargetColName = eval(TargetColumnName),
+            IndepVar = VariableImportance[i, Variable],
+            GraphType = "boxplot",
+            PercentileBucket = 0.05,
+            FactLevels = 10,
+            Function = function(x)
+              mean(x, na.rm = TRUE)
+          )
+          
+          k <- k + 1
+          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
+            Out1
+        }, error = function(x)
+          "skip")
+      }
+      
+      # Regression Save ParDepPlots to file----
+      if (SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          save(ParDepPlots,
+               file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+        } else {
+          save(ParDepPlots,
+               file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+        }
+      }
+      
+      # Regression Save ParDepBoxPlots to file----
+      if (SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          save(ParDepBoxPlots,
+               file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+        } else {
+          save(ParDepBoxPlots,
+               file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+        }
+      }    
+    }
+    
+    # Regression Save GridCollect and catboostGridList----
+    if (SaveModelObjects & GridTune == TRUE) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(catboostGridList,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID,
+                                         "_catboostGridList.csv"))
+        data.table::fwrite(GridCollect,
+                           file = paste0(metadata_path,
+                                         "/",
+                                         ModelID,
+                                         "_GridCollect.csv"))
+      } else {
+        data.table::fwrite(catboostGridList,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID,
+                                         "_catboostGridList.csv"))
+        data.table::fwrite(GridCollect,
+                           file = paste0(model_path,
+                                         "/",
+                                         ModelID,
+                                         "_GridCollect.csv"))      
+      }
+    }    
+  }
+
   # Final Garbage Collection----
   if (tolower(task_type) == "gpu") {
     gc()
   }
-  
-  # Reset working directory----
-  # setwd(working_directory)
   
   # Subset Transformation Object----
   if(!is.null(TransformNumericColumns)) {
@@ -1153,10 +1171,49 @@ AutoCatBoostRegression <- function(data,
     }  
   }
   
+  # VI_Plot_Function
+  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+    ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::scale_fill_gradient2(
+        mid = ColorLow,
+        high = ColorHigh) +
+      RemixAutoAI::ChartTheme(
+        Size = 12,
+        AngleX = 0,
+        LegendPosition = "right"
+      ) +
+      ggplot2::coord_flip() +
+      ggplot2::labs(
+        title = "Global Variable Importance") +
+      ggplot2::xlab("Top Model Features") +
+      ggplot2::ylab("Value")
+  }
+  
   # Regression Return Model Objects----
-  if (GridTune) {
-    if (!is.null(TransformNumericColumns)) {
-      if (ReturnModelObjects) {
+  if(!TrainOnFull) {
+    if (GridTune) {
+      if (!is.null(TransformNumericColumns)) {
+        if (ReturnModelObjects) {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              VI_Plot = VI_Plot(VariableImportance),
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              GridList = catboostGridList,
+              GridMetrics = GridCollect,
+              ColNames = Names,
+              TransformationResults = TransformationResults
+            )
+          )
+        }
+      } else {
         return(
           list(
             Model = model,
@@ -1165,35 +1222,35 @@ AutoCatBoostRegression <- function(data,
             EvaluationBoxPlot = EvaluationBoxPlot,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
             GridList = catboostGridList,
             GridMetrics = GridCollect,
-            ColNames = Names,
-            TransformationResults = TransformationResults
+            ColNames = Names
           )
         )
       }
     } else {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          GridList = catboostGridList,
-          GridMetrics = GridCollect,
-          ColNames = Names
-        )
-      )
-    }
-  } else {
-    if (!is.null(TransformNumericColumns)) {
-      if (ReturnModelObjects) {
+      if (!is.null(TransformNumericColumns)) {
+        if (ReturnModelObjects) {
+          return(
+            list(
+              Model = model,
+              ValidationData = ValidationData,
+              EvaluationPlot = EvaluationPlot,
+              EvaluationBoxPlot = EvaluationBoxPlot,
+              EvaluationMetrics = EvaluationMetrics,
+              VariableImportance = VariableImportance,
+              VI_Plot = VI_Plot(VariableImportance),
+              PartialDependencePlots = ParDepPlots,
+              PartialDependenceBoxPlots = ParDepBoxPlots,
+              ColNames = Names,
+              TransformationResults = TransformationResults
+            )
+          )
+        }
+      } else {
         return(
           list(
             Model = model,
@@ -1202,27 +1259,28 @@ AutoCatBoostRegression <- function(data,
             EvaluationBoxPlot = EvaluationBoxPlot,
             EvaluationMetrics = EvaluationMetrics,
             VariableImportance = VariableImportance,
+            VI_Plot = VI_Plot(VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
-            ColNames = Names,
-            TransformationResults = TransformationResults
+            ColNames = Names
           )
         )
       }
-    } else {
-      return(
+    }
+  } else {
+    return(
+      if(!is.null(TransformNumericColumns)) {
         list(
           Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          ColNames = Names
-        )
-      )
-    }
+          data = data,
+          ColNames = Names,
+          TransformationResults = TransformationResults)
+      } else {
+        list(
+          Model = model,
+          data = data,
+          ColNames = Names)
+      }
+    )
   }
 }
