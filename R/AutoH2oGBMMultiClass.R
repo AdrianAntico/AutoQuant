@@ -4,6 +4,7 @@
 #' @author Adrian Antico
 #' @family Automated MultiClass Classification
 #' @param data This is your data set for training and testing your model
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
@@ -60,6 +61,7 @@
 #'                      ifelse(Independent_Variable2 < 0.85,  "D", "E"))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' TestModel <- AutoH2oGBMMultiClass(data,
+#'                                   TrainOnFull = FALSE,
 #'                                   ValidationData = NULL,
 #'                                   TestData = NULL,
 #'                                   TargetColumnName = "Target",
@@ -81,6 +83,7 @@
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoH2oGBMMultiClass <- function(data,
+                                 TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
@@ -100,30 +103,22 @@ AutoH2oGBMMultiClass <- function(data,
                                  H2OShutdown = FALSE) {
   # MultiClass Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
-    warning("eval_metric not in AUC, logloss")
-    
+    stop("eval_metric not in AUC, logloss")
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
+  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1")
+    stop("MaxModelsInGrid needs to be at least 1")
   }
   if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
+    if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
   if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path))
-      warning("metadata_path needs to be a character type")
+    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
+  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if (!(tolower(eval_metric) == "auc")) {
     eval_metric <- tolower(eval_metric)
   } else {
@@ -162,7 +157,7 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3,
@@ -177,20 +172,16 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data,
-                             Impute = FALSE,
-                             CharToFactor = TRUE)
+  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   
   # MultiClass ModelDataPrep----
-  dataTest <- ModelDataPrep(data = ValidationData,
-                            Impute = FALSE,
-                            CharToFactor = TRUE)
+  if(!TrainOnFull) {
+    dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)  
+  }
   
   # MultiClass ModelDataPrep----
   if (!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
   }
   
   # MultiClass Ensure Target Is a Factor Type----
@@ -199,8 +190,10 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass Ensure Target Is a Factor Type----
-  if (!is.factor(dataTest[[eval(Target)]])) {
-    dataTest[, eval(Target) := as.factor(get(Target))]
+  if(!TrainOnFull) {
+    if (!is.factor(dataTest[[eval(Target)]])) {
+      dataTest[, eval(Target) := as.factor(get(Target))]
+    }  
   }
   
   # MultiClass Ensure Target Is a Factor Type----
@@ -211,11 +204,10 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass Grid Tune Check----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
+    
     # MultiClass Start Up H2O----
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  nthreads = NThreads,
-                  enable_assertions = FALSE)
+    h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
@@ -280,66 +272,68 @@ AutoH2oGBMMultiClass <- function(data,
   }
   
   # MultiClass Start Up H2O----
-  if (!GridTune) {
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  enable_assertions = FALSE)
+  if (GridTune == FALSE) {
+    h2o::h2o.init(max_mem_size = MaxMem, enable_assertions = FALSE)
     
     # MultiClass Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
-    datavalidate <- h2o::as.h2o(dataTest)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
   
   # MultiClass Build Baseline Model----
-  base_model <- h2o::h2o.gbm(
-    x                = FeatureColNames,
-    y                = TargetColumnName,
-    distribution     = "multinomial",
-    training_frame   = datatrain,
-    validation_frame = datavalidate,
-    model_id         = ModelID,
-    ntrees           = Trees
-  )
+  if(!TrainOnFull) {
+    base_model <- h2o::h2o.gbm(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      distribution     = "multinomial",
+      training_frame   = datatrain,
+      validation_frame = datavalidate,
+      model_id         = ModelID,
+      ntrees           = Trees)  
+  } else {
+    base_model <- h2o::h2o.gbm(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      distribution     = "multinomial",
+      training_frame   = datatrain,
+      model_id         = ModelID,
+      ntrees           = Trees)
+  }
   
   # MultiClass Get Metrics----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (!is.null(TestData)) {
       datatest        <-  h2o::as.h2o(TestData)
-      GridMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
+      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {
-      GridMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
+      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
-  } else {
+  } else if(!TrainOnFull) {
     if (!is.null(TestData)) {
       datatest    <- h2o::as.h2o(TestData)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
+  } else {
+    BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
   }
   
   # MultiClass Evaluate Metrics----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (tolower(eval_metric) == "logloss") {
       BaseMetric <- BaseMetrics@metrics$logloss
       GridMetric <- GridMetrics@metrics$logloss
       if (GridMetric < BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(GridMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetrics@metrics$logloss
-        ConfusionMatrix <-
-          data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
       }
     } else if (tolower(eval_metric) == "r2") {
       BaseMetric <- BaseMetrics@metrics$r2
@@ -347,13 +341,11 @@ AutoH2oGBMMultiClass <- function(data,
       if (GridMetric > BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(GridMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(BaseMetrics@metrics$cm)
+        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
       }
     } else if (tolower(eval_metric) == "rmse") {
       BaseMetric <- BaseMetrics@metrics$logloss
@@ -361,13 +353,11 @@ AutoH2oGBMMultiClass <- function(data,
       if (GridMetric < BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(GridMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(BaseMetrics@metrics$cm)
+        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
       }
     } else if (tolower(eval_metric) == "mse") {
       BaseMetric <- BaseMetrics@metrics$logloss
@@ -375,108 +365,76 @@ AutoH2oGBMMultiClass <- function(data,
       if (GridMetric < BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(GridMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(BaseMetrics@metrics$cm$table)
+        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
       }
     }
   } else {
     if (tolower(eval_metric) == "logloss") {
       FinalModel <- base_model
       EvalMetric <- BaseMetrics@metrics$logloss
-      ConfusionMatrix <-
-        data.table::as.data.table(BaseMetrics@metrics$cm$table)
+      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
     } else if (tolower(eval_metric) == "r2") {
       FinalModel <- base_model
       EvalMetric <- BaseMetrics@metrics$r2
-      ConfusionMatrix <-
-        data.table::as.data.table(BaseMetrics@metrics$cm$table)
+      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
     } else if (tolower(eval_metric) == "rmse") {
       FinalModel <- base_model
       EvalMetric <- BaseMetrics@metrics$RMSE
-      ConfusionMatrix <-
-        data.table::as.data.table(BaseMetrics@metrics$cm$table)
+      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
     } else if (tolower(eval_metric) == "mse") {
       FinalModel <- base_model
       EvalMetric <- BaseMetrics@metrics$MSE
-      ConfusionMatrix <-
-        data.table::as.data.table(BaseMetrics@metrics$cm$table)
+      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
     }
   }
   
   # MultiClass Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel,
-                                     path = model_path,
-                                     force = TRUE)
+      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path, force = TRUE)
       h2o::h2o.download_mojo(
         model = FinalModel,
         path = model_path,
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = ModelID
-      )
+        genmodel_name = ModelID)
     } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel,
-                                      path = model_path,
-                                      force = TRUE)
+      SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path, force = TRUE)
     }
   }
   
   # MultiClass Score Final Test Data----
   if (!is.null(TestData)) {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datatest))
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
+  } else if(!TrainOnFull) {
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
   } else {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datavalidate))
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
   }
   
   # MultiClass Variable Importance----
-  VariableImportance <-
-    data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+  VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
   
   # MultiClass Format Variable Importance Table----
   data.table::setnames(
     VariableImportance,
-    c(
-      "variable",
-      "relative_importance",
-      "scaled_importance",
-      "percentage"
-    ),
-    c(
-      "Variable",
-      "RelativeImportance",
-      "ScaledImportance",
-      "Percentage"
-    )
-  )
+    c("variable","relative_importance","scaled_importance","percentage"),
+    c("Variable","RelativeImportance","ScaledImportance","Percentage"))
   VariableImportance[, ':=' (
     RelativeImportance = round(RelativeImportance, 4),
     ScaledImportance = round(ScaledImportance, 4),
-    Percentage = round(Percentage, 4)
-  )]
+    Percentage = round(Percentage, 4))]
   
   # MultiClass Save Variable Importance----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
     } else {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
     }
   }
   
@@ -487,87 +445,53 @@ AutoH2oGBMMultiClass <- function(data,
 
   # MultiClass Create Validation Data----
   if (!is.null(TestData)) {
-    ValidationData <-
-      data.table::as.data.table(cbind(TestData, Predict))
+    ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
+    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
+  } else if(!TrainOnFull) {
+    ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
     data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
   } else {
-    ValidationData <-
-      data.table::as.data.table(cbind(dataTest, Predict))
+    ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
     data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
   }
   
   # MultiClass Metrics Accuracy----
-  MetricAcc <-
-    ValidationData[, mean(ifelse(as.character(eval(Target)) ==
-                                   as.character(Predict),
-                                 1.0,
-                                 0.0),
-                          na.rm = TRUE)]
-  
-  # MultiClass Metrics MicroAUC----
-  # y <- ValidationData[[eval(Target)]]
-  # keep <-
-  #   names(ValidationData)[(ncol(data) + 2):(ncol(ValidationData))]
-  # x <- as.matrix(ValidationData[, ..keep])
-  # z <-
-  #   tryCatch({
-  #     pROC::multiclass.roc(response = y, predictor = x)
-  #   },
-  #   error = function(x)
-  #     0)
-  # MetricAUC <- round(as.numeric(noquote(
-  #   stringr::str_extract(z$auc, "\\d+\\.*\\d*")
-  # )), 4)
+  MetricAcc <- ValidationData[, mean(data.table::fifelse(as.character(eval(Target)) == as.character(Predict),1.0,0.0),na.rm = TRUE)]
   
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
     Metric = c("Accuracy", "MicroAUC", "temp"),
-    Value = c(
-      round(MetricAcc, 4),
-      NA,
-      #round(MetricAUC, 4),
-      round(EvalMetric, 4)
-    )
-  )
-  data.table::set(
-    EvaluationMetrics,
-    i = 3L,
-    j = 1L,
-    value = paste0(eval_metric)
-  )
+    Value = c(round(MetricAcc, 4),NA,round(EvalMetric, 4)))
+  data.table::set(EvaluationMetrics,i = 3L,j = 1L,value = paste0(eval_metric))
   
   # MultiClass Save Validation Data to File----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))
+      data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
     } else {
-      data.table::fwrite(ValidationData,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))      
+      data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
     }
   }
   
   # MultiClass Save ConfusionMatrix to File----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ConfusionMatrix,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_EvaluationMetrics.csv"))
+      data.table::fwrite(ConfusionMatrix, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
-      data.table::fwrite(ConfusionMatrix,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_EvaluationMetrics.csv"))      
+      data.table::fwrite(ConfusionMatrix, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
     }
+  }
+  
+  # VI_Plot_Function
+  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+    ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, ScaledImportance), y = ScaledImportance, fill = ScaledImportance)) +
+      ggplot2::geom_bar(stat = "identity") +
+      ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+      RemixAutoAI::ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      ggplot2::coord_flip() +
+      ggplot2::labs(title = "Global Variable Importance") +
+      ggplot2::xlab("Top Model Features") +
+      ggplot2::ylab("Value")
   }
   
   # MultiClass Return Objects----
@@ -578,7 +502,8 @@ AutoH2oGBMMultiClass <- function(data,
         ValidationData = ValidationData,
         ConfusionMatrix = ConfusionMatrix,
         EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VI_Data = VariableImportance)
       )
     )
   }
