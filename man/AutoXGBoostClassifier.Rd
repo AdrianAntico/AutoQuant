@@ -4,17 +4,19 @@
 \alias{AutoXGBoostClassifier}
 \title{AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
-  eval_metric = "auc", Trees = 50, GridTune = FALSE,
+AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
+  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
+  IDcols = NULL, eval_metric = "auc", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "auc", TreeMethod = "hist",
   MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  Verbose = 0, ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  Verbose = 0, ReturnModelObjects = TRUE, ReturnFactorLevels = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
@@ -51,6 +53,8 @@ AutoXGBoostClassifier(data, ValidationData = NULL, TestData = NULL,
 \item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
+
+\item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
@@ -97,6 +101,7 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target > 0.5, 1, 0)]
 TestModel <- AutoXGBoostClassifier(data,
+                                   TrainOnFull = FALSE,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = 1,
@@ -114,6 +119,7 @@ TestModel <- AutoXGBoostClassifier(data,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 3,
                                    ReturnModelObjects = TRUE,
+                                   ReturnFactorLevels = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL)
 }

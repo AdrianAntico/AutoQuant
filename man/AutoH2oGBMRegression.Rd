@@ -4,8 +4,8 @@
 \alias{AutoH2oGBMRegression}
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
+AutoH2oGBMRegression(data, TrainOnFull = FALSE, ValidationData,
+  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
   TransformNumericColumns = NULL, Alpha = NULL,
   Distribution = "poisson", eval_metric = "RMSE", Trees = 50,
   GridTune = FALSE, MaxMem = "32G", NThreads = max(1,
@@ -17,6 +17,8 @@ AutoH2oGBMRegression(data, ValidationData, TestData = NULL,
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
@@ -102,6 +104,7 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoH2oGBMRegression(data,
+                                  TrainOnFull = FALSE,
                                   ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = "Target",

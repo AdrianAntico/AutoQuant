@@ -4,8 +4,8 @@
 \alias{AutoH2oDRFClassifier}
 \title{AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
+AutoH2oDRFClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
+  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
   eval_metric = "auc", Trees = 50, GridTune = FALSE,
   MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
   MaxModelsInGrid = 2, model_path = NULL, metadata_path = NULL,
@@ -15,6 +15,8 @@ AutoH2oDRFClassifier(data, ValidationData = NULL, TestData = NULL,
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
@@ -93,6 +95,7 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
 TestModel <- AutoH2oDRFClassifier(data,
+                                  TrainOnFull = FALSE,
                                   ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = "Target",

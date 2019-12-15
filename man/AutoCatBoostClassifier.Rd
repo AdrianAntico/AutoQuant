@@ -4,17 +4,20 @@
 \alias{AutoCatBoostClassifier}
 \title{AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostClassifier(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
-  PrimaryDateColumn = NULL, ClassWeights = NULL, IDcols = NULL,
-  task_type = "GPU", eval_metric = "AUC", Trees = 50,
-  GridTune = FALSE, grid_eval_metric = "f", MaxModelsInGrid = 10,
-  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL)
+AutoCatBoostClassifier(data, TrainOnFull = FALSE,
+  ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
+  FeatureColNames = NULL, PrimaryDateColumn = NULL,
+  ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
+  eval_metric = "AUC", Trees = 50, GridTune = FALSE,
+  grid_eval_metric = "f", MaxModelsInGrid = 10, model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -97,6 +100,7 @@ data[, Independent_Variable11 := as.factor(
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target < 0.5, 1, 0)]
 TestModel <- AutoCatBoostClassifier(data,
+                                    TrainOnFull = FALSE,
                                     ValidationData = NULL,
                                     TestData = NULL,
                                     TargetColumnName = "Target",

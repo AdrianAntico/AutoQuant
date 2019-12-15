@@ -6,7 +6,7 @@
 \usage{
 CreateHolidayVariables(data, DateCols = "DateTime",
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
-  "OtherEcclesticalFeasts"), Holidays = NULL)
+  "OtherEcclesticalFeasts"), Holidays = NULL, GroupingVars = NULL)
 }
 \arguments{
 \item{data}{This is your data}
@@ -16,6 +16,8 @@ CreateHolidayVariables(data, DateCols = "DateTime",
 \item{HolidayGroups}{Pick groups}
 
 \item{Holidays}{Pick holidays}
+
+\item{GroupingVars}{Grouping variable names}
 }
 \value{
 Returns your data.table with the added holiday indicator variable
@@ -30,7 +32,8 @@ data <- CreateHolidayVariables(data,
                                DateCols = "DateTime",
                                HolidayGroups = c("USPublicHolidays","EasterGroup",
                                                  "ChristmasGroup","OtherEcclesticalFeasts"),
-                               Holidays = NULL)
+                               Holidays = NULL,
+                               GroupingVars = NULL)
 }
 }
 \seealso{

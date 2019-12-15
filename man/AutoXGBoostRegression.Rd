@@ -4,11 +4,11 @@
 \alias{AutoXGBoostRegression}
 \title{AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostRegression(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
-  ReturnFactorLevels = FALSE, TransformNumericColumns = NULL,
-  eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "mae", TreeMethod = "hist",
+AutoXGBoostRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
+  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
+  IDcols = NULL, ReturnFactorLevels = FALSE,
+  TransformNumericColumns = NULL, eval_metric = "RMSE", Trees = 50,
+  GridTune = FALSE, grid_eval_metric = "mae", TreeMethod = "hist",
   MaxModelsInGrid = 10, NThreads = max(1, parallel::detectCores() - 2),
   model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
   NumOfParDepPlots = 3, Verbose = 0, ReturnModelObjects = TRUE,
@@ -16,6 +16,8 @@ AutoXGBoostRegression(data, ValidationData = NULL, TestData = NULL,
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters.}
 
@@ -101,6 +103,7 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoXGBoostRegression(data,
+                                   TrainOnFull = FALSE,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = 1,

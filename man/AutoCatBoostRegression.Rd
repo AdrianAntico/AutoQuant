@@ -4,9 +4,9 @@
 \alias{AutoCatBoostRegression}
 \title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
-  TargetColumnName = NULL, FeatureColNames = NULL,
-  PrimaryDateColumn = NULL, IDcols = NULL,
+AutoCatBoostRegression(data, TrainOnFull = FALSE,
+  ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
+  FeatureColNames = NULL, PrimaryDateColumn = NULL, IDcols = NULL,
   TransformNumericColumns = NULL, task_type = "GPU",
   eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
   grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
@@ -17,6 +17,8 @@ AutoCatBoostRegression(data, ValidationData = NULL, TestData = NULL,
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
+
+\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -100,6 +102,7 @@ data[, Independent_Variable11 := as.factor(
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 TestModel <- AutoCatBoostRegression(data,
+                                    TrainOnFull = FALSE,
                                     ValidationData = NULL,
                                     TestData = NULL,
                                     TargetColumnName = "Target",
