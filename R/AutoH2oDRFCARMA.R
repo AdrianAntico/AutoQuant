@@ -216,13 +216,35 @@ AutoH2oDRFCARMA <- function(data,
   }
   
   # Create Holiday Variables----
-  if (HolidayVariable) {
+  if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+    data <- CreateHolidayVariables(
+      data,
+      DateCols = eval(DateColumnName),
+      HolidayGroups = c("USPublicHolidays","EasterGroup",
+                        "ChristmasGroup","OtherEcclesticalFeasts"),
+      Holidays = NULL,
+      GroupingVars = "GroupVar")
+    
+    # Convert to lubridate as_date() or POSIXct----
+    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+    } else {
+      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    }
+  } else if(HolidayVariable) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
       HolidayGroups = c("USPublicHolidays","EasterGroup",
                         "ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
+    
+    # Convert to lubridate as_date() or POSIXct----
+    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+    } else {
+      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    }
   }
   
   # Target Transformation----
@@ -732,16 +754,6 @@ AutoH2oDRFCARMA <- function(data,
       )
     }
     
-    # Update holiday feature----
-    if (HolidayVariable) {
-      CalendarFeatures <- CreateHolidayVariables(
-        CalendarFeatures,
-        DateCols = eval(DateColumnName),
-        HolidayGroups = c("USPublicHolidays","EasterGroup",
-                          "ChristmasGroup","OtherEcclesticalFeasts"),
-        Holidays = NULL) 
-    }
-    
     # Add TimeTrendVariable----
     if (TimeTrendVariable) {
       CalendarFeatures[, TimeTrend := N + 1]
@@ -758,6 +770,22 @@ AutoH2oDRFCARMA <- function(data,
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
       UpdateData <-
         data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
+      
+      # Update holiday feature----
+      if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+        UpdateData <- CreateHolidayVariables(
+          UpdateData,
+          DateCols = eval(DateColumnName),
+          HolidayGroups = c("USPublicHolidays"),
+          Holidays = NULL, 
+          GroupingVars = "GroupVar")
+      } else if(HolidayVariable) {
+        UpdateData <- CreateHolidayVariables(
+          UpdateData,
+          DateCols = eval(DateColumnName),
+          HolidayGroups = c("USPublicHolidays"),
+          Holidays = NULL)
+      }
       
       # Update Lags and MA's----
       if (!is.null(GroupVariables)) {
