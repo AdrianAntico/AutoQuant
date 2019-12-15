@@ -79,6 +79,17 @@ ModelDataPrep <- function(data,
     }
   }
   
+  # Turn logical columns into numeric----
+  if (IntToNumeric) {
+    for (col in x) {
+      if (is.logical(data[[col]])) {
+        data.table::set(data,
+                        j = col,
+                        value = as.numeric(data[[col]]))
+      }
+    }
+  }
+  
   # Impute missing values----
   if (Impute) {
     for (col in x) {
