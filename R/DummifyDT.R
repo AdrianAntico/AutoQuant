@@ -100,7 +100,7 @@ DummifyDT <- function(data,
         inds <- sort(unique(temp[[eval(col)]]))
       } else {
         temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
-        inds <- sort(unique(temp[[eval(col)]]))        
+        inds <- sort(unique(temp[[eval(col)]]))
       }
     } else {
       inds <- sort(unique(data[[eval(col)]]))
