@@ -34,7 +34,7 @@ Imports: arules, catboost, data.table, doParallel, foreach, forecast,
         ggplot2, grid, h2o, itertools, lubridate, Matrix, methods, MLmetrics,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
         scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, wordcloud, 
-        xgboost, zoo, Rcpp
+        xgboost, zoo
 LinkingTo: Rcpp
 Suggests: knitr, rmarkdown, sde, testthat, fpp, gridExtra
 VignetteBuilder: knitr
