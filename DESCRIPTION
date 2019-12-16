@@ -35,7 +35,6 @@ Imports: arules, catboost, data.table, doParallel, foreach, forecast,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
         scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, wordcloud, 
         xgboost, zoo
-LinkingTo: Rcpp
 Suggests: knitr, rmarkdown, sde, testthat, fpp, gridExtra
 VignetteBuilder: knitr
 Additional_repositories:
