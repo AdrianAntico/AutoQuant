@@ -145,7 +145,7 @@ AutoTS <- function(data,
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
   }
-    
+  
   # Correct ordering----
   if (is.numeric(data[[1]]) | is.integer(data[[1]])) {
     data.table::setcolorder(data, c(2, 1))
@@ -1215,54 +1215,56 @@ AutoTS <- function(data,
         }
         
         # Final build----
-        if(ncol(Final_metrics) != 2) {
-          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-          Final_metrics[, Name := "ARIMA_model"]
-          WinningArimaMetrics <- Final_metrics[1,]
-          k <- Final_metrics[1,K]
-          if(k == 0) {
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")  
-          } else {
-            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")  
-          }
+        if(exists("Final_metrics")) {
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model"]
+            WinningArimaMetrics <- Final_metrics[1,]
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            } else {
+              XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            }
+          }  
         }
         
         # Model-Supplied-Freq
@@ -1381,58 +1383,60 @@ AutoTS <- function(data,
         }
         
         # Final build----
-        if(ncol(Final_metrics) != 2) {
-          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-          Final_metrics[, Name := "ARIMA_model1"]
-          if(exists("WinningArimaMetrics")) {
-            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-          } else {
-            WinningArimaMetrics <- Final_metrics[1,]
-          }
-          k <- Final_metrics[1,K]
-          if(k == 0) {
-            ARIMA_model1 <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain1[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          } else {
-            XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
-            ARIMA_model1 <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain1[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          }
+        if(exists("Final_metrics")) {
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model1"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+              ARIMA_model1 <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain1[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }  
         }
         
         # TSClean Verison
@@ -1553,58 +1557,60 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model2"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(Target, K = k)
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model2"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(Target, K = k)
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }  
           }
           
           # Model-Supplied-Freq
@@ -1724,58 +1730,60 @@ AutoTS <- function(data,
             }
             
             # Final build----
-            if(ncol(Final_metrics) != 2) {
-              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-              Final_metrics[, Name := "ARIMA_model3"]
-              if(exists("WinningArimaMetrics")) {
-                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-              } else {
-                WinningArimaMetrics <- Final_metrics[1,]
-              }
-              k <- Final_metrics[1,K]
-              if(k == 0) {
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      ic = tolower(InnerEval),
-                      lambda = TRUE,
-                      biasadj = TRUE,
-                      stepwise = StepWise,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              } else {
-                XREG <- forecast::fourier(TargetMB, K = k)
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      xreg = XREG,
-                      ic = tolower(InnerEval),
-                      lambda = TRUE,
-                      biasadj = TRUE,
-                      stepwise = StepWise,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              }
+            if(exists("Final_metrics")) {
+              if(ncol(Final_metrics) != 2) {
+                data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+                Final_metrics[, Name := "ARIMA_model3"]
+                if(exists("WinningArimaMetrics")) {
+                  WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+                } else {
+                  WinningArimaMetrics <- Final_metrics[1,]
+                }
+                k <- Final_metrics[1,K]
+                if(k == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  XREG <- forecast::fourier(TargetMB, K = k)
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+              } 
             }
           }
         }
@@ -1896,58 +1904,60 @@ AutoTS <- function(data,
         }
         
         # Final build----
-        if(ncol(Final_metrics) != 2) {
-          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-          Final_metrics[, Name := "ARIMA_model"]
-          if(exists("WinningArimaMetrics")) {
-            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-          } else {
-            WinningArimaMetrics <- Final_metrics[1,]
-          }
-          k <- Final_metrics[1,K]
-          if(k == 0) {
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  ic = tolower(InnerEval),
-                  lambda = FALSE,
-                  biasadj = FALSE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")  
-          } else {
-            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = FALSE,
-                  biasadj = FALSE,
-                  stepwise = StepWise,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")  
-          }
+        if(exists("Final_metrics")) {
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            } else {
+              XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")  
+            }
+          }  
         }
         
         # Model-Supplied-Freq
@@ -2067,58 +2077,60 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model1"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty") 
-            } else {
-              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty") 
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model1"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty") 
+              } else {
+                XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty") 
+              }
+            }  
           }
         }
         
@@ -2240,58 +2252,60 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model2"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(Target, K = k)
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model2"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(Target, K = k)
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }  
           }
           
           # Model-Supplied-Freq
@@ -2411,58 +2425,60 @@ AutoTS <- function(data,
             }
             
             # Final build----
-            if(ncol(Final_metrics) != 2) {
-              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-              Final_metrics[, Name := "ARIMA_model3"]
-              if(exists("WinningArimaMetrics")) {
-                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-              } else {
-                WinningArimaMetrics <- Final_metrics[1,]
-              }
-              k <- Final_metrics[1,K]
-              if(k == 0) {
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      ic = tolower(InnerEval),
-                      lambda = FALSE,
-                      biasadj = FALSE,
-                      stepwise = StepWise,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              } else {
-                XREG <- forecast::fourier(TargetMB, K = k)
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      xreg = XREG,
-                      ic = tolower(InnerEval),
-                      lambda = FALSE,
-                      biasadj = FALSE,
-                      stepwise = StepWise,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              }
+            if(exists("Final_metrics")) {
+              if(ncol(Final_metrics) != 2) {
+                data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+                Final_metrics[, Name := "ARIMA_model3"]
+                if(exists("WinningArimaMetrics")) {
+                  WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+                } else {
+                  WinningArimaMetrics <- Final_metrics[1,]
+                }
+                k <- Final_metrics[1,K]
+                if(k == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  XREG <- forecast::fourier(TargetMB, K = k)
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+              } 
             }
           }
         }
@@ -2587,60 +2603,62 @@ AutoTS <- function(data,
         }
         
         # Final build----
-        if(ncol(Final_metrics) != 2) {
-          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-          Final_metrics[, Name := "ARIMA_model"]
-          if(exists("WinningArimaMetrics")) {
-            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-          } else {
-            WinningArimaMetrics <- Final_metrics[1,]
-          }
-          k <- Final_metrics[1,K]
-          if(k == 0) {
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  parallel = TRUE,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          } else {
-            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = ddataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = TRUE,
-                  biasadj = TRUE,
-                  stepwise = StepWise,
-                  parallel = TRUE,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          }
+        if(exists("Final_metrics")) {
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = ddataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = TRUE,
+                    biasadj = TRUE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          } 
         }
         
         # Model-Supplied-Freq----
@@ -2762,60 +2780,62 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model1"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model1"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            } 
           }
         }
         
@@ -2939,60 +2959,62 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model2"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(Target, K = k)
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = TRUE,
-                    biasadj = TRUE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model2"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(Target, K = k)
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = TRUE,
+                      biasadj = TRUE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            } 
           }
           
           # Model-Supplied-Freq
@@ -3114,60 +3136,62 @@ AutoTS <- function(data,
             }
             
             # Final build----
-            if(ncol(Final_metrics) != 2) {
-              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-              Final_metrics[, Name := "ARIMA_model3"]
-              if(exists("WinningArimaMetrics")) {
-                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-              } else {
-                WinningArimaMetrics <- Final_metrics[1,]
-              }
-              k <- Final_metrics[1,K]
-              if(k == 0) {
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      ic = tolower(InnerEval),
-                      lambda = TRUE,
-                      biasadj = TRUE,
-                      stepwise = StepWise,
-                      parallel = TRUE,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              } else {
-                XREG <- forecast::fourier(TargetMB, K = k)
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      xreg = XREG,
-                      ic = tolower(InnerEval),
-                      lambda = TRUE,
-                      biasadj = TRUE,
-                      stepwise = StepWise,
-                      parallel = TRUE,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              }
+            if(exists("Final_metrics")) {
+              if(ncol(Final_metrics) != 2) {
+                data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+                Final_metrics[, Name := "ARIMA_model3"]
+                if(exists("WinningArimaMetrics")) {
+                  WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+                } else {
+                  WinningArimaMetrics <- Final_metrics[1,]
+                }
+                k <- Final_metrics[1,K]
+                if(k == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  XREG <- forecast::fourier(TargetMB, K = k)
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = TRUE,
+                        biasadj = TRUE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+              } 
             }
           }
         }
@@ -3290,61 +3314,63 @@ AutoTS <- function(data,
         }
         
         # Final build----
-        if(ncol(Final_metrics) != 2) {
-          data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-          Final_metrics[, Name := "ARIMA_model"]
-          if(exists("WinningArimaMetrics")) {
-            WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-          } else {
-            WinningArimaMetrics <- Final_metrics[1,]
-          }
-          k <- Final_metrics[1,K]
-          if(k == 0) {
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = dataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = FALSE,
-                  biasadj = FALSE,
-                  stepwise = StepWise,
-                  parallel = TRUE,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          } else {
-            XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
-            ARIMA_model <-
-              tryCatch({
-                forecast::auto.arima(
-                  y = dataTSTrain[, TargetName],
-                  max.p = Lags,
-                  max.q = Lags,
-                  max.P = SLags,
-                  max.Q = SLags,
-                  max.d = dataTSTrain,
-                  max.D = DdataTSTrain,
-                  xreg = XREG,
-                  ic = tolower(InnerEval),
-                  lambda = FALSE,
-                  biasadj = FALSE,
-                  stepwise = StepWise,
-                  parallel = TRUE,
-                  num.cores = NumCores
-                )
-              },
-              error = function(x)
-                "empty")
-          }
+        if(exists("Final_metrics")) {
+          if(ncol(Final_metrics) != 2) {
+            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+            Final_metrics[, Name := "ARIMA_model"]
+            if(exists("WinningArimaMetrics")) {
+              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+            } else {
+              WinningArimaMetrics <- Final_metrics[1,]
+            }
+            k <- Final_metrics[1,K]
+            if(k == 0) {
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            } else {
+              XREG <- forecast::fourier(dataTSTrain[, TargetName], K = k)
+              ARIMA_model <-
+                tryCatch({
+                  forecast::auto.arima(
+                    y = dataTSTrain[, TargetName],
+                    max.p = Lags,
+                    max.q = Lags,
+                    max.P = SLags,
+                    max.Q = SLags,
+                    max.d = dataTSTrain,
+                    max.D = DdataTSTrain,
+                    xreg = XREG,
+                    ic = tolower(InnerEval),
+                    lambda = FALSE,
+                    biasadj = FALSE,
+                    stepwise = StepWise,
+                    parallel = TRUE,
+                    num.cores = NumCores
+                  )
+                },
+                error = function(x)
+                  "empty")
+            }
+          }  
         }
         
         # Model-Supplied-Freq
@@ -3466,60 +3492,62 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model1"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
-              ARIMA_model1 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = dataTSTrain1[, TargetName],
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = ddataTSTrain1,
-                    max.D = DdataTSTrain1,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model1"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+                ARIMA_model1 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = dataTSTrain1[, TargetName],
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = ddataTSTrain1,
+                      max.D = DdataTSTrain1,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            } 
           }
         }
         
@@ -3643,60 +3671,62 @@ AutoTS <- function(data,
           }
           
           # Final build----
-          if(ncol(Final_metrics) != 2) {
-            data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-            Final_metrics[, Name := "ARIMA_model2"]
-            if(exists("WinningArimaMetrics")) {
-              WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-            } else {
-              WinningArimaMetrics <- Final_metrics[1,]
-            }
-            k <- Final_metrics[1,K]
-            if(k == 0) {
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            } else {
-              XREG <- forecast::fourier(Target, K = k)
-              ARIMA_model2 <-
-                tryCatch({
-                  forecast::auto.arima(
-                    y = Target,
-                    max.p = Lags,
-                    max.q = Lags,
-                    max.P = SLags,
-                    max.Q = SLags,
-                    max.d = dTarget,
-                    max.D = DTarget,
-                    xreg = XREG,
-                    ic = tolower(InnerEval),
-                    lambda = FALSE,
-                    biasadj = FALSE,
-                    stepwise = StepWise,
-                    parallel = TRUE,
-                    num.cores = NumCores
-                  )
-                },
-                error = function(x)
-                  "empty")
-            }
+          if(exists("Final_metrics")) {
+            if(ncol(Final_metrics) != 2) {
+              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+              Final_metrics[, Name := "ARIMA_model2"]
+              if(exists("WinningArimaMetrics")) {
+                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+              } else {
+                WinningArimaMetrics <- Final_metrics[1,]
+              }
+              k <- Final_metrics[1,K]
+              if(k == 0) {
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              } else {
+                XREG <- forecast::fourier(Target, K = k)
+                ARIMA_model2 <-
+                  tryCatch({
+                    forecast::auto.arima(
+                      y = Target,
+                      max.p = Lags,
+                      max.q = Lags,
+                      max.P = SLags,
+                      max.Q = SLags,
+                      max.d = dTarget,
+                      max.D = DTarget,
+                      xreg = XREG,
+                      ic = tolower(InnerEval),
+                      lambda = FALSE,
+                      biasadj = FALSE,
+                      stepwise = StepWise,
+                      parallel = TRUE,
+                      num.cores = NumCores
+                    )
+                  },
+                  error = function(x)
+                    "empty")
+              }
+            }  
           }
           
           # Model-Supplied-Freq
@@ -3820,60 +3850,62 @@ AutoTS <- function(data,
             }
             
             # Final build----
-            if(ncol(Final_metrics) != 2) {
-              data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
-              Final_metrics[, Name := "ARIMA_model3"]
-              if(exists("WinningArimaMetrics")) {
-                WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
-              } else {
-                WinningArimaMetrics <- Final_metrics[1,]
-              }
-              k <- Final_metrics[1,K]
-              if(k == 0) {
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      ic = tolower(InnerEval),
-                      lambda = FALSE,
-                      biasadj = FALSE,
-                      stepwise = StepWise,
-                      parallel = TRUE,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              } else {
-                XREG <- forecast::fourier(TargetMB, K = k)
-                ARIMA_model3 <-
-                  tryCatch({
-                    forecast::auto.arima(
-                      y = TargetMB,
-                      max.p = Lags,
-                      max.q = Lags,
-                      max.P = SLags,
-                      max.Q = SLags,
-                      max.d = dTSClean,
-                      max.D = DTSClean,
-                      xreg = XREG,
-                      ic = tolower(InnerEval),
-                      lambda = FALSE,
-                      biasadj = FALSE,
-                      stepwise = StepWise,
-                      parallel = TRUE,
-                      num.cores = NumCores
-                    )
-                  },
-                  error = function(x)
-                    "empty")
-              }
+            if(exists("Final_metrics")) {
+              if(ncol(Final_metrics) != 2) {
+                data.table::setorderv(Final_metrics, cols = "AbsoluteError", order = 1)
+                Final_metrics[, Name := "ARIMA_model3"]
+                if(exists("WinningArimaMetrics")) {
+                  WinningArimaMetrics <- data.table::rbindlist(list(WinningArimaMetrics, Final_metrics[1,]))
+                } else {
+                  WinningArimaMetrics <- Final_metrics[1,]
+                }
+                k <- Final_metrics[1,K]
+                if(k == 0) {
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                } else {
+                  XREG <- forecast::fourier(TargetMB, K = k)
+                  ARIMA_model3 <-
+                    tryCatch({
+                      forecast::auto.arima(
+                        y = TargetMB,
+                        max.p = Lags,
+                        max.q = Lags,
+                        max.P = SLags,
+                        max.Q = SLags,
+                        max.d = dTSClean,
+                        max.D = DTSClean,
+                        xreg = XREG,
+                        ic = tolower(InnerEval),
+                        lambda = FALSE,
+                        biasadj = FALSE,
+                        stepwise = StepWise,
+                        parallel = TRUE,
+                        num.cores = NumCores
+                      )
+                    },
+                    error = function(x)
+                      "empty")
+                }
+              } 
             }
           }
         }
@@ -5989,8 +6021,8 @@ AutoTS <- function(data,
       LagNN <- temp[order(meanResid)][1,][, 1][[1]]
       SLagNN <- temp[order(meanResid)][1,][, 2][[1]]
       fp <- ifelse(is.na(temp[order(meanResid)][1,][, 5][[1]]),
-                         0,
-                         temp[order(meanResid)][1,][, 5][[1]])
+                   0,
+                   temp[order(meanResid)][1,][, 5][[1]])
       NN_FP4 <- fp
       NN_Lags4 <- LagNN
       NN_SLags4 <- SLagNN
@@ -6786,3 +6818,4 @@ AutoTS <- function(data,
     )
   )
 }
+
