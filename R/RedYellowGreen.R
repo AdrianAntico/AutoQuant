@@ -31,7 +31,7 @@
 #'                        FalsePositiveCost = -1,
 #'                        FalseNegativeCost = -2,
 #'                        MidTierCost = -0.5,
-#'                        Precision = 0.5,
+#'                        Precision = 0.01,
 #'                        Cores = 1,
 #'                        Boundaries = c(0.05,0.75))
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
@@ -56,21 +56,21 @@ RedYellowGreen <- function(data,
   
   # Ensure arguments are valid
   if (is.character(TruePositiveCost))
-    warning("TruePositiveCost must be numeric")
+    stop("TruePositiveCost must be numeric")
   if (is.character(TrueNegativeCost))
-    warning("TruePositiveCost must be numeric")
+    stop("TruePositiveCost must be numeric")
   if (is.character(FalsePositiveCost))
-    warning("TruePositiveCost must be numeric")
+    stop("TruePositiveCost must be numeric")
   if (is.character(FalseNegativeCost))
-    warning("TruePositiveCost must be numeric")
+    stop("TruePositiveCost must be numeric")
   if (is.character(MidTierCost))
-    warning("TruePositiveCost must be numeric")
+    stop("TruePositiveCost must be numeric")
   if (Precision < 0 | Precision > 0.5)
-    warning("Precision should be a decimal value greater than 0 and less than 0.5")
-  if (min(Boundaries) < 0 | max(Boundaries) > 0.5)
-    warning("Boundaries should be a decimal value greater than 0 and less than 0.5")
+    stop("Precision should be a decimal value greater than 0 and less than 0.5")
+  if (min(Boundaries) < 0 | max(Boundaries) > 0.99999999999999999999)
+    stop("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
   if (Boundaries[1] > Boundaries[2])
-    warning("The first Boundaries element should be less than the second element")
+    stop("The first Boundaries element should be less than the second element")
   
   # Set up evaluation table
   analysisTable <- data.table::data.table(
@@ -161,17 +161,17 @@ RedYellowGreen <- function(data,
                               MidTierLowThresh = 0.25,
                               MidTierHighThresh = 0.75) {
         # Convert factor target to numeric
-        data[, eval(actTar) := base::as.numeric(base::as.character(base::get(actTar)))]
+        data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
         
         # Optimize each column's classification threshold ::
-        popTrue <- base::mean(data[[(actTar)]])
+        popTrue <- mean(data[[(actTar)]])
         store   <- list()
         j <- 0
-        base::options(warn = -1)
+        options(warn = -1)
         for (i in c(MidTierHighThresh)) {
           j <- j + 1
           if (tpProfit != 0) {
-            tp <- base::sum(base::ifelse(
+            tp <- sum(data.table::fifelse(
               !(data[[predTar]] < MidTierHighThresh &
                   data[[predTar]] > MidTierLowThresh) &
                 data[[actTar]] == 1 & data[[predTar]] >= i,
@@ -183,7 +183,7 @@ RedYellowGreen <- function(data,
           }
           if (tnProfit != 0) {
             tn <-
-              base::sum(base::ifelse(
+              sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 0 & data[[predTar]] <  i,
@@ -195,7 +195,7 @@ RedYellowGreen <- function(data,
           }
           if (fpProfit != 0) {
             fp <-
-              base::sum(base::ifelse(
+              sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 0 & data[[predTar]] >= i,
@@ -207,7 +207,7 @@ RedYellowGreen <- function(data,
           }
           if (fnProfit != 0) {
             fn <-
-              base::sum(base::ifelse(
+              sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
                   data[[actTar]] == 1 & data[[predTar]] <  i,
@@ -218,23 +218,23 @@ RedYellowGreen <- function(data,
             fp <- 0
           }
           none <-
-            base::sum(base::ifelse(
+            sum(data.table::fifelse(
               data[[predTar]] <= MidTierHighThresh &
                 data[[predTar]] >= MidTierLowThresh,
               1,
               0
             ))
           tpr     <-
-            base::ifelse((tp + fn) == 0, 0, tp / (tp + fn))
+            data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
           fpr     <-
-            base::ifelse((fp + tn) == 0, 0, fp / (fp + tn))
-          noneRate <- none / base::nrow(data)
+            data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
+          noneRate <- none / nrow(data)
           utility <-
             (1 - noneRate) * (
               popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) +
                 (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
             ) + noneRate * MidTierCost
-          store[[j]] <- base::c(i, utility)
+          store[[j]] <- c(i, utility)
         }
         all <- data.table::rbindlist(list(store))
         utilities <- data.table::melt(all[2,])
