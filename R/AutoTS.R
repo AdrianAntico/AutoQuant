@@ -135,7 +135,7 @@ AutoTS <- function(data,
   # Check for min value of data
   MinVal <- data[, min(get(TargetName))]
   
-  # Convert to lubridate as_date() or POSIXct----
+  # Convert to Date as.Date() or POSIXct----
   if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateName)]])) {
       x <- data[1,get(DateName)]
