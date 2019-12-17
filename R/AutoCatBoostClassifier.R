@@ -1048,7 +1048,7 @@ AutoCatBoostClassifier <- function(data,
       ggplot2::scale_fill_gradient2(
         mid = ColorLow,
         high = ColorHigh) +
-      RemixAutoAI::ChartTheme(
+      RemixAutoML::ChartTheme(
         Size = 12,
         AngleX = 0,
         LegendPosition = "right"

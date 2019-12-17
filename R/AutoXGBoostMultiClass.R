@@ -836,7 +836,7 @@ AutoXGBoostMultiClass <- function(data,
     ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-      RemixAutoAI::ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      RemixAutoML::ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
