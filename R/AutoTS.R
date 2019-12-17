@@ -138,7 +138,7 @@ AutoTS <- function(data,
   # Convert to lubridate as_date() or POSIXct----
   if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateName)]])) {
-      x <- data[1,get(DateColumnName)]
+      x <- data[1,get(DateName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
       data[, eval(DateName) := as.Date(get(DateName), tryFormats = x1)]
     }
