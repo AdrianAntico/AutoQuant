@@ -135,13 +135,17 @@ AutoTS <- function(data,
   # Check for min value of data
   MinVal <- data[, min(get(TargetName))]
   
-  # Convert to lubridate as_date() or POSIXct
-  if (tolower(TimeUnit) != "hour") {
-    data[, eval(DateName) := lubridate::as_date(get(DateName))]
+  # Convert to lubridate as_date() or POSIXct----
+  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(is.character(data[[eval(DateName)]])) {
+      x <- data[1,get(DateColumnName)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      data[, eval(DateName) := as.Date(get(DateName), tryFormats = x1)]
+    }
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
   }
-  
+    
   # Correct ordering----
   if (is.numeric(data[[1]]) | is.integer(data[[1]])) {
     data.table::setcolorder(data, c(2, 1))
