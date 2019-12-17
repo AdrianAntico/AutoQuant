@@ -95,13 +95,11 @@ DummifyDT <- function(data,
     
     # Import factor levels for scoring models----
     if (ImportFactorLevels) {
-      if(!is.null(FactorLevelsList)) {
-        temp <- FactorLevelsList[[eval(col)]]
-        inds <- sort(unique(temp[[eval(col)]]))
-      } else {
-        temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
-        inds <- sort(unique(temp[[eval(col)]]))
-      }
+      temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
+      inds <- sort(unique(temp[[eval(col)]]))
+    } else if(!is.null(FactorLevelsList)) {
+      temp <- FactorLevelsList[[eval(col)]]
+      inds <- sort(unique(temp[[eval(col)]])) 
     } else {
       inds <- sort(unique(data[[eval(col)]]))
     }
