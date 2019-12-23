@@ -484,10 +484,19 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Save Names of data----
-  Names <- data.table::as.data.table(names(data))
-  data.table::setnames(Names, "V1", "ColNames")
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
+    }
+  }
   if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path, "/" , ModelID, "_ColNames.csv"))
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
   # MultiClass Subset Target Variables----
@@ -742,7 +751,11 @@ AutoXGBoostMultiClass <- function(data,
   
   # MultiClass Save Model----
   if (SaveModelObjects) {
-    xgboost::xgb.save(model = model, fname = ModelID)
+    if(getwd() == model_path) {
+      xgboost::xgb.save(model = model, fname = ModelID)  
+    } else {
+      save(model, file = file.path(model_path, ModelID))
+    }    
   }
   
   # MultiClass Grid Score Model----
@@ -836,7 +849,7 @@ AutoXGBoostMultiClass <- function(data,
     ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-      RemixAutoML::ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +

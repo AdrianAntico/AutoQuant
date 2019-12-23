@@ -77,31 +77,30 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   
   # Check arguments----
   if (is.null(ScoringData)) {
-    warning("ScoringData cannot be NULL")
+    stop("ScoringData cannot be NULL")
   }
   if (!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
   }
   if (!is.logical(MDP_Impute)) {
-    warning("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+    stop("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
   }
   if (!is.logical(MDP_CharToFactor)) {
-    warning("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+    stop("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
   }
   if (!is.logical(MDP_RemoveDates)) {
-    warning("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+    stop("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
   }
   if (!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) {
-    warning("MDP_MissFactor should be a character or factor value")
+    stop("MDP_MissFactor should be a character or factor value")
   }
   if (!is.numeric(MDP_MissNum)) {
-    warning("MDP_MissNum should be a numeric or integer value")
+    stop("MDP_MissNum should be a numeric or integer value")
   }
   
   # Pull in ColNames----
   if (is.null(FeatureColumnNames)) {
-    FeatureColumnNames <-
-      data.table::fread(file = paste0(ModelID, "_ColNames.csv"))
+    FeatureColumnNames <- data.table::fread(file = paste0(ModelID, "_ColNames.csv"))
   }
   
   # Pull In Transformation Object----
@@ -110,8 +109,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       if(is.null(TargetColumnName)) {
         return("TargetColumnName needs to be supplied")
       }
-      TransformationObject <-
-        data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
+      TransformationObject <- data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
     }
   }
   
@@ -122,17 +120,11 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     CharToFactor = MDP_CharToFactor,
     RemoveDates = MDP_RemoveDates,
     MissFactor = MDP_MissFactor,
-    MissNum = MDP_MissNum
-  )
+    MissNum = MDP_MissNum)
   
   # Identify column numbers for factor variables----
-  CatFeatures <-
-    sort(c(as.numeric(which(
-      sapply(ScoringData, is.factor)
-    )),
-    as.numeric(which(
-      sapply(ScoringData, is.character)
-    ))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))),
+    as.numeric(which(sapply(ScoringData, is.character)))))
   
   # Convert CatFeatures to 1-indexed----
   if (!is.null(CatFeatures)) {
@@ -155,8 +147,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       FinalResults = tempTrans,
       Type = "Apply",
       TransID = TransID,
-      Path = TransPath
-    )
+      Path = TransPath)
   }
   
   # Convert FeatureColumnNames to Character Names----
@@ -170,8 +161,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
     if(!is.null(TargetColumnName)) {
       if (TargetColumnName %chin% FeatureColumnNames) {
-        FeatureColumnNames <-
-          FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+        FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
       }    
     }     
   }
@@ -194,22 +184,17 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   
   # Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
-    ScoringPool <-
-      catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
+    ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
-    ScoringPool <-
-      catboost::catboost.load_pool(ScoringData)
+    ScoringPool <- catboost::catboost.load_pool(ScoringData)
   }
   
   # Load model----
   if (!is.null(ModelObject)) {
     model <- ModelObject
   } else {
-    model <- tryCatch({
-      catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))
-    },
-    error = function(x)
-      return("Model not found in ModelPath"))
+    model <- tryCatch({catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))},
+    error = function(x) return("Model not found in ModelPath"))
   }
   
   # Score model----
@@ -219,31 +204,24 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         model = model,
         pool = ScoringPool,
         prediction_type = "RawFormulaVal",
-        thread_count = -1
-      )
-    )
+        thread_count = -1))
   } else if (tolower(TargetType) == "classification") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = model,
         pool = ScoringPool,
         prediction_type = "Probability",
-        thread_count = -1
-      )
-    )
+        thread_count = -1))
   } else if (tolower(TargetType) == "multiclass") {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = model,
         pool = ScoringPool,
-        prediction_type = "Class"
-      ),
+        prediction_type = "Class"),
       catboost::catboost.predict(
         model = model,
         pool = ScoringPool,
-        prediction_type = "Probability"
-      )
-    ))
+        prediction_type = "Probability")))
   }
   
   # Remove Model----
@@ -258,8 +236,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(!is.null(MultiClassTargetLevels)) {
       TargetLevels <- MultiClassTargetLevels
     } else {
-      TargetLevels <-
-        data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))      
+      TargetLevels <- data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))      
     }
     k <- 1
     for (name in as.character(TargetLevels[[1]])) {
@@ -272,8 +249,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TargetLevels,
       by.x = "Predictions",
       by.y = "NewLevels",
-      all = FALSE
-    )
+      all = FALSE)
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
   
@@ -292,10 +268,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       grid_trans_results,
       i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
       j = "ColumnName",
-      value = "Predictions"
-    )
-    grid_trans_results <-
-      grid_trans_results[ColumnName != eval(TargetColumnName)]
+      value = "Predictions")
+    grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
@@ -303,8 +277,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       Type = "Inverse",
       FinalResults = grid_trans_results,
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
   }
   
   # Garbage Collection----

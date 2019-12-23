@@ -118,7 +118,7 @@ AutoH2oDRFRegression <- function(data,
   if (!is.null(metadata_path)) {
     if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if (!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
   if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
@@ -279,6 +279,22 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
+  
+  # Regression Save Names of data----
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
+    }
+  }
+  if (SaveModelObjects) {
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
+  }
   
   # Regression Grid Tune Check----
   if(GridTune == TRUE & TrainOnFull == FALSE) {
@@ -927,7 +943,7 @@ AutoH2oDRFRegression <- function(data,
       ggplot2::scale_fill_gradient2(
         mid = ColorLow,
         high = ColorHigh) +
-      RemixAutoML::ChartTheme(
+      ChartTheme(
         Size = 12,
         AngleX = 0,
         LegendPosition = "right"
@@ -954,7 +970,8 @@ AutoH2oDRFRegression <- function(data,
             VI_Plot = VI_Plot(VI_Data = VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
-            TransformationInformation = TransformationResults
+            TransformationInformation = TransformationResults,
+            ColNames = Names
           )
         )
       } else {
@@ -968,7 +985,8 @@ AutoH2oDRFRegression <- function(data,
             VariableImportance = VariableImportance,
             VI_Plot = VI_Plot(VI_Data = VariableImportance),
             PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            ColNames = Names
           )
         )      
       }      
@@ -978,14 +996,16 @@ AutoH2oDRFRegression <- function(data,
           list(
             Model = FinalModel,
             ValidationData = ValidationData,
-            TransformationInformation = TransformationResults
+            TransformationInformation = TransformationResults,
+            ColNames = Names
           )
         )
       } else {
         return(
           list(
             Model = FinalModel,
-            ValidationData = ValidationData
+            ValidationData = ValidationData,
+            ColNames = Names
           )
         )      
       }

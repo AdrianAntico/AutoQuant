@@ -119,31 +119,23 @@ AutoH2oGBMRegression <- function(data,
                                  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")) {
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
-    warning("eval_metric not in MSE, RMSE, MAE, RMSLE")
+    stop("eval_metric not in MSE, RMSE, MAE, RMSLE")
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
+  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1")
+    stop("MaxModelsInGrid needs to be at least 1")
   }
   if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
+    if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
   if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path))
-      warning("metadata_path needs to be a character type")
+    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (NumOfParDepPlots < 0)
-    warning("NumOfParDepPlots needs to be a positive number")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
+  if (!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
+  if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
+  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
@@ -308,6 +300,22 @@ AutoH2oGBMRegression <- function(data,
   } else if (MinVal == 0 &
              tolower(Distribution) %chin% c("gamma", "tweedie")) {
     Distribution <- "poisson"
+  }
+  
+  # Regression Save Names of data----
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
+    }
+  }
+  if (SaveModelObjects) {
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
   # Regression Grid Tune Check----
@@ -1100,7 +1108,7 @@ AutoH2oGBMRegression <- function(data,
       ggplot2::scale_fill_gradient2(
         mid = ColorLow,
         high = ColorHigh) +
-      RemixAutoML::ChartTheme(
+      RemixAutoAI::ChartTheme(
         Size = 12,
         AngleX = 0,
         LegendPosition = "right"
@@ -1127,7 +1135,8 @@ AutoH2oGBMRegression <- function(data,
             VI_Plot = VI_Plot(VI_Data = VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
-            TransformationInformation = TransformationResults
+            TransformationInformation = TransformationResults,
+            ColNames = Names
           )
         )
       } else {
@@ -1141,7 +1150,8 @@ AutoH2oGBMRegression <- function(data,
             VariableImportance = VariableImportance,
             VI_Plot = VI_Plot(VI_Data = VariableImportance),
             PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots
+            PartialDependenceBoxPlots = ParDepBoxPlots,
+            ColNames = Names
           )
         )
       }      
@@ -1151,14 +1161,16 @@ AutoH2oGBMRegression <- function(data,
           list(
             Model = FinalModel,
             ValidationData = ValidationData,
-            TransformationInformation = TransformationResults
+            TransformationInformation = TransformationResults,
+            ColNames = Names
           )
         )
       } else {
         return(
           list(
             Model = FinalModel,
-            ValidationData = ValidationData
+            ValidationData = ValidationData,
+            ColNames = Names
           )
         )
       }

@@ -102,31 +102,23 @@ AutoH2oGBMClassifier <- function(data,
                                  H2OShutdown = FALSE) {
   # Binary Check Arguments----
   if (!(tolower(eval_metric) %chin% c("auc", "logloss"))) {
-    warning("eval_metric not in AUC, logloss")
+    stop("eval_metric not in AUC, logloss")
   }
-  if (Trees < 1)
-    warning("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE))
-    warning("GridTune needs to be TRUE or FALSE")
+  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1 & GridTune == TRUE) {
-    warning("MaxModelsInGrid needs to be at least 1")
+    stop("MaxModelsInGrid needs to be at least 1")
   }
   if (!is.null(model_path)) {
-    if (!is.character(model_path))
-      warning("model_path needs to be a character type")
+    if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
   if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path))
-      warning("metadata_path needs to be a character type")
+    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID))
-    warning("ModelID needs to be a character type")
-  if (NumOfParDepPlots < 0)
-    warning("NumOfParDepPlots needs to be a positive number")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE)))
-    warning("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE)))
-    warning("SaveModelObjects needs to be TRUE or FALSE")
+  if (!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
+  if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
+  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if (!(tolower(eval_metric) == "auc")) {
     eval_metric <- tolower(eval_metric)
   } else {
@@ -172,59 +164,44 @@ AutoH2oGBMClassifier <- function(data,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = Target,
-      TimeColumnName = NULL
-    )
+      TimeColumnName = NULL)
     data <- dataSets$TrainData
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
   
   # Binary ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data,
-                             Impute = FALSE,
-                             CharToFactor = TRUE)
+  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   
   # Binary ModelDataPrep----
-  dataTest <- ModelDataPrep(data = ValidationData,
-                            Impute = FALSE,
-                            CharToFactor = TRUE)
+  dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   
   # Binary ModelDataPrep----
   if (!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
   }
   
-  # Binary Get Min Value of Target Data----
-  MinVal <- min(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
-  MaxVal <- max(as.numeric(data[[eval(Target)]]), na.rm = TRUE)
-  if (MaxVal - MinVal > 1)
-    warning("Target Variable is not binary")
-  
-  # Binary Ensure Target Is a Factor Type----
-  if (!is.factor(dataTrain[[eval(Target)]])) {
-    dataTrain[, eval(Target) := as.factor(get(Target))]
-  }
-  
-  # Binary Ensure Target Is a Factor Type----
-  if (!is.factor(dataTest[[eval(Target)]])) {
-    dataTest[, eval(Target) := as.factor(get(Target))]
-  }
-  
-  # Binary Ensure Target Is a Factor Type----
-  if (!is.null(TestData)) {
-    if (!is.factor(TestData[[eval(Target)]])) {
-      TestData[, eval(Target) := as.factor(get(Target))]
+  # Binary Save Names of data----
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
     }
+  }
+  if (SaveModelObjects) {
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
   # Binary Grid Tune Check----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
+    
     # Binary Start Up H2O----
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  nthreads = NThreads,
-                  enable_assertions = FALSE)
+    h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
@@ -238,8 +215,7 @@ AutoH2oGBMClassifier <- function(data,
       seed                 = 1234,
       stopping_rounds      = 10,
       stopping_metric      = eval_metric,
-      stopping_tolerance   = 1e-3
-    )
+      stopping_tolerance   = 1e-3)
     
     # Binary Grid Parameters----
     hyper_params <- list(
@@ -253,8 +229,7 @@ AutoH2oGBMClassifier <- function(data,
       nbins_cats                       = c(64, 256, 512),
       histogram_type                   = c("UniformAdaptive",
                                            "QuantilesGlobal",
-                                           "RoundRobin")
-    )
+                                           "RoundRobin"))
     
     # Binary Grid Train Model----
     grid <- h2o::h2o.grid(
@@ -274,15 +249,13 @@ AutoH2oGBMClassifier <- function(data,
       stopping_tolerance   = 1e-3,
       stopping_metric      = eval_metric,
       score_tree_interval  = 10,
-      seed                 = 1234
-    )
+      seed                 = 1234)
     
     # Binary Get Best Model----
     Grid_Out   <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
-      decreasing = Decreasing
-    )
+      decreasing = Decreasing)
     
     # Binary Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
@@ -302,69 +275,49 @@ AutoH2oGBMClassifier <- function(data,
   base_model <- h2o::h2o.gbm(
     x                = FeatureColNames,
     y                = TargetColumnName,
-    distribution     = "bernoulli",
     training_frame   = datatrain,
     validation_frame = datavalidate,
     model_id         = ModelID,
-    ntrees           = Trees
-  )
+    ntrees           = Trees)
   
   # Binary Get Metrics----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (!is.null(TestData)) {
       datatest        <-  h2o::as.h2o(TestData)
-      GridMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
+      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {
-      GridMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
+      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
   } else {
     if (!is.null(TestData)) {
       datatest        <-  h2o::as.h2o(TestData)
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datatest)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {
-      BaseMetrics <- h2o::h2o.performance(model = base_model,
-                                          newdata = datavalidate)
+      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
   }
   
   # Binary Evaluate Metrics----
-  if (GridTune) {
+  if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (tolower(eval_metric) == "auc") {
       BaseMetric <- BaseMetrics@metrics$AUC
       GridMetric <- GridMetrics@metrics$AUC
       if (GridMetric > BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        FinalThresholdTable <-
-          data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(
-          FinalThresholdTable,
-          c("metric", "threshold", "value"),
-          c("Metric", "Threshold", "Value")
-        )
+        FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable, c("metric", "threshold", "value"), c("Metric", "Threshold", "Value"))
         FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                    Value = round(Value, 4))]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4), Value = round(Value, 4))]
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <-
-          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(
-          FinalThresholdTable,
-          c("metric", "threshold", "value"),
-          c("Metric", "Threshold", "Value")
-        )
+        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
         FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                    Value = round(Value, 4))]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
       }
     } else if (tolower(eval_metric) == "logloss") {
       BaseMetric <- BaseMetrics@metrics$logloss
@@ -372,135 +325,97 @@ AutoH2oGBMClassifier <- function(data,
       if (GridMetric < BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
-        FinalThresholdTable <-
-          data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(
-          FinalThresholdTable,
-          c("metric", "threshold", "value"),
-          c("Metric", "Threshold", "Value")
-        )
+        FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
         FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                    Value = round(Value, 4))]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
       } else {
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <-
-          data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(
-          FinalThresholdTable,
-          c("metric", "threshold", "value"),
-          c("Metric", "Threshold", "Value")
-        )
+        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
         FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                    Value = round(Value, 4))]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
       }
+    } else {
+      FinalModel <- base_model
     }
   } else {
-    if (tolower(eval_metric) == "auc") {
-      BaseMetric <- BaseMetrics@metrics$AUC
-      FinalModel <- base_model
-      EvalMetric <- BaseMetrics@metrics$AUC
-      FinalThresholdTable <-
-        data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-      data.table::setnames(
-        FinalThresholdTable,
-        c("metric", "threshold", "value"),
-        c("Metric", "Threshold", "Value")
-      )
-      FinalThresholdTable[, idx := NULL]
-      FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                  Value = round(Value, 4))]
+    if(!is.numeric(data[[eval(TargetColumnName)]])) {
+      if (tolower(eval_metric) == "auc") {
+        BaseMetric <- BaseMetrics@metrics$AUC
+        FinalModel <- base_model
+        EvalMetric <- BaseMetrics@metrics$AUC
+        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
+        FinalThresholdTable[, idx := NULL]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
+      } else {
+        BaseMetric <- BaseMetrics@metrics$logloss
+        FinalModel <- base_model
+        EvalMetric <- BaseMetric
+        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
+        data.table::setnames(FinalThresholdTable, c("metric", "threshold", "value"), c("Metric", "Threshold", "Value"))
+        FinalThresholdTable[, idx := NULL]
+        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
+      }      
     } else {
-      BaseMetric <- BaseMetrics@metrics$logloss
       FinalModel <- base_model
-      EvalMetric <- BaseMetric
-      FinalThresholdTable <-
-        data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-      data.table::setnames(
-        FinalThresholdTable,
-        c("metric", "threshold", "value"),
-        c("Metric", "Threshold", "Value")
-      )
-      FinalThresholdTable[, idx := NULL]
-      FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),
-                                  Value = round(Value, 4))]
     }
   }
   
   # Binary Save Final Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel,
-                                     path = model_path,
-                                     force = TRUE)
+      SaveModel <- h2o::h2o.saveMojo(object = FinalModel,path = model_path,force = TRUE)
       h2o::h2o.download_mojo(
         model = FinalModel,
         path = model_path,
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = ModelID
-      )
+        genmodel_name = ModelID)
     } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel,
-                                      path = model_path,
-                                      force = TRUE)
+      SaveModel <- h2o::h2o.saveModel(object = FinalModel,path = model_path,force = TRUE)
     }
   }
   
   # Binary Score Final Test Data----
-  if (!is.null(TestData)) {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datatest))
-    Predict[, p0 := NULL]
-    
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    if(!is.null(TestData)) {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
+      Predict[, p0 := NULL]
+    } else {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
+      Predict[, p0 := NULL]
+    }  
   } else {
-    Predict <-
-      data.table::as.data.table(h2o::h2o.predict(object = FinalModel,
-                                                 newdata = datavalidate))
-    Predict[, p0 := NULL]
+    if(!is.null(TestData)) {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
+      data.table::setnames(Predict, "predict", "predict")
+    } else {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
+      data.table::setnames(Predict, "predict", "predict")
+    }
   }
   
   # Binary Variable Importance----
-  VariableImportance <-
-    data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
+  VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
   
   # Binary Format Variable Importance Table----
-  data.table::setnames(
-    VariableImportance,
-    c(
-      "variable",
-      "relative_importance",
-      "scaled_importance",
-      "percentage"
-    ),
-    c(
-      "Variable",
-      "RelativeImportance",
-      "ScaledImportance",
-      "Percentage"
-    )
-  )
+  data.table::setnames(VariableImportance,
+                       c("variable","relative_importance","scaled_importance","percentage"),
+                       c("Variable","RelativeImportance","ScaledImportance","Percentage"))
   VariableImportance[, ':=' (
     RelativeImportance = round(RelativeImportance, 4),
     ScaledImportance = round(ScaledImportance, 4),
-    Percentage = round(Percentage, 4)
-  )]
+    Percentage = round(Percentage, 4))]
   
   # Binary Save Variable Importance----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance,file = paste0(metadata_path,"/",ModelID, "_VariableImportance.csv"))
     } else {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance,file = paste0(model_path,"/",ModelID, "_VariableImportance.csv"))
     }
   }
   
@@ -508,14 +423,12 @@ AutoH2oGBMClassifier <- function(data,
   if(H2OShutdown) {
     h2o::h2o.shutdown(prompt = FALSE)    
   }
-
+  
   # Binary Create Validation Data----
   if (!is.null(TestData)) {
-    ValidationData <-
-      data.table::as.data.table(cbind(TestData, Predict))
+    ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
   } else {
-    ValidationData <-
-      data.table::as.data.table(cbind(dataTest, Predict))
+    ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
   }
   
   # Binary Change Prediction Name----
@@ -524,192 +437,188 @@ AutoH2oGBMClassifier <- function(data,
   # Binary Save Validation Data to File----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))
+      data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
     } else {
-      data.table::fwrite(ValidationData,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))      
+      data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
     }
   }
   
   # Binary Evaluation Calibration Plot----
-  EvaluationPlot <- EvalPlot(
-    data = ValidationData,
-    PredictionColName = "p1",
-    TargetColName = Target,
-    GraphType = "calibration",
-    PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    EvaluationPlot <- EvalPlot(
+      data = ValidationData,
+      PredictionColName = "p1",
+      TargetColName = Target,
+      GraphType = "calibration",
+      PercentileBucket = 0.05,
+      aggrfun = function(x) mean(x, na.rm = TRUE))  
+  } else {
+    EvaluationPlot <- EvalPlot(
+      data = ValidationData,
+      PredictionColName = "Predict",
+      TargetColName = Target,
+      GraphType = "calibration",
+      PercentileBucket = 0.05,
+      aggrfun = function(x) mean(x, na.rm = TRUE))
+  }
   
   # Binary Evaluation Plot Update Title----
-  if (GridTune) {
-    EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0(
-        "GBM Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(EvalMetric@metrics$AUC, 3)
-      ))
-  } else {
-    EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0(
-        "Calibration Evaluation Plot: ",
-        toupper(eval_metric),
-        " = ",
-        round(EvalMetric, 3)
-      ))
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    if (GridTune) {
+      EvaluationPlot <- EvaluationPlot +
+        ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3)))
+    } else {
+      EvaluationPlot <- EvaluationPlot +
+        ggplot2::ggtitle(paste0("Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3)))
+    }  
   }
   
   # Binary Save plot to file----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(paste0(metadata_path,
-                             "/",
-                             ModelID,
-                             "_EvaluationPlot.png"))
+      ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationPlot.png"))
     } else {
-      ggplot2::ggsave(paste0(model_path,
-                             "/",
-                             ModelID,
-                             "_EvaluationPlot.png"))      
+      ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))      
     }
   }
   
   # Binary AUC Object Create----
-  AUC_Metrics <-
-    pROC::roc(
-      response = ValidationData[[eval(Target)]],
-      predictor = ValidationData[["p1"]],
-      na.rm = TRUE,
-      algorithm = 3,
-      auc = TRUE,
-      ci = TRUE
-    )
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
+                             predictor = ValidationData[["p1"]],
+                             na.rm = TRUE,
+                             algorithm = 3,
+                             auc = TRUE,
+                             ci = TRUE)  
+  } else {
+    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
+                             predictor = ValidationData[["Predict"]],
+                             na.rm = TRUE,
+                             algorithm = 3,
+                             auc = TRUE,
+                             ci = TRUE)
+  }
   
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
-    Specificity = AUC_Metrics$specificities
-  )
+    Specificity = AUC_Metrics$specificities)
   
   # Binary Plot ROC Curve----
-  ROC_Plot <-
-    ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
+  ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
-    ggplot2::ggtitle(paste0("GBM AUC: ",
-                            100 * round(AUC_Metrics$auc, 3), "%")) +
+    ggplot2::ggtitle(paste0("GBM AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
   
   # Save plot to file
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(paste0(metadata_path,
-                             "/",
-                             ModelID,
-                             "_ROC_Plot.png"))
+      ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_ROC_Plot.png"))
     } else {
-      ggplot2::ggsave(paste0(model_path,
-                             "/",
-                             ModelID,
-                             "_ROC_Plot.png"))      
+      ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))      
     }
   }
   
   # Binary Save EvaluationMetrics to File----
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(FinalThresholdTable,
-                         file = paste0(metadata_path,
-                                       "/",
-                                       ModelID,
-                                       "_EvaluationMetrics.csv"))
-    } else {
-      data.table::fwrite(FinalThresholdTable,
-                         file = paste0(model_path,
-                                       "/",
-                                       ModelID,
-                                       "_EvaluationMetrics.csv"))      
-    }
+  if(exists("FinalThresholdTable")) {
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(FinalThresholdTable,file = paste0(metadata_path,"/",ModelID,"_EvaluationMetrics.csv"))
+      } else {
+        data.table::fwrite(FinalThresholdTable, file = paste0(model_path,"/",ModelID,"_EvaluationMetrics.csv"))      
+      }
+    }  
   }
   
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-    tryCatch({
-      Out <- ParDepCalPlots(
-        data = ValidationData,
-        PredictionColName = "p1",
-        TargetColName = Target,
-        IndepVar = VariableImportance[i, Variable],
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      j <- j + 1
-      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-        Out
-    }, error = function(x)
-      "skip")
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "p1",
+          TargetColName = Target,
+          IndepVar = VariableImportance[i, Variable],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x) mean(x, na.rm = TRUE))
+        
+        j <- j + 1
+        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+      }, error = function(x) "skip")
+    }
+  } else {
+    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "Predict",
+          TargetColName = Target,
+          IndepVar = VariableImportance[i, Variable],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x) mean(x, na.rm = TRUE))
+        
+        j <- j + 1
+        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+      }, error = function(x) "skip")
+    }
   }
   
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      save(ParDepPlots,
-           file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+      save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
     } else {
-      save(ParDepPlots,
-           file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+      save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
     }
   }
-             
+  
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, ScaledImportance), y = ScaledImportance, fill = ScaledImportance)) +
       ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(
-        mid = ColorLow,
-        high = ColorHigh) +
-      RemixAutoML::ChartTheme(
-        Size = 12,
-        AngleX = 0,
-        LegendPosition = "right"
-      ) +
+      ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+      ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
       ggplot2::coord_flip() +
-      ggplot2::labs(
-        title = "Global Variable Importance") +
+      ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }
   
   # Binary Return Objects----
   if (ReturnModelObjects) {
-    return(
-      list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = FinalThresholdTable,
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-        PartialDependencePlots = ParDepPlots
-      )
-    )
+    if(!is.numeric(data[[eval(TargetColumnName)]])) {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          ROC_Plot = ROC_Plot,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationMetrics = FinalThresholdTable,
+          VariableImportance = VariableImportance,
+          VI_Plot = VI_Plot(VI_Data = VariableImportance),
+          PartialDependencePlots = ParDepPlots,
+          ColNames = Names))
+    } else {
+      return(
+        list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          ROC_Plot = ROC_Plot,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationMetrics = NULL,
+          VariableImportance = VariableImportance,
+          VI_Plot = VI_Plot(VI_Data = VariableImportance),
+          PartialDependencePlots = ParDepPlots,
+          ColNames = Names))
+    }
   }
 }

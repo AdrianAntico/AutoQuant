@@ -116,7 +116,7 @@ AutoH2oDRFMultiClass <- function(data,
   if (!is.null(metadata_path)) {
     if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   }
-  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if (!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if (!(tolower(eval_metric) == "auc")) {
@@ -201,6 +201,22 @@ AutoH2oDRFMultiClass <- function(data,
     if (!is.factor(TestData[[eval(Target)]])) {
       TestData[, eval(Target) := as.factor(get(Target))]
     }
+  }
+  
+  # MultiClass Save Names of data----
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
+    }
+  }
+  if (SaveModelObjects) {
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
   # MultiClass Grid Tune Check----
@@ -463,9 +479,15 @@ AutoH2oDRFMultiClass <- function(data,
   }
   
   # MultiClass Metrics Accuracy----
-  ValidationData[, eval(Target) := as.character(get(Target))]
-  ValidationData[, Predict := as.character(Predict)]
-  MetricAcc <- ValidationData[, mean(data.table::fifelse(get(Target) == Predict, 1, 0), na.rm = TRUE)]
+  if(TargetColumnName == "Target") {
+    ValidationData[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
+    ValidationData[, Predict := as.character(Predict)]
+    MetricAcc <- ValidationData[, mean(data.table::fifelse(get(TargetColumnName) == Predict, 1.0, 0.0), na.rm = TRUE)]
+  } else {
+    ValidationData[, eval(Target) := as.character(get(Target))]
+    ValidationData[, Predict := as.character(Predict)]
+    MetricAcc <- ValidationData[, mean(data.table::fifelse(get(Target) == Predict, 1.0, 0.0), na.rm = TRUE)]
+  }
   
   # MultiClass Evaluation Metrics Table----
   EvaluationMetrics <- data.table::data.table(
@@ -498,7 +520,7 @@ AutoH2oDRFMultiClass <- function(data,
       ggplot2::scale_fill_gradient2(
         mid = ColorLow,
         high = ColorHigh) +
-      RemixAutoML::ChartTheme(
+      ChartTheme(
         Size = 12,
         AngleX = 0,
         LegendPosition = "right") +
@@ -518,7 +540,8 @@ AutoH2oDRFMultiClass <- function(data,
         ConfusionMatrix = ConfusionMatrix,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance)
+        VI_Plot = VI_Plot(VI_Data = VariableImportance),
+        ColNames = Names
       )
     )
   }

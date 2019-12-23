@@ -401,10 +401,19 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Save Names of data----
-  Names <- data.table::as.data.table(names(data))
-  data.table::setnames(Names, "V1", "ColNames")
+  if(is.numeric(FeatureColNames)) {
+    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    data.table::setnames(Names, "V1", "ColNames")
+  } else {
+    Names <- data.table::as.data.table(FeatureColNames)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames", "ColNames")
+    } else {
+      data.table::setnames(Names, "V1", "ColNames")
+    }
+  }
   if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path,"/", ModelID, "_ColNames.csv"))
+    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   }
   
   # Regression Get Min Value of Target Data----
@@ -1178,7 +1187,7 @@ AutoCatBoostRegression <- function(data,
       ggplot2::scale_fill_gradient2(
         mid = ColorLow,
         high = ColorHigh) +
-      RemixAutoML::ChartTheme(
+      ChartTheme(
         Size = 12,
         AngleX = 0,
         LegendPosition = "right"
