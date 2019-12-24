@@ -112,9 +112,9 @@ AutoCatBoostClassifier <- function(data,
   # Binary Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
   if (!(tolower(eval_metric) %chin% c("logloss","crossentropy","precision","recall","f1",
-      "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
-      "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
-      "wkappa","loglikelihoodofprediction")
+                                      "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
+                                      "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
+                                      "wkappa","loglikelihoodofprediction")
   )) {
     stop(
       "eval_metric not in c('Logloss','CrossEntropy',
@@ -156,7 +156,7 @@ AutoCatBoostClassifier <- function(data,
   if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -198,8 +198,7 @@ AutoCatBoostClassifier <- function(data,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = eval(Target),
-      TimeColumnName = NULL
-    )
+      TimeColumnName = NULL)
     data <- dataSets$TrainData
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
@@ -230,9 +229,7 @@ AutoCatBoostClassifier <- function(data,
     if (!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
       if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-        data.table::set(TestData,
-                        j = eval(PrimaryDateColumn),
-                        value = NULL)
+        data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
       }
     }
   }
@@ -279,7 +276,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-    as.numeric(which(sapply(data, is.character)))))
+                        as.numeric(which(sapply(data, is.character)))))
   
   # Binary Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
@@ -493,13 +490,8 @@ AutoCatBoostClassifier <- function(data,
           Threshold = seq(0.01, 0.99, 0.001))
         for (k in unique(x[["Threshold"]])) {
           j = as.integer(j + 1)
-          Accuracy <- mean(calibEval[, data.table::fifelse(p1 > k &
-                                                             Target == 1 |
-                                                             p1 < k & Target == 0, 1, 0)])
-          data.table::set(x,
-                          i = j,
-                          j = 2L,
-                          value = round(Accuracy, 4))
+          Accuracy <- mean(calibEval[, data.table::fifelse(p1 > k & Target == 1 | p1 < k & Target == 0, 1, 0)])
+          data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4))
         }
         data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
         Metric <- x[1, MetricValue]
@@ -508,8 +500,7 @@ AutoCatBoostClassifier <- function(data,
         y <- ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
         if (any(
           nrow(data.table::as.data.table(y@y.values)) <= 1 |
-          nrow(data.table::as.data.table(y@x.values)) <= 1
-        )) {
+          nrow(data.table::as.data.table(y@x.values)) <= 1)) {
           if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
               nrow(data.table::as.data.table(y@x.values)) <= 1) {
             z <- data.table::as.data.table(cbind(
@@ -558,45 +549,25 @@ AutoCatBoostClassifier <- function(data,
         na.rm = TRUE,
         algorithm = 3,
         auc = TRUE,
-        ci = TRUE
-      )
+        ci = TRUE)
       
       # Binary AUC Conversion to data.table----
       AUC_List[[i]] <- data.table::data.table(
         ModelNumber = i,
         Sensitivity = as.numeric(AUC_Metrics$sensitivities + 0.0001),
-        Specificity = as.numeric(AUC_Metrics$specificities + 0.0001)
-      )
+        Specificity = as.numeric(AUC_Metrics$specificities + 0.0001))
       
       # Store Output Information
       if (tolower(grid_eval_metric) == "accuracy") {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric)
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric)
       } else if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
                      nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric)
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric)
       } else {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric[, 1])
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric[, 1])
       }
     }
   }
@@ -617,8 +588,7 @@ AutoCatBoostClassifier <- function(data,
             best_model_min_trees = 10,
             metric_period        = 10,
             task_type            = task_type,
-            class_weights        = ClassWeights
-          )
+            class_weights        = ClassWeights)
         } else {
           base_params <- list(
             iterations           = Trees,
@@ -628,8 +598,7 @@ AutoCatBoostClassifier <- function(data,
             has_time             = HasTime,
             best_model_min_trees = 10,
             metric_period        = 10,
-            task_type            = task_type
-          )
+            task_type            = task_type)
         }
       } else {
         BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
@@ -643,8 +612,7 @@ AutoCatBoostClassifier <- function(data,
             best_model_min_trees = 10,
             metric_period        = 10,
             task_type            = task_type,
-            class_weights        = ClassWeights
-          )
+            class_weights        = ClassWeights)
         } else {
           base_params <- list(
             iterations           = Trees,
@@ -654,11 +622,9 @@ AutoCatBoostClassifier <- function(data,
             has_time             = HasTime,
             best_model_min_trees = 10,
             metric_period        = 10,
-            task_type            = task_type
-          )
+            task_type            = task_type)
         }
-        base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), base_params)
+        base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
       }
     } else {
       BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
@@ -674,8 +640,7 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type,
-        class_weights        = ClassWeights
-      )
+        class_weights        = ClassWeights)
     } else {
       base_params <- list(
         iterations           = Trees,
@@ -685,11 +650,9 @@ AutoCatBoostClassifier <- function(data,
         has_time             = HasTime,
         best_model_min_trees = 10,
         metric_period        = 10,
-        task_type            = task_type
-      )
+        task_type            = task_type)
     }
-    base_params <-
-      c(as.list(catboostGridList[BestGrid, ]), base_params)
+    base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
   } else {
     if (!is.null(ClassWeights)) {
       base_params <- list(
@@ -701,8 +664,7 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type,
-        class_weights        = ClassWeights
-      )
+        class_weights        = ClassWeights)
     } else {
       base_params <- list(
         iterations           = Trees,
@@ -712,8 +674,7 @@ AutoCatBoostClassifier <- function(data,
         has_time             = HasTime,
         best_model_min_trees = 10,
         metric_period        = 10,
-        task_type            = task_type
-      )
+        task_type            = task_type)
     }
     if (!is.null(PassInGrid)) {
       base_params <- c(base_params, as.list(PassInGrid[1,]))
@@ -732,8 +693,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Save Model----
   if (SaveModelObjects) {
-    catboost::catboost.save_model(model = model,
-                                  model_path = paste0(model_path, "/", ModelID))
+    catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
   }
   
   # Binary Score Final Test Data----
@@ -776,11 +736,9 @@ AutoCatBoostClassifier <- function(data,
   # Save Validation Data to File----
   if (SaveModelObjects & TrainOnFull != TRUE) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData,
-                         file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
+      data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
     } else {
-      data.table::fwrite(ValidationData,
-                         file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
     }
   }
   
@@ -809,11 +767,7 @@ AutoCatBoostClassifier <- function(data,
       temp <- data.table::rbindlist(AUC_List)
       AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
       AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-      ROC_Plot <- ggplot2::ggplot(AUC_Data,
-                                  ggplot2::aes(
-                                    x = 1 - Specificity,
-                                    group = ModelNumber,
-                                    color = ModelNumber)) +
+      ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity,group = ModelNumber,color = ModelNumber)) +
         ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
         ggplot2::geom_abline(slope = 1, color = "black") +
         ggplot2::ggtitle(paste0("Catboost Best Model AUC: ",100 * round(AUC_Metrics$auc, 3),"%")) +
@@ -886,9 +840,7 @@ AutoCatBoostClassifier <- function(data,
                 nrow(data.table::as.data.table(y@x.values)) <= 1)) {
           if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
               nrow(data.table::as.data.table(y@x.values)) <= 1) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values,
-              Threshold = y@x.values))
+            z <- data.table::as.data.table(cbind(Metric = y@y.values,Threshold = y@x.values))
             Metric <- z[[1]]
           } else if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
                      !(nrow(data.table::as.data.table(y@x.values) <= 1))) {
@@ -904,9 +856,7 @@ AutoCatBoostClassifier <- function(data,
                 Threshold = y@x.values))
               Metric <- z[order(-Metric)][!is.infinite(Metric)][[1]]
             } else {
-              z <- data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values))
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]],Threshold = y@x.values))
               Metric <- z[order(Metric)][!is.infinite(Metric)][[1]]
             }
           }
@@ -915,43 +865,23 @@ AutoCatBoostClassifier <- function(data,
             z <- data.table::as.data.table(cbind(
               Metric = y@y.values[[1]],
               Threshold = y@x.values[[1]]))
-            Metric <- z[order(-Metric)][!is.infinite(Threshold) &
-                                          !is.infinite(Metric)][1, ]
+            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1,]
           } else {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values[[1]],
-              Threshold = y@x.values[[1]]))
-            Metric <- z[order(Metric)][!is.infinite(Threshold) &
-                                         !is.infinite(Metric)][1, ]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]],Threshold = y@x.values[[1]]))
+            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1,]
           }
         }
         
         # Store Output Information
         if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
                 nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-          data.table::set(
-            EvaluationMetrics,
-            i = i,
-            j = 2L,
-            value = round(Metric[[1]], 4))
-          data.table::set(EvaluationMetrics,
-                          i = i,
-                          j = 3L,
-                          value = NA)
+          data.table::set(EvaluationMetrics,i = i,j = 2L,value = round(Metric[[1]], 4))
+          data.table::set(EvaluationMetrics,i = i,j = 3L,value = NA)
         } else {
-          data.table::set(
-            EvaluationMetrics,
-            i = i,
-            j = 2L,
-            value = round(Metric[[1]], 4))
-          data.table::set(
-            EvaluationMetrics,
-            i = i,
-            j = 3L,
-            value = Metric[[2]])
+          data.table::set(EvaluationMetrics,i = i,j = 2L,value = round(Metric[[1]], 4))
+          data.table::set(EvaluationMetrics,i = i,j = 3L,value = Metric[[2]])
         }
-      }, error = function(x)
-        "skip")
+      }, error = function(x) "skip")
     }
   }
   
@@ -976,11 +906,9 @@ AutoCatBoostClassifier <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
       } else {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
       }
     }
   }
@@ -993,11 +921,9 @@ AutoCatBoostClassifier <- function(data,
   VariableImportance <- VariableImportance[order(-Importance)]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
     } else {
-      data.table::fwrite(VariableImportance,
-                         file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
     }
   }
   
@@ -1016,10 +942,7 @@ AutoCatBoostClassifier <- function(data,
         GraphType = "calibration",
         PercentileBucket = 0.05,
         FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
+        Function = function(x) mean(x, na.rm = TRUE))
       j <- j + 1
       ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
     }, error = function(x) "skip")
@@ -1049,13 +972,13 @@ AutoCatBoostClassifier <- function(data,
   if (tolower(task_type) == "gpu") {
     gc()
   }
-             
+  
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
+      RemixAutoAI::ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
