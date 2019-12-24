@@ -157,7 +157,7 @@ AutoH2oGBMClassifier <- function(data,
   }
   
   # Binary Data Partition----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3,
@@ -174,7 +174,7 @@ AutoH2oGBMClassifier <- function(data,
   dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   
   # Binary ModelDataPrep----
-  dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
+  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   
   # Binary ModelDataPrep----
   if (!is.null(TestData)) {
@@ -268,17 +268,26 @@ AutoH2oGBMClassifier <- function(data,
     
     # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
-    datavalidate <- h2o::as.h2o(dataTest)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
   
   # Binary Build Baseline Model----
-  base_model <- h2o::h2o.gbm(
-    x                = FeatureColNames,
-    y                = TargetColumnName,
-    training_frame   = datatrain,
-    validation_frame = datavalidate,
-    model_id         = ModelID,
-    ntrees           = Trees)
+  if(!TrainOnFull) {
+    base_model <- h2o::h2o.gbm(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      training_frame   = datatrain,
+      validation_frame = datavalidate,
+      model_id         = ModelID,
+      ntrees           = Trees)  
+  } else {
+    base_model <- h2o::h2o.gbm(
+      x                = FeatureColNames,
+      y                = TargetColumnName,
+      training_frame   = datatrain,
+      model_id         = ModelID,
+      ntrees           = Trees)
+  }
   
   # Binary Get Metrics----
   if (GridTune == TRUE & TrainOnFull == FALSE) {
@@ -384,16 +393,22 @@ AutoH2oGBMClassifier <- function(data,
     if(!is.null(TestData)) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
       Predict[, p0 := NULL]
-    } else {
+    } else if(!TrainOnFull) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
+      Predict[, p0 := NULL]
+    } else {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
       Predict[, p0 := NULL]
     }  
   } else {
     if(!is.null(TestData)) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
       data.table::setnames(Predict, "predict", "predict")
-    } else {
+    } else if(!TrainOnFull) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
+      data.table::setnames(Predict, "predict", "predict")
+    } else {
+      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
       data.table::setnames(Predict, "predict", "predict")
     }
   }
@@ -427,8 +442,10 @@ AutoH2oGBMClassifier <- function(data,
   # Binary Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
-  } else {
+  } else if(!TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
+  } else {
+    ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
   }
   
   # Binary Change Prediction Name----
