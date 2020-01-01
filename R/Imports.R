@@ -6,7 +6,6 @@
 #' @importFrom stats optimize pchisq
 #' @import doParallel
 #' @importClassesFrom arules transactions
-#' @useDynLib RemixAutoML
 NULL
 
 .datatable.aware = TRUE
