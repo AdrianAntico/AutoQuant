@@ -1,7 +1,7 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 0.11.0
-Date: 2019-09-07
+Version: 0.12.0
+Date: 2020-01-01
 Authors@R: 
     c(person(given = "Adrian",
              family = "Antico",
@@ -44,7 +44,7 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 NeedsCompilation: no
-Packaged: 2019-09-07 08:00:00 UTC
+Packaged: 2020-01-01 08:00:00 UTC
 RoxygenNote: 6.1.1
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre],
