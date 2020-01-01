@@ -192,6 +192,14 @@ multiplot <-
 #' @author Adrian Antico
 #' @family Misc
 #' @param Size The size of the axis labels and title
+#' @param AngleX The angle of the x axis labels
+#' @param AngleY The angle of the Y axis labels
+#' @param ChartColor "lightsteelblue1",
+#' @param BorderColor "darkblue",
+#' @param TextColor "darkblue",
+#' @param GridColor "white",
+#' @param BackGroundColor "gray95",
+#' @param LegendPosition Where to place legend
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
@@ -205,54 +213,68 @@ multiplot <-
 #' p <- p + ChartTheme(Size = 12)
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
-ChartTheme <- function(Size = 12) {
+ChartTheme <- function(Size = 12, 
+                       AngleX = 35, 
+                       AngleY = 0,
+                       ChartColor = "lightsteelblue1",
+                       BorderColor = "darkblue",
+                       TextColor = "darkblue",
+                       GridColor = "white",
+                       BackGroundColor = "gray95",
+                       LegendPosition = "bottom") {
   chart_theme <-
     ggplot2::theme(
-      plot.background = ggplot2::element_rect(fill = "gray94"),
+      plot.background = ggplot2::element_rect(
+        fill = BackGroundColor),
       panel.background = ggplot2::element_rect(
-        fill = "lightsteelblue1",
-        colour = "darkblue",
+        fill = ChartColor,
+        colour = BorderColor,
         size = 0.25,
-        color = "darkblue"
+        color = BorderColor
       ),
       panel.grid.major = ggplot2::element_line(
-        colour = "darkblue",
+        colour = BorderColor,
         size = 0.01,
-        color = "white",
+        color = GridColor,
         linetype = 1
       ),
       panel.grid.minor = ggplot2::element_line(
-        colour = "darkblue",
+        colour = BorderColor,
         size = 0.01,
-        color = "white",
+        color = GridColor,
         linetype = 1
       ),
-      legend.position = "bottom",
+      legend.position = LegendPosition,
       legend.title = ggplot2::element_text(
-        color = "darkblue",
+        color = BorderColor,
         size = Size,
         face = "bold"
       ),
       legend.background = ggplot2::element_rect(
-        fill = "gray95",
+        fill = BackGroundColor,
         size = 1,
         linetype = "solid",
-        color = "darkblue"
+        color = BorderColor
       ),
       plot.title = ggplot2::element_text(
-        color = "darkblue",
+        color = TextColor,
         size = Size,
         face = "bold"
       ),
       axis.title = ggplot2::element_text(
-        color = "darkblue",
+        color = TextColor,
         size = Size,
         face = "bold"
       ),
-      axis.text = ggplot2::element_text(
-        colour = "darkblue",
+      axis.text.x = ggplot2::element_text(
+        colour = TextColor,
         face = "bold",
-        angle = 90
+        angle = AngleX
+      ),
+      axis.text.y = ggplot2::element_text(
+        colour = TextColor,
+        face = "bold",
+        angle = AngleY
       ),
       axis.title.x = ggplot2::element_text(margin = ggplot2::margin(
         t = 20,
@@ -267,7 +289,7 @@ ChartTheme <- function(Size = 12) {
         l = 20
       )),
       panel.border = ggplot2::element_rect(
-        colour = "darkblue",
+        colour = BorderColor,
         fill = NA,
         size = 1.5
       )

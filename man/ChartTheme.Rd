@@ -4,10 +4,29 @@
 \alias{ChartTheme}
 \title{ChartTheme function is a ggplot theme generator for ggplots}
 \usage{
-ChartTheme(Size = 12)
+ChartTheme(Size = 12, AngleX = 35, AngleY = 0,
+  ChartColor = "lightsteelblue1", BorderColor = "darkblue",
+  TextColor = "darkblue", GridColor = "white",
+  BackGroundColor = "gray95", LegendPosition = "bottom")
 }
 \arguments{
 \item{Size}{The size of the axis labels and title}
+
+\item{AngleX}{The angle of the x axis labels}
+
+\item{AngleY}{The angle of the Y axis labels}
+
+\item{ChartColor}{"lightsteelblue1",}
+
+\item{BorderColor}{"darkblue",}
+
+\item{TextColor}{"darkblue",}
+
+\item{GridColor}{"white",}
+
+\item{BackGroundColor}{"gray95",}
+
+\item{LegendPosition}{Where to place legend}
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign
