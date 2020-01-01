@@ -119,8 +119,7 @@ TestModel <- AutoH2oGBMMultiClass(data,
 }
 \seealso{
 Other Automated MultiClass Classification: \code{\link{AutoCatBoostMultiClass}},
-  \code{\link{AutoH2oDRFMultiClass}},
-  \code{\link{AutoXGBoostMultiClass}}
+  \code{\link{AutoH2oDRFMultiClass}}
 }
 \author{
 Adrian Antico

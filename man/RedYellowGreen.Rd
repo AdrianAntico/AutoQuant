@@ -53,7 +53,7 @@ data <- RedYellowGreen(data,
                        FalsePositiveCost = -1,
                        FalseNegativeCost = -2,
                        MidTierCost = -0.5,
-                       Precision = 0.5,
+                       Precision = 0.01,
                        Cores = 1,
                        Boundaries = c(0.05,0.75))
 }
