@@ -54,7 +54,18 @@ for (i in to_install) {
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
-### If you're having trouble installing, see if this issue helps you out.
+# Installation Troubleshooting 
+
+The most common issue some users are having trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency in R. Since <code>catboost</code> is not on CRAN, it can only be installed via GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+
+```
+options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+```
+ 
+
+If you're having still having trouble installing, see if this issue helps you out.
+
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
