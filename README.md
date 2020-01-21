@@ -13,7 +13,7 @@
 
 # Installing RemixAutoML in 2 Easy Steps:
 
-### First, install R package dependencies:
+### 1. First, install R package dependencies:
 <details><summary>Expand to see code snippet</summary> 
 <p>
   
