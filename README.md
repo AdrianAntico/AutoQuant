@@ -14,8 +14,6 @@
 # Installing RemixAutoML in 2 Easy Steps:
 
 ### 1. First, install R package dependencies:
-<details><summary>Expand to see code snippet</summary> 
-<p>
   
 ```
 library(devtools)
@@ -44,8 +42,7 @@ for (i in to_install) {
 }
 
 ```
-</p>
-</details>
+
 
 ### 2. Next, install RemixAutoML via GitHub:
 
@@ -64,7 +61,7 @@ install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3
 ```
  
 
-If you're having still having trouble installing, see if this issue helps you out.
+If you're having still having trouble installing, see if this issue helps you out:
 
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
