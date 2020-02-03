@@ -66,16 +66,16 @@ threshOptim <- function(data,
     j <- j + 1
     tp      <-
       sum(data.table::fifelse(data[[actTar]] == 1 &
-                         data[[predTar]] >= i, 1, 0))
+                                data[[predTar]] >= i, 1, 0))
     tn      <-
       sum(data.table::fifelse(data[[actTar]] == 0 &
-                         data[[predTar]] <  i, 1, 0))
+                                data[[predTar]] <  i, 1, 0))
     fp      <-
       sum(data.table::fifelse(data[[actTar]] == 0 &
-                         data[[predTar]] >= i, 1, 0))
+                                data[[predTar]] >= i, 1, 0))
     fn      <-
       sum(data.table::fifelse(data[[actTar]] == 1 &
-                         data[[predTar]] <  i, 1, 0))
+                                data[[predTar]] <  i, 1, 0))
     tpr     <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
     fpr     <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
     utility <-
@@ -96,7 +96,7 @@ threshOptim <- function(data,
   # Plot of results
   Plot <- ggplot2::ggplot(results, ggplot2::aes(x = Thresholds, y = Utilities)) + 
     ggplot2::geom_line(color = "blue") +
-    RemixAutoAI::ChartTheme(AngleX = 0) + 
+    ChartTheme(AngleX = 0) + 
     ggplot2::ggtitle(paste0("Threshold Optimization: best cutoff at ",thresh)) +
     ggplot2::geom_vline(xintercept = thresh, linetype="dotted", color = "red", size=1.5)
   return(list(Thresholds = thresh, EvaluationTable = results, Plot = Plot))
