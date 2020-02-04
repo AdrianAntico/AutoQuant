@@ -1,4 +1,4 @@
-![Version: 0.10.0](https://img.shields.io/static/v1?label=Version&message=0.11.0&color=blue&?style=plastic)
+![Version: 0.12.0](https://img.shields.io/static/v1?label=Version&message=0.12.0&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -11,11 +11,9 @@
 
 <img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="800" />
 
-# Installing RemixAutoML:
+# Installing RemixAutoML in 2 Easy Steps:
 
-### Install pacakge dependecies and install RemixAutoML:
-<details><summary>Expand to see code snippet</summary> 
-<p>
+### 1. First, install R package dependencies:
   
 ```
 library(devtools)
@@ -42,22 +40,34 @@ for (i in to_install) {
     install.packages(i)
   }
 }
-
-# Install RemixAutoML:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
-
 ```
 
-</p>
-</details>
 
-### If you're having trouble installing, see if this issue helps you out.
+### 2. Next, install RemixAutoML via GitHub:
+
+```
+# Install RemixAutoML:
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+```
+
+# Installation Troubleshooting 
+
+The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency in R. Since <code>catboost</code> is not on CRAN, it can only be installed via GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+
+```
+options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+```
+ 
+
+If you're having still having trouble installing, see if this issue helps you out:
+
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
 > This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** To see them in action, check out the free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a> or the reference manual and vignette in the vignette folder above.
 
-Also, be sure to visit our blog at <a href="http://www.remixinstitute.com" target="_blank">RemixInstitute.ai</a> for data science, machine learning, and AI content.
+Also, be sure to visit our blog at <a href="https://www.remixinstitute.com" target="_blank">RemixInstitute.ai</a> for data science, machine learning, and AI content.
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see the package reference manual and a vignette with some background and examples. If you want to be a contributer, contact me via LinkedIn email.
 

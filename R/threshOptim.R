@@ -45,6 +45,10 @@ threshOptim <- function(data,
                         MinThresh = 0.001,
                         MaxThresh = 0.999,
                         ThresholdPrecision = 0.001) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check data.table
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -61,19 +65,19 @@ threshOptim <- function(data,
   for (i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
     j <- j + 1
     tp      <-
-      sum(ifelse(data[[actTar]] == 1 &
-                         data[[predTar]] >= i, 1, 0))
+      sum(data.table::fifelse(data[[actTar]] == 1 &
+                                data[[predTar]] >= i, 1, 0))
     tn      <-
-      sum(ifelse(data[[actTar]] == 0 &
-                         data[[predTar]] <  i, 1, 0))
+      sum(data.table::fifelse(data[[actTar]] == 0 &
+                                data[[predTar]] <  i, 1, 0))
     fp      <-
-      sum(ifelse(data[[actTar]] == 0 &
-                         data[[predTar]] >= i, 1, 0))
+      sum(data.table::fifelse(data[[actTar]] == 0 &
+                                data[[predTar]] >= i, 1, 0))
     fn      <-
-      sum(ifelse(data[[actTar]] == 1 &
-                         data[[predTar]] <  i, 1, 0))
-    tpr     <- ifelse((tp + fn) == 0, 0, tp / (tp + fn))
-    fpr     <- ifelse((fp + tn) == 0, 0, fp / (fp + tn))
+      sum(data.table::fifelse(data[[actTar]] == 1 &
+                                data[[predTar]] <  i, 1, 0))
+    tpr     <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
+    fpr     <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
     utility <-
       popTrue * (tpProfit * tpr +
                    fnProfit * (1 - tpr)) +
@@ -88,5 +92,12 @@ threshOptim <- function(data,
   results <- cbind(utilities, thresholds)[, c(-1,-3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
-  return(list(Thresholds = thresh, EvaluationTable = results))
+  
+  # Plot of results
+  Plot <- ggplot2::ggplot(results, ggplot2::aes(x = Thresholds, y = Utilities)) + 
+    ggplot2::geom_line(color = "blue") +
+    ChartTheme(AngleX = 0) + 
+    ggplot2::ggtitle(paste0("Threshold Optimization: best cutoff at ",thresh)) +
+    ggplot2::geom_vline(xintercept = thresh, linetype="dotted", color = "red", size=1.5)
+  return(list(Thresholds = thresh, EvaluationTable = results, Plot = Plot))
 }
