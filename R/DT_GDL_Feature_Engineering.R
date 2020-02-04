@@ -118,32 +118,24 @@ DT_GDL_Feature_Engineering <- function(data,
     if(is.null(timeDiffTarget)) {
       if(ncol(data) +
          (length(lags) + length(periods)) * tarNum * length(groupingVars) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data, 
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * length(groupingVars))
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars))
       }
     } else {
       if(ncol(data) +
          (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data, 
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars))
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars))
       }
     }
   } else {
     if(is.null(timeDiffTarget)) {
       if(ncol(data) +
          (length(lags) + length(periods)) * tarNum > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data, 
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum)
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum)
       }
     } else {
       if(ncol(data) +
          (length(lags) + length(periods)) * tarNum * 2 > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data, 
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * 2)
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * 2)
       }
     }  
   }
