@@ -24,9 +24,10 @@ to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost
 for (i in to_install) {
   message(paste("looking for ", i))
   if(i == "catboost" & !requireNamespace(i)) {
-    # CURRENT VERSIONS ARE FAILING WITH MultiClass: devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-    # Use the below instead as it is the latest release that doesn't fail
-    remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.17.5/catboost-R-Windows-0.17.5.tgz', build_opts = c("--no-multiarch"))
+    
+    # Choose a different release version (currently v17.3 and v0.21 are the latest releases that are fully functional
+    devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.17.5/catboost-R-Windows-0.17.5.tgz', build_opts = c("--no-multiarch"))
   } else if(i == "h2o" & !requireNamespace(i)) {
     if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
     if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
