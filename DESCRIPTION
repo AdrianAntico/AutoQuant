@@ -9,8 +9,7 @@ Authors@R:
              email = "adrianantico@gmail.com"),
       person(given = "Douglas",
              family = "Pestana",
-             role = "aut",
-             email = "douglas.pestana@remix.institute"),
+             role = "ctb"),
       person("Jan","Gorecki", role="ctb"),
       person("Solomon","Daner", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
@@ -36,5 +35,4 @@ NeedsCompilation: no
 Packaged: 2020-23-02 08:00:00 UTC
 RoxygenNote: 6.1.1
 SystemRequirements: Java (>= 7.0)
-Author: Adrian Antico [aut, cre],
-  Douglas Pestana [aut]
+Author: Adrian Antico [aut, cre]
