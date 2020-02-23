@@ -5,16 +5,29 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
+#' @param HierarchGroups = NULL Character vector or NULL with names of the columns that form the interaction hierarchy
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
+#' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"
+#' @param TimeGroups Select time aggregations for adding various time aggregated GDL features. 
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "year"
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
+#' @param SD_Periods Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)
+#' @param Skew_Periods Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)
+#' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)
+#' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
+#' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
+#' @param Difference Set to TRUE to put the I in ARIMA
+#' @param FourierTerms Set to the max number of pairs
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
+#' @param HolidayLags Number of lags for the holiday counts
+#' @param HolidayMovingAverages Number of moving averages for holiday counts
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
@@ -27,50 +40,88 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
-#' @param Timer = TRUE
+#' @param Timer Setting to TRUE prints out the forecast number while it is building
+#' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
 #' @examples
 #' \donttest{
-#' Results <- AutoXGBoostCARMA(data,
-#'                             TargetColumnName = "Target",
-#'                             DateColumnName = "DateTime",
-#'                             GroupVariables = NULL,
-#'                             FC_Periods = 30,
-#'                             TimeUnit = "week",
-#'                             TargetTransformation = FALSE,
-#'                             Lags = c(1:5),
-#'                             MA_Periods = c(1:5),
-#'                             CalendarVariables = FALSE,
-#'                             HolidayVariable = TRUE,
-#'                             TimeTrendVariable = FALSE,
-#'                             DataTruncate = FALSE,
-#'                             ZeroPadSeries = "all",
-#'                             SplitRatios = c(0.7, 0.2, 0.1),
-#'                             TreeMethod = "hist",
-#'                             NThreads = max(1, parallel::detectCores()-2),
-#'                             EvalMetric = "MAE",
-#'                             GridTune = FALSE,
-#'                             GridEvalMetric = "mape",
-#'                             ModelCount = 1,
-#'                             NTrees = 1000,
-#'                             PartitionType = "timeseries",
-#'                             Timer = TRUE)
-#' Results$TimeSeriesPlot
-#' Results$Forecast
-#' Results$ModelInformation$...
+#' Forecast <- RemixAutoAI::AutoXGBoostCARMA(
+#'   
+#'   # Data Artifacts
+#'   data = data,
+#'   TargetColumnName = "Weekly_Sales",
+#'   DateColumnName = "Date",
+#'   HierarchGroups = NULL,
+#'   GroupVariables = c("Store","Dept"), 
+#'   TimeUnit = "week",
+#'   TimeGroups = c("weeks","months","quarter"),
+#'   
+#'   # Data Wrangling Features
+#'   ZeroPadSeries = NULL,
+#'   DataTruncate = FALSE,
+#'   SplitRatios = c(1 - 10 / 143, 10 / 143),
+#'   PartitionType = "timeseries",
+#'   
+#'   # Productionize
+#'   TrainOnFull = FALSE,
+#'   EvalMetric = "RMSE",
+#'   GridTune = FALSE,
+#'   ModelCount = 5,
+#'   NThreads = 8, 
+#'   Timer = TRUE,
+#'   DebugMode = FALSE,
+#'   
+#'   # Target Transformations
+#'   TargetTransformation = TRUE,
+#'   Difference = TRUE,
+#'   
+#'   # Features
+#'   Lags = c(1:5),
+#'   HolidayLags = 1, 
+#'   MA_Periods = c(1:5),
+#'   SD_Periods = c(2:5),
+#'   Skew_Periods = c(3:5),
+#'   Kurt_Periods = c(4:5),
+#'   Quantile_Periods = c(3:5),
+#'   HolidayMovingAverages = 1:2,
+#'   Quantiles_Selected = c("q5","q95"),
+#'   XREGS = xreg,
+#'   FC_Periods = 4,
+#'   FourierTerms = 4,
+#'   CalendarVariables = TRUE,
+#'   HolidayVariable = TRUE,
+#'   TimeTrendVariable = TRUE,
+#'   NTrees = 300)
+#'   
+#' Forecast$TimeSeriesPlot
+#' Forecast$Forecast
+#' Forecast$ModelInformation$...
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoXGBoostCARMA <- function(data,
+                             TrainOnFull = FALSE,
                              TargetColumnName = "Target",
                              DateColumnName = "DateTime",
+                             HierarchGroups = NULL,
                              GroupVariables = NULL,
                              FC_Periods = 30,
                              TimeUnit = "week",
+                             TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
+                             XREGS = NULL,
                              Lags = c(1:5),
                              MA_Periods = c(1:5),
+                             SD_Periods = c(2:5),
+                             Skew_Periods = c(3:5),
+                             Kurt_Periods = c(4:5),
+                             Quantile_Periods = c(3:5),
+                             Quantiles_Selected = c("q5","q95"),
+                             Difference = TRUE,
+                             FourierTerms = 6,
                              CalendarVariables = FALSE,
                              HolidayVariable = TRUE,
+                             HolidayLags = 1,
+                             HolidayMovingAverages = 1:2,
                              TimeTrendVariable = FALSE,
                              DataTruncate = FALSE,
                              ZeroPadSeries = NULL,
@@ -83,64 +134,147 @@ AutoXGBoostCARMA <- function(data,
                              ModelCount = 1,
                              NTrees = 1000,
                              PartitionType = "timeseries",
-                             Timer = TRUE) {
+                             Timer = TRUE,
+                             DebugMode = FALSE) {
   
-  # Check arguments----
-  if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
-    return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
-  }
-  if (tolower(PartitionType) == "timeseries" &
-      is.null(GroupVariables)) {
-    PartitionType <- "time"
-  }
-  if(FC_Periods <= 1) {
-    FC_Periods <- 2
-  } else {
-    FC_Periods <- FC_Periods + 1
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
+  # Purified args: see CARMA HELPER FUNCTIONS----
+  Args <- CARMA_Define_Args(
+    TimeUnit = TimeUnit, TimeGroups = TimeGroups, HierarchGroups = HierarchGroups, GroupVariables = GroupVariables, 
+    FC_Periods = FC_Periods, PartitionType = PartitionType, TrainOnFull = TrainOnFull, SplitRatios = SplitRatios)
+  
+  # Store purified args----
+  IndepentVariablesPass <- Args$IndepentVariablesPass
+  TimeUnit              <- Args$TimeUnit
+  TimeGroups            <- Args$TimeGroups
+  TimeUnit              <- Args$TimeUnit
+  TimeGroup             <- Args$TimeGroupPlaceHolder
+  HierarchGroups        <- Args$HierarchGroups
+  GroupVariables        <- Args$GroupVariables
+  FC_Periods            <- Args$FC_Periods
+  HoldOutPeriods        <- Args$HoldOutPeriods
+  
+  # Variables for Program: Redefine HoldOutPerids----
+  if(!TrainOnFull) {
+    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   }
   
-  # Convert to data.table----
+  # Convert data to data.table----
+  if(DebugMode) print("Convert data to data.table----")
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
   }
   
-  # Subset Columns----
-  keep1 <- c(DateColumnName, TargetColumnName, GroupVariables)
-  data <- data[, ..keep1]
+  # Feature Engineering: Add XREGS----
+  if(DebugMode) print("Feature Engineering: Add XREGS----")
   
-  # Group Concatenation----
-  if (!is.null(GroupVariables)) {
-    data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-    data[, eval(GroupVariables) := NULL]
+  # Convert XREGS to data.table
+  if(!is.null(XREGS)) {
+    if(!data.table::is.data.table(XREGS)) {
+      XREGS <- data.table::as.data.table(XREGS)
+    }
   }
   
-  # Zero pad missing dates----
+  # Check for any Target Variable hiding in XREGS
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
+    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
+  }
+  
+  # Merge data and XREG for Training
+  if(!is.null(XREGS)) {
+    if(!is.null(GroupVariables)) {
+      data <- merge(data, XREGS, by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+    } else {
+      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+    }
+  }
+  
+  # Set Keys for data.table usage----
+  if(!is.null(GroupVariables)) {
+    data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
+    if(!is.null(XREGS)) {
+      data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+    }
+  } else {
+    data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
+    if(!is.null(XREGS)) {
+      data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
+    }
+  }
+  
+  # Data Wrangling: Remove Unnecessary Columns----
+  if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
+  if(!is.null(XREGS)) {
+    if(!is.null(GroupVariables)) {
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName, GroupVariables)))]
+    } else {
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
+    }
+  } else {
+    if(!is.null(GroupVariables)) {
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables)]
+    } else {
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName)]
+    }
+  }
+  
+  # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
+  if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
+  if (!is.null(GroupVariables)) {
+    if(length(GroupVariables) > 1) {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      data[, eval(GroupVariables) := NULL]
+      # if(!is.null(XREGS)) {
+      #   XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      #   XREGS[, eval(GroupVariables) := NULL]
+      # }
+    } else {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(GroupVariables != "GroupVar") {
+        data[, eval(GroupVariables) := NULL]
+      }
+      if(!is.null(XREGS)) {
+        # XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+        # if(GroupVariables != "GroupVar") {
+        #   XREGS[, eval(GroupVariables) := NULL]  
+        # }
+      }
+    }
+  }
+  
+  # Feature Engineering: Add Zero Padding for missing dates----
+  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(!is.null(ZeroPadSeries)) {
     if (!is.null(GroupVariables)) {
       if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(data,
-                               DateColumnName = eval(DateColumnName),
-                               GroupVariables = "GroupVar",
-                               TimeUnit = TimeUnit,
-                               FillType = "all")        
+        data <- TimeSeriesFill(
+          data,
+          DateColumnName = eval(DateColumnName),
+          GroupVariables = "GroupVar",
+          TimeUnit = TimeUnit,
+          FillType = "all")
       } else {
-        data <- TimeSeriesFill(data,
-                               DateColumnName = eval(DateColumnName),
-                               GroupVariables = "GroupVar",
-                               TimeUnit = TimeUnit,
-                               FillType = "inner")
+        data <- TimeSeriesFill(
+          data,
+          DateColumnName = eval(DateColumnName),
+          GroupVariables = "GroupVar",
+          TimeUnit = TimeUnit,
+          FillType = "inner")
       }
     } else {
       if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(data,
-                               DateColumnName = eval(DateColumnName),
-                               GroupVariables = NULL,
-                               TimeUnit = TimeUnit,
-                               FillType = "all")        
+        data <- TimeSeriesFill(
+          data,
+          DateColumnName = eval(DateColumnName),
+          GroupVariables = NULL,
+          TimeUnit = TimeUnit,
+          FillType = "all")
       }
     }
     
-    # Convert TimeUnit back if particular ones----
+    # Convert TimeUnit back to original argument name because TimeSeriesFill() coerces them to a modified version
     if(TimeUnit == "weeks") {
       TimeUnit <- "week"
     } else if(TimeUnit == "secs") {
@@ -150,51 +284,129 @@ AutoXGBoostCARMA <- function(data,
     }
   }
   
-  # Get unique set of GroupVar----
+  # Variables for Program: Store unique values of GroupVar in GroupVarVector----
+  if(DebugMode) print("Variables for Program: Store unique values of GroupVar in GroupVarVector----")
   if (!is.null(GroupVariables)) {
-    GroupVarVector <- unique(as.character(data[["GroupVar"]]))
+    GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[["GroupVar"]])))
+    data.table::setnames(GroupVarVector, "V1", "GroupVar")
   }
   
-  # Change column ordering
+  # Data Wrangling: Standardize column ordering----
+  if(DebugMode) print("Data Wrangling: Standardize column ordering----")
   if (!is.null(GroupVariables)) {
-    data.table::setcolorder(data,
-                            c("GroupVar",
-                              eval(DateColumnName),
-                              eval(TargetColumnName)))
+    data.table::setcolorder(data, c("GroupVar", eval(DateColumnName), eval(TargetColumnName)))
   } else {
-    data.table::setcolorder(data,
-                            c(eval(DateColumnName),
-                              eval(TargetColumnName)))
+    data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
   }
   
-  # Convert to lubridate as_date() or POSIXct----
+  # Data Wrangling: Convert DateColumnName to Date or POSIXct----
+  if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
   if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumnName)]])) {
       x <- data[1,get(DateColumnName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
       data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
     }
+    if(!is.null(XREGS)) {
+      if(is.character(XREGS[[eval(DateColumnName)]])) {
+        x <- XREGS[1,get(DateColumnName)]
+        x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+        XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+      }
+    }
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    if(!is.null(XREGS)) {
+      XREGS[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    }
   }
   
-  # Ensure Target is Numeric----
-  data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
+  # Data Wrangling: Ensure TargetColumnName is Numeric----
+  if(DebugMode) print("Data Wrangling: Ensure TargetColumnName is Numeric----")
+  if(!is.numeric(data[[eval(TargetColumnName)]])) {
+    data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
+  }
   
-  # Define NumSets
+  # Variables for Program: Store number of data partitions in NumSets----
+  if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
   NumSets <- length(SplitRatios)
   
-  # Set max vals----
+  # Variables for Program: Store Maximum Value of TargetColumnName in val----
+  if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
   val <- max(Lags, MA_Periods)
   
-  # Ensure data is sorted----
+  # Data Wrangling: Sort data by GroupVar then DateColumnName----
+  if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
   if (!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
   }
   
-  # Create Calendar Variables----
+  # Feature Engineering: Add Fourier Features by GroupVar----
+  # To error check, store arg values and run through EconometricsFunctions.R AutoHierarchicalFourier
+  if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar----")
+  if(FourierTerms > 0) {
+    
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+    data <- Output$data
+    HierarchSupplyValue <- Output$HierarchSupplyValue
+    IndependentSupplyValue <- Output$IndependentSupplyValue
+    
+    # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
+    Output <- tryCatch({AutoHierarchicalFourier(
+      datax = data,
+      xRegs = names(XREGS),
+      FourierTermS = FourierTerms,
+      TimeUniT = TimeUnit,
+      FC_PeriodS = FC_Periods,
+      TargetColumN = TargetColumnName,
+      DateColumN = DateColumnName,
+      HierarchGroups = HierarchSupplyValue,
+      IndependentGroups = IndependentSupplyValue)}, 
+      error = function(x) NULL)
+    
+    # ARGS TO TROUBLESHOOT
+    # datax = data
+    # xRegs = names(XREGS)
+    # FourierTermS = FourierTerms
+    # TimeUniT = TimeUnit
+    # FC_PeriodS = FC_Periods
+    # TargetColumN = TargetColumnName
+    # DateColumN = DateColumnName
+    # HierarchGroups = HierarchSupplyValue
+    # IndependentGroups = IndependentSupplyValue
+    
+    # Store Objects If No Error in Hierarchy Run----
+    if(!is.null(Output)) {
+      data <- Output$data
+      FourierFC <- Output$FourierFC  
+    } else {
+      print("Turning off Fourier Terms. Failed to build.")
+      FourierTerms <- 0
+    }
+    
+    # If Fourier is turned off, concatenate grouping cols
+    if (!is.null(HierarchGroups)) {
+      if(length(HierarchGroups) > 1) {
+        if(any(HierarchGroups %chin% names(data))) {
+          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
+          data[, eval(HierarchGroups) := NULL]
+        }
+      } else {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
+        if(HierarchGroups != "GroupVar") {
+          data[, eval(HierarchGroups) := NULL]
+        }
+      }
+    } else if(!is.null(GroupVariables)) {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    }
+  }
+  
+  # Feature Engineering: Add Create Calendar Variables----
+  if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
   if (CalendarVariables) {
     data <- CreateCalendarVariables(
       data = data,
@@ -211,18 +423,16 @@ AutoXGBoostCARMA <- function(data,
         "isoweek",
         "month",
         "quarter",
-        "year"
-      )
-    )
+        "year"))
   }
   
-  # Create Holiday Variables----
+  # Feature Engineering: Add Create Holiday Variables----
+  if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
   if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup",
-                        "ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL,
       GroupingVars = "GroupVar")
     
@@ -236,8 +446,7 @@ AutoXGBoostCARMA <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup",
-                        "ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
     
     # Convert to lubridate as_date() or POSIXct----
@@ -248,7 +457,8 @@ AutoXGBoostCARMA <- function(data,
     }
   }
   
-  # Target Transformation----
+  # Feature Engineering: Add Target Transformation----
+  if(DebugMode) print("Feature Engineering: Add Target Transformation----")
   if (TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data,
@@ -262,40 +472,243 @@ AutoXGBoostCARMA <- function(data,
     TransformObject <- TransformResults$FinalResults
   }
   
-  # GDL Features----
-  if (!is.null(GroupVariables)) {
-    data <- DT_GDL_Feature_Engineering(
-      data,
-      lags           = c(Lags),
-      periods        = c(MA_Periods),
-      statsNames     = c("MA"),
-      targets        = eval(TargetColumnName),
-      groupingVars   = "GroupVar",
-      sortDateName   = eval(DateColumnName),
-      timeDiffTarget = NULL,
-      timeAgg        = NULL,
-      WindowingLag   = 1,
-      Type           = "Lag",
-      SimpleImpute   = TRUE
-    )
-  } else {
-    data <- DT_GDL_Feature_Engineering(
-      data,
-      lags           = c(Lags),
-      periods        = c(MA_Periods),
-      statsNames     = c("MA"),
-      targets        = eval(TargetColumnName),
-      groupingVars   = NULL,
-      sortDateName   = eval(DateColumnName),
-      timeDiffTarget = NULL,
-      timeAgg        = NULL,
-      WindowingLag   = 1,
-      Type           = "Lag",
-      SimpleImpute   = TRUE
-    )
+  # Store Date Info----
+  if(DebugMode) print("Store Date Info----")
+  FutureDateData <- unique(data[, get(DateColumnName)])
+  
+  # Copy data for non grouping + difference----
+  if(DebugMode) print("Copy data for non grouping + difference----")
+  if(is.null(GroupVariables) & Difference == TRUE) {
+    antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
   }
   
-  # TimeTrend Variable----
+  # Feature Engineering: Add Difference Data----
+  if(DebugMode) print("Feature Engineering: Add Difference Data----")
+  if(!is.null(GroupVariables) & Difference == TRUE) {
+    data[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName), n = 1, fill = NA, type = "lag"), by = c("GroupVar")][, ModTarget := get(TargetColumnName) - TargetDiffMidStep]
+    dataStart <- data[is.na(TargetDiffMidStep)]
+    data <- data[!is.na(TargetDiffMidStep)]
+    FC_Periods <- FC_Periods + 1L
+  } else if(Difference == TRUE) {
+    DiffTrainOutput <- DifferenceData(
+      data = data,
+      ColumnsToDiff = eval(TargetColumnName),
+      CARMA = TRUE,
+      TargetVariable = eval(TargetColumnName),
+      GroupingVariable = NULL)
+    Train <- DiffTrainOutput$DiffData
+    data <- cbind(Train,data[1:(nrow(data)-1)][,.SD, .SDcols = names(data)[3:ncol(data)]])
+    FC_Periods <- FC_Periods + 1L
+  }
+  
+  # Feature Engineering: Add GDL Features based on the TargetColumnName----
+  if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
+  if (!is.null(GroupVariables) & Difference == FALSE) {
+    
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+    data <- Output$data
+    HierarchSupplyValue <- Output$HierarchSupplyValue
+    IndependentSupplyValue <- Output$IndependentSupplyValue
+    
+    # Generate features
+    data <- AutoLagRollStats(
+      
+      # Data
+      data                 = data,
+      DateColumn           = eval(DateColumnName),
+      Targets              = eval(TargetColumnName),
+      HierarchyGroups      = HierarchSupplyValue,
+      IndependentGroups    = IndependentSupplyValue,
+      
+      # Services
+      TimeBetween          = NULL,
+      TimeUnit             = TimeUnit,
+      TimeUnitAgg          = TimeUnit,
+      TimeGroups           = TimeGroups,
+      RollOnLag1           = TRUE,
+      Type                 = "Lag",
+      SimpleImpute         = TRUE,
+      
+      # Calculated Columns
+      Lags                  = c(Lags),
+      MA_RollWindows        = c(MA_Periods),
+      SD_RollWindows        = c(SD_Periods),
+      Skew_RollWindows      = c(Skew_Periods),
+      Kurt_RollWindows      = c(Kurt_Periods),
+      Quantile_RollWindows  = c(Quantile_Periods),
+      Quantiles_Selected    = c(Quantiles_Selected))
+    
+    # Keep interaction group as GroupVar
+    if(length(GroupVariables) > 1) {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
+    } else {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    }
+    
+  } else if(!is.null(GroupVariables) & Difference == TRUE) {
+    
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+    data <- Output$data
+    HierarchSupplyValue <- Output$HierarchSupplyValue
+    IndependentSupplyValue <- Output$IndependentSupplyValue
+    
+    # Generate features
+    data <- AutoLagRollStats(
+      
+      # Data
+      data                 = data,
+      DateColumn           = eval(DateColumnName),
+      Targets              = c(eval(TargetColumnName),"ModTarget"),
+      HierarchyGroups      = HierarchSupplyValue,
+      IndependentGroups    = IndependentSupplyValue,
+      
+      # Services
+      TimeBetween          = NULL,
+      TimeUnit             = TimeUnit,
+      TimeUnitAgg          = TimeUnit,
+      TimeGroups           = TimeGroups,
+      RollOnLag1           = TRUE,
+      Type                 = "Lag",
+      SimpleImpute         = TRUE,
+      
+      # Calculated Columns
+      Lags                  = c(Lags),
+      MA_RollWindows        = c(MA_Periods),
+      SD_RollWindows        = c(SD_Periods),
+      Skew_RollWindows      = c(Skew_Periods),
+      Kurt_RollWindows      = c(Kurt_Periods),
+      Quantile_RollWindows  = c(Quantile_Periods),
+      Quantiles_Selected    = c(Quantiles_Selected))
+    
+    # Keep interaction group as GroupVar
+    if(length(GroupVariables) > 1) {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
+    } else {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    }
+    
+  } else if(is.null(GroupVariables) & Difference == FALSE) {
+    
+    # Generate features
+    data <- AutoLagRollStats(
+      
+      # Data
+      data                 = data,
+      DateColumn           = eval(DateColumnName),
+      Targets              = eval(TargetColumnName),
+      HierarchyGroups      = NULL,
+      IndependentGroups    = NULL,
+      
+      # Services
+      TimeBetween          = NULL,
+      TimeUnit             = TimeUnit,
+      TimeUnitAgg          = TimeUnit,
+      TimeGroups           = TimeGroups,
+      RollOnLag1           = TRUE,
+      Type                 = "Lag",
+      SimpleImpute         = TRUE,
+      
+      # Calculated Columns
+      Lags                  = c(Lags),
+      MA_RollWindows        = c(MA_Periods),
+      SD_RollWindows        = c(SD_Periods),
+      Skew_RollWindows      = c(Skew_Periods),
+      Kurt_RollWindows      = c(Kurt_Periods),
+      Quantile_RollWindows  = c(Quantile_Periods),
+      Quantiles_Selected    = c(Quantiles_Selected))
+    
+  } else {
+    
+    # Generate features
+    data <- AutoLagRollStats(
+      
+      # Data
+      data                 = data,
+      DateColumn           = eval(DateColumnName),
+      Targets              = eval(TargetColumnName),
+      HierarchyGroups      = NULL,
+      IndependentGroups    = NULL,
+      
+      # Services
+      TimeBetween          = NULL,
+      TimeUnit             = TimeUnit,
+      TimeUnitAgg          = TimeUnit,
+      TimeGroups           = TimeGroups,
+      RollOnLag1           = TRUE,
+      Type                 = "Lag",
+      SimpleImpute         = TRUE,
+      
+      # Calculated Columns
+      Lags                  = c(Lags),
+      MA_RollWindows        = c(MA_Periods),
+      SD_RollWindows        = c(SD_Periods),
+      Skew_RollWindows      = c(Skew_Periods),
+      Kurt_RollWindows      = c(Kurt_Periods),
+      Quantile_RollWindows  = c(Quantile_Periods),
+      Quantiles_Selected    = c(Quantiles_Selected))
+  }
+  
+  # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
+  if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
+  if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+    if(!is.null(GroupVariables)) {
+      
+      # Build Features---
+      data <- DT_GDL_Feature_Engineering(
+        data,
+        lags            = HolidayLags,
+        periods         = HolidayMovingAverages,
+        SDperiods       = 0,
+        Skewperiods     = 0,
+        Kurtperiods     = 0,
+        Quantileperiods = 0,
+        statsFUNs       = "mean",
+        targets         = "HolidayCounts",
+        groupingVars    = IndepentVariablesPass,
+        sortDateName    = eval(DateColumnName),
+        timeDiffTarget  = NULL,
+        timeAgg         = TimeGroups[1],
+        WindowingLag    = 1,
+        Type            = "Lag",
+        SimpleImpute    = TRUE)
+    } else {
+      data <- DT_GDL_Feature_Engineering(
+        data,
+        lags            = HolidayLags,
+        periods         = HolidayMovingAverages,
+        SDperiods       = 0,
+        Skewperiods     = 0,
+        Kurtperiods     = 0,
+        Quantileperiods = 0,
+        statsFUNs       = "mean",
+        targets         = "HolidayCounts",
+        groupingVars    = NULL,
+        sortDateName    = eval(DateColumnName),
+        timeDiffTarget  = NULL,
+        timeAgg         = TimeGroups[1],
+        WindowingLag    = 1,
+        Type            = "Lag",
+        SimpleImpute    = TRUE)
+    }
+  }
+  
+  # Create GroupVar
+  if (!is.null(GroupVariables)) {
+    if(length(GroupVariables) > 1) {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    } else {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    }
+  }
+  
+  # Feature Engineering: Add TimeTrend Variable----
+  if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
   if (TimeTrendVariable) {
     if (!is.null(GroupVariables)) {
       data[, TimeTrend := 1:.N, by = "GroupVar"]
@@ -304,99 +717,150 @@ AutoXGBoostCARMA <- function(data,
     }
   }
   
-  # Prepare data----
-  data <- RemixAutoML::ModelDataPrep(
+  # Data Wrangling: ModelDataPrep() to prepare data----
+  if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
+  data <- ModelDataPrep(
     data,
     Impute = TRUE,
-    CharToFactor = FALSE,
+    CharToFactor = TRUE,
     RemoveDates = FALSE,
     MissFactor = "0",
-    MissNum    = -1
-  )
+    MissNum    = -1)
   
-  # Subset Data----
+  # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
+  if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
   if (DataTruncate) {
     data <- data[val:.N]
   }
   
-  # Partition Data----
-  if (tolower(PartitionType) == "timeseries") {
-    DataSets <- RemixAutoML::AutoDataPartition(
-      data,
-      NumDataSets = NumSets,
-      Ratios = SplitRatios,
-      PartitionType = "timeseries",
-      StratifyColumnNames = "GroupVar",
-      TimeColumnName = eval(DateColumnName)
-    )
-  } else if (tolower(PartitionType) == "random") {
-    if (!is.null(GroupVariables)) {
-      DataSets <- RemixAutoML::AutoDataPartition(
+  # Data Wrangling: Partition data with AutoDataPartition()----
+  if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
+  if(!TrainOnFull) {
+    if(Difference == TRUE & !is.null(GroupVariables)) {
+      x <- length(unique(data[[eval(DateColumnName)]]))
+      N1 <- x+1L - SplitRatios[1]*(x+1L)
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = "random",
+        Ratios = c(1-N1/x,N1/x),
+        PartitionType = "timeseries",
         StratifyColumnNames = "GroupVar",
-        TimeColumnName = eval(DateColumnName)
-      )
-    } else {
-      DataSets <- RemixAutoML::AutoDataPartition(
+        TimeColumnName = eval(DateColumnName))
+    } else if(Difference) {
+      x <- length(unique(data[[eval(DateColumnName)]]))
+      N1 <- x+1L - SplitRatios[1]*(x+1L)
+      DataSets <- RemixAutoAI::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = c(1-N1/x,N1/x),
+        PartitionType = "timeseries",
+        StratifyColumnNames = NULL,
+        TimeColumnName = eval(DateColumnName))
+    } else if(!is.null(GroupVariables)) {
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
-        PartitionType = "random",
+        PartitionType = "timeseries",
+        StratifyColumnNames = "GroupVar",
+        TimeColumnName = eval(DateColumnName))
+    } else {
+      DataSets <- RemixAutoAI::AutoDataPartition(
+        data,
+        NumDataSets = NumSets,
+        Ratios = SplitRatios,
+        PartitionType = "timeseries",
         StratifyColumnNames = NULL,
-        TimeColumnName = eval(DateColumnName)
-      )
+        TimeColumnName = eval(DateColumnName))
     }
+    
+    # Remove ID Column
+    if (tolower(PartitionType) == "timeseries") {
+      data.table::set(data, j = "ID", value = NULL)
+    }
+  }
+  
+  # Variables for CARMA function: Define data sets----
+  if(DebugMode) print("Variables for CARMA function: Define data sets----")
+  if(!TrainOnFull) {
+    if (NumSets == 2) {
+      train <- DataSets$TrainData
+      valid <- DataSets$ValidationData
+      test  <- NULL
+    } else if (NumSets == 3) {
+      train <- DataSets$TrainData
+      valid <- DataSets$ValidationData
+      test  <- DataSets$TestData
+    }
+    rm(DataSets)
   } else {
-    DataSets <- RemixAutoML::AutoDataPartition(
-      data,
-      NumDataSets = NumSets,
-      Ratios = SplitRatios,
-      PartitionType = "time",
-      StratifyColumnNames = NULL,
-      TimeColumnName = eval(DateColumnName)
-    )
-  }
-  
-  # Remove ID Column----
-  if (tolower(PartitionType) == "timeseries") {
-    data.table::set(data, j = "ID", value = NULL) 
-  }
-  
-  # Define data sets----
-  if (NumSets == 2) {
-    train <- DataSets$TrainData
-    valid <- DataSets$ValidationData
+    train <- data
+    valid <- NULL
     test  <- NULL
-  } else if (NumSets == 3) {
-    train <- DataSets$TrainData
-    valid <- DataSets$ValidationData
-    test  <- DataSets$TestData
   }
   
-  # Pass along base data unperturbed----
-  dataFuture <- data.table::copy(data)
-  datax <- data
-  rm(data)
-  
-  # IDcols----
+  # Variables for CARMA function:IDcols----
+  if(DebugMode) print("Variables for CARMA function:IDcols----")
   if(!is.null(GroupVariables)) {
     IDcols <- 2
   } else {
     IDcols <- 1
   }
   
-  # Build Regression Model----
-  TestModel <- RemixAutoML::AutoXGBoostRegression(
+  # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
+  if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
+  if(TrainOnFull) {
+    Step1SCore <- data.table::copy(data)
+  } else {
+    Step1SCore <- data.table::copy(train)
+  }
+  
+  # Machine Learning: Build Model----
+  if(DebugMode) print("Machine Learning: Build Model----")
+  
+  # Define CARMA feature names
+  if(Difference == FALSE | is.null(GroupVariables)) {
+    if(!is.null(XREGS)) {
+      if(!"GroupVar" %chin% GroupVariables & length(GroupVariables) > 1 & "GroupVar" %chin% setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))) {
+        ModelFeatures <- setdiff(setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName))),"GroupVar")
+      } else {
+        ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
+      }
+    } else {
+      if(!"GroupVar" %chin% GroupVariables & length(GroupVariables) > 1 & "GroupVar" %chin% setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))) {
+        ModelFeatures <- setdiff(setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName))),"GroupVar")
+      } else {
+        ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
+      }
+    }
+    TargetVariable <- eval(TargetColumnName)
+  } else if(Difference == TRUE & !is.null(GroupVariables)) {
+    if(!"GroupVar" %chin% GroupVariables & length(GroupVariables) > 1 & "GroupVar" %chin% setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))) {
+      ModelFeatures <- setdiff(setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName))),"GroupVar")
+      TargetVariable <- "ModTarget"
+    } else {
+      ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
+      TargetVariable <- "ModTarget"  
+    }
+  } else {
+    if(!"GroupVar" %chin% GroupVariables & length(GroupVariables) > 1 & "GroupVar" %chin% setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))) {
+      ModelFeatures <- setdiff(setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName))), "GroupVar")
+    } else {
+      ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
+    }
+  }
+  
+  # Return warnings to default since warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
+  if(DebugMode) options(warn = 0)
+  
+  # Run AutoCatBoostRegression and return list of ml objects
+  TestModel <- RemixAutoAI::AutoXGBoostRegression(
     data = train,
+    TrainOnFull = TRUE,
     ValidationData = valid,
     TestData = test,
-    TargetColumnName = eval(TargetColumnName),
-    FeatureColNames = setdiff(names(datax),
-                              c(eval(TargetColumnName),
-                                eval(DateColumnName))),
+    TargetColumnName = TargetVariable,
+    FeatureColNames = ModelFeatures,
     IDcols = IDcols,
     ReturnFactorLevels = TRUE,
     TransformNumericColumns = NULL,
@@ -408,218 +872,130 @@ AutoXGBoostCARMA <- function(data,
     MaxModelsInGrid = ModelCount,
     NThreads = NThreads,
     model_path = getwd(),
+    metadata_path = getwd(),
     ModelID = "ModelTest",
-    NumOfParDepPlots = 1,
+    NumOfParDepPlots = 0,
     Verbose = 1,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     PassInGrid = NULL)
   
-  # Store Model----
+  # QA: Troubleshoot reason for why only 'Store' is being returned as a factor in the factor level list
+  # data = train
+  # TrainOnFull = TRUE
+  # ValidationData = valid
+  # TestData = test
+  # TargetColumnName = TargetVariable
+  # FeatureColNames = ModelFeatures
+  # IDcols = IDcols
+  # ReturnFactorLevels = TRUE
+  # TransformNumericColumns = NULL
+  # eval_metric = EvalMetric
+  # Trees = NTrees
+  # GridTune = GridTune
+  # grid_eval_metric = GridEvalMetric
+  # TreeMethod = TreeMethod
+  # MaxModelsInGrid = ModelCount
+  # NThreads = NThreads
+  # model_path = getwd()
+  # metadata_path = getwd()
+  # ModelID = "ModelTest"
+  # NumOfParDepPlots = 0
+  # Verbose = 1
+  # ReturnModelObjects = TRUE
+  # SaveModelObjects = FALSE
+  # PassInGrid = NULL
+  
+  # Turn warnings into errors back on
+  if(DebugMode) options(warn = 2)
+  
+  # Variable for storing ML model: Pull model object out of TestModel list----
+  if(DebugMode) print("Variable for storing ML model: Pull model object out of TestModel list----")
   Model <- TestModel$Model
+  
+  # Grab factor level list----
+  if(DebugMode) print("Grab factor level list----")
   if(!is.null(GroupVariables)) {
     FactorList <- TestModel$FactorLevelsList    
   } else {
     FactorList <- NULL
   }
   
-  # Update ValidationData and Create Metrics Data----
-  TestDataEval <- TestModel$ValidationData
-  TestDataEval[, Target := NULL]
-  TestDataEval[, eval(DateColumnName) := NULL]
-  if(TargetTransformation) {
-    TransformObject <- data.table::rbindlist(list(
-      TransformObject,
-      data.table::data.table(
-        ColumnName = "Predict",
-        MethodName = TransformObject[ColumnName == eval(TargetColumnName), MethodName],
-        Lambda = TransformObject[ColumnName == eval(TargetColumnName), Lambda],
-        NormalizedStatistics = 0
-      )
-    ))
-    TestDataEval <- AutoTransformationScore(
-      ScoringData = TestDataEval,
-      FinalResults = TransformObject,
-      Type = "Inverse",
-      TransID = NULL,
-      Path = NULL
-    )    
-  } else {
-    TransformObject <- NULL
-  }
-  
-  MinVal <- TestDataEval[, min(get(TargetColumnName), na.rm = TRUE)]
+  # Variable for interation counts: max number of rows in train data.table across all group----
+  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
   if (!is.null(GroupVariables)) {
-    Metric <-
-      TestDataEval[, .(GroupVar, get(TargetColumnName), Predict)]
-    data.table::setnames(Metric, "V2", eval(TargetColumnName))
-    MetricCollection <-
-      Metric[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
-  }
-  
-  # poisson----
-  if (MinVal > 0 &
-      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
-    if (!is.null(GroupVariables)) {
-      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
-      MetricCollection <-
-        merge(MetricCollection,
-              TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-              by = "GroupVar",
-              all = FALSE)
+    if(Difference) {
+      N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L
     } else {
-      TestDataEval[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
-      Metric <-
-        TestDataEval[, .(Poisson_Metric = mean(Metric, na.rm = TRUE))]
-    }
-  }
-  
-  # mae----
-  if (!is.null(GroupVariables)) {
-    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
-    MetricCollection <-
-      merge(MetricCollection,
-            TestDataEval[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-            by = "GroupVar",
-            all = FALSE)
-  } else {
-    TestDataEval[, Metric := abs(get(TargetColumnName) - Predict)]
-    Metric <- TestDataEval[, mean(Metric, na.rm = TRUE)]
-  }
-  
-  # mape----
-  if (!is.null(GroupVariables)) {
-    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
-    MetricCollection <-
-      merge(MetricCollection,
-            TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-            by = "GroupVar",
-            all = FALSE)
-  } else {
-    TestDataEval[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
-    Metric <-
-      TestDataEval[, .(MAPE_Metric = mean(Metric, na.rm = TRUE))]
-  }
-  
-  # mse----
-  if (!is.null(GroupVariables)) {
-    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
-    MetricCollection <-
-      merge(MetricCollection,
-            TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-            by = "GroupVar",
-            all = FALSE)
-  } else {
-    TestDataEval[, Metric := (get(TargetColumnName) - Predict) ^ 2]
-    Metric <-
-      TestDataEval[, .(MSE_Metric = mean(Metric, na.rm = TRUE))]
-  }
-  
-  # msle----
-  if (MinVal > 0 &
-      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
-    if (!is.null(GroupVariables)) {
-      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
-      MetricCollection <-
-        merge(MetricCollection,
-              TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-              by = "GroupVar",
-              all = FALSE)
-    } else {
-      TestDataEval[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
-      Metric <- TestDataEval[, .(MSLE = mean(Metric, na.rm = TRUE))]
-    }
-  }
-  
-  # kl----
-  if (MinVal > 0 &
-      min(TestDataEval[["Predict"]], na.rm = TRUE) > 0) {
-    if (!is.null(GroupVariables)) {
-      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
-      MetricCollection <-
-        merge(MetricCollection,
-              TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
-              by = "GroupVar",
-              all = FALSE)
-    } else {
-      TestDataEval[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
-      Metric <-
-        TestDataEval[, .(KL_Metric = mean(Metric, na.rm = TRUE))]
-    }
-  }
-  
-  # r2----
-  if (!is.null(GroupVariables)) {
-    MetricCollection <-
-      merge(MetricCollection,
-            TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict)), by = "GroupVar"],
-            by = "GroupVar",
-            all = FALSE)
-    MetricCollection[, R2_Metric := R2_Metric ^ 2]
-  } else {
-    Metric <-
-      (TestDataEval[, .(R2_Metric = stats::cor(get(TargetColumnName), Predict))]) ^ 2
-  }
-  
-  # Update GroupVar with Original Columns, reorder columns, add to model objects----
-  if (!is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
-      MetricCollection[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-      NumGroupVars <- length(GroupVariables)
-      data.table::setcolorder(MetricCollection,
-                              c((ncol(MetricCollection) - NumGroupVars + 1):ncol(MetricCollection),
-                                1:(ncol(MetricCollection) - NumGroupVars)
-                              ))      
-    }
-    TestModel[["EvaluationMetricsByGroup"]] <- MetricCollection
-    TestModel$EvaluationMetricsByGroup
-  }
-  
-  # Store Date Info----
-  if (!is.null(GroupVariables)) {
-    FutureDateData <- unique(dataFuture[, get(DateColumnName)])
-    for (i in  seq_len(FC_Periods)) {
-      FutureDateData <- c(FutureDateData, max(FutureDateData) + 1)
+      N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
     }
   } else {
-    FutureDateData <- dataFuture[, get(DateColumnName)]
-    for (i in  seq_len(FC_Periods)) {
-      FutureDateData <- c(FutureDateData, max(FutureDateData) + 1)
-    }
+    N <- as.integer(train[, .N])
   }
   
-  # Row Count----
-  if (!is.null(GroupVariables)) {
-    N <- datax[, .N, by = "GroupVar"][, max(N)]
+  # Number of forecast periods----
+  if(DebugMode) print("Number of forecast periods----")
+  if(TrainOnFull) {
+    ForecastRuns <- FC_Periods
   } else {
-    N <- datax[, .N]
+    ForecastRuns <- HoldOutPeriods
   }
+  
+  #----
+  
+  #----
+  
+  # ARMA PROCESS FORECASTING----
+  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  
+  #----
+  
+  #----
   
   # Begin loop for generating forecasts----
-  for (i in seq_len(FC_Periods)) {
+  for (i in seq_len(ForecastRuns+1L)) {
+    
     # Row counts----
     if (i != 1) {
-      N <- N + 1
+      N <- as.integer(N + 1L)
     }
     
-    # Generate predictions----
+    ###############
+    # ML Scoring
+    ###############
+    
+    # Machine Learning: Generate predictions----
+    if(DebugMode) print("# Machine Learning: Generate predictions----")
     if (i == 1) {
-      
-      # Score model----
       if(!is.null(GroupVariables)) {
+        
+        # i = 1 Define IDcols----
+        if(DebugMode) print("# i = 1 Define IDcols----")
+        if(Difference) {
+          IDcols = "ModTarget"
+        } else {
+          IDcols <- eval(TargetColumnName)
+        }
+        
+        # Score model----
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
-          ScoringData = datax,
-          FeatureColumnNames = names(datax)[c(1,4:ncol(datax))],
+          # Keep GroupVar in Step1SCore since it might fuck shit up downstream
+          ScoringData = Step1SCore, # Auto_Scoring shoud ignore non-ModelFeatures so just throw everything in there? Otherwise use: if("GroupVar" %chin% names(Step1SCore) & !"GroupVar" %chin% ModelFeatures) Step1SCore[, .SD, .SDcols = setdiff(names(Step1SCore), "GroupVar")] else Step1SCore,
+          FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
-          IDcols = NULL,
+          IDcols = IDcols,
           ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
-          TargetColumnName = eval(TargetColumnName),
+          TargetColumnName = NULL,
           TransformationObject = NULL,
           FactorLevelsList = FactorList,
           TransID = NULL,
@@ -628,13 +1004,13 @@ AutoXGBoostCARMA <- function(data,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
-          MDP_MissNum = -1
-        )  
+          MDP_MissNum = -1)
+        
       } else {
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
-          ScoringData = datax,
-          FeatureColumnNames = names(datax)[c(3:ncol(datax))],
+          ScoringData = Step1SCore,
+          FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
           IDcols = NULL,
           ModelObject = Model,
@@ -643,7 +1019,7 @@ AutoXGBoostCARMA <- function(data,
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
-          TargetColumnName = eval(TargetColumnName),
+          TargetColumnName = NULL,
           TransformationObject = NULL,
           FactorLevelsList = FactorList,
           TransID = NULL,
@@ -652,27 +1028,54 @@ AutoXGBoostCARMA <- function(data,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
-          MDP_MissNum = -1
-        )
+          MDP_MissNum = -1)
       }
       
-      # Update data----
-      UpdateData <- cbind(FutureDateData[1:N],
-                          datax[, get(TargetColumnName)], Preds[, eval(DateColumnName) := NULL])
-      data.table::setnames(UpdateData,
-                           c("V1", "V2"),
-                           c(eval(DateColumnName),
-                             eval(TargetColumnName)))
+      # Data Wrangline: grab historical data and one more future record----
+      if(Difference) {
+        if(eval(TargetColumnName) %chin% names(Step1SCore)) {
+          if(eval(TargetColumnName) %chin% names(Preds)) {
+            data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
+          }
+        }
+        if(eval(DateColumnName) %chin% names(Step1SCore)) {
+          data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
+        }
+        if(eval(DateColumnName) %chin% names(Preds)) {
+          data.table::set(Preds, j = eval(DateColumnName), value = NULL) 
+        }        
+        UpdateData <- cbind(FutureDateData[2L:(N+3L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+      } else {
+        UpdateData <- cbind(FutureDateData[1L:N],Preds)
+        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+      }
+      
     } else {
       if (!is.null(GroupVariables)) {
-        temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
+        
+        # Correctly indicate the target variables being generated----
+        if(Difference) {
+          IDcols = "ModTarget"
+        } else {
+          IDcols <- eval(TargetColumnName)
+        }
+        
+        # GroupVar or Hierarchical----
+        if(!is.null(HierarchGroups)) {
+          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
+        } else {
+          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])  
+        }
+        
+        # Score model----
         temp <- temp[ID == N][, ID := NULL]
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = temp,
-          FeatureColumnNames = c(4:ncol(temp)),
+          FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
-          IDcols = NULL,
+          IDcols = IDcols,
           ModelObject = Model,
           ModelPath = getwd(),
           ModelID = "ModelTest",
@@ -688,25 +1091,37 @@ AutoXGBoostCARMA <- function(data,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
-          MDP_MissNum = -1
-        )
+          MDP_MissNum = -1)
         
         # Update data group case----
         data.table::setnames(Preds, "Predictions", "Preds")
         Preds <- cbind(UpdateData[ID == N], Preds)
-        Preds[, eval(TargetColumnName) := Preds]
+        if(Difference) {
+          Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
+        } else {
+          Preds[, eval(TargetColumnName) := Preds]  
+        }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) {
+          UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+        }
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
+        if(Difference) {
+          
+          # GroupVar or Hierarchical----
+          if(!is.null(HierarchGroups)) {
+            UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = c(eval(GroupVariables))]
+          } else {
+            UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
+          }
+        }
         UpdateData[, ID := NULL]
       } else {
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = UpdateData[.N, ],
-          FeatureColumnNames = setdiff(names(UpdateData),
-                                       c("Predictions",
-                                         eval(DateColumnName),
-                                         eval(TargetColumnName))),
+          FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
           IDcols = NULL,
           ModelObject = Model,
@@ -724,94 +1139,149 @@ AutoXGBoostCARMA <- function(data,
           MDP_CharToFactor = TRUE,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = "0",
-          MDP_MissNum = -1
-        )
+          MDP_MissNum = -1)
         
         # Update data non-group case----
-        data.table::set(UpdateData,
-                        i = N,
-                        j = 2:3,
-                        value = Preds[[1]])
+        data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1]])
       }
     }
     
-    # Timer----
-    if (Timer) {
-      if(i != 1) print(paste("Forecast future step: ", i-1))
-    }
-    
-    # Create single future record----
-    d <- max(UpdateData[[eval(DateColumnName)]])
-    if (tolower(TimeUnit) == "hour") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::hours(1))
-    } else if (tolower(TimeUnit) == "1min") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::minute(1))
-    } else if (tolower(TimeUnit) == "5min") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::minute(5))
-    } else if (tolower(TimeUnit) == "10min") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::minute(10))
-    } else if (tolower(TimeUnit) == "15min") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::minute(15))
-    } else if (tolower(TimeUnit) == "30min") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::minute(30))
-    } else if (tolower(TimeUnit) == "day") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::days(1))
-    } else if (tolower(TimeUnit) == "week") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::weeks(1))
-    } else if (tolower(TimeUnit) == "month") {
-      CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
-    } else if (tolower(TimeUnit) == "quarter") {
-      CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
-    } else if (tolower(TimeUnit) == "year") {
-      CalendarFeatures <-
-        data.table::as.data.table(d + lubridate::years(1))
-    }
-    
-    # Prepare for more feature engineering----
-    data.table::setnames(CalendarFeatures, "V1", eval(DateColumnName))
-    CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
-    if (!is.null(GroupVariables)) {
-      CalendarFeatures <- cbind(GroupVarVector, CalendarFeatures)
-      data.table::setnames(CalendarFeatures, "GroupVarVector", "GroupVar")
-    }
-    
-    # Add calendar variables----
-    if (CalendarVariables) {
-      CalendarFeatures <- RemixAutoML::CreateCalendarVariables(
-        data = CalendarFeatures,
-        DateCols = eval(DateColumnName),
-        AsFactor = FALSE,
-        TimeUnits = c(
-          "second",
-          "minute",
-          "hour",
-          "wday",
-          "mday",
-          "yday",
-          "week",
-          "isoweek",
-          "month",
-          "quarter",
-          "year"
-        )
-      )
-    }
-    
-    # Add TimeTrendVariable----
-    if (TimeTrendVariable) {
-      CalendarFeatures[, TimeTrend := N + 1]
-    }
+    ###############
+    # Forecasting
+    ###############
     
     # Update features for next run----
-    if (i != max(FC_Periods)) {
+    if (i != ForecastRuns+1L) {
+      
+      # Timer----
+      if(DebugMode) print("Timer----")
+      if (Timer) {
+        if(i != 1) {
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+          print(paste("Forecast future step: ", i-1))
+        }
+      }
+      
+      # Create single future record----
+      if(DebugMode) print("Create single future record----")
+      d <- max(UpdateData[[eval(DateColumnName)]])
+      if (tolower(TimeUnit) == "hour") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
+      } else if (tolower(TimeUnit) == "1min") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
+      } else if (tolower(TimeUnit) == "5min") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(5))
+      } else if (tolower(TimeUnit) == "10min") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(10))
+      } else if (tolower(TimeUnit) == "15min") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(15))
+      } else if (tolower(TimeUnit) == "30min") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(30))
+      } else if (tolower(TimeUnit) == "day") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::days(1))
+      } else if (tolower(TimeUnit) == "week") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::weeks(1))
+      } else if (tolower(TimeUnit) == "month") {
+        CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
+      } else if (tolower(TimeUnit) == "quarter") {
+        CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
+      } else if (tolower(TimeUnit) == "year") {
+        CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
+      }
+      
+      # Merge groups vars----
+      if(DebugMode) print("Merge groups vars----")
+      if (!is.null(GroupVariables)) {
+        CalendarFeatures <- cbind(unique(GroupVarVector), CalendarFeatures)
+        if(!"GroupVar" %chin% GroupVariables) {
+          if("GroupVar" %chin% names(CalendarFeatures)) data.table::set(CalendarFeatures, j = "GroupVar", value = NULL)
+        }
+      }
+      
+      # Update colname for date----
+      if(DebugMode) print("Update colname for date----")
+      data.table::setnames(CalendarFeatures, names(CalendarFeatures)[ncol(CalendarFeatures)], eval(DateColumnName))
+      
+      # Merge XREGS if not null----
+      if(DebugMode) print("Merge XREGS if not null----")
+      if(!is.null(XREGS)) {
+        
+        # Ensure Grouping Variables are Character----
+        for(zz in seq_len(length(GroupVariables))) {
+          if(!is.character(CalendarFeatures[[eval(GroupVariables[zz])]])) {
+            data.table::set(CalendarFeatures, j == eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+          }
+          if(!is.character(XREGS[[eval(GroupVariables[zz])]])) {
+            data.table::set(XREGS, j = eval(GroupVariables[zz]), value = as.character(XREGS[[eval(GroupVariables[zz])]]))
+          }
+        }
+        
+        # Match GroupVariables Type----
+        if(!is.null(GroupVariables)) {
+          if(!"GroupVar" %chin% names(XREGS)) {
+            if(IndepentVariablesPass %chin% names(XREGS)) {
+              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
+            } else {
+              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(GroupVariables,eval(DateColumnName)), all = FALSE)
+            }
+          } else {
+            CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          }
+        } else {
+          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+        }
+      }
+      
+      # Add fouier terms----
+      if(DebugMode) print("Add fouier terms----")
+      if(is.null(GroupVariables) & FourierTerms > 0) {
+        if(i == 1) {
+          CalendarFeatures <- cbind(CalendarFeatures, XREG[nrow(Step1SCore)+1])
+        } else {
+          CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
+        }
+      } else if(FourierTerms > 0) {
+        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+      }
+      
+      # Prepare for more feature engineering----
+      if(DebugMode) print("Prepare for more feature engineering----")
+      CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
+      
+      # Update calendar variables----
+      if(DebugMode) print("Update calendar variables----")
+      if (CalendarVariables) {
+        CalendarFeatures <- CreateCalendarVariables(
+          data = CalendarFeatures,
+          DateCols = eval(DateColumnName),
+          AsFactor = FALSE,
+          TimeUnits = c(
+            "second",
+            "minute",
+            "hour",
+            "wday",
+            "mday",
+            "yday",
+            "week",
+            "isoweek",
+            "month",
+            "quarter",
+            "year"))
+      }
+      
+      # Update Time Trend feature----
+      if(DebugMode) print("Update Time Trend feature----")
+      if (TimeTrendVariable) {
+        CalendarFeatures[, TimeTrend := N + 1L]
+      }
+      
+      # Prepare data for scoring----
+      if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
       if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
         temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
@@ -819,17 +1289,29 @@ AutoXGBoostCARMA <- function(data,
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      UpdateData <-
-        data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
+      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) {
+        UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      }
+      UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
       
       # Update holiday feature----
+      if(DebugMode) print("Update holiday feature----")
       if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
-        UpdateData <- CreateHolidayVariables(
-          UpdateData,
-          DateCols = eval(DateColumnName),
-          HolidayGroups = c("USPublicHolidays"),
-          Holidays = NULL, 
-          GroupingVars = "GroupVar")
+        if(IndepentVariablesPass %chin% names(UpdateData)) {
+          UpdateData <- CreateHolidayVariables(
+            UpdateData,
+            DateCols = eval(DateColumnName),
+            HolidayGroups = c("USPublicHolidays"),
+            Holidays = NULL,
+            GroupingVars = IndepentVariablesPass)  
+        } else {
+          UpdateData <- CreateHolidayVariables(
+            UpdateData,
+            DateCols = eval(DateColumnName),
+            HolidayGroups = c("USPublicHolidays"),
+            Holidays = NULL,
+            GroupingVars = "GroupVar")
+        }
       } else if(HolidayVariable) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
@@ -839,259 +1321,549 @@ AutoXGBoostCARMA <- function(data,
       }
       
       # Update Lags and MA's----
-      if (!is.null(GroupVariables)) {
-        UpdateData <- UpdateData[order(GroupVar, get(DateColumnName))]
-        UpdateData[, ID := .N:1, by = "GroupVar"]
-        keep <- unique(c(
-          eval(DateColumnName),
-          eval(TargetColumnName),
-          "Predictions",
-          "GroupVar",
-          "ID",
-          names(CalendarFeatures)
-        ))
-        Temporary <- data.table::copy(UpdateData[, ..keep])
-        Temporary <- Partial_DT_GDL_Feature_Engineering(
-          data           = Temporary,
-          lags           = c(Lags),
-          periods        = c(MA_Periods),
-          statsNames     = c("MA"),
-          targets        = eval(TargetColumnName),
-          groupingVars   = "GroupVar",
-          sortDateName   = eval(DateColumnName),
-          timeDiffTarget = NULL,
-          timeAgg        = NULL,
-          WindowingLag   = 1,
-          Type           = "Lag",
-          SimpleImpute   = TRUE,
-          AscRowByGroup  = "ID",
-          RecordsKeep    = 1,
-          AscRowRemove   = FALSE
-        )
+      if(DebugMode) print("Update Lags and MA's----")
+      if(!is.null(GroupVariables) & Difference == TRUE) {
         
-        # Not lining up - Updatedata and Temporary
-        UpdateData <-
-          data.table::rbindlist(list(UpdateData[ID != 1], Temporary), use.names = TRUE)
+        # Create data for GDL----
+        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        Temporary <- temp$data
+        keep <- temp$keep
+        
+        # Generate GDL Features for Updated Records----
+        if(DebugMode) print("Generate GDL Features for Updated Records----")
+        
+        # Build GDL----
+        Temporary <- AutoLagRollStatsScoring(
+          
+          # Data
+          data                 = Temporary,
+          RowNumsID            = "ID",
+          RowNumsKeep          = 1,
+          DateColumn           = eval(DateColumnName),
+          Targets              = c(eval(TargetColumnName),"ModTarget"),
+          HierarchyGroups      = HierarchSupplyValue,
+          IndependentGroups    = IndependentSupplyValue,
+          
+          # Services
+          TimeBetween          = NULL,
+          TimeUnit             = TimeUnit,
+          TimeUnitAgg          = TimeUnit,
+          TimeGroups           = TimeGroups,
+          RollOnLag1           = TRUE,
+          Type                 = "Lag",
+          SimpleImpute         = TRUE,
+          
+          # Calculated Columns
+          Lags                 = c(Lags),
+          MA_RollWindows       = c(MA_Periods),
+          SD_RollWindows       = c(SD_Periods),
+          Skew_RollWindows     = c(Skew_Periods),
+          Kurt_RollWindows     = c(Kurt_Periods),
+          Quantile_RollWindows = c(Quantile_Periods),
+          Quantiles_Selected   = c(Quantiles_Selected),
+          Debug                = TRUE)
+        
+        # Data
+        # data                 = Temporary
+        # RowNumsID            = "ID"
+        # RowNumsKeep          = 1
+        # DateColumn           = eval(DateColumnName)
+        # Targets              = c(eval(TargetColumnName),"ModTarget")
+        # HierarchyGroups      = HierarchSupplyValue
+        # IndependentGroups    = IndependentSupplyValue
+        # 
+        # # Services
+        # TimeBetween          = NULL
+        # TimeUnit             = TimeUnit
+        # RollOnLag1           = TRUE
+        # Type                 = "Lag"
+        # SimpleImpute         = TRUE
+        # 
+        # # Calculated Columns
+        # Lags                 = c(Lags)
+        # MA_RollWindows       = c(MA_Periods)
+        # SD_RollWindows       = c(SD_Periods)
+        # Skew_RollWindows     = c(Skew_Periods)
+        # Kurt_RollWindows     = c(Kurt_Periods)
+        # Quantile_RollWindows = c(Quantile_Periods)
+        # Quantiles_Selected   = c(Quantiles_Selected)
+        # Debug                = TRUE
+        
+        # Lag / Lead, MA Holiday Variables----
+        if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
+        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+          
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
+          
+          # Create data for GDL----
+          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
+            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          Temporary1 <- temp$data
+          keep <- temp$keep
+          
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          Temporary1 <- AutoLagRollStatsScoring(
+            
+            # Data
+            data                 = Temporary1,
+            RowNumsID            = "ID",
+            RowNumsKeep          = 1,
+            DateColumn           = eval(DateColumnName),
+            Targets              = "HolidayCounts",
+            HierarchyGroups      = NULL,
+            IndependentGroups    = IndepentVariablesPass,
+            
+            # Services
+            TimeBetween          = NULL,
+            TimeUnit             = TimeUnit,
+            TimeUnitAgg          = TimeUnit,
+            TimeGroups           = TimeUnit,
+            RollOnLag1           = TRUE,
+            Type                 = "Lag",
+            SimpleImpute         = TRUE,
+            
+            # Calculated Columns
+            Lags                 = HolidayLags,
+            MA_RollWindows       = HolidayMovingAverages,
+            SD_RollWindows       = NULL,
+            Skew_RollWindows     = NULL,
+            Kurt_RollWindows     = NULL,
+            Quantile_RollWindows = NULL,
+            Quantiles_Selected   = NULL)
+          
+          # Join Holiday Lags and Moving Averages back to UpdateData----
+          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+          Temporary <- merge(Temporary, 
+                             Temporary1[, .SD, .SDcols = c(keep)], 
+                             by = c(eval(GroupVariables),eval(DateColumnName)), 
+                             all = FALSE)
+        }
+        
+        # Update data for scoring next iteration----
+        if(DebugMode) print("Update data for scoring next iteration----")
+        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
+        
+      } else if(!is.null(GroupVariables)) {
+        
+        # Create data for GDL----
+        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        Temporary <- temp$data
+        keep <- temp$keep
+        
+        # Generate GDL Features for Updated Records----
+        if(DebugMode) print("Generate GDL Features for Updated Records----")
+        Temporary <- AutoLagRollStatsScoring(
+          
+          # Data
+          data                 = Temporary,
+          RowNumsID            = "ID",
+          RowNumsKeep          = 1,
+          DateColumn           = eval(DateColumnName),
+          Targets              = eval(TargetColumnName),
+          HierarchyGroups      = HierarchSupplyValue,
+          IndependentGroups    = IndependentSupplyValue,
+          
+          # Services
+          TimeBetween          = NULL,
+          TimeUnit             = TimeUnit,
+          TimeUnitAgg          = TimeUnit,
+          TimeGroups           = TimeGroups,
+          RollOnLag1           = TRUE,
+          Type                 = "Lag",
+          SimpleImpute         = TRUE,
+          
+          # Calculated Columns
+          Lags                 = c(Lags),
+          MA_RollWindows       = c(MA_Periods),
+          SD_RollWindows       = c(SD_Periods),
+          Skew_RollWindows     = c(Skew_Periods),
+          Kurt_RollWindows     = c(Kurt_Periods),
+          Quantile_RollWindows = c(Quantile_Periods),
+          Quantiles_Selected   = c(Quantiles_Selected),
+          Debug                = DebugMode)
+        
+        # Args for rolling stats scoring
+        # data                 = Temporary
+        # RowNumsID            = "ID"
+        # RowNumsKeep          = 1
+        # DateColumn           = eval(DateColumnName)
+        # Targets              = eval(TargetColumnName)
+        # HierarchyGroups      = HierarchSupplyValue
+        # IndependentGroups    = IndependentSupplyValue
+        # 
+        # # Services
+        # TimeBetween          = NULL
+        # TimeUnit             = TimeUnit
+        # RollOnLag1           = TRUE
+        # Type                 = "Lag"
+        # SimpleImpute         = TRUE
+        # 
+        # # Calculated Columns
+        # Lags                 = c(Lags)
+        # MA_RollWindows       = c(MA_Periods)
+        # SD_RollWindows       = c(SD_Periods)
+        # Skew_RollWindows     = c(Skew_Periods)
+        # Kurt_RollWindows     = c(Kurt_Periods)
+        # Quantile_RollWindows = c(Quantile_Periods)
+        # Quantiles_Selected   = c(Quantiles_Selected)
+        # Debug = TRUE
+        
+        # Lag / Lead, MA Holiday Variables----
+        if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
+        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+          
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
+          
+          # Create data for GDL----
+          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
+            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          Temporary1 <- temp$data
+          keep <- temp$keep
+
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          Temporary1 <- AutoLagRollStatsScoring(
+            
+            # Data
+            data                 = Temporary1,
+            RowNumsID            = "ID",
+            RowNumsKeep          = 1,
+            DateColumn           = eval(DateColumnName),
+            Targets              = "HolidayCounts",
+            HierarchyGroups      = NULL,
+            IndependentGroups    = IndepentVariablesPass,
+            
+            # Services
+            TimeBetween          = NULL,
+            TimeUnit             = TimeUnit,
+            TimeUnitAgg          = TimeUnit,
+            TimeGroups           = TimeUnit,
+            RollOnLag1           = TRUE,
+            Type                 = "Lag",
+            SimpleImpute         = TRUE,
+            
+            # Calculated Columns
+            Lags                 = HolidayLags,
+            MA_RollWindows       = HolidayMovingAverages[!HolidayMovingAverages %in% 1],
+            SD_RollWindows       = NULL,
+            Skew_RollWindows     = NULL,
+            Kurt_RollWindows     = NULL,
+            Quantile_RollWindows = NULL,
+            Quantiles_Selected   = NULL)
+          
+          # Join Holiday Lags and Moving Averages back to UpdateData----
+          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+          Temporary <- merge(Temporary, 
+                             Temporary1[, .SD, .SDcols = c(keep)], 
+                             by = c(eval(GroupVariables),eval(DateColumnName)), 
+                             all = FALSE)
+        }
+        
+        # Update data for scoring next iteration----
+        if(DebugMode) print("Update data for scoring next iteration----")
+        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
+        
       } else {
-        UpdateData <- UpdateData[order(get(DateColumnName))]
-        UpdateData[, ID := .N:1]
-        keep <- unique(c(
-          eval(DateColumnName),
-          eval(TargetColumnName),
-          "Predictions",
-          "ID",
-          names(CalendarFeatures)
-        ))
-        Temporary <- data.table::copy(UpdateData[, ..keep])
-        Temporary <- Partial_DT_GDL_Feature_Engineering(
-          data           = Temporary,
-          lags           = c(Lags),
-          periods        = c(MA_Periods),
-          statsNames     = c("MA"),
-          targets        = eval(TargetColumnName),
-          groupingVars   = NULL,
-          sortDateName   = eval(DateColumnName),
-          timeDiffTarget = NULL,
-          timeAgg        = NULL,
-          WindowingLag   = 1,
-          Type           = "Lag",
-          SimpleImpute   = TRUE,
-          AscRowByGroup  = "ID",
-          RecordsKeep    = 1,
-          AscRowRemove   = FALSE
-        )
-        UpdateData <-
-          data.table::rbindlist(list(UpdateData[ID != 1], Temporary), use.names = TRUE)
-        UpdateData[, ID := NULL]
+        
+        # Create data for GDL----
+        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        Temporary <- temp$data
+        keep <- temp$keep
+        
+        # Generate GDL Features for Updated Records----
+        if(DebugMode) print("Generate GDL Features for Updated Records----")
+        Temporary <- AutoLagRollStatsScoring(
+          
+          # Data
+          data                 = Temporary,
+          RowNumsID            = "ID",
+          RowNumsKeep          = 1,
+          DateColumn           = eval(DateColumnName),
+          Targets              = eval(TargetColumnName),
+          HierarchyGroups      = NULL,
+          IndependentGroups    = NULL,
+          
+          # Services
+          TimeBetween          = NULL,
+          TimeUnit             = TimeUnit,
+          TimeUnitAgg          = TimeUnit,
+          TimeGroups           = TimeGroups,
+          RollOnLag1           = TRUE,
+          Type                 = "Lag",
+          SimpleImpute         = TRUE,
+          
+          # Calculated Columns
+          Lags                 = c(Lags),
+          MA_RollWindows       = c(MA_Periods),
+          SD_RollWindows       = c(SD_Periods),
+          Skew_RollWindows     = c(Skew_Periods),
+          Kurt_RollWindows     = c(Kurt_Periods),
+          Quantile_RollWindows = c(Quantile_Periods),
+          Quantiles_Selected   = c(Quantiles_Selected))
+        
+        # Lag / Lead, MA Holiday Variables----
+        if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
+        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+          
+          # Create copy of data----
+          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
+            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          Temporary1 <- temp$data
+          keep <- temp$keep
+          
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          Temporary1 <- AutoLagRollStatsScoring(
+            
+            # Data
+            data                 = Temporary1,
+            RowNumsID            = "ID",
+            RowNumsKeep          = 1,
+            DateColumn           = eval(DateColumnName),
+            Targets              = "HolidayCounts",
+            HierarchyGroups      = NULL,
+            IndependentGroups    = NULL,
+            
+            # Services
+            TimeBetween          = NULL,
+            TimeUnit             = TimeUnit,
+            TimeUnitAgg          = TimeUnit,
+            TimeGroups           = TimeUnit,
+            RollOnLag1           = TRUE,
+            Type                 = "Lag",
+            SimpleImpute         = TRUE,
+            
+            # Calculated Columns
+            Lags                 = HolidayLags,
+            MA_RollWindows       = HolidayMovingAverages[!HolidayMovingAverages %in% 1],
+            SD_RollWindows       = NULL,
+            Skew_RollWindows     = NULL,
+            Kurt_RollWindows     = NULL,
+            Quantile_RollWindows = NULL,
+            Quantiles_Selected   = NULL)
+          
+          # Join Holiday Lags and Moving Averages back to UpdateData----
+          keep <- c(eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+          Temporary <- merge(Temporary, 
+                             Temporary1[, .SD, .SDcols = c(keep)], 
+                             by = c(eval(DateColumnName)), 
+                             all = FALSE)
+        }
+        
+        # Update data for scoring next iteration----
+        if(DebugMode) print("Update data for scoring next iteration----")
+        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
+        
       }
+      gc()
     }
+    gc()
+  }
+  
+  # Remove duplicate date names----
+  if(DebugMode) print("Remove duplicate date names----")
+  if(sum(names(UpdateData) %chin% eval(DateColumnName)) > 1) {
+    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(DateColumnName))[2], value = NULL)      
+  }
+  
+  # Remove duplicate target names----
+  if(DebugMode) print("Remove duplicate target names----")
+  if(sum(names(UpdateData) %chin% eval(TargetColumnName)) > 1) {
+    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(TargetColumnName))[2], value = NULL)      
+  }
+  
+  # Reverse Difference----
+  if(DebugMode) print("Reverse Difference----")
+  if(is.null(GroupVariables) & Difference == TRUE) {
+    UpdateData <- DifferenceDataReverse(
+      data = UpdateData, 
+      ScoreData = NULL, 
+      CARMA = TRUE, 
+      TargetCol = eval(TargetColumnName),
+      FirstRow = DiffTrainOutput$FirstRow[[eval(TargetColumnName)]],
+      LastRow = NULL)
+  } else if(!is.null(GroupVariables) & Difference == TRUE) {
+    if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == "Date")) {
+      UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+    }
+    UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
+    UpdateData <- UpdateData[, .SD, .SDcols = c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar")]
+    data.table::set(UpdateData, j = "Predictions", value = UpdateData[[eval(TargetColumnName)]])
   }
   
   # BackTransform----
-  if (TargetTransformation) {
-    data.table::set(TransformObject,
-                    i = 2L,
-                    j = 1L,
-                    value = "Predictions")
+  if(DebugMode) print("BackTransform----")
+  if(TargetTransformation) {
+    temptrans <- data.table::copy(TransformObject)
+    data.table::set(TransformObject, i = 1L, j = "ColumnName", value = "Predictions")
+    TransformObject <- data.table::rbindlist(list(temptrans,TransformObject))
+    
+    # Ensure positive values in case transformation method requires so----
+    if(DebugMode) print("Ensure positive values in case transformation method requires so----")
+    if(Difference) {
+      if(!is.null(GroupVariables)) {
+        UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := 1, by = "GroupVar"]        
+      } else {
+        UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := 1]
+      }
+    }
+    
+    # Backtrans----
+    if(DebugMode) print("Backtrans----")
     UpdateData <- AutoTransformationScore(
       ScoringData = UpdateData,
       FinalResults = TransformObject,
       Type = "Inverse",
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
   }
   
-  # Metrics----
-  EvalMetric <-
-    TestModel$EvaluationMetrics[Metric == "MAPE", MetricValue]
-  
-  # Define plot theme----
-  Temp <- function () {
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 11),
-      axis.text = ggplot2::element_text(size = 11),
-      legend.text = ggplot2::element_text(color = "#1c1c1c",
-                                          size = 11),
-      legend.background = ggplot2::element_rect(
-        fill = "snow3",
-        size = 0.25,
-        colour = "darkblue"
-      ),
-      legend.justification = 0,
-      legend.position = "bottom",
-      plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
-      panel.background = ggplot2::element_rect(fill = "#E7E7E7"),
-      panel.grid.major.x = ggplot2::element_blank(),
-      panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.y = ggplot2::element_line(color = "white"),
-      panel.grid.minor.y = ggplot2::element_line(color = "white"),
-      plot.title = ggplot2::element_text(
-        color = "#1c1c1c",
-        size = 25,
-        hjust = 0,
-        face = "bold"
-      ),
-      plot.subtitle = ggplot2::element_text(
-        color = "#1c1c1c",
-        size = 14,
-        hjust = 0
-      ),
-      plot.caption = ggplot2::element_text(
-        size = 9,
-        hjust = 0,
-        face = "italic"
-      )
-    )
+  # Update ValidationData and Create Metrics Data----
+  if(!TrainOnFull) {
+    if(!is.null(GroupVariables)) {
+      
+      # Sometimes GroupVar is passed, other times not, for both data sets----
+      if(!is.null(HierarchGroups)) {
+        x1 <- tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables),"GroupVar")]}, error = function(x) {
+          tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables))]}, error = function(x) {
+            tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),"GroupVar")]}, error = function(x) NULL)
+          })
+        })
+        tryCatch({data.table::setkeyv(x1, cols = c(eval(GroupVariables),eval(DateColumnName)))}, error = function(x) NULL)
+        x2 <- tryCatch({UpdateData[, .SD, .SDcols =  c("Predictions",eval(GroupVariables),eval(DateColumnName))]}, error = function(x) {
+          tryCatch({UpdateData[, .SD, .SDcols =  c("Predictions","GroupVar",eval(DateColumnName))]}, error = function(x) NULL)
+        })
+        TestDataEval <- tryCatch({x2[x1, on = c(eval(GroupVariables), eval(DateColumnName))][!Predictions %in% c(NA,1)]}, error = function(x) {
+          tryCatch({x2[x1, on = c("GroupVar",eval(DateColumnName))][!Predictions %in% c(NA,1)]})
+        })
+      } else {
+        x1 <- tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables))]}, error = function(x) {
+          tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),"GroupVar")]}, error = function(x) NULL)
+        })
+        x2 <- tryCatch({UpdateData[, .SD, .SDcols =  c("Predictions",eval(GroupVariables),eval(DateColumnName))]}, error = function(x) {
+          tryCatch({UpdateData[, .SD, .SDcols =  c("Predictions","GroupVar",eval(DateColumnName))]}, error = function(x) NULL)
+        })
+        data.table::setkeyv(x1, cols = c("GroupVar",eval(DateColumnName)))
+        TestDataEval <- x2[x1, on = c("GroupVar", eval(DateColumnName))][!Predictions %in% c(NA,1)]
+      }
+    } else {
+      x2 <- UpdateData[, .SD, .SDcols =  c("Predictions",eval(DateColumnName))]
+      if(Difference) {
+        TestDataEval <- merge(antidiff,x2, by = c(eval(DateColumnName)), all = FALSE)
+        TestDataEval <- merge(TestDataEval,valid[, .SD, .SDcols = eval(DateColumnName)], by = eval(DateColumnName), all = FALSE)
+      } else {
+        TestDataEval <- merge(x2,valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))], by = eval(DateColumnName), all = FALSE)
+      }
+    }
+    
+    # Transform target----
+    if(DebugMode) print("Transform target----")
+    if(TargetTransformation) {
+      TestDataEval <- AutoTransformationScore(
+        ScoringData = TestDataEval,
+        FinalResults = TransformObject[1],
+        Type = "Inverse",
+        TransID = NULL,
+        Path = NULL)
+    }
+    
+    # Collect Performance Metrics MSE, MAE, MAPE, R2----
+    if(DebugMode) print("Collect Performance Metrics MSE, MAE, MAPE, R2----")
+    MetricOutput <- tryCatch({CarmaHoldoutMetrics(
+      DATA = TestDataEval,
+      TARGETCOLUMNNAME = eval(TargetColumnName),
+      GROUPVARIABLES = NULL)}, error = function(x) -1)
+    TestModel[["EvaluationMetrics"]] <- MetricOutput
+    
+    # Update GroupVar with Original Columns, reorder columns, add to model objects----
+    if(DebugMode) print("Update GroupVar with Original Columns, reorder columns, add to model objects----")
+    if(!is.null(GroupVariables)) {
+      MetricOutputByGroup <- tryCatch({CarmaHoldoutMetrics(
+        DATA = TestDataEval,
+        TARGETCOLUMNNAME = eval(TargetColumnName),
+        GROUPVARIABLES = "GroupVar")}, error = function(x) -1)
+      
+      # Convert GroupVar back to original columns----
+      if(DebugMode) print("Convert GroupVar back to original columns----")
+      if(length(GroupVariables) > 1 & data.table::is.data.table(MetricOutputByGroup) == TRUE) {
+        if("GroupVar" %chin% names(MetricOutputByGroup)) {
+          tryCatch({data.table::set(MetricOutputByGroup, j = c(eval(GroupVariables)), value = data.table::tstrsplit(MetricOutputByGroup[["GroupVar"]], " "))}, error = function(x) NULL)
+          data.table::set(MetricOutputByGroup, j = "GroupVar", value = NULL)
+        }
+      } else if(data.table::is.data.table(MetricOutputByGroup)) {
+        if(GroupVariables != "GroupVar") {
+          MetricOutputByGroup[, eval(GroupVariables) := GroupVar][, GroupVar := NULL]
+        }
+      }
+      TestModel[["EvaluationMetricsByGroup"]] <- MetricOutputByGroup
+    }
+    
+    # Return if TrainOnFull is FALSE----
+    if(DebugMode) print("Return if TrainOnFull is FALSE----")
+    if(TargetTransformation) {
+      return(list(ModelInformation = TestModel, TransformationDetail = TransformObject))
+    } else {
+      return(list(ModelInformation = TestModel))
+    }
   }
   
-  # Data Manipulation----
-  if (!is.null(GroupVariables)) {
-    PlotData <- data.table::copy(UpdateData)
-    PlotData <- PlotData[, .(sum(get(TargetColumnName)),
-                             sum(Predictions)),
-                         by = eval(DateColumnName)]
-    data.table::setnames(PlotData, c("V1", "V2"), c(eval(TargetColumnName), "Predictions"))
+  # Remove target variables values on FC periods----
+  if(!is.null(GroupVariables)) {
+    if(!"GroupVar" %chin% names(UpdateData)) {
+      UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := NA, by = c(eval(GroupVariables))]
+    } else {
+      UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := NA, by = "GroupVar"]
+    }
   } else {
-    PlotData <- data.table::copy(UpdateData)
-    data.table::set(
-      PlotData,
-      i = (datax[, .N] + 1):PlotData[, .N],
-      j = 2,
-      value = NA
-    )
-    data.table::set(PlotData,
-                    i = 1:datax[, .N],
-                    j = 3,
-                    value = NA)
-  }
-  
-  # Plot Time Series----
-  TimeSeriesPlot <-
-    ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[[eval(DateColumnName)]])) +
-    ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetColumnName)]],
-                                    color = "Actual")) +
-    ggplot2::geom_line(ggplot2::aes(y = PlotData[["Predictions"]],
-                                    color = "Forecast"))
-  
-  # Modify title----
-  if (!is.null(GroupVariables)) {
-    TimeSeriesPlot <- TimeSeriesPlot +
-      ggplot2::geom_vline(
-        xintercept = UpdateData[datax[, .N, by = "GroupVar"][1, 2][[1]],
-                                max(get(DateColumnName), na.rm = TRUE)],
-        color = "#FF4F00",
-        lty = "dotted",
-        lwd = 1
-      ) +
-      Temp()
-    TimeSeriesPlot <- TimeSeriesPlot +
-      ggplot2::labs(
-        title = paste0(
-          FC_Periods-1,
-          " - Period Forecast for Aggregate ",
-          eval(TargetColumnName)
-        ),
-        caption = "Forecast generated by Remix Institute's RemixAutoML R package"
-      ) +
-      ggplot2::scale_colour_manual(
-        "",
-        breaks = c("Actual", "Forecast"),
-        values = c("Actual" = "red", "Forecast" =
-                     "blue")
-      ) +
-      ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
-  } else {
-    TimeSeriesPlot <- TimeSeriesPlot +
-      ggplot2::geom_vline(
-        xintercept = UpdateData[datax[, .N][[1]],
-                                max(get(DateColumnName), na.rm = TRUE)],
-        color = "#FF4F00",
-        lty = "dotted",
-        lwd = 1
-      ) +
-      Temp() +
-      ggplot2::labs(
-        title = paste0(FC_Periods-1, " - Period Forecast for ", eval(TargetColumnName)),
-        caption = "Forecast generated by Remix Institute's RemixAutoML R package"
-      ) +
-      ggplot2::scale_colour_manual(
-        "",
-        breaks = c("Actual", "Forecast"),
-        values = c("Actual" = "red", "Forecast" = "blue")) +
-      ggplot2::xlab(eval(DateColumnName)) + ggplot2::ylab(eval(TargetColumnName))
+    UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := NA]
   }
   
   # Return data----
   if (!is.null(GroupVariables)) {
-    # Variables to keep----
-    keep <-
-      c("GroupVar",
-        eval(DateColumnName),
-        eval(TargetColumnName),
-        "Predictions")
-    UpdateData <- UpdateData[, ..keep]
-    if(length(GroupVariables) > 1) {
-      UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]  
+    if("GroupVar" %chin% names(UpdateData)) {
+      keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
+      tryCatch({data.table::set(UpdateData, j = setdiff(keep,names(UpdateData)), value = NULL)}, error = function(x) NULL)
     }
+    
+    # Return
     if(TargetTransformation) {
       return(
         list(
           Forecast = UpdateData,
-          TimeSeriesPlot = TimeSeriesPlot,
           ModelInformation = TestModel,
-          TransformationDetail = TransformObject
-        )
-      )
+          TransformationDetail = TransformObject))
     } else {
       return(
         list(
           Forecast = UpdateData,
-          TimeSeriesPlot = TimeSeriesPlot,
-          ModelInformation = TestModel
-        )
-      )      
+          ModelInformation = TestModel))      
     }
   } else {
-    # Variables to keep----
-    keep <- c(eval(DateColumnName), "Predictions")
     if(TargetTransformation) {
       return(
         list(
-          Forecast = PlotData[, ..keep],
-          TimeSeriesPlot = TimeSeriesPlot,
+          Forecast = UpdateData,
           ModelInformation = TestModel,
-          TransformationDetail = TransformObject
-        )
-      )
+          TransformationDetail = TransformObject))
     } else {
       return(
         list(
-          Forecast = PlotData[, ..keep],
-          TimeSeriesPlot = TimeSeriesPlot,
-          ModelInformation = TestModel
-        )
-      )      
+          Forecast = UpdateData,
+          ModelInformation = TestModel))      
     }
   }
 }

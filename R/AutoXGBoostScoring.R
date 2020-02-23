@@ -78,6 +78,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_RemoveDates = TRUE,
                                MDP_MissFactor = "0",
                                MDP_MissNum = -1) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
   if (is.null(ScoringData)) {
     warning("ScoringData cannot be NULL")

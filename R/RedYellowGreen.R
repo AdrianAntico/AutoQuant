@@ -47,6 +47,10 @@ RedYellowGreen <- function(data,
                            Cores             = 8,
                            Precision         = 0.01,
                            Boundaries        = c(0.05, 0.75)) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace('parallel', quietly = FALSE)
   
@@ -80,16 +84,14 @@ RedYellowGreen <- function(data,
     FNP = base::rep(FalseNegativeCost, 1),
     MTDN = base::rep(TRUE, 1),
     MTC = base::rep(MidTierCost, 1),
-    Threshold = runif(1)
-  )
+    Threshold = runif(1))
   
   # Do nothing possibilities
-  temp     <-
-    data.table::CJ(
+  temp <- data.table::CJ(
       MTLT = seq(Boundaries[1], Boundaries[2], Precision),
       MTHT = seq(Boundaries[1], Boundaries[2], Precision)
     )[MTHT > MTLT]
-  new      <- cbind(analysisTable, temp)
+  new <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
   
   # Parallel components
@@ -102,13 +104,11 @@ RedYellowGreen <- function(data,
   doParallel::registerDoParallel(cl)
   
   # Kick off run
-  results <-
-    foreach::foreach(
-      i            = itertools::isplitRows(new, chunks = parts),
-      .combine      = function(...)
-        data.table::rbindlist(list(...)),
-      .multicombine = TRUE,
-      .packages     = packages
+  results <- foreach::foreach(
+    i = itertools::isplitRows(new, chunks = parts),
+    .combine = function(...) data.table::rbindlist(list(...)),
+    .multicombine = TRUE,
+    .packages     = packages
     ) %dopar% {
       RedYellowGreenParallel <- function(data,
                                          PredictColNumber  = 1,
@@ -174,10 +174,7 @@ RedYellowGreen <- function(data,
             tp <- sum(data.table::fifelse(
               !(data[[predTar]] < MidTierHighThresh &
                   data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 1 & data[[predTar]] >= i,
-              1,
-              0
-            ))
+                data[[actTar]] == 1 & data[[predTar]] >= i,1,0))
           } else {
             tp <- 0
           }
@@ -186,10 +183,7 @@ RedYellowGreen <- function(data,
               sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] <  i,
-                1,
-                0
-              ))
+                  data[[actTar]] == 0 & data[[predTar]] <  i,1,0))
           } else {
             tn <- 0
           }
@@ -198,10 +192,7 @@ RedYellowGreen <- function(data,
               sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] >= i,
-                1,
-                0
-              ))
+                  data[[actTar]] == 0 & data[[predTar]] >= i,1,0))
           } else {
             fp <- 0
           }
@@ -210,27 +201,18 @@ RedYellowGreen <- function(data,
               sum(data.table::fifelse(
                 !(data[[predTar]] < MidTierHighThresh &
                     data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 1 & data[[predTar]] <  i,
-                1,
-                0
-              ))
+                  data[[actTar]] == 1 & data[[predTar]] <  i,1,0))
           } else {
             fp <- 0
           }
           none <-
             sum(data.table::fifelse(
               data[[predTar]] <= MidTierHighThresh &
-                data[[predTar]] >= MidTierLowThresh,
-              1,
-              0
-            ))
-          tpr     <-
-            data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
-          fpr     <-
-            data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
+                data[[predTar]] >= MidTierLowThresh,1,0))
+          tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
+          fpr <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
           noneRate <- none / nrow(data)
-          utility <-
-            (1 - noneRate) * (
+          utility <- (1 - noneRate) * (
               popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) +
                 (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
             ) + noneRate * MidTierCost
@@ -242,10 +224,8 @@ RedYellowGreen <- function(data,
         thresholds <- data.table::melt(all[1,])
         data.table::setnames(thresholds, "value", "Thresholds")
         results <- cbind(utilities, thresholds)[, c(-1,-3)]
-        thresh <-
-          results[Thresholds <= eval(MidTierLowThresh) |
-                    Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,
-                                                                              2][[1]]
+        thresh <- results[Thresholds <= eval(MidTierLowThresh) |
+                            Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
         options(warn = 1)
         return(list(thresh, results))
       }
@@ -260,8 +240,7 @@ RedYellowGreen <- function(data,
         FalsePositiveCost = FalsePositiveCost,
         FalseNegativeCost = FalseNegativeCost,
         MidTierCost       = MidTierCost,
-        new = i
-      )
+        new = i)
       
       # Return data table
       data
@@ -271,28 +250,23 @@ RedYellowGreen <- function(data,
   parallel::stopCluster(cl)
   
   # 3D Scatterplot
-  s3d <-
-    scatterplot3d::scatterplot3d(
-      x = results[["MTLT"]],
-      y = results[["MTHT"]],
-      z = results[["Utility"]],
-      type = "p",
-      color = "#401a50",
-      angle = 45,
-      pch = 16,
-      main = paste0("Utility Maximizer - Main Threshold at ",
-                    results[order(-Utility)][1, "MTHT"][[1]]),
-      sub = paste0("Lower Thresh = ",
-                   results[order(-Utility)][1,
-                                            "MTLT"][[1]],
-                   " and Upper Thresh = ",
-                   results[order(-Utility)][1, "MTHT"][[1]]),
-      xlab = "Mid Tier Lower Threshold",
-      ylab = "Mid Tier Higher Threshold",
-      zlab = "Utility"
-    )
-  model <-
-    stats::lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
+  s3d <- scatterplot3d::scatterplot3d(
+    x = results[["MTLT"]],
+    y = results[["MTHT"]],
+    z = results[["Utility"]],
+    type = "p",
+    color = "#401a50",
+    angle = 45,
+    pch = 16,
+    main = paste0("Utility Maximizer - Main Threshold at ",
+                  results[order(-Utility)][1, "MTHT"][[1]]),
+    sub = paste0("Lower Thresh = ",
+                 results[order(-Utility)][1,"MTLT"][[1]],
+                 " and Upper Thresh = ",results[order(-Utility)][1, "MTHT"][[1]]),
+    xlab = "Mid Tier Lower Threshold",
+    ylab = "Mid Tier Higher Threshold",
+    zlab = "Utility")
+  model <- stats::lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
   s3d$plane3d(model)
   N <- nrow(results)
   s3d$points3d(
@@ -301,15 +275,13 @@ RedYellowGreen <- function(data,
     z = results[order(-Utility)][1:(N / 100), "Utility"][[1]],
     col = "#00aa9d",
     type = "h",
-    pch = 1
-  )
+    pch = 1)
   s3d$points3d(
     x = results[order(-Utility)][1, "MTLT"][[1]],
     y = results[order(-Utility)][1, "MTHT"][[1]],
     z = results[order(-Utility)][1, "Utility"][[1]],
     col = "black",
     type = "h",
-    pch = 10
-  )
+    pch = 10)
   return(results)
 }

@@ -69,6 +69,10 @@ AutoH2oGBMHurdleModel <- function(data,
                                   MaxModelsInGrid = 1,
                                   NumOfParDepPlots = 10,
                                   PassInGrid = NULL) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check args----
   if (is.character(Buckets) |
       is.factor(Buckets) | is.logical(Buckets)) {

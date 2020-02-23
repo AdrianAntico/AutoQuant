@@ -45,17 +45,19 @@ dataSets <- AutoDataPartition(data,
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoTransformationCreate}},
+Other Feature Engineering: \code{\link{AutoFourierFeatures}},
+  \code{\link{AutoLagRollStatsScoring}},
+  \code{\link{AutoLagRollStats}},
+  \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},
   \code{\link{AutoWord2VecModeler}},
   \code{\link{CreateCalendarVariables}},
   \code{\link{CreateHolidayVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
-  \code{\link{GDL_Feature_Engineering}},
+  \code{\link{IntermittentDemandDataGenerator}},
   \code{\link{ModelDataPrep}},
   \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{Scoring_GDL_Feature_Engineering}},
   \code{\link{TimeSeriesFill}}
 }
 \author{

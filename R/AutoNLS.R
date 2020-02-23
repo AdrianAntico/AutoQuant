@@ -76,6 +76,10 @@ AutoNLS <- function(data,
                     y,
                     x,
                     monotonic = TRUE) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Begin
   DATA <- data
   nls_collection <-

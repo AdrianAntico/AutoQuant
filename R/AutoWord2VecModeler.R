@@ -55,6 +55,9 @@ AutoWord2VecModeler <- function(data,
                                 MaxMemory     = "28G",
                                 SaveOutput    = FALSE) {
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)

@@ -2,7 +2,7 @@
 #'
 #' This function returns the winning model that you pass onto AutoRecommenderScoring
 #' @author Adrian Antico and Douglas Pestana
-#' @family Marketing Modeling
+#' @family Recommenders
 #' @param data This is your BinaryRatingsMatrix. See function RecomDataCreate
 #' @param Partition Choose from "split", "cross-validation", "bootstrap". See evaluationScheme in recommenderlab for details.
 #' @param KFolds Choose 1 for traditional train and test. Choose greater than 1 for the number of cross validations
@@ -35,6 +35,10 @@ AutoRecommender <- function(data,
                             RatingsKeep = 20,
                             SkipModels  = "AssociationRules",
                             ModelMetric = "TPR") {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Ensure data is proper----
   if (class(data)[1] != "binaryRatingMatrix") {
     warning("data must be of class binaryRatingMatrix")

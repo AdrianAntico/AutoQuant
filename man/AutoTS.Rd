@@ -105,9 +105,14 @@ WinningModel <- output$TimeSeriesModel
 }
 \seealso{
 Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
+  \code{\link{AutoCatBoostFreqSizeScoring}},
+  \code{\link{AutoCatBoostSizeFreqDist}},
   \code{\link{AutoH2oDRFCARMA}},
   \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoXGBoostCARMA}}
+  \code{\link{AutoH2oGBMFreqSizeScoring}},
+  \code{\link{AutoH2oGBMSizeFreqDist}},
+  \code{\link{AutoXGBoostCARMA}},
+  \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \author{
 Adrian Antico and Douglas Pestana

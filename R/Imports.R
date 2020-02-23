@@ -6,6 +6,7 @@
 #' @importFrom stats optimize pchisq
 #' @import doParallel
 #' @importClassesFrom arules transactions
+#' @importFrom stats dbeta pbeta
 NULL
 
 .datatable.aware = TRUE

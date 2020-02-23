@@ -44,6 +44,10 @@ ResidualOutliers <- function(data,
                              TimeUnit = "day",
                              maxN = 5,
                              tstat = 2) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Define TS Frequency
   if (tolower(TimeUnit) == "hour") {
     freq <- 24

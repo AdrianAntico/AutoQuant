@@ -103,6 +103,9 @@ AutoH2oDRFRegression <- function(data,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = TRUE) {
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) {
     stop("eval_metric not in MSE, RMSE, MAE, RMSLE")
@@ -938,19 +941,12 @@ AutoH2oDRFRegression <- function(data,
   
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data, ggplot2::aes(x = reorder(Variable, ScaledImportance), y = ScaledImportance, fill = ScaledImportance)) +
+    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(
-        mid = ColorLow,
-        high = ColorHigh) +
-      ChartTheme(
-        Size = 12,
-        AngleX = 0,
-        LegendPosition = "right"
-      ) +
+      ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
       ggplot2::coord_flip() +
-      ggplot2::labs(
-        title = "Global Variable Importance") +
+      ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }

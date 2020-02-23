@@ -5,11 +5,12 @@
 \title{An Automated Feature Engineering Function Using data.table frollmean}
 \usage{
 DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
-  periods = c(seq(5, 95, 5)), statsNames = c("MA"),
-  targets = c("qty"), groupingVars = c("Group1", "Group2"),
-  sortDateName = c("date"), timeDiffTarget = c("TimeDiffName"),
-  timeAgg = c("days"), WindowingLag = 0, Type = c("Lag"),
-  SimpleImpute = TRUE)
+  periods = c(seq(5, 95, 5)), SDperiods = c(seq(5, 95, 5)),
+  Skewperiods = c(seq(5, 95, 5)), Kurtperiods = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)), statsFUNs = c("mean"),
+  targets = NULL, groupingVars = NULL, sortDateName = NULL,
+  timeDiffTarget = NULL, timeAgg = c("days"), WindowingLag = 0,
+  Type = c("Lag"), SimpleImpute = TRUE)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -18,7 +19,15 @@ DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
 
 \item{periods}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
 
-\item{statsNames}{A character vector of the corresponding names to create for the rollings stats variables.}
+\item{SDperiods}{A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Skewperiods}{A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Kurtperiods}{A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Quantileperiods}{A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{statsFUNs}{Select from the following c("mean","sd","skew","kurt","q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
 \item{targets}{A character vector of the column names for the reference column in which you will build your lags and rolling stats}
 
@@ -55,7 +64,11 @@ data <- data[order(DateTime)]
 data <- DT_GDL_Feature_Engineering(data,
                                    lags           = c(seq(1,5,1)),
                                    periods        = c(3,5,10,15,20,25),
-                                   statsNames     = c("MA"),
+                                   SDperiods       = c(seq(5, 95, 5)),
+                                   Skewperiods     = c(seq(5, 95, 5)),
+                                   Kurtperiods     = c(seq(5, 95, 5)),
+                                   Quantileperiods = c(seq(5, 95, 5)),
+                                   statsFUNs      = c("mean","sd","skew","kurt","q05","q95"),
                                    targets        = c("Target"),
                                    groupingVars   = NULL,
                                    sortDateName   = "DateTime",
@@ -67,16 +80,18 @@ data <- DT_GDL_Feature_Engineering(data,
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoFourierFeatures}},
+  \code{\link{AutoLagRollStatsScoring}},
+  \code{\link{AutoLagRollStats}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},
   \code{\link{AutoWord2VecModeler}},
   \code{\link{CreateCalendarVariables}},
   \code{\link{CreateHolidayVariables}},
   \code{\link{DummifyDT}},
-  \code{\link{GDL_Feature_Engineering}},
+  \code{\link{IntermittentDemandDataGenerator}},
   \code{\link{ModelDataPrep}},
   \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{Scoring_GDL_Feature_Engineering}},
   \code{\link{TimeSeriesFill}}
 }
 \author{

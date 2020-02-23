@@ -64,6 +64,10 @@ ProblematicRecords <- function(data,
                                NThreads = -1,
                                NTrees = 100,
                                SampleRate = (sqrt(5) - 1) / 2) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Ensure H2O is installed----
   if (!requireNamespace("h2o")) {
     warning("Install H2O to run this function")

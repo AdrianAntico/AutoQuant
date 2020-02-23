@@ -5,12 +5,13 @@
 \title{A version of the DT_GDL function for creating the GDL features for a new set of records}
 \usage{
 Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
-  periods = c(3, 5, 10, 15, 20, 25), statsNames = c("MA"),
-  targets = c("Target"), groupingVars = NULL,
-  sortDateName = c("DateTime"), timeDiffTarget = c("Time_Gap"),
-  timeAgg = "days", WindowingLag = 1, Type = "Lag", Timer = TRUE,
-  SimpleImpute = TRUE, AscRowByGroup = "temp", RecordsKeep = 1,
-  AscRowRemove = TRUE)
+  periods = c(3, 5, 10, 15, 20, 25), SDperiods = c(seq(5, 95, 5)),
+  Skewperiods = c(seq(5, 95, 5)), Kurtperiods = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)), statsFUNs = c("mean"),
+  targets = c("Target"), groupingVars = NULL, sortDateName = NULL,
+  timeDiffTarget = NULL, timeAgg = NULL, WindowingLag = 1,
+  Type = "Lag", Timer = TRUE, SimpleImpute = TRUE,
+  AscRowByGroup = "temp", RecordsKeep = 1, AscRowRemove = TRUE)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -19,7 +20,15 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 
 \item{periods}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
 
-\item{statsNames}{A character vector of the corresponding names to create for the rollings stats variables.}
+\item{SDperiods}{A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Skewperiods}{A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Kurtperiods}{A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Quantileperiods}{A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{statsFUNs}{Select from the following c("mean","sd","skew","kurt","q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
 \item{targets}{A character vector of the column names for the reference column in which you will build your lags and rolling stats}
 
@@ -41,7 +50,7 @@ Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
 
 \item{AscRowByGroup}{Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).}
 
-\item{RecordsKeep}{List the number of records to retain (1 for last record, 2 for last 2 records, etc.)}
+\item{RecordsKeep}{List the row number of AscRowByGroup and those data points will be returned}
 
 \item{AscRowRemove}{Set to TRUE to remove the AscRowByGroup column upon returning data.}
 }
@@ -64,7 +73,11 @@ data <- data[order(DateTime)]
 data <- Partial_DT_GDL_Feature_Engineering(data,
                                            lags           = c(1:5),
                                            periods        = c(seq(10,50,10)),
-                                           statsNames     = "mean",
+                                           SDperiods       = c(seq(5, 95, 5)),
+                                           Skewperiods     = c(seq(5, 95, 5)),
+                                           Kurtperiods     = c(seq(5, 95, 5)),
+                                           Quantileperiods = c(seq(5, 95, 5)),
+                                           statsFUNs      = c("mean","sd", "skew", "kurt","q5","q95"),
                                            targets        = c("Target"),
                                            groupingVars   = NULL,
                                            sortDateName   = "DateTime",
@@ -75,11 +88,14 @@ data <- Partial_DT_GDL_Feature_Engineering(data,
                                            Timer          = TRUE,
                                            SimpleImpute   = TRUE,
                                            AscRowByGroup  = "temp",
-                                           RecordsKeep    = 1,
+                                           RecordsKeep    = c(1,5,100,2500),
                                            AscRowRemove   = TRUE)
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoFourierFeatures}},
+  \code{\link{AutoLagRollStatsScoring}},
+  \code{\link{AutoLagRollStats}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},
   \code{\link{AutoWord2VecModeler}},
@@ -87,10 +103,8 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{CreateHolidayVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
   \code{\link{DummifyDT}},
-  \code{\link{GDL_Feature_Engineering}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Scoring_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+  \code{\link{IntermittentDemandDataGenerator}},
+  \code{\link{ModelDataPrep}}, \code{\link{TimeSeriesFill}}
 }
 \author{
 Adrian Antico

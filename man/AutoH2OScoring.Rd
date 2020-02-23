@@ -130,6 +130,9 @@ data <- AutoH2OScoring(Features     = aa,
                        H20ShutDown  = rep(FALSE,N))
 }
 }
+\seealso{
+Other Supervised Learning: \code{\link{AutoCatBoostGridSet}}
+}
 \author{
 Adrian Antico
 }

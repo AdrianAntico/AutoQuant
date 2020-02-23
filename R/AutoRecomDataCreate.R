@@ -1,7 +1,7 @@
 #' Convert transactional data.table to a binary ratings matrix
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Marketing Modeling
+#' @family Recommenders
 #' @param data This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).
 #' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
 #' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU
@@ -22,6 +22,9 @@ AutoRecomDataCreate <- function(data,
                                 ProductColName = "StockCode",
                                 MetricColName  = "TotalSales",
                                 ReturnMatrix   = FALSE) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
   
   # Require RecommenderLab
   requireNamespace("recommenderlab", quietly = TRUE)
@@ -65,10 +68,9 @@ AutoRecomDataCreate <- function(data,
                        "EntityColName",
                        eval(EntityColName))
   
-  # Convert Sales data to Binary (60% faster than ifelse)----
+  # Convert Sales data to Binary----
   for (j in 2:ncol(train_data)) {
-    data.table::set(train_data, which(train_data[[j]] > 0), j, 1)
-    data.table::set(train_data, which(train_data[[j]] <= 0), j, 0)
+    data.table::set(x, j = j, value = data.table::fifelse(x[[j]] > 0, 1, 0))
   }
   
   # Store customerID for rownames----

@@ -2,7 +2,7 @@
 #'
 #' This function will take your ratings matrix and model and score your data in parallel.
 #' @author Adrian Antico and Douglas Pestana
-#' @family Marketing Modeling
+#' @family Recommenders
 #' @param data The binary ratings matrix from RecomDataCreate()
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID
@@ -40,6 +40,10 @@ AutoRecommenderScoring <- function(data,
                                    EntityColName  = "CustomerID",
                                    ProductColName = "StockCode",
                                    NumItemsReturn = 1) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace("data.table", quietly = FALSE)
@@ -59,7 +63,7 @@ AutoRecommenderScoring <- function(data,
   
   # Setup the parallel environment----
   packages <- c("curl", "reshape2", "recommenderlab", "data.table")
-  cores    <- 8
+  cores    <- parallel::detectCores()
   parts    <- floor(nrow(data) * ncol(data) / 250000)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)

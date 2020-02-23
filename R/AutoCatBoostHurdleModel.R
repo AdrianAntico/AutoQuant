@@ -94,6 +94,9 @@ AutoCatBoostHurdleModel <- function(data,
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Update working directory----
   working_directory <- getwd()
   if (!is.null(Paths)) {

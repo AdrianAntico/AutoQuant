@@ -20,6 +20,10 @@ CreateCalendarVariables <- function(data,
                                     DateCols = c("Date", "Date2"),
                                     AsFactor = FALSE,
                                     TimeUnits = "wday") {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -84,25 +88,10 @@ CreateCalendarVariables <- function(data,
   for (i in seq_len(length(DateCols))) {
     if (length(TimeList) != 0) {
       if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-        data.table::set(data,
-                        j = paste0("TIME_", eval(DateCols[i])),
-                        value = as.ITime(data[[eval(DateCols[i])]]))
+        data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = as.ITime(data[[eval(DateCols[i])]]))
       }
-      if (any(
-        tolower(TimeList[[i]]) %chin% c(
-          "wday",
-          "mday",
-          "yday",
-          "week",
-          "isoweek",
-          "month",
-          "quarter",
-          "year"
-        )
-      )) {
-        data.table::set(data,
-                        j = paste0("DATE_", eval(DateCols[i])),
-                        value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+      if (any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) {
+        data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
       }
     }
   }

@@ -5,7 +5,7 @@
 #' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Marketing Modeling
+#' @family Recommender Systems
 #' @importClassesFrom arules transactions
 #' @param data This is your transactions data set
 #' @param OrderIDColumnName Supply your column name for the Order ID Values
@@ -39,6 +39,10 @@ AutoMarketBasketModel <- function(data,
                                   MaxLength = 2,
                                   MinLength = 2,
                                   MaxTime = 5) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Convert to data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)

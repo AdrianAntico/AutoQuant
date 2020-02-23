@@ -551,6 +551,10 @@ AutoTransformationCreate <- function(data,
                                      Path = NULL,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -920,6 +924,10 @@ AutoTransformationScore <- function(ScoringData,
                                     Type = "Inverse",
                                     TransID = "TestModel",
                                     Path = NULL) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
   if (!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)

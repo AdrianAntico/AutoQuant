@@ -75,6 +75,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
   if (is.null(ScoringData)) {
     stop("ScoringData cannot be NULL")

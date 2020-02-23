@@ -49,6 +49,9 @@ DummifyDT <- function(data,
                       ClustScore         = FALSE,
                       ReturnFactorLevels = FALSE) {
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
   if (!is.character(cols)) {
     warning("cols needs to be a character vector of names")
@@ -89,6 +92,8 @@ DummifyDT <- function(data,
   }
   
   # Build dummies start----
+  FactorsLevelsList <- list()
+  if(length(cols) > 1 & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
   for (col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)
@@ -109,13 +114,11 @@ DummifyDT <- function(data,
     
     # Save factor levels for scoring later----
     if (SaveFactorLevels) {
-      data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL],
-                         file = paste0(SavePath, "/", col, ".csv"))
+      data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = paste0(SavePath, "/", col, ".csv"))
     }
     
     # Collect Factor Levels----
     if(ReturnFactorLevels) {
-      FactorsLevelsList <- list()
       FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
     }
     
@@ -126,31 +129,17 @@ DummifyDT <- function(data,
     
     # If for clustering set up old school way----
     if (!ClustScore) {
-      data.table::set(data,
-                      j = paste0(col, "_", inds),
-                      value = 0L)
+      data.table::set(data, j = paste0(col, "_", inds), value = 0L)
     } else {
-      data.table::set(data,
-                      j = paste0(col, inds),
-                      value = 0L)
+      data.table::set(data, j = paste0(col, inds), value = 0L)
     }
     
     # Build dummies----
     for (ind in inds) {
       if (!ClustScore) {
-        data.table::set(
-          data,
-          i = which(data[[col]] %chin% ind),
-          j = paste0(col, "_", ind),
-          value = 1L
-        )
+        data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, "_", ind), value = 1L)
       } else {
-        data.table::set(
-          data,
-          i = which(data[[col]] %chin% ind),
-          j = paste0(col, ind),
-          value = 1L
-        )
+        data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, ind),value = 1L)
       }
     }
     
@@ -159,10 +148,7 @@ DummifyDT <- function(data,
       data.table::set(data, j = eval(col), value = NULL)
     }
     if (ClustScore) {
-      setcolorder(data,
-                  c(setdiff(names(data),
-                            Names),
-                    Names))
+      setcolorder(data, c(setdiff(names(data), Names), Names))
     }
     
     # If onehot, add extra column----
@@ -173,12 +159,7 @@ DummifyDT <- function(data,
   
   # Clustering section----
   if (ClustScore) {
-    setnames(data, names(data),
-             tolower(gsub(
-               '[[:punct:] ]+',
-               replacement = "",
-               names(data)
-             )))
+    data.table::setnames(data, names(data), tolower(gsub('[[:punct:] ]+', replacement = "", names(data))))
   }
   
   # Return data----

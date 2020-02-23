@@ -44,7 +44,8 @@ EvalPlot(data,
          aggrfun = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{ParDepCalPlots}},
+Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
+  \code{\link{LimeModel}}, \code{\link{ParDepCalPlots}},
   \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
 }
 \author{

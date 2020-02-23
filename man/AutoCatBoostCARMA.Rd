@@ -2,40 +2,72 @@
 % Please edit documentation in R/AutoCatBoostCARMA.R
 \name{AutoCatBoostCARMA}
 \alias{AutoCatBoostCARMA}
-\title{AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
+\title{AutoCatBoostCARMA}
 \usage{
-AutoCatBoostCARMA(data, TargetColumnName = "Target",
-  DateColumnName = "DateTime", GroupVariables = NULL,
-  FC_Periods = 30, TimeUnit = "week", TargetTransformation = FALSE,
-  Lags = c(1:5), MA_Periods = c(1:5), CalendarVariables = FALSE,
-  HolidayVariable = TRUE, TimeTrendVariable = FALSE,
+AutoCatBoostCARMA(data, TrainOnFull = FALSE,
+  TargetColumnName = "Target", DateColumnName = "DateTime",
+  HierarchGroups = NULL, GroupVariables = NULL, FC_Periods = 30,
+  TimeUnit = "week", TimeGroups = c("weeks", "months"),
+  TargetTransformation = FALSE, XREGS = NULL, Lags = c(1:5),
+  MA_Periods = c(1:5), SD_Periods = c(2:5), Skew_Periods = c(3:5),
+  Kurt_Periods = c(4:5), Quantile_Periods = c(3:5),
+  Quantiles_Selected = c("q5", "q95"), Difference = TRUE,
+  FourierTerms = 6, CalendarVariables = FALSE,
+  HolidayVariable = TRUE, HolidayLags = 1,
+  HolidayMovingAverages = 1:2, TimeTrendVariable = FALSE,
   ZeroPadSeries = NULL, DataTruncate = FALSE, SplitRatios = c(0.7,
   0.2, 0.1), TaskType = "GPU", EvalMetric = "RMSE", GridTune = FALSE,
   GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
-  PartitionType = "timeseries", Timer = TRUE)
+  PartitionType = "timeseries", Timer = TRUE, DebugMode = FALSE)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{TargetColumnName}{List the column name of your target variables column. E.g. "Target"}
 
 \item{DateColumnName}{List the column name of your date column. E.g. "DateTime"}
 
+\item{HierarchGroups}{Vector of hierachy categorical columns.}
+
 \item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".}
+
+\item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
+
+\item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
 \item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52)}
 
 \item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
 
+\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)}
+
+\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)}
+
+\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)}
+
+\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
+
+\item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
+
+\item{Difference}{Puts the I in ARIMA for single series and grouped series.}
+
+\item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
+
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
 
 \item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
+
+\item{HolidayLags}{Number of lags to build off of the holiday count variable.}
+
+\item{HolidayMovingAverages}{Number of moving averages to build off of the holiday count variable.}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
@@ -60,47 +92,87 @@ AutoCatBoostCARMA(data, TargetColumnName = "Target",
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
+
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 }
 \description{
-AutoCatBoostCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+AutoCatBoostCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 }
 \examples{
 \donttest{
-Results <- AutoCatBoostCARMA(data,
-                             TargetColumnName = "Target",
-                             DateColumnName = "Date",
-                             GroupVariables = c("Store","Dept"),
-                             FC_Periods = 52,
-                             TimeUnit = "week",
-                             TargetTransformation = FALSE,
-                             Lags = c(1:5,52),
-                             MA_Periods = c(1:5,52),
-                             CalendarVariables = TRUE,
-                             HolidayVariable = TRUE, 
-                             TimeTrendVariable = TRUE,
-                             DataTruncate = FALSE,
-                             ZeroPadSeries = "all",
-                             SplitRatios = c(1-2*30/143,30/143,30/143),
-                             TaskType = "GPU",
-                             EvalMetric = "MAE",
-                             GridTune = FALSE,
-                             GridEvalMetric = "mae",
-                             ModelCount = 1,
-                             NTrees = 1000,
-                             PartitionType = "timeseries",
-                             Timer = TRUE)
-Results$TimeSeriesPlot
-Results$Forecast
-Results$ModelInformation$...
+data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
+xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
+Forecast1 <- RemixAutoAI::AutoCatBoostCARMA(
+  
+  # Data Artifacts
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"), 
+  TimeUnit = "week",
+  TimeGroups = c("weeks","months","quarter"),
+  
+  # Data Wrangling Features
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  SplitRatios = c(1 - 10 / 143, 10 / 143),
+  PartitionType = "timeseries",
+  
+  # Productionize
+  TrainOnFull = FALSE,
+  FC_Periods = 4,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  ModelCount = 5,
+  TaskType = "GPU", 
+  Timer = TRUE,
+  DebugMode = FALSE,
+  
+  # Target Transformations
+  TargetTransformation = TRUE,
+  Difference = TRUE,
+  
+  # Date Features
+  CalendarVariables = TRUE,
+  HolidayVariable = TRUE,
+  HolidayLags = 1, 
+  HolidayMovingAverages = 1:2,
+  
+  # Time Series Features
+  Lags = c(1:5),
+  MA_Periods = c(1:5),
+  SD_Periods = c(2:5),
+  Skew_Periods = c(3:5),
+  Kurt_Periods = c(4:5),
+  Quantile_Periods = c(3:5),
+  Quantiles_Selected = c("q5","q95"), 
+  
+  # Bonus Features
+  XREGS = xreg,
+  FourierTerms = 4,
+  TimeTrendVariable = TRUE,
+  NTrees = 300,
+  DebugMode = FALSE)
+  
+Forecast1$TimeSeriesPlot
+Forecast1$Forecast
+Forecast1$ModelInformation$...
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+Other Automated Time Series: \code{\link{AutoCatBoostFreqSizeScoring}},
+  \code{\link{AutoCatBoostSizeFreqDist}},
+  \code{\link{AutoH2oDRFCARMA}},
+  \code{\link{AutoH2oGBMCARMA}},
+  \code{\link{AutoH2oGBMFreqSizeScoring}},
+  \code{\link{AutoH2oGBMSizeFreqDist}},
+  \code{\link{AutoTS}}, \code{\link{AutoXGBoostCARMA}},
+  \code{\link{IntermittentDemandScoringDataGenerator}}
 }
 \author{
 Adrian Antico

@@ -108,6 +108,10 @@ AutoXGBoostClassifier <- function(data,
                                   ReturnFactorLevels = TRUE,
                                   SaveModelObjects = FALSE,
                                   PassInGrid = NULL) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Binary Check Arguments----
   if (!(tolower(grid_eval_metric) %chin% c("accuracy","auc","tpr","fnr","fpr","tnr","prbe","f","odds","chisq"))) {
     stop("grid_eval_metric not in c('accuracy','auc','tpr','fnr','fpr','tnr','prbe','f','odds','chisq')")
@@ -1071,39 +1075,31 @@ AutoXGBoostClassifier <- function(data,
   # Return objects----
   if (GridTune) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          ROC_Plot = ROC_Plot,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VI_Data = VariableImportance),
-          PartialDependencePlots = ParDepPlots,
-          GridList = grid_params,
-          GridMetrics = GridCollect,
-          ColNames = Names,
-          FactorLevels = FactorLevelsList
-        )
-      )
+      return(list(Model = model,
+                  ValidationData = ValidationData,
+                  ROC_Plot = ROC_Plot,
+                  EvaluationPlot = EvaluationPlot,
+                  EvaluationMetrics = EvaluationMetrics,
+                  VariableImportance = VariableImportance,
+                  VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                  PartialDependencePlots = ParDepPlots,
+                  GridList = grid_params,
+                  GridMetrics = GridCollect,
+                  ColNames = Names,
+                  FactorLevels = FactorLevelsList))
     }
   } else {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          ROC_Plot = ROC_Plot,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VI_Data = VariableImportance),
-          PartialDependencePlots = ParDepPlots,
-          ColNames = Names,
-          FactorLevels = FactorLevelsList
-        )
-      )
+      return(list(Model = model,
+                  ValidationData = ValidationData,
+                  ROC_Plot = ROC_Plot,
+                  EvaluationPlot = EvaluationPlot,
+                  EvaluationMetrics = EvaluationMetrics,
+                  VariableImportance = VariableImportance,
+                  VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                  PartialDependencePlots = ParDepPlots,
+                  ColNames = Names,
+                  FactorLevels = FactorLevelsList))
     }
   }
 }

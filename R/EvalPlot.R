@@ -33,6 +33,10 @@ EvalPlot <- function(data,
                      PercentileBucket = 0.05,
                      aggrfun     = function(x)
                        mean(x, na.rm = TRUE)) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Turn data into data.table if not already
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)

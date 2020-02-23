@@ -24,8 +24,8 @@ data[, Percentile := percRank(A)]
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{multiplot}}, \code{\link{tempDatesFun}},
+  \code{\link{RPM_Binomial_Bandit}},
+  \code{\link{SimpleCap}}, \code{\link{tempDatesFun}},
   \code{\link{tokenizeH2O}}
 }
 \author{

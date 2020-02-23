@@ -58,7 +58,8 @@ data <- RedYellowGreen(data,
                        Boundaries = c(0.05,0.75))
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
+  \code{\link{EvalPlot}}, \code{\link{LimeModel}},
   \code{\link{ParDepCalPlots}}, \code{\link{threshOptim}}
 }
 \author{

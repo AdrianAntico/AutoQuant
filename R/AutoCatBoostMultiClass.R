@@ -106,6 +106,9 @@ AutoCatBoostMultiClass <- function(data,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # MultiClass Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
   if (!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) {
@@ -133,7 +136,7 @@ AutoCatBoostMultiClass <- function(data,
   if (!is.character(ModelID)) stop("ModelID needs to be a character type")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-  
+
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -853,7 +856,7 @@ AutoCatBoostMultiClass <- function(data,
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }
-  
+
   # MultiClass Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {

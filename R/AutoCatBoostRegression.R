@@ -117,6 +117,9 @@ AutoCatBoostRegression <- function(data,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Regression Check Arguments----
   if (!is.null(PrimaryDateColumn)) {
     HasTime <- TRUE
@@ -281,6 +284,8 @@ AutoCatBoostRegression <- function(data,
       TestData <- dataSets$TestData
       MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
     }
+  } else {
+    UseBestModel <- FALSE 
   }
   
   # Regression Sort data if PrimaryDateColumn----
@@ -516,7 +521,7 @@ AutoCatBoostRegression <- function(data,
         iterations           = Trees,
         loss_function        = eval_metric,
         eval_metric          = eval_metric,
-        use_best_model       = TRUE,
+        use_best_model       = UseBestModel,
         has_time             = HasTime,
         best_model_min_trees = 10,
         metric_period        = 10,
@@ -680,7 +685,7 @@ AutoCatBoostRegression <- function(data,
           depth                = 10,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
-          use_best_model       = TRUE,
+          use_best_model       = UseBestModel,
           has_time             = HasTime,
           best_model_min_trees = 10,
           metric_period        = 10,
@@ -694,7 +699,7 @@ AutoCatBoostRegression <- function(data,
           iterations           = Trees,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
-          use_best_model       = TRUE,
+          use_best_model       = UseBestModel,
           has_time             = HasTime,
           best_model_min_trees = 10,
           metric_period        = 10,
@@ -714,7 +719,7 @@ AutoCatBoostRegression <- function(data,
           learning_rate        = 0.03,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
-          use_best_model       = TRUE,
+          use_best_model       = UseBestModel,
           has_time             = HasTime,
           best_model_min_trees = 10,
           metric_period        = 10,
@@ -729,7 +734,7 @@ AutoCatBoostRegression <- function(data,
           iterations           = Trees,
           loss_function        = eval_metric,
           eval_metric          = eval_metric,
-          use_best_model       = TRUE,
+          use_best_model       = UseBestModel,
           has_time             = HasTime,
           best_model_min_trees = 10,
           metric_period        = 10,
@@ -749,7 +754,7 @@ AutoCatBoostRegression <- function(data,
       depth                = 10,
       loss_function        = eval_metric,
       eval_metric          = eval_metric,
-      use_best_model       = TRUE,
+      use_best_model       = UseBestModel,
       has_time             = HasTime,
       best_model_min_trees = 10,
       metric_period        = 10,
@@ -1184,17 +1189,10 @@ AutoCatBoostRegression <- function(data,
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(
-        mid = ColorLow,
-        high = ColorHigh) +
-      ChartTheme(
-        Size = 12,
-        AngleX = 0,
-        LegendPosition = "right"
-      ) +
+      ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
       ggplot2::coord_flip() +
-      ggplot2::labs(
-        title = "Global Variable Importance") +
+      ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }

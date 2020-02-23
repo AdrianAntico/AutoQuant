@@ -2808,7 +2808,7 @@ AutoH2OModeler <- function(Construct,
           N <- (ncol(xx) - 2)
           data <- eval(parse(text = Construct[i, 7][[1]]))
           for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-            xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+            xx[, paste0("V", lev) := data.table::fifelse(xx[[1]] %in% lev, 1, 0)]
           }
           RemoveCols <- names(xx)[1:2]
           KeepCols   <- names(xx)[3:length(names(xx))]
@@ -2839,7 +2839,7 @@ AutoH2OModeler <- function(Construct,
             ))
             names(xx)
             val <-
-              mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
+              mean(xx[, Accuracy := as.numeric(data.table::fifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
           
@@ -2908,7 +2908,7 @@ AutoH2OModeler <- function(Construct,
           N <- (ncol(xx) - 2)
           data <- eval(parse(text = Construct[i, 7][[1]]))
           for (lev in levels(data[[Construct[i, 1][[1]]]])) {
-            xx[, paste0("V", lev) := ifelse(xx[[1]] %in% lev, 1, 0)]
+            xx[, paste0("V", lev) := data.table::fifelse(xx[[1]] %in% lev, 1, 0)]
           }
           RemoveCols <- names(xx)[1:2]
           KeepCols   <- names(xx)[3:length(names(xx))]
@@ -2937,7 +2937,7 @@ AutoH2OModeler <- function(Construct,
             ))
             names(xx)
             val <-
-              mean(xx[, Accuracy := as.numeric(ifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
+              mean(xx[, Accuracy := as.numeric(data.table::fifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
           

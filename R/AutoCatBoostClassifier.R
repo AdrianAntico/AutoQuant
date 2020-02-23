@@ -109,24 +109,17 @@ AutoCatBoostClassifier <- function(data,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Binary Check Arguments----
   if (!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
   if (!(tolower(eval_metric) %chin% c("logloss","crossentropy","precision","recall","f1",
-                                      "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
-                                      "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
-                                      "wkappa","loglikelihoodofprediction")
-  )) {
-    stop(
-      "eval_metric not in c('Logloss','CrossEntropy',
-                          'Precision','Recall',
-                          'F1','BalancedAccuracy',
-                          'BalancedErrorRate','MCC',
-                          'Accuracy','CtrFactor',
-                          'AUC','BrierScore',
-                          'HingeLoss','HammingLoss',
-                          'ZeroOneLoss','Kappa',
-                          'WKappa','LogLikelihoodOfPrediction')"
-    )
+      "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
+      "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
+      "wkappa","loglikelihoodofprediction"))) {
+    stop("eval_metric not in c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC',
+    'Accuracy','CtrFactor','AUC','BrierScore','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa','LogLikelihoodOfPrediction')")
   }
   if (!is.null(ClassWeights)) {
     LossFunction <- "Logloss"
@@ -156,7 +149,7 @@ AutoCatBoostClassifier <- function(data,
   if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-  
+
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -276,7 +269,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
+    as.numeric(which(sapply(data, is.character)))))
   
   # Binary Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
@@ -430,7 +423,8 @@ AutoCatBoostClassifier <- function(data,
           use_best_model       = TRUE,
           has_time             = HasTime,
           best_model_min_trees = 10,
-          metric_period        = 10,
+          metric_period        = 1,
+          train_dir            = model_path,
           task_type            = task_type,
           class_weights        = ClassWeights)
       } else {
@@ -441,7 +435,8 @@ AutoCatBoostClassifier <- function(data,
           use_best_model       = TRUE,
           has_time             = HasTime,
           best_model_min_trees = 10,
-          metric_period        = 10,
+          metric_period        = 1,
+          train_dir            = model_path,
           task_type            = task_type)
       }
       
@@ -972,7 +967,7 @@ AutoCatBoostClassifier <- function(data,
   if (tolower(task_type) == "gpu") {
     gc()
   }
-  
+             
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +

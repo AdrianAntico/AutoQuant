@@ -70,6 +70,10 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check Arguments----
   if (nthreads < 0) {
     warning("nthreads needs to be a positive integer")

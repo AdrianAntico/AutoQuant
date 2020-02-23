@@ -34,6 +34,10 @@ ProblematicFeatures <- function(data,
                                 NA_Rate = 0.20,
                                 Zero_Rate = 0.20,
                                 HighSkewThresh = 10) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Convert to data.table----
   if (!data.table::is.data.table(data))
     data <- data.table::as.data.table(data)

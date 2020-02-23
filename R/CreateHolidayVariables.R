@@ -30,14 +30,22 @@ CreateHolidayVariables <- function(data,
                                    Holidays = NULL,
                                    GroupingVars = NULL) {
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
+  # If GroupVars are numeric, convert them to character
+  for(zz in seq_along(GroupingVars)) {
+    if(is.numeric(data[[eval(GroupingVars[zz])]]) | is.integer(data[[eval(GroupingVars[zz])]])) {
+      data.table::set(data, j = GroupingVars[zz], value = as.character(data[[eval(GroupingVars[zz])]]))  
+    }
+  }
+  
   # Require namespace----
   requireNamespace("timeDate", quietly = TRUE)
   
   # Function for expanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) {
-    DateRange <- seq(as.Date(Start), 
-                     as.Date(End), 
-                     by = "days")
+    DateRange <- seq(as.Date(Start), as.Date(End), by = "days")
     return(as.integer(length(which(x = Values %in% DateRange))))
   }
   
@@ -48,8 +56,8 @@ CreateHolidayVariables <- function(data,
   
   # Sort by group and date----
   if(!is.null(GroupingVars)) {
-    if(class(data[[eval(DateCols)]]) != "Date") {
-      data[, eval(DateCols) := as.POSIXct(data[[eval(DateCols)]])]  
+    if(!any(class(data[[eval(DateCols)]]) %chin% c("POSIXct","POSIXt","Date"))) {
+      data[, eval(DateCols) := as.POSIXct(data[[eval(DateCols)]])]
     }
     data <- data[order(get(GroupingVars),get(DateCols))]
   }
@@ -132,12 +140,19 @@ CreateHolidayVariables <- function(data,
   
   # Create Temp Date Columns----
   MinDate <- data[, min(get(DateCols[1]))]
-  for (i in seq_len(length(DateCols))) {
-    data.table::setorderv(x = data, cols = eval(DateCols[i]), order = 1, na.last = TRUE)
-    data.table::set(data,
-                    j = paste0("Lag1_", eval(DateCols[i])),
-                    value = data.table::shift(x = data[[eval(DateCols[i])]],
-                                              n = 1L, fill = MinDate, type = "lag"))
+  if(!is.null(GroupingVars)) {
+    for (i in seq_len(length(DateCols))) {
+      data.table::setorderv(x = data, cols = c(eval(GroupingVars), eval(DateCols[i])), order = 1, na.last = TRUE)
+      data[, paste0("Lag1_", eval(DateCols[i])) := data.table::shift(
+        x = get(DateCols[i]), n = 1L, fill = MinDate, type = "lag"), 
+        by = c(eval(GroupingVars))]
+    }  
+  } else {
+    for (i in seq_len(length(DateCols))) {
+      data.table::setorderv(x = data, cols = eval(DateCols[i]), order = 1, na.last = TRUE)
+      data.table::set(data, j = paste0("Lag1_", eval(DateCols[i])),
+                      value = data.table::shift(x = data[[eval(DateCols[i])]], n = 1L, fill = MinDate, type = "lag"))
+    }
   }
   
   # Enforce the missing lagged date to equal the regular date minus a constant----
@@ -153,24 +168,16 @@ CreateHolidayVariables <- function(data,
   for (i in seq_len(length(DateCols))) {
     EndDateVector <- data[[eval(DateCols[i])]]
     StartDateVector <- data[[paste0("Lag1_", eval(DateCols[i]))]]
-    data.table::set(data, 
-                    i = which(data[[eval(DateCols[i])]] == MinDate),
-                    j = eval(paste0("Lag1_",DateCols[i])),
-                    value = MinDate - x)
+    data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
     for(j in as.integer(seq_len(data[,.N]))) {
-      data.table::set(x = data,
-                      i = j,
-                      j = "HolidayCounts", 
-                      value = HolidayCountsInRange(
-                        Start = StartDateVector[j],
-                        End = EndDateVector[j],
-                        Values = Holidays))
+      data.table::set(x = data, i = j, j = "HolidayCounts",
+                      value = HolidayCountsInRange(Start = StartDateVector[j],End = EndDateVector[j],Values = Holidays))
     }
     
     # Remove Lag1date----
-    data.table::set(data, 
-                    j = eval(paste0("Lag1_",DateCols[i])), 
-                    value = NULL)
+    data.table::set(data, j = eval(paste0("Lag1_",DateCols[i])), value = NULL)
   }
+  
+  # Return data
   return(data)
 }

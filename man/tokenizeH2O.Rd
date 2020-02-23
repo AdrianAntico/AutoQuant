@@ -20,8 +20,8 @@ data <- tokenizeH2O(data = data[["StringColumn"]])
 \seealso{
 Other Misc: \code{\link{AutoH2OTextPrepScoring}},
   \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RemixTheme}}, \code{\link{SimpleCap}},
-  \code{\link{multiplot}}, \code{\link{percRank}},
+  \code{\link{RPM_Binomial_Bandit}},
+  \code{\link{SimpleCap}}, \code{\link{percRank}},
   \code{\link{tempDatesFun}}
 }
 \author{

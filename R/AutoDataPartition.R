@@ -32,6 +32,10 @@ AutoDataPartition <- function(data,
                               StratifyNumericTarget = NULL,
                               StratTargetPrecision = 3,
                               TimeColumnName = NULL) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Arguments----
   if (NumDataSets < 0) {
     warning("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")

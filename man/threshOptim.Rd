@@ -56,7 +56,8 @@ optimalThreshold <- data$Thresholds
 allResults <- data$EvaluationTable
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
+Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
+  \code{\link{EvalPlot}}, \code{\link{LimeModel}},
   \code{\link{ParDepCalPlots}},
   \code{\link{RedYellowGreen}}
 }
