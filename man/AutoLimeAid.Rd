@@ -117,7 +117,7 @@ dataGenH2O <- function() {
   return(data)
 }
 data <- dataGenH2O()
-TestModel <- RemixAutoAI::AutoCatBoostRegression(
+TestModel <- RemixAutoML::AutoCatBoostRegression(
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -141,7 +141,7 @@ TestModel <- RemixAutoAI::AutoCatBoostRegression(
   PassInGrid = NULL)
 
 # CatBoost Build Lime Model and Explanations
-LimeOutput <- RemixAutoAI::AutoLimeAid(
+LimeOutput <- RemixAutoML::AutoLimeAid(
   EvalPredsData = data[c(1,15)],
   LimeTrainingData = data,
   LimeBins = 10,
@@ -204,7 +204,7 @@ dataGenH2O <- function() {
   return(data)
 }
 data <- dataGenH2O()
-TestModel <- RemixAutoAI::AutoH2oDRFClassifier(
+TestModel <- RemixAutoML::AutoH2oDRFClassifier(
   data = data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -226,7 +226,7 @@ TestModel <- RemixAutoAI::AutoH2oDRFClassifier(
   IfSaveModel = "standard",
   H2OShutdown = TRUE)
 
-LimeOutput <- RemixAutoAI::AutoLimeAid(
+LimeOutput <- RemixAutoML::AutoLimeAid(
   EvalPredsData = data[c(1,15)],
   LimeTrainingData = data,
   LimeBins = 10,
@@ -289,7 +289,7 @@ dataGenXGBoost <- function() {
   return(data)
 }
 data <- dataGenXGBoost()
-TestModel <- RemixAutoAI::AutoXGBoostClassifier(
+TestModel <- RemixAutoML::AutoXGBoostClassifier(
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -314,7 +314,7 @@ TestModel <- RemixAutoAI::AutoXGBoostClassifier(
   PassInGrid = NULL)
 
 # XGBoost Build Lime and Generate Output
-LimeOutput <- RemixAutoAI::AutoLimeAid(
+LimeOutput <- RemixAutoML::AutoLimeAid(
   EvalPredsData = data[c(1,15)],
   LimeTrainingData = data,
   LimeBins = 10,

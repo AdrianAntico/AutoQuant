@@ -103,7 +103,7 @@ AutoH2oGBMCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoAI::AutoH2oGBMCARMA(
+Forecast <- RemixAutoML::AutoH2oGBMCARMA(
 
   # Data Artifacts
   data = data,

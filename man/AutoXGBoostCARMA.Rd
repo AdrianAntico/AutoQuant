@@ -106,7 +106,7 @@ AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoAI::AutoXGBoostCARMA(
+Forecast <- RemixAutoML::AutoXGBoostCARMA(
   
   # Data Artifacts
   data = data,

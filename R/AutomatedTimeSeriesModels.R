@@ -315,7 +315,7 @@ AutoBanditNNet <- function(data,
   MaxValue <- max(data[[eval(TargetVariableName)]], na.rm = TRUE)
   
   # 1. Create time series artifacts----
-  NNET_Artifacts_Build <- RemixAutoAI::TimeSeriesDataPrepare(
+  NNET_Artifacts_Build <- TimeSeriesDataPrepare(
     data = data,
     TargetName = TargetVariableName,
     DateName = DateColumnName,
@@ -330,7 +330,7 @@ AutoBanditNNet <- function(data,
     ModelFreq = TRUE)
   
   # 2. Find Best NNET Models----
-  NNET_ExperimentGrid <- tryCatch({RemixAutoAI::ParallelAutoNNET(
+  NNET_ExperimentGrid <- tryCatch({ParallelAutoNNET(
     MetricSelection = EvaluationMetric,
     Output = NNET_Artifacts_Build,
     MaxFourierTerms = NNET_MaxFourierTerms,
@@ -342,7 +342,7 @@ AutoBanditNNet <- function(data,
   
   # 3. Create Final Build Data----
   if(!is.null(NNET_ExperimentGrid)) {
-    NNET_Artifacts_Score <- RemixAutoAI::TimeSeriesDataPrepare(
+    NNET_Artifacts_Score <- TimeSeriesDataPrepare(
       data = data,
       TargetName = TargetVariableName,
       DateName = DateColumnName,
@@ -360,7 +360,7 @@ AutoBanditNNet <- function(data,
     # 4. Generate Final NNET Forecasts----
     counter <- 1L
     repeat {
-      Forecast <- tryCatch({RemixAutoAI::FinalBuildNNET(
+      Forecast <- tryCatch({FinalBuildNNET(
         ModelOutputGrid = NNET_ExperimentGrid,
         TimeSeriesPrepareOutput = NNET_Artifacts_Score,
         FCPeriods = NumFCPeriods,
@@ -466,7 +466,7 @@ AutoTBATS <- function(data,
   MaxValue <- max(data[[eval(TargetVariableName)]], na.rm = TRUE)
   
   # 1. Create time series artifacts----
-  TBATS_Artifacts_Build <- RemixAutoAI::TimeSeriesDataPrepare(
+  TBATS_Artifacts_Build <- TimeSeriesDataPrepare(
     data                   = data,
     TargetName             = TargetVariableName,
     DateName               = DateColumnName,
@@ -481,7 +481,7 @@ AutoTBATS <- function(data,
     ModelFreq              = TRUE)
   
   # 2. Find Best TBATS Models----
-  TBATS_ExperimentGrid <- tryCatch({RemixAutoAI::ParallelAutoTBATS(
+  TBATS_ExperimentGrid <- tryCatch({ParallelAutoTBATS(
     MetricSelection = EvaluationMetric,
     Output = TBATS_Artifacts_Build,
     TrainValidateShare = TBATS_TrainShareEvaluate)},
@@ -489,7 +489,7 @@ AutoTBATS <- function(data,
   
   # 3. Create Final Build Data----
   if(!is.null(TBATS_ExperimentGrid)) {
-    TBATS_Artifacts_Score <- RemixAutoAI::TimeSeriesDataPrepare(
+    TBATS_Artifacts_Score <- TimeSeriesDataPrepare(
       data                   = data,
       TargetName             = TargetVariableName,
       DateName               = DateColumnName,
@@ -505,7 +505,7 @@ AutoTBATS <- function(data,
       FinalBuild             = TRUE)
     
     # 4. Generate Final TBATS Forecasts----
-    Forecast <- tryCatch({RemixAutoAI::FinalBuildTBATS(
+    Forecast <- tryCatch({FinalBuildTBATS(
       ModelOutputGrid = TBATS_ExperimentGrid,
       TimeSeriesPrepareOutput = TBATS_Artifacts_Score,
       FCPeriods = NumFCPeriods,

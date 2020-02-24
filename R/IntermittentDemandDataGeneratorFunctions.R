@@ -255,7 +255,7 @@ IntermittentDemandDataGenerator <- function(data,
   }
   
   # Run Final Build----
-  packages <- c("RemixAutoAI","data.table","forecast","lubridate")
+  packages <- c("RemixAutoML","data.table","forecast","lubridate")
   cores <- parallel::detectCores()
   
   # Create File Splitter Column Indicator----

@@ -103,7 +103,7 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
+Forecast <- RemixAutoML::AutoH2oDRFCARMA(
 
   # Data Artifacts
   data = data,

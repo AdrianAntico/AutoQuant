@@ -45,7 +45,7 @@
 #' \donttest{
 #' data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 #' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-#' Forecast1 <- RemixAutoAI::AutoCatBoostCARMA(
+#' Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
 #'   
 #'   # Data Artifacts
 #'   data = data,
@@ -610,7 +610,7 @@ AutoCatBoostCARMA <- function(data,
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -681,7 +681,7 @@ AutoCatBoostCARMA <- function(data,
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -884,7 +884,7 @@ AutoCatBoostCARMA <- function(data,
     if(Difference == TRUE & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -894,7 +894,7 @@ AutoCatBoostCARMA <- function(data,
     } else if(Difference) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -902,7 +902,7 @@ AutoCatBoostCARMA <- function(data,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -910,7 +910,7 @@ AutoCatBoostCARMA <- function(data,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,

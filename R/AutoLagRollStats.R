@@ -265,7 +265,7 @@ AutoLagRollStats <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Categorical Names Fully Interacted (Check if there already)----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
@@ -752,7 +752,7 @@ AutoLagRollStatsScoring <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Check if there already----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {

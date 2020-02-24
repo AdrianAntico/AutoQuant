@@ -43,7 +43,7 @@
 #' @param DebugMode Set to TRUE to get a print out of every comment that has four dashes at the end of it
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
+#' Forecast <- RemixAutoML::AutoH2oDRFCARMA(
 #'
 #'   # Data Artifacts
 #'   data = data,
@@ -580,7 +580,7 @@ AutoH2oDRFCARMA <- function(data,
     # Keep interaction group as GroupVar
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -625,7 +625,7 @@ AutoH2oDRFCARMA <- function(data,
     # Keep interaction group as GroupVar
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -779,7 +779,7 @@ AutoH2oDRFCARMA <- function(data,
     if(Difference == TRUE & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -789,7 +789,7 @@ AutoH2oDRFCARMA <- function(data,
     } else if(Difference) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -797,7 +797,7 @@ AutoH2oDRFCARMA <- function(data,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -805,7 +805,7 @@ AutoH2oDRFCARMA <- function(data,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
-      DataSets <- RemixAutoAI::AutoDataPartition(
+      DataSets <- RemixAutoML::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
