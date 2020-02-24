@@ -142,10 +142,6 @@ AutoH2oGBMCARMA <- function(data,
                             PartitionType = "timeseries",
                             Timer = TRUE,
                             DebugMode = FALSE) {
-  # Load catboost----
-  if(DebugMode) print("Load catboost----")
-  if(DebugMode) print("loadNamespace(package = 'catboost')")
-  loadNamespace(package = "catboost")
   
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
