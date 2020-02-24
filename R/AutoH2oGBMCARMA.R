@@ -997,7 +997,7 @@ AutoH2oGBMCARMA <- function(data,
         UpdateData <- cbind(FutureDateData[1L:N],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds[, eval(TargetColumnName) := NULL])
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
-    
+      
     } else {
       if (!is.null(GroupVariables)) {
         
@@ -1013,7 +1013,7 @@ AutoH2oGBMCARMA <- function(data,
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
         } else {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])  
+          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
           temp <- temp[ID == N][, ID := NULL]
         }
         
@@ -1237,8 +1237,8 @@ AutoH2oGBMCARMA <- function(data,
         
         # Create data for GDL----
         temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                    data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                    GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1308,8 +1308,8 @@ AutoH2oGBMCARMA <- function(data,
           
           # Create data for GDL----
           temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                      data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                      GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
@@ -1364,8 +1364,8 @@ AutoH2oGBMCARMA <- function(data,
         
         # Create data for GDL----
         temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                    data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                    GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1433,8 +1433,8 @@ AutoH2oGBMCARMA <- function(data,
           
           # Create data for GDL----
           temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                      data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                      GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
@@ -1493,8 +1493,8 @@ AutoH2oGBMCARMA <- function(data,
         
         # Create data for GDL----
         temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                    data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                    GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1535,8 +1535,8 @@ AutoH2oGBMCARMA <- function(data,
           
           # Create data for GDL----
           temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                      data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                      GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
