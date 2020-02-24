@@ -202,7 +202,7 @@ IntermittentDemandDataGenerator <- function(data,
   
   # Print Steps----
   if(PrintSteps) {
-    print("Running DT_GDL_Feature_Engineering()") 
+    print("Running AutoLagRollStats()") 
   }
   
   # Add in the time varying features----
