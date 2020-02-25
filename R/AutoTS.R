@@ -178,19 +178,19 @@ AutoTS <- function(data,
     FC_Data[, Date := MaxDate + lubridate::hours(Date)]
   } else if(tolower(TimeUnit) == "1min") {
     freq <- 60
-    FC_Data[, Date := MaxDate + lubridate::minute(Date)]
+    FC_Data[, Date := Date + lubridate::minutes(Date)]
   } else if(tolower(TimeUnit) == "5min") {
     freq <- 12
-    FC_Data[, Date := MaxDate + lubridate::minute(5 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(5 * Date)]
   } else if(tolower(TimeUnit) == "10min") {
     freq <- 6
-    FC_Data[, Date := MaxDate + lubridate::minute(10 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(10 * Date)]
   } else if(tolower(TimeUnit) == "15min") {
     freq <- 4
-    FC_Data[, Date := MaxDate + lubridate::minute(15 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(15 * Date)]
   } else if(tolower(TimeUnit) == "30min") {
     freq <- 2
-    FC_Data[, Date := MaxDate + lubridate::minute(30 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(30 * Date)]
   } else if (tolower(TimeUnit) == "day") {
     freq <- 365
     FC_Data[, Date := MaxDate + lubridate::days(Date)]
