@@ -170,42 +170,42 @@ AutoTS <- function(data,
   
   # Check for different time aggregations
   MaxDate <- data[, max(get(DateName))]
-  FC_Data <- data.table::data.table(Date = seq(1:FCPeriods))
+  FC_Data <- data.table::data.table(Datex = seq(1:FCPeriods), Date = MaxDate)
   
   # Define TS Frequency----
   if (tolower(TimeUnit) == "hour") {
     freq <- 24
-    FC_Data[, Date := MaxDate + lubridate::hours(Date)]
+    FC_Data[, Date := MaxDate + lubridate::hours(Datex)]
   } else if(tolower(TimeUnit) == "1min") {
     freq <- 60
-    FC_Data[, Date := Date + lubridate::minutes(Date)]
+    FC_Data[, Date := Date + lubridate::minutes(Datex)]
   } else if(tolower(TimeUnit) == "5min") {
     freq <- 12
-    FC_Data[, Date := MaxDate + lubridate::minutes(5 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(5 * Datex)]
   } else if(tolower(TimeUnit) == "10min") {
     freq <- 6
-    FC_Data[, Date := MaxDate + lubridate::minutes(10 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(10 * Datex)]
   } else if(tolower(TimeUnit) == "15min") {
     freq <- 4
-    FC_Data[, Date := MaxDate + lubridate::minutes(15 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(15 * Datex)]
   } else if(tolower(TimeUnit) == "30min") {
     freq <- 2
-    FC_Data[, Date := MaxDate + lubridate::minutes(30 * Date)]
+    FC_Data[, Date := MaxDate + lubridate::minutes(30 * Datex)]
   } else if (tolower(TimeUnit) == "day") {
     freq <- 365
-    FC_Data[, Date := MaxDate + lubridate::days(Date)]
+    FC_Data[, Date := MaxDate + lubridate::days(Datex)]
   } else if (tolower(TimeUnit) == "week") {
     freq <- 52
-    FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
+    FC_Data[, Date := MaxDate + lubridate::weeks(Datex)]
   } else if (tolower(TimeUnit) == "month") {
     freq <- 12
-    FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
+    FC_Data[, Date := as.Date(MaxDate) %m+% months(Datex)]
   } else if (tolower(TimeUnit) == "quarter") {
     freq <- 4
-    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4 * Date)]
+    FC_Data[, Date := as.Date(MaxDate)  %m+% months(4 * Datex)]
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
-    FC_Data[, Date := MaxDate + lubridate::years(Date)]
+    FC_Data[, Date := MaxDate + lubridate::years(Datex)]
   } else {
     return("TimeUnit is not in hour, day, week, month,
     quarter, or year")
@@ -6752,10 +6752,8 @@ AutoTS <- function(data,
   # Create plot
   temp <- data.table::copy(FC_Data)
   data.table::setnames(data, c(eval(DateName)), "Date")
-  Time <-
-    data.table::rbindlist(list(data[, "Date"], temp[, "Date"]))
-  z <-
-    data.table::rbindlist(list(data[, Date := NULL], temp[, Date := NULL]), fill = TRUE)
+  Time <- data.table::rbindlist(list(data[, "Date"], temp[, "Date"]))
+  z <- data.table::rbindlist(list(data[, Date := NULL], temp[, Date := NULL]), fill = TRUE)
   z <- cbind(Time, z)
   z[, eval(TargetName) := as.numeric(get(TargetName))]
   TimeSeriesPlot <-
