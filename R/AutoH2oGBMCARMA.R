@@ -46,7 +46,7 @@
 #' \donttest{
 #' data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 #' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-#' Forecast1 <- RemixAutoML::AutoH2oGBMCARMA(
+#' Forecast1 <- AutoH2oGBMCARMA(
 #'   
 #'   # Data Artifacts
 #'   data = data,
@@ -103,7 +103,7 @@
 #' Forecast1$Forecast
 #' Forecast1$ModelInformation$...
 #' }
-#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+#' @return Returns a data.table of original series and forecasts, the h2o-gbm model objects (everything returned from AutoH2oGBMRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoH2oGBMCARMA <- function(data,
                             TrainOnFull = FALSE,
@@ -133,7 +133,8 @@ AutoH2oGBMCARMA <- function(data,
                             ZeroPadSeries = NULL,
                             DataTruncate = FALSE,
                             SplitRatios = c(0.7, 0.2, 0.1),
-                            TaskType = "GPU",
+                            MaxMem = "28G",
+                            NThreads = max(1L, parallel::detectCores()-2L),
                             EvalMetric = "RMSE",
                             GridTune = FALSE,
                             GridEvalMetric = "mae",
@@ -606,7 +607,7 @@ AutoH2oGBMCARMA <- function(data,
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -677,7 +678,7 @@ AutoH2oGBMCARMA <- function(data,
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -880,7 +881,7 @@ AutoH2oGBMCARMA <- function(data,
     if(Difference == TRUE & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -890,7 +891,7 @@ AutoH2oGBMCARMA <- function(data,
     } else if(Difference) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -898,7 +899,7 @@ AutoH2oGBMCARMA <- function(data,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -906,7 +907,7 @@ AutoH2oGBMCARMA <- function(data,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -970,10 +971,10 @@ AutoH2oGBMCARMA <- function(data,
   if(DebugMode) print("Initialize H2O----")
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
-  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
+  # Return warnings to default since h2o will issue warning for constant valued coluns----
   if(DebugMode) options(warn = 0)
   
-  # Run AutoCatBoostRegression and return list of ml objects----
+  # Run AutoH2oGBMRegression and return list of ml objects----
   TestModel <- AutoH2oGBMRegression(
     data = train,
     TrainOnFull = TRUE,
