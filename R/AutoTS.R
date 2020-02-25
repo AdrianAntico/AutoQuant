@@ -143,7 +143,9 @@ AutoTS <- function(data,
       data[, eval(DateName) := as.Date(get(DateName), tryFormats = x1)]
     }
   } else {
-    data[, eval(DateName) := as.POSIXct(get(DateName))]
+    if(lubridate::is.POSIXct(data[[eval(DateName)]])) {
+      data[, eval(DateName) := as.POSIXct(get(DateName))]
+    }
   }
   
   # Correct ordering----
@@ -6818,4 +6820,3 @@ AutoTS <- function(data,
     )
   )
 }
-
