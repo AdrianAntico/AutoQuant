@@ -211,6 +211,9 @@ AutoTS <- function(data,
     quarter, or year")
   }
   
+  # Remove datex
+  data.table::set(FC_Data, j = "Datex", value = NULL)
+  
   # Coerce SLags if too large----
   if (freq * SLags > nrow(data_train)) {
     SLags <- floor(nrow(data_train) / freq)
