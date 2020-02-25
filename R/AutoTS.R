@@ -6135,32 +6135,45 @@ AutoTS <- function(data,
   
   # Model Evaluation----
   if (tolower(EvaluationMetric) == "mae") {
-    Eval <- dataEval[, .(
-      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
-      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
-      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
-      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
-      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
-    ),
-    by = "ModelName"][order(MAE)][, ID := 1:.N]
+    if(dataEval[,.N] != 0L) {
+      Eval <- dataEval[, .(
+        MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+        MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+        MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+        MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+        MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+      ),
+      by = "ModelName"][order(MAE)][, ID := 1:.N]  
+    } else {
+      return(print("Models could not be built"))
+    }
+    
   } else if (tolower(EvaluationMetric) == "mape") {
-    Eval <- dataEval[, .(
-      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
-      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
-      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
-      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
-      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
-    ),
-    by = "ModelName"][order(MAPE)][, ID := 1:.N]
+    if(dataEval[,.N] != 0L) {
+      Eval <- dataEval[, .(
+        MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+        MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+        MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+        MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+        MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+      ),
+      by = "ModelName"][order(MAPE)][, ID := 1:.N]
+    } else {
+      return(print("Models could not be built"))
+    }
   } else if (tolower(EvaluationMetric) == "mse") {
-    Eval <- dataEval[, .(
-      MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
-      MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
-      MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
-      MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
-      MSE = round(mean(SquaredError, na.rm = TRUE), 4)
-    ),
-    by = "ModelName"][order(MSE)][, ID := 1:.N]
+    if(dataEval[,.N] != 0L) {
+      Eval <- dataEval[, .(
+        MeanResid = round(base::mean(Resid, na.rm = TRUE), 2),
+        MeanPercError = round(base::mean(PercentError, na.rm = TRUE), 5),
+        MAPE = round(mean(AbsolutePercentError, na.rm = TRUE), 5),
+        MAE = round(mean(AbsoluteError, na.rm = TRUE), 4),
+        MSE = round(mean(SquaredError, na.rm = TRUE), 4)
+      ),
+      by = "ModelName"][order(MSE)][, ID := 1:.N]
+    } else {
+      return(print("Models could not be built"))
+    }
   }
   
   # Grab Winning Model----
