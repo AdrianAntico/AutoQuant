@@ -575,7 +575,8 @@ AutoH2oGBMCARMA <- function(data,
       Skew_RollWindows      = c(Skew_Periods),
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Quantiles_Selected    = c(Quantiles_Selected),
+      Debug                 = FALSE)
     
     # Args to jump into AutLagRollStats----
     # DateColumn           = eval(DateColumnName)
@@ -843,9 +844,13 @@ AutoH2oGBMCARMA <- function(data,
   # Create GroupVar----
   if (!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
   }
   
@@ -1115,11 +1120,18 @@ AutoH2oGBMCARMA <- function(data,
           UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])],
                               Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
+          if(eval(DateColumnName) %chin% names(Preds)) {
+            data.table::set(Preds, j = "Date", value = NULL)
+          }
           UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)],
-                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],
+                              Preds)
         }        
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
+        if(eval(DateColumnName) %chin% names(Preds)) {
+          data.table::set(Preds, j = "Date", value = NULL)
+        }
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }

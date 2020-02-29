@@ -22,7 +22,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   # MAE----
   if (!is.null(GROUPVARIABLES)) {
     data.table::set(DATA, j = "Metric", value = abs(DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]))
-    MetricCollection <- merge(MetricCollection, DATA[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+    MetricCollection <- merge(MetricCollection, DATA[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
                               all = FALSE)
   } else {
@@ -32,8 +32,8 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   
   # MAPE----
   if (!is.null(GROUPVARIABLES)) {
-    DATA[, Metric := abs((get(TARGETCOLUMNNAME) - Predictions) / (get(TARGETCOLUMNNAME) + 1))]
-    MetricCollection <- merge(MetricCollection, DATA[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+    data.table::set(DATA, j = "Metric", value = abs((DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]) / (DATA[[eval(TARGETCOLUMNNAME)]] + 1)))
+    MetricCollection <- merge(MetricCollection, DATA[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
                               all = FALSE)
   } else {
@@ -43,8 +43,8 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   
   # MSE----
   if (!is.null(GROUPVARIABLES)) {
-    DATA[, Metric := (get(TARGETCOLUMNNAME) - Predictions) ^ 2]
-    MetricCollection <- merge(MetricCollection, DATA[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = "GroupVar"],
+    data.table::set(DATA, j = "Metric", value = (DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]) ^ 2)
+    MetricCollection <- merge(MetricCollection, DATA[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
                               all = FALSE)
   } else {
@@ -53,16 +53,15 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   }
   
   # R2----
-  if (!is.null(GROUPVARIABLES)) {
-    DATA[, Metric := stats::cor(DATA[[eval(TARGETCOLUMNNAME)]], DATA[["Predictions"]]), by = "GroupVar"]
-    MetricCollection <- merge(MetricCollection, DATA[, .(R2_Metric = stats::cor(get(TARGETCOLUMNNAME), Predictions)), 
-                                                     by = "GroupVar"],
-            by = "GroupVar",
-            all = FALSE)
-    MetricCollection[, R2_Metric := R2_Metric ^ 2]
+  tryCatch({if (!is.null(GROUPVARIABLES)) {
+    MetricCollection <- merge(MetricCollection, 
+                              DATA[, .(R2_Metric = stats::cor(get(TARGETCOLUMNNAME), Predictions)), by = list(GroupVar)],
+                              by = "GroupVar",
+                              all = FALSE)
+    data.table::set(MetricCollection, j = "R2_Metric", value = MetricCollection[["R2_Metric"]]^2)
   } else {
     data.table::set(MetricCollection, i = 4L, j = "MetricValue", value = round(stats::cor(DATA[[eval(TARGETCOLUMNNAME)]], DATA[["Predictions"]]) ^ 2,3))
-  }
+  }}, error = function(x) NULL)
   
   # Return----
   return(MetricCollection)
