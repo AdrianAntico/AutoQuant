@@ -5,12 +5,12 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
-#' @param TrainOnFull Set to TRUE to run on full data
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
-#' @param HierarchGroups Vector of hierachy categorical columns.
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
-#' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"
+#' @param HierarchGroups Vector of hierachy categorical columns.
+#' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features. 
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
@@ -21,18 +21,19 @@
 #' @param Skew_Periods Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)
 #' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)
 #' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
-#' @param Quantiles_Selected Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
-#' @param Difference Set to TRUE to put the I in ARIMA
-#' @param FourierTerms Set to the max number of pairs
+#' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
+#' @param Difference Puts the I in ARIMA for single series and grouped series. 
+#' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
-#' @param HolidayLags Number of lags for the holiday counts
-#' @param HolidayMovingAverages Number of moving averages for holiday counts
+#' @param HolidayLags Number of lags to build off of the holiday count variable.
+#' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
-#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"
+#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
@@ -40,10 +41,10 @@
 #' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
 #' @param NThreads Set to the number of threads you want to dedicate to this function.
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
-#' @param DebugMode Set to TRUE to get a print out of every comment that has four dashes at the end of it
+#' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoML::AutoH2oDRFCARMA(
+#' Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
 #'
 #'   # Data Artifacts
 #'   data = data,
@@ -138,16 +139,18 @@ AutoH2oDRFCARMA <- function(data,
                             DebugMode = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
+  if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")
   Args <- CARMA_Define_Args(
     TimeUnit = TimeUnit, TimeGroups = TimeGroups, HierarchGroups = HierarchGroups, GroupVariables = GroupVariables, 
-    FC_Periods = FC_Periods, PartitionType = PartitionType, TrainOnFull = TrainOnFull, SplitRatios = SplitRatios)
+    FC_Periods = FC_Periods, PartitionType = PartitionType, TrainOnFull = TrainOnFull, SplitRatios = SplitRatios,
+    SD_Periods = SD_Periods, Skew_Periods = Skew_Periods, Kurt_Periods = Kurt_Periods, Quantile_Periods = Quantile_Periods)
   
   # Store purified args----
+  if(DebugMode) print("# Store purified args----")
   IndepentVariablesPass <- Args$IndepentVariablesPass
-  TimeUnit              <- Args$TimeUnit
   TimeGroups            <- Args$TimeGroups
   TimeUnit              <- Args$TimeUnit
   TimeGroup             <- Args$TimeGroupPlaceHolder
@@ -155,6 +158,10 @@ AutoH2oDRFCARMA <- function(data,
   GroupVariables        <- Args$GroupVariables
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
+  SD_Periods            <- Args$SD_Periods
+  Skew_Periods          <- Args$Skew_Periods
+  Kurt_Periods          <- Args$Kurt_Periods
+  Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) {
@@ -345,7 +352,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Variables for Program: Store number of data partitions in NumSets----
   if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
-  NumSets <- length(SplitRatios)
+  NumSets <- 2L
   
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
@@ -365,10 +372,15 @@ AutoH2oDRFCARMA <- function(data,
   if(FourierTerms > 0) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
-    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
-    data <- Output$data
-    HierarchSupplyValue <- Output$HierarchSupplyValue
-    IndependentSupplyValue <- Output$IndependentSupplyValue
+    if(!is.null(GroupVariables)) {
+      Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+      data <- Output$data
+      HierarchSupplyValue <- Output$HierarchSupplyValue
+      IndependentSupplyValue <- Output$IndependentSupplyValue
+    } else {
+      HierarchSupplyValue <- NULL
+      IndependentSupplyValue <- NULL
+    }
     
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
@@ -467,9 +479,9 @@ AutoH2oDRFCARMA <- function(data,
     
     # Convert to lubridate as_date() or POSIXct----
     if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
+      data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
     } else {
-      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+      data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
     }
   }
   
@@ -513,7 +525,11 @@ AutoH2oDRFCARMA <- function(data,
       TargetVariable = eval(TargetColumnName),
       GroupingVariable = NULL)
     Train <- DiffTrainOutput$DiffData
-    data <- cbind(Train,data[1:(nrow(data)-1)][,.SD, .SDcols = names(data)[3:ncol(data)]])
+    if(ncol(data) >= 3) {
+      data <- cbind(Train,data[1:(nrow(data)-1)][,.SD, .SDcols = names(data)[3:ncol(data)]])
+    } else {
+      data <- Train
+    }
     FC_Periods <- FC_Periods + 1L
   }
   
@@ -521,13 +537,13 @@ AutoH2oDRFCARMA <- function(data,
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
   if (!is.null(GroupVariables) & Difference == FALSE) {
     
-    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -553,7 +569,8 @@ AutoH2oDRFCARMA <- function(data,
       Skew_RollWindows      = c(Skew_Periods),
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Quantiles_Selected    = c(Quantiles_Selected),
+      Debug                 = FALSE)
     
     # Args to jump into AutLagRollStats----
     # DateColumn           = eval(DateColumnName)
@@ -564,6 +581,8 @@ AutoH2oDRFCARMA <- function(data,
     # # Services
     # TimeBetween          = NULL
     # TimeUnit             = TimeUnit
+    # TimeUnitAgg          = TimeUnit
+    # TimeGroups           = TimeGroups
     # RollOnLag1           = TRUE
     # Type                 = "Lag"
     # SimpleImpute         = TRUE
@@ -576,11 +595,14 @@ AutoH2oDRFCARMA <- function(data,
     # Kurt_RollWindows      = c(Kurt_Periods)
     # Quantile_RollWindows  = c(Quantile_Periods)
     # Quantiles_Selected    = c(Quantiles_Selected)
+    # Debug                 = TRUE
+    # Fact                  = Categoricals[1]
+    # timeaggs              = TimeGroups[1]
     
-    # Keep interaction group as GroupVar
+    # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -588,13 +610,13 @@ AutoH2oDRFCARMA <- function(data,
     
   } else if(!is.null(GroupVariables) & Difference == TRUE) {
     
-    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -620,20 +642,45 @@ AutoH2oDRFCARMA <- function(data,
       Skew_RollWindows      = c(Skew_Periods),
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Quantiles_Selected    = c(Quantiles_Selected),
+      Debug                 = DebugMode)
     
-    # Keep interaction group as GroupVar
+    # data                 = data
+    # DateColumn           = eval(DateColumnName)
+    # Targets              = c(eval(TargetColumnName),"ModTarget")
+    # HierarchyGroups      = HierarchSupplyValue
+    # IndependentGroups    = IndependentSupplyValue
+    # 
+    # # Services
+    # TimeBetween          = NULL
+    # TimeUnit             = TimeUnit
+    # TimeUnitAgg          = TimeUnit
+    # TimeGroups           = TimeGroups
+    # RollOnLag1           = TRUE
+    # Type                 = "Lag"
+    # SimpleImpute         = TRUE
+    # 
+    # # Calculated Columns
+    # Lags                  = c(Lags)
+    # MA_RollWindows        = c(MA_Periods)
+    # SD_RollWindows        = c(SD_Periods)
+    # Skew_RollWindows      = c(Skew_Periods)
+    # Kurt_RollWindows      = c(Kurt_Periods)
+    # Quantile_RollWindows  = c(Quantile_Periods)
+    # Quantiles_Selected    = c(Quantiles_Selected)
+    # Debug                 = TRUE
+    
+    # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-    
   } else if(is.null(GroupVariables) & Difference == FALSE) {
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -659,11 +706,36 @@ AutoH2oDRFCARMA <- function(data,
       Skew_RollWindows      = c(Skew_Periods),
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Quantiles_Selected    = c(Quantiles_Selected), 
+      Debug                 = TRUE)
+    
+    # DateColumn           = eval(DateColumnName)
+    # Targets              = eval(TargetColumnName)
+    # HierarchyGroups      = NULL
+    # IndependentGroups    = NULL
+    # 
+    # # Services
+    # TimeBetween          = NULL
+    # TimeUnit             = TimeUnit
+    # TimeUnitAgg          = TimeUnit
+    # TimeGroups           = TimeGroups
+    # RollOnLag1           = TRUE
+    # Type                 = "Lag"
+    # SimpleImpute         = TRUE
+    # 
+    # # Calculated Columns
+    # Lags                  = c(Lags)
+    # MA_RollWindows        = c(MA_Periods)
+    # SD_RollWindows        = c(SD_Periods)
+    # Skew_RollWindows      = c(Skew_Periods)
+    # Kurt_RollWindows      = c(Kurt_Periods)
+    # Quantile_RollWindows  = c(Quantile_Periods)
+    # Quantiles_Selected    = c(Quantiles_Selected)
+    # Debug                 = TRUE
     
   } else {
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -690,6 +762,31 @@ AutoH2oDRFCARMA <- function(data,
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected))
+    
+    # data                 = data
+    # DateColumn           = eval(DateColumnName)
+    # Targets              = TargetColumnName
+    # HierarchyGroups      = NULL
+    # IndependentGroups    = NULL
+    # 
+    # # Services
+    # TimeBetween          = NULL
+    # TimeUnit             = TimeUnit
+    # TimeUnitAgg          = TimeUnit
+    # TimeGroups           = TimeGroups
+    # RollOnLag1           = TRUE
+    # Type                 = "Lag"
+    # SimpleImpute         = TRUE
+    # 
+    # # Calculated Columns
+    # Lags                  = c(Lags)
+    # MA_RollWindows        = c(MA_Periods)
+    # SD_RollWindows        = c(SD_Periods)
+    # Skew_RollWindows      = c(Skew_Periods)
+    # Kurt_RollWindows      = c(Kurt_Periods)
+    # Quantile_RollWindows  = c(Quantile_Periods)
+    # Quantiles_Selected    = c(Quantiles_Selected)
+    # Debug                 = TRUE
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -738,12 +835,16 @@ AutoH2oDRFCARMA <- function(data,
     }
   }
   
-  # Create GroupVar
+  # Create GroupVar----
   if (!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
   }
   
@@ -779,7 +880,7 @@ AutoH2oDRFCARMA <- function(data,
     if(Difference == TRUE & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -789,7 +890,7 @@ AutoH2oDRFCARMA <- function(data,
     } else if(Difference) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -797,7 +898,7 @@ AutoH2oDRFCARMA <- function(data,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -805,7 +906,7 @@ AutoH2oDRFCARMA <- function(data,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -814,8 +915,8 @@ AutoH2oDRFCARMA <- function(data,
         TimeColumnName = eval(DateColumnName))
     }
     
-    # Remove ID Column
-    if (tolower(PartitionType) == "timeseries") {
+    # Remove ID Column----
+    if ("ID" %chin% names(data)) {
       data.table::set(data, j = "ID", value = NULL)
     }
   }
@@ -839,14 +940,6 @@ AutoH2oDRFCARMA <- function(data,
     test  <- NULL
   }
   
-  # Variables for CARMA function:IDcols----
-  if(DebugMode) print("Variables for CARMA function:IDcols----")
-  if(!is.null(GroupVariables)) {
-    IDcols <- 2
-  } else {
-    IDcols <- 1
-  }
-  
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
   if(TrainOnFull) {
@@ -856,6 +949,7 @@ AutoH2oDRFCARMA <- function(data,
   }
   
   # Machine Learning: Build Model----
+  if(DebugMode) print("Machine Learning: Build Model----")
   
   # Define CARMA feature names
   if(Difference == FALSE | is.null(GroupVariables)) {
@@ -876,7 +970,7 @@ AutoH2oDRFCARMA <- function(data,
   if(DebugMode) print("Initialize H2O----")
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
-  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
+  # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
   
   # Run AutoCatBoostRegression and return list of ml objects
@@ -902,39 +996,28 @@ AutoH2oDRFCARMA <- function(data,
     IfSaveModel = "mojo",
     H2OShutdown = FALSE)
   
-  # Turn warnings into errors back on
-  if(DebugMode) options(warn = 2)
-  
-  # Initialize H2O----
-  if(DebugMode) print("Initialize H2O----")
-  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
-  
-  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
-  if(DebugMode) options(warn = 0)
-  
-  # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- AutoH2oGBMRegression(
-    data = train,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    TransformNumericColumns = NULL,
-    eval_metric = EvalMetric,
-    Distribution = "gaussian",
-    Trees = NTrees,
-    GridTune = GridTune,
-    MaxMem = MaxMem,
-    NThreads = NThreads,
-    MaxModelsInGrid = ModelCount,
-    model_path = getwd(),
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 1,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    IfSaveModel = "mojo",
-    H2OShutdown = FALSE)
+  # data = train
+  # TrainOnFull = TRUE
+  # ValidationData = valid
+  # TestData = test
+  # TargetColumnName = TargetVariable
+  # FeatureColNames = ModelFeatures
+  # PrimaryDateColumn = eval(DateColumnName)
+  # IDcols = IDcols
+  # TransformNumericColumns = NULL
+  # MaxModelsInGrid = ModelCount
+  # task_type = TaskType
+  # eval_metric = EvalMetric
+  # grid_eval_metric = GridEvalMetric
+  # Trees = NTrees
+  # GridTune = GridTune
+  # model_path = getwd()
+  # metadata_path = getwd()
+  # ModelID = "ModelTest"
+  # NumOfParDepPlots = 0
+  # ReturnModelObjects = TRUE
+  # SaveModelObjects = FALSE
+  # PassInGrid = NULL
   
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
@@ -986,7 +1069,11 @@ AutoH2oDRFCARMA <- function(data,
     ###############
     
     # Machine Learning: Generate predictions----
-    if (i == 1) {
+    if(DebugMode) print("Machine Learning: Generate predictions----")
+    if (i == 1L) {
+      
+      # i = 1 Score Model With Group Variables----
+      if(DebugMode) print("# i = 1 Score Model With Group Variables----")
       Preds <- AutoH2OMLScoring(
         ScoringData = Step1SCore,
         ModelObject = Model,
@@ -1009,7 +1096,7 @@ AutoH2oDRFCARMA <- function(data,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
       
-      # Update data----
+      # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
         if(eval(TargetColumnName) %chin% names(Step1SCore)) {
           if(eval(TargetColumnName) %chin% names(Preds)) {
@@ -1022,9 +1109,22 @@ AutoH2oDRFCARMA <- function(data,
         if(eval(DateColumnName) %chin% names(Preds)) {
           data.table::set(Preds, j = eval(DateColumnName), value = NULL) 
         }        
-        UpdateData <- cbind(FutureDateData[2L:(N+3L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+        if(!is.null(GroupVariables)) {
+          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])],
+                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+        } else {
+          if(eval(DateColumnName) %chin% names(Preds)) {
+            data.table::set(Preds, j = "Date", value = NULL)
+          }
+          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)],
+                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],
+                              Preds)
+        }        
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
+        if(eval(DateColumnName) %chin% names(Preds)) {
+          data.table::set(Preds, j = "Date", value = NULL)
+        }
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1048,7 +1148,7 @@ AutoH2oDRFCARMA <- function(data,
           temp <- temp[ID == N][, ID := NULL]
         }
         
-        # Score Model----
+        # Score model----
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
           ModelObject = Model,
@@ -1072,12 +1172,13 @@ AutoH2oDRFCARMA <- function(data,
           MDP_MissNum = -1)
         
         # Update data group case----
+        if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
         Preds <- cbind(UpdateData[ID == N], Preds)
-        if(TrainOnFull & Difference) {
-          Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] 
+        if(Difference) {
+          Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
         } else {
-          Preds[, eval(TargetColumnName) := Preds]  
+          Preds[, eval(TargetColumnName) := Preds]
         }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
@@ -1086,13 +1187,13 @@ AutoH2oDRFCARMA <- function(data,
         }
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) {
-          UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]  
+          UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
         }
         UpdateData[, ID := NULL]
         
       } else {
-        temp <- data.table::copy(UpdateData[, ID := 1:.N])
-        temp <- temp[ID == N][, ID := NULL][, eval(DateColumnName) := NULL]
+        
+        # Score Model----
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
           ModelObject = Model,
@@ -1116,7 +1217,8 @@ AutoH2oDRFCARMA <- function(data,
           MDP_MissNum = -1)
         
         # Update data non-group case----
-        data.table::set(UpdateData, i = N, j = 1L:2L, value = Preds[[1]])
+        if(DebugMode) print("Update data non-group case----")
+        data.table::set(UpdateData, i = N, j = as.integer(2:3), value = Preds[[1]])
       }
     }
     
@@ -1144,7 +1246,7 @@ AutoH2oDRFCARMA <- function(data,
       # Create single future record----
       if(DebugMode) print("Create single future record----")
       d <- max(UpdateData[[eval(DateColumnName)]])
-      if (tolower(TimeUnit) == "hour") {
+      if (tolower(TimeUnit) %chin% c("hour","hours")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
       } else if (tolower(TimeUnit) == "1min") {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
@@ -1156,15 +1258,15 @@ AutoH2oDRFCARMA <- function(data,
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(15))
       } else if (tolower(TimeUnit) == "30min") {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(30))
-      } else if (tolower(TimeUnit) == "day") {
+      } else if (tolower(TimeUnit) %chin% c("day","days")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::days(1))
-      } else if (tolower(TimeUnit) == "week") {
+      } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::weeks(1))
-      } else if (tolower(TimeUnit) == "month") {
+      } else if (tolower(TimeUnit) %chin% c("month","months")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
-      } else if (tolower(TimeUnit) == "quarter") {
+      } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
-      } else if (tolower(TimeUnit) == "year") {
+      } else if (tolower(TimeUnit) %chin% c("years","year")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
       }
       
@@ -1202,7 +1304,9 @@ AutoH2oDRFCARMA <- function(data,
       
       # Prepare for more feature engineering----
       if(DebugMode) print("Prepare for more feature engineering----")
-      CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
+      if(!tolower(TimeGroups[1]) %chin% c("5min","10min","15min","30min","hour")) {
+        CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]  
+      }
       
       # Update calendar variables----
       if(DebugMode) print("Update calendar variables----")
@@ -1266,10 +1370,10 @@ AutoH2oDRFCARMA <- function(data,
       if(DebugMode) print("Update Lags and MA's----")
       if(!is.null(GroupVariables) & Difference == TRUE) {
         
-        # Create data for GDL: See CARMA-HelperFunctions.R----
-        temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        # Create data for GDL----
+        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1317,6 +1421,8 @@ AutoH2oDRFCARMA <- function(data,
         # IndependentGroups    = IndependentSupplyValue
         # 
         # # Services
+        # TimeUnitAgg          = TimeGroups[1]
+        # TimeGroups           = TimeGroups
         # TimeBetween          = NULL
         # TimeUnit             = TimeUnit
         # RollOnLag1           = TRUE
@@ -1337,12 +1443,16 @@ AutoH2oDRFCARMA <- function(data,
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
         if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
           
-          # Create data for GDL: See CARMA-HelperFunctions.R----
-          temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          # Create copy of data----
+          temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
+                                           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
+          
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
           
           # Generate GDL Features for Updated Records----
           if(DebugMode) print("Generate GDL Features for Updated Records----")
@@ -1355,13 +1465,13 @@ AutoH2oDRFCARMA <- function(data,
             DateColumn           = eval(DateColumnName),
             Targets              = "HolidayCounts",
             HierarchyGroups      = NULL,
-            IndependentGroups    = "GroupVar",
+            IndependentGroups    = IndepentVariablesPass,
             
             # Services
-            TimeBetween          = NULL,
             TimeUnit             = TimeUnit,
             TimeUnitAgg          = TimeGroups[1],
             TimeGroups           = TimeGroups[1],
+            TimeBetween          = NULL,
             RollOnLag1           = TRUE,
             Type                 = "Lag",
             SimpleImpute         = TRUE,
@@ -1389,15 +1499,33 @@ AutoH2oDRFCARMA <- function(data,
         
       } else if(!is.null(GroupVariables)) {
         
-        # Create data for GDL: See CARMA-HelperFunctions.R----
-        temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        # Create data for GDL----
+        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")
+        
+        # QA PRINT ARGS----
+        # if(DebugMode) print("data"); print(Temporary)
+        # if(DebugMode) print("eval(DateColumnName)"); print(eval(DateColumnName))
+        # if(DebugMode) print("HierarchSupplyValue"); print(HierarchSupplyValue)
+        # if(DebugMode) print("IndependentSupplyValue"); print(IndependentSupplyValue)
+        # if(DebugMode) print("TimeUnit"); print(TimeUnit)
+        # if(DebugMode) print("TimeGroups"); print(TimeGroups[1])
+        # if(DebugMode) print("c(Lags)"); print(c(Lags))
+        # if(DebugMode) print("c(MA_Periods)"); print(c(MA_Periods))
+        # if(DebugMode) print("c(SD_Periods)"); print(c(SD_Periods))
+        # if(DebugMode) print("c(Skew_Periods)"); print(c(Skew_Periods))
+        # if(DebugMode) print("c(Kurt_Periods)"); print(c(Kurt_Periods))
+        # if(DebugMode) print("c(Quantile_Periods)"); print(c(Quantile_Periods))
+        # if(DebugMode) print("c(Quantiles_Selected)"); print(c(Quantiles_Selected))
+        # if(DebugMode) print("DebugMode"); print(DebugMode)
+        
+        # Build Features----
         Temporary <- AutoLagRollStatsScoring(
           
           # Data
@@ -1458,10 +1586,14 @@ AutoH2oDRFCARMA <- function(data,
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
         if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
           
-          # Create data for GDL: See CARMA-HelperFunctions.R----
-          temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          # Generate GDL Features for Updated Records----
+          if(DebugMode) print("Generate GDL Features for Updated Records----")
+          IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
+          
+          # Create copy of data----
+          temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
+                                           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
@@ -1479,7 +1611,6 @@ AutoH2oDRFCARMA <- function(data,
             IndependentGroups    = IndepentVariablesPass,
             
             # Services
-            TimeBetween          = NULL,
             TimeUnit             = TimeUnit,
             TimeUnitAgg          = TimeGroups[1],
             TimeGroups           = TimeGroups[1],
@@ -1510,14 +1641,10 @@ AutoH2oDRFCARMA <- function(data,
         
       } else {
         
-        # Keep Variables----
-        data.table::setorderv(x = UpdateData, cols = c("DateColumnName"), order = 1)
-        UpdateData[, ID := .N:1]
-        
-        # Create data for GDL: See CARMA-HelperFunctions.R----
-        temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        # Create data for GDL----
+        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1552,14 +1679,41 @@ AutoH2oDRFCARMA <- function(data,
           Quantile_RollWindows = c(Quantile_Periods),
           Quantiles_Selected   = c(Quantiles_Selected))
         
+        # data                 = Temporary
+        # RowNumsID            = "ID"
+        # RowNumsKeep          = 1
+        # DateColumn           = eval(DateColumnName)
+        # Targets              = eval(TargetColumnName)
+        # HierarchyGroups      = NULL
+        # IndependentGroups    = NULL
+        # 
+        # # Services
+        # TimeBetween          = NULL
+        # TimeUnit             = TimeUnit
+        # TimeUnitAgg          = TimeGroups[1]
+        # TimeGroups           = TimeGroups
+        # RollOnLag1           = TRUE
+        # Type                 = "Lag"
+        # SimpleImpute         = TRUE
+        # 
+        # # Calculated Columns
+        # Lags                 = c(Lags)
+        # MA_RollWindows       = c(MA_Periods)
+        # SD_RollWindows       = c(SD_Periods)
+        # Skew_RollWindows     = c(Skew_Periods)
+        # Kurt_RollWindows     = c(Kurt_Periods)
+        # Quantile_RollWindows = c(Quantile_Periods)
+        # Quantiles_Selected   = c(Quantiles_Selected)
+        # Debug                = TRUE
+        
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
         if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
           
-          # Create data for GDL----
-          temp <- CarmaH2OKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          # Copy data----
+          temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
+                                           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
@@ -1577,10 +1731,10 @@ AutoH2oDRFCARMA <- function(data,
             IndependentGroups    = NULL,
             
             # Services
-            TimeBetween          = NULL,
             TimeUnit             = TimeUnit,
             TimeUnitAgg          = TimeGroups[1],
             TimeGroups           = TimeGroups[1],
+            TimeBetween          = NULL,
             RollOnLag1           = TRUE,
             Type                 = "Lag",
             SimpleImpute         = TRUE,
@@ -1604,8 +1758,10 @@ AutoH2oDRFCARMA <- function(data,
         
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
-        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
-        
+        if(!"ID" %chin% c(names(UpdateData))) {
+          data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
+        }
+        UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
       gc()
     }

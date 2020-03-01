@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGBMCARMA.R
 \name{AutoH2oGBMCARMA}
 \alias{AutoH2oGBMCARMA}
-\title{AutoH2oGBMCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
+\title{AutoH2oGBMCARMA}
 \usage{
 AutoH2oGBMCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
   DateColumnName = "DateTime", HierarchGroups = NULL,
@@ -14,16 +14,16 @@ AutoH2oGBMCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
   Difference = TRUE, FourierTerms = 6, CalendarVariables = FALSE,
   HolidayVariable = TRUE, HolidayLags = 1,
   HolidayMovingAverages = 1:2, TimeTrendVariable = FALSE,
-  DataTruncate = FALSE, ZeroPadSeries = NULL, SplitRatios = c(0.7,
-  0.2, 0.1), EvalMetric = "MAE", GridTune = FALSE, ModelCount = 1,
-  NTrees = 1000, PartitionType = "timeseries", MaxMem = "32G",
-  NThreads = max(1, parallel::detectCores() - 2), Timer = TRUE,
-  DebugMode = FALSE)
+  ZeroPadSeries = NULL, DataTruncate = FALSE, SplitRatios = c(0.7,
+  0.2, 0.1), MaxMem = "28G", NThreads = max(1L, parallel::detectCores()
+  - 2L), EvalMetric = "RMSE", GridTune = FALSE,
+  GridEvalMetric = "mae", ModelCount = 1, NTrees = 1000,
+  PartitionType = "timeseries", Timer = TRUE, DebugMode = FALSE)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
 
-\item{TrainOnFull}{Set to TRUE to run on full data}
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{TargetColumnName}{List the column name of your target variables column. E.g. "Target"}
 
@@ -35,7 +35,7 @@ AutoH2oGBMCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
@@ -55,31 +55,37 @@ AutoH2oGBMCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
 
-\item{Quantiles_Selected}{Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
+\item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
-\item{Difference}{Set to TRUE to put the I in ARIMA}
+\item{Difference}{Puts the I in ARIMA for single series and grouped series.}
 
-\item{FourierTerms}{Set to the max number of pairs}
+\item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
 
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
 
 \item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
 
-\item{HolidayLags}{Number of lags for the holiday counts}
+\item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
-\item{HolidayMovingAverages}{Number of moving averages for holiday counts}
+\item{HolidayMovingAverages}{Number of moving averages to build off of the holiday count variable.}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
-\item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
-
 \item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
+
+\item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
-\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"}
+\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
+
+\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
+
+\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
+
+\item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
 
@@ -87,75 +93,76 @@ AutoH2oGBMCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
-\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
-
-\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
-
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
-\item{DebugMode}{Set to TRUE to get a print out of every comment that has four dashes at the end of it}
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 }
 \value{
-Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+Returns a data.table of original series and forecasts, the h2o-gbm model objects (everything returned from AutoH2oGBMRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 }
 \description{
-AutoH2oGBMCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+AutoH2oGBMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoML::AutoH2oGBMCARMA(
-
+data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
+xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
+Forecast1 <- AutoH2oGBMCARMA(
+  
   # Data Artifacts
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
+  GroupVariables = c("Store","Dept"), 
   TimeUnit = "week",
   TimeGroups = c("weeks","months","quarter"),
-
+  
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
   PartitionType = "timeseries",
-
+  
   # Productionize
   TrainOnFull = FALSE,
+  FC_Periods = 4,
   EvalMetric = "RMSE",
   GridTune = FALSE,
+  GridEvalMetric = "mae",
   ModelCount = 5,
-  MaxMem = "28G",
-  NThreads = 8,
   Timer = TRUE,
-
+  DebugMode = FALSE,
+  
   # Target Transformations
   TargetTransformation = TRUE,
   Difference = TRUE,
-
-  # Features
+  
+  # Date Features
+  CalendarVariables = TRUE,
+  HolidayVariable = TRUE,
+  HolidayLags = 1, 
+  HolidayMovingAverages = 1:2,
+  
+  # Time Series Features
   Lags = c(1:5),
-  HolidayLags = 1,
   MA_Periods = c(1:5),
   SD_Periods = c(2:5),
   Skew_Periods = c(3:5),
   Kurt_Periods = c(4:5),
   Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5","q95"),
-  HolidayMovingAverages = 1:2,
-  RollStatFUNs = c("mean","sd","skew","kurt","q5","q95"),
+  Quantiles_Selected = c("q5","q95"), 
+  
+  # Bonus Features
   XREGS = xreg,
-  FC_Periods = 4,
   FourierTerms = 4,
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
   TimeTrendVariable = TRUE,
   NTrees = 300,
   DebugMode = FALSE)
-
-Forecast$TimeSeriesPlot
-Forecast$Forecast
-Forecast$ModelInformation$...
+  
+Forecast1$TimeSeriesPlot
+Forecast1$Forecast
+Forecast1$ModelInformation$...
 }
 }
 \seealso{

@@ -23,7 +23,7 @@ AutoH2oDRFCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 \arguments{
 \item{data}{Supply your full series data set here}
 
-\item{TrainOnFull}{Set to TRUE to run on full data}
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{TargetColumnName}{List the column name of your target variables column. E.g. "Target"}
 
@@ -35,7 +35,7 @@ AutoH2oDRFCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
@@ -55,19 +55,19 @@ AutoH2oDRFCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
 
-\item{Quantiles_Selected}{Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
+\item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
-\item{Difference}{Set to TRUE to put the I in ARIMA}
+\item{Difference}{Puts the I in ARIMA for single series and grouped series.}
 
-\item{FourierTerms}{Set to the max number of pairs}
+\item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
 
 \item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
 
 \item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
 
-\item{HolidayLags}{Number of lags for the holiday counts}
+\item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
-\item{HolidayMovingAverages}{Number of moving averages for holiday counts}
+\item{HolidayMovingAverages}{Number of moving averages to build off of the holiday count variable.}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
@@ -77,7 +77,7 @@ AutoH2oDRFCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
-\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "R2", "RMSLE"}
+\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
@@ -93,7 +93,9 @@ AutoH2oDRFCARMA(data, TrainOnFull = FALSE, TargetColumnName = "Target",
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
-\item{DebugMode}{Set to TRUE to get a print out of every comment that has four dashes at the end of it}
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+
+\item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -103,7 +105,7 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoML::AutoH2oDRFCARMA(
+Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
 
   # Data Artifacts
   data = data,
