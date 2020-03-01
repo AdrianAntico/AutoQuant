@@ -378,12 +378,12 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       }
     } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
       if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
             data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           }
         }
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
