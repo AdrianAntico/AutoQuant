@@ -44,7 +44,7 @@
 #' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoML::AutoXGBoostCARMA(
+#' Forecast <- RemixAutoAI::AutoXGBoostCARMA(
 #'   
 #'   # Data Artifacts
 #'   data = data,
@@ -505,13 +505,13 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
   if (!is.null(GroupVariables) & Difference == FALSE) {
     
-    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -539,10 +539,10 @@ AutoXGBoostCARMA <- function(data,
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected))
     
-    # Keep interaction group as GroupVar
+    # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -550,13 +550,13 @@ AutoXGBoostCARMA <- function(data,
     
   } else if(!is.null(GroupVariables) & Difference == TRUE) {
     
-    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -584,10 +584,10 @@ AutoXGBoostCARMA <- function(data,
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected))
     
-    # Keep interaction group as GroupVar
+    # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- RemixAutoML::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -595,7 +595,7 @@ AutoXGBoostCARMA <- function(data,
     
   } else if(is.null(GroupVariables) & Difference == FALSE) {
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -625,7 +625,7 @@ AutoXGBoostCARMA <- function(data,
     
   } else {
     
-    # Generate features
+    # Generate features----
     data <- AutoLagRollStats(
       
       # Data
@@ -656,7 +656,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+  if(HolidayVariable == TRUE & max(HolidayLags) > 0L & max(HolidayMovingAverages) > 0L) {
     if(!is.null(GroupVariables)) {
       
       # Build Features---
@@ -664,17 +664,17 @@ AutoXGBoostCARMA <- function(data,
         data,
         lags            = HolidayLags,
         periods         = HolidayMovingAverages,
-        SDperiods       = 0,
-        Skewperiods     = 0,
-        Kurtperiods     = 0,
-        Quantileperiods = 0,
+        SDperiods       = 0L,
+        Skewperiods     = 0L,
+        Kurtperiods     = 0L,
+        Quantileperiods = 0L,
         statsFUNs       = "mean",
         targets         = "HolidayCounts",
         groupingVars    = IndepentVariablesPass,
         sortDateName    = eval(DateColumnName),
         timeDiffTarget  = NULL,
-        timeAgg         = TimeGroups[1],
-        WindowingLag    = 1,
+        timeAgg         = TimeGroups[1L],
+        WindowingLag    = 1L,
         Type            = "Lag",
         SimpleImpute    = TRUE)
     } else {
@@ -682,17 +682,17 @@ AutoXGBoostCARMA <- function(data,
         data,
         lags            = HolidayLags,
         periods         = HolidayMovingAverages,
-        SDperiods       = 0,
-        Skewperiods     = 0,
-        Kurtperiods     = 0,
-        Quantileperiods = 0,
+        SDperiods       = 0L,
+        Skewperiods     = 0L,
+        Kurtperiods     = 0L,
+        Quantileperiods = 0L,
         statsFUNs       = "mean",
         targets         = "HolidayCounts",
         groupingVars    = NULL,
         sortDateName    = eval(DateColumnName),
         timeDiffTarget  = NULL,
-        timeAgg         = TimeGroups[1],
-        WindowingLag    = 1,
+        timeAgg         = TimeGroups[1L],
+        WindowingLag    = 1L,
         Type            = "Lag",
         SimpleImpute    = TRUE)
     }
@@ -739,7 +739,7 @@ AutoXGBoostCARMA <- function(data,
     if(Difference == TRUE & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -749,7 +749,7 @@ AutoXGBoostCARMA <- function(data,
     } else if(Difference) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
@@ -757,7 +757,7 @@ AutoXGBoostCARMA <- function(data,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -765,7 +765,7 @@ AutoXGBoostCARMA <- function(data,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
-      DataSets <- RemixAutoML::AutoDataPartition(
+      DataSets <- RemixAutoAI::AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
@@ -801,12 +801,8 @@ AutoXGBoostCARMA <- function(data,
   
   # Variables for CARMA function:IDcols----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
-  if(!is.null(GroupVariables)) {
-    IDcols <- 2
-  } else {
-    IDcols <- 1
-  }
-  
+  IDcols <- which(names(data) == eval(DateColumnName))
+
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
   if(TrainOnFull) {
@@ -854,7 +850,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) options(warn = 0)
   
   # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- RemixAutoML::AutoXGBoostRegression(
+  TestModel <- RemixAutoAI::AutoXGBoostRegression(
     data = train,
     TrainOnFull = TRUE,
     ValidationData = valid,
