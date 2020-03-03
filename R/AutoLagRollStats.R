@@ -265,7 +265,7 @@ AutoLagRollStats <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Categorical Names Fully Interacted (Check if there already)----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
@@ -752,7 +752,7 @@ AutoLagRollStatsScoring <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Check if there already----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
@@ -850,6 +850,27 @@ AutoLagRollStatsScoring <- function(data,
             AscRowByGroup = RowNumsID,
             RecordsKeep = RowNumsKeep,
             AscRowRemove = TRUE)
+          
+          # data <- tempData
+          # lags = Lags
+          # periods = MA_RollWindows
+          # SDperiods = SD_RollWindows
+          # Skewperiods = Skew_RollWindows
+          # Kurtperiods = Kurt_RollWindows
+          # Quantileperiods = Quantile_RollWindows
+          # statsFUNs = RollFunctions
+          # targets = Targets
+          # groupingVars = Fact
+          # sortDateName = "TEMPDATE"
+          # timeDiffTarget = TimeBetween
+          # timeAgg = timeaggs
+          # WindowingLag = RollOnLag1
+          # Type = Type
+          # Timer = FALSE
+          # SimpleImpute = SimpleImpute
+          # AscRowByGroup = RowNumsID
+          # RecordsKeep = RowNumsKeep
+          # AscRowRemove = TRUE
           
           # Update vals----
           data.table::set(KeepData, j = eval(DateColumn), value = KeepData[["TEMPDATE"]])

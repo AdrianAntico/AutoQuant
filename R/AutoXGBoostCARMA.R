@@ -966,7 +966,7 @@ AutoXGBoostCARMA <- function(data,
     
     # Machine Learning: Generate predictions----
     if(DebugMode) print("# Machine Learning: Generate predictions----")
-    if (i == 1) {
+    if (i == 1L) {
       if(!is.null(GroupVariables)) {
         
         # i = 1 Define IDcols----
@@ -981,7 +981,7 @@ AutoXGBoostCARMA <- function(data,
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           # Keep GroupVar in Step1SCore since it might fuck shit up downstream
-          ScoringData = Step1SCore, # Auto_Scoring shoud ignore non-ModelFeatures so just throw everything in there? Otherwise use: if("GroupVar" %chin% names(Step1SCore) & !"GroupVar" %chin% ModelFeatures) Step1SCore[, .SD, .SDcols = setdiff(names(Step1SCore), "GroupVar")] else Step1SCore,
+          ScoringData = Step1SCore, # Auto_Scoring should ignore non-ModelFeatures so just throw everything in there? Otherwise use: if("GroupVar" %chin% names(Step1SCore) & !"GroupVar" %chin% ModelFeatures) Step1SCore[, .SD, .SDcols = setdiff(names(Step1SCore), "GroupVar")] else Step1SCore,
           FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
           IDcols = IDcols,
@@ -1372,7 +1372,7 @@ AutoXGBoostCARMA <- function(data,
         # 
         # # Services
         # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
+        # TimeUnitAgg = TimeUnit = TimeUnit
         # RollOnLag1           = TRUE
         # Type                 = "Lag"
         # SimpleImpute         = TRUE

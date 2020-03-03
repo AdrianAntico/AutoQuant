@@ -369,7 +369,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       PeriodKeep <- c()
       
       # Moving Averages----
-      if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0,1))) {
+      if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0L,1L))) {
         
         # Begin
         periods <- periods[periods > 1L]
@@ -402,7 +402,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
       
       # Standard Deviations----
-      if(any(tolower(statsFUNs) %chin% "sd") & !all(SDperiods %in% c(0,1))) {
+      if(any(tolower(statsFUNs) %chin% "sd") & !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         TargetN <- 0L
         for (t in TargetS) {
@@ -421,7 +421,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
               }
             } else {
               data1[, eval(paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t)) := fBasics::rowSds(.SD), .SDcols = c(LagColss[[TargetN]][1:j])]
-              PeriodKeep <- paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t)
+              PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t))
             }
           }
         }
