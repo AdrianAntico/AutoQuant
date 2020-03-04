@@ -546,7 +546,7 @@ AutoXGBoostMultiClass <- function(data,
       }
       grid_params <- data.table::CJ(
         eta = c(0.30, 0.25, 0.35),
-        max_depth = c(6, 8, 10),
+        max_depth = c(4, 8, 12, 15),
         min_child_weight = c(1, 2, 3),
         subsample = c(1, 0.90, 0.80),
         colsample_bytree = c(1, 0.90, 0.80)
@@ -559,7 +559,7 @@ AutoXGBoostMultiClass <- function(data,
     } else {
       grid_params <- data.table::CJ(
         eta = c(0.30, 0.25, 0.35),
-        max_depth = c(6, 8, 10),
+        max_depth = c(4, 8, 12, 15),
         min_child_weight = c(1, 2, 3),
         subsample = c(1, 0.90, 0.80),
         colsample_bytree = c(1, 0.90, 0.80)
