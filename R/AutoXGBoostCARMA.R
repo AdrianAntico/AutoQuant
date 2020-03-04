@@ -1697,6 +1697,7 @@ AutoXGBoostCARMA <- function(data,
       UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
     }
     UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
+    UpdateData[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     UpdateData <- UpdateData[, .SD, .SDcols = c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar")]
     data.table::set(UpdateData, j = "Predictions", value = UpdateData[[eval(TargetColumnName)]])
   }

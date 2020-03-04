@@ -221,50 +221,76 @@ AutoTS <- function(data,
   
   # Convert data.tables to stats::ts objects----
   # User Supplied Frequency
-  dataTSTrain <-
-    stats::ts(data = data_train,
-              start = data_train[, min(get(DateName))][[1]],
-              frequency = freq)
-  ddataTSTrain <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0L)
-  DdataTSTrain <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0L)
+  dataTSTrain <- tryCatch({stats::ts(
+    data = data_train,
+    start = data_train[, min(get(DateName))][[1]],
+    frequency = freq)}, error = function(x) NULL)
+  if(!is.null(dataTSTrain)) {
+    ddataTSTrain <- tryCatch({forecast::ndiffs(x = dataTSTrain)},error = function(x) 0L)
+    DdataTSTrain <- tryCatch({forecast::nsdiffs(x = dataTSTrain)},error = function(x) 0L)
+    if(is.null(ddataTSTrain) | is.null(DdataTSTrain)) {
+      return(print("Unable to determine differences and seasonal differences. Set to 0L"))
+    }
+  } else {
+    return(print("Cannot convert your data to a time series object with that TimeUnit"))
+  }
   
   # TSClean Version----
   if (TSClean) {
-    if (MinVal > 0) {
-      Target <- forecast::tsclean(x = dataTSTrain[, TargetName],
+    if (MinVal > 0L) {
+      Target <- tryCatch({forecast::tsclean(x = dataTSTrain[, TargetName],
                                   replace.missing = TRUE,
-                                  lambda = "auto")
+                                  lambda = "auto")}, error = function(x) NULL)
     } else {
-      Target <- forecast::tsclean(x = dataTSTrain[, TargetName],
+      Target <- tryCatch({forecast::tsclean(x = dataTSTrain[, TargetName],
                                   replace.missing = TRUE,
-                                  lambda = NULL)
+                                  lambda = NULL)}, error = function(x) NULL)
     }
-    dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0L)
-    DTarget <- tryCatch({forecast::nsdiffs(x = Target)},error = function(x) 0L)
+    if(!is.null(Target)) {
+      dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0L)
+      DTarget <- tryCatch({forecast::nsdiffs(x = Target)},error = function(x) 0L)
+      if(is.null(dTarget) | is.null(DTarget)) {
+        TSClean <- FALSE
+        print("TSClean being set to FALSE due to failed run of forecast::tsclean()")
+      }
+    } else {
+      TSClean <- FALSE
+      print("TSClean being set to FALSE due to failed run of forecast::tsclean()")
+    }
   }
   
   # Model-Based Frequency----
   if(ModelFreq) {
-    SFreq <- forecast::findfrequency(as.matrix(data_train[, 2]))
-    dataTSTrain1 <-
-      stats::ts(data = data_train,
-                start = data_train[, min(get(DateName))][[1]],
-                frequency = SFreq)
-    
-    ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0L)
-    DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0L)
+    SFreq <- tryCatch({forecast::findfrequency(as.matrix(data_train[, 2]))}, error = function(x) NULL)
+    if(!is.null(SFreq)) {
+      dataTSTrain1 <- tryCatch({stats::ts(
+        data = data_train,
+        start = data_train[, min(get(DateName))][[1]],
+        frequency = SFreq)}, error = function(x) NULL)
+    }
+    if(!is.null(dataTSTrain1)) {
+      ddataTSTrain1 <- tryCatch({forecast::ndiffs(x = dataTSTrain1)},error = function(x) 0L)
+      DdataTSTrain1 <- tryCatch({forecast::nsdiffs(x = dataTSTrain1)},error = function(x) 0L)
+      if(is.null(ddataTSTrain1) | is.null(DdataTSTrain1)) {
+        ModelFreq <- FALSE
+        print("Setting ModelFreq to FALSE due to inability to fit forecast::ndiffs() or forecast::nsdiffs()")
+      }
+    } else {
+      ModelFreq <- FALSE
+      print("Setting ModelFreq to FALSE due to inability to fit frequency using forecast::findfrequency()")
+    }
   }
   
   # TSClean Version
   if (TSClean | ModelFreq) {
-    if (MinVal > 0) {
-      TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
+    if (MinVal > 0L) {
+      TargetMB <- tryCatch({forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
-                                    lambda = "auto")
+                                    lambda = "auto")}, error = function(x) NULL)
     } else {
-      TargetMB <- forecast::tsclean(x = dataTSTrain1[, TargetName],
+      TargetMB <- tryCatch({forecast::tsclean(x = dataTSTrain1[, TargetName],
                                     replace.missing = TRUE,
-                                    lambda = NULL)
+                                    lambda = NULL)}, error = function(x) NULL)
     }
     
     # Differencing----

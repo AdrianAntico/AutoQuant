@@ -265,7 +265,7 @@ AutoH2oDRFRegression <- function(data,
                               Impute = FALSE,
                               CharToFactor = TRUE)    
   }
-
+  
   # Regression ModelDataPrep----
   if (!is.null(TestData)) {
     TestData <- ModelDataPrep(data = TestData,
@@ -324,7 +324,7 @@ AutoH2oDRFRegression <- function(data,
     
     # Regression Grid Parameters----
     hyper_params <- list(
-      max_depth                        = c(6, 9, 12),
+      max_depth                        = c(4, 8, 12, 15),
       sample_rate                      = c(0.5, 0.75, 1.0),
       col_sample_rate_per_tree         = c(0.5, 0.75, 1.0),
       col_sample_rate_change_per_level = c(0.9, 1.0, 1.1),
@@ -394,7 +394,7 @@ AutoH2oDRFRegression <- function(data,
       model_id         = ModelID,
       ntrees           = Trees)
   }
-
+  
   # Regression Grab Evaluation Metric----
   if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (!is.null(TestData)) {
@@ -595,7 +595,7 @@ AutoH2oDRFRegression <- function(data,
   if(H2OShutdown) {
     h2o::h2o.shutdown(prompt = FALSE)
   }
-
+  
   # Regression Create Validation Data----
   if (!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
@@ -950,7 +950,7 @@ AutoH2oDRFRegression <- function(data,
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }
-
+  
   # Regression Return Objects----
   if (ReturnModelObjects) {
     if(!TrainOnFull) {

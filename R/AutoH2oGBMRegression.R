@@ -346,7 +346,7 @@ AutoH2oGBMRegression <- function(data,
     
     # Regression Grid Parameters----
     hyper_params <- list(
-      max_depth                        = c(6, 9, 12),
+      max_depth                        = c(4, 8, 12, 15),
       sample_rate                      = c(0.5, 0.75, 1.0),
       col_sample_rate                  = c(0.5, 0.75, 1.0),
       col_sample_rate_per_tree         = c(0.5, 0.75, 1.0),
@@ -356,8 +356,7 @@ AutoH2oGBMRegression <- function(data,
       nbins_cats                       = c(64, 256, 512),
       histogram_type                   = c("UniformAdaptive",
                                            "QuantilesGlobal",
-                                           "RoundRobin")
-    )
+                                           "RoundRobin"))
     
     # Regression Grid Train Model----
     if (!is.null(Alpha)) {

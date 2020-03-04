@@ -225,7 +225,7 @@ AutoH2oDRFClassifier <- function(data,
     
     # Binary Grid Parameters----
     hyper_params <- list(
-      max_depth                        = c(6, 9, 12),
+      max_depth                        = c(4, 8, 12, 15),
       balance_classes                  = c(TRUE, FALSE),
       sample_rate                      = c(0.5, 0.75, 1.0),
       col_sample_rate_per_tree         = c(0.5, 0.75, 1.0),
