@@ -44,7 +44,7 @@
 #' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoAI::AutoXGBoostCARMA(
+#' Forecast <- AutoXGBoostCARMA(
 #'   
 #'   # Data Artifacts
 #'   data = data,
@@ -346,7 +346,7 @@ AutoXGBoostCARMA <- function(data,
   # Feature Engineering: Add Fourier Features by GroupVar----
   # To error check, store arg values and run through EconometricsFunctions.R AutoHierarchicalFourier
   if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar----")
-  if(FourierTerms > 0) {
+  if(FourierTerms > 0L) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -852,7 +852,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) options(warn = 0)
   
   # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- RemixAutoAI::AutoXGBoostRegression(
+  TestModel <- AutoXGBoostRegression(
     data = train,
     TrainOnFull = TRUE,
     ValidationData = valid,
