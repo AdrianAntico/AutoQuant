@@ -435,7 +435,9 @@ AutoH2oGBMCARMA <- function(data,
         }
       }
     } else if(!is.null(GroupVariables)) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(all(GroupVariables %chin% names(data))) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
   }
   
@@ -972,14 +974,14 @@ AutoH2oGBMCARMA <- function(data,
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
   }
   
-  # Initialize H2O----
+  # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
   h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
-  # Return warnings to default since h2o will issue warning for constant valued coluns----
+  # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
   
-  # Run AutoH2oGBMRegression and return list of ml objects----
+  # Run AutoH2oGBMRegression and return list of ml objects
   TestModel <- AutoH2oGBMRegression(
     data = train,
     TrainOnFull = TRUE,
@@ -1508,8 +1510,8 @@ AutoH2oGBMCARMA <- function(data,
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1599,8 +1601,8 @@ AutoH2oGBMCARMA <- function(data,
           
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-                                           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           

@@ -429,7 +429,9 @@ AutoH2oDRFCARMA <- function(data,
         }
       }
     } else if(!is.null(GroupVariables)) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(all(GroupVariables %chin% names(data))) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
   }
   

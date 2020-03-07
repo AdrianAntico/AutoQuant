@@ -100,11 +100,11 @@
 #' @export
 AutoXGBoostCARMA <- function(data,
                              TrainOnFull = FALSE,
-                             TargetColumnName = "Target",
-                             DateColumnName = "DateTime",
+                             TargetColumnName = NULL,
+                             DateColumnName = NULL,
                              HierarchGroups = NULL,
                              GroupVariables = NULL,
-                             FC_Periods = 30,
+                             FC_Periods = 5,
                              TimeUnit = "week",
                              TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
@@ -120,19 +120,19 @@ AutoXGBoostCARMA <- function(data,
                              FourierTerms = 6,
                              CalendarVariables = FALSE,
                              HolidayVariable = TRUE,
-                             HolidayLags = 1,
-                             HolidayMovingAverages = 1:2,
+                             HolidayLags = 1L,
+                             HolidayMovingAverages = 3L,
                              TimeTrendVariable = FALSE,
                              DataTruncate = FALSE,
                              ZeroPadSeries = NULL,
-                             SplitRatios = c(0.7, 0.2, 0.1),
+                             SplitRatios = c(1 - 10/100, 10/100),
                              TreeMethod = "hist",
-                             NThreads = max(1, parallel::detectCores()-2),
+                             NThreads = max(1, parallel::detectCores()-2L),
                              EvalMetric = "MAE",
                              GridTune = FALSE,
                              GridEvalMetric = "mae",
-                             ModelCount = 1,
-                             NTrees = 1000,
+                             ModelCount = 1L,
+                             NTrees = 1000L,
                              PartitionType = "timeseries",
                              Timer = TRUE,
                              DebugMode = FALSE) {
@@ -401,7 +401,9 @@ AutoXGBoostCARMA <- function(data,
         }
       }
     } else if(!is.null(GroupVariables)) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(all(GroupVariables %chin% names(data))) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
   }
   
