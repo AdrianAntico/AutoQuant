@@ -239,12 +239,12 @@ AutoTS <- function(data,
   if (TSClean) {
     if (MinVal > 0L) {
       Target <- tryCatch({forecast::tsclean(x = dataTSTrain[, TargetName],
-                                  replace.missing = TRUE,
-                                  lambda = "auto")}, error = function(x) NULL)
+                                            replace.missing = TRUE,
+                                            lambda = "auto")}, error = function(x) NULL)
     } else {
       Target <- tryCatch({forecast::tsclean(x = dataTSTrain[, TargetName],
-                                  replace.missing = TRUE,
-                                  lambda = NULL)}, error = function(x) NULL)
+                                            replace.missing = TRUE,
+                                            lambda = NULL)}, error = function(x) NULL)
     }
     if(!is.null(Target)) {
       dTarget <- tryCatch({forecast::ndiffs(x = Target)},error = function(x) 0L)
@@ -285,12 +285,12 @@ AutoTS <- function(data,
   if (TSClean | ModelFreq) {
     if (MinVal > 0L) {
       TargetMB <- tryCatch({forecast::tsclean(x = dataTSTrain1[, TargetName],
-                                    replace.missing = TRUE,
-                                    lambda = "auto")}, error = function(x) NULL)
+                                              replace.missing = TRUE,
+                                              lambda = "auto")}, error = function(x) NULL)
     } else {
       TargetMB <- tryCatch({forecast::tsclean(x = dataTSTrain1[, TargetName],
-                                    replace.missing = TRUE,
-                                    lambda = NULL)}, error = function(x) NULL)
+                                              replace.missing = TRUE,
+                                              lambda = NULL)}, error = function(x) NULL)
     }
     
     # Differencing----
@@ -1126,8 +1126,7 @@ AutoTS <- function(data,
   if (!("ARIMA" %in% toupper(SkipModels))) {
     # ARIMA-------------
     # 1)
-    if (PrintUpdates)
-      message("ARIMA FITTING")
+    if (PrintUpdates) message("ARIMA FITTING")
     if (StepWise) {
       if (MinVal > 0) {
         # User-Supplied-Freq
@@ -1303,7 +1302,7 @@ AutoTS <- function(data,
         final_metrics[, Target := as.numeric(Target)]
         temp_metrics <- data.table::copy(final_metrics)
         j <- 0
-        for(i in 0:MaxFourierPairs) {
+        for(i in c(0,seq_len(MaxFourierPairs))) {
           if(i == 0) {
             XREG <- 1
             XREGFC <- 1
@@ -1445,7 +1444,7 @@ AutoTS <- function(data,
                 error = function(x)
                   "empty")
             } else {
-              XREG <- forecast::fourier(dataTSTrain1[, TargetName], K = k)
+              XREG <- tryCatch({forecast::fourier(dataTSTrain1[, TargetName], K = k)}, error = function(x) NULL)
               ARIMA_model1 <-
                 tryCatch({
                   forecast::auto.arima(
@@ -1616,8 +1615,7 @@ AutoTS <- function(data,
                       num.cores = NumCores
                     )
                   },
-                  error = function(x)
-                    "empty")
+                  error = function(x) "empty")
               } else {
                 XREG <- forecast::fourier(Target, K = k)
                 ARIMA_model2 <-
