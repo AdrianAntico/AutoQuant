@@ -6806,7 +6806,7 @@ AutoTS <- function(data,
       lty = "dotted",
       lwd = 1
     ) +
-    RemixAutoML::RemixTheme() +
+    RemixTheme() +
     ggplot2::labs(
       title = paste0(FCPeriods, "-", TimeUnit, " Forecast for ", TempTargetName),
       subtitle = paste0(
