@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Unsupervised Learning
 #' @param data The data.table with the columns you wish to have analyzed
+#' @param TestData Data for scoring the trained isolation forest
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
 #' @param Threshold Quantile value to find the cutoff value for classifying outliers
 #' @param MaxMem Specify the amount of memory to allocate to H2O. E.g. "28G"
@@ -50,14 +51,16 @@
 #'                       ifelse(Independent_Variable2 < 0.85,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' Outliers <- ProblematicRecords(data,
-#'                               ColumnNumbers = NULL,
-#'                               Threshold = 0.95,
-#'                               MaxMem = "28G",
-#'                               NThreads = -1)
+#'                                TestData = NULL,
+#'                                ColumnNumbers = NULL,
+#'                                Threshold = 0.95,
+#'                                MaxMem = "28G",
+#'                                NThreads = -1)
 #' }
 #' @return A data.table
 #' @export
 ProblematicRecords <- function(data,
+                               TestData = NULL,
                                ColumnNumbers = NULL,
                                Threshold = 0.975,
                                MaxMem = "28G",
@@ -78,20 +81,31 @@ ProblematicRecords <- function(data,
     data <- data.table::as.data.table(data)
   }
   
+  # Ensure data is a data.table----
+  if(!is.null(TestData)) {
+    if (!data.table::is.data.table(TestData)) {
+      TestData <- data.table::as.data.table(TestData)
+    }  
+  }
+  
   # Initialize H2O----
-  h2o::h2o.init(
-    max_mem_size = MaxMem,
-    nthreads = NThreads,
-    enable_assertions = FALSE
-  )
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Ensure Characters are Converted to Factors----
-  data <- RemixAutoML::ModelDataPrep(data,
-                                     Impute = FALSE,
-                                     CharToFactor = TRUE)
+  data <- RemixAutoML::ModelDataPrep(data, Impute = FALSE, CharToFactor = TRUE)
+  
+  # Convert chars to factors----
+  if(!is.null(TestData)) {
+    TestData <- RemixAutoML::ModelDataPrep(TestData, Impute = FALSE, CharToFactor = TRUE)
+  }
   
   # Convert data to H2O Frame----
   Data <- h2o::as.h2o(data)
+  
+  # Convert data to H2O Frame----
+  if(!is.null(TestData)) {
+    TestDataH2O <- h2o::as.h2o(TestData)
+  }
   
   # Build Isolation Forest----
   if (is.null(ColumnNumbers)) {
@@ -100,39 +114,55 @@ ProblematicRecords <- function(data,
       x = names(data),
       model_id = "test",
       ntrees = NTrees,
-      sample_rate = SampleRate
-    )
+      sample_rate = SampleRate)
   } else {
     IsolationForest <- h2o::h2o.isolationForest(
       training_frame = Data,
       x = names(data)[ColumnNumbers],
       model_id = "test",
       ntrees = NTrees,
-      sample_rate = SampleRate
-    )
+      sample_rate = SampleRate)
   }
   
   # Generate Outliers data.table----
-  OutliersRaw <-
-    data.table::as.data.table(h2o::h2o.predict(object = IsolationForest,
-                                               newdata = Data))
+  if(!is.null(TestData)) {
+    OutliersRawTest <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = TestDataH2O))
+  } 
+  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = Data))
+  
   
   # Shutdown H2O
   h2o::h2o.shutdown(prompt = FALSE)
   
   # Add column for outlier indicator----
-  setnames(OutliersRaw,
-           c("predict", "mean_length"),
-           c("PredictIsoForest", "MeanLength"))
-  Cutoff <- quantile(OutliersRaw[["PredictIsoForest"]],
-                     probs = Threshold)[[1]]
-  OutliersRaw[, PredictedOutlier := ifelse(PredictIsoForest > Cutoff, 1, 0)]
-  OutliersRaw[, PercentileRank := percRank(PredictIsoForest)]
-  data.table::setcolorder(OutliersRaw, c(4, 3, 1, 2))
+  data.table::setnames(OutliersRaw, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))
+  Cutoff <- quantile(OutliersRaw[["PredictIsoForest"]], probs = Threshold)[[1]]
+  data.table::set(OutliersRaw, j = "PredictedOutlier", value = data.table::fifelse(OutliersRaw[["PredictIsoForest"]] > Cutoff, 1, 0))
+  data.table::set(OutliersRaw, j = "PercentileRank", value = percRank(OutliersRaw[["PredictIsoForest"]]))
+  data.table::setcolorder(OutliersRaw, c(4L, 3L, 1L, 2L))
+  
+  # TestData
+  if(!is.null(TestData)) {
+    data.table::setnames(OutliersRawTest, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))
+    Cutoff <- quantile(OutliersRawTest[["PredictIsoForest"]], probs = Threshold)[[1]]
+    data.table::set(OutliersRawTest, j = "PredictedOutlier", value = data.table::fifelse(OutliersRawTest[["PredictIsoForest"]] > Cutoff, 1, 0))
+    data.table::set(OutliersRawTest, j = "PercentileRank", value = percRank(OutliersRawTest[["PredictIsoForest"]]))
+    data.table::setcolorder(OutliersRawTest, c(4L, 3L, 1L, 2L))
+  }
   
   # Merge back with source data----
   OutputData <- cbind(OutliersRaw, data)
+  if(!is.null(TestData)) {
+    OutputDataTest <- cbind(OutliersRawTest, TestData)
+  }
   
   # Return data----
-  return(OutputData[order(-PredictIsoForest)])
+  if(!is.null(TestData)) {
+    return(list(Data     = OutputData[order(-PredictIsoForest)],
+                TestData = OutputDataTest[order(-PredictIsoForest)],
+                Model    = IsolationForest))
+  } else {
+    return(list(Data  = OutputData[order(-PredictIsoForest)],
+                Model = IsolationForest))
+  }
 }
