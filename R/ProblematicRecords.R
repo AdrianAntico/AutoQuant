@@ -66,7 +66,7 @@ ProblematicRecords <- function(data,
                                MaxMem = "28G",
                                NThreads = -1,
                                NTrees = 100,
-                               SampleRate = (sqrt(5) - 1) / 2) {
+                               SampleRate = (sqrt(5)-1)/2) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
@@ -92,11 +92,11 @@ ProblematicRecords <- function(data,
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Ensure Characters are Converted to Factors----
-  data <- RemixAutoML::ModelDataPrep(data, Impute = FALSE, CharToFactor = TRUE)
+  data <- ModelDataPrep(data, Impute = FALSE, CharToFactor = TRUE)
   
   # Convert chars to factors----
   if(!is.null(TestData)) {
-    TestData <- RemixAutoML::ModelDataPrep(TestData, Impute = FALSE, CharToFactor = TRUE)
+    TestData <- ModelDataPrep(TestData, Impute = FALSE, CharToFactor = TRUE)
   }
   
   # Convert data to H2O Frame----
@@ -127,9 +127,8 @@ ProblematicRecords <- function(data,
   # Generate Outliers data.table----
   if(!is.null(TestData)) {
     OutliersRawTest <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = TestDataH2O))
-  } 
+  }
   OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = Data))
-  
   
   # Shutdown H2O
   h2o::h2o.shutdown(prompt = FALSE)
@@ -141,7 +140,7 @@ ProblematicRecords <- function(data,
   data.table::set(OutliersRaw, j = "PercentileRank", value = percRank(OutliersRaw[["PredictIsoForest"]]))
   data.table::setcolorder(OutliersRaw, c(4L, 3L, 1L, 2L))
   
-  # TestData
+  # TestData----
   if(!is.null(TestData)) {
     data.table::setnames(OutliersRawTest, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))
     Cutoff <- quantile(OutliersRawTest[["PredictIsoForest"]], probs = Threshold)[[1]]
@@ -157,12 +156,7 @@ ProblematicRecords <- function(data,
   }
   
   # Return data----
-  if(!is.null(TestData)) {
-    return(list(Data     = OutputData[order(-PredictIsoForest)],
-                TestData = OutputDataTest[order(-PredictIsoForest)],
-                Model    = IsolationForest))
-  } else {
-    return(list(Data  = OutputData[order(-PredictIsoForest)],
-                Model = IsolationForest))
-  }
+  return(list(Data     = OutputData[order(-PredictIsoForest)],
+              TestData = tryCatch({OutputDataTest[order(-PredictIsoForest)]}, error = function(x) NULL),
+              Model    = IsolationForest))
 }
