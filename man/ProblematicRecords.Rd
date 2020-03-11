@@ -4,13 +4,13 @@
 \alias{ProblematicRecords}
 \title{ProblematicRecords identifies problematic records for further investigation}
 \usage{
-ProblematicRecords(data, TestData = NULL, ColumnNumbers = NULL, Threshold = 0.975,
-  MaxMem = "28G", NThreads = -1, NTrees = 100,
+ProblematicRecords(data, TestData = NULL, ColumnNumbers = NULL,
+  Threshold = 0.975, MaxMem = "28G", NThreads = -1, NTrees = 100,
   SampleRate = (sqrt(5) - 1)/2)
 }
 \arguments{
 \item{data}{The data.table with the columns you wish to have analyzed}
-  
+
 \item{TestData}{Data for scoring the trained isolation forest}
 
 \item{ColumnNumbers}{A vector with the column numbers you wish to analyze}
@@ -70,7 +70,7 @@ data[, Independent_Variable11 := as.factor(
                       ifelse(Independent_Variable2 < 0.85,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 Outliers <- ProblematicRecords(data,
-                               TestData = NULL.
+                               TestData = NULL,
                                ColumnNumbers = NULL,
                                Threshold = 0.95,
                                MaxMem = "28G",
