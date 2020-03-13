@@ -131,7 +131,7 @@ AutoXGBoostClassifier <- function(data,
   if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-
+  
   # Binary Ensure data is a data.table----
   if (!data.table::is.data.table(data)) {
     data <- data.table::as.data.table(data)
@@ -169,8 +169,13 @@ AutoXGBoostClassifier <- function(data,
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   CatFeatures <- names(data)[CatFeatures]
   CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols]
-  if(length(CatFeatures)==0) {
+  if(length(CatFeatures) == 0L) {
     CatFeatures <- NULL
+  }
+  if(class(FeatureColNames) == "character") {
+    CatFeatures <- CatFeatures[CatFeatures %chin% FeatureColNames]
+  } else {
+    CatFeatures <- CatFeatures[CatFeatures %chin% names(data)[FeatureColNames]]
   }
   
   # Binary Data Partition----
@@ -817,7 +822,7 @@ AutoXGBoostClassifier <- function(data,
       nrounds = Trees,
       early_stopping_rounds = 10)
   }
-
+  
   # Binary Save Model----
   if (SaveModelObjects) {
     if(getwd() == model_path) {
@@ -826,7 +831,7 @@ AutoXGBoostClassifier <- function(data,
       save(model, file = file.path(model_path, ModelID))
     }    
   }
-
+  
   # Binary Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
@@ -917,17 +922,17 @@ AutoXGBoostClassifier <- function(data,
   # Evaluation Metrics at Optimial Threshold----
   x <- ROCR::prediction(predictions = ValidationData[["p1"]], labels = ValidationData[["Target"]])
   EvaluationMetrics <- data.table::data.table(
-      Metric = c(
-        "AUC",
-        "TruePositiveRate",
-        "FalseNegativeRate",
-        "FalsePositiveRate",
-        "TrueNegativeRate",
-        "PreceisionRecallBreakEven",
-        "F1_Score",
-        "Odds"),
-      MetricValue = rep(999999, 8),
-      Threshold   = rep(999999, 8))
+    Metric = c(
+      "AUC",
+      "TruePositiveRate",
+      "FalseNegativeRate",
+      "FalsePositiveRate",
+      "TrueNegativeRate",
+      "PreceisionRecallBreakEven",
+      "F1_Score",
+      "Odds"),
+    MetricValue = rep(999999, 8),
+    Threshold   = rep(999999, 8))
   i <- 0
   for (metric in c("auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds")) {
     i <- as.integer(i + 1)
