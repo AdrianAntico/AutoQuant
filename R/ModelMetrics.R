@@ -71,7 +71,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
 #'
 #' DT_BinaryConfusionMatrix is for computing all metrics related to binary modeling outcomes
 #' 
-#' @family Supervised Machine Learning
+#' @family Model Evaluation
 #' @author Adrian Antico
 #' @param data Supply your model validation data with predictions
 #' @param GroupVariables Supply grouping variables to generate statistics by groups
@@ -142,3 +142,138 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
   return(AggData)
 }
 
+#' ClassificationMetrics
+#'
+#' ClassificationMetrics
+#'
+#' @author Adrian Antico
+#' @family Model Evaluation
+#' @param TestData Test data from your modeling
+#' @param Target Name of your target variable
+#' @param Predict Name of your predicted value variable
+#' @export
+ClassificationMetrics <- function(TestData, Target, Predict) {
+  ThresholdOutput <- data.table::data.table(
+    Threshold = rep(1,99),
+    Accuracy = rep(1,99),
+    MCC = rep(1,99),
+    TN = rep(1,99),
+    TP = rep(1,99),
+    FP = rep(1,99),
+    FN = rep(1,99))
+  counter <- 0L
+  for(Thresh in seq(0.01,0.99,0.01)) {
+    counter <- counter + 1L
+    TP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == 0, 1, 0))]
+    TN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == 1, 1, 0))]
+    FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == 1, 1, 0))]
+    FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == 0, 1, 0))]
+    N  <- TestData[,.N]
+    P  <- TestData[get(Target) == 0, .N]
+    acc <- (TP+TN)/N
+    TPR <- TP/P
+    TNR <- TN/(N-P)
+    MCC <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+    data.table::set(ThresholdOutput, i = counter, j = "Threshold", value = Thresh)
+    data.table::set(ThresholdOutput, i = counter, j = "Accuracy", value = acc)
+    data.table::set(ThresholdOutput, i = counter, j = "MCC", value = MCC)
+    data.table::set(ThresholdOutput, i = counter, j = "TP", value = TP)
+    data.table::set(ThresholdOutput, i = counter, j = "FP", value = FP)
+    data.table::set(ThresholdOutput, i = counter, j = "TN", value = TN)
+    data.table::set(ThresholdOutput, i = counter, j = "FN", value = FN)
+  }
+  return(ThresholdOutput)
+}
+
+#' RemixClassificationMetrics
+#'
+#' RemixClassificationMetrics
+#'
+#' @author Adrian Antico
+#' @family Model Evaluation
+#' @param MLModels A vector of model names from remixautoml
+#' @param TargetVariable Name of your target variable
+#' @param CatBoostTestData Test data returned from AutoCatBoostClassifier
+#' @param H2oGBMTestData Test data returned from AutoCatBoostClassifier
+#' @param H2oDRFTestData Test data returned from AutoCatBoostClassifier
+#' @param XGBoostTestData Test data returned from AutoCatBoostClassifier
+#' @export
+RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf","xgboost"),
+                                       TargetVariable = "Value",
+                                       CatBoostTestData = CatModel$ValidationData,
+                                       H2oGBMTestData = H2oGBMModel$ValidationData,
+                                       H2oDRFTestData = H2oDRFModel$ValidationData,
+                                       XGBoostTestData = XGBoostModel$ValidationData) {
+  
+  # Store output----
+  ThresholdOutput <- list()
+  
+  # CatBoost----
+  if(any(tolower(MLModels) == "catboost")) {
+    if(!"p1" %in% names(CatBoostTestData)) data.table::setnames(CatBoostTestData, "Predict", "p1")
+    temp <- ClassificationMetrics(
+      TestData = CatBoostTestData,
+      Target = eval(TargetVariable),
+      Predict = "p1")
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(temp, c("Accuracy","MCC","TN","TP","FP","FN"), c("Cat_Acc","Cat_MCC","Cat_TN","Cat_TP","Cat_FP","Cat_FN"))
+    print("catboost here")
+    ThresholdOutput[["catboost"]] <- temp
+  }
+  
+  # H2oGBMBoost----
+  if(any(tolower(MLModels) == "h2ogbm")) {
+    if(!"p1" %in% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
+    temp <- ClassificationMetrics(
+      TestData = H2oGBMTestData,
+      Target = eval(TargetVariable),
+      Predict = "p1")
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(temp, c("Accuracy","MCC","TN","TP","FP","FN"), c("GBM_Acc","GBM_MCC","GBM_TN","GBM_TP","GBM_FP","GBM_FN"))
+    print("h2ogbm here")
+    ThresholdOutput[["h2ogbm"]] <- temp
+  }
+  
+  # H2oDRFBoost----
+  if(any(tolower(MLModels) == "h2odrf")) {
+    if(!"p1" %in% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
+    temp <- ClassificationMetrics(
+      TestData = H2oDRFTestData,
+      Target = eval(TargetVariable),
+      Predict = "p1")
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(temp, c("Accuracy","MCC","TN","TP","FP","FN"), c("DRF_Acc","DRF_MCC","DRF_TN","DRF_TP","DRF_FP","DRF_FN"))
+    print("h2odrf here")
+    ThresholdOutput[["h2odrf"]] <- temp
+  }
+  
+  # XGBoost----
+  if(any(tolower(MLModels) == "xgboost")) {
+    if(!"p1" %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Predict", "p1")
+    if(!TargetVariable %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Target", eval(TargetVariable))
+    temp <- ClassificationMetrics(
+      TestData = XGBoostTestData,
+      Target = TargetVariable,
+      Predict = "p1")
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(temp, c("Accuracy","MCC","TN","TP","FP","FN"), c("XGB_Acc","XGB_MCC","XGB_TN","XGB_TP","XGB_FP","XGB_FN"))
+    print("xgboost here")
+    ThresholdOutput[["xgboost"]] <- temp
+  }
+  
+  # Combine output----
+  incr <- 0L
+  for(val in seq_len(length(ThresholdOutput))) {
+    incr <- incr + 1L
+    if(length(ThresholdOutput) == 1L) {
+      return(ThresholdOutput[[val]])
+    } else if(incr == 1L) {
+      Metrics <- ThresholdOutput[[val]]
+    } else if(incr > 1L) {
+      Metrics <- merge(Metrics, ThresholdOutput[[val]], by = "Threshold", all = FALSE)
+    }
+  }
+  
+  # Return values----
+  return(Metrics)
+}

@@ -29,7 +29,11 @@ AggMetricsByGroup <- DT_BinaryConfusionMatrix(
   Predicted = "p1")
 }
 }
+\seealso{
+Other Model Evaluation: \code{\link{ClassificationMetrics}},
+  \code{\link{RemixClassificationMetrics}}
+}
 \author{
 Adrian Antico
 }
-\concept{Supervised Machine Learning}
+\concept{Model Evaluation}
