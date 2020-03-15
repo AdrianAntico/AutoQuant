@@ -214,7 +214,7 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
     F1_Score    <- 2 * TP / (2 * TP + FP + FN)
     F2_Score    <- 3 * TP / (2 * TP + FP + FN)
     F0.5_Score  <- 1.5 * TP / (0.5 * TP + FP + FN)
-    NPV         <- TN / (TN + FN
+    NPV         <- TN / (TN + FN)
     PPV         <- TP / (TP + FP)
     ThreatScore <- TP / (TP + FN + FP)
     Utility     <- P/N * (CostMatrix[1] * TPR + CostMatrix[2] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3] * FPR + CostMatrix[4] * (1 - FPR))
