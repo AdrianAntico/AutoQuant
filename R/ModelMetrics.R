@@ -289,8 +289,8 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
       temp, 
-      c("TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"), 
-      c("Cat_TN","Cat_TP","Cat_FP","Cat_FN","Cat_Utility","Cat_MCC","Cat_Acc","Cat_F1_Score","Cat_F0.5_Score","Cat_F2_Score","Cat_NPV","Cat_TRP","Cat_TNR","Cat_FNR',Cat_FPR","Cat_FDR","Cat_FOR","Cat_PPV","Cat_ThreatScore"))
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"), 
+      c("Cat_N","Cat_P","Cat_TN","Cat_TP","Cat_FP","Cat_FN","Cat_Utility","Cat_MCC","Cat_Acc","Cat_F1_Score","Cat_F0.5_Score","Cat_F2_Score","Cat_NPV","Cat_TPR","Cat_TNR","Cat_FNR","Cat_FPR","Cat_FDR","Cat_FOR","Cat_PPV","Cat_ThreatScore"))
     print("catboost here")
     ThresholdOutput[["catboost"]] <- temp
   }
