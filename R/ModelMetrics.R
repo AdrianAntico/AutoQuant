@@ -170,6 +170,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, PositiveOutcome, NegativeOutcome, CostMatrix = c(1,0,0,1)) {
   ThreshLength <- length(Thresholds)
   ThresholdOutput <- data.table::data.table(
+    Threshold   = rep(1,ThreshLength),
     TN          = rep(1,ThreshLength),
     TP          = rep(1,ThreshLength),
     FN          = rep(1,ThreshLength),
@@ -213,13 +214,15 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
     F1_Score    <- 2 * TP / (2 * TP + FP + FN)
     F2_Score    <- 3 * TP / (2 * TP + FP + FN)
     F0.5_Score  <- 1.5 * TP / (0.5 * TP + FP + FN)
-    NPV         <- TN / (TN + FN)
+    NPV         <- TN / (TN + FN
     PPV         <- TP / (TP + FP)
     ThreatScore <- TP / (TP + FN + FP)
     Utility     <- P/N * (CostMatrix[1] * TPR + CostMatrix[2] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3] * FPR + CostMatrix[4] * (1 - FPR))
     
     # Fill in values----
     data.table::set(ThresholdOutput, i = counter, j = "Threshold",   value = Thresh)
+    data.table::set(ThresholdOutput, i = counter, j = "P",           value = P)
+    data.table::set(ThresholdOutput, i = counter, j = "N",           value = N)
     data.table::set(ThresholdOutput, i = counter, j = "TN",          value = TN)
     data.table::set(ThresholdOutput, i = counter, j = "TP",          value = TP)
     data.table::set(ThresholdOutput, i = counter, j = "FP",          value = FP)
@@ -228,7 +231,7 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
     data.table::set(ThresholdOutput, i = counter, j = "MCC",         value = MCC)
     data.table::set(ThresholdOutput, i = counter, j = "Accuracy",    value = Accuracy)
     data.table::set(ThresholdOutput, i = counter, j = "F1_Score",    value = F1_Score)
-    data.table::set(ThresholdOutput, i = counter, j = "F0.5_score",  value = F0.5_Score)
+    data.table::set(ThresholdOutput, i = counter, j = "F0.5_Score",  value = F0.5_Score)
     data.table::set(ThresholdOutput, i = counter, j = "F2_Score",    value = F2_Score)
     data.table::set(ThresholdOutput, i = counter, j = "NPV",         value = NPV)
     data.table::set(ThresholdOutput, i = counter, j = "TPR",         value = TPR)
@@ -278,10 +281,10 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     temp <- ClassificationMetrics(
       TestData = CatBoostTestData,
       Target = eval(TargetVariable),
-      Predict = "p1", 
-      Thresholds = Thresholds, 
-      PositiveOutcome = ClassLabels[1L], 
-      NegativeOutcome = ClassLabels[2L], 
+      Predict = "p1",
+      Thresholds = Thresholds,
+      PositiveOutcome = ClassLabels[1L],
+      NegativeOutcome = ClassLabels[2L],
       CostMatrix = CostMatrix)
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
