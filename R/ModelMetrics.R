@@ -250,10 +250,10 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
                                        Thresholds = seq(0.01,0.99,0.01),
                                        CostMatrix = c(1,0,0,1),
                                        ClassLabels = c(1,0),
-                                       CatBoostTestData = CatModel$ValidationData,
-                                       H2oGBMTestData = H2oGBMModel$ValidationData,
-                                       H2oDRFTestData = H2oDRFModel$ValidationData,
-                                       XGBoostTestData = XGBoostModel$ValidationData) {
+                                       CatBoostTestData = NULL,
+                                       H2oGBMTestData = NULL,
+                                       H2oDRFTestData = NULL,
+                                       XGBoostTestData = NULL) {
   
   # Store output----
   ThresholdOutput <- list()
