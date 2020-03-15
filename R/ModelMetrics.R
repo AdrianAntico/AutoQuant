@@ -115,14 +115,26 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
         data[[eval(Target)]] == 1, 1, 0))
   
   # Compute confusion matrix by group----
-  AggData <- data[, .(Counts = .N,
-           P  = sum(get(Target) == 0, na.rm = TRUE),
-           N  = sum(get(Target) == 1, na.rm = TRUE),
-           TP = sum(Correct_1, na.rm = TRUE),
-           TN = sum(Correct_0, na.rm = TRUE),
-           FP = sum(Incorrect_1, na.rm = TRUE),
-           FN = sum(Incorrect_0, na.rm = TRUE)),
-       by = c(GroupVariables)][order(GroupVariables)]
+  if(!is.null(GroupVariables)) {
+    AggData <- data[, .(Counts = .N,
+                        P  = sum(get(Target) == 0, na.rm = TRUE),
+                        N  = sum(get(Target) == 1, na.rm = TRUE),
+                        TP = sum(Correct_1, na.rm = TRUE),
+                        TN = sum(Correct_0, na.rm = TRUE),
+                        FP = sum(Incorrect_1, na.rm = TRUE),
+                        FN = sum(Incorrect_0, na.rm = TRUE)),
+                    by = c(GroupVariables)][order(GroupVariables)]
+  } else {
+    
+    # No grouping variables----
+    AggData <- data[, .(Counts = .N,
+                        P  = sum(get(Target) == 0, na.rm = TRUE),
+                        N  = sum(get(Target) == 1, na.rm = TRUE),
+                        TP = sum(Correct_1, na.rm = TRUE),
+                        TN = sum(Correct_0, na.rm = TRUE),
+                        FP = sum(Incorrect_1, na.rm = TRUE),
+                        FN = sum(Incorrect_0, na.rm = TRUE))]
+  }
   
   # Add other confusion matrix measures----
   data.table::set(AggData, j = "Accuracy",     value = (AggData[["TP"]] + AggData[["TN"]]) / (AggData[["Counts"]]))
@@ -151,36 +163,68 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 #' @param TestData Test data from your modeling
 #' @param Target Name of your target variable
 #' @param Predict Name of your predicted value variable
+#' @param PositiveOutcome The value of the positive outcome level
+#' @param NegativeOutcome The value of the negative outcome level
+#' @param CostMatrix c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)
 #' @export
-ClassificationMetrics <- function(TestData, Target, Predict) {
+ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, PositiveOutcome, NegativeOutcome, CostMatrix = c(1,0,0,1)) {
+  ThreshLength <- length(Thresholds)
   ThresholdOutput <- data.table::data.table(
-    Threshold = rep(1,99),
-    Accuracy = rep(1,99),
-    MCC = rep(1,99),
-    TN = rep(1,99),
-    TP = rep(1,99),
-    FP = rep(1,99),
-    FN = rep(1,99))
+    Threshold = rep(1,ThreshLength),
+    Accuracy = rep(1,ThreshLength),
+    MCC = rep(1,ThreshLength),
+    TN = rep(1,ThreshLength),
+    TP = rep(1,ThreshLength),
+    FP = rep(1,ThreshLength),
+    FN = rep(1,ThreshLength))
   counter <- 0L
-  for(Thresh in seq(0.01,0.99,0.01)) {
+  for(Thresh in Thresholds) {
     counter <- counter + 1L
-    TP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == 0, 1, 0))]
-    TN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == 1, 1, 0))]
-    FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == 1, 1, 0))]
-    FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == 0, 1, 0))]
+    TN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
+    TP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
+    FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
+    FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
     N  <- TestData[,.N]
-    P  <- TestData[get(Target) == 0, .N]
-    acc <- (TP+TN)/N
+    P  <- TestData[get(Target) == 1, .N]
+
+    # Calculate metrics----
+    MCC <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+    Accuracy <- (TP+TN)/N
     TPR <- TP/P
     TNR <- TN/(N-P)
-    MCC <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+    FNR <- FN / P
+    FPR <- FP / N
+    FDR <- FP / (FP + TP)
+    FOR <- FN / (FN + TN)
+    F1_Score <- 2 * TP / (2 * TP + FP + FN)
+    F2_Score <- 3 * TP / (2 * TP + FP + FN)
+    F0.5_Score <- 1.5 * TP / (0.5 * TP + FP + FN)
+    NPV <- TN / (TN + FN)
+    PPV <- TP / (TP + FP)
+    ThreatScore <- TP / (TP + FN + FP)
+    Utility <- P/N * (CostMatrix[1] * tpr + CostMatrix[2] * (1 - tpr)) + (1 - P/N) * (CostMatrix[3] * fpr + CostMatrix[4] * (1 - fpr))
+    
+    # Fill in values----
     data.table::set(ThresholdOutput, i = counter, j = "Threshold", value = Thresh)
-    data.table::set(ThresholdOutput, i = counter, j = "Accuracy", value = acc)
-    data.table::set(ThresholdOutput, i = counter, j = "MCC", value = MCC)
+    data.table::set(ThresholdOutput, i = counter, j = "TN", value = TN)
     data.table::set(ThresholdOutput, i = counter, j = "TP", value = TP)
     data.table::set(ThresholdOutput, i = counter, j = "FP", value = FP)
-    data.table::set(ThresholdOutput, i = counter, j = "TN", value = TN)
     data.table::set(ThresholdOutput, i = counter, j = "FN", value = FN)
+    data.table::set(ThresholdOutput, i = counter, j = "Utility", value = Utility)
+    data.table::set(ThresholdOutput, i = counter, j = "MCC", value = MCC)
+    data.table::set(ThresholdOutput, i = counter, j = "Accuracy", value = Accuracy)
+    data.table::set(ThresholdOutput, i = counter, j = "F1_Score", value = F1_Score)
+    data.table::set(ThresholdOutput, i = counter, j = "F0.5_score", value = F0.5_Score)
+    data.table::set(ThresholdOutput, i = counter, j = "F2_Score", value = F2_Score)
+    data.table::set(ThresholdOutput, i = counter, j = "NPV", value = NPV)
+    data.table::set(ThresholdOutput, i = counter, j = "TPR", value = TPR)
+    data.table::set(ThresholdOutput, i = counter, j = "TNR", value = TNR)
+    data.table::set(ThresholdOutput, i = counter, j = "FNR", value = FNR)
+    data.table::set(ThresholdOutput, i = counter, j = "FPR", value = FPR)
+    data.table::set(ThresholdOutput, i = counter, j = "FDR", value = FDR)
+    data.table::set(ThresholdOutput, i = counter, j = "FOR", value = FOR)
+    data.table::set(ThresholdOutput, i = counter, j = "PPV", value = PPV)
+    data.table::set(ThresholdOutput, i = counter, j = "ThreatScore", value = ThreatScore)
   }
   return(ThresholdOutput)
 }

@@ -4,7 +4,8 @@
 \alias{ClassificationMetrics}
 \title{ClassificationMetrics}
 \usage{
-ClassificationMetrics(TestData, Target, Predict)
+ClassificationMetrics(TestData, Thresholds, Target, Predict,
+  PositiveOutcome, NegativeOutcome, CostMatrix = c(1, 0, 0, 1))
 }
 \arguments{
 \item{TestData}{Test data from your modeling}
@@ -12,6 +13,12 @@ ClassificationMetrics(TestData, Target, Predict)
 \item{Target}{Name of your target variable}
 
 \item{Predict}{Name of your predicted value variable}
+
+\item{PositiveOutcome}{The value of the positive outcome level}
+
+\item{NegativeOutcome}{The value of the negative outcome level}
+
+\item{CostMatrix}{c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)}
 }
 \description{
 ClassificationMetrics
