@@ -202,7 +202,7 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
     NPV <- TN / (TN + FN)
     PPV <- TP / (TP + FP)
     ThreatScore <- TP / (TP + FN + FP)
-    Utility <- P/N * (CostMatrix[1] * tpr + CostMatrix[2] * (1 - tpr)) + (1 - P/N) * (CostMatrix[3] * fpr + CostMatrix[4] * (1 - fpr))
+    Utility <- P/N * (CostMatrix[1] * TPR + CostMatrix[2] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3] * FPR + CostMatrix[4] * (1 - FPR))
     
     # Fill in values----
     data.table::set(ThresholdOutput, i = counter, j = "Threshold", value = Thresh)
@@ -262,7 +262,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   if(any(tolower(MLModels) == "catboost")) {
     if(!"p1" %in% names(CatBoostTestData)) data.table::setnames(CatBoostTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
-      TestData = H2oGBMTestData,
+      TestData = CatBoostTestData,
       Target = eval(TargetVariable),
       Predict = "p1", 
       Thresholds = Thresholds, 
@@ -302,7 +302,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   if(any(tolower(MLModels) == "h2odrf")) {
     if(!"p1" %in% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
-      TestData = H2oGBMTestData,
+      TestData = H2oDRFTestData,
       Target = eval(TargetVariable),
       Predict = "p1", 
       Thresholds = Thresholds,
@@ -323,7 +323,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     if(!"p1" %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Predict", "p1")
     if(!TargetVariable %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Target", eval(TargetVariable))
     temp <- ClassificationMetrics(
-      TestData = H2oGBMTestData,
+      TestData = XGBoostTestData,
       Target = eval(TargetVariable),
       Predict = "p1", 
       Thresholds = Thresholds,
