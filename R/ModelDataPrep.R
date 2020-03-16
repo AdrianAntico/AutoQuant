@@ -124,7 +124,7 @@ ModelDataPrep <- function(data,
   }
   
   # Remove Dates----
-  if (RemoveDates) {
+  if (RemoveDates | DateToChar) {
     for (col in rev(x)) {
       if (!is.character(data[[col]]) &
           !is.factor(data[[col]]) &
@@ -132,7 +132,11 @@ ModelDataPrep <- function(data,
           !is.integer(data[[col]]) &
           !is.logical(data[[col]]) &
           !is.complex(data[[col]])) {
-        data[, paste0(names(data)[col]) := NULL]
+        if(DateToChar) {
+          data.table::set(data, j = paste0(names(data)[col]), value = as.character(data[[eval(col)]]))
+        } else {
+          data.table::set(data, j = paste0(names(data)[col]), value = NULL) 
+        }        
       }
     }
   }
