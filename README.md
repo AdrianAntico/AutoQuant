@@ -543,6 +543,9 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>EXPAND</summary>
 <p>
   
+##### **RemixClassificationMetrics()**
+<code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model.
+
 ##### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
