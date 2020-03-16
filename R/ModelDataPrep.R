@@ -24,14 +24,14 @@
 #'                                                                size = 100000,
 #'                                                                replace = TRUE)))
 #' data <- ModelDataPrep(data,
-                          Impute       = TRUE,
-                          CharToFactor = TRUE,
-                          IntToNumeric = TRUE,
-                          DateToChar   = FALSE,
-                          RemoveDates  = FALSE,
-                          MissFactor   = "0",
-                          MissNum      = -1,
-                          IgnoreCols   = NULL)
+#'                          Impute       = TRUE,
+#'                          CharToFactor = TRUE,
+#'                          IntToNumeric = TRUE,
+#'                          DateToChar   = FALSE,
+#'                          RemoveDates  = FALSE,
+#'                          MissFactor   = "0",
+#'                          MissNum      = -1,
+#'                          IgnoreCols   = NULL)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
