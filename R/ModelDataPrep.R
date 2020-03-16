@@ -8,6 +8,7 @@
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
 #' @param IntToNumeric Defaults to TRUE which tells the function to convert integers to numeric
+#' @param DateToChar Converts date columns into character columns
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
@@ -23,17 +24,21 @@
 #'                                                                size = 100000,
 #'                                                                replace = TRUE)))
 #' data <- ModelDataPrep(data,
-#'                       Impute = TRUE,
-#'                       CharToFactor = TRUE,
-#'                       IntToNumeric = TRUE,
-#'                       MissFactor = "0",
-#'                       MissNum    = -1)
+                          Impute       = TRUE,
+                          CharToFactor = TRUE,
+                          IntToNumeric = TRUE,
+                          DateToChar   = FALSE,
+                          RemoveDates  = FALSE,
+                          MissFactor   = "0",
+                          MissNum      = -1,
+                          IgnoreCols   = NULL)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
                           Impute       = TRUE,
                           CharToFactor = TRUE,
                           IntToNumeric = TRUE,
+                          DateToChar   = FALSE,
                           RemoveDates  = FALSE,
                           MissFactor   = "0",
                           MissNum      = -1,
