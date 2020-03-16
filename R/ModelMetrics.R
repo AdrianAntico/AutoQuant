@@ -289,7 +289,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
       temp, 
-      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"), 
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("Cat_N","Cat_P","Cat_TN","Cat_TP","Cat_FP","Cat_FN","Cat_Utility","Cat_MCC","Cat_Acc","Cat_F1_Score","Cat_F0.5_Score","Cat_F2_Score","Cat_NPV","Cat_TPR","Cat_TNR","Cat_FNR","Cat_FPR","Cat_FDR","Cat_FOR","Cat_PPV","Cat_ThreatScore"))
     print("catboost here")
     ThresholdOutput[["catboost"]] <- temp
@@ -309,8 +309,8 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
       temp, 
-      c("TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR',FPR","FDR","FOR","PPV","ThreatScore"),
-      c("H2oGBM_TN","H2oGBM_TP","H2oGBM_FP","H2oGBM_FN","H2oGBM_Utility","H2oGBM_MCC","H2oGBM_Acc","H2oGBM_F1_Score","H2oGBM_F0.5_Score","H2oGBM_F2_Score","H2oGBM_NPV","H2oGBM_TRP","H2oGBM_TNR","H2oGBM_FNR',H2oGBM_FPR","H2oGBM_FDR","H2oGBM_FOR","H2oGBM_PPV","H2oGBM_ThreatScore"))
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
+      c("H2oGBM_N","H2oGBM_P","H2oGBM_TN","H2oGBM_TP","H2oGBM_FP","H2oGBM_FN","H2oGBM_Utility","H2oGBM_MCC","H2oGBM_Acc","H2oGBM_F1_Score","H2oGBM_F0.5_Score","H2oGBM_F2_Score","H2oGBM_NPV","H2oGBM_TPR","H2oGBM_TNR","H2oGBM_FNR","H2oGBM_FPR","H2oGBM_FDR","H2oGBM_FOR","H2oGBM_PPV","H2oGBM_ThreatScore"))
     print("h2ogbm here")
     ThresholdOutput[["h2ogbm"]] <- temp
   }
@@ -329,8 +329,8 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
       temp, 
-      c("TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR',FPR","FDR","FOR","PPV","ThreatScore"),
-      c("H2oDRF_TN","H2oDRF_TP","H2oDRF_FP","H2oDRF_FN","H2oDRF_Utility","H2oDRF_MCC","H2oDRF_Acc","H2oDRF_F1_Score","H2oDRF_F0.5_Score","H2oDRF_F2_Score","H2oDRF_NPV","H2oDRF_TRP","H2oDRF_TNR","H2oDRF_FNR',H2oDRF_FPR","H2oDRF_FDR","H2oDRF_FOR","H2oDRF_PPV","H2oDRF_ThreatScore"))
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
+      c("H2oDRF_N","H2oDRF_P","H2oDRF_TN","H2oDRF_TP","H2oDRF_FP","H2oDRF_FN","H2oDRF_Utility","H2oDRF_MCC","H2oDRF_Acc","H2oDRF_F1_Score","H2oDRF_F0.5_Score","H2oDRF_F2_Score","H2oDRF_NPV","H2oDRF_TPR","H2oDRF_TNR","H2oDRF_FNR","H2oDRF_FPR","H2oDRF_FDR","H2oDRF_FOR","H2oDRF_PPV","H2oDRF_ThreatScore"))
     print("h2odrf here")
     ThresholdOutput[["h2odrf"]] <- temp
   }
@@ -350,8 +350,8 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     data.table::setorderv(temp, cols = "MCC", order = -1L)
     data.table::setnames(
       temp, 
-      c("TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR',FPR","FDR","FOR","PPV","ThreatScore"),
-      c("XGB_TN","XGB_TP","XGB_FP","XGB_FN","XGB_Utility","XGB_MCC","XGB_Acc","XGB_F1_Score","XGB_F0.5_Score","XGB_F2_Score","XGB_NPV","XGB_TRP","XGB_TNR","XGB_FNR',XGB_FPR","XGB_FDR","XGB_FOR","XGB_PPV","XGB_ThreatScore"))
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
+      c("XGB_N","XGB_P","XGB_TN","XGB_TP","XGB_FP","XGB_FN","XGB_Utility","XGB_MCC","XGB_Acc","XGB_F1_Score","XGB_F0.5_Score","XGB_F2_Score","XGB_NPV","XGB_TPR","XGB_TNR","XGB_FNR","XGB_FPR","XGB_FDR","XGB_FOR","XGB_PPV","XGB_ThreatScore"))
     print("xgboost here")
     ThresholdOutput[["xgboost"]] <- temp
   }
