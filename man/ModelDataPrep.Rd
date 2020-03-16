@@ -5,7 +5,7 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  IntToNumeric = TRUE, RemoveDates = FALSE, MissFactor = "0",
+  IntToNumeric = TRUE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0",
   MissNum = -1, IgnoreCols = NULL)
 }
 \arguments{
@@ -16,6 +16,8 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 \item{CharToFactor}{Defaults to TRUE which tells the function to convert characters to factors}
 
 \item{IntToNumeric}{Defaults to TRUE which tells the function to convert integers to numeric}
+
+\item{DateToChar}{Convert date column to character column}
 
 \item{RemoveDates}{Defaults to FALSE. Set to TRUE to remove date columns from your data.table}
 
@@ -45,6 +47,8 @@ data <- ModelDataPrep(data,
                       Impute = TRUE,
                       CharToFactor = TRUE,
                       IntToNumeric = TRUE,
+                      DateToChar = FALSE,
+                      RemoveDates = FALSE,
                       MissFactor = "0",
                       MissNum    = -1)
 }
