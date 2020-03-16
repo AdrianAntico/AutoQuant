@@ -168,6 +168,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 #' @param CostMatrix c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)
 #' @export
 ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, PositiveOutcome, NegativeOutcome, CostMatrix = c(1,0,0,1)) {
+  if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
   ThreshLength <- length(Thresholds)
   ThresholdOutput <- data.table::data.table(
     Threshold   = rep(1,ThreshLength),
@@ -201,7 +202,7 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
     FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
     N  <- TestData[,.N]
     P  <- TestData[get(Target) == 1, .N]
-
+    
     # Calculate metrics----
     MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
     Accuracy    <- (TP+TN)/N
@@ -277,7 +278,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   
   # CatBoost----
   if(any(tolower(MLModels) == "catboost")) {
-    if(!"p1" %in% names(CatBoostTestData)) data.table::setnames(CatBoostTestData, "Predict", "p1")
+    if(!"p1" %chin% names(CatBoostTestData)) data.table::setnames(CatBoostTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = CatBoostTestData,
       Target = eval(TargetVariable),
@@ -297,7 +298,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   
   # H2oGBMBoost----
   if(any(tolower(MLModels) == "h2ogbm")) {
-    if(!"p1" %in% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
+    if(!"p1" %chin% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oGBMTestData,
       Target = eval(TargetVariable),
@@ -317,7 +318,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   
   # H2oDRFBoost----
   if(any(tolower(MLModels) == "h2odrf")) {
-    if(!"p1" %in% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
+    if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oDRFTestData,
       Target = eval(TargetVariable),
@@ -337,14 +338,14 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
   
   # XGBoost----
   if(any(tolower(MLModels) == "xgboost")) {
-    if(!"p1" %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Predict", "p1")
-    if(!TargetVariable %in% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Target", eval(TargetVariable))
+    if(!"p1" %chin% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Predict", "p1")
+    if(!TargetVariable %chin% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Target", eval(TargetVariable))
     temp <- ClassificationMetrics(
       TestData = XGBoostTestData,
       Target = eval(TargetVariable),
-      Predict = "p1", 
+      Predict = "p1",
       Thresholds = Thresholds,
-      PositiveOutcome = ClassLabels[1L], 
+      PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
       CostMatrix = CostMatrix)
     data.table::setorderv(temp, cols = "MCC", order = -1L)
