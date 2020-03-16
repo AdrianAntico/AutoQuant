@@ -196,12 +196,21 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
   counter <- 0L
   for(Thresh in Thresholds) {
     counter <- counter + 1L
-    TN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
-    TP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
-    FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
-    FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
-    N  <- TestData[,.N]
-    P  <- TestData[get(Target) == 1, .N]
+    if(PositiveOutcome == 1L) {
+      TN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      TP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
+      FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
+      FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      N  <- TestData[,.N]
+      P  <- TestData[get(Target) == 1, .N]
+    } else {
+      TN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      TP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
+      FN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
+      FP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      N  <- TestData[,.N]
+      P  <- TestData[get(Target) == 1, .N]
+    }
     
     # Calculate metrics----
     MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
@@ -302,8 +311,8 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     temp <- ClassificationMetrics(
       TestData = H2oGBMTestData,
       Target = eval(TargetVariable),
-      Predict = "p1", 
-      Thresholds = Thresholds, 
+      Predict = "p1",
+      Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L], 
       NegativeOutcome = ClassLabels[2L], 
       CostMatrix = CostMatrix)
