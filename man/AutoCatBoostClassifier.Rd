@@ -127,6 +127,7 @@ TestModel <- AutoCatBoostClassifier(data,
 Other Automated Binary Classification: \code{\link{AutoH2oDRFClassifier}},
   \code{\link{AutoH2oGBMClassifier}},
   \code{\link{AutoH2oGLMClassifier}},
+  \code{\link{AutoH2oMLClassifier}},
   \code{\link{AutoXGBoostClassifier}}
 }
 \author{

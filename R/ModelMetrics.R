@@ -268,9 +268,10 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
 #' @param CostMatrix c(1,0,0,1),
 #' @param ClassLabels c(1,0),
 #' @param CatBoostTestData Test data returned from AutoCatBoostClassifier
-#' @param H2oGBMTestData Test data returned from AutoCatBoostClassifier
-#' @param H2oDRFTestData Test data returned from AutoCatBoostClassifier
-#' @param XGBoostTestData Test data returned from AutoCatBoostClassifier
+#' @param H2oGBMTestData Test data returned from AutoH2oGBMClassifier
+#' @param H2oDRFTestData Test data returned from AutoH2oDRFClassifier
+#' @param H2oGLMTestData Test data returned from AutoH2oGLMClassifier
+#' @param XGBoostTestData Test data returned from AutoXGBoostClassifier
 #' @export
 RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf","xgboost"),
                                        TargetVariable = "Value",
@@ -280,6 +281,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
                                        CatBoostTestData = NULL,
                                        H2oGBMTestData = NULL,
                                        H2oDRFTestData = NULL,
+                                       H2oGLMTestData = NULL,
                                        XGBoostTestData = NULL) {
   
   # Store output----
@@ -305,7 +307,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     ThresholdOutput[["catboost"]] <- temp
   }
   
-  # H2oGBMBoost----
+  # H2oGBM----
   if(any(tolower(MLModels) == "h2ogbm")) {
     if(!"p1" %chin% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
@@ -325,11 +327,31 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf"
     ThresholdOutput[["h2ogbm"]] <- temp
   }
   
-  # H2oDRFBoost----
+  # H2oDRF----
   if(any(tolower(MLModels) == "h2odrf")) {
     if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oDRFTestData,
+      Target = eval(TargetVariable),
+      Predict = "p1", 
+      Thresholds = Thresholds,
+      PositiveOutcome = ClassLabels[1L], 
+      NegativeOutcome = ClassLabels[2L],
+      CostMatrix = CostMatrix)
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(
+      temp, 
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
+      c("H2oDRF_N","H2oDRF_P","H2oDRF_TN","H2oDRF_TP","H2oDRF_FP","H2oDRF_FN","H2oDRF_Utility","H2oDRF_MCC","H2oDRF_Acc","H2oDRF_F1_Score","H2oDRF_F0.5_Score","H2oDRF_F2_Score","H2oDRF_NPV","H2oDRF_TPR","H2oDRF_TNR","H2oDRF_FNR","H2oDRF_FPR","H2oDRF_FDR","H2oDRF_FOR","H2oDRF_PPV","H2oDRF_ThreatScore"))
+    print("h2odrf here")
+    ThresholdOutput[["h2odrf"]] <- temp
+  }
+  
+  # H2oGLM----
+  if(any(tolower(MLModels) == "h2odrf")) {
+    if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
+    temp <- ClassificationMetrics(
+      TestData = H2oGLMTestData,
       Target = eval(TargetVariable),
       Predict = "p1", 
       Thresholds = Thresholds,
