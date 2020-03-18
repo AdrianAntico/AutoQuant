@@ -127,7 +127,8 @@ TestModel <- AutoXGBoostClassifier(data,
 \seealso{
 Other Automated Binary Classification: \code{\link{AutoCatBoostClassifier}},
   \code{\link{AutoH2oDRFClassifier}},
-  \code{\link{AutoH2oGBMClassifier}}
+  \code{\link{AutoH2oGBMClassifier}},
+  \code{\link{AutoH2oGLMClassifier}}
 }
 \author{
 Adrian Antico

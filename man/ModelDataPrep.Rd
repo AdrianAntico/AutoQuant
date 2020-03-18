@@ -5,8 +5,8 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  IntToNumeric = TRUE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0",
-  MissNum = -1, IgnoreCols = NULL)
+  IntToNumeric = TRUE, DateToChar = FALSE, RemoveDates = FALSE,
+  MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}
@@ -17,7 +17,7 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 
 \item{IntToNumeric}{Defaults to TRUE which tells the function to convert integers to numeric}
 
-\item{DateToChar}{Convert date column to character column}
+\item{DateToChar}{Converts date columns into character columns}
 
 \item{RemoveDates}{Defaults to FALSE. Set to TRUE to remove date columns from your data.table}
 
@@ -44,13 +44,14 @@ data <- data.table::data.table(Value = runif(100000),
                                                                size = 100000,
                                                                replace = TRUE)))
 data <- ModelDataPrep(data,
-                      Impute = TRUE,
-                      CharToFactor = TRUE,
-                      IntToNumeric = TRUE,
-                      DateToChar = FALSE,
-                      RemoveDates = FALSE,
-                      MissFactor = "0",
-                      MissNum    = -1)
+                         Impute       = TRUE,
+                         CharToFactor = TRUE,
+                         IntToNumeric = TRUE,
+                         DateToChar   = FALSE,
+                         RemoveDates  = FALSE,
+                         MissFactor   = "0",
+                         MissNum      = -1,
+                         IgnoreCols   = NULL)
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},

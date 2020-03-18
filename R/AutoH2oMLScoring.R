@@ -137,8 +137,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     CharToFactor = MDP_CharToFactor,
     RemoveDates = MDP_RemoveDates,
     MissFactor = MDP_MissFactor,
-    MissNum = MDP_MissNum
-  )
+    MissNum = MDP_MissNum)
   
   # Initialize H2O Data Conversion----
   if(!is.null(ModelType)) {
@@ -165,10 +164,8 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       )
       
     } else if (tolower(ModelType) == "standard") {
-      model <- h2o::h2o.loadModel(path = paste0(ModelPath, "/", ModelID))
-      predict <-
-        data.table::as.data.table(h2o::h2o.predict(object = model,
-                                                   newdata = ScoreData))
+      model <- h2o::h2o.loadModel(path = file.path(ModelPath, ModelID))
+      predict <- data.table::as.data.table(h2o::h2o.predict(object = model, newdata = ScoreData))
     }    
   }
 
@@ -198,8 +195,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       grid_trans_results,
       i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
       j = "ColumnName",
-      value = "Predictions"
-    )
+      value = "Predictions")
     
     # Remove target variable----
     grid_trans_results <-
