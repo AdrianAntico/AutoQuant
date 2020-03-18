@@ -7,12 +7,12 @@
 RemixClassificationMetrics(MLModels = c("catboost", "h2ogbm", "h2odrf",
   "xgboost"), TargetVariable = "Value", Thresholds = seq(0.01, 0.99,
   0.01), CostMatrix = c(1, 0, 0, 1), ClassLabels = c(1, 0),
-  CatBoostTestData = NULL, H2oGBMTestData = NULL,
-  H2oDRFTestData = NULL, H2oGLMTestData = NULL,
-  XGBoostTestData = NULL)
+  CatBoostTestData = NULL, H2oAutoMLTestData = NULL,
+  H2oGBMTestData = NULL, H2oDRFTestData = NULL,
+  H2oGLMTestData = NULL, XGBoostTestData = NULL)
 }
 \arguments{
-\item{MLModels}{A vector of model names from remixautoml}
+\item{MLModels}{A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","xgboost")}
 
 \item{TargetVariable}{Name of your target variable}
 
@@ -23,6 +23,8 @@ RemixClassificationMetrics(MLModels = c("catboost", "h2ogbm", "h2odrf",
 \item{ClassLabels}{c(1,0),}
 
 \item{CatBoostTestData}{Test data returned from AutoCatBoostClassifier}
+
+\item{H2oAutoMLTestData}{Test data returned from AutoCatBoostClassifier}
 
 \item{H2oGBMTestData}{Test data returned from AutoH2oGBMClassifier}
 
