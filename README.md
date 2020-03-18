@@ -86,12 +86,12 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
 ## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary> 
+<details><summary>click to expand</summary> 
 <p>
   
 #### Regression:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoCatBoostRegression()** GPU + CPU
@@ -137,7 +137,7 @@ ________________________________________________________________________________
 
 #### Binary Classification:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoCatBoostClassifier()** GPU + CPU
@@ -181,7 +181,7 @@ ________________________________________________________________________________
 
 #### Multinomial Classification:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoCatBoostMultiClass()** GPU + CPU
@@ -223,7 +223,7 @@ ________________________________________________________________________________
 
 #### Generalized Hurdle Models:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 First step is to build either a binary classification model (in the case of a single bucket value, such as zero) or a multiclass model (for the case of multiple bucket values, such as zero and 10). The next step is to subset the data for the cases of: less than the first split value, in between the first and second split value, second and third split value, ..., second to last and last split value, along with greater than last split value. For each data subset, a regression model is built for predicting values in the split value ranges. The final compilation is to multiply the probabilities of being in each group times the values supplied by the regression values for each group.
@@ -254,7 +254,7 @@ First step is to build either a binary classification model (in the case of a si
 
 #### General Purpose H2O Automated Modeling:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoH2OModeler()**
@@ -271,7 +271,7 @@ ________________________________________________________________________________
 
 #### Nonlinear Regression Modeling:
 ____________________________________________________________________________________________________________________________________________
-<details><summary>expand</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoNLS()**
@@ -298,7 +298,7 @@ ________________________________________________________________________________
 </details>
 
 ## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
   
 <img src="Images/ScoringCatBoost.png" align="center" width="400" />
@@ -319,7 +319,7 @@ ________________________________________________________________________________
 </details>
 
 ## Automated Time Series Modeling Functions: <img src="Images/AutoCARMA2.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
   
 <img src="Images/AutoTSPlot.png" align="center" width="300" />
@@ -455,7 +455,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoRecomDataCreate()**
@@ -479,7 +479,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Unsupervised Learning Functions: <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
 
 ##### **GenTSAnomVars()**
@@ -500,7 +500,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **AutoLagRollStats()** 
@@ -552,7 +552,7 @@ For each of the models tested internally, several aspects should be noted:
 
 
 ## Automated Model Evaluation: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
   
 ##### **RemixClassificationMetrics()**
@@ -585,7 +585,7 @@ For each of the models tested internally, several aspects should be noted:
 
 
 ## Utilities, EDA, and Misc. Functions: <img src="Images/MiscImage.png" align="right" width="80" />
-<details><summary>EXPAND</summary>
+<details><summary>click to expand</summary>
 <p>
  
 ##### **AutoWordFreq()** 
