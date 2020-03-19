@@ -112,6 +112,7 @@ Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
   \code{\link{AutoH2oGBMFreqSizeScoring}},
   \code{\link{AutoH2oGBMSizeFreqDist}},
   \code{\link{AutoH2oGLMCARMA}},
+  \code{\link{AutoH2oMLCARMA}},
   \code{\link{AutoXGBoostCARMA}},
   \code{\link{IntermittentDemandScoringDataGenerator}}
 }

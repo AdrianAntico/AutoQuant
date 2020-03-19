@@ -29,7 +29,7 @@ AutoCARMA_QA(ModelName = "catboost", FeatureGridTune = FALSE,
   OptionsWarn = 1)
 }
 \arguments{
-\item{ModelName}{Choose from 'catboost', 'h2odrf', 'h2ogbm', 'h2oglm', 'xgboost'}
+\item{ModelName}{Choose from 'catboost', 'h2odrf', 'h2ogbm', 'h2oglm', 'h2oautoml', 'xgboost'}
 
 \item{FeatureGridTune}{Set to TRUE to only run in evaluation model opposed to TrainOnFull model which does not return model performance measures}
 

@@ -540,7 +540,7 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
       }
     }
     
-    # H2O-GLM CARMA FUNCTION----
+    # H2O-ML CARMA FUNCTION----
     if(tolower(ModelName) == "h2oautoml") {
       PrintOut <- tryCatch({
         AutoH2oMLCARMA(
