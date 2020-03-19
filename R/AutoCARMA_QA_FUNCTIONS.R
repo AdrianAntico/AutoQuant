@@ -5,7 +5,7 @@
 #' @family QA Functions
 #'
 #' # Data Names Mapping
-#' @param ModelName Choose from 'catboost', 'h2odrf', 'h2ogbm', 'h2oglm', 'xgboost'
+#' @param ModelName Choose from 'catboost', 'h2odrf', 'h2ogbm', 'h2oglm', 'h2oautoml', 'xgboost'
 #' @param FeatureGridTune Set to TRUE to only run in evaluation model opposed to TrainOnFull model which does not return model performance measures
 #' @param Nthreads_ = parallel::detectCores() - 2
 #' @param MaxMem_ = "28G"
@@ -458,10 +458,92 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
       }
     }
     
-    # H2O-DFR CARMA FUNCTION----
+    # H2O-GLM CARMA FUNCTION----
     if(tolower(ModelName) == "h2oglm") {
       PrintOut <- tryCatch({
         AutoH2oGLMCARMA(
+          
+          # Testing Args----
+          TrainOnFull = TrainOnFull,
+          XREGS = XREGS__,
+          TargetTransformation = TargetTransformation__,
+          Difference = Difference__,
+          FourierTerms = FourierTerms__,
+          CalendarVariables = CalendarVariables__,
+          TimeTrendVariable = TimeTrendVariable__,
+          HolidayVariable = HolidayVariable__,
+          HolidayLags = HolidayLags__,
+          HolidayMovingAverages = HolidayMovingAverages__,
+          
+          # Data
+          data = data__,
+          
+          # Data names----
+          TargetColumnName = TargetColumnName_,
+          DateColumnName = DateColumnName_,
+          HierarchGroups = HierarchGroups_,
+          GroupVariables = GroupVariables_,
+          TimeUnit = TimeUnit_,
+          
+          # Data Wrangling Features----
+          ZeroPadSeries = ZeroPadSeries_,
+          DataTruncate = DataTruncate_,
+          SplitRatios = SplitRatios_,
+          PartitionType = PartitionType_,
+          
+          # Productionize----
+          FC_Periods = FC_Periods_,
+          EvalMetric = EvalMetric_,
+          GridTune = GridTune_,
+          ModelCount = ModelCount_,
+          Timer = Timer_,
+          MaxMem = "28G",
+          NThreads = NThreads_,
+          
+          # Time Series Features----
+          Lags = Lags_,
+          MA_Periods = MA_Periods_,
+          SD_Periods = SD_Periods_,
+          Skew_Periods = Skew_Periods_,
+          Kurt_Periods = Kurt_Periods_,
+          Quantile_Periods = Quantile_Periods_,
+          Quantiles_Selected = Quantiles_Selected_,
+          
+          # Bonus Features----
+          DebugMode = DebugMode_)
+        
+        # CREATE WARNING OUTPUT----
+      }, error = function(x) {
+        "error"
+      })
+      
+      # Time runs end----
+      EndTime <- Sys.time()
+      
+      # Fill in table----
+      if(is.list(PrintOut)) {
+        data.table::set(AutoCARMA_ArgList, i = run, j = "RESULTS_TEST", value = "success")
+        data.table::set(AutoCARMA_ArgList, i = run, j = "RUN_TIME", value = EndTime - StartTime)
+        if(!TrainOnFull) {
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          # print(PrintOut$ModelInformation$EvaluationMetrics)
+          tryCatch({data.table::set(AutoCARMA_ArgList, i = run, j = "EvalMetric", value = PrintOut$ModelInformation$EvaluationMetrics[Metric == "MAE"][[2]])}, error = function(x) NULL)
+        }
+      } else {
+        data.table::set(AutoCARMA_ArgList, i = run, j = "RESULTS_TEST", value = "failure")
+        data.table::set(AutoCARMA_ArgList, i = run, j = "RUN_TIME", value = EndTime - StartTime)
+      }
+    }
+    
+    # H2O-GLM CARMA FUNCTION----
+    if(tolower(ModelName) == "h2oautoml") {
+      PrintOut <- tryCatch({
+        AutoH2oMLCARMA(
           
           # Testing Args----
           TrainOnFull = TrainOnFull,

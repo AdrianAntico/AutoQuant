@@ -37,6 +37,7 @@
 #' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
 #' @param NThreads Set to the number of threads you want to dedicate to this function.
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
+#' @param GridTune Keep set to FALSE. I need to investigate how to do this more efficiently with this function
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
@@ -65,6 +66,7 @@
 #'   EvalMetric = "RMSE",
 #'   Timer = TRUE,
 #'   DebugMode = FALSE,
+#'   GridTune = FALSE,
 #'   
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
