@@ -6,12 +6,12 @@
 \usage{
 AutoH2oMLClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  eval_metric = "auc", Trees = 50, MaxMem = "32G",
-  NThreads = max(1, parallel::detectCores() - 2), MaxModelsInGrid = 2,
-  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 3, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, IfSaveModel = "mojo",
-  H2OShutdown = FALSE)
+  ExcludeAlgos = NULL, eval_metric = "auc", Trees = 50,
+  MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2, model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  IfSaveModel = "mojo", H2OShutdown = FALSE)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -25,6 +25,8 @@ AutoH2oMLClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{ExcludeAlgos}{"DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"}
 
@@ -51,8 +53,6 @@ AutoH2oMLClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -100,6 +100,7 @@ TestModel <- AutoH2oMLClassifier(data,
                                  TestData = NULL,
                                  TargetColumnName = "Target",
                                  FeatureColNames = 2:ncol(data),
+                                 ExcludeAlgos = NULL,
                                  eval_metric = "auc",
                                  Trees = 50,
                                  MaxMem = "32G",

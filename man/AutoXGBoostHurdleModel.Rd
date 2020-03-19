@@ -93,7 +93,7 @@ Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
   \code{\link{AutoH2oGBMHurdleModel}},
   \code{\link{AutoH2oGBMRegression}},
   \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoNLS}},
+  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
   \code{\link{AutoXGBoostRegression}}
 }
 \concept{Automated Regression}

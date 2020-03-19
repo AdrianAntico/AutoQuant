@@ -123,6 +123,7 @@ TestModel <- AutoCatBoostMultiClass(data,
 Other Automated MultiClass Classification: \code{\link{AutoH2oDRFMultiClass}},
   \code{\link{AutoH2oGBMMultiClass}},
   \code{\link{AutoH2oGLMMultiClass}},
+  \code{\link{AutoH2oMLMultiClass}},
   \code{\link{AutoXGBoostMultiClass}}
 }
 \author{
