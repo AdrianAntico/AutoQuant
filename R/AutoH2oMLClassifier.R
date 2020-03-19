@@ -9,9 +9,9 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param ExcludeAlgos "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
 #' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
@@ -63,6 +63,7 @@
 #'                                  TestData = NULL,
 #'                                  TargetColumnName = "Target",
 #'                                  FeatureColNames = 2:ncol(data),
+#'                                  ExcludeAlgos = NULL,
 #'                                  eval_metric = "auc",
 #'                                  Trees = 50,
 #'                                  MaxMem = "32G",
@@ -85,6 +86,7 @@ AutoH2oMLClassifier <- function(data,
                                 TestData = NULL,
                                 TargetColumnName = NULL,
                                 FeatureColNames = NULL,
+                                ExcludeAlgos = NULL,
                                 eval_metric = "auc",
                                 Trees = 50,
                                 MaxMem = "32G",
@@ -280,6 +282,7 @@ AutoH2oMLClassifier <- function(data,
   }
   
   # Binary Build Baseline Model----
+  if(!h2o::h2o.xgboost.available()) exclude <- unique(c(ExcludeAlgos,"XGBoost"))
   if(!TrainOnFull) {
     base_model <- h2o::h2o.automl(
       x = FeatureColNames, 
@@ -289,8 +292,8 @@ AutoH2oMLClassifier <- function(data,
       nfolds = 2,
       stopping_metric = "AUTO",
       project_name = "winner",
-      exclude_algos = "XGBoost", 
-      sort_metric = "AUC", 
+      exclude_algos = ExcludeAlgos, 
+      sort_metric = "AUTO", 
       max_models = 20,
       seed = 1)
     base_model <- base_model@leader
@@ -302,8 +305,8 @@ AutoH2oMLClassifier <- function(data,
       nfolds = 2,
       stopping_metric = "AUTO",
       project_name = "winner",
-      exclude_algos = "XGBoost", 
-      sort_metric = "AUC", 
+      exclude_algos = ExcludeAlgos, 
+      sort_metric = "AUTO", 
       max_models = 20,
       seed = 1)
     base_model <- base_model@leader

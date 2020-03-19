@@ -274,7 +274,7 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
 #' @param H2oGLMTestData Test data returned from AutoH2oGLMClassifier
 #' @param XGBoostTestData Test data returned from AutoXGBoostClassifier
 #' @export
-RemixClassificationMetrics <- function(MLModels = c("catboost","h2ogbm","h2odrf","xgboost"),
+RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
                                        TargetVariable = "Value",
                                        Thresholds = seq(0.01,0.99,0.01),
                                        CostMatrix = c(1,0,0,1),
