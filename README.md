@@ -108,6 +108,9 @@ ________________________________________________________________________________
 
 ##### **AutoH2oGLMRegression()**
 <code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
+
+##### **AutoH2oMLRegression()**
+<code>AutoH2oMLRegression()</code> utilizes the H2o AutoML algorithm in the below steps 
   
 #### The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -154,6 +157,9 @@ ________________________________________________________________________________
 
 ##### **AutoH2oGLMClassifier()**
 <code>AutoH2oGLMClassifier()</code> utilizes the H2O generalized linear model algorithm in the below steps
+
+##### **AutoH2oMLClassifier()**
+<code>AutoH2oMLClassifier()</code> utilizes the H2o AutoML algorithm in the below steps 
   
 #### The Auto_Classifier() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -198,6 +204,9 @@ ________________________________________________________________________________
 
 ##### **AutoH2oGLMMultiClass()**
 <code>AutoH2oGLMMultiClass()</code> utilizes the H2O generalized linear model algorithm in the below steps
+
+##### **AutoH2oMLMultiClass()**
+<code>AutoH2oMLMultiClass()</code> utilizes the H2o AutoML algorithm in the below steps
   
 #### The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -384,6 +393,9 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **AutoH2oGLMCARMA()**
 <code>AutoH2oGLMCARMA()</code> utilizes the H2O generalized linear model alorithm
+
+##### **AutoH2oMLCARMA()**
+<code>AutoH2oMLCARMA()</code> utilizes the H2O AutoML alorithm
 
 
 <img src="Images/Catboost30.png" align="center" width="300" />
