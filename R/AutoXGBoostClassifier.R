@@ -1058,7 +1058,7 @@ AutoXGBoostClassifier <- function(data,
     }
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
       ggplot2::geom_bar(stat = "identity") +
