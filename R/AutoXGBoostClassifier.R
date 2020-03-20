@@ -584,11 +584,9 @@ AutoXGBoostClassifier <- function(data,
       
       # Binary Grid Validation Data----
       if (!is.null(TestData)) {
-        calibEval <-
-          data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+        calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
       } else {
-        calibEval <-
-          data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+        calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
       }
       
       # Binary Initialize AUC_List
@@ -1072,6 +1070,9 @@ AutoXGBoostClassifier <- function(data,
       ggplot2::ylab("Value")
   }
   
+  # VI_Plot----
+  VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
+  
   # Binary Return Model Objects----
   if(!exists("FactorLevelsList")) {
     FactorLevelsList <- NULL
@@ -1086,7 +1087,7 @@ AutoXGBoostClassifier <- function(data,
                   EvaluationPlot = EvaluationPlot,
                   EvaluationMetrics = EvaluationMetrics,
                   VariableImportance = VariableImportance,
-                  VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                  VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
                   GridList = grid_params,
                   GridMetrics = GridCollect,
@@ -1101,7 +1102,7 @@ AutoXGBoostClassifier <- function(data,
                   EvaluationPlot = EvaluationPlot,
                   EvaluationMetrics = EvaluationMetrics,
                   VariableImportance = VariableImportance,
-                  VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                  VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
                   ColNames = Names,
                   FactorLevels = FactorLevelsList))

@@ -88,18 +88,24 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 - `AutoXGBoostClassifier()`
 - `AutoH2oGBMClassifier()`
 - `AutoH2oDRFClassifier()`
+- `AutoH2oGLMClassifier()`
+- `AutoH2oMLClassifier()`
 
 ###### MultiClass Classification
 - `AutoCatBoostMultiClass()`
 - `AutoXGBoostMultiClass()`
 - `AutoH2oGBMMultiClass()`
 - `AutoH2oDRFMultiClass()`
+- `AutoH2oGLMMultiClass()`
+- `AutoH2oMLMultiClass()`
 
 ###### Regression
 - `AutoCatBoostRegression()`
 - `AutoH2oGBMRegression()`
 - `AutoH2oDRFRegression()`
 - `AutoXGBoostRegression()`
+- `AutoH2oGLMRegression()`
+- `AutoH2oMLRegression()`
 
 ###### Scoring Functions
 - `AutoCatBoostScoring()`
@@ -114,10 +120,15 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 
 ###### Time Series
 - `AutoTS()`
+- `AutoBanditSarima()`
+- `AutoBanditNNet()`
+- `AutoTBATS()`
 - `AutoCatBoostCARMA()`
 - `AutoXGBoostCARMA()`
 - `AutoH2oDRFCARMA()`
 - `AutoH2oGBMCARMA()`
+- `AutoH2oGLMCARMA()`
+- `AutoH2oMLCARMA()`
 - `TimeSeriesFill()`
 
 ###### Non Linear Regression
@@ -137,18 +148,24 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 #### **AutoXGBoostRegression()**
 #### **AutoH2oGBMRegression()**
 #### **AutoH2oDRFRegression()**
+#### **AutoH2oGLMRegression()**
+#### **AutoH2oMLRegression()**
 The Auto__Regression() set are automated regression modeling function that runs a variety of steps. First, the functions will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation calibration plot, evaluation calibration boxplot, evaluation model metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, grid metrics, grid arguments, and column names used in model fitting. You can fit standard expected value regression (all of them) along with quantile regression (catboost and h2o gbm). 
 
 #### **AutoCatBoostClassifier()** 
 #### **AutoXGBoostClassifier()** 
 #### **AutoH2oGBMClassifier()** 
 #### **AutoH2oDRFClassifier()**
+#### **AutoH2oGLMClassifier()**
+#### **AutoH2oMLClassifier()**
 The Auto__Classifier() set are automated binary classification modeling functions that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, ROC plot, evaluation calibration plot, evaluation metrics, variable importance, partial dependence calibration plots, grid metrics, grid arguments, and column names used in model fitting. 
 
 #### **AutoCatBoostMultiClass()** 
 #### **AutoXGBoostMultiClass()** 
 #### **AutoH2oGBMMultiClass()** 
 #### **AutoH2oDRFMultiClass()**
+#### **AutoH2oGLMMultiClass()**
+#### **AutoH2oMLMultiClass()**
 The Auto__MultiClass() set are automated multiclass modeling functions that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best on holdout test data (a default model is always included in that set). Once the best model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, grid metrics, grid arguments, and column names used in model fitting.
 
 #### **AutoCatBoostScoring()**
@@ -168,6 +185,13 @@ The supervised learning functions handle multiple tasks internally. The **AutoH2
 #### **AutoH2OScoring()**
 This function is the complement of the **AutoH2OModeler**, **AutoKMeans**, and **AutoWord2VecModeler** functions. Specify which rows of your model metadata collection file to run and **AutoH2OScoring** will return a list of predicted values, where each element of the list is a set of predicted values from the model it ran. For the **AutoH2OModeler** you will generate a file called grid_tuned_paths.Rdata which contains the path to your models (among other items) that you can pass along to the **AutoH2OScoring** function to automatically score your models. For the **AutoKMeans** you will generate a file called KMeansModelFile.Rdata which contains the paths to the models for scoring your GLRM and KMeans models. For the **AutoWord2VecModeler** you will generate a file called StoreFile.Rdata which contains the paths to your word2vec models for scoring. In total, the **AutoH2OScoring** function can score: Regression models, Quantile regression Models, Binary classification Models, Multinomial classification Models, Multioutcome multinomial classification models, Generalized low rank dimensionality reduction models, KMeans clustering models, and Word2vec models. 
 
+#### **AutoBanditSarima()**
+#### **AutoBanditNNet()**
+These functions are new and improved versions of the forecast:: models that run under the hood of AutoTS(). There is a Bayesian multi-armed bandit running the search for the best model configurations. You can select how you want the procedure to evalute the models along with many other useful features.
+
+#### **AutoTBATS()**
+This function is similar to the Bandit functions above except this one does not utilize the bandit algo. The inner working of TBATS utilizes forecast::auto.arima() to determine the AR and MA values to pass along to TBATS. Unfortunately, I would prefer if that function used a not stepwise version of arima() so I can test the models under a different evaluation criteria that I've shown to be extremely beneficial. 
+
 #### **AutoTS()**
 Another automated supervised learning function we have is an automated time series modeling function (AutoTS) that optimally builds out seven types of time series forecasting models, compares them on holdout data, picks a winner, rebuilds the winner on full data, and generates the forecasts for the number of desired periods. The intent is to make these processes fast, easy, and of high quality. Every model makes use of the optimal settings of their paramters to give them the best chance of being the best. Each model uses a Box-Cox transformation on the target variable and all predictions are back-transformed. It also compares model-based frequency determination versus user-supplied (for the TimeUnit argument) along with the option to have imputation and outlier replacement conducted. The competing models include: DSHW (Double Seasonal Holt Winters), ARFIMA (Autoregressive Fractional Integrated Moving Average), ARIMA (Autoregressive Integrated Moving Average), ETS (Exponential Smoothing and Holt Winters), TBATS (Exonential Smoothing State Space Model with Box-Cox Transformation, ARMA Errors, Trend and Seasonal Components), TSLM (Time Series Linear Model), NN (Autoregressive Neural Network). 
 
@@ -175,7 +199,9 @@ Another automated supervised learning function we have is an automated time seri
 #### **AutoXGBoostCARMA()**
 #### **AutoH2oDRFCARMA()**
 #### **AutoH2oGBMCARMA()**
-This is a unique function that utilizes machine learning models (currently catboost and xgboost) to generate time series forecasts. It replicates the time series models forecasting approach, where it predicts one step ahead and re-generates the model features, and makes the next forecast, etc. If you need to generate forecasts for say 100,000 unique series, you can  simply supply the grouping variables that identify which series is which, and generate forecasts for every one.
+#### **AutoH2oGLMCARMA()**
+#### **AutoH2oMLCARMA()**
+This is a unique function that utilizes machine learning models to generate time series forecasts. It replicates the time series models forecasting approach, where it predicts one step ahead and re-generates the model features, and makes the next forecast, etc. If you need to generate forecasts for say 100,000 unique series, you can  simply supply the grouping variables that identify which series is which, and generate forecasts for every one. This function is rich in feature engineering parameters.
 
 #### **AutoRecomDataCreate()**
 This function will automatically turn your transactional data into a binary ratings matrix that you supply to the AutoRecommender() function for model building and the AutoRecommenderScoring() function for scoring.
@@ -197,6 +223,7 @@ This automated supervised learning function builds nonlinear regression models f
 Find more demos at **https://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r**
 
 ```{r, fig.show='hold', fig.width=6, fig.height=4}
+print("here yo")
 library(RemixAutoML)
 library(data.table)
 
@@ -226,37 +253,37 @@ data[, Independent_Variable9 := (pnorm(Correl * x1 +
                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
 data[, Independent_Variable10 := (pnorm(Correl * x1 +
                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
-data[, Independent_Variable11 := as.factor(
-  ifelse(Independent_Variable2 < 0.20, "A",
-         ifelse(Independent_Variable2 < 0.40, "B",
-                ifelse(Independent_Variable2 < 0.6,  "C",
-                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data[, Independent_Variable11 := 
+  data.table::fifelse(Independent_Variable2 < 0.20, "A",
+         data.table::fifelse(Independent_Variable2 < 0.40, "B",
+                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E"))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
+data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, 1)]
 
 # Build Models
-TestModel <- RemixAutoML::AutoXGBoostRegression(
+Results <- RemixAutoAI::AutoXGBoostClassifier(
   data,
+  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = 2:12,
+  FeatureColNames = c(2:12),
   IDcols = NULL,
-  TransformNumericColumns = "Adrian",
-  eval_metric = "RMSE",
+  TreeMethod = "hist", 
+  NThreads = max(1L, parallel::detectCores()-2L), 
+  ReturnFactorLevels = TRUE, 
+  MaxModelsInGrid = 3,
+  eval_metric = "AUC",
+  grid_eval_metric = "auc",
   Trees = 50,
-  GridTune = TRUE,
-  grid_eval_metric = "mae",
-  MaxModelsInGrid = 10,
-  NThreads = 8,
-  TreeMethod = "hist",
+  GridTune = FALSE,
   model_path = NULL,
   metadata_path = NULL,
-  ModelID = "FirstModel",
-  NumOfParDepPlots = 3,
-  Verbose = 0,
+  ModelID = "ModelTest",
+  NumOfParDepPlots = 15,
   ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, 
-  ReturnFactorLevels = TRUE,
+  SaveModelObjects = FALSE,
   PassInGrid = NULL)
 
 # Evaluation metrics
@@ -273,6 +300,9 @@ TestModel$GridMetrics
 
 # Transformation Object
 TestModel$TransformationResults
+
+# Variable Importance Plot
+TestModel$VI_Plot
 
 # Factor Levels for Scoring
 TestModel$FactorLevelsList
