@@ -203,9 +203,9 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
       XREGSData <- data.table::fread(file.path(DataPath, XREGSX))
     } else {
       if(!is.null(GroupVariables_)) {
-        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
+        Output <- QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
       } else {
-        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
+        Output <- QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
       }
       Data <- Output$dataFull
       DataForecast <- Output$dataForecastX
