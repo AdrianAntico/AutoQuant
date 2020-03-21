@@ -907,7 +907,7 @@ TimeSeriesDataPrepare <- function(data,
   data <- data[, ..keep]
   
   # Convert to lubridate as_date() or POSIXct----
-  if (!tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour")) {
+  if (!tolower(TimeUnit) %chin% tolower(c("1min","1mins","5min","5mins","10min","10mins","15min","15mins","30min","30mins","hour","hours","hr","hrs"))) {
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
