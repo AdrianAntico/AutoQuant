@@ -48,34 +48,63 @@ AutoBanditSarima(data, TargetVariableName, DateColumnName,
 \description{
 AutoBanditSarima is a multi-armed bandit model testing framework for SARIMA. Randomized probability matching is the underlying bandit algorithm. Model evaluation is done by blending the training error and the validation error from testing the model on out of sample data. The bandit algorithm compares the performance of the current build against the previous builds which starts with the classic auto.arima from the forecast package. Depending on how many lags, moving averages, seasonal lags and moving averages you test the number of combinations of features to test begins to approach 100,000 different combinations of settings. The function tests out transformations, differencing, and variations of the lags and moving averages. The paramter space is broken up into various buckets that are increasing in sophistication. The bandit algorithm samples from those buckets and based on many rounds of testing it determines which buckets to generate samples from more frequently based on the models performance coming from that bucket. All of the models have performance data collected on them and a final rebuild is initiated when a winner is found. The rebuild process begins by retraining the model with the settings that produced the best performance. If the model fails to build, for whatever reason, the next best buildable model is rebuilt.
 }
+\examples{
+\donttest{
+# Pull in data
+data <- data.table::as.data.table(fpp::cafe)
+data.table::setnames(data, "x", "Weekly_Sales")
+data.table::set(data, j = "Date", value = "1982-01-01")
+data.table::setcolorder(data, c(2,1))
+data[, Date := as.POSIXct(Date)]
+
+# "1min"
+data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+
+# "5min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+
+# "10min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+
+# "15min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+
+# "30min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+
+# "hour"
+#data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+
+# Build model
+Output <- RemixAutoML::AutoBanditSarima(
+  data = data,
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 5L,
+  NumFCPeriods = 5L,
+  MaxLags = 5L,
+  MaxSeasonalLags = 0L,
+  MaxMovingAverages = 5L, 
+  MaxSeasonalMovingAverages = 0L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+ MaxNumberModels = 500L,
+ MaxRunTimeMinutes = 30L)
+
+# View output
+Output$Forecast[ModelRank == min(ModelRank)]
+View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
+}
+}
 \seealso{
 Other Time Series: \code{\link{AutoBanditNNet}},
   \code{\link{AutoTBATS}},
   \code{\link{CarmaHoldoutMetrics}},
   \code{\link{DifferenceDataReverse}},
-  \code{\link{DifferenceData}},
-  \code{\link{FinalBuildArfima}},
-  \code{\link{FinalBuildArima}},
-  \code{\link{FinalBuildETS}},
-  \code{\link{FinalBuildNNET}},
-  \code{\link{FinalBuildTBATS}},
-  \code{\link{FinalBuildTSLM}},
-  \code{\link{GenerateParameterGrids}},
-  \code{\link{OptimizeArfima}},
-  \code{\link{OptimizeArima}}, \code{\link{OptimizeETS}},
-  \code{\link{OptimizeNNET}}, \code{\link{OptimizeTBATS}},
-  \code{\link{OptimizeTSLM}},
-  \code{\link{ParallelAutoARIMA}},
-  \code{\link{ParallelAutoArfima}},
-  \code{\link{ParallelAutoETS}},
-  \code{\link{ParallelAutoNNET}},
-  \code{\link{ParallelAutoTBATS}},
-  \code{\link{ParallelAutoTSLM}},
-  \code{\link{RL_Performance}},
-  \code{\link{Regular_Performance}},
-  \code{\link{StackedTimeSeriesEnsembleForecast}},
-  \code{\link{TimeSeriesDataPrepare}},
-  \code{\link{WideTimeSeriesEnsembleForecast}}
+  \code{\link{DifferenceData}}
 }
 \author{
 Adrian Antico

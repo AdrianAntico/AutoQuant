@@ -45,8 +45,7 @@ dataSets <- AutoDataPartition(data,
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
+Other Feature Engineering: \code{\link{AutoLagRollStatsScoring}},
   \code{\link{AutoLagRollStats}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},

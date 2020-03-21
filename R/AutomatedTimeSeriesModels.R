@@ -20,6 +20,56 @@
 #' @param MaxConsecutiveFails When a new best model is found MaxConsecutiveFails resets to zero. Indicated the number of model attemps without a new winner before terminating the procedure.
 #' @param MaxNumberModels Indicate the maximum number of models to test.
 #' @param MaxRunTimeMinutes Indicate the maximum number of minutes to wait for a result.
+#' @examples 
+#' \donttest{
+#' # Pull in data
+#' data <- data.table::as.data.table(fpp::cafe)
+#' data.table::setnames(data, "x", "Weekly_Sales")
+#' data.table::set(data, j = "Date", value = "1982-01-01")
+#' data.table::setcolorder(data, c(2,1))
+#' data[, Date := as.POSIXct(Date)]
+#' 
+#' # "1min"
+#' data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+#' 
+#' # "5min"
+#' #data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+#' 
+#' # "10min"
+#' #data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+#' 
+#' # "15min"
+#' #data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+#' 
+#' # "30min"
+#' #data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+#' 
+#' # "hour"
+#' #data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+#' 
+#' # Build model
+#' Output <- RemixAutoML::AutoBanditSarima(
+#'   data = data,
+#'   TargetVariableName = "Weekly_Sales",
+#'   DateColumnName = "Date",
+#'   TimeAggLevel = "1min",
+#'   EvaluationMetric = "MAE",
+#'   NumHoldOutPeriods = 5L,
+#'   NumFCPeriods = 5L,
+#'   MaxLags = 5L,
+#'   MaxSeasonalLags = 0L,
+#'   MaxMovingAverages = 5L, 
+#'   MaxSeasonalMovingAverages = 0L,
+#'   MaxFourierPairs = 2L,
+#'   TrainWeighting = 0.50,
+#'   MaxConsecutiveFails = 50L,
+#'  MaxNumberModels = 500L,
+#'  MaxRunTimeMinutes = 30L)
+#'
+#'# View output
+#' Output$Forecast[ModelRank == min(ModelRank)]
+#' View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
+#' }
 #' @export
 AutoBanditSarima <- function(data,
                              TargetVariableName,

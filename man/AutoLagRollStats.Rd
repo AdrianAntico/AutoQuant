@@ -107,7 +107,6 @@ data <- AutoLagRollStats(
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
   \code{\link{AutoLagRollStatsScoring}},
   \code{\link{AutoTransformationCreate}},
   \code{\link{AutoTransformationScore}},
