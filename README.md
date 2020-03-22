@@ -1,4 +1,4 @@
-![Version: 0.2.1](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=blue&?style=plastic)
+![Version: 0.2.1](https://img.shields.io/static/v1?label=Version&message=0.2.1&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -335,6 +335,56 @@ ________________________________________________________________________________
 
 ### **AutoBanditSarima()**
 <code>AutoBanditArima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
+
+```
+# Pull in data
+data <- data.table::as.data.table(fpp::cafe)
+data.table::setnames(data, "x", "Weekly_Sales")
+data.table::set(data, j = "Date", value = "1982-01-01")
+data.table::setcolorder(data, c(2,1))
+data[, Date := as.POSIXct(Date)]
+
+# "1min"
+data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+
+# "5min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+
+# "10min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+
+# "15min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+
+# "30min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+
+# "hour"
+#data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+
+# Build model
+Output <- RemixAutoML::AutoBanditSarima(
+  data = data,
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 5L,
+  NumFCPeriods = 5L,
+  MaxLags = 5L,
+  MaxSeasonalLags = 0L,
+  MaxMovingAverages = 5L, 
+  MaxSeasonalMovingAverages = 0L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 500L,
+  MaxRunTimeMinutes = 30L)
+
+# View output
+Output$Forecast[ModelRank == min(ModelRank)]
+View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
+```
 
 ### **AutoBanditNNet()**
 Same as AutoBanditArima except it uses the nnetar model behind the scenes.
