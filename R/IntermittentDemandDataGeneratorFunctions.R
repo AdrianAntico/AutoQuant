@@ -208,7 +208,7 @@ IntermittentDemandDataGenerator <- function(data,
   
   # Print Steps----
   if(PrintSteps) {
-    print("Running DT_GDL_Feature_Engineering()") 
+    print("Running AutoLagRollStats()") 
   }
   
   # Define targets for AutoLagRollStats----
@@ -277,6 +277,11 @@ IntermittentDemandDataGenerator <- function(data,
   data.table::set(MetaData, j = "GroupVar", value = as.character(MetaData[["GroupVar"]]))
   data.table::set(datax, j = "GroupVar", value = as.character(datax[["GroupVar"]]))
   datax <- merge(x = datax, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
+  
+  # Print Steps----
+  if(PrintSteps) {
+    print("ParallelBuilding()") 
+  }
   
   # Parallelize Build----
   cl <- parallel::makePSOCKcluster(cores)
