@@ -588,7 +588,7 @@ ID_TrainingDataGenerator2 <- function(data,
     data.table::setnames(temp, names(temp)[1L], eval(TargetVariableName[1L]))
     data.table::setnames(temp, names(temp)[2L], eval(TargetVariableName[2L]))
     data.table::setnames(temp, names(temp)[3L], eval(TargetVariableName[3L]))
-    data.table::set(temp, data.table::fifelse(temp[[eval(TargetVariableName)]] == 0, 1, 0))
+    data.table::set(temp, j = names(temp)[1L], value = data.table::fifelse(temp[[eval(TargetVariableName)]] == 0, 1, 0))
     
     # Combine data sets----
     counter <- counter + 1L
