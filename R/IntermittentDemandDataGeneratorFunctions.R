@@ -275,7 +275,8 @@ IntermittentDemandDataGenerator <- function(data,
   MetaData <- MetaData[, ID := runif(MetaData[,.N])][order(ID)][, ID := NULL]
   MetaData[, SelectRows := sample(c(seq_len(cores)), size = MetaData[,.N], replace = TRUE, prob = c(rep(1/cores, cores)))]
   data.table::set(MetaData, j = "GroupVar", value = as.character(MetaData[["GroupVar"]]))
-  datax <- merge(x = data.table::set(datax, j = "GroupVar", value = as.character(datax[["GroupVar"]])), y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
+  data.table::set(datax, j = "GroupVar", value = as.character(datax[["GroupVar"]]))
+  datax <- merge(x = datax, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
   
   # Parallelize Build----
   cl <- parallel::makePSOCKcluster(cores)
