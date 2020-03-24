@@ -773,10 +773,10 @@ ID_BuildTrainDataSets <- function(MetaData,
         }
       } else if(Case == 2L) {
         if(i == 1L) {
-          countData <- SampleData$data
+          countData <- SampleData
         } else {
           countData <- data.table::rbindlist(
-            list(countData, SampleData$data), fill = TRUE)
+            list(countData, SampleData), fill = TRUE)
         }
       }
     }
