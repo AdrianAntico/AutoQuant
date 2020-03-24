@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Feature Engineering
 #' @param data This is your transactional level data
+#' @param Case Currently set as 1 for forecasting and 2 for other
 #' @param RestrictDateRange Set to TRUE to only pull samples by entity within the entity life (not beyond)
 #' @param FC_Periods The number of future periods to collect data on
 #' @param SaveData Set to TRUE to save the MetaData and final modeling data sets to file
@@ -62,6 +63,7 @@
 #' @export
 IntermittentDemandDataGenerator <- function(data,
                                             RestrictDateRange = TRUE,
+                                            Case = 2L,
                                             FC_Periods = 52,
                                             SaveData = FALSE,
                                             FilePath = NULL,
@@ -279,6 +281,7 @@ IntermittentDemandDataGenerator <- function(data,
       ModelDataSets <- ID_BuildTrainDataSets(
         MetaData = MetaData[SelectRows == i],
         data = datax[SelectRows == i],
+        Case = 2L,
         TargetVariableName = TargetVariableName,
         DateVariableName = DateVariableName,
         GroupingVariables = GroupingVariables,

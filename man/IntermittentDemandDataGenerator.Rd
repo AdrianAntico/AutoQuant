@@ -5,10 +5,10 @@
 \title{IntermittentDemandDataGenerator for frequency and size data sets}
 \usage{
 IntermittentDemandDataGenerator(data, RestrictDateRange = TRUE,
-  FC_Periods = 52, SaveData = FALSE, FilePath = NULL,
+  Case = 2L, FC_Periods = 52, SaveData = FALSE, FilePath = NULL,
   TargetVariableName = "qty", DateVariableName = "date",
-  TimeUnit = "raw", TimeGroups = c("raw", "day", "week"),
-  GroupingVariables = "sku", HierarchyGroupVars = NULL,
+  GDL_Targets = NULL, TimeUnit = "raw", TimeGroups = c("raw", "day",
+  "week"), GroupingVariables = "sku", HierarchyGroupVars = NULL,
   MinTimeWindow = 1, MinTxnRecords = 2, Lags = 1:7,
   MovingAverages = seq(7, 28, 7), TimeTrendVariable = TRUE,
   CalendarVariables = c("wday", "mday", "yday", "week", "isoweek",
@@ -21,6 +21,8 @@ IntermittentDemandDataGenerator(data, RestrictDateRange = TRUE,
 
 \item{RestrictDateRange}{Set to TRUE to only pull samples by entity within the entity life (not beyond)}
 
+\item{Case}{Currently set as 1 for forecasting and 2 for other}
+
 \item{FC_Periods}{The number of future periods to collect data on}
 
 \item{SaveData}{Set to TRUE to save the MetaData and final modeling data sets to file}
@@ -30,6 +32,8 @@ IntermittentDemandDataGenerator(data, RestrictDateRange = TRUE,
 \item{TargetVariableName}{The name of your target variable that represents demand}
 
 \item{DateVariableName}{The date variable of the demand instances}
+
+\item{GDL_Targets}{The variable names to run through AutoLagRollStats()}
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "day", "week", "month", "quarter", "year"}
 
@@ -70,6 +74,7 @@ DataSets <- IntermittentDemandDataGenerator(data,
                                             FilePath = NULL,
                                             TargetVariableName = "qty",
                                             DateVariableName = "date",
+                                            GDL_Targets = NULL,
                                             GroupingVariables = "sku",
                                             MinTimeWindow = 1,
                                             MinTxnRecords = 2,
