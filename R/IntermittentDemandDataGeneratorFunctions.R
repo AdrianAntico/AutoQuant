@@ -591,10 +591,10 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Merge Features and Targets----
     temp <- cbind(binarytarget, timetoevent, outcome, features)
-    data.table::setnames(temp, names(temp)[1L], eval(TargetVariableName[1L]))
-    data.table::setnames(temp, names(temp)[2L], eval(TargetVariableName[2L]))
-    data.table::setnames(temp, names(temp)[3L], eval(TargetVariableName[3L]))
-    data.table::set(temp, j = names(temp)[1L], value = data.table::fifelse(temp[[eval(TargetVariableName[1L])]] == 0, 1, 0))
+    data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
+    data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
+    data.table::setnames(temp, names(temp)[3L], "Outcome")
+    data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
     
     # Combine data sets----
     counter <- counter + 1L
