@@ -146,9 +146,11 @@ IntermittentDemandDataGenerator <- function(data,
   }
   
   # Ensure datax is aggregated to proper time unit----
-  if(TimeUnit != "raw") {
-    datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), 
-                   by = c(eval(GroupingVariables), eval(DateVariableName))]
+  if(Case == 1L) {
+    if(TimeUnit != "raw") {
+      datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), 
+                     by = c(eval(GroupingVariables), eval(DateVariableName))]
+    }
   }
   
   # Print Steps----
@@ -159,7 +161,6 @@ IntermittentDemandDataGenerator <- function(data,
   # Generate Metadata----
   MetaData <- ID_MetadataGenerator(
     data = datax,
-    TargetVariableName = TargetVariableName,
     DateVariableName = DateVariableName,
     GroupingVariables = "GroupVar",
     MinTimeWindow = MinTimeWindow,
@@ -210,13 +211,20 @@ IntermittentDemandDataGenerator <- function(data,
     print("Running DT_GDL_Feature_Engineering()") 
   }
   
+  # Define targets for AutoLagRollStats----
+  if(Case == 1L) {
+    targs <- c(eval(TargetVariableName))
+  } else if(Case == 2L) {
+    targs <- c(eval(TargetVariableName[1L:2L]))
+  }
+  
   # Add in the time varying features----
   datax <- AutoLagRollStats(
     
     # Data
     data                 = datax,
     DateColumn           = eval(DateVariableName),
-    Targets              = c(eval(TargetVariableName)),
+    Targets              = targs,
     HierarchyGroups      = NULL,
     IndependentGroups    = "GroupVar",
     
