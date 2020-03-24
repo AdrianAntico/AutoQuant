@@ -284,6 +284,8 @@ IntermittentDemandDataGenerator <- function(data,
   }
   
   # Parallelize Build----
+  print(names(MetaData))
+  print(MetaData[SelectRows %in% c(1,2,3,4,5,6)])
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   Results <- foreach::foreach(
