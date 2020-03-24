@@ -330,6 +330,11 @@ IntermittentDemandDataGenerator <- function(data,
   parallel::stopCluster(cl)
   rm(cl)
   
+  # Print Steps----
+  if(PrintSteps) {
+    print("Final Data Wrangling") 
+  }
+  
   # Back-transform GroupingVariables----
   if(length(ReverseGroupingVariables) > 1) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
