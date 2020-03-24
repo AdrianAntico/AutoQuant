@@ -610,8 +610,8 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Time to event target variable data----
     timetoevent <- data[get(DateVariableName)-86400*eval(tar) > eval(RandomStartDate) &
-                          get(DateVariableName)-86400*(eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])]
-    outcome <- data[1L, get(TargetVariableName[3L])]
+                          get(DateVariableName)-86400*(eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])][1]
+    outcome <- as.character(data[1L, get(TargetVariableName[3L])])
     
     # Add in the time since last demand instance from RandomStartDate----
     histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
