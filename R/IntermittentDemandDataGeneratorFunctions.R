@@ -286,36 +286,64 @@ IntermittentDemandDataGenerator <- function(data,
   # Parallelize Build----
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = unique(MetaData[["SelectRows"]]),
-    .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE),x,...,SIMPLIFY=FALSE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
-      
-      # Loops----
-      ModelDataSets <- ID_BuildTrainDataSets(
-        MetaData = MetaData[SelectRows == eval(i)],
-        data = datax[SelectRows == eval(i)],
-        Case = 2L,
-        TargetVariableName = TargetVariableName,
-        DateVariableName = DateVariableName,
-        GroupingVariables = GroupingVariables,
-        FC_Periods = FC_Periods,
-        TimeUnit = TimeUnit,
-        PowerRate = PowerRate,
-        SampleRate = SampleRate,
-        TargetWindowSamples = TargetWindowSamples)
-      
-      # Store individual file outputs----
-      if(Case == 1L) {
-        CountModelData <- ModelDataSets$CountModelData
-        SizeModelData <- ModelDataSets$SizeModelData
-        list(CountModelData = CountModelData, SizeModelData = SizeModelData)
-      } else if(Case == 2L) {
+  
+  if(Case == 1L) {
+    Results <- foreach::foreach(
+      i = unique(MetaData[["SelectRows"]]),
+      .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE),x,...,SIMPLIFY=FALSE),
+      .multicombine = TRUE,
+      .packages = packages) %dopar% {
+        
+        # Loops----
+        ModelDataSets <- ID_BuildTrainDataSets(
+          MetaData = MetaData[SelectRows == eval(i)],
+          data = datax[SelectRows == eval(i)],
+          Case = 2L,
+          TargetVariableName = TargetVariableName,
+          DateVariableName = DateVariableName,
+          GroupingVariables = GroupingVariables,
+          FC_Periods = FC_Periods,
+          TimeUnit = TimeUnit,
+          PowerRate = PowerRate,
+          SampleRate = SampleRate,
+          TargetWindowSamples = TargetWindowSamples)
+        
+        # Store individual file outputs----
+        if(Case == 1L) {
+          CountModelData <- ModelDataSets$CountModelData
+          SizeModelData <- ModelDataSets$SizeModelData
+          list(CountModelData = CountModelData, SizeModelData = SizeModelData)
+        } else if(Case == 2L) {
+          CountModelData <- ModelDataSets$CountModelData
+          list(CountModelData = CountModelData)
+        }
+      }
+  } else if(Case == 2L) {
+    Results <- foreach::foreach(
+      i = unique(MetaData[["SelectRows"]]),
+      .combine = data.table::rbindlist(list(...), fill = TRUE),
+      .multicombine = TRUE,
+      .packages = packages) %dopar% {
+        
+        # Loops----
+        ModelDataSets <- ID_BuildTrainDataSets(
+          MetaData = MetaData[SelectRows == eval(i)],
+          data = datax[SelectRows == eval(i)],
+          Case = 2L,
+          TargetVariableName = TargetVariableName,
+          DateVariableName = DateVariableName,
+          GroupingVariables = GroupingVariables,
+          FC_Periods = FC_Periods,
+          TimeUnit = TimeUnit,
+          PowerRate = PowerRate,
+          SampleRate = SampleRate,
+          TargetWindowSamples = TargetWindowSamples)
+        
+        # Store individual file outputs----
         CountModelData <- ModelDataSets$CountModelData
         list(CountModelData = CountModelData)
       }
-    }
+  }
   
   # Remove Zeros----
   if(Case == 1L) {
