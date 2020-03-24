@@ -321,7 +321,7 @@ IntermittentDemandDataGenerator <- function(data,
   } else if(Case == 2L) {
     Results <- foreach::foreach(
       i = unique(MetaData[["SelectRows"]]),
-      .combine = data.table::rbindlist(list(...), fill = TRUE),
+      .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
         
