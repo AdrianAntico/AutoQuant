@@ -570,7 +570,8 @@ ID_TrainingDataGenerator2 <- function(data,
     }
     
     # Time to event target variable data----
-    timetoevent <- data[1L, get(TargetVariableName[2L])]
+    timetoevent <- data[get(DateVariableName)-86400*eval(tar) > eval(RandomStartDate) &
+                          get(DateVariableName)-86400*(eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])]
     outcome <- data[1L, get(TargetVariableName[3L])]
     
     # Add in the time since last demand instance from RandomStartDate----
@@ -692,7 +693,7 @@ ID_BuildTrainDataSets <- function(MetaData,
       
       # Set Target Window Max Sample Window----
       TargetWindowMax <- ceiling(as.numeric(difftime(
-              lubridate::floor_date(MetaData[eval(GroupingVariables) == eval(level), "MaxDate"][[1]], unit = TimeUnit), 
+              lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1]], unit = TimeUnit), 
               RandomStartDate, 
               units = TimeUnit)))
       
