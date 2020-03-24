@@ -215,7 +215,7 @@ IntermittentDemandDataGenerator <- function(data,
   if(Case == 1L) {
     targs <- c(eval(TargetVariableName))
   } else if(Case == 2L) {
-    targs <- c(eval(TargetVariableName[1L:2L]))
+    targs <- c(eval(TargetVariableName[1L]))
   }
   
   # Add in the time varying features----
@@ -282,7 +282,7 @@ IntermittentDemandDataGenerator <- function(data,
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   Results <- foreach::foreach(
-    i = seq_len(cores),
+    i = unique(MetaData[[SelectRows]]),
     .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE),x,...,SIMPLIFY=FALSE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
