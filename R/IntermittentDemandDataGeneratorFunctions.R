@@ -665,11 +665,10 @@ ID_BuildTrainDataSets <- function(MetaData,
       }
       
       # Set Target Window Max Sample Window----
-      TargetWindowMax <- ceiling(min(as.numeric(difftime(
+      TargetWindowMax <- ceiling(as.numeric(difftime(
               lubridate::floor_date(MetaData[eval(GroupingVariables) == eval(level), "MaxDate"][[1]], unit = TimeUnit), 
               RandomStartDate, 
-              units = TimeUnit)),
-          FC_Periods))
+              units = TimeUnit)))
       
       # Set Target Window----
       TargetWindow <- sample(x = seq_len(TargetWindowMax),
@@ -696,29 +695,52 @@ ID_BuildTrainDataSets <- function(MetaData,
       }
       
       # Build data sets----
-      if(i == 1L) {
-        countData <- SampleData$CountData
-        sizeData <- SampleData$SizeData
-      } else {
-        countData <- data.table::rbindlist(
-          list(countData, SampleData$CountData), fill = TRUE)
-        sizeData <- data.table::rbindlist(
-          list(sizeData, SampleData$SizeData), fill = TRUE)
+      if(Case == 1L) {
+        if(i == 1L) {
+          countData <- SampleData$CountData
+          sizeData <- SampleData$SizeData
+        } else {
+          countData <- data.table::rbindlist(
+            list(countData, SampleData$CountData), fill = TRUE)
+          sizeData <- data.table::rbindlist(
+            list(sizeData, SampleData$SizeData), fill = TRUE)
+        }
+      } else if(Case == 2L) {
+        if(i == 1L) {
+          countData <- SampleData$data
+        } else {
+          countData <- data.table::rbindlist(
+            list(countData, SampleData$data), fill = TRUE)
+        }
       }
     }
     
     # Collect samples----
-    if(j == 1L) {
-      CMD <- countData
-      SMD <- sizeData
-    } else {
-      CMD <- data.table::rbindlist(list(CMD,countData), fill = TRUE)
-      SMD <- data.table::rbindlist(list(SMD,sizeData), fill = TRUE)
+    if(Case == 1L) {
+      if(j == 1L) {
+        CMD <- countData
+        SMD <- sizeData
+      } else {
+        CMD <- data.table::rbindlist(list(CMD,countData), fill = TRUE)
+        SMD <- data.table::rbindlist(list(SMD,sizeData), fill = TRUE)
+      }
+    } else if(Case == 2L) {
+      if(j == 1L) {
+        CMD <- countData
+      } else {
+        CMD <- data.table::rbindlist(list(CMD,countData), fill = TRUE)
+      }
     }
   }
   
   # Return data----
-  return(list(
-    CountModelData = CMD, 
-    SizeModelData = SMD))
+  if(Case == 1L) {
+    return(list(
+      CountModelData = CMD, 
+      SizeModelData = SMD))
+  } else if(Case == 2L) {
+    return(list(
+      CountModelData = CMD, 
+      SizeModelData = NULL))
+  }
 }
