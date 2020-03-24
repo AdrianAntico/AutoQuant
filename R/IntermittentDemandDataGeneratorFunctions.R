@@ -289,7 +289,7 @@ IntermittentDemandDataGenerator <- function(data,
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   Results <- foreach::foreach(
-    i = unique(MetaData[[SelectRows]]),
+    i = unique(MetaData[["SelectRows"]]),
     .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE),x,...,SIMPLIFY=FALSE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
