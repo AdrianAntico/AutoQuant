@@ -294,8 +294,8 @@ IntermittentDemandDataGenerator <- function(data,
       
       # Loops----
       ModelDataSets <- ID_BuildTrainDataSets(
-        MetaData = MetaData[SelectRows == i],
-        data = datax[SelectRows == i],
+        MetaData = MetaData[SelectRows == eval(i)],
+        data = datax[SelectRows == eval(i)],
         Case = 2L,
         TargetVariableName = TargetVariableName,
         DateVariableName = DateVariableName,
