@@ -300,15 +300,24 @@ IntermittentDemandDataGenerator <- function(data,
         TargetWindowSamples = TargetWindowSamples)
       
       # Store individual file outputs----
-      CountModelData <- ModelDataSets$CountModelData
-      SizeModelData <- ModelDataSets$SizeModelData
-      list(CountModelData = CountModelData, SizeModelData = SizeModelData)
+      if(Case == 1L) {
+        CountModelData <- ModelDataSets$CountModelData
+        SizeModelData <- ModelDataSets$SizeModelData
+        list(CountModelData = CountModelData, SizeModelData = SizeModelData)
+      } else if(Case == 2L) {
+        CountModelData <- ModelDataSets$CountModelData
+        list(CountModelData = CountModelData)
+      }
     }
   
   # Remove Zeros----
-  CountModelData <- Results$CountModelData
-  SizeModelData <- Results$SizeModelData
-  SizeModelData <- SizeModelData[Size != 0]
+  if(Case == 1L) {
+    CountModelData <- Results$CountModelData
+    SizeModelData <- Results$SizeModelData
+    SizeModelData <- SizeModelData[Size != 0]
+  } else if(Case == 2L) {
+    CountModelData <- Results$CountModelData
+  }
   
   # shut down parallel objects----
   parallel::stopCluster(cl)
@@ -317,10 +326,10 @@ IntermittentDemandDataGenerator <- function(data,
   # Back-transform GroupingVariables----
   if(length(ReverseGroupingVariables) > 1) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-    SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    if(exists("SizeModelData")) SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
   } else {
     data.table::setnames(CountModelData, eval(GroupingVariables), eval(ReverseGroupingVariables))
-    data.table::setnames(SizeModelData, eval(GroupingVariables), eval(ReverseGroupingVariables))
+    if(exists("SizeModelData")) data.table::setnames(SizeModelData, eval(GroupingVariables), eval(ReverseGroupingVariables))
   }
   
   # Save Data----
@@ -328,18 +337,22 @@ IntermittentDemandDataGenerator <- function(data,
     
     # Save modeling data sets----
     data.table::fwrite(CountModelData, file = file.path(FilePath, "CountModelData.csv"))
-    data.table::fwrite(SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
+    if(exists("SizeModelData")) data.table::fwrite(SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
     
     # Save column names for modeling data----
     CountPredNames <- names(CountModelData)
-    SizeModelData <- names(SizeModelData)
+    if(exists("SizeModelData")) SizeModelData <- names(SizeModelData)
     save(CountPredNames, file = file.path(FilePath,"CountPredNames.Rdata"))
-    save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
+    if(exists("SizeModelData")) save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
   }
   
   # Return CountModelData and SizeModelData----
-  return(list(CountData = CountModelData, 
-              SizeData = SizeModelData))
+  if(Case == 1L) {
+    return(list(CountData = CountModelData, 
+                SizeData = SizeModelData))
+  } else if(Case == 2L) {
+    return(list(CountData = CountModelData))
+  }
 }
 
 #' ID_MetadataGenerator for summary metadata for transactional data
