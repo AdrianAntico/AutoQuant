@@ -280,7 +280,7 @@ IntermittentDemandDataGenerator <- function(data,
   
   # Print Steps----
   if(PrintSteps) {
-    print("ParallelBuilding()") 
+    print("Running Parallel Build") 
   }
   
   # Parallelize Build----
