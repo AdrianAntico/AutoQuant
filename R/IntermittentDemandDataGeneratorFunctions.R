@@ -458,27 +458,21 @@ ID_MetadataGenerator <- function(data,
   }
   
   # Gather second to last distinct date by GroupingVariable----
-  Step2 <- data[, .(.N, get(DateVariableName)), by = list(GroupVar)]
-  data.table::setorderv(Step2, c("GroupVar","V2"), c(1,-1))
-  Step2 <- Step2[, sum(N), by = c(eval(GroupingVariables),"V2")]
-  Step3 <- Step2[, txn := .N:1, by = list(GroupVar)]
-  Step4 <- Step3[txn == MinTxnRecords]
-  Step4[, txn := NULL]
-  data.table::setnames(Step4,c("V1","V2"),c("Txns","MinDate"))
-  keep <- c(eval(GroupingVariables),"MinDate")
-  Step5 <- Step4[, ..keep]
+  Step2 <- data[, .(.N, get(DateVariableName)), by = list(GroupVar)][order(GroupVar,-V2)][, sum(N), by = c(eval(GroupingVariables),"V2")][, txn := .N:1, by = list(GroupVar)][txn == MinTxnRecords][, txn := NULL]
+  data.table::setnames(Step2,c("V1","V2"),c("Txns","MinDate"))
+  Step2 <- Step2[, .SD, .SDcols = c(eval(GroupingVariables),"MinDate")]
   
   # Merge, change names, filter out infrequent levels----
-  BaseTable2 <- merge(Step5, Step1, by = eval(GroupingVariables), all = FALSE)
+  BaseTable2 <- merge(Step2, Step1, by = eval(GroupingVariables), all = FALSE)
   data.table::setnames(BaseTable2, c("N","V2"), c("Txns", "MaxDate"))
   if(tolower(DateInterval) == "raw") {
-    BaseTable3 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = "day"))][order(-Txns)]
+    BaseTable2 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = "day"))][order(-Txns)]
   } else {
-    BaseTable3 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = DateInterval))][order(-Txns)]  
+    BaseTable2 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = DateInterval))][order(-Txns)]  
   }
   
   # Remove levels with less than MinTxnRecords distinct past dates----
-  MetaData <- BaseTable3[Txns >= eval(MinTxnRecords)][Date_Range > 0]
+  MetaData <- BaseTable2[Txns >= eval(MinTxnRecords)][Date_Range > 0]
   
   # Return data----
   return(MetaData)
@@ -635,8 +629,7 @@ ID_TrainingDataGenerator2 <- function(data,
           , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
         
         # Remove meta data for feature creation set----
-        features <- histDemandRaw[order(-get(DateVariableName))][
-          , paste0(eval(DateVariableName)) := NULL][1,]
+        features <- histDemandRaw[order(-get(DateVariableName))][1,]
         data.table::set(features, j = "FC_Window", value = tar)
         
         # Merge Features and Targets----
