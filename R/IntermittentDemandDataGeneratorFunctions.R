@@ -609,9 +609,11 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-        timetoevent <- data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1]
+        temp <- data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
+        timetoevent <- temp[length(temp)]
       } else {
-        timetoevent <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1]
+        temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
+        timetoevent <- temp[length(temp)]
       }
       
       # Build records----
