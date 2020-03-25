@@ -615,12 +615,21 @@ ID_TrainingDataGenerator2 <- function(data,
     if(is.finite(binarytarget)) {
       
       # Time to event target variable data----
-      timetoevent <- data[get(DateVariableName)-86400 * eval(tar) > eval(RandomStartDate) &
-                            get(DateVariableName)-86400 * (eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])][1]
+      if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
+        timetoevent <- data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1]
+      } else {
+        timetoevent <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1]
+      }
       
       # Build records----
-      if(!is.numeric(timetoevent) & !is.integer(timetoevent)) {
-        outcome <- as.character(data[1L, get(TargetVariableName[3L])])
+      if(is.numeric(timetoevent) | is.integer(timetoevent)) {
+        
+        # Time to event target variable data----
+        if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
+          outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
+        } else {
+          outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
+        }
         
         # Add in the time since last demand instance from RandomStartDate----
         histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
