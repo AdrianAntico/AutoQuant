@@ -371,7 +371,6 @@ IntermittentDemandDataGenerator <- function(data,
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     if(exists("SizeModelData")) SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
   } else {
-    print(CountModelData)
     data.table::setnames(CountModelData, "GroupVar", eval(ReverseGroupingVariables))
     if(exists("SizeModelData")) data.table::setnames(SizeModelData, "GroupVar", eval(ReverseGroupingVariables))
   }
