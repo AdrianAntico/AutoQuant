@@ -315,7 +315,8 @@ IntermittentDemandDataGenerator <- function(data,
             list(CountModelData = CountModelData, SizeModelData = SizeModelData)
           } else if(Case == 2L) {
             CountModelData <- ModelDataSets$CountModelData
-            list(CountModelData = CountModelData)
+            list(CountModelData = CountModelData,
+                 SizeModelData = SizeModelData)
           }
         }
       }
@@ -353,7 +354,7 @@ IntermittentDemandDataGenerator <- function(data,
     SizeModelData <- Results$SizeModelData
     SizeModelData <- SizeModelData[Size != 0]
   } else if(Case == 2L) {
-    CountModelData <- Results$CountModelData
+    CountModelData <- Results
   }
   
   # shut down parallel objects----
