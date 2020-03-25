@@ -286,11 +286,10 @@ IntermittentDemandDataGenerator <- function(data,
   # Parallelize Build----
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
-  
   if(Case == 1L) {
     Results <- foreach::foreach(
       i = unique(MetaData[["SelectRows"]]),
-      .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE),x,...,SIMPLIFY=FALSE),
+      .combine = function(x, ...) mapply(function(...) data.table::rbindlist(list(...), use.names = TRUE, fill = TRUE), x, ..., SIMPLIFY = FALSE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
         
@@ -321,7 +320,7 @@ IntermittentDemandDataGenerator <- function(data,
   } else if(Case == 2L) {
     Results <- foreach::foreach(
       i = unique(MetaData[["SelectRows"]]),
-      .combine = function(...) data.table::rbindlist(list(...)),
+      .combine = function(...) data.table::rbindlist(list(...), use.names = TRUE, fill = TRUE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
         
