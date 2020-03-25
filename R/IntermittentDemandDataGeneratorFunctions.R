@@ -600,15 +600,15 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Classification target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-      binarytarget  <- min(data[get(DateVariableName) >= eval(RandomStartDate) & get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate), 
-                                get(TargetVariableName[1L])], na.rm = TRUE)
+      binarytarget <- min(data[get(DateVariableName) >= eval(RandomStartDate) & get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate), 
+                               get(TargetVariableName[1L])], na.rm = TRUE)
     } else {
-      binarytarget  <- min(data[get(DateVariableName) >= eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), 
-                                get(TargetVariableName[1L])], na.rm = TRUE)
+      binarytarget <- min(data[get(DateVariableName) >= eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), 
+                               get(TargetVariableName[1L])], na.rm = TRUE)
     }
     
     # Build records----
-    if(!binarytarget == inf) {
+    if(is.finite(binarytarget)) {
       
       # Time to event target variable data----
       timetoevent <- data[get(DateVariableName)-86400*eval(tar) > eval(RandomStartDate) &
