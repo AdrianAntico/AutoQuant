@@ -284,7 +284,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   
   # Parallelize Build----
-  cl <- max(1L, min(cores, length(unique(MetaData[["SelectRows"]]))))
+  cl <- max(1L, min(as.numeric(cores), length(unique(MetaData[["SelectRows"]]))))
   doParallel::registerDoParallel(cl)
   if(Case == 1L) {
     Results <- foreach::foreach(
