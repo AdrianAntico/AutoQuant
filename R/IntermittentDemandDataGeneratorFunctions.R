@@ -294,7 +294,7 @@ IntermittentDemandDataGenerator <- function(data,
       .packages = packages) %dopar% {
         
         # Loops----
-        ModelDataSets <- ID_BuildTrainDataSets(
+        ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
           data = datax[SelectRows == eval(i)],
           Case = 2L,
@@ -305,16 +305,18 @@ IntermittentDemandDataGenerator <- function(data,
           TimeUnit = TimeUnit,
           PowerRate = PowerRate,
           SampleRate = SampleRate,
-          TargetWindowSamples = TargetWindowSamples)
+          TargetWindowSamples = TargetWindowSamples)}, error = function(x) NULL)
         
         # Store individual file outputs----
-        if(Case == 1L) {
-          CountModelData <- ModelDataSets$CountModelData
-          SizeModelData <- ModelDataSets$SizeModelData
-          list(CountModelData = CountModelData, SizeModelData = SizeModelData)
-        } else if(Case == 2L) {
-          CountModelData <- ModelDataSets$CountModelData
-          list(CountModelData = CountModelData)
+        if(!is.null(ModelDataSets)) {
+          if(Case == 1L) {
+            CountModelData <- ModelDataSets$CountModelData
+            SizeModelData <- ModelDataSets$SizeModelData
+            list(CountModelData = CountModelData, SizeModelData = SizeModelData)
+          } else if(Case == 2L) {
+            CountModelData <- ModelDataSets$CountModelData
+            list(CountModelData = CountModelData)
+          }
         }
       }
   } else if(Case == 2L) {
@@ -325,7 +327,7 @@ IntermittentDemandDataGenerator <- function(data,
       .packages = packages) %dopar% {
         
         # Loops----
-        ModelDataSets <- ID_BuildTrainDataSets(
+        ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
           data = datax[SelectRows == eval(i)],
           Case = 2L,
@@ -336,11 +338,13 @@ IntermittentDemandDataGenerator <- function(data,
           TimeUnit = TimeUnit,
           PowerRate = PowerRate,
           SampleRate = SampleRate,
-          TargetWindowSamples = TargetWindowSamples)
+          TargetWindowSamples = TargetWindowSamples)}, error = function(x) NULL)
         
         # Store individual file outputs----
-        CountModelData <- ModelDataSets$CountModelData
-        list(CountModelData = CountModelData)
+        if(!is.null(ModelDataSets)) {
+          CountModelData <- ModelDataSets$CountModelData
+          list(CountModelData = CountModelData)
+        }
       }
   }
   
