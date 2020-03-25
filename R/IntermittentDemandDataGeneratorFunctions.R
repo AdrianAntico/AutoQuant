@@ -342,8 +342,7 @@ IntermittentDemandDataGenerator <- function(data,
         
         # Store individual file outputs----
         if(!is.null(ModelDataSets)) {
-          CountModelData <- ModelDataSets$CountModelData
-          list(CountModelData = CountModelData)
+          ModelDataSets$CountModelData
         }
       }
   }
