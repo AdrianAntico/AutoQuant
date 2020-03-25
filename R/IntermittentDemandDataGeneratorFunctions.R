@@ -743,7 +743,7 @@ ID_BuildTrainDataSets <- function(MetaData,
       }
       
       # Set Target Window Max Sample Window----
-      TargetWindowMax <- max(ceiling(as.numeric(difftime(
+      TargetWindowMax <- min(ceiling(as.numeric(difftime(
               lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1]], unit = TimeUnit), 
               RandomStartDate, 
               units = TimeUnit))),
