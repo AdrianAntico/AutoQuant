@@ -597,7 +597,7 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Classification target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate), 
+      binarytarget <- min(data[get(DateVariableName)+86400 > eval(RandomStartDate) & get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate), 
                                get(TargetVariableName[1L])], na.rm = TRUE)
     } else {
       binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), 
