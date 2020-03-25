@@ -715,17 +715,17 @@ ID_BuildTrainDataSets <- function(MetaData,
     level_data <- data[get(GroupingVariables) == eval(level)]
     
     # Set date range----
-    DateRange <- MetaData[get(GroupingVariables) == eval(level), "Date_Range"][[1]]
+    DateRange <- MetaData[GroupVar == eval(level), "Date_Range"][[1]]
     
     # Data generator
     for (i in seq_len(iterations)) {
       
       # Set Random Starting Date----
       if(lubridate::is.POSIXct(MetaData$MinDate[1])) {
-        RandomStartDate  <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
+        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
           DateUnit * ceiling(sample(86400:(86400 * DateUnit * DateRange), 1))
       } else {
-        RandomStartDate  <- MetaData[get(GroupingVariables) == eval(level), "MinDate"][[1]] + 
+        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
           DateUnit * ceiling(sample(1:(DateUnit*DateRange), 1))
       }
       
@@ -736,9 +736,7 @@ ID_BuildTrainDataSets <- function(MetaData,
               units = TimeUnit)))
       
       # Set Target Window----
-      TargetWindow <- sample(x = seq_len(TargetWindowMax),
-                             size = TargetWindowSamples,
-                             replace = TRUE)
+      TargetWindow <- sample(x = seq_len(TargetWindowMax), size = TargetWindowSamples, replace = TRUE)
       
       # Create samples----
       if(Case == 1L) {
