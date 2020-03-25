@@ -66,11 +66,9 @@ If you're having still having trouble installing, see if this issue helps you ou
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
 # RemixAutoML <img src="Images/RemixAutoML-hexSticker.png" align="right" width="120" />
-> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** To see them in action, check out the free tutorials at <a href="http://www.remyxcourses.com/course?courseid=intro-to-remixautoml-in-r" target="_blank">RemyxCourses.com</a> or the reference manual and vignette in the vignette folder above.
+> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** 
 
-Also, be sure to visit our blog at <a href="https://www.remixinstitute.com" target="_blank">RemixInstitute.ai</a> for data science, machine learning, and AI content.
-
-You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. You can also go into the vignettes folder to see the package reference manual and a vignette with some background and examples. If you want to be a contributer, contact me via LinkedIn email.
+You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
 
 ## RemixAutoML Blogs: <img src="Images/BlogsImage4.png" align="right" width="180" />
 [AI for Small to Medium Size Businesses: A Management Take On The Challenges...](https://www.remixinstitute.com/blog/business-ai-for-small-to-medium-sized-businesses-with-remixautoml/#.XX-lD2ZlD8A)
