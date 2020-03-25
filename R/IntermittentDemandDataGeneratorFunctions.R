@@ -607,33 +607,37 @@ ID_TrainingDataGenerator2 <- function(data,
                                 get(TargetVariableName[1L])], na.rm = TRUE)
     }
     
-    # Time to event target variable data----
-    timetoevent <- data[get(DateVariableName)-86400*eval(tar) > eval(RandomStartDate) &
-                          get(DateVariableName)-86400*(eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])][1]
-    outcome <- as.character(data[1L, get(TargetVariableName[3L])])
-    
-    # Add in the time since last demand instance from RandomStartDate----
-    histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-      , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
-    
-    # Remove meta data for feature creation set----
-    features <- histDemandRaw[order(-get(DateVariableName))][
-      , paste0(eval(DateVariableName)) := NULL][1,]
-    data.table::set(features, j = "FC_Window", value = tar)
-    
-    # Merge Features and Targets----
-    temp <- cbind(binarytarget, timetoevent, outcome, features)
-    data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
-    data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
-    data.table::setnames(temp, names(temp)[3L], "Outcome")
-    data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
-    
-    # Combine data sets----
-    counter <- counter + 1L
-    if(counter == 1L) {
-      Final <- temp
-    } else {
-      Final <- data.table::rbindlist(list(Final,temp), fill = TRUE)
+    # Build records----
+    if(!binarytarget == inf) {
+      
+      # Time to event target variable data----
+      timetoevent <- data[get(DateVariableName)-86400*eval(tar) > eval(RandomStartDate) &
+                            get(DateVariableName)-86400*(eval(tar)+1L) <= eval(RandomStartDate), get(TargetVariableName[2L])][1]
+      outcome <- as.character(data[1L, get(TargetVariableName[3L])])
+      
+      # Add in the time since last demand instance from RandomStartDate----
+      histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
+        , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
+      
+      # Remove meta data for feature creation set----
+      features <- histDemandRaw[order(-get(DateVariableName))][
+        , paste0(eval(DateVariableName)) := NULL][1,]
+      data.table::set(features, j = "FC_Window", value = tar)
+      
+      # Merge Features and Targets----
+      temp <- cbind(binarytarget, timetoevent, outcome, features)
+      data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
+      data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
+      data.table::setnames(temp, names(temp)[3L], "Outcome")
+      data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
+      
+      # Combine data sets----
+      counter <- counter + 1L
+      if(counter == 1L) {
+        Final <- temp
+      } else {
+        Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
+      }
     }
   }
   
