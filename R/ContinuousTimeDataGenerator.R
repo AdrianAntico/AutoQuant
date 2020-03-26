@@ -610,9 +610,11 @@ ID_TrainingDataGenerator2 <- function(data,
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
         temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[2L])]
+        temp <- temp[!is.na(temp)]
         timetoevent <- temp[length(temp)]
       } else {
         temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
+        temp <- temp[!is.na(temp)]
         timetoevent <- temp[length(temp)]
       }
       
