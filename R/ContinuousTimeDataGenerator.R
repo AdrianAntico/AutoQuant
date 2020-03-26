@@ -605,51 +605,60 @@ ID_TrainingDataGenerator2 <- function(data,
     }
     
     # Build records----
-    if(is.finite(binarytarget)) {
+    if(!is.finite(binarytarget)) {
+      binarytarget <- 0
+    }
+    
+    # Time to event target variable data----
+    if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
+      temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[2L])]
+      temp <- temp[!is.na(temp)]
+      if(is.na(temp[1])) {
+        timetoevent <- 0
+      } else {
+        timetoevent <- temp[length(temp)]
+      }
+    } else {
+      temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
+      temp <- temp[!is.na(temp)]
+      if(is.na(temp[1])) {
+        timetoevent <- 0
+      } else {
+        timetoevent <- temp[length(temp)]
+      }
+    }
+    
+    # Build records----
+    if(is.numeric(timetoevent) | is.integer(timetoevent)) {
       
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-        temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[2L])]
-        temp <- temp[!is.na(temp)]
-        timetoevent <- temp[length(temp)]
+        outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
       } else {
-        temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
-        temp <- temp[!is.na(temp)]
-        timetoevent <- temp[length(temp)]
+        outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
       }
       
-      # Build records----
-      if(is.numeric(timetoevent) | is.integer(timetoevent)) {
-        
-        # Time to event target variable data----
-        if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-          outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
-        } else {
-          outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
-        }
-        
-        # Add in the time since last demand instance from RandomStartDate----
-        histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-          , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
-        
-        # Remove meta data for feature creation set----
-        features <- histDemandRaw[order(-get(DateVariableName))][1,]
-        data.table::set(features, j = "FC_Window", value = tar)
-        
-        # Merge Features and Targets----
-        temp <- cbind(binarytarget, timetoevent, outcome, features)
-        data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
-        data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
-        data.table::setnames(temp, names(temp)[3L], "Outcome")
-        data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
-        
-        # Combine data sets----
-        counter <- counter + 1L
-        if(counter == 1L) {
-          Final <- temp
-        } else {
-          Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
-        }
+      # Add in the time since last demand instance from RandomStartDate----
+      histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
+        , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
+      
+      # Remove meta data for feature creation set----
+      features <- histDemandRaw[order(-get(DateVariableName))][1,]
+      data.table::set(features, j = "FC_Window", value = tar)
+      
+      # Merge Features and Targets----
+      temp <- cbind(binarytarget, timetoevent, outcome, features)
+      data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
+      data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
+      data.table::setnames(temp, names(temp)[3L], "Outcome")
+      data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
+      
+      # Combine data sets----
+      counter <- counter + 1L
+      if(counter == 1L) {
+        Final <- temp
+      } else {
+        Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
       }
     }
   }
