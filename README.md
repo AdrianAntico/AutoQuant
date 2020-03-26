@@ -5,9 +5,6 @@
 ![Contributors: 4](https://img.shields.io/static/v1?label=Contributors&message=4&color=Orange)
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
-[![HitCount](http://hits.dwyl.io/AdrianAntico/badges.svg)](http://hits.dwyl.io/AdrianAntico/badges)
-
-
 
 <img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="800" />
 
