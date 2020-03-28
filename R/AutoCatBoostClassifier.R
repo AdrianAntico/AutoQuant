@@ -989,6 +989,8 @@ AutoCatBoostClassifier <- function(data,
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
+      GridMetrics <- cbind(catboostGridList,GridCollect)
+      data.table::setorderv(GridMetrics, cols = "EvalStat", order = -1, na.last = TRUE)
       return(
         list(
           Model = model,
@@ -999,8 +1001,7 @@ AutoCatBoostClassifier <- function(data,
           VariableImportance = VariableImportance,
           VI_Plot = VI_Plot(VariableImportance),
           PartialDependencePlots = ParDepPlots,
-          GridList = catboostGridList,
-          GridMetrics = GridCollect,
+          GridMetrics = GridMetrics,
           ColNames = Names))
     }
   } else if(TrainOnFull) {

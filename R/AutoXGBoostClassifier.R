@@ -1081,6 +1081,8 @@ AutoXGBoostClassifier <- function(data,
   # Return objects----
   if (GridTune) {
     if (ReturnModelObjects) {
+      GridMetrics <- cbind(grid_params,GridCollect)
+      data.table::setorderv(GridMetrics, cols = "EvalStat", order = -1, na.last = TRUE)
       return(list(Model = model,
                   ValidationData = ValidationData,
                   ROC_Plot = ROC_Plot,
@@ -1089,8 +1091,7 @@ AutoXGBoostClassifier <- function(data,
                   VariableImportance = VariableImportance,
                   VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
-                  GridList = grid_params,
-                  GridMetrics = GridCollect,
+                  GridMetrics = GridMetrics,
                   ColNames = Names,
                   FactorLevels = FactorLevelsList))
     }
