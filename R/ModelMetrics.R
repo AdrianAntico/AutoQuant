@@ -324,7 +324,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
     data.table::setnames(
       temp, 
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
-      c("H2oGBM_N","H2oGBM_P","H2oGBM_TN","H2oGBM_TP","H2oGBM_FP","H2oGBM_FN","H2oGBM_Utility","H2oGBM_MCC","H2oGBM_Acc","H2oGBM_F1_Score","H2oGBM_F0.5_Score","H2oGBM_F2_Score","H2oGBM_NPV","H2oGBM_TPR","H2oGBM_TNR","H2oGBM_FNR","H2oGBM_FPR","H2oGBM_FDR","H2oGBM_FOR","H2oGBM_PPV","H2oGBM_ThreatScore"))
+      c("H2oML_N","H2oML_P","H2oML_TN","H2oML_TP","H2oML_FP","H2oML_FN","H2oML_Utility","H2oML_MCC","H2oML_Acc","H2oML_F1_Score","H2oML_F0.5_Score","H2oML_F2_Score","H2oML_NPV","H2oML_TPR","H2oML_TNR","H2oML_FNR","H2oML_FPR","H2oML_FDR","H2oML_FOR","H2oML_PPV","H2oML_ThreatScore"))
     print("h2ogbm here")
     ThresholdOutput[["h2ogbm"]] <- temp
   }
