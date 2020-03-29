@@ -494,28 +494,23 @@ AutoXGBoostClassifier <- function(data,
         PassInGrid <- data.table::as.data.table(PassInGrid)
       }
       grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(4, 8, 12, 15),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
+        eta = c(0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40),
+        max_depth = c(4,6,8,10,12,14,16,18,20),
+        min_child_weight = c(1,2,3,4,5),
+        subsample = c(1,0.95,0.90,0.85,0.80,0.75),
+        colsample_bytree = c(1, 0.90, 0.80))
       grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <-
-        grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-      grid_params <-
-        data.table::rbindlist(list(PassInGrid, grid_params))
+      grid_params <- grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+      grid_params <- data.table::rbindlist(list(PassInGrid, grid_params))
     } else {
       grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(4, 8, 12, 15),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
+        eta = c(0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40),
+        max_depth = c(4,6,8,10,12,14,16,18,20),
+        min_child_weight = c(1,2,3,4,5),
+        subsample = c(1,0.95,0.90,0.85,0.80,0.75),
+        colsample_bytree = c(1, 0.90, 0.80))
       grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <-
-        grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      grid_params <- grid_params[order(ID)][1L:(MaxModelsInGrid + 1L)][, ID := NULL]
     }
     
     # Binary Grid Tuning Main Loop----
@@ -536,8 +531,7 @@ AutoXGBoostClassifier <- function(data,
           colsample_bytree = 1,
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
+          tree_method = TreeMethod)
       } else {
         base_params <- list(
           booster = "gbtree",
@@ -545,14 +539,13 @@ AutoXGBoostClassifier <- function(data,
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
           max_bin = 64,
-          tree_method = TreeMethod
-        )
+          tree_method = TreeMethod)
       }
       
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
       if (i != 1) {
-        base_params <- c(as.list(grid_params[i, ]), base_params)
+        base_params <- c(as.list(grid_params[i,]), base_params)
       }
       
       # Binary Grid Train Model----
@@ -691,8 +684,7 @@ AutoXGBoostClassifier <- function(data,
         na.rm = TRUE,
         algorithm = 3,
         auc = TRUE,
-        ci = TRUE
-      )
+        ci = TRUE)
       
       # Binary AUC Conversion to data.table----
       AUC_List[[i]] <- data.table::data.table(
@@ -732,6 +724,7 @@ AutoXGBoostClassifier <- function(data,
                         j = 2L,
                         value = Metric[, 1])
       }
+      gc()
     }
   }
   
