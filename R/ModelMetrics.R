@@ -311,7 +311,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
   
   # H2oAutoML----
   if(any(tolower(MLModels) == "h2oautoml")) {
-    if(!"p1" %chin% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
+    if(!"p1" %chin% names(H2oAutoMLTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oAutoMLTestData,
       Target = eval(TargetVariable),
@@ -370,7 +370,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
   }
   
   # H2oGLM----
-  if(any(tolower(MLModels) == "h2odrf")) {
+  if(any(tolower(MLModels) == "h2oglm")) {
     if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oGLMTestData,
