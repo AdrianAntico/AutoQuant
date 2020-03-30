@@ -6,8 +6,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 
-<img src="Images/RemixAutoMLLogoPurple2.png" align="center" width="800" />
-
 # Installing RemixAutoML in 2 Easy Steps:
 
 ### 1. First, install R package dependencies:
@@ -67,7 +65,7 @@ If you're having still having trouble installing, see if this issue helps you ou
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
 
-## RemixAutoML Blogs: <img src="Images/BlogsImage4.png" align="right" width="180" />
+## RemixAutoML Blogs: 
 [AI for Small to Medium Size Businesses: A Management Take On The Challenges...](https://www.remixinstitute.com/blog/business-ai-for-small-to-medium-sized-businesses-with-remixautoml/#.XX-lD2ZlD8A)
 
 [Why Machine Learning is more Practical than Econometrics in the Real World](https://medium.com/@adrianantico/machine-learning-vs-econometrics-in-the-real-world-4058095b1013)
