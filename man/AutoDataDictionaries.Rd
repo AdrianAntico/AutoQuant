@@ -5,7 +5,7 @@
 \title{AutoDataDictionaries}
 \usage{
 AutoDataDictionaries(Type = "sqlserver", DBConnection, DDType = 1L,
-  Query = NULL, CloseChannelWhenDone = TRUE)
+  Query = NULL, CloseChannel = TRUE)
 }
 \arguments{
 \item{Type}{= "sqlserver" is currently the only system supported}
@@ -16,7 +16,7 @@ AutoDataDictionaries(Type = "sqlserver", DBConnection, DDType = 1L,
 
 \item{Query}{Supply a query}
 
-\item{CloseChannelWhenDone}{Set to TRUE to disconnect}
+\item{CloseChannel}{Set to TRUE to disconnect}
 }
 \description{
 AutoDataDictionaries is a function to return data dictionary data in table form
