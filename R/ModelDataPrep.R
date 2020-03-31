@@ -77,7 +77,7 @@ ModelDataPrep <- function(data,
   }
   
   # Turn factor columns into character----
-  if (CharToFactor) {
+  if (FactorToChar) {
     for (col in x) {
       if (is.factor(data[[col]])) {
         data.table::set(data,
