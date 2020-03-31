@@ -300,7 +300,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Tables and number of columns----
-  if(tolower(DDType) == 1L) {
+  if(DDType == 1L) {
     qry <- "select schema_name(tab.schema_id) as schema_name,
        tab.name as table_name, 
        tab.create_date as created,  
@@ -332,7 +332,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Tables and number of columns----
-  if(tolower(DDType) == 2L) {
+  if(DDType == 2L) {
     qry <- "select schema_name(v.schema_id) as schema_name,
        v.name as view_name,
        v.create_date as created,
@@ -357,7 +357,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Tables and number of columns----
-  if(tolower(DDType) == 3L) {
+  if(DDType == 3L) {
     qry <- "select schema_name(tab.schema_id) as schema_name,
        tab.name as table_name, 
        col.name as column_name, 
@@ -502,7 +502,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Tables and number of columns----
-  if(tolower(DDType) == 4L) {
+  if(DDType == 4L) {
     qry <- "SELECT
        schema_name(tab.schema_id) AS table_schema_name,
        tab.name AS table_name,
@@ -549,7 +549,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Views and Columns----
-  if(tolower(DDType) == 5L) {
+  if(DDType == 5L) {
     qry <- "SELECT
       schema_name(v.schema_id) AS schema_name,
       v.name AS view_name, 
@@ -633,7 +633,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
   
   # Tables and number of columns----
-  if(tolower(DDType) == 6L) {
+  if(DDType == 6L) {
     qry <- "SELECT 
     schema_name(tab.schema_id) AS schema_name, 
       tab.name AS table_name, 
