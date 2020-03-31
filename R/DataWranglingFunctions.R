@@ -297,7 +297,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   # Queries----
   if(!is.null(Query)) {
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -329,7 +329,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -354,7 +354,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -499,7 +499,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -546,7 +546,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -630,7 +630,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
   
@@ -653,7 +653,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     
     # Return data----
     x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
-    close(DBConnection)
+    if(CloseChannelWhenDone) close(DBConnection)
     return(x)
   }
 }
