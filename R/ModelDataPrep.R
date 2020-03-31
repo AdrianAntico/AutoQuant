@@ -79,10 +79,10 @@ ModelDataPrep <- function(data,
   # Turn factor columns into character----
   if (CharToFactor) {
     for (col in x) {
-      if (is.character(data[[col]])) {
+      if (is.factor(data[[col]])) {
         data.table::set(data,
                         j = col,
-                        value = as.factor(data[[col]]))
+                        value = as.character(data[[col]]))
       }
     }
   }
