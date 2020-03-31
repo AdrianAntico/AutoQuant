@@ -6,6 +6,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/RemixAutoML-hexSticker.png" align="center" width="200" />
+
 # Installing RemixAutoML in 2 Easy Steps:
 
 ### 1. First, install R package dependencies:
@@ -15,7 +17,7 @@ library(devtools)
 to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
   "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
   "magick","Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
-  "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud","Rcpp")
+  "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud","Rcpp","RODBC")
 for (i in to_install) {
   message(paste("looking for ", i))
   if(i == "catboost" & !requireNamespace(i)) {
