@@ -5,8 +5,9 @@
 \title{Final Data Preparation Function}
 \usage{
 ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  IntToNumeric = TRUE, DateToChar = FALSE, RemoveDates = FALSE,
-  MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE,
+  RemoveDates = FALSE, MissFactor = "0", MissNum = -1,
+  IgnoreCols = NULL)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}
@@ -14,6 +15,8 @@ ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
 \item{Impute}{Defaults to TRUE which tells the function to impute the data}
 
 \item{CharToFactor}{Defaults to TRUE which tells the function to convert characters to factors}
+
+\item{FactorToChar}{Converts to character}
 
 \item{IntToNumeric}{Defaults to TRUE which tells the function to convert integers to numeric}
 
@@ -46,6 +49,7 @@ data <- data.table::data.table(Value = runif(100000),
 data <- ModelDataPrep(data,
                          Impute       = TRUE,
                          CharToFactor = TRUE,
+                         FactorToChar = FALSE,
                          IntToNumeric = TRUE,
                          DateToChar   = FALSE,
                          RemoveDates  = FALSE,

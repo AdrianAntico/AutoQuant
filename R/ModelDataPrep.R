@@ -7,6 +7,7 @@
 #' @param data This is your source data you'd like to modify
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors
+#' @param FactorToChar Converts to character
 #' @param IntToNumeric Defaults to TRUE which tells the function to convert integers to numeric
 #' @param DateToChar Converts date columns into character columns
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
@@ -26,6 +27,7 @@
 #' data <- ModelDataPrep(data,
 #'                          Impute       = TRUE,
 #'                          CharToFactor = TRUE,
+#'                          FactorToChar = FALSE,
 #'                          IntToNumeric = TRUE,
 #'                          DateToChar   = FALSE,
 #'                          RemoveDates  = FALSE,
@@ -37,6 +39,7 @@
 ModelDataPrep <- function(data,
                           Impute       = TRUE,
                           CharToFactor = TRUE,
+                          FactorToChar = FALSE,
                           IntToNumeric = TRUE,
                           DateToChar   = FALSE,
                           RemoveDates  = FALSE,
@@ -63,6 +66,17 @@ ModelDataPrep <- function(data,
   }
   
   # Turn character columns into factors----
+  if (CharToFactor) {
+    for (col in x) {
+      if (is.character(data[[col]])) {
+        data.table::set(data,
+                        j = col,
+                        value = as.factor(data[[col]]))
+      }
+    }
+  }
+  
+  # Turn factor columns into character----
   if (CharToFactor) {
     for (col in x) {
       if (is.character(data[[col]])) {
