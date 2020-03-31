@@ -13,7 +13,8 @@ DataDisplayMeta(data)
 DataDisplayMeta
 }
 \seealso{
-Other Data Wrangling: \code{\link{ColumnSubsetDataTable}},
+Other Data Wrangling: \code{\link{AutoDataDictionaries}},
+  \code{\link{ColumnSubsetDataTable}},
   \code{\link{FullFactorialCatFeatures}},
   \code{\link{TimeSeriesMelt}}
 }

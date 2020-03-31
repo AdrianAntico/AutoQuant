@@ -20,7 +20,8 @@ ColumnSubsetDataTable(data, TargetColumnName = NULL,
 ColumnSubsetDataTable will subset data tables by column
 }
 \seealso{
-Other Data Wrangling: \code{\link{DataDisplayMeta}},
+Other Data Wrangling: \code{\link{AutoDataDictionaries}},
+  \code{\link{DataDisplayMeta}},
   \code{\link{FullFactorialCatFeatures}},
   \code{\link{TimeSeriesMelt}}
 }

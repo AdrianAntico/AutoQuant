@@ -15,7 +15,8 @@ FullFactorialCatFeatures(GroupVars = GroupVariables, BottomsUp = TRUE)
 FullFactorialCatFeatures reverses the difference
 }
 \seealso{
-Other Data Wrangling: \code{\link{ColumnSubsetDataTable}},
+Other Data Wrangling: \code{\link{AutoDataDictionaries}},
+  \code{\link{ColumnSubsetDataTable}},
   \code{\link{DataDisplayMeta}},
   \code{\link{TimeSeriesMelt}}
 }
