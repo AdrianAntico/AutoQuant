@@ -6,7 +6,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 
-![Image description](https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/RemixAutoML-hexSticker.png <img src="url" alt="alt text" width="100" height="200">)
+![Image description](<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/RemixAutoML-hexSticker.png" alt="alt text" width="100" height="200">)
 
 # Installing RemixAutoML in 2 Easy Steps:
 
