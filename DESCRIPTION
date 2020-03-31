@@ -20,7 +20,7 @@ Imports: arules, catboost, data.table, doParallel, e1071, fBasics, foreach, fore
         ggplot2, grid, h2o, itertools, lubridate, methods, MLmetrics,
         monreg, nortest, parallel, pROC, RColorBrewer, recommenderlab, ROCR,
         scatterplot3d, stats, stringr, timeDate, tm, tsoutliers, wordcloud, 
-        xgboost, zoo, lime
+        xgboost, zoo, lime, RODBC
 Suggests: knitr, rmarkdown, sde, testthat, fpp, gridExtra
 VignetteBuilder: knitr
 Additional_repositories:
