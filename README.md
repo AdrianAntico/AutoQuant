@@ -6,6 +6,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/AdrianAntico/RemixAutoML)](https://GitHub.com/AdrianAntico/RemixAutoML/issues/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 
+![Image description]()
+
 # Installing RemixAutoML in 2 Easy Steps:
 
 ### 1. First, install R package dependencies:
