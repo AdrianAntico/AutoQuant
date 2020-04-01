@@ -599,8 +599,9 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoTransformationScore()**
 <code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
 
-##### **GDL_Feature_Engineering()**
-<code>GDL_Feature_Engineering()</code> builds autoregressive and rolling stats from target columns and distributed lags and distributed rolling stats for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and rolling stats. This function works for data with groups and without groups. The rolling stats can be of any variety, such as rolling standard deviations, rolling quantiles, etc. but the function runs much slower than the DT_GDL_Feature_Engineering() counterpart so it might not be a good choice for scoring environments that require low latency.
+##### **AutoDataDictionary()**
+<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server environment.
+
 </p>
 </details>
 
