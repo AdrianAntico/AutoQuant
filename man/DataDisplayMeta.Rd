@@ -14,6 +14,7 @@ DataDisplayMeta
 }
 \seealso{
 Other Data Wrangling: \code{\link{AutoDataDictionaries}},
+  \code{\link{AutoHierarchicalFourier}},
   \code{\link{ColumnSubsetDataTable}},
   \code{\link{FullFactorialCatFeatures}},
   \code{\link{TimeSeriesMelt}}

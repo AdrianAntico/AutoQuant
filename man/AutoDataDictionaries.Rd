@@ -22,7 +22,8 @@ AutoDataDictionaries(Type = "sqlserver", DBConnection, DDType = 1L,
 AutoDataDictionaries is a function to return data dictionary data in table form
 }
 \seealso{
-Other Data Wrangling: \code{\link{ColumnSubsetDataTable}},
+Other Data Wrangling: \code{\link{AutoHierarchicalFourier}},
+  \code{\link{ColumnSubsetDataTable}},
   \code{\link{DataDisplayMeta}},
   \code{\link{FullFactorialCatFeatures}},
   \code{\link{TimeSeriesMelt}}

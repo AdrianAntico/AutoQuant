@@ -102,6 +102,7 @@ rm(DataSets)
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
+  \code{\link{AutoFourierFeatures}},
   \code{\link{AutoLagRollStatsScoring}},
   \code{\link{AutoLagRollStats}},
   \code{\link{AutoTransformationCreate}},
