@@ -608,7 +608,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 
-## Automated Model Evaluation: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
+## Automated Model Evaluation Functions: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>click to expand</summary>
 <p>
   
