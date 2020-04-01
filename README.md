@@ -493,7 +493,7 @@ For each of the models tested internally, several aspects should be noted:
 * Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
 
 ##### **ContinuousTimeDataGenerator()**
-<code>IntermittentDemandDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
+<code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
 
 ##### **AutoCatBoostSizeFreqDist()**
 <code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
