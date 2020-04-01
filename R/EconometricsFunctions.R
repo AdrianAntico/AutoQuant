@@ -2811,7 +2811,7 @@ ParallelAutoARIMA <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -2942,7 +2942,7 @@ ParallelAutoETS <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3033,7 +3033,7 @@ ParallelAutoTBATS <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3153,7 +3153,7 @@ ParallelAutoNNET <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3253,7 +3253,7 @@ ParallelAutoArfima <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3346,7 +3346,7 @@ ParallelAutoTSLM <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3474,7 +3474,7 @@ FinalBuildArima <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3635,7 +3635,7 @@ FinalBuildETS <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3779,7 +3779,7 @@ FinalBuildTBATS <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -3923,7 +3923,7 @@ FinalBuildNNET <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -4076,7 +4076,7 @@ FinalBuildArfima <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -4220,7 +4220,7 @@ FinalBuildTSLM <- function(
   }
   
   # Setup the parallel environment----
-  packages <- c("RemixAutoAI","data.table","forecast")
+  packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
   cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
@@ -5228,7 +5228,7 @@ AutoFourierFeatures <- function(data,
   if(!is.null(GroupVariable)) {
     
     # Grouping Variable Case----
-    packages <- c("RemixAutoAI","data.table","forecast","lubridate","stats")
+    packages <- c("RemixAutoML","data.table","forecast","lubridate","stats")
     cores <- parallel::detectCores()
     cl <- parallel::makePSOCKcluster(cores)
     doParallel::registerDoParallel(cl)
