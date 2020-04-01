@@ -1021,7 +1021,7 @@ TimeSeriesDataPrepare <- function(data,
   
   # Model-Based Frequency----
   if(ModelFreq) {
-    ModelFreqFrequency <- forecast::findfrequency(as.matrix(data_train[, 2]))
+    ModelFreqFrequency <- forecast::findfrequency(data_train[, get(names(data_train)[2]])
     ModelFreqData <-
       stats::ts(data = data_train,
                 start = data_train[, min(get(DateName))][[1]],
