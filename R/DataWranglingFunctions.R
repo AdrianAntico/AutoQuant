@@ -513,17 +513,8 @@ AutoDataDictionaries <- function(Type = "sqlserver",
        schema_name(tab_prim.schema_id) AS primary_table_schema_name,
        tab_prim.name AS primary_table_name,
        col_prim.name AS primary_table_column, 
-       schema_name(tab.schema_id) + 
-         '.' + tab.name + 
-         '.' + col.name + 
-         ' = ' + 
-         schema_name(tab_prim.schema_id) + 
-         '.' + tab_prim.name + 
-         '.' + col_prim.name AS join_condition,
-       case
-            when count(*) over (partition by fk.name) > 1 then 'Y'
-            else 'N'
-       end AS complex_fk,
+       schema_name(tab.schema_id) + '.' + tab.name + '.' + col.name + ' = ' + schema_name(tab_prim.schema_id) + '.' + tab_prim.name + '.' + col_prim.name AS join_condition,
+       case when count(*) over (partition by fk.name) > 1 then 'Y' else 'N' end AS complex_fk,
        fkc.constraint_column_id AS fk_part
     FROM sys.tables AS tab
        INNER JOIN sys.foreign_keys AS fk
