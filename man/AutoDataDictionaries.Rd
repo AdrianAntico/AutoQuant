@@ -26,6 +26,7 @@ Other Data Wrangling: \code{\link{AutoHierarchicalFourier}},
   \code{\link{ColumnSubsetDataTable}},
   \code{\link{DataDisplayMeta}},
   \code{\link{FullFactorialCatFeatures}},
+  \code{\link{SQL_Server_DBConnection}},
   \code{\link{TimeSeriesMelt}}
 }
 \author{

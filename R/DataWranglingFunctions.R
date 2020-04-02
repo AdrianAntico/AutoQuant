@@ -273,6 +273,21 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
   }
 }
 
+#' SQL_Server_DBConnection
+#' 
+#' SQL_Server_DBConnection is a function to return data dictionary data in table form
+#' 
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DataBaseName Name of the database
+#' @param Server Name of the server to use
+#' @export
+SQL_Server_DBConnection <- function(DataBaseName = "", Server = "") {
+  return(RODBC::odbcDriverConnect(connection  = paste0("Driver={SQL Server};
+                                  server=",Server,"; database=",DataBaseName,";
+                                  trusted_connection=yes;")))
+}
+
 #' AutoDataDictionaries
 #' 
 #' AutoDataDictionaries is a function to return data dictionary data in table form
