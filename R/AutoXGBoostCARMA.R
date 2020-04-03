@@ -776,8 +776,8 @@ AutoXGBoostCARMA <- function(data,
         TimeColumnName = eval(DateColumnName))
     }
     
-    # Remove ID Column
-    if (tolower(PartitionType) == "timeseries") {
+    # Remove ID Column----
+    if ("ID" %chin% names(data)) {
       data.table::set(data, j = "ID", value = NULL)
     }
   }
