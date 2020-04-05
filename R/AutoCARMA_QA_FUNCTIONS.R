@@ -203,9 +203,9 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
       XREGSData <- data.table::fread(file.path(DataPath, XREGSX))
     } else {
       if(!is.null(GroupVariables_)) {
-        Output <- QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
+        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
       } else {
-        Output <- QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
+        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
       }
       Data <- Output$dataFull
       DataForecast <- Output$dataForecastX
@@ -825,7 +825,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # Monthly DATA:----
-  if(Groups == 0L & TimeUnit__ %chin% c("MONTHS","MONTH")) {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("MONTHS","MONTH")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.Date(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
@@ -860,7 +860,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # Weekly DATA:----
-  if(Groups == 0L & TimeUnit__ %chin% c("WEEKS","WEEK")) {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("WEEKS","WEEK")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.Date(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
@@ -895,7 +895,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # Daily DATA:----
-  if(Groups == 0L & TimeUnit__ %chin% c("DAYS","DAY")) {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("DAYS","DAY")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.Date(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
@@ -930,7 +930,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # Hourly DATA:----
-  if(Groups == 0L & TimeUnit__ %chin% c("HOURS","HOUR")) {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("HOURS","HOUR")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.Date(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
@@ -965,7 +965,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # 30min DATA:----
-  if(Groups == 0L & TimeUnit__ == "30MIN") {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("30MIN","30MINS")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.POSIXct(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
@@ -1004,7 +1004,7 @@ QA_WALMARTDATAGENERATOR <- function(data,
   }
   
   # 5min DATA:----
-  if(Groups == 0L & TimeUnit__ == "5MIN") {
+  if(Groups == 0L & toupper(TimeUnit__) %chin% c("5MIN","5MINS")) {
     dataFull <- data[, .SD, .SDcols = c("Date","Weekly_Sales")]
     data.table::set(dataFull, j = "Date", value = as.POSIXct(dataFull[["Date"]]))
     XREGS <- dataFull[, .SD, .SDcols = c("Date","Weekly_Sales2")]
