@@ -364,7 +364,7 @@ AutoXGBoostCARMA <- function(data,
       TargetColumN = TargetColumnName,
       DateColumN = DateColumnName,
       HierarchGroups = HierarchSupplyValue,
-      IndependentGroups = IndependentSupplyValue)}, 
+      IndependentGroups = IndependentSupplyValue)},
       error = function(x) NULL)
     
     # ARGS TO TROUBLESHOOT
@@ -1005,6 +1005,14 @@ AutoXGBoostCARMA <- function(data,
           MDP_MissNum = -1)
         
       } else {
+        
+        # i = 1 Define IDcols----
+        if(DebugMode) print("# i = 1 Define IDcols----")
+        if(Difference) {
+          IDcols = "ModTarget"
+        } else {
+          IDcols <- eval(TargetColumnName)
+        }
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = Step1SCore,
@@ -1042,7 +1050,7 @@ AutoXGBoostCARMA <- function(data,
         if(eval(DateColumnName) %chin% names(Preds)) {
           data.table::set(Preds, j = eval(DateColumnName), value = NULL) 
         }        
-        UpdateData <- cbind(FutureDateData[2L:(N+3L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+        UpdateData <- cbind(FutureDateData[2L:(N+1L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
