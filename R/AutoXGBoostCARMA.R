@@ -1672,8 +1672,11 @@ AutoXGBoostCARMA <- function(data,
         
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
-        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
-        
+        if("ID" %chin% names(UpdateData)) {
+          UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
+        } else {
+          UpdateData <- data.table::rbindlist(list(UpdateData, Temporary), fill = TRUE, use.names = TRUE)
+        }
       }
       gc()
     }
