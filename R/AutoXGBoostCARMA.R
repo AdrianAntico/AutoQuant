@@ -156,6 +156,11 @@ AutoXGBoostCARMA <- function(data,
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
   
+  # EvalMetric----
+  if(!tolower(EvalMetric) %chin% c("RMSE","MAE","MAPE","r2")) {
+    EvalMetric <- "RMSE"
+  }
+  
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) {
     HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
