@@ -13,7 +13,11 @@ CARMA_GroupHierarchyCheck <- function(data = data,
   } else {
     HierarchSupplyValue <- NULL
   }
-  IndependentSupplyValue <- CARMA_Get_IndepentVariablesPass(HierarchyGroups)
+  if(!is.null(Group_Variables)) {
+    IndependentSupplyValue <- CARMA_Get_IndepentVariablesPass(HierarchyGroups)
+  } else {
+    IndependentSupplyValue <- NULL
+  }
   return(list(data = data, HierarchSupplyValue = HierarchyGroups, IndependentSupplyValue = IndependentSupplyValue))
 }
 
