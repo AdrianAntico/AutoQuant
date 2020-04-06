@@ -1200,6 +1200,9 @@ AutoH2oGLMCARMA <- function(data,
         
       } else {
         
+        # Data
+        temp <- UpdateData[.N]
+        
         # Score Model----
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
