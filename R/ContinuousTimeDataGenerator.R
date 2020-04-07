@@ -18,7 +18,13 @@
 #' @param MinTxnRecords I typically set this to 2 so that there is at least one other instance of demand so that the forecasted values are not complete nonsense.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "day", "week", "month", "quarter", "year"
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
-#' @param MovingAverages Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
+#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
+#' @param SD_Periods Select the periods for all sd variables you want to create. E.g. c(1:5,52)
+#' @param Skew_Periods Select the periods for all skew variables you want to create. E.g. c(1:5,52)
+#' @param Kurt_Periods Select the periods for all kurtosis variables you want to create. E.g. c(1:5,52)
+#' @param Quantile_Periods Select the periods for all quantiles variables you want to create. E.g. c(1:5,52)
+#' @param Quantiles_Selected Select the quantiles you want. q5, q10, ..., q95
+#' @param TimeBetween Supply a name or NULL
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayGroups Input the holiday groups of your choice from the CreateHolidayVariable() function in this package
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
@@ -39,7 +45,13 @@
 #'                                         MinTimeWindow = 1,
 #'                                         MinTxnRecords = 2,
 #'                                         Lags = 1:7,
-#'                                         MovingAverages = seq(7,28,7),
+#'                                         MA_Periods = 10L,
+#'                                         SD_Periods = 10L,
+#'                                         Skew_Periods = 10L,
+#'                                         Kurt_Periods = 10L,
+#'                                         Quantile_Periods = 10L,
+#'                                         Quantiles_Selected = c("q5"),
+#'                                         TimeBetween = NULL,
 #'                                         TimeTrendVariable = TRUE,
 #'                                         TimeUnit = "day",
 #'                                         CalendarVariables = c("wday",
@@ -64,7 +76,7 @@
 ContinuousTimeDataGenerator <- function(data,
                                         RestrictDateRange = TRUE,
                                         Case = 2L,
-                                        FC_Periods = 52,
+                                        FC_Periods = 52L,
                                         SaveData = FALSE,
                                         FilePath = NULL,
                                         TargetVariableName = "qty",
@@ -74,10 +86,16 @@ ContinuousTimeDataGenerator <- function(data,
                                         TimeGroups = c("raw","day","week"),
                                         GroupingVariables = "sku",
                                         HierarchyGroupVars = NULL,
-                                        MinTimeWindow = 1,
-                                        MinTxnRecords = 2,
-                                        Lags = 1:7,
-                                        MovingAverages = seq(7,28,7),
+                                        MinTimeWindow = 1L,
+                                        MinTxnRecords = 2L,
+                                        Lags = 1L:7L,
+                                        MA_Periods = 10L,
+                                        SD_Periods = 10L,
+                                        Skew_Periods = 10L,
+                                        Kurt_Periods = 10L,
+                                        Quantile_Periods = 10L,
+                                        Quantiles_Selected = c("q5"),
+                                        TimeBetween = NULL,
                                         TimeTrendVariable = TRUE,
                                         CalendarVariables = c("wday",
                                                               "mday",
@@ -229,7 +247,7 @@ ContinuousTimeDataGenerator <- function(data,
     IndependentGroups    = "GroupVar",
     
     # Services
-    TimeBetween          = "bla",
+    TimeBetween          = TimeBetween,
     TimeUnit             = if(tolower(TimeUnit) == "raw") "day" else TimeUnit,
     TimeUnitAgg          = TimeUnit,
     TimeGroups           = TimeGroups,
@@ -239,12 +257,12 @@ ContinuousTimeDataGenerator <- function(data,
     
     # Calculated Columns
     Lags                  = c(Lags),
-    MA_RollWindows        = c(MovingAverages),
-    SD_RollWindows        = 0L,
-    Skew_RollWindows      = 0L,
-    Kurt_RollWindows      = 0L,
-    Quantile_RollWindows  = 0L,
-    Quantiles_Selected    = 0L)
+    MA_RollWindows        = c(MA_Periods),
+    SD_RollWindows        = c(SD_Periods),
+    Skew_RollWindows      = c(Skew_Periods),
+    Kurt_RollWindows      = c(Kurt_Periods),
+    Quantile_RollWindows  = c(Quantile_Periods),
+    Quantiles_Selected    = c(Quantiles_Selected))
   
   # Add Time Trend Variable----
   if(!is.null(GroupingVariables)) {

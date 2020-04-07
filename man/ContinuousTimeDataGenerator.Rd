@@ -5,16 +5,18 @@
 \title{ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling}
 \usage{
 ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
-  FC_Periods = 52, SaveData = FALSE, FilePath = NULL,
+  FC_Periods = 52L, SaveData = FALSE, FilePath = NULL,
   TargetVariableName = "qty", DateVariableName = "date",
   GDL_Targets = NULL, TimeUnit = "raw", TimeGroups = c("raw", "day",
   "week"), GroupingVariables = "sku", HierarchyGroupVars = NULL,
-  MinTimeWindow = 1, MinTxnRecords = 2, Lags = 1:7,
-  MovingAverages = seq(7, 28, 7), TimeTrendVariable = TRUE,
-  CalendarVariables = c("wday", "mday", "yday", "week", "isoweek",
-  "month", "quarter", "year"), HolidayGroups = "USPublicHolidays",
-  PowerRate = 0.5, SampleRate = 5, TargetWindowSamples = 5,
-  PrintSteps = TRUE)
+  MinTimeWindow = 1L, MinTxnRecords = 2L, Lags = 1L:7L,
+  MA_Periods = 10L, SD_Periods = 10L, Skew_Periods = 10L,
+  Kurt_Periods = 10L, Quantile_Periods = 10L,
+  Quantiles_Selected = c("q5"), TimeBetween = NULL,
+  TimeTrendVariable = TRUE, CalendarVariables = c("wday", "mday",
+  "yday", "week", "isoweek", "month", "quarter", "year"),
+  HolidayGroups = "USPublicHolidays", PowerRate = 0.5,
+  SampleRate = 5, TargetWindowSamples = 5, PrintSteps = TRUE)
 }
 \arguments{
 \item{data}{This is your transactional level data}
@@ -45,7 +47,19 @@ ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
 
 \item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52)}
 
-\item{MovingAverages}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
+\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
+
+\item{SD_Periods}{Select the periods for all sd variables you want to create. E.g. c(1:5,52)}
+
+\item{Skew_Periods}{Select the periods for all skew variables you want to create. E.g. c(1:5,52)}
+
+\item{Kurt_Periods}{Select the periods for all kurtosis variables you want to create. E.g. c(1:5,52)}
+
+\item{Quantile_Periods}{Select the periods for all quantiles variables you want to create. E.g. c(1:5,52)}
+
+\item{Quantiles_Selected}{Select the quantiles you want. q5, q10, ..., q95}
+
+\item{TimeBetween}{Supply a name or NULL}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
@@ -79,7 +93,13 @@ DataSets <- ContinuousTimeDataGenerator(data,
                                         MinTimeWindow = 1,
                                         MinTxnRecords = 2,
                                         Lags = 1:7,
-                                        MovingAverages = seq(7,28,7),
+                                        MA_Periods = 10L,
+                                        SD_Periods = 10L,
+                                        Skew_Periods = 10L,
+                                        Kurt_Periods = 10L,
+                                        Quantile_Periods = 10L,
+                                        Quantiles_Selected = c("q5"),
+                                        TimeBetween = NULL,
                                         TimeTrendVariable = TRUE,
                                         TimeUnit = "day",
                                         CalendarVariables = c("wday",
