@@ -228,14 +228,7 @@ ContinuousTimeDataGenerator <- function(data,
   if(PrintSteps) {
     print("Running AutoLagRollStats()") 
   }
-  
-  # Define targets for AutoLagRollStats----
-  if(Case == 1L) {
-    targs <- c(eval(TargetVariableName))
-  } else if(Case == 2L) {
-    targs <- c(eval(TargetVariableName[1L]))
-  }
-  
+
   # Add in the time varying features----
   datax <- AutoLagRollStats(
     
