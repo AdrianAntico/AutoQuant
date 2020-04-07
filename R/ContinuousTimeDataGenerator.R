@@ -374,6 +374,7 @@ ContinuousTimeDataGenerator <- function(data,
   } else if(Case == 2L) {
     CountModelData <- Results
     print(Results)
+    print("here yo")
   }
   
   # shut down parallel objects----
