@@ -1197,7 +1197,7 @@ AutoH2oDRFCARMA <- function(data,
         
         # Score Model----
         Preds <- AutoH2OMLScoring(
-          ScoringData = temp,
+          ScoringData = UpdateData[.N],
           ModelObject = Model,
           ModelType = "mojo",
           H2OShutdown = TRUE,
