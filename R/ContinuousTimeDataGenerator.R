@@ -242,7 +242,7 @@ ContinuousTimeDataGenerator <- function(data,
     # Data
     data                 = datax,
     DateColumn           = eval(DateVariableName),
-    Targets              = targs,
+    Targets              = GDL_Targets,
     HierarchyGroups      = NULL,
     IndependentGroups    = "GroupVar",
     
