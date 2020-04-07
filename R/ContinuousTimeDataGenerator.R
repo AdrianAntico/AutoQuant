@@ -373,6 +373,7 @@ ContinuousTimeDataGenerator <- function(data,
     SizeModelData <- SizeModelData[Size != 0]
   } else if(Case == 2L) {
     CountModelData <- Results
+    print(Results)
   }
   
   # shut down parallel objects----
