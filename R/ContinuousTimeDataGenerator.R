@@ -662,7 +662,7 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Remove meta data for feature creation set----
       features <- histDemandRaw[order(-get(DateVariableName))][1,]
-      data.table::set(features, j = TargetVariableName, value = NULL)
+      data.table::set(features, j = unique(TargetVariableName), value = NULL)
       data.table::set(features, j = "FC_Window", value = tar)
       
       # Merge Features and Targets----
