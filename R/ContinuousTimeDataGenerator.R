@@ -373,8 +373,6 @@ ContinuousTimeDataGenerator <- function(data,
     SizeModelData <- SizeModelData[Size != 0]
   } else if(Case == 2L) {
     CountModelData <- Results
-    print(Results)
-    print("here yo")
   }
   
   # shut down parallel objects----
@@ -391,9 +389,6 @@ ContinuousTimeDataGenerator <- function(data,
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     if(exists("SizeModelData")) SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
   } else {
-    
-    print(names(CountModelData))
-    
     data.table::setnames(CountModelData, "GroupVar", eval(ReverseGroupingVariables))
     if(exists("SizeModelData")) data.table::setnames(SizeModelData, "GroupVar", eval(ReverseGroupingVariables))
   }
