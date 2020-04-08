@@ -348,6 +348,9 @@ ContinuousTimeDataGenerator <- function(data,
   parallel::stopCluster(cl)
   rm(cl)
   
+  print("here yo")
+  print(CountModelData)
+  
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
   if(length(ReverseGroupingVariables) > 1) {
