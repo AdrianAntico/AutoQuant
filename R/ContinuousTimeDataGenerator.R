@@ -613,14 +613,14 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-        outcome <- as.character(data[get(DateVariableName) - 86400L * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
+        outcome <- as.character(data[get(DateVariableName) - 86400L * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1L])
       } else {
-        outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
+        outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1L])
       }
       
       # Add in the time since last demand instance from RandomStartDate----
       data.table::setorderv(x = histDemandRaw, cols = eval(DateVariableName), order = -1L)
-      data.table::set(histDemandRaw, j = "TimeSinceLastDemand", value = as.numeric(difftime(histDemandRaw[["RandomStartDate"]],histDemandRaw[[eval(DateVariableName)]], units = TimeUnit)))
+      data.table::set(histDemandRaw, j = "TimeSinceLastDemand", value = as.numeric(difftime(RandomStartDate, histDemandRaw[[eval(DateVariableName)]], units = TimeUnit)))
         
       # Remove meta data for feature creation set----
       features <- histDemandRaw[1L]
