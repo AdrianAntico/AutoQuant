@@ -619,11 +619,11 @@ ID_TrainingDataGenerator2 <- function(data,
       }
       
       # Add in the time since last demand instance from RandomStartDate----
-      histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-        , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
-      
+      data.table::setorderv(x = histDemandRaw, cols = eval(DateVariableName), order = -1L)
+      data.table::set(histDemandRaw, j = "TimeSinceLastDemand", value = as.numeric(difftime(histDemandRaw[["RandomStartDate"]],histDemandRaw[[eval(DateVariableName)]], units = TimeUnit)))
+        
       # Remove meta data for feature creation set----
-      features <- histDemandRaw[order(-get(DateVariableName))][1L,]
+      features <- histDemandRaw[1L]
       data.table::set(features, j = unique(TargetVariableName), value = NULL)
       data.table::set(features, j = "FC_Window", value = tar)
       
