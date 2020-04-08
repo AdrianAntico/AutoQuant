@@ -35,23 +35,14 @@ CreateCalendarVariables <- function(data,
   }
   if (!(any(
     tolower(TimeUnits) %chin% c(
-      "second",
-      "minute",
-      "hour",
-      "wday",
-      "mday",
-      "yday",
-      "week",
-      "isoweek",
-      "month",
-      "quarter",
-      "year"
-    )
-  ))) {
+      "second","minute",
+      "hour","wday",
+      "mday","yday",
+      "week","isoweek",
+      "month","quarter","year")))) {
     warning(
       "TimeUnits needs to be one of 'minute', 'hour', 'wday',
-            'mday', 'yday','week', 'month', 'quarter', 'year'"
-    )
+            'mday', 'yday','week', 'month', 'quarter', 'year'")
   }
   
   # Turn DateCols into character names if not already----
@@ -67,9 +58,8 @@ CreateCalendarVariables <- function(data,
   Cols <- c()
   for (i in seq_len(length(DateCols))) {
     if (any(TimeUnits %chin% c("second", "minute", "hour"))) {
-      if (min(as.ITime(data[[eval(DateCols[i])]])) - max(as.ITime(data[[eval(DateCols[i])]])) == 0) {
-        TimeList[[i]] <-
-          TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
+      if (min(data.table::as.ITime(data[[eval(DateCols[i])]])) - max(data.table::as.ITime(data[[eval(DateCols[i])]])) == 0) {
+        TimeList[[i]] <- TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
         Cols[i] <- length(TimeList[[i]])
       } else {
         TimeList[[i]] <- TimeUnits
@@ -81,6 +71,9 @@ CreateCalendarVariables <- function(data,
     }
   }
   
+  # Number of supplied columns----
+  NumCols <- ncol(data.table::copy(data))
+  
   # Allocate data.table cols
   data.table::alloc.col(DT = data, ncol(data) + sum(Cols))
   
@@ -88,7 +81,7 @@ CreateCalendarVariables <- function(data,
   for (i in seq_len(length(DateCols))) {
     if (length(TimeList) != 0) {
       if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-        data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = as.ITime(data[[eval(DateCols[i])]]))
+        data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = data.table::as.ITime(data[[eval(DateCols[i])]]))
       }
       if (any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) {
         data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
@@ -101,203 +94,89 @@ CreateCalendarVariables <- function(data,
     for (j in TimeList[[i]]) {
       if (tolower(j) == "second") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.factor(data.table::second(get(
-              paste0("TIME_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.factor(data.table::second(data[[eval(paste0("TIME_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::second(data[[paste0("TIME_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::second(data[[eval(paste0("TIME_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "minute") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::minute(get(
-              paste0("TIME_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::minute(data[[eval(paste0("TIME_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::minute(data[[paste0("TIME_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::minute(data[[paste0("TIME_", DateCols[i])]])))
         }
       } else if (tolower(j) == "hour") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::hour(get(
-              paste0("TIME_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::hour(data[[eval(paste0("TIME_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::hour(data[[paste0("TIME_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::hour(data[[eval(paste0("TIME_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "wday") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::wday(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::wday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::wday(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::wday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "mday") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::mday(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::mday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::mday(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::mday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "yday") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::yday(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::yday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::yday(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::yday(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "week") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::week(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::week(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::week(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::week(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "isoweek") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::isoweek(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::isoweek(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::isoweek(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::isoweek(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "month") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::month(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::month(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::month(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::month(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "quarter") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::quarter(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::quarter(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::quarter(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::quarter(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if (tolower(j) == "year") {
         if (AsFactor) {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", TimeList[[i]][j]),
-            value = as.factor(data.table::year(get(
-              paste0("DATE_", DateCols[i])
-            )))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::year(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
-          data.table::set(
-            data,
-            j = paste0(DateCols[i], "_", j),
-            value = as.integer(data.table::year(data[[paste0("DATE_", DateCols[i])]]))
-          )
+          data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::year(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       }
     }
     if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
-      data.table::set(data,
-                      j = paste0("TIME_", DateCols[i]),
-                      value = NULL)
+      data.table::set(data, j = paste0("TIME_", DateCols[i]), value = NULL)
     }
-    if (any(
-      tolower(TimeList[[i]]) %chin% c(
-        "wday",
-        "mday",
-        "yday",
-        "week",
-        "isoweek",
-        "month",
-        "quarter",
-        "year"
-      )
-    )) {
-      data.table::set(data,
-                      j = paste0("DATE_", DateCols[i]),
-                      value = NULL)
+    if (any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) {
+      data.table::set(data, j = paste0("DATE_", DateCols[i]), value = NULL)
     }
   }
+  
+  # Remove constant columns----
+  if(ncol(data) - NumCols > 0L) {
+    for(col in (ncol(data) - NumCols + 1L):ncol(data)) {
+      if(var(data[[names(data)[col]]], na.rm = TRUE) == 0L) {
+        data.table::set(data, j = eval(col), value = NULL)
+      }
+    }
+  }
+
+  # Return data----
   return(data)
 }
