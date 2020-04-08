@@ -242,7 +242,6 @@ AutoH2oGLMMultiClass <- function(data,
     hyper_params <- list(
       alpha = c(0,0.25,0.5,0.75,1),
       lambda = c(0,0.01,0.05,0.10),
-      standardize = c(TRUE, FALSE),
       theta = c(1e-10, 0.01, 0.05, 0.10))
     
     # MultiClass Grid Train Model----

@@ -164,8 +164,7 @@ AutoH2oGLMRegression <- function(data,
       Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
       Path = model_path,
       TransID = ModelID,
-      SaveOutput = SaveModelObjects
-    )
+      SaveOutput = SaveModelObjects)
     data <- Output$Data
     TransformationResults <- Output$FinalResults
     
@@ -175,8 +174,7 @@ AutoH2oGLMRegression <- function(data,
       Type = "Apply",
       FinalResults = TransformationResults,
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
     
     # Transform TestData----
     if (!is.null(TestData)) {
@@ -185,8 +183,7 @@ AutoH2oGLMRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
     }
   }
   
@@ -200,8 +197,7 @@ AutoH2oGLMRegression <- function(data,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
+        TimeColumnName = NULL)
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
@@ -216,8 +212,7 @@ AutoH2oGLMRegression <- function(data,
         Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
         Path = model_path,
         TransID = ModelID,
-        SaveOutput = SaveModelObjects
-      )
+        SaveOutput = SaveModelObjects)
       data <- Output$Data
       TransformationResults <- Output$FinalResults
       
@@ -227,8 +222,7 @@ AutoH2oGLMRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
       
       # Transform TestData----
       if (!is.null(TestData)) {
@@ -237,8 +231,7 @@ AutoH2oGLMRegression <- function(data,
           Type = "Apply",
           FinalResults = TransformationResults,
           TransID = NULL,
-          Path = NULL
-        )
+          Path = NULL)
       }
     } else {
       dataSets <- AutoDataPartition(
@@ -247,8 +240,7 @@ AutoH2oGLMRegression <- function(data,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
+        TimeColumnName = NULL)
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
@@ -257,22 +249,16 @@ AutoH2oGLMRegression <- function(data,
   }
   
   # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data,
-                             Impute = FALSE,
-                             CharToFactor = TRUE)
+  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   
   # Regression ModelDataPrep----
   if(!TrainOnFull) {
-    dataTest <- ModelDataPrep(data = ValidationData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)    
+    dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   }
   
   # Regression ModelDataPrep----
   if (!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData,
-                              Impute = FALSE,
-                              CharToFactor = TRUE)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
   }
   
   # Regression Target Name Storage----
@@ -305,11 +291,7 @@ AutoH2oGLMRegression <- function(data,
   if(GridTune == TRUE & TrainOnFull == FALSE) {
     
     # Regression Start Up H2O----
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  nthreads = NThreads,
-                  enable_assertions = FALSE)
-    
-    # Regression Define data sets----
+    h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
@@ -321,15 +303,13 @@ AutoH2oGLMRegression <- function(data,
       seed                 = 1234,
       stopping_rounds      = 10,
       stopping_metric      = toupper(eval_metric),
-      stopping_tolerance   = 1e-3
-    )
+      stopping_tolerance   = 1e-3)
     
     # Regression Grid Parameters----
     if(Distribution == "tweedie") {
       hyper_params <- list(
         alpha = c(0,0.25,0.5,0.75,1),
         lambda = c(0,0.01,0.05,0.10),
-        standardize = c(TRUE, FALSE),
         theta = c(1e-10, 0.01, 0.05, 0.10),
         tweedie_link_power = c(1, 0.95, 0.90, 0.75),
         tweedie_variance_power = c(0,0.25,0.50,0.75,1))
@@ -337,7 +317,6 @@ AutoH2oGLMRegression <- function(data,
       hyper_params <- list(
         alpha = c(0,0.25,0.5,0.75,1),
         lambda = c(0,0.01,0.05,0.10),
-        standardize = c(TRUE, FALSE),
         theta = c(1e-10, 0.01, 0.05, 0.10))
     }
     
@@ -361,15 +340,13 @@ AutoH2oGLMRegression <- function(data,
       validation_frame     = datavalidate,
       family               = Distribution,
       link                 = Link,
-      seed                 = 1234
-    )
+      seed                 = 1234)
     
     # Regression Get Best Model----
-    Grid_Out   <- h2o::h2o.getGrid(
+    Grid_Out <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
-      decreasing = FALSE
-    )
+      decreasing = FALSE)
     
     # Regression Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
@@ -377,21 +354,26 @@ AutoH2oGLMRegression <- function(data,
   
   # Regression Start Up H2O----
   if (!GridTune) {
-    h2o::h2o.init(max_mem_size = MaxMem,
-                  enable_assertions = FALSE)
-    
-    # Regression Define data sets----
-    datatrain    <- h2o::as.h2o(dataTrain)
+    h2o::h2o.init(max_mem_size = MaxMem, enable_assertions = FALSE)
+    datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
+  } else {
+    datatrain <- h2o::as.h2o(data)
   }
+  
+  # Print
+  print("THIS IS WHERE THE ERROR IS YO")
+  print(datatrain)
   
   # Define link----
   if(!GridTune) {
     if(!is.null(link)) {
       Link <- link
     } else {
-      Link <- "logit"
+      Link <- "identity"
     }
+  } else {
+    Link <- "identity"
   }
   
   # Binary Build Baseline Model----
@@ -419,85 +401,44 @@ AutoH2oGLMRegression <- function(data,
     if (!is.null(TestData)) {
       datatest        <-  h2o::as.h2o(TestData)
       if (tolower(eval_metric) == "mse") {
-        GridModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = grid_model,
-                                            newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
+        GridModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = grid_model, newdata = datatest))
+        BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "rmse") {
-        GridModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = grid_model,
-                                             newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datatest))
+        GridModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = grid_model, newdata = datatest))
+        BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "mae") {
-        GridModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = grid_model,
-                                            newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
+        GridModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = grid_model, newdata = datatest))
+        BaseModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "rmsle") {
-        GridModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model,
-                                              newdata = datatest))
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datatest))
+        GridModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model, newdata = datatest))
+        BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datatest))
       }
     } else {
       if (tolower(eval_metric) == "mse") {
-        GridModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = grid_model,
-                                            newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
+        GridModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = grid_model, newdata = datavalidate))
+        BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       } else if (tolower(eval_metric) == "rmse") {
-        GridModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = grid_model,
-                                             newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datavalidate))
+        GridModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = grid_model, newdata = datavalidate))
+        BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       } else if (tolower(eval_metric) == "mae") {
-        GridModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = grid_model,
-                                            newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datavalidate))
+        GridModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = grid_model, newdata = datavalidate))
+        BaseModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       } else if (tolower(eval_metric) == "rmsle") {
-        GridModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model,
-                                              newdata = datavalidate))
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datavalidate))
+        GridModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = grid_model, newdata = datavalidate))
+        BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       }
-      
     }
   } else if(!TrainOnFull) {
     if (!is.null(TestData)) {
       datatest <-  h2o::as.h2o(TestData)
       if (tolower(eval_metric) == "mse") {
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
+        BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "rmse") {
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datatest))
+        BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "mae") {
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datatest))
+        BaseModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if (tolower(eval_metric) == "rmsle") {
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datatest))
+        BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datatest))
       }
     } else if(!is.null(ValidationData)) {
       if (tolower(eval_metric) == "mse") {
@@ -511,21 +452,13 @@ AutoH2oGLMRegression <- function(data,
       }
     } else {
       if (tolower(eval_metric) == "mse") {
-        BaseModelEval <-
-          h2o::h2o.mse(h2o::h2o.performance(model = base_model,
-                                            newdata = datatrain))
+        BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatrain))
       } else if (tolower(eval_metric) == "rmse") {
-        BaseModelEval <-
-          h2o::h2o.rmse(h2o::h2o.performance(model = base_model,
-                                             newdata = datatrain))
+        BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datatrain))
       } else if (tolower(eval_metric) == "mae") {
-        BaseModelEval <-
-          h2o::h2o.mae(h2o::h2o.performance(model = base_model,
-                                            newdata = datatrain))
+        BaseModelEval <- h2o::h2o.mae(h2o::h2o.performance(model = base_model, newdata = datatrain))
       } else if (tolower(eval_metric) == "rmsle") {
-        BaseModelEval <-
-          h2o::h2o.rmsle(h2o::h2o.performance(model = base_model,
-                                              newdata = datatrain))
+        BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datatrain))
       }
     }
   }
@@ -544,20 +477,15 @@ AutoH2oGLMRegression <- function(data,
   # Regression Save Model----
   if (SaveModelObjects) {
     if (tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel,
-                                     path = model_path,
-                                     force = TRUE)
+      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path, force = TRUE)
       h2o::h2o.download_mojo(
         model = FinalModel,
         path = model_path,
         get_genmodel_jar = TRUE,
         genmodel_path = model_path,
-        genmodel_name = ModelID
-      )
+        genmodel_name = ModelID)
     } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel,
-                                      path = model_path,
-                                      force = TRUE)
+      SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path, force = TRUE)
     }
   }
   
@@ -575,39 +503,27 @@ AutoH2oGLMRegression <- function(data,
     VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID, "_VariableImportance.csv"))
+        data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
       } else {
-        data.table::fwrite(VariableImportance,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID, "_VariableImportance.csv"))      
+        data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
       }
     }
     
     # Regression Format Variable Importance Table----
     data.table::setnames(
       VariableImportance,
-      c(
-        "variable",
+      c("variable",
         "relative_importance",
         "scaled_importance",
-        "percentage"
-      ),
-      c(
-        "Variable",
+        "percentage"),
+      c("Variable",
         "RelativeImportance",
         "ScaledImportance",
-        "Percentage"
-      )
-    )
+        "Percentage"))
     VariableImportance[, ':=' (
       RelativeImportance = round(RelativeImportance, 4),
       ScaledImportance = round(ScaledImportance, 4),
-      Percentage = round(Percentage, 4)
-    )]  
+      Percentage = round(Percentage, 4))]  
   }
   
   # Regression H2O Shutdown----
@@ -629,22 +545,16 @@ AutoH2oGLMRegression <- function(data,
   
   # Inverse Transform----
   if (!is.null(TransformNumericColumns)) {
-    # Append record for Predicted Column----
     if (GridTune) {
-      TransformationResults <-
-        TransformationResults[ColumnName != "Predict"]
+      TransformationResults <- TransformationResults[ColumnName != "Predict"]
     }
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
         ColumnName = "Predict",
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                               MethodName], 1),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                           Lambda], 1),
-        NormalizedStatistics = rep(0, 1)
-      )
-    ))
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 1),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 1),
+        NormalizedStatistics = rep(0, 1))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
     if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
@@ -652,8 +562,7 @@ AutoH2oGLMRegression <- function(data,
       temp1 <- which(names(ValidationData) == temp)[1]
       ValidationData[, eval(names(data)[temp1]) := NULL]
       TransformationResults <- TransformationResults[, ID := 1:.N][
-        ID != which(TransformationResults[["ID"]] == temp1)][
-          , ID := NULL]
+        ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
     }
     
     # Transform Target and Predicted Value----
@@ -662,8 +571,7 @@ AutoH2oGLMRegression <- function(data,
       Type = "Inverse",
       FinalResults = TransformationResults,
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
   }
   
   # Regression Get R2----
@@ -673,31 +581,15 @@ AutoH2oGLMRegression <- function(data,
   if (SaveModelObjects) {
     if(!TrainOnFull) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(ValidationData,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_ValidationData.csv"))
+        data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
       } else {
-        data.table::fwrite(ValidationData,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_ValidationData.csv"))      
+        data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
       }      
     } else {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(ValidationData,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_FullDataPredictions.csv"))
+        data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_FullDataPredictions.csv"))
       } else {
-        data.table::fwrite(ValidationData,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_FullDataPredictions.csv"))      
+        data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_FullDataPredictions.csv"))      
       }
     }
   }
@@ -710,42 +602,24 @@ AutoH2oGLMRegression <- function(data,
       TargetColName = Target,
       GraphType = "calibration",
       PercentileBucket = 0.05,
-      aggrfun = function(x)
-        mean(x, na.rm = TRUE)
-    )
+      aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Regression Evaluation Plot Update Title----
     if (GridTune) {
       val <- max(GridModelEval, BaseModelEval)
       EvaluationPlot <- EvaluationPlot +
-        ggplot2::ggtitle(paste0(
-          "Random Forest Calibration Evaluation Plot: ",
-          toupper(eval_metric),
-          " = ",
-          round(val, 3)
-        ))
+        ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(val, 3)))
     } else {
       EvaluationPlot <- EvaluationPlot +
-        ggplot2::ggtitle(paste0(
-          "Calibration Evaluation Plot: ",
-          toupper(eval_metric),
-          " = ",
-          round(BaseModelEval, 3)
-        ))
+        ggplot2::ggtitle(paste0("Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(BaseModelEval, 3)))
     }
     
     # Save plot to file
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationPlot.png"))
+        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationPlot.png"))
       } else {
-        ggplot2::ggsave(paste0(model_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationPlot.png"))      
+        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))      
       }
     }
     
@@ -756,42 +630,24 @@ AutoH2oGLMRegression <- function(data,
       TargetColName = Target,
       GraphType = "boxplot",
       PercentileBucket = 0.05,
-      aggrfun = function(x)
-        mean(x, na.rm = TRUE)
-    )
+      aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Regression Evaluation Plot Update Title----
     if (GridTune) {
       val <- max(GridModelEval, BaseModelEval)
       EvaluationBoxPlot <- EvaluationBoxPlot +
-        ggplot2::ggtitle(paste0(
-          "Random Forest Calibration Evaluation Plot: ",
-          toupper(eval_metric),
-          " = ",
-          round(val, 3)
-        ))
+        ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(val, 3)))
     } else {
       EvaluationBoxPlot <- EvaluationBoxPlot +
-        ggplot2::ggtitle(paste0(
-          "Random Forest Calibration Evaluation Plot: ",
-          toupper(eval_metric),
-          " = ",
-          round(BaseModelEval, 3)
-        ))
+        ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(BaseModelEval, 3) ))
     }
     
     # Save plot to file
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationBoxPlot.png"))
+        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationBoxPlot.png"))
       } else {
-        ggplot2::ggsave(paste0(model_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationBoxPlot.png"))      
+        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationBoxPlot.png"))      
       }
     }
     
@@ -799,16 +655,13 @@ AutoH2oGLMRegression <- function(data,
     EvaluationMetrics <-
       data.table::data.table(
         Metric = c("MAE","MAPE","MSE","R2"),
-        MetricValue = rep(999999, 8)
-      )
+        MetricValue = rep(999999, 8))
     i <- 0
     for (metric in c("mae", "mape", "mse", "r2")) {
       i <- as.integer(i + 1)
       tryCatch({
-        # Regression Grid Evaluation Metrics----
         if (tolower(metric) == "poisson") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
             ValidationData[, Metric := Predict - get(TargetColumnName) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
@@ -822,39 +675,27 @@ AutoH2oGLMRegression <- function(data,
           ValidationData[, Metric := (get(TargetColumnName) - Predict) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if (tolower(metric) == "msle") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
             ValidationData[, Metric := (log(get(TargetColumnName) + 1) - log(Predict + 1)) ^ 2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "kl") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
-                                                                     (Predict + 1))]
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+            ValidationData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "cs") {
           ValidationData[, ':=' (
             Metric1 = get(TargetColumnName) * Predict,
             Metric2 = get(TargetColumnName) ^ 2,
-            Metric3 = Predict ^ 2
-          )]
-          Metric <-
-            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+            Metric3 = Predict ^ 2)]
+          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
+                                                                      sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
-          Metric <-
-            (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2
+          Metric <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2
         }
-        data.table::set(
-          EvaluationMetrics,
-          i = i,
-          j = 2L,
-          value = round(Metric, 4)
-        )
-      }, error = function(x)
-        "skip")
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4))
+      }, error = function(x) "skip")
     }
     
     # Remove Features----
@@ -865,17 +706,9 @@ AutoH2oGLMRegression <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
       } else {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_EvaluationMetrics.csv"))      
+        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
       }
     }
     
@@ -895,15 +728,10 @@ AutoH2oGLMRegression <- function(data,
             GraphType = "calibration",
             PercentileBucket = 0.05,
             FactLevels = 10,
-            Function = function(x)
-              mean(x, na.rm = TRUE)
-          )
-          
+            Function = function(x) mean(x, na.rm = TRUE))
           j <- j + 1
-          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-            Out
-        }, error = function(x)
-          "skip")
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+        }, error = function(x) "skip")
         tryCatch({
           Out1 <- ParDepCalPlots(
             data = ValidationData,
@@ -913,37 +741,27 @@ AutoH2oGLMRegression <- function(data,
             GraphType = "boxplot",
             PercentileBucket = 0.05,
             FactLevels = 10,
-            Function = function(x)
-              mean(x, na.rm = TRUE)
-          )
-          
+            Function = function(x) mean(x, na.rm = TRUE))
           k <- k + 1
-          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-            Out1
-        }, error = function(x)
-          "skip")
-        
+          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+        }, error = function(x) "skip")
       }
       
       # Regression Save ParDepPlots to file----
       if (SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          save(ParDepPlots,
-               file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+          save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
         } else {
-          save(ParDepPlots,
-               file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+          save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
         }
       }
       
       # Regression Save ParDepBoxPlots to file----
       if (SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          save(ParDepBoxPlots,
-               file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+          save(ParDepBoxPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
         } else {
-          save(ParDepBoxPlots,
-               file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+          save(ParDepBoxPlots, file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
         }
       }  
     }  

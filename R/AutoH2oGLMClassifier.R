@@ -211,8 +211,6 @@ AutoH2oGLMClassifier <- function(data,
     
     # Binary Start Up H2O----
     h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    
-    # Binary Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
@@ -230,7 +228,6 @@ AutoH2oGLMClassifier <- function(data,
     hyper_params <- list(
       alpha = c(0,0.25,0.5,0.75,1),
       lambda = c(0,0.01,0.05,0.10),
-      standardize = c(TRUE, FALSE),
       theta = c(1e-10, 0.01, 0.05, 0.10))
     
     # Link----
