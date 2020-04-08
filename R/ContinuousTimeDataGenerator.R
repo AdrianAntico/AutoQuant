@@ -24,6 +24,8 @@
 #' @param Kurt_Periods Select the periods for all kurtosis variables you want to create. E.g. c(1:5,52)
 #' @param Quantile_Periods Select the periods for all quantiles variables you want to create. E.g. c(1:5,52)
 #' @param Quantiles_Selected Select the quantiles you want. q5, q10, ..., q95
+#' @param HolidayLags Select the lags you want generated
+#' @param HolidayMovingAverages Select the moving averages you want generated
 #' @param TimeBetween Supply a name or NULL
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayGroups Input the holiday groups of your choice from the CreateHolidayVariable() function in this package
@@ -51,6 +53,8 @@
 #'                                         Kurt_Periods = 10L,
 #'                                         Quantile_Periods = 10L,
 #'                                         Quantiles_Selected = c("q5"),
+#'                                         HolidayLags = c(1L:7L),
+#'                                         HolidayMovingAverages = c(2L:14L),
 #'                                         TimeBetween = NULL,
 #'                                         TimeTrendVariable = TRUE,
 #'                                         TimeUnit = "day",
@@ -95,6 +99,8 @@ ContinuousTimeDataGenerator <- function(data,
                                         Kurt_Periods = 10L,
                                         Quantile_Periods = 10L,
                                         Quantiles_Selected = c("q5"),
+                                        HolidayLags = c(1L:7L),
+                                        HolidayMovingAverages = c(2L:14L),
                                         TimeBetween = NULL,
                                         TimeTrendVariable = TRUE,
                                         CalendarVariables = c("wday",
@@ -111,15 +117,9 @@ ContinuousTimeDataGenerator <- function(data,
                                         TargetWindowSamples = 5,
                                         PrintSteps = TRUE) {
   
-  # Print Steps----
-  if(PrintSteps) {
-    print("Running initial data prep") 
-  }
-  
   # Ensure is data.table----
-  if(!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(PrintSteps) print("Running initial data prep")
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Ensure Date Column is a Date----
   if(is.character(data[[eval(DateVariableName)]])) {
@@ -166,17 +166,12 @@ ContinuousTimeDataGenerator <- function(data,
   # Ensure datax is aggregated to proper time unit----
   if(Case == 1L) {
     if(TimeUnit != "raw") {
-      datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), 
-                     by = c(eval(GroupingVariables), eval(DateVariableName))]
+      datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), by = c(eval(GroupingVariables), eval(DateVariableName))]
     }
   }
   
-  # Print Steps----
-  if(PrintSteps) {
-    print("Running ID_MetadataGenerator()") 
-  }
-  
   # Generate Metadata----
+  if(PrintSteps) print("Running ID_MetadataGenerator()")
   MetaData <- ID_MetadataGenerator(
     data = datax,
     DateVariableName = DateVariableName,
@@ -186,20 +181,11 @@ ContinuousTimeDataGenerator <- function(data,
     DateInterval = TimeUnit)
   
   # Save Data----
-  if(SaveData) {
-    data.table::fwrite(
-      MetaData, file = file.path(FilePath, "MetaData.csv"))
-  }
+  if(SaveData) data.table::fwrite(MetaData, file = file.path(FilePath, "MetaData.csv"))
   
   # Add Calendar Variables----
+  if(PrintSteps) print("Running CreateCalendarVariables()")
   if(!is.null(CalendarVariables)) {
-    
-    # Print Steps----
-    if(PrintSteps) {
-      print("Running CreateCalendarVariables()") 
-    }
-    
-    # Run function----
     datax <- CreateCalendarVariables(
       datax, 
       DateCols = DateVariableName,
@@ -208,14 +194,8 @@ ContinuousTimeDataGenerator <- function(data,
   }
   
   # Add Holiday Variables----
+  if(PrintSteps) print("Running CreateHolidayVariables()")
   if(!is.null(HolidayGroups)) {
-    
-    # Print Steps----
-    if(PrintSteps) {
-      print("Running CreateHolidayVariables()") 
-    }
-    
-    # Run function----
     datax <- CreateHolidayVariables(
       datax, 
       DateCols = DateVariableName,
@@ -224,15 +204,42 @@ ContinuousTimeDataGenerator <- function(data,
       GroupingVars = "GroupVar")    
   }
   
-  # Print Steps----
-  if(PrintSteps) {
-    print("Running AutoLagRollStats()") 
+  # Holiday Lags and Moving Average----
+  if(PrintSteps) print("Running AutoLagRollStats() for Holiday Counts")
+  if(!is.null(HolidayGroups)) {
+    datax <- AutoLagRollStats(
+      
+      # Data Args
+      data                 = datax,
+      DateColumn           = eval(DateVariableName),
+      Targets              = "HolidayCounts",
+      HierarchyGroups      = NULL,
+      IndependentGroups    = "GroupVar",
+      
+      # Services
+      TimeBetween          = TimeBetween,
+      TimeUnit             = if(tolower(TimeUnit) == "raw") "day" else TimeUnit,
+      TimeUnitAgg          = TimeUnit,
+      TimeGroups           = TimeGroups,
+      RollOnLag1           = FALSE,
+      Type                 = "Lag",
+      SimpleImpute         = TRUE,
+      
+      # Calculated Columns
+      Lags                  = HolidayLags,
+      MA_RollWindows        = HolidayMovingAverages,
+      SD_RollWindows        = NULL,
+      Skew_RollWindows      = NULL,
+      Kurt_RollWindows      = NULL,
+      Quantile_RollWindows  = NULL,
+      Quantiles_Selected    = NULL)
   }
-
+  
   # Add in the time varying features----
+  if(PrintSteps) print("Running AutoLagRollStats()")
   datax <- AutoLagRollStats(
     
-    # Data
+    # Data Args
     data                 = datax,
     DateColumn           = eval(DateVariableName),
     Targets              = GDL_Targets,
@@ -258,27 +265,14 @@ ContinuousTimeDataGenerator <- function(data,
     Quantiles_Selected    = c(Quantiles_Selected))
   
   # Add Time Trend Variable----
+  if(PrintSteps) print("Running Time Trend Calculation")
   if(!is.null(GroupingVariables)) {
-    
-    # Print Steps----
-    if(PrintSteps) {
-      print("Running Time Trend Calculation") 
-    }
-    
-    # Create trend----
-    data.table::setorderv(
-      datax, 
-      cols = c(eval(GroupingVariables), eval(DateVariableName)), 
-      order = c(1,-1))
-    datax[, TimeTrend := 1:.N, by = list(GroupVar)]
-  }
-  
-  # Print Steps----
-  if(PrintSteps) {
-    print("Running ID_BuildTrainDataSets()") 
+    data.table::setorderv(datax, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L,-1L))
+    datax[, TimeTrend := 1L:.N, by = list(GroupVar)]
   }
   
   # Run Final Build----
+  if(PrintSteps) print("Running ID_BuildTrainDataSets()")
   packages <- c("RemixAutoML","data.table","forecast","lubridate")
   cores <- parallel::detectCores()
   
@@ -289,12 +283,8 @@ ContinuousTimeDataGenerator <- function(data,
   data.table::set(datax, j = "GroupVar", value = as.character(datax[["GroupVar"]]))
   datax <- merge(x = datax, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
   
-  # Print Steps----
-  if(PrintSteps) {
-    print("Running Parallel Build")
-  }
-  
   # Parallelize Build----
+  if(PrintSteps) print("Running Parallel Build")
   cl <- parallel::makePSOCKcluster(max(1L, min(as.numeric(cores), length(unique(MetaData[["SelectRows"]])))))
   doParallel::registerDoParallel(cl)
   if(Case == 1L) {
@@ -326,8 +316,7 @@ ContinuousTimeDataGenerator <- function(data,
             list(CountModelData = CountModelData, SizeModelData = SizeModelData)
           } else if(Case == 2L) {
             CountModelData <- ModelDataSets$CountModelData
-            list(CountModelData = CountModelData,
-                 SizeModelData = SizeModelData)
+            list(CountModelData = CountModelData, SizeModelData = SizeModelData)
           }
         }
       }
@@ -359,7 +348,7 @@ ContinuousTimeDataGenerator <- function(data,
       }
   }
   
-  # Remove Zeros----
+  # Store results----
   if(Case == 1L) {
     CountModelData <- Results$CountModelData
     SizeModelData <- Results$SizeModelData
@@ -368,16 +357,12 @@ ContinuousTimeDataGenerator <- function(data,
     CountModelData <- Results
   }
   
-  # shut down parallel objects----
+  # Shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
   
-  # Print Steps----
-  if(PrintSteps) {
-    print("Final Data Wrangling") 
-  }
-  
   # Back-transform GroupingVariables----
+  if(PrintSteps) print("Final Data Wrangling")
   if(length(ReverseGroupingVariables) > 1) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     data.table::setcolorder(CountModelData, c((ncol(CountModelData)-length(ReverseGroupingVariables)+1L):ncol(CountModelData),1L:(ncol(CountModelData)-length(ReverseGroupingVariables))))
@@ -401,10 +386,9 @@ ContinuousTimeDataGenerator <- function(data,
     if(exists("SizeModelData")) save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
   }
   
-  # Return CountModelData and SizeModelData----
+  # Return data sets----
   if(Case == 1L) {
-    return(list(CountData = CountModelData, 
-                SizeData = SizeModelData))
+    return(list(CountData = CountModelData, SizeData = SizeModelData))
   } else if(Case == 2L) {
     return(list(CountData = CountModelData))
   }

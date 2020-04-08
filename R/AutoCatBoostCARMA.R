@@ -173,32 +173,24 @@ AutoCatBoostCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L]*length(unique(data[[eval(DateColumnName)]])), 0L)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
   
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {
     if(Difference) {
-      FC_Periods <- min(-2 + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
+      FC_Periods <- min(-2L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     } else {
-      FC_Periods <- min(-1 + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
+      FC_Periods <- min(-1L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     }
     
     # Stop if XREGS doesn't supply forward looking data
@@ -210,9 +202,7 @@ AutoCatBoostCARMA <- function(data,
   }
   
   # Check for any Target Variable hiding in XREGS
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
-    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-  }
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
   
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {

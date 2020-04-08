@@ -151,22 +151,16 @@ AutoCatBoostClassifier <- function(data,
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   
   # Binary Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Binary Ensure ValidationData is a data.table----
   if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) {
-      ValidationData <- data.table::as.data.table(ValidationData)
-    }
+    if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   }
   
   # Binary Ensure TestData is a data.table----
   if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
+    if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   }
   
   # Binary Target Name Storage----
@@ -187,7 +181,7 @@ AutoCatBoostClassifier <- function(data,
   if (is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
     dataSets <- AutoDataPartition(
       data,
-      NumDataSets = 3,
+      NumDataSets = 3L,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = eval(Target),
@@ -201,9 +195,7 @@ AutoCatBoostClassifier <- function(data,
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
     if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data.table::set(data,
-                      j = eval(PrimaryDateColumn),
-                      value = NULL)
+      data.table::set(data, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
   
@@ -211,19 +203,15 @@ AutoCatBoostClassifier <- function(data,
   if (!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
     if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data.table::set(ValidationData,
-                      j = eval(PrimaryDateColumn),
-                      value = NULL)
+      data.table::set(ValidationData, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
   
   # Binary Sort TestData if PrimaryDateColumn----
   if (!is.null(TestData) & TrainOnFull != TRUE) {
     if (!is.null(PrimaryDateColumn)) {
-      TestData <- TestData[order(get(PrimaryDateColumn))]
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-        data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
-      }
+      data.table::setorderv(TestData, cols = eval(PrimaryDateColumn), order = -1L, na.last = TRUE)
+      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
   
@@ -268,8 +256,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   
   # Binary Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
@@ -306,8 +293,7 @@ AutoCatBoostClassifier <- function(data,
       CharToFactor = TRUE,
       RemoveDates = TRUE,
       MissFactor = "0",
-      MissNum = -1
-    )
+      MissNum = -1)
   }
   
   # Binary Save Names of data----
@@ -338,17 +324,13 @@ AutoCatBoostClassifier <- function(data,
   # Binary Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                                label = TrainTarget,
-                                                cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) {
         TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
         FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)        
       }
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                                label = TrainTarget,
-                                                cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) {
         TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)        
       }
@@ -684,18 +666,13 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Train Final Model----
   if(!TrainOnFull) {
-    model <- catboost::catboost.train(learn_pool = TrainPool,
-                                      test_pool  = TestPool,
-                                      params     = base_params)
+    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
   } else {
-    model <- catboost::catboost.train(learn_pool = TrainPool,
-                                      params     = base_params)
+    model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
   }
   
   # Binary Save Model----
-  if (SaveModelObjects) {
-    catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
-  }
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
   
   # Binary Score Final Test Data----
   if(TrainOnFull != TRUE) {
@@ -704,19 +681,19 @@ AutoCatBoostClassifier <- function(data,
         model = model,
         pool = FinalTestPool,
         prediction_type = "Probability",
-        thread_count = -1)
+        thread_count = -1L)
     } else if(TrainOnFull) {
       predict <- catboost::catboost.predict(
         model = model,
         pool = TrainPool,
         prediction_type = "Probability",
-        thread_count = -1)
+        thread_count = -1L)
     } else {
       predict <- catboost::catboost.predict(
         model = model,
         pool = TestPool,
         prediction_type = "Probability",
-        thread_count = -1)
+        thread_count = -1L)
     }
   }
   
@@ -757,21 +734,21 @@ AutoCatBoostClassifier <- function(data,
   # Binary AUC Conversion to data.table----
   if(!TrainOnFull) {
     AUC_Data <- data.table::data.table(
-      ModelNumber = 0,
+      ModelNumber = 0L,
       Sensitivity = AUC_Metrics$sensitivities,
       Specificity = AUC_Metrics$specificities)  
   }
   
   # Binary Plot ROC Curve----
   if(!TrainOnFull) {
-    if (GridTune == TRUE & MaxModelsInGrid <= 15) {
+    if (GridTune == TRUE & MaxModelsInGrid <= 15L) {
       temp <- data.table::rbindlist(AUC_List)
       AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
       AUC_Data[, ModelNumber := as.factor(ModelNumber)]
       ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity,group = ModelNumber,color = ModelNumber)) +
         ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
         ggplot2::geom_abline(slope = 1, color = "black") +
-        ggplot2::ggtitle(paste0("Catboost Best Model AUC: ",100 * round(AUC_Metrics$auc, 3),"%")) +
+        ggplot2::ggtitle(paste0("Catboost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
         ChartTheme() + ggplot2::xlab("Specificity") +
         ggplot2::ylab("Sensitivity")
     } else {
@@ -970,9 +947,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Final Garbage Collection----
-  if (tolower(task_type) == "gpu") {
-    gc()
-  }
+  if (tolower(task_type) == "gpu") gc()
   
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {

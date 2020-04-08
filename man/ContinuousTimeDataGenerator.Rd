@@ -12,7 +12,8 @@ ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
   MinTimeWindow = 1L, MinTxnRecords = 2L, Lags = 1L:7L,
   MA_Periods = 10L, SD_Periods = 10L, Skew_Periods = 10L,
   Kurt_Periods = 10L, Quantile_Periods = 10L,
-  Quantiles_Selected = c("q5"), TimeBetween = NULL,
+  Quantiles_Selected = c("q5"), HolidayLags = c(1L:7L),
+  HolidayMovingAverages = c(2L:14L), TimeBetween = NULL,
   TimeTrendVariable = TRUE, CalendarVariables = c("wday", "mday",
   "yday", "week", "isoweek", "month", "quarter", "year"),
   HolidayGroups = "USPublicHolidays", PowerRate = 0.5,
@@ -59,6 +60,10 @@ ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
 
 \item{Quantiles_Selected}{Select the quantiles you want. q5, q10, ..., q95}
 
+\item{HolidayLags}{Select the lags you want generated}
+
+\item{HolidayMovingAverages}{Select the moving averages you want generated}
+
 \item{TimeBetween}{Supply a name or NULL}
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
@@ -99,6 +104,8 @@ DataSets <- ContinuousTimeDataGenerator(data,
                                         Kurt_Periods = 10L,
                                         Quantile_Periods = 10L,
                                         Quantiles_Selected = c("q5"),
+                                        HolidayLags = c(1L:7L),
+                                        HolidayMovingAverages = c(2L:14L),
                                         TimeBetween = NULL,
                                         TimeTrendVariable = TRUE,
                                         TimeUnit = "day",

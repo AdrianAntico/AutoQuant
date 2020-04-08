@@ -23,26 +23,12 @@ CreateCalendarVariables <- function(data,
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
-  
-  # Convert to data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Check args----
-  if (!is.logical(AsFactor)) {
-    warning("AsFactor needs to be TRUE or FALSE")
-  }
-  if (!(any(
-    tolower(TimeUnits) %chin% c(
-      "second","minute",
-      "hour","wday",
-      "mday","yday",
-      "week","isoweek",
-      "month","quarter","year")))) {
-    warning(
-      "TimeUnits needs to be one of 'minute', 'hour', 'wday',
-            'mday', 'yday','week', 'month', 'quarter', 'year'")
+  if (!is.logical(AsFactor)) warning("AsFactor needs to be TRUE or FALSE")
+  if (!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year")))) {
+    warning("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week', 'month', 'quarter', 'year'")
   }
   
   # Turn DateCols into character names if not already----
@@ -53,12 +39,12 @@ CreateCalendarVariables <- function(data,
   }
   
   # Revise TimeUnits Based on Data----
-  x <- 0
+  x <- 0L
   TimeList <- list()
   Cols <- c()
   for (i in seq_len(length(DateCols))) {
     if (any(TimeUnits %chin% c("second", "minute", "hour"))) {
-      if (min(data.table::as.ITime(data[[eval(DateCols[i])]])) - max(data.table::as.ITime(data[[eval(DateCols[i])]])) == 0) {
+      if (min(data.table::as.ITime(data[[eval(DateCols[i])]])) - max(data.table::as.ITime(data[[eval(DateCols[i])]])) == 0L) {
         TimeList[[i]] <- TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
         Cols[i] <- length(TimeList[[i]])
       } else {
@@ -79,7 +65,7 @@ CreateCalendarVariables <- function(data,
   
   # Create DateCols to data.table IDateTime types----
   for (i in seq_len(length(DateCols))) {
-    if (length(TimeList) != 0) {
+    if (length(TimeList) != 0L) {
       if (any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
         data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = data.table::as.ITime(data[[eval(DateCols[i])]]))
       }
