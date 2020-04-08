@@ -571,6 +571,8 @@ ID_TrainingDataGenerator2 <- function(data,
                                       TimeUnit = NULL,
                                       TargetWindow = NULL) {
   
+  print("I AM NOW IN DG 2")
+  
   # historical data <--> point in time <--> target window----
   histDemandRaw <- data[get(DateVariableName) < eval(RandomStartDate)]
   
@@ -691,6 +693,8 @@ ID_BuildTrainDataSets <- function(MetaData,
     DateUnit <- 1L
     TimeUnit <- "day"
   }
+  
+  print("I AM HERE NOW")
   
   # Set up collection objects----
   SMD <- list()
