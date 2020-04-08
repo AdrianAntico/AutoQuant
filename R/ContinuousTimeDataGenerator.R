@@ -124,26 +124,15 @@ ContinuousTimeDataGenerator <- function(data,
   # Ensure Date Column is a Date----
   if(is.character(data[[eval(DateVariableName)]])) {
     if(tolower(TimeUnit) == "raw") {
-      data.table::set(
-        data, 
-        j = eval(DateVariableName), 
-        value = as.POSIXct(data[[eval(DateVariableName)]]))
+      data.table::set(data, j = eval(DateVariableName), value = as.POSIXct(data[[eval(DateVariableName)]]))
     } else {
-      data.table::set(
-        data, 
-        j = eval(DateVariableName), 
-        value = as.Date(data[[eval(DateVariableName)]]))      
+      data.table::set(data, j = eval(DateVariableName), value = as.Date(data[[eval(DateVariableName)]]))      
     }
   }
   
   # Round down dates (add option to not do this)----
   if(TimeUnit != "raw") {
-    data.table::set(
-      data,
-      j = eval(DateVariableName),
-      value = lubridate::floor_date(
-        data[[eval(DateVariableName)]],
-        unit = TimeUnit))
+    data.table::set(data, j = eval(DateVariableName), value = lubridate::floor_date(data[[eval(DateVariableName)]], unit = TimeUnit))
   }
   
   # Copy data----
@@ -165,9 +154,7 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Ensure datax is aggregated to proper time unit----
   if(Case == 1L) {
-    if(TimeUnit != "raw") {
-      datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), by = c(eval(GroupingVariables), eval(DateVariableName))]
-    }
+    if(TimeUnit != "raw") datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), by = c(eval(GroupingVariables), eval(DateVariableName))]
   }
   
   # Generate Metadata----
@@ -220,7 +207,7 @@ ContinuousTimeDataGenerator <- function(data,
       TimeBetween          = TimeBetween,
       TimeUnit             = if(tolower(TimeUnit) == "raw") "day" else TimeUnit,
       TimeUnitAgg          = TimeUnit,
-      TimeGroups           = TimeGroups,
+      TimeGroups           = TimeGroups[1L],
       RollOnLag1           = FALSE,
       Type                 = "Lag",
       SimpleImpute         = TRUE,
@@ -425,8 +412,8 @@ ID_MetadataGenerator <- function(data,
                                  RestrictDateRange = TRUE,
                                  DateVariableName = NULL,
                                  GroupingVariables = NULL,
-                                 MinTimeWindow = 1,
-                                 MinTxnRecords = 2,
+                                 MinTimeWindow = 1L,
+                                 MinTxnRecords = 2L,
                                  DateInterval = "day") {
   
   # Define max date for sampling window----
@@ -437,15 +424,15 @@ ID_MetadataGenerator <- function(data,
     
     # Set up base table----
     Step1 <- data[, .(.N, max(lubridate::floor_date(as.Date(max_date, unit = DateInterval)))), by = list(GroupVar)]
-    data.table::setorderv(Step1, "N", -1)
+    data.table::setorderv(Step1, "N", -1L)
     
   } else {
     if(tolower(DateInterval) == "week") {
-      max_date <- data[, max(get(DateVariableName))][[1]] - 7 * MinTimeWindow
+      max_date <- data[, max(get(DateVariableName))][[1L]] - 7L * MinTimeWindow
     } else if(tolower(DateInterval) == "day") {
-      max_date <- data[, max(get(DateVariableName))][[1]] - MinTimeWindow
+      max_date <- data[, max(get(DateVariableName))][[1L]] - MinTimeWindow
     } else if(tolower(DateInterval) == "month") {
-      max_date <- data[, max(get(DateVariableName))][[1]] %m+% months(-MinTimeWindow)
+      max_date <- data[, max(get(DateVariableName))][[1L]] %m+% months(-MinTimeWindow)
     }
     
     # Set up base table----
@@ -454,7 +441,7 @@ ID_MetadataGenerator <- function(data,
   }
   
   # Gather second to last distinct date by GroupingVariable----
-  Step2 <- data[, .(.N, get(DateVariableName)), by = list(GroupVar)][order(GroupVar,-V2)][, sum(N), by = c(eval(GroupingVariables),"V2")][, txn := .N:1, by = list(GroupVar)][txn == MinTxnRecords][, txn := NULL]
+  Step2 <- data[, .(.N, get(DateVariableName)), by = list(GroupVar)][order(GroupVar,-V2)][, sum(N), by = c(eval(GroupingVariables),"V2")][, txn := .N:1L, by = list(GroupVar)][txn == MinTxnRecords][, txn := NULL]
   data.table::setnames(Step2,c("V1","V2"),c("Txns","MinDate"))
   Step2 <- Step2[, .SD, .SDcols = c(eval(GroupingVariables),"MinDate")]
   
@@ -468,7 +455,7 @@ ID_MetadataGenerator <- function(data,
   }
   
   # Remove levels with less than MinTxnRecords distinct past dates----
-  MetaData <- BaseTable2[Txns >= eval(MinTxnRecords)][Date_Range > 0]
+  MetaData <- BaseTable2[Txns >= eval(MinTxnRecords)][Date_Range > 0L]
   
   # Return data----
   return(MetaData)
@@ -509,7 +496,7 @@ ID_TrainingDataGenerator <- function(data,
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       targetDemand  <- data[
         get(DateVariableName) >= eval(RandomStartDate) &
-          get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate)]
+          get(DateVariableName) - 86400L * eval(tar) <= eval(RandomStartDate)]
     } else {
       targetDemand  <- data[
         get(DateVariableName) >= eval(RandomStartDate) &
@@ -522,7 +509,7 @@ ID_TrainingDataGenerator <- function(data,
     
     # Remove meta data for feature creation set----
     features <- histDemandRaw[order(-get(DateVariableName))][
-      , paste0(eval(DateVariableName)) := NULL][1,]
+      , paste0(eval(DateVariableName)) := NULL][1L,]
     data.table::set(features, 
                     j = "FC_Window", 
                     value = tar)
@@ -535,12 +522,12 @@ ID_TrainingDataGenerator <- function(data,
                          new = "Size")
     
     # Merge Features and Targets----
-    if(nrow(targetDemand) != 0) {
+    if(nrow(targetDemand) != 0L) {
       TargetCount <- cbind(targetDemand[, .(Counts = .N)], features)
       TargetSize  <- cbind(targetDemand, features)
     } else {
-      TargetCount <- cbind(data.table(Counts = 0), features)
-      TargetSize  <- cbind(data.table::data.table(Temp = 0), features)
+      TargetCount <- cbind(data.table(Counts = 0L), features)
+      TargetSize  <- cbind(data.table::data.table(Temp = 0L), features)
       data.table::setnames(TargetSize, "Temp", "Size")
     }
     
@@ -556,10 +543,7 @@ ID_TrainingDataGenerator <- function(data,
   }
   
   # Output data file----
-  return(
-    list(
-      CountData = CountFinal, 
-      SizeData = SizeFinal))
+  return(list(CountData = CountFinal, SizeData = SizeFinal))
 }
 
 #' ID_TrainingDataGenerator2 for subsetting data
@@ -593,7 +577,7 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Classification target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400 * eval(tar) <= eval(RandomStartDate), 
+      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400L * eval(tar) <= eval(RandomStartDate), 
                                get(TargetVariableName[1L])], na.rm = TRUE)
     } else {
       binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), 
@@ -602,23 +586,23 @@ ID_TrainingDataGenerator2 <- function(data,
     
     # Build records----
     if(!is.finite(binarytarget)) {
-      binarytarget <- 0
+      binarytarget <- 0L
     }
     
     # Time to event target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[2L])]
       temp <- temp[!is.na(temp)]
-      if(is.na(temp[1])) {
-        timetoevent <- 0
+      if(is.na(temp[1L])) {
+        timetoevent <- 0L
       } else {
         timetoevent <- temp[length(temp)]
       }
     } else {
       temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])]
       temp <- temp[!is.na(temp)]
-      if(is.na(temp[1])) {
-        timetoevent <- 0
+      if(is.na(temp[1L])) {
+        timetoevent <- 0L
       } else {
         timetoevent <- temp[length(temp)]
       }
@@ -629,7 +613,7 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-        outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
+        outcome <- as.character(data[get(DateVariableName) - 86400L * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
       } else {
         outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1])
       }
@@ -639,7 +623,7 @@ ID_TrainingDataGenerator2 <- function(data,
         , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
       
       # Remove meta data for feature creation set----
-      features <- histDemandRaw[order(-get(DateVariableName))][1,]
+      features <- histDemandRaw[order(-get(DateVariableName))][1L,]
       data.table::set(features, j = unique(TargetVariableName), value = NULL)
       data.table::set(features, j = "FC_Window", value = tar)
       
@@ -648,7 +632,7 @@ ID_TrainingDataGenerator2 <- function(data,
       data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
       data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
       data.table::setnames(temp, names(temp)[3L], "Outcome")
-      data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0, 1, 0))
+      data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0L, 1L, 0L))
       
       # Combine data sets----
       counter <- counter + 1L
@@ -690,18 +674,18 @@ ID_BuildTrainDataSets <- function(MetaData,
                                   FC_Periods,
                                   TimeUnit = "week",
                                   PowerRate = 0.5,
-                                  SampleRate = 5,
-                                  TargetWindowSamples = 5) {
+                                  SampleRate = 5L,
+                                  TargetWindowSamples = 5L) {
   
   # Define DateUnit----
   if(TimeUnit == "week") {
-    DateUnit <- 7
+    DateUnit <- 7L
   } else if (TimeUnit == "day") {
-    DateUnit <- 1
+    DateUnit <- 1L
   } else if (TimeUnit == "month") {
-    DateUnit <- 30
+    DateUnit <- 30L
   } else {
-    DateUnit <- 1
+    DateUnit <- 1L
     TimeUnit <- "day"
   }
   
@@ -720,11 +704,11 @@ ID_BuildTrainDataSets <- function(MetaData,
   for(level in LevelVector) {
     
     # Set iterations----
-    issuances  <- as.numeric(ceiling(MetaData[get(GroupingVariables) == eval(level), "Txns"][[1]]))
+    issuances  <- as.numeric(ceiling(MetaData[get(GroupingVariables) == eval(level), "Txns"][[1L]]))
     iterations <- ceiling((issuances^PowerRate)*SampleRate)
     
     # Check to ensure issuances and iterations exist----
-    if(length(issuances) == 0 | length(iterations) == 0) next
+    if(length(issuances) == 0L | length(iterations) == 0L) next
     j <- j + 1L
     
     # Track progress----
@@ -746,15 +730,15 @@ ID_BuildTrainDataSets <- function(MetaData,
       # Set Random Starting Date----
       if(lubridate::is.POSIXct(MetaData$MinDate[1])) {
         RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
-          DateUnit * ceiling(sample(86400:(86400 * DateUnit * DateRange), 1))
+          DateUnit * ceiling(sample(86400L:(86400L * DateUnit * DateRange), 1L))
       } else {
-        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
-          DateUnit * ceiling(sample(1:(DateUnit*DateRange), 1))
+        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1L]] + 
+          DateUnit * ceiling(sample(1L:(DateUnit*DateRange), 1L))
       }
       
       # Set Target Window Max Sample Window----
       TargetWindowMax <- min(ceiling(as.numeric(difftime(
-              lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1]], unit = TimeUnit), 
+              lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1L]], unit = TimeUnit), 
               RandomStartDate, 
               units = TimeUnit))),
               FC_Periods)
@@ -822,12 +806,8 @@ ID_BuildTrainDataSets <- function(MetaData,
   
   # Return data----
   if(Case == 1L) {
-    return(list(
-      CountModelData = CMD, 
-      SizeModelData = SMD))
+    return(list(CountModelData = CMD, SizeModelData = SMD))
   } else if(Case == 2L) {
-    return(list(
-      CountModelData = CMD, 
-      SizeModelData = NULL))
+    return(list(CountModelData = CMD, SizeModelData = NULL))
   }
 }
