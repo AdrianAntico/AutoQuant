@@ -380,6 +380,7 @@ ContinuousTimeDataGenerator <- function(data,
   # Back-transform GroupingVariables----
   if(length(ReverseGroupingVariables) > 1) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    data.table::setcolorder(CountModelData, c((ncol(CountModelData)-length(ReverseGroupingVariables)+1L):ncol(CountModelData),1L:(ncol(CountModelData)-length(ReverseGroupingVariables))))
     if(exists("SizeModelData")) SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
   } else {
     data.table::setnames(CountModelData, "GroupVar", eval(ReverseGroupingVariables))
