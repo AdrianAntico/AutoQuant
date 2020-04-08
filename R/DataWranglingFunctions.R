@@ -311,7 +311,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   
   # Queries----
   if(!is.null(Query)) {
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, Query))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
