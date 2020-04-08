@@ -749,6 +749,8 @@ ID_BuildTrainDataSets <- function(MetaData,
       # Set Target Window----
       TargetWindow <- sample(x = seq_len(TargetWindowMax), size = TargetWindowSamples, replace = TRUE)
       
+      print("Build training data")
+      
       # Create samples----
       if(Case == 1L) {
         SampleData <- ID_TrainingDataGenerator(
@@ -768,23 +770,22 @@ ID_BuildTrainDataSets <- function(MetaData,
           TargetWindow = TargetWindow)
       }
       
+      print("Build training data 2")
+      
       # Build data sets----
       if(Case == 1L) {
         if(i == 1L) {
           countData <- SampleData$CountData
           sizeData <- SampleData$SizeData
         } else {
-          countData <- data.table::rbindlist(
-            list(countData, SampleData$CountData), fill = TRUE)
-          sizeData <- data.table::rbindlist(
-            list(sizeData, SampleData$SizeData), fill = TRUE)
+          countData <- data.table::rbindlist(list(countData, SampleData$CountData), fill = TRUE)
+          sizeData <- data.table::rbindlist(list(sizeData, SampleData$SizeData), fill = TRUE)
         }
       } else if(Case == 2L) {
         if(i == 1L) {
           countData <- SampleData
         } else {
-          countData <- data.table::rbindlist(
-            list(countData, SampleData), fill = TRUE)
+          countData <- data.table::rbindlist(list(countData, SampleData), fill = TRUE)
         }
       }
     }
