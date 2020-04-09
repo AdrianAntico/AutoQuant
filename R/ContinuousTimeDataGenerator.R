@@ -348,9 +348,6 @@ ContinuousTimeDataGenerator <- function(data,
   parallel::stopCluster(cl)
   rm(cl)
   
-  print("here yo")
-  print(CountModelData)
-  
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
   if(length(ReverseGroupingVariables) > 1) {
@@ -571,8 +568,6 @@ ID_TrainingDataGenerator2 <- function(data,
                                       TimeUnit = NULL,
                                       TargetWindow = NULL) {
   
-  print("I AM NOW IN DG 2")
-  
   # historical data <--> point in time <--> target window----
   histDemandRaw <- data[get(DateVariableName) < eval(RandomStartDate)]
   
@@ -618,17 +613,17 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-        outcome <- as.character(data[get(DateVariableName) - 86400L * eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1L])
+        outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1L])
       } else {
-        outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[3L])][1L])
+        outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1L])
       }
       
       # Add in the time since last demand instance from RandomStartDate----
       data.table::setorderv(x = histDemandRaw, cols = eval(DateVariableName), order = -1L)
-      data.table::set(histDemandRaw, j = "TimeSinceLastDemand", value = as.numeric(difftime(RandomStartDate, histDemandRaw[[eval(DateVariableName)]], units = TimeUnit)))
+      features <- histDemandRaw[1L]
+      data.table::set(features, j = "TimeSinceLastDemand", value = as.numeric(difftime(RandomStartDate, features[[eval(DateVariableName)]], units = TimeUnit)))
         
       # Remove meta data for feature creation set----
-      features <- histDemandRaw[1L]
       data.table::set(features, j = unique(TargetVariableName), value = NULL)
       data.table::set(features, j = "FC_Window", value = tar)
       
@@ -694,8 +689,6 @@ ID_BuildTrainDataSets <- function(MetaData,
     TimeUnit <- "day"
   }
   
-  print("I AM HERE NOW")
-  
   # Set up collection objects----
   SMD <- list()
   CMD <- list()
@@ -753,8 +746,6 @@ ID_BuildTrainDataSets <- function(MetaData,
       # Set Target Window----
       TargetWindow <- sample(x = seq_len(TargetWindowMax), size = TargetWindowSamples, replace = TRUE)
       
-      print("Build training data")
-      
       # Create samples----
       if(Case == 1L) {
         SampleData <- ID_TrainingDataGenerator(
@@ -773,8 +764,6 @@ ID_BuildTrainDataSets <- function(MetaData,
           TimeUnit = TimeUnit,
           TargetWindow = TargetWindow)
       }
-      
-      print("Build training data 2")
       
       # Build data sets----
       if(Case == 1L) {
