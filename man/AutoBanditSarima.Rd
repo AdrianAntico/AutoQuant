@@ -45,6 +45,75 @@ AutoBanditSarima(data, TargetVariableName, DateColumnName,
 
 \item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result.}
 }
+\value{
+1. DataSetName - ModelFrequency means that I used forecast::findfrequency() to define the periodicity of the time series data (versus user-supplied)
+
+2. BoxCox - "skip" means I didn't use it
+
+3. IncludeDrift - TRUE or FALSE in forecast::Arima() 
+
+4. SeasonalDifferences - 0, 1, 2, ... Set to 0 by default as values > 0 can cause model runs to take significantly longer depending on the size of the data
+
+5. SeasonalMovingAverages - Q in Arima(p,d,q)(P,D,Q)
+
+6. SeasonalLags - P in Arima(p,d,q)(P,D,Q)
+
+7. MaxFourierTerms - used in xreg argument in Arima
+
+8. Differences - d in Arima(p,d,q)(P,D,Q)
+
+9. MovingAverages - q in Arima(p,d,q)(P,D,Q)
+
+10. Lags - p in Arima(p,d,q)(P,D,Q)
+
+11. BiasAdj - TRUE if BoxCox isn't "skip"
+
+12. GridName - ID for set of function arguments that are treated like hyperparameters
+
+13. Train_MSE - MSE of the training data fit
+
+14. Train_MAE - MAE of the training data fit
+
+15. Train_MAPE - MAPE of the training data fit
+
+16. Validate_MSE - MSE of the validation data fit
+
+17. Validate_MAE - MAE of the validation data fit
+
+18. Validate_MAPE - MAPE of the validation data fit
+
+19. Blended_MSE - MSE  weighted by the TrainWeighting argument so that the Blended MSE = TrainWeighting * Train_MSE + (1 - TrainWeighting)  * Validate_MSE
+
+20. Blended_MAE - like above
+
+21. Blended_MAPE - like above
+
+# Non overlapping set of Arima arguments in order of increasing sophistication
+
+22. BanditProbs_StratifyParsimonousGrid_3 
+
+23. BanditProbs_StratifyParsimonousGrid_4 
+
+24. BanditProbs_StratifyParsimonousGrid_5 
+
+25. BanditProbs_StratifyParsimonousGrid_6 
+
+26. BanditProbs_StratifyParsimonousGrid_7 
+
+27. BanditProbs_StratifyParsimonousGrid_8 
+
+28. BanditProbs_StratifyParsimonousGrid_9 
+
+29. BanditProbs_StratifyParsimonousGrid_10 
+
+30. RunTime - Time taken to build the model using the set of arguments
+
+31. ModelRankByDataType - There are 4 data types: user-supplied frequency or not (2) and forecast::tsclean() or not (2)
+
+32. ModelRank - the rank of the model based on the Blended_xxx measure
+
+34. ModelRunNumber - The order that the model was run
+}
 \description{
 AutoBanditSarima is a multi-armed bandit model testing framework for SARIMA. Randomized probability matching is the underlying bandit algorithm. Model evaluation is done by blending the training error and the validation error from testing the model on out of sample data. The bandit algorithm compares the performance of the current build against the previous builds which starts with the classic auto.arima from the forecast package. Depending on how many lags, moving averages, seasonal lags and moving averages you test the number of combinations of features to test begins to approach 100,000 different combinations of settings. The function tests out transformations, differencing, and variations of the lags and moving averages. The paramter space is broken up into various buckets that are increasing in sophistication. The bandit algorithm samples from those buckets and based on many rounds of testing it determines which buckets to generate samples from more frequently based on the models performance coming from that bucket. All of the models have performance data collected on them and a final rebuild is initiated when a winner is found. The rebuild process begins by retraining the model with the settings that produced the best performance. If the model fails to build, for whatever reason, the next best buildable model is rebuilt.
 }
