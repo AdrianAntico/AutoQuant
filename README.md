@@ -8,6 +8,11 @@
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
+# RemixAutoML
+> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** 
+
+You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
+
 # Installing RemixAutoML in 2 Easy Steps:
 
 ### 1. First, install R package dependencies:
@@ -60,11 +65,6 @@ install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3
 If you're having still having trouble installing, see if this issue helps you out:
 
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
-
-# RemixAutoML
-> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** 
-
-You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
 
 ## RemixAutoML Blogs: 
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
