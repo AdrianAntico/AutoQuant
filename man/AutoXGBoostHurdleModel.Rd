@@ -5,12 +5,12 @@
 \title{AutoXGBoostHurdleModel is generalized hurdle modeling framework}
 \usage{
 AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
+  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
   IDcols = NULL, TransformNumericColumns = NULL, SplitRatios = c(0.7,
   0.2, 0.1), TreeMethod = "hist", NThreads = max(1,
-  parallel::detectCores() - 2), ModelID = "ModelTest", Paths = NULL,
-  MetaDataPaths = NULL, SaveModelObjects = TRUE, Trees = 1000,
-  GridTune = TRUE, MaxModelsInGrid = 1, NumOfParDepPlots = 10,
+  parallel::detectCores() - 2L), ModelID = "ModelTest", Paths = NULL,
+  MetaDataPaths = NULL, SaveModelObjects = TRUE, Trees = 1000L,
+  GridTune = TRUE, MaxModelsInGrid = 1L, NumOfParDepPlots = 10L,
   PassInGrid = NULL)
 }
 \arguments{
@@ -44,7 +44,7 @@ AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
-\item{Trees}{Default 15000}
+\item{Trees}{Default 1000}
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
@@ -66,22 +66,22 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
   data,
   ValidationData = NULL,
   TestData = NULL,
-  Buckets = 1,
+  Buckets = 1L,
   TargetColumnName = "Target_Variable",
-  FeatureColNames = 4:ncol(data),
-  IDcols = 1:3,
+  FeatureColNames = 4L:ncol(data),
+  IDcols = 1L:3L,
   TransformNumericColumns = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   TreeMethod = "hist",
-  NThreads = max(1, parallel::detectCores()-2),
+  NThreads = max(1L, parallel::detectCores()-2L),
   ModelID = "ModelID",
   Paths = NULL,
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
-  Trees = 1000,
+  Trees = 1000L,
   GridTune = FALSE,
-  MaxModelsInGrid = 1,
-  NumOfParDepPlots = 10,
+  MaxModelsInGrid = 1L,
+  NumOfParDepPlots = 10L,
   PassInGrid = NULL)
 }
 }
