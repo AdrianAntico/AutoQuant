@@ -5,13 +5,13 @@
 \title{AutoCatBoostHurdleModel for generalized hurdle modeling}
 \usage{
 AutoCatBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
+  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
   PrimaryDateColumn = NULL, IDcols = NULL,
   TransformNumericColumns = NULL, ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1), task_type = "GPU",
   ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
-  SaveModelObjects = TRUE, Trees = 1000, GridTune = TRUE,
-  MaxModelsInGrid = 1, NumOfParDepPlots = 10, PassInGrid = NULL)
+  SaveModelObjects = TRUE, Trees = 1000L, GridTune = TRUE,
+  MaxModelsInGrid = 1L, NumOfParDepPlots = 10L, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -46,7 +46,7 @@ AutoCatBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
-\item{Trees}{Default 15000}
+\item{Trees}{Default 1000}
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
@@ -64,15 +64,15 @@ AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd
 }
 \examples{
 \donttest{
-Output <- RemixAutoML::AutoCatBoostHurdleModel(
+Output <- AutoCatBoostHurdleModel(
   data,
   ValidationData = NULL,
   TestData = NULL,
-  Buckets = 1,
+  Buckets = 1L,
   TargetColumnName = "Target_Variable",
-  FeatureColNames = 4:ncol(data),
+  FeatureColNames = 4L:ncol(data),
   PrimaryDateColumn = "Date",
-  IDcols = 1:3,
+  IDcols = 1L:3L,
   TransformNumericColumns = NULL,
   ClassWeights = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
@@ -81,10 +81,10 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   Paths = NULL,
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
-  Trees = 1000,
+  Trees = 1000L,
   GridTune = FALSE,
-  MaxModelsInGrid = 1,
-  NumOfParDepPlots = 10,
+  MaxModelsInGrid = 1L,
+  NumOfParDepPlots = 10L,
   PassInGrid = NULL)
 }
 }
