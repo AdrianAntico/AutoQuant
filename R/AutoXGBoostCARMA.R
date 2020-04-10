@@ -1181,27 +1181,27 @@ AutoXGBoostCARMA <- function(data,
       # Create single future record----
       if(DebugMode) print("Create single future record----")
       d <- max(UpdateData[[eval(DateColumnName)]])
-      if (tolower(TimeUnit) == "hour") {
+      if (tolower(TimeUnit) %chin% c("hour","hours")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
-      } else if (tolower(TimeUnit) == "1min") {
+      } else if (tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
-      } else if (tolower(TimeUnit) == "5min") {
+      } else if (tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(5))
-      } else if (tolower(TimeUnit) == "10min") {
+      } else if (tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(10))
-      } else if (tolower(TimeUnit) == "15min") {
+      } else if (tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(15))
-      } else if (tolower(TimeUnit) == "30min") {
+      } else if (tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(30))
-      } else if (tolower(TimeUnit) == "day") {
+      } else if (tolower(TimeUnit) %chin% c("day","days")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::days(1))
-      } else if (tolower(TimeUnit) == "week") {
+      } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::weeks(1))
-      } else if (tolower(TimeUnit) == "month") {
+      } else if (tolower(TimeUnit) %chin% c("month","months")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
-      } else if (tolower(TimeUnit) == "quarter") {
+      } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
-      } else if (tolower(TimeUnit) == "year") {
+      } else if (tolower(TimeUnit) %chin% c("years","year")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
       }
       
