@@ -17,7 +17,7 @@
 #' @param IfSaveModel Save as "mojo" or "standard"
 #' @param MaxMem Set the maximum memory your system can provide
 #' @param NThreads Set the number of threads you want to dedicate to the model building
-#' @param Trees Default 15000
+#' @param Trees Default 1000
 #' @param GridTune Set to TRUE if you want to grid tune the models
 #' @param MaxModelsInGrid Set to a numeric value for the number of models to try in grid tune
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
@@ -29,29 +29,29 @@
 #'   data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
-#'   Buckets = 1,
+#'   Buckets = 1L,
 #'   TargetColumnName = "Target_Variable",
-#'   FeatureColNames = 4:ncol(data),
+#'   FeatureColNames = 4L:ncol(data),
 #'   TransformNumericColumns = NULL,
 #'   Distribution = "gaussian",
 #'   SplitRatios = c(0.7, 0.2, 0.1),
-#'   NThreads = max(1, parallel::detectCores()-2),
+#'   NThreads = max(1L, parallel::detectCores()-2L),
 #'   ModelID = "ModelID",
 #'   Paths = NULL,
 #'   MetaDataPaths = NULL,
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "mojo",
-#'   Trees = 1000,
+#'   Trees = 1000L,
 #'   GridTune = FALSE,
-#'   MaxModelsInGrid = 1,
-#'   NumOfParDepPlots = 10,
+#'   MaxModelsInGrid = 1L,
+#'   NumOfParDepPlots = 10L,
 #'   PassInGrid = NULL)
 #' }
 #' @export
 AutoH2oGBMHurdleModel <- function(data,
                                   ValidationData = NULL,
                                   TestData = NULL,
-                                  Buckets = 0,
+                                  Buckets = 0L,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   TransformNumericColumns = NULL,
@@ -63,68 +63,52 @@ AutoH2oGBMHurdleModel <- function(data,
                                   SaveModelObjects = TRUE,
                                   IfSaveModel = "mojo",
                                   MaxMem = "28G",
-                                  NThreads = max(1, parallel::detectCores()-2),
-                                  Trees = 1000,
+                                  NThreads = max(1L, parallel::detectCores()-2L),
+                                  Trees = 1000L,
                                   GridTune = TRUE,
-                                  MaxModelsInGrid = 1,
-                                  NumOfParDepPlots = 10,
+                                  MaxModelsInGrid = 1L,
+                                  NumOfParDepPlots = 10L,
                                   PassInGrid = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Check args----
-  if (is.character(Buckets) |
-      is.factor(Buckets) | is.logical(Buckets)) {
+  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
     return("Buckets needs to be a numeric scalar or vector")
   }
   if (!is.logical(SaveModelObjects)) {
     return("SaveModelOutput needs to be set to either TRUE or FALSE")
   }
-  if (is.character(Trees) |
-      is.factor(Trees) | is.logical(Trees) | length(Trees) > 1) {
+  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) {
     return("NumTrees needs to be a numeric scalar")
   }
   if (!is.logical(GridTune)) {
     return("GridTune needs to be either TRUE or FALSE")
   }
-  if (is.character(MaxModelsInGrid) |
-      is.factor(MaxModelsInGrid) |
-      is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1) {
+  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) {
     return("NumberModelsInGrid needs to be a numeric scalar")
   }
   
   # Initialize H2O----
-  h2o::h2o.init(max_mem_size = MaxMem, 
-                nthreads = NThreads, 
-                enable_assertions = FALSE)
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Initialize collection and counter----
   ModelInformationList <- list()
   if(!is.null(Paths)) {
-    if (length(Paths) == 1) {
-      Paths <- rep(Paths, length(Buckets) + 1)
-    }    
+    if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)    
   }
   if(!is.null(MetaDataPaths)) {
-    if (length(MetaDataPaths) == 1) {
-      MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1)
-    }    
+    if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)    
   }
 
   # Data.table check----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if (!data.table::is.data.table(data)) data.table::setDT(data)
   if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) {
-      ValidationData <- data.table::as.data.table(ValidationData)
-    }
+    if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   }
   if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
+    if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   }
   
   # FeatureColumnNames----
@@ -135,107 +119,45 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  if(length(Buckets) == 1) {
-    data.table::set(
-      data,
-      i = which(data[[eval(TargetColumnName)]] <= Buckets[1]),
-      j = "Target_Buckets",
-      value = 0
-    )
-    data.table::set(
-      data,
-      i = which(data[[eval(TargetColumnName)]] > Buckets[1]),
-      j = "Target_Buckets",
-      value = 1
-    )
+  if(length(Buckets) == 1L) {
+    data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
+    data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1L]), j = "Target_Buckets", value = 1L)
   } else {
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (i == 1) {
-        data.table::set(
-          data,
-          i = which(data[[eval(TargetColumnName)]] <= Buckets[i]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
-      } else if (i == length(Buckets) + 1) {
-        data.table::set(
-          data,
-          i = which(data[[eval(TargetColumnName)]] > Buckets[i -
-                                                               1]),
-          j = "Target_Buckets",
-          value = as.factor(paste0(Buckets[i-1], "+"))
-        )
+    for (i in seq_len(length(Buckets) + 1L)) {
+      if (i == 1L) {
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
+      } else if (i == length(Buckets) + 1L) {
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
       } else {
-        data.table::set(
-          data,
-          i = which(data[[eval(TargetColumnName)]] <= Buckets[i] &
-                      data[[eval(TargetColumnName)]] > Buckets[i-1]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }      
     }
   }
   
   # Add target bucket column----
   if (!is.null(ValidationData)) {
-    ValidationData[, Target_Buckets := as.factor(Buckets[1])]
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (i == 1) {
-        data.table::set(
-          ValidationData,
-          i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
-      } else if (i == length(Buckets) + 1) {
-        data.table::set(
-          ValidationData,
-          i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i -
-                                                                         1]),
-          j = "Target_Buckets",
-          value = as.factor(paste0(Buckets[i - 1], "+"))
-        )
+    ValidationData[, Target_Buckets := as.factor(Buckets[1L])]
+    for (i in seq_len(length(Buckets) + 1L)) {
+      if (i == 1L) {
+        data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
+      } else if (i == length(Buckets) + 1L) {
+        data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
-        data.table::set(
-          ValidationData,
-          i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] &
-                      ValidationData[[eval(TargetColumnName)]] > Buckets[i -
-                                                                           1]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
+        data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }
     }
   }
   
   # Add target bucket column----
   if (!is.null(TestData)) {
-    TestData[, Target_Buckets := as.factor(Buckets[1])]
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (i == 1) {
-        data.table::set(
-          TestData,
-          i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
-      } else if (i == length(Buckets) + 1) {
-        data.table::set(
-          TestData,
-          i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1]),
-          j = "Target_Buckets",
-          value = as.factor(paste0(Buckets[i - 1], "+"))
-        )
+    TestData[, Target_Buckets := as.factor(Buckets[1L])]
+    for (i in seq_len(length(Buckets) + 1L)) {
+      if (i == 1L) {
+        data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
+      } else if (i == length(Buckets) + 1L) {
+        data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
-        data.table::set(
-          TestData,
-          i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i] &
-                      TestData[[eval(TargetColumnName)]] > Buckets[i -
-                                                                     1]),
-          j = "Target_Buckets",
-          value = as.factor(Buckets[i])
-        )
+        data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }
     }
   }
@@ -244,12 +166,11 @@ AutoH2oGBMHurdleModel <- function(data,
   if (is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
       data = data,
-      NumDataSets = 3,
+      NumDataSets = 3L,
       Ratios = SplitRatios,
       PartitionType = "random",
       StratifyColumnNames = "Target_Buckets",
-      TimeColumnName = NULL
-    )
+      TimeColumnName = NULL)
     data <- DataSets$TrainData
     ValidationData <- DataSets$ValidationData
     TestData <- DataSets$TestData
@@ -257,7 +178,7 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Begin classification model building----
-  if (length(Buckets) == 1) {
+  if (length(Buckets) == 1L) {
     ClassifierModel <- AutoH2oGBMClassifier(
       data = data,
       ValidationData = ValidationData,
@@ -333,101 +254,74 @@ AutoH2oGBMHurdleModel <- function(data,
   TestData <- TestData[, Predictions := NULL]
   
   # Change name for classification----
-  if(length(Buckets) == 1) {
+  if(length(Buckets) == 1L) {
     data.table::setnames(TestData, "p0","Predictions_C0")
     data.table::setnames(TestData, "p1","Predictions_C1")
   } else {
-    data.table::setnames(TestData,
-                         names(TestData)[1:length(Buckets)],
-                         paste0("P_",gsub('[[:punct:] ]+',' ',names(TestData)[1:length(Buckets)])))
-    data.table::setnames(TestData,
-                         names(TestData)[length(Buckets)+1],
-                         paste0("P+_",gsub('[[:punct:] ]+',' ',names(TestData)[length(Buckets)+1])))
+    data.table::setnames(TestData, names(TestData)[1L:length(Buckets)], paste0("P_",gsub('[[:punct:] ]+',' ',names(TestData)[1L:length(Buckets)])))
+    data.table::setnames(TestData, names(TestData)[length(Buckets)+1L], paste0("P+_",gsub('[[:punct:] ]+',' ',names(TestData)[length(Buckets)+1L])))
   }
 
   # Remove Model Object----
   rm(ClassModel)
   
   # Remove Target_Buckets----
-  data[, Target_Buckets := NULL]
-  ValidationData[, Target_Buckets := NULL]
+  data.table::set(data, j = "Target_Buckets", value = NULL)
+  data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
   
   # Begin regression model building----
-  counter <- 0
-  Degenerate <- 0
-  for (bucket in rev(seq_len(length(Buckets) + 1))) {
+  counter <- 0L
+  Degenerate <- 0L
+  for (bucket in rev(seq_len(length(Buckets) + 1L))) {
     # Filter By Buckets----
-    if (bucket == max(seq_len(length(Buckets) + 1))) {
+    if (bucket == max(seq_len(length(Buckets) + 1L))) {
       if (!is.null(TestData)) {
-        trainBucket <-
-          data[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        testBucket <-
-          TestData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        testBucket[, setdiff(names(testBucket), names(data)) := NULL]
+        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
-        trainBucket <-
-          data[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
+        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
-    } else if (bucket == 1) {
+    } else if (bucket == 1L) {
       if (!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
-        testBucket <-
-          TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
-        testBucket[, setdiff(names(testBucket), names(data)) := NULL]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
+        testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
+        data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
         testBucket <- NULL
       }
     } else {
       if (!is.null(TestData)) {
-        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) &
-                              get(TargetColumnName) > eval(Buckets[bucket -
-                                                                     1])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) &
-                           get(TargetColumnName) > eval(Buckets[bucket -
-                                                                  1])]
-        testBucket <-
-          TestData[get(TargetColumnName) <= eval(Buckets[bucket]) &
-                     get(TargetColumnName) > eval(Buckets[bucket -
-                                                            1])]
-        testBucket[, setdiff(names(testBucket), names(data)) := NULL]
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
-        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) &
-                              get(TargetColumnName) > eval(Buckets[bucket -
-                                                                     1])]
-        validBucket <-
-          ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) &
-                           get(TargetColumnName) > eval(Buckets[bucket -
-                                                                  1])]
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
     }
     
     # Load Winning Grid if it exists----
     if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <-
-        data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
+      gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
     if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <-
-        data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+      gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
     
     # AutoCatBoostRegression()----
-    if (trainBucket[, .N] != 0) {
-      if (var(trainBucket[[eval(TargetColumnName)]]) > 0) {
-        counter <- counter + 1
-        if (bucket == max(seq_len(length(Buckets) + 1))) {
+    if (trainBucket[, .N] != 0L) {
+      if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
+        counter <- counter + 1L
+        if (bucket == max(seq_len(length(Buckets) + 1L))) {
           TestModel <- AutoH2oGBMRegression(
             data = trainBucket,
             ValidationData = validBucket,
@@ -467,7 +361,7 @@ AutoH2oGBMHurdleModel <- function(data,
             MaxModelsInGrid = MaxModelsInGrid,
             model_path = Paths,
             metadata_path = MetaDataPaths,
-            ModelID = paste0(ModelID,"_",bucket-1),
+            ModelID = paste0(ModelID,"_",bucket-1L),
             NumOfParDepPlots = NumOfParDepPlots,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
@@ -486,7 +380,7 @@ AutoH2oGBMHurdleModel <- function(data,
         gc()
         
         # Score TestData----
-        if (bucket == max(seq_len(length(Buckets) + 1))) {
+        if (bucket == max(seq_len(length(Buckets) + 1L))) {
           if(!is.null(TransformNumericColumns)) {
             TestData <- AutoH2OMLScoring(
               ScoringData = TestData,
@@ -584,26 +478,20 @@ AutoH2oGBMHurdleModel <- function(data,
         rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if (bucket == max(seq_len(length(Buckets) + 1))) {
-          data.table::setnames(TestData,
-                               "Predictions",
-                               paste0("Predictions_", Buckets[bucket - 1], "+"))
+        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+          data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
         } else {
-          data.table::setnames(TestData,
-                               "Predictions",
-                               paste0("Predictions_", Buckets[bucket]))
+          data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
         }
       } else {
-        
-        # Use single value for predictions in the case of zero variance----
-        if (bucket == max(seq_len(length(Buckets) + 1))) {
-          Degenerate <- Degenerate + 1
-          TestData[, paste0("Predictions_", Buckets[bucket - 1], "+") := Buckets[bucket]]
-          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
+        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+          Degenerate <- Degenerate + 1L
+          data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
         } else {
-          Degenerate <- Degenerate + 1
-          TestData[, paste0("Predictions_", Buckets[bucket]) := Buckets[bucket]]
-          data.table::setcolorder(TestData, c(ncol(TestData), 1:(ncol(TestData)-1)))
+          Degenerate <- Degenerate + 1L
+          data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket]), value = Buckets[bucket])
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
         }
       }
     }
@@ -616,66 +504,37 @@ AutoH2oGBMHurdleModel <- function(data,
   # Secondary logic: for i == 1, need to create the final column first
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
-  if(counter > 2) {
-    for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1) {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[[i]] *
-                          TestData[[i + counter + Degenerate]])
+  if(counter > 2L) {
+    for (i in seq_len(length(Buckets)+1L)) {
+      if (i == 1L) {
+        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + counter + Degenerate]])
       } else {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[["UpdatedPrediction"]] +
-                          TestData[[i]] *
-                          TestData[[i + counter + Degenerate]])
+        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
       }
     }  
-  } else if(counter == 2 & length(Buckets) != 1) {
+  } else if(counter == 2L & length(Buckets) != 1L) {
     for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1) {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[[i]] *
-                          TestData[[i + 1 + counter]])
+      if (i == 1L) {
+        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + 1L + counter]])
       } else {
-        data.table::set(TestData,
-                        j = "UpdatedPrediction",
-                        value = TestData[["UpdatedPrediction"]] +
-                          TestData[[i]] *
-                          TestData[[i + 1 + counter]])
+        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
       }
     }  
-  } else if(counter == 2 & length(Buckets) == 1) {
-    data.table::set(TestData,
-                    j = "UpdatedPrediction",
-                    value = TestData[[1]] * TestData[[3]] + 
-                      TestData[[2]] * TestData[[4]])
+  } else if(counter == 2L & length(Buckets) == 1L) {
+    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]])
   } else {
-    data.table::set(TestData,
-                    j = "UpdatedPrediction",
-                    value = TestData[[1]] * TestData[[3]] + 
-                      TestData[[2]] * TestData[[4]])
+    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] +  TestData[[2L]] * TestData[[4L]])
   }
   
   # Regression r2 via sqrt of correlation
-  r_squared <-
-    (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
+  r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      data.table::fwrite(TestData,
-                         file = paste0(MetaDataPaths[1],
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))
+    if(!is.null(MetaDataPaths[1L])) {
+      data.table::fwrite(TestData, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ValidationData.csv"))
     } else {
-      data.table::fwrite(TestData,
-                         file = paste0(Paths[1],
-                                       "/",
-                                       ModelID,
-                                       "_ValidationData.csv"))      
+      data.table::fwrite(TestData, file = paste0(Paths[1L], "/", ModelID, "_ValidationData.csv"))      
     }
   }
   
@@ -686,25 +545,18 @@ AutoH2oGBMHurdleModel <- function(data,
     TargetColName = eval(TargetColumnName),
     GraphType = "calibration",
     PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
+    aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
-                            round(r_squared, 3)))
+    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1],
-                             "/",
-                             ModelID, "_EvaluationPlot.png"))
+    if(!is.null(MetaDataPaths[1L])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationPlot.png"))
     } else {
-      ggplot2::ggsave(paste0(Paths[1],
-                             "/",
-                             ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationPlot.png"))      
     }
   }
   
@@ -715,136 +567,83 @@ AutoH2oGBMHurdleModel <- function(data,
     TargetColName = eval(TargetColumnName),
     GraphType = "boxplot",
     PercentileBucket = 0.05,
-    aggrfun = function(x)
-      mean(x, na.rm = TRUE)
-  )
+    aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title----
   EvaluationBoxPlot <- EvaluationBoxPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",
-                            round(r_squared, 3)))
+    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1],
-                             "/",
-                             ModelID,
-                             "_EvaluationBoxPlot.png"))
+    if(!is.null(MetaDataPaths[1L])) {
+      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))
     } else {
-      ggplot2::ggsave(paste0(Paths[1],
-                             "/",
-                             ModelID,
-                             "_EvaluationBoxPlot.png"))      
+      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))      
     }
   }
   
   # Regression Evaluation Metrics----
   EvaluationMetrics <-
-    data.table::data.table(
-      Metric = c("Poisson", "MAE",
-                 "MAPE", "MSE", "MSLE",
-                 "KL", "CS", "R2"),
-      MetricValue = rep(999999, 8)
-    )
-  i <- 0
-  MinVal <-
-    min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
+    data.table::data.table(Metric = c("Poisson","MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999L, 8L))
+  i <- 0L
+  MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
   for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1)
+    i <- as.integer(i + 1L)
     tryCatch({
-      # Regression Grid Evaluation Metrics----
       if (tolower(metric) == "poisson") {
-        if (MinVal > 0 &
-            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1)]
+        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
+          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1L)]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mape") {
-        TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1))]
+        TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1L))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "mse") {
-        TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2]
+        TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if (tolower(metric) == "msle") {
-        if (MinVal > 0 &
-            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2]
+        if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
+          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "kl") {
-        if (MinVal > 0 &
-            min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0) {
-          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) /
-                                                             (UpdatedPrediction + 1))]
+        if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
+          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if (tolower(metric) == "cs") {
-        TestData[, ':=' (
-          Metric1 = get(TargetColumnName) * UpdatedPrediction,
-          Metric2 = get(TargetColumnName) ^ 2,
-          Metric3 = UpdatedPrediction ^ 2
-        )]
-        Metric <-
-          TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) *
-                                                      sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
+        TestData[, ':=' (Metric1 = get(TargetColumnName) * UpdatedPrediction, Metric2 = get(TargetColumnName) ^ 2L, Metric3 = UpdatedPrediction ^ 2L)]
+        Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if (tolower(metric) == "r2") {
-        TestData[, ':=' (
-          Metric1 = (get(TargetColumnName) - mean(get(
-            TargetColumnName
-          ))) ^ 2,
-          Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2
-        )]
-        Metric <-
-          1 - TestData[, sum(Metric2, na.rm = TRUE)] /
-          TestData[, sum(Metric1, na.rm = TRUE)]
+        TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2)]
+        Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
       }
-      data.table::set(
-        EvaluationMetrics,
-        i = i,
-        j = 2L,
-        value = round(Metric, 4)
-      )
-      data.table::set(EvaluationMetrics,
-                      i = i,
-                      j = 3L,
-                      value = NA)
-    }, error = function(x)
-      "skip")
+      data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
+      data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
+    }, error = function(x) "skip")
   }
   
   # Remove Cols----
-  TestData[, ':=' (
-    Metric = NULL,
-    Metric1 = NULL,
-    Metric2 = NULL,
-    Metric3 = NULL
-  )]
+  TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
   
   # Save EvaluationMetrics to File
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
   if (SaveModelObjects) {
     if(!is.null(MetaDataPaths[1])) {
-      data.table::fwrite(MetaDataPaths,
-                         file = paste0(Paths[1],
-                                       "/",
-                                       ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(MetaDataPaths, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
-      data.table::fwrite(EvaluationMetrics,
-                         file = paste0(Paths[1],
-                                       "/",
-                                       ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(EvaluationMetrics, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))      
     }
   }
   
   # Regression Partial Dependence----
   ParDepPlots <- list()
-  j <- 0
+  j <- 0L
   ParDepBoxPlots <- list()
-  k <- 0
+  k <- 0L
   for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
     tryCatch({
       Out <- ParDepCalPlots(
@@ -854,16 +653,11 @@ AutoH2oGBMHurdleModel <- function(data,
         IndepVar = VariableImportance[i, Variable],
         GraphType = "calibration",
         PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      j <- j + 1
-      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-        Out
-    }, error = function(x)
-      "skip")
+        FactLevels = 10L,
+        Function = function(x) mean(x, na.rm = TRUE))
+      j <- j + 1L
+      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+    }, error = function(x) "skip")
     tryCatch({
       Out1 <- ParDepCalPlots(
         data = ValidationData,
@@ -872,26 +666,19 @@ AutoH2oGBMHurdleModel <- function(data,
         IndepVar = VariableImportance[i, Variable],
         GraphType = "boxplot",
         PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x)
-          mean(x, na.rm = TRUE)
-      )
-      
-      k <- k + 1
-      ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-        Out1
-    }, error = function(x)
-      "skip")
+        FactLevels = 10L,
+        Function = function(x) mean(x, na.rm = TRUE))
+      k <- k + 1L
+      ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+    }, error = function(x) "skip")
   }
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      save(ParDepBoxPlots,
-           file = paste0(MetaDataPaths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(MetaDataPaths[1L])) {
+      save(ParDepBoxPlots, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ParDepBoxPlots.R"))
     } else {
-      save(ParDepBoxPlots,
-           file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))      
+      save(ParDepBoxPlots, file = paste0(Paths[1L], "/", ModelID, "_ParDepBoxPlots.R"))      
     }
   }
 
@@ -904,7 +691,5 @@ AutoH2oGBMHurdleModel <- function(data,
       EvaluationBoxPlot = EvaluationBoxPlot,
       EvaluationMetrics = EvaluationMetrics,
       PartialDependencePlots = ParDepPlots,
-      PartialDependenceBoxPlots = ParDepBoxPlots
-    )
-  )
+      PartialDependenceBoxPlots = ParDepBoxPlots))
 }

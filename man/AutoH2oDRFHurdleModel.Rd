@@ -5,12 +5,12 @@
 \title{AutoH2oDRFHurdleModel is generalized hurdle modeling framework}
 \usage{
 AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0, TargetColumnName = NULL, FeatureColNames = NULL,
+  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
   TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
   ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
   SaveModelObjects = TRUE, IfSaveModel = "mojo", MaxMem = "28G",
-  NThreads = max(1, parallel::detectCores() - 2), Trees = 1000,
-  GridTune = TRUE, MaxModelsInGrid = 1, NumOfParDepPlots = 10,
+  NThreads = max(1L, parallel::detectCores() - 2L), Trees = 1000L,
+  GridTune = TRUE, MaxModelsInGrid = 1L, NumOfParDepPlots = 10L,
   PassInGrid = NULL)
 }
 \arguments{
@@ -44,7 +44,7 @@ AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{NThreads}{Set the number of threads you want to dedicate to the model building}
 
-\item{Trees}{Default 15000}
+\item{Trees}{Default 1000}
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
@@ -62,25 +62,25 @@ AutoH2oDRFHurdleModel is generalized hurdle modeling framework
 }
 \examples{
 \donttest{
-Output <- RemixAutoML::AutoH2oDRFHurdleModel(
+Output <- AutoH2oDRFHurdleModel(
   data,
   ValidationData = NULL,
   TestData = NULL,
-  Buckets = 1,
+  Buckets = 1L,
   TargetColumnName = "Target_Variable",
   FeatureColNames = 4:ncol(data),
   TransformNumericColumns = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
-  NThreads = max(1, parallel::detectCores()-2),
+  NThreads = max(1L, parallel::detectCores()-2L),
   ModelID = "ModelID",
   Paths = NULL,
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
-  Trees = 1000,
+  Trees = 1000L,
   GridTune = FALSE,
-  MaxModelsInGrid = 1,
-  NumOfParDepPlots = 10,
+  MaxModelsInGrid = 1L,
+  NumOfParDepPlots = 10L,
   PassInGrid = NULL)
 }
 }
