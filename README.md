@@ -26,10 +26,8 @@ to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost
 for (i in to_install) {
   message(paste("looking for ", i))
   if(i == "catboost" & !requireNamespace(i)) {
-    
-    # Choose a different release version (currently v17.3 and v0.21 are the latest releases that are fully functional
     devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.17.5/catboost-R-Windows-0.17.5.tgz', build_opts = c("--no-multiarch"))
+    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Windows-0.22.tgz', build_opts = c("--no-multiarch"))
   } else if(i == "h2o" & !requireNamespace(i)) {
     pkgs <- c("RCurl","jsonlite")
     for (pkg in pkgs) {
