@@ -96,7 +96,7 @@ threshOptim <- function(data,
   # Plot of results
   Plot <- ggplot2::ggplot(results, ggplot2::aes(x = Thresholds, y = Utilities)) + 
     ggplot2::geom_line(color = "blue") +
-    RemixAutoAI::ChartTheme(AngleX = 0) + 
+    ChartTheme(AngleX = 0) + 
     ggplot2::ggtitle(paste0("Threshold Optimization: best cutoff at ",thresh)) +
     ggplot2::geom_vline(xintercept = thresh, linetype="dotted", color = "red", size=1.5)
   return(list(Thresholds = thresh, EvaluationTable = results, Plot = Plot))
