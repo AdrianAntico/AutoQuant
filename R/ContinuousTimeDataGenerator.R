@@ -363,13 +363,17 @@ ContinuousTimeDataGenerator <- function(data,
   if(SaveData) {
     
     # Save modeling data sets----
-    data.table::fwrite(CountModelData, file = file.path(FilePath, "CountModelData.csv"))
+    if(Case == 1L) {
+      data.table::fwrite(CountModelData, file = file.path(FilePath, "CountModelData.csv"))
+    } else if(Case == 2L) {
+      data.table::fwrite(CountModelData, file = file.path(FilePath, "ModelingData.csv"))
+    }
     if(exists("SizeModelData")) data.table::fwrite(SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
     
     # Save column names for modeling data----
     CountPredNames <- names(CountModelData)
     if(exists("SizeModelData")) SizeModelData <- names(SizeModelData)
-    save(CountPredNames, file = file.path(FilePath,"CountPredNames.Rdata"))
+    save(CountPredNames, file = file.path(FilePath,"ModelDataColumnNames.csv"))
     if(exists("SizeModelData")) save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
   }
   
@@ -377,7 +381,7 @@ ContinuousTimeDataGenerator <- function(data,
   if(Case == 1L) {
     return(list(CountData = CountModelData, SizeData = SizeModelData))
   } else if(Case == 2L) {
-    return(list(CountData = CountModelData))
+    return(list(Data = CountModelData))
   }
 }
 
