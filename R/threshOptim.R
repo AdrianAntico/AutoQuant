@@ -59,29 +59,18 @@ threshOptim <- function(data,
   
   # Optimize each column's classification threshold ::
   popTrue <- mean(data[[(actTar)]])
-  store   <- list()
+  store <- list()
   j <- 0
   options(warn = -1)
   for (i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
     j <- j + 1
-    tp      <-
-      sum(data.table::fifelse(data[[actTar]] == 1 &
-                         data[[predTar]] >= i, 1, 0))
-    tn      <-
-      sum(data.table::fifelse(data[[actTar]] == 0 &
-                         data[[predTar]] <  i, 1, 0))
-    fp      <-
-      sum(data.table::fifelse(data[[actTar]] == 0 &
-                         data[[predTar]] >= i, 1, 0))
-    fn      <-
-      sum(data.table::fifelse(data[[actTar]] == 1 &
-                         data[[predTar]] <  i, 1, 0))
-    tpr     <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
-    fpr     <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
-    utility <-
-      popTrue * (tpProfit * tpr +
-                   fnProfit * (1 - tpr)) +
-      (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
+    tp <- sum(data.table::fifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+    tn <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
+    fp <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
+    fn <- sum(data.table::fifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
+    tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn)) 
+    fpr <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
+    utility <- popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
     store[[j]] <- c(i, utility)
   }
   all <- data.table::rbindlist(list(store))
