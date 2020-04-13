@@ -101,32 +101,68 @@ AutoLagRollStats <- function(data,
   if(!is.null(Kurt_RollWindows)) RollFunctions <- c(RollFunctions,"kurt")
   if(!is.null(Quantiles_Selected)) RollFunctions <- c(RollFunctions,Quantiles_Selected)
   if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
-  if(RollOnLag1) RollOnLag1 <- 1 else RollOnLag1 <- 0
+  if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
   if("raw" %chin% tolower(TimeGroups)) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
   }
   if(any(c("hours","hour","hr","hrs","hourly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "hour")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
   }
   if(any(c("days","day","dy","dd","d") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "day")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
   }
   if(any(c("weeks","week","weaks","weak","wk","wkly","wks") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "weeks")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
   }
   if(any(c("months","month","mth","mnth","monthly","mnthly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "months")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
   }
   if(any(c("quarter","qarter","quarterly","q","qtly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "quarter")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
   }
   if(any(c("year","annual","yearly","annually","ann","yr","yrly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "year")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
   }
   TimeGroups <- TimeGroupPlaceHolder
   if(is.null(TimeUnitAgg)) {
-    TimeUnitAgg <- TimeGroups[1]
+    TimeUnitAgg <- TimeGroups[1L]
   }
   #The correct TimeGroups are: c("hour", "day", "weeks", "months", "quarter", "year", "1min", "5min", "10min", "15min", "30min", "45min")
   
@@ -148,8 +184,14 @@ AutoLagRollStats <- function(data,
   # No Categoricals----
   if(is.null(IndependentGroups) & is.null(HierarchyGroups)) {
     
+    # Initialize counter----
+    counter <- 0L
+    
     # Loop through various time aggs----
     for(timeaggs in TimeGroups) {
+      
+      # Increment counter----
+      counter <- counter + 1L
       
       # Check time scale----
       if(timeaggs != TimeUnitAgg) {
@@ -167,16 +209,16 @@ AutoLagRollStats <- function(data,
         
         # Ensure TimeBetween is null for aggregated data----
         if(!is.null(TimeBetween)) TimeBetween <- NULL
-        
+
         # Build features----
         tempData <- DT_GDL_Feature_Engineering(
           tempData,
-          lags            = Lags,
-          periods         = MA_RollWindows,
-          SDperiods       = SD_RollWindows,
-          Skewperiods     = Skew_RollWindows,
-          Kurtperiods     = Kurt_RollWindows,
-          Quantileperiods = Quantile_RollWindows,
+          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs       = RollFunctions,
           targets         = Targets,
           groupingVars    = NULL,
@@ -192,12 +234,12 @@ AutoLagRollStats <- function(data,
         # Build features----
         data <- DT_GDL_Feature_Engineering(
           data,
-          lags            = Lags,
-          periods         = MA_RollWindows,
-          SDperiods       = SD_RollWindows,
-          Skewperiods     = Skew_RollWindows,
-          Kurtperiods     = Kurt_RollWindows,
-          Quantileperiods = Quantile_RollWindows,
+          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs       = RollFunctions,
           targets         = Targets,
           groupingVars    = NULL,
@@ -265,7 +307,7 @@ AutoLagRollStats <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Categorical Names Fully Interacted (Check if there already)----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
@@ -305,12 +347,12 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           tempData <- DT_GDL_Feature_Engineering(
             tempData,
-            lags            = Lags,
-            periods         = MA_RollWindows,
-            SDperiods       = SD_RollWindows,
-            Skewperiods     = Skew_RollWindows,
-            Kurtperiods     = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
@@ -329,12 +371,12 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           data <- DT_GDL_Feature_Engineering(
             data,
-            lags            = Lags,
-            periods         = MA_RollWindows,
-            SDperiods       = SD_RollWindows,
-            Skewperiods     = Skew_RollWindows,
-            Kurtperiods     = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
@@ -415,12 +457,12 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           tempData <- DT_GDL_Feature_Engineering(
             tempData,
-            lags            = Lags,
-            periods         = MA_RollWindows,
-            SDperiods       = SD_RollWindows,
-            Skewperiods     = Skew_RollWindows,
-            Kurtperiods     = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
@@ -439,12 +481,12 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           data <- DT_GDL_Feature_Engineering(
             data,
-            lags            = Lags,
-            periods         = MA_RollWindows,
-            SDperiods       = SD_RollWindows,
-            Skewperiods     = Skew_RollWindows,
-            Kurtperiods     = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
@@ -562,32 +604,68 @@ AutoLagRollStatsScoring <- function(data,
   if(!is.null(Kurt_RollWindows)) RollFunctions <- c(RollFunctions,"kurt")
   if(!is.null(Quantiles_Selected)) RollFunctions <- c(RollFunctions,Quantiles_Selected)
   if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
-  if(RollOnLag1) RollOnLag1 <- 1 else RollOnLag1 <- 0
+  if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
   if("raw" %chin% tolower(TimeGroups)) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
   }
   if(any(c("hours","hour","hr","hrs","hourly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "hour")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
   }
   if(any(c("days","day","dy","dd","d") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "day")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("days","day","dy","dd","d"))] <- "day"
   }
   if(any(c("weeks","week","weaks","weak","wk","wkly","wks") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "weeks")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("weeks","week","weaks","weak","wk","wkly","wks"))] <- "weeks"
   }
   if(any(c("months","month","mth","mnth","monthly","mnthly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "months")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("months","month","mth","mnth","monthly","mnthly"))] <- "months"
   }
   if(any(c("quarter","qarter","quarterly","q","qtly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "quarter")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("quarter","qarter","quarterly","q","qtly"))] <- "quarter"
   }
   if(any(c("year","annual","yearly","annually","ann","yr","yrly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "year")
+    if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(MA_RollWindows)) names(MA_RollWindows)[which(names(MA_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(SD_RollWindows)) names(SD_RollWindows)[which(names(SD_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Skew_RollWindows)) names(Skew_RollWindows)[which(names(Skew_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Kurt_RollWindows)) names(Kurt_RollWindows)[which(names(Kurt_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
+    if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
   }
   TimeGroups <- TimeGroupPlaceHolder
   if(is.null(TimeUnitAgg)) {
-    TimeUnitAgg <- TimeGroups[1]
+    TimeUnitAgg <- TimeGroups[1L]
   }
   #The correct TimeGroups are: c("hour", "day", "weeks", "months", "quarter", "year", "1min", "5min", "10min", "15min", "30min", "45min")
   
@@ -653,12 +731,12 @@ AutoLagRollStatsScoring <- function(data,
         # Build GDL Features----
         tempData <- Partial_DT_GDL_Feature_Engineering(
           tempData,
-          lags = Lags,
-          periods = MA_RollWindows,
-          SDperiods = SD_RollWindows,
-          Skewperiods = Skew_RollWindows,
-          Kurtperiods = Kurt_RollWindows,
-          Quantileperiods = Quantile_RollWindows,
+          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs = RollFunctions,
           targets = Targets,
           groupingVars = NULL,
@@ -678,12 +756,12 @@ AutoLagRollStatsScoring <- function(data,
         # Build GDL Features----
         KeepData <- Partial_DT_GDL_Feature_Engineering(
           data,
-          lags = Lags,
-          periods = MA_RollWindows,
-          SDperiods = SD_RollWindows,
-          Skewperiods = Skew_RollWindows,
-          Kurtperiods = Kurt_RollWindows,
-          Quantileperiods = Quantile_RollWindows,
+          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs = RollFunctions,
           targets = Targets,
           groupingVars = NULL,
@@ -752,7 +830,7 @@ AutoLagRollStatsScoring <- function(data,
   if(!is.null(HierarchyGroups)) {
     
     # Categorical Names Fully Interacted----
-    Categoricals <- RemixAutoAI::FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
+    Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Check if there already----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
@@ -806,12 +884,12 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           tempData <- Partial_DT_GDL_Feature_Engineering(
             data = tempData,
-            lags = Lags,
-            periods = MA_RollWindows,
-            SDperiods = SD_RollWindows,
-            Skewperiods = Skew_RollWindows,
-            Kurtperiods = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
             groupingVars = Fact,
@@ -831,12 +909,12 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
             tempData,
-            lags = Lags,
-            periods = MA_RollWindows,
-            SDperiods = SD_RollWindows,
-            Skewperiods = Skew_RollWindows,
-            Kurtperiods = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
             groupingVars = Fact,
@@ -989,12 +1067,12 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           tempData <- Partial_DT_GDL_Feature_Engineering(
             data = tempData,
-            lags = Lags,
-            periods = MA_RollWindows,
-            SDperiods = SD_RollWindows,
-            Skewperiods = Skew_RollWindows,
-            Kurtperiods = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
             groupingVars = Fact,
@@ -1014,12 +1092,12 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
             data = data,
-            lags = Lags,
-            periods = MA_RollWindows,
-            SDperiods = SD_RollWindows,
-            Skewperiods = Skew_RollWindows,
-            Kurtperiods = Kurt_RollWindows,
-            Quantileperiods = Quantile_RollWindows,
+            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
+            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
             groupingVars = IndependentGroups,
