@@ -256,6 +256,9 @@ ContinuousTimeDataGenerator <- function(data,
   if(!is.null(GroupingVariables)) {
     data.table::setorderv(datax, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L,-1L))
     datax[, TimeTrend := 1L:.N, by = list(GroupVar)]
+  } else {
+    data.table::setorderv(datax, cols = c(eval(DateVariableName)), order = c(-1L))
+    datax[, TimeTrend := 1L:.N]
   }
   
   # Run Final Build----
@@ -350,7 +353,7 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
-  if(length(ReverseGroupingVariables) > 1) {
+  if(length(ReverseGroupingVariables) > 1L) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     data.table::setcolorder(CountModelData, c((ncol(CountModelData)-length(ReverseGroupingVariables)+1L):ncol(CountModelData),1L:(ncol(CountModelData)-length(ReverseGroupingVariables))))
     if(exists("SizeModelData")) SizeModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
@@ -381,10 +384,10 @@ ContinuousTimeDataGenerator <- function(data,
   if("SelectRows" %chin% names(CountModelData)) data.table::set(CountModelData, j = "SelectRows", value = NULL)
   
   # Reorder columns----
-  if(!is.null(TimeTrend)) {
-    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-3L):ncol(CountModelData), 1:(ncol(CountModelData)-4L)))
+  if("TimeTrend" %chin% names(CountModelData)) {
+    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-3L):ncol(CountModelData), 1L:(ncol(CountModelData)-4L)))
   } else {
-    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-2L):ncol(CountModelData), 1:(ncol(CountModelData)-3L)))
+    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-2L):ncol(CountModelData), 1L:(ncol(CountModelData)-3L)))
   }
   
   # Return data sets----
