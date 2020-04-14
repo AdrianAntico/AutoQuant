@@ -377,6 +377,16 @@ ContinuousTimeDataGenerator <- function(data,
     if(exists("SizeModelData")) save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
   }
   
+  # Remove select rows----
+  if("SelectRows" %chin% names(CountModelData)) data.table::set(CountModelData, j = "SelectRows", value = NULL)
+  
+  # Reorder columns----
+  if(!is.null(TimeTrend)) {
+    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-3L):ncol(CountModelData), 1:(ncol(CountModelData)-4L)))
+  } else {
+    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-2L):ncol(CountModelData), 1:(ncol(CountModelData)-3L)))
+  }
+  
   # Return data sets----
   if(Case == 1L) {
     return(list(CountData = CountModelData, SizeData = SizeModelData))
