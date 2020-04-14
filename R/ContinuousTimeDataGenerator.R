@@ -385,9 +385,9 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Reorder columns----
   if("TimeTrend" %chin% names(CountModelData)) {
-    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-3L):ncol(CountModelData), 1L:(ncol(CountModelData)-4L)))
-  } else {
     data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-2L):ncol(CountModelData), 1L:(ncol(CountModelData)-3L)))
+  } else {
+    data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-1L):ncol(CountModelData), 1L:(ncol(CountModelData)-2L)))
   }
   
   # Return data sets----
