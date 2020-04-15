@@ -82,7 +82,7 @@ ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
 Returns two data.table data sets: The first is a modeling data set for the count distribution while the second data set if for the size model data set.
 }
 \description{
-ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling. Score any time without extrapolation.
+ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling of transactional panel data.
 }
 \examples{
 \donttest{

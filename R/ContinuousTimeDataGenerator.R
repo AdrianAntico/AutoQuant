@@ -1,6 +1,6 @@
 #' ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling
 #'
-#' ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling. Score any time without extrapolation.
+#' ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling of transactional panel data.
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
