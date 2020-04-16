@@ -9,7 +9,7 @@
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 # RemixAutoML
-> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package.
+> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. E.g. ?RemixAutoML::ModelDataPrep
 
 ### 1. Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
 * Pull in data from your data warehouse (or wherever)
