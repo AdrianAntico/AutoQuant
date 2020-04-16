@@ -9,7 +9,13 @@
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 # RemixAutoML
-> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code> Many of them come with examples you can run. There's also a full listing of all exported functions by category at the bottom of this readme. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer shoot me an email there.
+> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. I utilize well-written data.table code for all data management tasks. Currently I'm utilizing CatBoost, H2O, and XGBoost for all the automated Machine Learning related models because they're highly accurate, flexible, can handle big data, and GPU is enabled for CatBoost and XGBoost. I've automated the steps to utilize the forecast package to its upmost, along with blending methods from reinforcement learning, to make forecasting even more accurate and automated. 
+
+Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function run extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the authors admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeated to deliver those features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically more on demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
+
+I'm aware the documentation isn't as complete as I'd like, as of April 2020, so here is some guidance for navigating and using the package. For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me over an email there.
+
+P.S. I'm not a fan of the ellipses operator (** kwargs and * args in Python)
 
 ### Supervised Learning
 #### An example workflow with function references
@@ -40,9 +46,9 @@
 <details><summary>click to expand</summary>
 <p>
  
-You have to have your data fully prepared before running the below functions:
+Supply a data.table to run the functions below:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-2. For panel data or single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
+2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
 
 </p>
 </details>
