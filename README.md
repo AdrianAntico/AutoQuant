@@ -9,7 +9,7 @@
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 # RemixAutoML
-> This is a collection of functions that I have made to speed up machine learning and to ensure high quality modeling results and output are generated. They are great at establishing solid baselines that are extremely challenging to beat using alternative methods (if at all). **They are intended to make the development cycle fast and robust, along with making operationalizing quick and easy, with low latency model scoring.** 
+> This is a collection of functions that I have made to speed up the development cycle of quantitative modeling projects. They are great for establishing solid baselines that are challenging to beat.
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
 
