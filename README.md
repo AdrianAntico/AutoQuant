@@ -11,7 +11,7 @@
 # RemixAutoML
 > This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. E.g. ?RemixAutoML::ModelDataPrep
 
-### 1. Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
+#### Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
 * Pull in data from your data warehouse (or wherever)
 * Run all the appropriate feature engineering functions, such as AutoLagRollStats(), AutoWord2VecModeler(), and CreateCalendarVariables()
 * Partition your data with AutoDataPartition() if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
@@ -27,7 +27,7 @@
 * Select a model and run some grid tuning (or several if you can do this concurrently)
 * Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. 
 
-### 2. Forecasting
+#### Forecasting
 You have to have your data fully prepared before running the below functions:
 * For single series check out AutoBanditSarima(), AutoBanditNNet(), AutoTBATS(), or AutoTS() (older function; no longer developing)
 * For panel data check out AutoCatBoostCARMA(), AutoXGBoostCARMA(), AutoH2oMLCARMA(), AutoH2oGBMCARMA(), AutoH2oGLMCARMA(), or AutoH2oDRFCARMA() or build a loop and run functions from (a)
