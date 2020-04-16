@@ -32,8 +32,7 @@
 10. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
 12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
 12. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
-13. Select a model and rerun it with the grid tuning argument set to TRUE (or several if you can do this concurrently)
-14. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get that time to explore so you can learn new things.
+13. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get that time to explore so you can learn new things.
 
 </p>
 </details>
