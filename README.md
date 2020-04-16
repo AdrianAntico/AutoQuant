@@ -11,7 +11,7 @@
 # RemixAutoML
 > This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. Many of them come with examples you can run. <code>?RemixAutoML::ModelDataPrep</code>. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer shoot me an email there.
 
-#### Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
+#### Supervised Learning - An Example Initial Workflow
 <details><summary>click to expand</summary>
 <p>
  
@@ -33,14 +33,14 @@
 </p>
 </details>
 
-#### Forecasting
+#### Forecasting: Single Series and Panel Data using Time Series Models or Machine Learning Models
 
 <details><summary>click to expand</summary>
 <p>
  
 You have to have your data fully prepared before running the below functions:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-2. For panel data check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
+2. For panel data or single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
 
 </p>
 </details>
