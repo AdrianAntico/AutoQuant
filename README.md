@@ -17,7 +17,7 @@
 
 ### Supervised Learning
 #### An example workflow with function references
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
  
 1. Pull in data from your data warehouse (or from wherever) and clean it up
@@ -41,7 +41,7 @@
 ### Forecasting
 #### Single series and panel data using Time Series models or Machine Learning models
 
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
  
 Supply a data.table to run the functions below:
