@@ -119,7 +119,7 @@ If you're having still having trouble installing see if the issue below helps ou
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
 ## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
-<details><summary>click to expand</summary> 
+<details><summary>Expand to view content</summary> 
 <p>
   
 #### Regression:
@@ -340,7 +340,7 @@ ________________________________________________________________________________
 </details>
 
 ## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
   
 <img src="Images/ScoringCatBoost.png" align="center" width="400" />
@@ -361,7 +361,7 @@ ________________________________________________________________________________
 </details>
 
 ## Automated Time Series Modeling Functions: <img src="Images/AutoCARMA2.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
   
 <img src="Images/AutoTSPlot.png" align="center" width="300" />
@@ -547,7 +547,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Recommender System Functions: <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
   
 ##### **AutoRecomDataCreate()**
@@ -571,7 +571,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Unsupervised Learning Functions: <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
 
 ##### **GenTSAnomVars()**
@@ -592,7 +592,7 @@ For each of the models tested internally, several aspects should be noted:
 </details>
 
 ## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
   
 ##### **AutoLagRollStats()** 
@@ -645,7 +645,7 @@ For each of the models tested internally, several aspects should be noted:
 
 
 ## Automated Model Evaluation Functions: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
   
 ##### **RemixClassificationMetrics()**
@@ -678,7 +678,7 @@ For each of the models tested internally, several aspects should be noted:
 
 
 ## Utilities, EDA, and Misc. Functions: <img src="Images/MiscImage.png" align="right" width="80" />
-<details><summary>click to expand</summary>
+<details><summary>Expand to view content</summary>
 <p>
  
 ##### **AutoWordFreq()** 
