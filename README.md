@@ -9,30 +9,31 @@
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 # RemixAutoML
-> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. Many of them come with examples you can run. <code>?RemixAutoML::ModelDataPrep</code>
+> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. Many of them come with examples you can run. <code>?RemixAutoML::ModelDataPrep</code>. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer shoot me an email there.
 
 #### Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
-* Pull in data from your data warehouse (or wherever)
-* Run all the appropriate feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoWord2VecModeler()</code>, and <code>CreateCalendarVariables()</code>
-* Partition your data with <code>AutoDataPartition()</code> if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
-* Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
-* Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
-* Run <code>AutoH2oGBMRegression()</code> or <code>AutoH2oGBMClassifier()</code> or <code>AutoH2oGBMMultiClass()</code> if you have the patience to wait for a CPU build.
-* Run <code>AutoH2oGLMRegression()</code> or <code>AutoH2oGLMClassifier()</code> or <code>AutoH2oGLMMultiClass()</code> if you have the patience to wait for a CPU build.
-* Run <code>AutoH2oMLRegression()</code> or <code>AutoH2oMLClassifier()</code> or <code>AutoH2oMLMultiClass()</code> to run H2O's AutoML function inside the Remix framework.
-* Run <code>AutoH2oDRFRegression()</code> or <code>AutoH2oDRFClassifier()</code> or <code>AutoH2oDRFMultiClass()</code> H2O's Distributed Random Forest
-* Pick your model of choice and run some grid tuning
-* Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
-* If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
-* Select a model and run some grid tuning (or several if you can do this concurrently)
-* Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. 
-
+```
+1. Pull in data from your data warehouse (or wherever)
+2. Run all the appropriate feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoWord2VecModeler()</code>, and <code>CreateCalendarVariables()</code>
+3. Partition your data with <code>AutoDataPartition()</code> if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
+4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
+5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
+6. Run <code>AutoH2oGBMRegression()</code> or <code>AutoH2oGBMClassifier()</code> or <code>AutoH2oGBMMultiClass()</code> if you have the patience to wait for a CPU build.
+7. Run <code>AutoH2oGLMRegression()</code> or <code>AutoH2oGLMClassifier()</code> or <code>AutoH2oGLMMultiClass()</code> if you have the patience to wait for a CPU build.
+8. Run <code>AutoH2oMLRegression()</code> or <code>AutoH2oMLClassifier()</code> or <code>AutoH2oMLMultiClass()</code> to run H2O's AutoML function inside the Remix framework.
+9. Run <code>AutoH2oDRFRegression()</code> or <code>AutoH2oDRFClassifier()</code> or <code>AutoH2oDRFMultiClass()</code> H2O's Distributed Random Forest
+10. Pick your model of choice and run some grid tuning
+11. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
+12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
+13. Select a model and run some grid tuning (or several if you can do this concurrently)
+14. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. 
+```
 #### Forecasting
+```
 You have to have your data fully prepared before running the below functions:
-* For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-* For panel data check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
-
-You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
+1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
+2. For panel data check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
+```
 
 # Installing RemixAutoML in 2 Easy Steps:
 
