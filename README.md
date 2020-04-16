@@ -9,7 +9,28 @@
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 # RemixAutoML
-> This is a collection of functions that I have made to speed up the development cycle of quantitative modeling projects. They are great for establishing solid baselines that are challenging to beat.
+> This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package.
+
+### 1. Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
+a) Pull in data from your data warehouse (or wherever)
+b) Run all the appropriate feature engineering functions, such as AutoLagRollStats(), AutoWord2VecModeler(), and CreateCalendarVariables()
+c) Partition your data with AutoDataPartition() if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
+d) Run AutoCatBoostRegression() or AutoCatBoostClassifier() or AutoCatBoostMultiClass() with GPU if you have access to one
+OR Run AutoXGBoostRegression() or AutoXGBoostClassifier() or AutoXGBoostMultiClass() with GPU if you have access to one
+OR Run AutoH2oGBMRegression() or AutoH2oGBMClassifier() or AutoH2oGBMMultiClass() if you have the patience to wait for a CPU build.
+OR Run AutoH2oGLMRegression() or AutoH2oGLMClassifier() or AutoH2oGLMMultiClass() if you have the patience to wait for a CPU build.
+OR Run AutoH2oMLRegression() or AutoH2oMLClassifier() or AutoH2oMLMultiClass() to run H2O's AutoML function inside the Remix framework.
+OR Run AutoH2oDRFRegression() or AutoH2oDRFClassifier() or AutoH2oDRFMultiClass() H2O's Distributed Random Forest
+OR Pick your model of choice and run some grid tuning
+e) Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
+f) If you ran one of the Auto__Classifer() function supply the validation to the function RemixClassificationMetrics() for an exhaustive threshold analysis
+g) Select a model and run some grid tuning (or several if you can do this concurrently)
+h) Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. 
+
+### 2. Forecasting
+You have to have your data fully prepared before running the below functions:
+a) For single series check out AutoBanditSarima(), AutoBanditNNet(), AutoTBATS(), or AutoTS() (older function; no longer developing)
+b) For panel data check out AutoCatBoostCARMA(), AutoXGBoostCARMA(), AutoH2oMLCARMA(), AutoH2oGBMCARMA(), AutoH2oGLMCARMA(), or AutoH2oDRFCARMA() or build a loop and run functions from (a)
 
 You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer, contact me via LinkedIn email.
 
