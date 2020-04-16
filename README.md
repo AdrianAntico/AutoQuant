@@ -15,8 +15,10 @@ You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" targ
 
 # Installing RemixAutoML in 2 Easy Steps:
 
-### 1. First, install R package dependencies:
-  
+### 1. First, install R package dependencies: 
+XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
+ [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
+ 
 ```
 library(devtools)
 to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
@@ -49,18 +51,17 @@ for (i in to_install) {
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
-# Installation Troubleshooting 
-
-The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency in R. Since <code>catboost</code> is not on CRAN, it can only be installed via GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+## Installation Troubleshooting 
+The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+If you're still having trouble submit an issue and I'll work with you to get it installed.
 
 ```
-# Be sure to use the version you want versus what is listed here.
+# Be sure to use the version you want versus what is listed below
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
 install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
-
-If you're having still having trouble installing, see if this issue helps you out:
+If you're having still having trouble installing see if the issue below helps out:
 
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
 
