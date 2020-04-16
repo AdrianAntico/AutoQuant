@@ -12,7 +12,9 @@
 > This package is a collection of functions I created to speed up the development process of building predictive models, time series included. They are great for establishing solid baselines that are challenging to beat. I'm aware the documentation is pretty thin as of April 2020 so here is some guidance for navigating and using the package. Of course, for every function you can call the help file. Many of them come with examples you can run. <code>?RemixAutoML::ModelDataPrep</code>. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to be a contributer shoot me an email there.
 
 #### Supervised Learning: Using the package for building supervised learning models with the end goal of minimizing error:
-```
+<details><summary>click to expand</summary>
+<p>
+ 
 1. Pull in data from your data warehouse (or wherever)
 2. Run all the appropriate feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoWord2VecModeler()</code>, and <code>CreateCalendarVariables()</code>
 3. Partition your data with <code>AutoDataPartition()</code> if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
@@ -27,13 +29,21 @@
 12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
 13. Select a model and run some grid tuning (or several if you can do this concurrently)
 14. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. 
-```
+
+</p>
+</details>
+
 #### Forecasting
-```
+
+<details><summary>click to expand</summary>
+<p>
+ 
 You have to have your data fully prepared before running the below functions:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
 2. For panel data check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
-```
+
+</p>
+</details>
 
 # Installing RemixAutoML in 2 Easy Steps:
 
