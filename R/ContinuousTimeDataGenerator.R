@@ -135,7 +135,7 @@ ContinuousTimeDataGenerator <- function(data,
     }
   }
   DateTypeConversionEnd <- Sys.time()
-  ProfilerList[["DateConversion"]] <- RoundDatesEnd - RoundDatesStart
+  ProfilerList[["DateConversion"]] <- DateTypeConversionEnd - DateTypeConversionStart
   
   # Round down dates (add option to not do this)----
   RoundDatesStart <- Sys.time()
