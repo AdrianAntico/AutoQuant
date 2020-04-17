@@ -136,6 +136,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   DateTypeConversionEnd <- Sys.time()
   ProfilerList[["DateConversion"]] <- DateTypeConversionEnd - DateTypeConversionStart
+  print(paste0("DateConversion run time = ", ProfilerList[["DateConversion"]]))
   
   # Round down dates (add option to not do this)----
   RoundDatesStart <- Sys.time()
@@ -144,6 +145,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   RoundDatesEnd <- Sys.time()
   ProfilerList[["RoundDownDates"]] <- RoundDatesEnd - RoundDatesStart
+  print(paste0("RoundDownDates run time = ", ProfilerList[["RoundDownDates"]]))
   
   # Group Concatenation----
   GroupConcatenationStart <- Sys.time()
@@ -161,6 +163,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   GroupConcatenationEnd <- Sys.time()
   ProfilerList[["GroupConcatenation"]] <- GroupConcatenationEnd - GroupConcatenationStart
+  print(paste0("GroupConcatenation run time = ", ProfilerList[["GroupConcatenation"]]))
   
   # Ensure data is aggregated to proper time unit----
   if(Case == 1L) {
@@ -175,6 +178,7 @@ ContinuousTimeDataGenerator <- function(data,
   # Update timing list----
   DataPrepEnd <- Sys.time()
   ProfilerList[["InitialDataPrepAll"]] <- DataPrepEnd - DataPrepStart
+  print(paste0("InitialDataPrepAll run time = ", ProfilerList[["InitialDataPrepAll"]]))
   
   # Generate Metadata----
   if(PrintSteps) print("Running ID_MetadataGenerator()")
@@ -188,6 +192,7 @@ ContinuousTimeDataGenerator <- function(data,
     DateInterval = TimeUnit)
   MetaDataEnd <- Sys.time()
   ProfilerList[["MetaDataGeneratorAll"]] <- MetaDataEnd - MetaDataStart
+  print(paste0("MetaDataGeneratorAll run time = ", ProfilerList[["MetaDataGeneratorAll"]]))
   
   # Save Data----
   if(SaveData) data.table::fwrite(MetaData, file = file.path(FilePath, "MetaData.csv"))
@@ -204,6 +209,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   CreateCalendarVariablesEnd <- Sys.time()
   ProfilerList[["CreateCalendarVariables()"]] <- CreateCalendarVariablesEnd - CreateCalendarVariablesStart
+  print(paste0("CreateCalendarVariables() run time = ", ProfilerList[["CreateCalendarVariables()"]]))
   
   # Add Holiday Variables----
   if(PrintSteps) print("Running CreateHolidayVariables()")
@@ -218,6 +224,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   CreateHolidayVariablesEnd <- Sys.time()
   ProfilerList[["CreateHolidayVariables()"]] <- CreateHolidayVariablesEnd - CreateHolidayVariablesStart
+  print(paste0("CreateHolidayVariables() run time = ", ProfilerList[["CreateHolidayVariables()"]]))
   
   # Holiday Lags and Moving Average----
   if(PrintSteps) print("Running AutoLagRollStats() for Holiday Counts")
@@ -252,6 +259,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   CreateHolidayLagsEnd <- Sys.time()
   ProfilerList[["HolidayLags"]] <- CreateHolidayLagsEnd - CreateHolidayLagsStart
+  print(paste0("HolidayLags run time = ", ProfilerList[["HolidayLags"]]))
   
   # Add in the time varying features----
   if(PrintSteps) print("Running AutoLagRollStats()")
@@ -284,6 +292,7 @@ ContinuousTimeDataGenerator <- function(data,
     Quantiles_Selected    = c(Quantiles_Selected))
   AutoLagRollStatsEnd <- Sys.time()
   ProfilerList[["AutoLagRollStats()"]] <- AutoLagRollStatsEnd - AutoLagRollStatsStart
+  print(paste0("AutoLagRollStats() run time = ", ProfilerList[["AutoLagRollStats()"]]))
   
   # Add Time Trend Variable----
   if(PrintSteps) print("Running Time Trend Calculation")
@@ -297,6 +306,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   AutoLagRollStatsEnd <- Sys.time()
   ProfilerList[["TimeTrend"]] <- TimeTrendEnd - TimeTrendStart
+  print(paste0("TimeTrend run time = ", ProfilerList[["TimeTrend"]]))
   
   # Run Final Build----
   if(PrintSteps) print("Running ID_BuildTrainDataSets()")
@@ -390,6 +400,7 @@ ContinuousTimeDataGenerator <- function(data,
   rm(cl)
   BuildDataSetsEnd <- Sys.time()
   ProfilerList[["BuildDataSets"]] <- BuildDataSetsEnd - BuildDataSetsStart
+  print(paste0("BuildDataSets run time = ", ProfilerList[["BuildDataSets"]]))
   
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
@@ -404,6 +415,7 @@ ContinuousTimeDataGenerator <- function(data,
   }
   BackTransformEnd <- Sys.time()
   ProfilerList[["BackTransform"]] <- BackTransformEnd - BackTransformStart
+  print(paste0("Backtransform run time = ", ProfilerList[["BackTransform"]]))
   
   # Save Data----
   if(SaveData) {
