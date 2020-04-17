@@ -117,87 +117,116 @@ ContinuousTimeDataGenerator <- function(data,
                                         TargetWindowSamples = 5,
                                         PrintSteps = TRUE) {
   
+  # Initialize timer list----
+  ProfilerList <- list()
+  
   # Ensure is data.table----
   if(PrintSteps) print("Running initial data prep")
+  DataPrepStart <- Sys.time()
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Ensure Date Column is a Date----
+  DateTypeConversionStart <- Sys.time()
   if(is.character(data[[eval(DateVariableName)]])) {
     if(tolower(TimeUnit) == "raw") {
       data.table::set(data, j = eval(DateVariableName), value = as.POSIXct(data[[eval(DateVariableName)]]))
     } else {
-      data.table::set(data, j = eval(DateVariableName), value = as.Date(data[[eval(DateVariableName)]]))      
+      data.table::set(data, j = eval(DateVariableName), value = as.Date(data[[eval(DateVariableName)]]))
     }
   }
+  DateTypeConversionEnd <- Sys.time()
+  ProfilerList[["DateConversion"]] <- RoundDatesEnd - RoundDatesStart
   
   # Round down dates (add option to not do this)----
+  RoundDatesStart <- Sys.time()
   if(TimeUnit != "raw") {
     data.table::set(data, j = eval(DateVariableName), value = lubridate::floor_date(data[[eval(DateVariableName)]], unit = TimeUnit))
   }
-  
-  # Copy data----
-  datax <- data.table::copy(data)
+  RoundDatesEnd <- Sys.time()
+  ProfilerList[["RoundDownDates"]] <- RoundDatesEnd - RoundDatesStart
   
   # Group Concatenation----
+  GroupConcatenationStart <- Sys.time()
   if (!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
-      datax[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupingVariables]
-      datax[, eval(GroupingVariables) := NULL]      
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupingVariables]
+      data[, eval(GroupingVariables) := NULL]      
     } else {
-      data.table::setnames(datax, eval(GroupingVariables), "GroupVar")
+      data.table::setnames(data, eval(GroupingVariables), "GroupVar")
     }
     
     # Modify GroupingVariables argument
     ReverseGroupingVariables <- GroupingVariables
     GroupingVariables <- "GroupVar"
   }
+  GroupConcatenationEnd <- Sys.time()
+  ProfilerList[["GroupConcatenation"]] <- GroupConcatenationEnd - GroupConcatenationStart
   
-  # Ensure datax is aggregated to proper time unit----
+  # Ensure data is aggregated to proper time unit----
   if(Case == 1L) {
-    if(TimeUnit != "raw") datax <- datax[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), by = c(eval(GroupingVariables), eval(DateVariableName))]
+    if(TimeUnit != "raw") {
+      AggregateTimeUnitStart <- Sys.time()
+      data <- data[, lapply(.SD, sum), .SDcols = c(eval(TargetVariableName)), by = c(eval(GroupingVariables), eval(DateVariableName))]
+      AggregateTimeUnitEnd <- Sys.time()
+      ProfilerList[["AggregateByTimeUnit"]] <- AggregateTimeUnitEnd - AggregateTimeUnitStart
+    }
   }
+  
+  # Update timing list----
+  DataPrepEnd <- Sys.time()
+  ProfilerList[["InitialDataPrepAll"]] <- DataPrepEnd - DataPrepStart
   
   # Generate Metadata----
   if(PrintSteps) print("Running ID_MetadataGenerator()")
+  MetaDataStart <- Sys.time()
   MetaData <- ID_MetadataGenerator(
-    data = datax,
+    data = data,
     DateVariableName = DateVariableName,
     GroupingVariables = "GroupVar",
     MinTimeWindow = MinTimeWindow,
     MinTxnRecords = MinTxnRecords,
     DateInterval = TimeUnit)
+  MetaDataEnd <- Sys.time()
+  ProfilerList[["MetaDataGeneratorAll"]] <- MetaDataEnd - MetaDataStart
   
   # Save Data----
   if(SaveData) data.table::fwrite(MetaData, file = file.path(FilePath, "MetaData.csv"))
   
   # Add Calendar Variables----
   if(PrintSteps) print("Running CreateCalendarVariables()")
+  CreateCalendarVariablesStart <- Sys.time()
   if(!is.null(CalendarVariables)) {
-    datax <- CreateCalendarVariables(
-      datax, 
+    data <- CreateCalendarVariables(
+      data, 
       DateCols = DateVariableName,
       AsFactor = FALSE, 
       TimeUnits = CalendarVariables)    
   }
+  CreateCalendarVariablesEnd <- Sys.time()
+  ProfilerList[["CreateCalendarVariables()"]] <- CreateCalendarVariablesEnd - CreateCalendarVariablesStart
   
   # Add Holiday Variables----
   if(PrintSteps) print("Running CreateHolidayVariables()")
+  CreateHolidayVariablesStart <- Sys.time()
   if(!is.null(HolidayGroups)) {
-    datax <- CreateHolidayVariables(
-      datax, 
+    data <- CreateHolidayVariables(
+      data, 
       DateCols = DateVariableName,
       HolidayGroups = HolidayGroups, 
       Holidays = NULL,
-      GroupingVars = "GroupVar")    
+      GroupingVars = "GroupVar")
   }
+  CreateHolidayVariablesEnd <- Sys.time()
+  ProfilerList[["CreateHolidayVariables()"]] <- CreateHolidayVariablesEnd - CreateHolidayVariablesStart
   
   # Holiday Lags and Moving Average----
   if(PrintSteps) print("Running AutoLagRollStats() for Holiday Counts")
+  CreateHolidayLagsStart <- Sys.time()
   if(!is.null(HolidayGroups)) {
-    datax <- AutoLagRollStats(
+    data <- AutoLagRollStats(
       
       # Data Args
-      data                 = datax,
+      data                 = data,
       DateColumn           = eval(DateVariableName),
       Targets              = "HolidayCounts",
       HierarchyGroups      = NULL,
@@ -221,13 +250,16 @@ ContinuousTimeDataGenerator <- function(data,
       Quantile_RollWindows  = NULL,
       Quantiles_Selected    = NULL)
   }
+  CreateHolidayLagsEnd <- Sys.time()
+  ProfilerList[["HolidayLags"]] <- CreateHolidayLagsEnd - CreateHolidayLagsStart
   
   # Add in the time varying features----
   if(PrintSteps) print("Running AutoLagRollStats()")
-  datax <- AutoLagRollStats(
+  AutoLagRollStatsStart <- Sys.time()
+  data <- AutoLagRollStats(
     
     # Data Args
-    data                 = datax,
+    data                 = data,
     DateColumn           = eval(DateVariableName),
     Targets              = GDL_Targets,
     HierarchyGroups      = NULL,
@@ -250,19 +282,25 @@ ContinuousTimeDataGenerator <- function(data,
     Kurt_RollWindows      = c(Kurt_Periods),
     Quantile_RollWindows  = c(Quantile_Periods),
     Quantiles_Selected    = c(Quantiles_Selected))
+  AutoLagRollStatsEnd <- Sys.time()
+  ProfilerList[["AutoLagRollStats()"]] <- AutoLagRollStatsEnd - AutoLagRollStatsStart
   
   # Add Time Trend Variable----
   if(PrintSteps) print("Running Time Trend Calculation")
+  TimeTrendStart <- Sys.time()
   if(!is.null(GroupingVariables)) {
-    data.table::setorderv(datax, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L,-1L))
-    datax[, TimeTrend := 1L:.N, by = list(GroupVar)]
+    data.table::setorderv(data, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L,-1L))
+    data[, TimeTrend := 1L:.N, by = list(GroupVar)]
   } else {
-    data.table::setorderv(datax, cols = c(eval(DateVariableName)), order = c(-1L))
-    datax[, TimeTrend := 1L:.N]
+    data.table::setorderv(data, cols = c(eval(DateVariableName)), order = c(-1L))
+    data[, TimeTrend := 1L:.N]
   }
+  AutoLagRollStatsEnd <- Sys.time()
+  ProfilerList[["TimeTrend"]] <- TimeTrendEnd - TimeTrendStart
   
   # Run Final Build----
   if(PrintSteps) print("Running ID_BuildTrainDataSets()")
+  BuildDataSetsStart <- Sys.time()
   packages <- c("RemixAutoML","data.table","forecast","lubridate")
   cores <- parallel::detectCores()
   
@@ -270,8 +308,8 @@ ContinuousTimeDataGenerator <- function(data,
   MetaData <- MetaData[, ID := runif(MetaData[,.N])][order(ID)][, ID := NULL]
   MetaData[, SelectRows := sample(c(seq_len(cores)), size = MetaData[,.N], replace = TRUE, prob = c(rep(1/cores, cores)))]
   data.table::set(MetaData, j = "GroupVar", value = as.character(MetaData[["GroupVar"]]))
-  data.table::set(datax, j = "GroupVar", value = as.character(datax[["GroupVar"]]))
-  datax <- merge(x = datax, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
+  data.table::set(data, j = "GroupVar", value = as.character(data[["GroupVar"]]))
+  data <- merge(x = data, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
   
   # Parallelize Build----
   if(PrintSteps) print("Running Parallel Build")
@@ -287,7 +325,7 @@ ContinuousTimeDataGenerator <- function(data,
         # Loops----
         ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
-          data = datax[SelectRows == eval(i)],
+          data = data[SelectRows == eval(i)],
           Case = 2L,
           TargetVariableName = TargetVariableName,
           DateVariableName = DateVariableName,
@@ -320,7 +358,7 @@ ContinuousTimeDataGenerator <- function(data,
         # Loops----
         ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
-          data = datax[SelectRows == eval(i)],
+          data = data[SelectRows == eval(i)],
           Case = 2L,
           TargetVariableName = TargetVariableName,
           DateVariableName = DateVariableName,
@@ -350,9 +388,12 @@ ContinuousTimeDataGenerator <- function(data,
   # Shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
+  BuildDataSetsEnd <- Sys.time()
+  ProfilerList[["BuildDataSets"]] <- BuildDataSetsEnd - BuildDataSetsStart
   
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
+  BackTransformStart <- Sys.time()
   if(length(ReverseGroupingVariables) > 1L) {
     CountModelData[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     data.table::setcolorder(CountModelData, c((ncol(CountModelData)-length(ReverseGroupingVariables)+1L):ncol(CountModelData),1L:(ncol(CountModelData)-length(ReverseGroupingVariables))))
@@ -361,6 +402,8 @@ ContinuousTimeDataGenerator <- function(data,
     data.table::setnames(CountModelData, "GroupVar", eval(ReverseGroupingVariables))
     if(exists("SizeModelData")) data.table::setnames(SizeModelData, "GroupVar", eval(ReverseGroupingVariables))
   }
+  BackTransformEnd <- Sys.time()
+  ProfilerList[["BackTransform"]] <- BackTransformEnd - BackTransformStart
   
   # Save Data----
   if(SaveData) {
@@ -392,9 +435,9 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Return data sets----
   if(Case == 1L) {
-    return(list(CountData = CountModelData, SizeData = SizeModelData))
+    return(list(CountData = CountModelData, SizeData = SizeModelData, ProfilerList = ProfilerList))
   } else if(Case == 2L) {
-    return(list(Data = CountModelData))
+    return(list(Data = CountModelData, ProfilerList = ProfilerList))
   }
 }
 
