@@ -4,12 +4,12 @@
 \alias{CatBoostParameterGrids}
 \title{CatBoostParameterGrids}
 \usage{
-CatBoostParameterGrids(TaskType, Shuffles = 1L, NTrees = seq(1000L,
-  10000L, 1000L), Depth = seq(4L, 16L, 2L), LearningRate = c(0.01,
-  0.02, 0.03, 0.04), L2_Leaf_Reg = seq(1, 10, 1), rsm = c(0.8, 0.85,
-  0.9, 0.95, 1), BootStrapType = c("Bayesian", "Bernoulli", "Poisson",
-  "MVS", "No"), grow_policy = c("SymmertricTree", "Depthwise",
-  "Lossguide"))
+CatBoostParameterGrids(TaskType = "CPU", Shuffles = 1L,
+  NTrees = seq(1000L, 10000L, 1000L), Depth = seq(4L, 16L, 2L),
+  LearningRate = c(0.01, 0.02, 0.03, 0.04), L2_Leaf_Reg = seq(1, 10,
+  1), RSM = c(0.8, 0.85, 0.9, 0.95, 1), BootStrapType = c("Bayesian",
+  "Bernoulli", "Poisson", "MVS", "No"), GrowPolicy = c("SymmertricTree",
+  "Depthwise", "Lossguide"))
 }
 \arguments{
 \item{TaskType}{"GPU" or "CPU"}
@@ -24,13 +24,11 @@ CatBoostParameterGrids(TaskType, Shuffles = 1L, NTrees = seq(1000L,
 
 \item{L2_Leaf_Reg}{c(1.0:10.0)}
 
-\item{rsm}{c(0.80, 0.85, 0.90, 0.95, 1.0)}
+\item{RSM}{CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
 \item{BootStrapType}{c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
-\item{grow_policy}{c("SymmertricTree", "Depthwise", "Lossguide")}
-
-\item{rsm}{CPU ONLY, Random subspace method. https://catboost.ai/docs/concepts/r-training-parameters.html "The percentage of features to use at each split selection, when features are selected over again at random. The RandomSubspaceMethod value needs to be greater than 0 and less than or equal to 1}
+\item{GrowPolicy}{c("SymmertricTree", "Depthwise", "Lossguide")}
 }
 \value{
 A list containing data.table's with the parameters shuffled and ready to test in the bandit framework

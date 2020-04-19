@@ -232,20 +232,19 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param Depth seq(4L, 16L, 2L)
 #' @param LearningRate seq(0.01,.10,0.01)
 #' @param L2_Leaf_Reg c(1.0:10.0)
-#' @param rsm c(0.80, 0.85, 0.90, 0.95, 1.0)
-#' @param grow_policy c("SymmertricTree", "Depthwise", "Lossguide")
-#' @param rsm CPU ONLY, Random subspace method. https://catboost.ai/docs/concepts/r-training-parameters.html "The percentage of features to use at each split selection, when features are selected over again at random. The RandomSubspaceMethod value needs to be greater than 0 and less than or equal to 1 
+#' @param GrowPolicy c("SymmertricTree", "Depthwise", "Lossguide")
+#' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0) 
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
 #' @export
-CatBoostParameterGrids <- function(TaskType,
+CatBoostParameterGrids <- function(TaskType = "CPU",
                                    Shuffles = 1L,
                                    NTrees = seq(1000L, 10000L, 1000L),
                                    Depth = seq(4L, 16L, 2L),
                                    LearningRate = c(0.01,0.02,0.03,0.04),
                                    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-                                   rsm = c(0.80, 0.85, 0.90, 0.95, 1.0),
+                                   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                                   grow_policy = c("SymmertricTree", "Depthwise", "Lossguide")) {
+                                   GrowPolicy = c("SymmertricTree", "Depthwise", "Lossguide")) {
   
   # Create grid sets----
   Grid <- data.table::CJ(
@@ -257,19 +256,18 @@ CatBoostParameterGrids <- function(TaskType,
     
     # Random hyperparameters----
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
-    rsm = if(!is.null(rsm)) rsm else c(0.80, 0.85, 0.90, 0.95, 1.0),
+    RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = if(!is.null(BootStrapType)) BootStrapType else c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    grow_policy = if(!is.null(grow_policy)) grow_policy else c("SymmertricTree", "Depthwise", "Lossguide"))
+    GrowPolicy = if(!is.null(GrowPolicy)) GrowPolicy else c("SymmertricTree", "Depthwise", "Lossguide"))
   
   # Filter out invalid grids----  
   if(tolower(TaskType) == "gpu") {
-    data.table::set(Grid, j = "rsm", value = NULL)
+    data.table::set(Grid, j = "RSM", value = NULL)
     Grid <- unique(Grid[!BootStrapType %chin% c("MVS")])
-  }
-  if(tolower(TaskType) != "gpu") {
+  } else {
     Grid <- unique(Grid[!BootStrapType %chin% c("poisson")])
   }
-  
+
   # Total loops----
   N_NTrees <- length(unique(Grid[["NTrees"]]))
   N_Depth <- length(unique(Grid[["Depth"]]))

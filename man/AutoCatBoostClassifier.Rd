@@ -8,11 +8,14 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "AUC", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "f", MaxModelsInGrid = 10, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
+  eval_metric = "AUC", model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 0L,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  PassInGrid = NULL, GridTune = FALSE, grid_eval_metric = "f",
+  MaxModelsInGrid = 10L, IncludeDefault = TRUE, Shuffles = 1L,
+  Trees = 50L, Depth = NULL, LearningRate = NULL,
+  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
+  GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -37,14 +40,6 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"}
 
-\item{Trees}{The maximum number of trees you want in your models}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{grid_eval_metric}{This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options.}
-
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
@@ -58,6 +53,34 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
+
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{grid_eval_metric}{This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options.}
+
+\item{IncludeDefault}{TRUE or FALSE. Setting to TRUE when running a grid tune will force a default catboost model to be fitted using 1000L trees}
+
+\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
+
+\item{Trees}{The maximum number of trees you want in your models}
+
+\item{Depth}{NULL, number, or vector for depth to test. For grid tuning, supply a vector of values}
+
+\item{LearningRate}{NULL, number, or vector for learning rate to test. For grid tuning, supply a vector of values}
+
+\item{L2_Leaf_Reg}{NULL, number, or vector for l2 regularization to test. For grid tuning, supply a vector of values}
+
+\item{RSM}{NULL, number, or vector for random subspace method to test. For grid tuning, supply a vector of values}
+
+\item{BootStrapType}{NULL, character, or vector for BootstrapType to test. For grid tuning, supply a vector of values}
+
+\item{GrowPolicy}{NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values}
+
+\item{IncludeDefault}{= TRUE,}
+
+\item{Trees}{NULL, number, or vector for trees to test. For grid tuning, supply a vector of values}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -68,59 +91,64 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 \examples{
 \donttest{
 Correl <- 0.85
-N <- 1000
+N <- 1000L
 data <- data.table::data.table(Target = runif(N))
 data[, x1 := qnorm(Target)]
 data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-                                                sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-                                             sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
+data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 data[, Independent_Variable11 := as.factor(
-  ifelse(Independent_Variable2 < 0.20, "A",
-         ifelse(Independent_Variable2 < 0.40, "B",
-                ifelse(Independent_Variable2 < 0.6,  "C",
-                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+  data.table::fifelse(Independent_Variable2 < 0.20, "A",
+         data.table::fifelse(Independent_Variable2 < 0.40, "B",
+                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Target := ifelse(Target < 0.5, 1, 0)]
-TestModel <- AutoCatBoostClassifier(data,
-                                    TrainOnFull = FALSE,
-                                    ValidationData = NULL,
-                                    TestData = NULL,
-                                    TargetColumnName = "Target",
-                                    FeatureColNames = c(2:12),
-                                    PrimaryDateColumn = NULL,
-                                    ClassWeights = NULL,
-                                    IDcols = NULL,
-                                    MaxModelsInGrid = 3,
-                                    task_type = "GPU",
-                                    eval_metric = "AUC",
-                                    grid_eval_metric = "auc",
-                                    Trees = 50,
-                                    GridTune = FALSE,
-                                    model_path = NULL,
-                                    metadata_path = NULL,
-                                    ModelID = "ModelTest",
-                                    NumOfParDepPlots = 15,
-                                    ReturnModelObjects = TRUE,
-                                    SaveModelObjects = FALSE,
-                                    PassInGrid = NULL)
+TestModel <- AutoCatBoostClassifier(
+    
+    # Data arguments
+    data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = NULL,
+    FeatureColNames = NULL,
+    PrimaryDateColumn = NULL,
+    ClassWeights = NULL,
+    IDcols = NULL,
+    
+    # Meta data arguments
+    task_type = "GPU",
+    eval_metric = "AUC",
+    model_path = NULL,
+    metadata_path = NULL,
+    ModelID = "FirstModel",
+    NumOfParDepPlots = 0L,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    
+    # Grid tuning arguments
+    PassInGrid = NULL
+    GridTune = FALSE,
+    grid_eval_metric = "f",
+    MaxModelsInGrid = 10L,
+    IncludeDefault = TRUE,
+    Shuffles = 1L,
+    Trees = 50L,
+    Depth = NULL, 
+    LearningRate = NULL, 
+    L2_Leaf_Reg = NULL, 
+    RSM = NULL, 
+    BootStrapType = NULL,
+    GrowPolicy = NULL)
 }
 }
 \seealso{

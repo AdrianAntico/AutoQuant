@@ -14,10 +14,6 @@
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
-#' @param grid_eval_metric This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"
-#' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -25,62 +21,81 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param grid_eval_metric This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"
+#' @param MaxModelsInGrid Number of models to test from grid options.
+#' @param IncludeDefault TRUE or FALSE. Setting to TRUE when running a grid tune will force a default catboost model to be fitted using 1000L trees
+#' @param Trees The maximum number of trees you want in your models
+#' @param IncludeDefault = TRUE,
+#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
+#' @param Trees NULL, number, or vector for trees to test. For grid tuning, supply a vector of values
+#' @param Depth NULL, number, or vector for depth to test. For grid tuning, supply a vector of values
+#' @param LearningRate NULL, number, or vector for learning rate to test. For grid tuning, supply a vector of values
+#' @param L2_Leaf_Reg NULL, number, or vector for l2 regularization to test. For grid tuning, supply a vector of values
+#' @param RSM NULL, number, or vector for random subspace method to test. For grid tuning, supply a vector of values
+#' @param BootStrapType NULL, character, or vector for BootstrapType to test. For grid tuning, supply a vector of values
+#' @param GrowPolicy NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values
 #' @examples
 #' \donttest{
 #' Correl <- 0.85
-#' N <- 1000
+#' N <- 1000L
 #' data <- data.table::data.table(Target = runif(N))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 #' data[, Independent_Variable11 := as.factor(
-#'   ifelse(Independent_Variable2 < 0.20, "A",
-#'          ifelse(Independent_Variable2 < 0.40, "B",
-#'                 ifelse(Independent_Variable2 < 0.6,  "C",
-#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
+#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
+#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Target := ifelse(Target < 0.5, 1, 0)]
-#' TestModel <- AutoCatBoostClassifier(data,
-#'                                     TrainOnFull = FALSE,
-#'                                     ValidationData = NULL,
-#'                                     TestData = NULL,
-#'                                     TargetColumnName = "Target",
-#'                                     FeatureColNames = c(2:12),
-#'                                     PrimaryDateColumn = NULL,
-#'                                     ClassWeights = NULL,
-#'                                     IDcols = NULL,
-#'                                     MaxModelsInGrid = 3,
-#'                                     task_type = "GPU",
-#'                                     eval_metric = "AUC",
-#'                                     grid_eval_metric = "auc",
-#'                                     Trees = 50,
-#'                                     GridTune = FALSE,
-#'                                     model_path = NULL,
-#'                                     metadata_path = NULL,
-#'                                     ModelID = "ModelTest",
-#'                                     NumOfParDepPlots = 15,
-#'                                     ReturnModelObjects = TRUE,
-#'                                     SaveModelObjects = FALSE,
-#'                                     PassInGrid = NULL)
+#' TestModel <- AutoCatBoostClassifier(
+#'     
+#'     # Data arguments
+#'     data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     TargetColumnName = NULL,
+#'     FeatureColNames = NULL,
+#'     PrimaryDateColumn = NULL,
+#'     ClassWeights = NULL,
+#'     IDcols = NULL,
+#'     
+#'     # Meta data arguments
+#'     task_type = "GPU",
+#'     eval_metric = "AUC",
+#'     model_path = NULL,
+#'     metadata_path = NULL,
+#'     ModelID = "FirstModel",
+#'     NumOfParDepPlots = 0L,
+#'     ReturnModelObjects = TRUE,
+#'     SaveModelObjects = FALSE,
+#'     
+#'     # Grid tuning arguments
+#'     PassInGrid = NULL
+#'     GridTune = FALSE,
+#'     grid_eval_metric = "f",
+#'     MaxModelsInGrid = 10L,
+#'     IncludeDefault = TRUE,
+#'     Shuffles = 1L,
+#'     Trees = 50L,
+#'     Depth = NULL, 
+#'     LearningRate = NULL, 
+#'     L2_Leaf_Reg = NULL, 
+#'     RSM = NULL, 
+#'     BootStrapType = NULL,
+#'     GrowPolicy = NULL)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -95,17 +110,25 @@ AutoCatBoostClassifier <- function(data,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "AUC",
-                                   Trees = 50,
-                                   GridTune = FALSE,
-                                   grid_eval_metric = "f",
-                                   MaxModelsInGrid = 10,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
-                                   NumOfParDepPlots = 3,
+                                   NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
-                                   PassInGrid = NULL) {
+                                   PassInGrid = NULL,
+                                   GridTune = FALSE,
+                                   grid_eval_metric = "f",
+                                   MaxModelsInGrid = 10L,
+                                   IncludeDefault = TRUE,
+                                   Shuffles = 1L,
+                                   Trees = 50L,
+                                   Depth = NULL, 
+                                   LearningRate = NULL, 
+                                   L2_Leaf_Reg = NULL, 
+                                   RSM = NULL, 
+                                   BootStrapType = NULL,
+                                   GrowPolicy = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
   
@@ -353,90 +376,70 @@ AutoCatBoostClassifier <- function(data,
   # Binary Grid Tune or Not Check----
   if (GridTune == TRUE & TrainOnFull != TRUE) {
     
-    # Binary Grid Create data.table To Store Results----
-    GridCollect <- data.table::data.table(
-      ParamRow = 1:(MaxModelsInGrid + 1),
-      EvalStat = rep(9999999, MaxModelsInGrid + 1))
-    
-    # Binary Grid Define Hyper Parameters----
-    if (!is.null(PassInGrid)) {
-      if (!data.table::is.data.table(PassInGrid)) {
-        PassInGrid <- data.table::as.data.table(PassInGrid)
-      }
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
-        bootstrap_type = c("Bayesian", "Bernoulli", "No"),
-        depth = c(4:15))
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-      catboostGridList <- data.table::rbindlist(list(PassInGrid, catboostGridList))
-    } else {
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
-        bootstrap_type = c("Bayesian", "Bernoulli", "No"),
-        depth = c(4:15))
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
-    }
-    
-    # Binary AUC List----
-    AUC_List <- list()
+    # Pull in Grid sets----
+    Grids <- CatBoostParameterGrids(
+      TaskType      = task_type,
+      Shuffles      = Shuffles,
+      NTrees        = Trees,
+      Depth         = Depth,
+      LearningRate  = LearningRate,
+      L2_Leaf_Reg   = L2_Leaf_Reg,
+      RSM           = RSM,
+      BootStrapType = BootStrapType,
+      GrowPolicy    = GrowPolicy)
     
     # Binary Grid Tuning Main Loop----
-    for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
+    for (i in as.integer(seq_len(MaxModelsInGrid + 1L))) {
       
-      # Print i
-      print(i)
+      # Select Grid----
       
-      # Binary Grid Define Base Parameters----
+      # Define parameters----
       if (!is.null(ClassWeights)) {
         base_params <- list(
-          iterations           = Trees,
+          has_time             = HasTime,
+          metric_period        = 1L,
           loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 1,
-          train_dir            = model_path,
+          best_model_min_trees = 10L,
           task_type            = task_type,
-          class_weights        = ClassWeights)
+          class_weights        = ClassWeights,
+          train_dir            = model_path
+          Shuffles             = Shuffles,
+          iterations           = Trees,
+          Depth                = Depth,
+          LearningRate         = LearningRate,
+          L2_Leaf_Reg          = L2_Leaf_Reg,
+          RSM                  = RSM,
+          BootStrapType        = BootStrapType,
+          GrowPolicy           = GrowPolicy)
       } else {
         base_params <- list(
           iterations           = Trees,
           loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = 1L,
           has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 1,
           train_dir            = model_path,
           task_type            = task_type)
       }
       
+      # Run model
+      
+      # Score model
+      
+      # Evaluate scores
+      
+      # Update bandit probabilities
+      
+      
       # Binary Grid Merge Model Parameters----
-      if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
-      }
+      if (i != 1) base_params <- unique(c(as.list(catboostGridList[i, ]), base_params))
       
       # Binary Grid Train Model----
-      model <- catboost::catboost.train(learn_pool = TrainPool,
-                                        test_pool  = TestPool,
-                                        params     = base_params)
+      model <- catboost::catboost.train(learn_pool = TrainPool, test_pool  = TestPool, params = base_params)
       
       # Binary Grid Score Model----
       if (!is.null(TestData)) {
@@ -466,61 +469,44 @@ AutoCatBoostClassifier <- function(data,
       
       # Binary Grid Evaluation Metrics for Each Grid----
       if (tolower(grid_eval_metric) == "accuracy") {
-        j <- 0
+        j <- 0L
         x <- data.table::data.table(
           Metric = "Accuracy",
           MetricValue = 5.0,
           Threshold = seq(0.01, 0.99, 0.001))
         for (k in unique(x[["Threshold"]])) {
-          j = as.integer(j + 1)
+          j <- j + 1L
           Accuracy <- mean(calibEval[, data.table::fifelse(p1 > k & Target == 1 | p1 < k & Target == 0, 1, 0)])
-          data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4))
+          data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4L))
         }
-        data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-        Metric <- x[1, MetricValue]
+        data.table::setorderv(x, "MetricValue", order = -1L, na.last = TRUE)
+        Metric <- x[1L, MetricValue]
       } else {
         x <- ROCR::prediction(predictions = calibEval[["p1"]], labels = calibEval[["Target"]])
         y <- ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
-        if (any(
-          nrow(data.table::as.data.table(y@y.values)) <= 1 |
-          nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-          if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-              nrow(data.table::as.data.table(y@x.values)) <= 1) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values,
-              Threshold = y@x.values))
-            Metric <- z[[1]]
-          } else if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-                     !(nrow(data.table::as.data.table(y@x.values) <= 1))) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values,
-              Threshold = y@x.values[[1]]))
-            Metric <- z[!is.infinite(Threshold)][[1]]
-          } else if (!(nrow(data.table::as.data.table(y@y.values)) <= 1) &
-                     nrow(data.table::as.data.table(y@x.values) <= 1)) {
-            if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-              z <- data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values))
+        if(any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+          if(nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L) {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values))
+            Metric <- z[[1L]]
+          } else if(nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1L]]))
+            Metric <- z[!is.infinite(Threshold)][[1L]]
+          } else if(!(nrow(data.table::as.data.table(y@y.values)) <= 1L) & nrow(data.table::as.data.table(y@x.values) <= 1L)) {
+            if(grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
               Metric <- z[order(-Metric)][!is.infinite(Metric)][[1]]
             } else {
-              z <- data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values))
-              Metric <- z[order(Metric)][!is.infinite(Metric)][[1]]
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+              Metric <- z[order(Metric)][!is.infinite(Metric)][[1L]]
             }
           }
         } else {
-          if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values[[1]],
-              Threshold = y@x.values[[1]]))
-            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1, ]
+          if(grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
           } else {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values[[1]],
-              Threshold = y@x.values[[1]]))
-            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1, ]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
           }
         }
       }
@@ -541,11 +527,10 @@ AutoCatBoostClassifier <- function(data,
         Specificity = as.numeric(AUC_Metrics$specificities + 0.0001))
       
       # Store Output Information
-      if (tolower(grid_eval_metric) == "accuracy") {
+      if(tolower(grid_eval_metric) == "accuracy") {
         data.table::set(GridCollect, i = i, j = 1L, value = i)
         data.table::set(GridCollect, i = i, j = 2L, value = Metric)
-      } else if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
-                     nrow(data.table::as.data.table(y@x.values)) <= 1)) {
+      } else if(any(nrow(data.table::as.data.table(y@y.values)) <= 1 | nrow(data.table::as.data.table(y@x.values)) <= 1)) {
         data.table::set(GridCollect, i = i, j = 1L, value = i)
         data.table::set(GridCollect, i = i, j = 2L, value = Metric)
       } else {
