@@ -219,267 +219,80 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
   )
 }
 
-#' AutoCatBoostGridSet
+#' CatBoostParameterGrids 
 #' 
-#' AutoCatBoostGridSet lets the user decide on grid options
+#' CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.html
 #' 
 #' @author Adrian Antico
-#' @family Supervised Learning
-#' @param NumberPartitions = 10 
-#' @param BootstrapType = c("Bayesian","Bernoulli","Poisson","MVS","No")
-#' @param BaggingTemperature = seq(1,3,1)
-#' @param MinDataInLeaf = c(1,5,10)
-#' @param MaxLeaves = c(15,31,45)
-#' @param SubSample = c(seq(0.6,1,0.10))
-#' @param RandomStrength = c(0.90,1,1.10)
-#' @param SamplingFrequency = c("PerTree","PreTreeLevel") CPU Only
-#' @param RandomSubspaceMethod = c(0.65,0.80,1) CPU Only
-#' @param ODWait = 50
-#' @param L2LeafReg = c(seq(2.0,4.0,1.0))
-#' @param LearningRate = c(seq(0.01,0.05,0.01))
-#' @param Depth = c(seq(4,16,1))
+#' @family Supervised Learning 
+#' @param TaskType "GPU" or "CPU"
+#' @param Shuffles The number of shuffles you want to apply to each grid
+#' @param BootStrapType c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+#' @param NTrees seq(1000L, 10000L, 1000L)
+#' @param Depth seq(4L, 16L, 2L)
+#' @param LearningRate seq(0.01,.10,0.01)
+#' @param L2_Leaf_Reg c(1.0:10.0)
+#' @param rsm c(0.80, 0.85, 0.90, 0.95, 1.0)
+#' @param grow_policy c("SymmertricTree", "Depthwise", "Lossguide")
+#' @param rsm CPU ONLY, Random subspace method. https://catboost.ai/docs/concepts/r-training-parameters.html "The percentage of features to use at each split selection, when features are selected over again at random. The RandomSubspaceMethod value needs to be greater than 0 and less than or equal to 1 
+#' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
 #' @export
-AutoCatBoostGridSet <- function(NumberPartitions = 10,
-                                BootstrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
-                                BaggingTemperature = seq(1,3,1),
-                                MinDataInLeaf = c(1,5,10),
-                                MaxLeaves = c(15,31,45),
-                                SubSample = c(seq(0.6,1,0.10)),
-                                RandomStrength = c(0.90,1,1.10),
-                                SamplingFrequency = c("PerTree","PreTreeLevel"),
-                                RandomSubspaceMethod = c(0.65,0.80,1),
-                                ODWait = 50,
-                                L2LeafReg = c(seq(2.0,4.0,1.0)),
-                                LearningRate = c(seq(0.01,0.05,0.01)),
-                                Depth = c(seq(4,16,1))) {
+CatBoostParameterGrids <- function(TaskType,
+                                   Shuffles = 1L,
+                                   NTrees = seq(1000L, 10000L, 1000L),
+                                   Depth = seq(4L, 16L, 2L),
+                                   LearningRate = c(0.01,0.02,0.03,0.04),
+                                   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+                                   rsm = c(0.80, 0.85, 0.90, 0.95, 1.0),
+                                   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+                                   grow_policy = c("SymmertricTree", "Depthwise", "Lossguide")) {
   
-  # CatBoost Docs: how are MVS, Poisson, Bayesian, etc, how does catboost decide?
-  # QueryCrossEntropy, YetiRankPairwise, PairLogitPairwise: Bernoulli with the subsample parameter set to 0.5
-  # MultiClass and MultiClassOneVsAll: Bayesian
-  # Other modes:
-  #   
-  # GPU: Bayesian
-  # CPU: MVS with the subsample parameter set to 0.8.
-  # 
-  # # grid tuning advice by catboost
-  # https://catboost.ai/docs/concepts/parameter-tuning.html
+  # Create grid sets----
+  Grid <- data.table::CJ(
+    
+    # Basis for creating parsimonous buckets----
+    NTrees = if(!is.null(NTrees)) NTrees else seq(1000L, 10000L, 1000L),
+    Depth = if(!is.null(Depth)) Depth else seq(4L, 16L, 2L),
+    LearningRate = if(!is.null(LearningRate)) LearningRate else seq(0.01,.10,0.01),
+    
+    # Random hyperparameters----
+    L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
+    rsm = if(!is.null(rsm)) rsm else c(0.80, 0.85, 0.90, 0.95, 1.0),
+    BootStrapType = if(!is.null(BootStrapType)) BootStrapType else c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+    grow_policy = if(!is.null(grow_policy)) grow_policy else c("SymmertricTree", "Depthwise", "Lossguide"))
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
-  # Bayesian Grid Set----
-  if(tolower(task_type) == "gpu") {
-    BayesianGrid <- data.table::CJ(
-      bootstrap_type = "Bayesian",
-      bagging_temperature = seq(1,3,1),
-      random_strength = c(0.90,1,1.10),
-      min_data_in_leaf = c(1,5,10),
-      max_leaves = c(15,31,45),
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,8,1)))
-  } else {
-    BayesianGrid <- data.table::CJ(
-      bootstrap_type = "Bayesian",
-      bagging_temperature = seq(1,3,1),
-      random_strength = c(0.90,1,1.10),
-      sampling_frequency = c("PerTree","PreTreeLevel"),
-      rsm = c(0.65,0.80,1),
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,16,1)))
+  # Filter out invalid grids----  
+  if(tolower(TaskType) == "gpu") {
+    data.table::set(Grid, j = "rsm", value = NULL)
+    Grid <- unique(Grid[!BootStrapType %chin% c("MVS")])
+  }
+  if(tolower(TaskType) != "gpu") {
+    Grid <- unique(Grid[!BootStrapType %chin% c("poisson")])
   }
   
-  # Bayesian Grid List----
-  BayesianGridClusters <- list()
-  N <- floor(BayesianGrid[,.N]/10)
-  for(i in seq_len(10)) {
-    if(i == 1) {
-      BayesianGridClusters[[paste0("Bayesian_Grid_",i)]] <- BayesianGrid[1:N][order(runif(N))]
-    } else if(i < 10) {
-      BayesianGridClusters[[paste0("Bayesian_Grid_",i)]] <- BayesianGrid[(N*(i-1)+1):(N*i)][order(runif(N))]
+  # Total loops----
+  N_NTrees <- length(unique(Grid[["NTrees"]]))
+  N_Depth <- length(unique(Grid[["Depth"]]))
+  N_LearningRate <- length(unique(Grid[["LearningRate"]]))
+  N_L2_Leaf_Reg <- length(unique(Grid[["L2_Leaf_Reg"]]))
+  Runs <- max(N_NTrees, N_Depth, N_LearningRate, N_L2_Leaf_Reg)
+  Grids <- list()
+  
+  # Create grid sets----
+  for (i in seq_len(Runs)) {
+    if(i == 1L) {
+      Grids[[paste0("Grid_",i)]] <- 
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i, N_L2_Leaf_Reg)]]
     } else {
-      BayesianGridClusters[[paste0("Bayesian_Grid_",i)]] <- BayesianGrid[(N*(i-1)+1):BayesianGrid[,.N]][order(runif(BayesianGrid[(N*(i-1)+1):BayesianGrid[,.N],.N]))]
+      Grids[[paste0("Grid_",i)]] <- data.table::fsetdiff(
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i, N_L2_Leaf_Reg)]],
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i-1L,N_L2_Leaf_Reg)]])
     }
   }
   
-  # Bernoulli Grid Set----
-  if(tolower(task_type) == "gpu") {
-    BernoulliGrid <- data.table::CJ(
-      bootstrap_type = "Bernoulli",
-      subsample = c(seq(0.6,1,0.10)),
-      random_strength = c(0.90,1,1.10),
-      min_data_in_leaf = c(1,5,10), # GPU only
-      max_leaves = c(15,31,45), # GPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,8,1)))
-  } else {
-    BernoulliGrid <- data.table::CJ(
-      bootstrap_type = "Bernoulli",
-      subsample = c(seq(0.6,1,0.10)),
-      random_strength = c(0.90,1,1.10),
-      sampling_frequency = c("PerTree","PreTreeLevel"), # CPU only
-      rsm = c(0.65,0.80,1), # random subspace method CPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,16,1)))
-  }
+  # Shuffle grid sets----
+  for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
   
-  # Bernoulli Grid List----
-  BernoulliGridClusters <- list()
-  N <- floor(BernoulliGrid[,.N]/10)
-  for(i in seq_len(10)) {
-    if(i == 1) {
-      BernoulliGridClusters[[paste0("Bayesian_Grid_",i)]] <- BernoulliGrid[1:N][order(runif(N))]
-    } else if(i < 10) {
-      BernoulliGridClusters[[paste0("Bayesian_Grid_",i)]] <- BernoulliGrid[(N*(i-1)+1):(N*i)][order(runif(N))]
-    } else {
-      BernoulliGridClusters[[paste0("Bayesian_Grid_",i)]] <- BernoulliGrid[(N*(i-1)+1):BernoulliGrid[,.N]][order(runif(BernoulliGrid[(N*(i-1)+1):BernoulliGrid[,.N],.N]))]
-    }
-  }
-  
-  # 'No' Grid Set----
-  if(tolower(task_type) == "gpu") {
-    NoGrid <- data.table::CJ(
-      bootstrap_type = "No",
-      random_strength = c(0.90,1,1.10),
-      min_data_in_leaf = c(1,5,10), # GPU only
-      max_leaves = c(15,31,45), # GPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,8,1)))
-  } else {
-    NoGrid <- data.table::CJ(
-      bootstrap_type = "No",
-      random_strength = c(0.90,1,1.10),
-      sampling_frequency = c("PerTree","PreTreeLevel"), # CPU only
-      rsm = c(0.65,0.80,1), # random subspace method CPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,16,1)))
-  }
-  
-  # 'No' Grid List----
-  NoGridClusters <- list()
-  N <- floor(NoGrid[,.N]/10)
-  for(i in seq_len(10)) {
-    if(i == 1) {
-      NoGridClusters[[paste0("Bayesian_Grid_",i)]] <- NoGrid[1:N][order(runif(N))]
-    } else if(i < 10) {
-      NoGridClusters[[paste0("Bayesian_Grid_",i)]] <- NoGrid[(N*(i-1)+1):(N*i)][order(runif(N))]
-    } else {
-      NoGridClusters[[paste0("Bayesian_Grid_",i)]] <- NoGrid[(N*(i-1)+1):NoGrid[,.N]][order(runif(NoGrid[(N*(i-1)+1):NoGrid[,.N],.N]))]
-    }
-  }
-  
-  # Poisson Grid Set----
-  if(tolower(task_type) == "gpu") {
-    PoissonGrid <- data.table::CJ(
-      bootstrap_type = "Poisson",
-      subsample = c(seq(0.6,1,0.10)),
-      random_strength = c(0.90,1,1.10),
-      min_data_in_leaf = c(1,5,10), # GPU only
-      max_leaves = c(15,31,45), # GPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(4,8,1)))
-  }
-  
-  # Poisson Grid List----
-  PoissonGridClusters <- list()
-  N <- floor(PoissonGrid[,.N]/10)
-  for(i in seq_len(10)) {
-    if(i == 1) {
-      PoissonGridClusters[[paste0("Bayesian_Grid_",i)]] <- PoissonGrid[1:N][order(runif(N))]
-    } else if(i < 10) {
-      PoissonGridClusters[[paste0("Bayesian_Grid_",i)]] <- PoissonGrid[(N*(i-1)+1):(N*i)][order(runif(N))]
-    } else {
-      PoissonGridClusters[[paste0("Bayesian_Grid_",i)]] <- PoissonGrid[(N*(i-1)+1):PoissonGrid[,.N]][order(runif(PoissonGrid[(N*(i-1)+1):PoissonGrid[,.N],.N]))]
-    }
-  }
-  
-  # MVS Grid Set----
-  if(tolower(task_type) == "cpu") {
-    MVSGrid <- data.table::CJ(
-      bootstrap_type = "MVS",
-      subsample = c(seq(0.6,1,0.10)),
-      random_strength = c(0.90,1,1.10),
-      sampling_frequency = c("PerTree","PreTreeLevel"), # CPU only
-      rsm = c(0.65,0.80,1), # random subspace method CPU only
-      od_type = "Iter",
-      od_wait = 50,
-      l2_leaf_reg = c(seq(2.0,4.0,1.0)),
-      learning_rate = c(seq(0.01,0.05,0.01)),
-      depth = c(seq(6,16,1)))
-  }
-  
-  # MVS Grid List----
-  MVSGridClusters <- list()
-  N <- floor(MVSGrid[,.N]/10)
-  for(i in seq_len(10)) {
-    if(i == 1) {
-      MVSGridClusters[[paste0("Bayesian_Grid_",i)]] <- MVSGrid[1:N][order(runif(N))]
-    } else if(i < 10) {
-      MVSGridClusters[[paste0("Bayesian_Grid_",i)]] <- MVSGrid[(N*(i-1)+1):(N*i)][order(runif(N))]
-    } else {
-      MVSGridClusters[[paste0("Bayesian_Grid_",i)]] <- MVSGrid[(N*(i-1)+1):MVSGrid[,.N]][order(runif(MVSGrid[(N*(i-1)+1):MVSGrid[,.N],.N]))]
-    }
-  }
-  
-  
-  
-  
-  
-  
-  
-  # Add evaluation metrics columns and fill with dummy values----
-  for(trainvalidate in c("Train_","Validate_","Blended_")) {
-    for(tseval in c("MSE","MAE","MAPE")) {
-      data.table::set(GridClusters[["ParsimonousGrid"]], j = paste0(trainvalidate,tseval), value = -10)
-      data.table::set(GridClusters[["RandomGrid"]], j = paste0(trainvalidate,tseval), value = -10)
-      data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
-      for(i in seq_len(TotalStratGrids)) {
-        data.table::set(GridClusters[[paste0("StratifyParsimonousGrid_",i)]],j = paste0(trainvalidate,tseval), value = -10)
-      }
-    }
-  }
-  
-  # Set up results grid to collect parameters tested and results----
-  ExperimentGrid <- data.table::copy(Grid)
-  ExperimentGrid[, ModelRunNumber := seq_len(ExperimentGrid[, .N])]
-  data.table::set(ExperimentGrid, j = "GridName", value = "xxx")
-  for(i in seq_len(ncol(ExperimentGrid))[-1]) {
-    if(is.character(ExperimentGrid[[i]])) {
-      data.table::set(ExperimentGrid, j = i, value = "xxx")
-      data.table::set(ExperimentGrid, i = 1L, j = i, value = "AutoArima")
-    } else if(is.numeric(ExperimentGrid[[i]]) | is.integer(ExperimentGrid[[i]])) {
-      data.table::set(ExperimentGrid, j = i, value = -10)
-      data.table::set(ExperimentGrid, i = 1L, j = i, value = -7)
-    } else if(is.logical(ExperimentGrid[[i]])) {
-      data.table::set(ExperimentGrid, j = i, value = FALSE)
-    }
-  }
-  
-  # Return objects----
-  return(
-    list(Grid = Grid,
-         GridClusters = GridClusters,
-         ExperimentGrid = ExperimentGrid))
-  
+  # Return grid----
+  return(Grids)
 }
-
