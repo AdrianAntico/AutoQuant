@@ -120,6 +120,11 @@ AutoCatBoostClassifier <- function(data,
                                    GridTune = FALSE,
                                    grid_eval_metric = "f",
                                    MaxModelsInGrid = 10L,
+                                   
+                                   
+                                   MaxRunsWithoutNewWinner = 20L,
+                                   MaxRunMinutes = 24*60,
+                                   
                                    IncludeDefault = TRUE,
                                    Shuffles = 1L,
                                    Trees = 50L,
@@ -419,6 +424,10 @@ AutoCatBoostClassifier <- function(data,
       # Select Grid----
       if(counter <= BanditArmsN + 1L) {
         
+        # Define GridNumber----
+        GridNumber <- counter - 1L
+        BanditProbs <- rep(1/BanditArmsN, BanditArmsN)
+        
         # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
         # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
         if(counter == 1L) {
@@ -471,6 +480,10 @@ AutoCatBoostClassifier <- function(data,
           }
         }
       } else {
+        
+        # Define GridNumber----
+        GridNumber <- counter - 1L
+        
         if (!is.null(ClassWeights)) {
           base_params <- list(
             has_time             = HasTime,
@@ -538,11 +551,8 @@ AutoCatBoostClassifier <- function(data,
         auc = TRUE,
         ci = TRUE)
       
-      # Performance measures----
-      NewPerformance <- as.numeric(AUC_Metrics$auc)
-      BestPerformance <- max(ExperimentalGrid$EvalMetric, na.rm = TRUE)
-      
       # Update Experimental Grid with Param values----
+      data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
       if(counter == 1L) {
@@ -559,9 +569,30 @@ AutoCatBoostClassifier <- function(data,
         data.table::set(ExperimentalGrid, i = counter, j = "GrowPolicy", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       }
       
-      
+      # Performance measures----
+      NewPerformance <- as.numeric(AUC_Metrics$auc)
+      BestPerformance <- max(ExperimentalGrid$EvalMetric, na.rm = TRUE)
+      TotalRunTime <- ExperimentalGrid
       
       # Update bandit probabilities----
+      
+      
+      ExperimentGrid = ExperimentalGrid
+      ModelRun = counter
+      NewPerformance = NewPerformance
+      BestPerformance = BestPerformance
+      TrialVector = Trials
+      SuccessVector = Successes
+      GridIDS = GridIDs
+      BanditArmsCount = BanditArmsN
+      RunsWithoutNewWinner = RunsWithoutNewWinner
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+      MaxNumberModels = MaxModelsInGrid
+      MaxRunMinutes = MaxRunMinutes
+      TotalRunTime = TotalRunTime
+      BanditProbabilities = BanditProbs
+      
+      
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
@@ -573,7 +604,7 @@ AutoCatBoostClassifier <- function(data,
         BanditArmsCount = BanditArmsN,
         RunsWithoutNewWinner = RunsWithoutNewWinner,
         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-        MaxNumberModels = MaxNumberModels,
+        MaxNumberModels = MaxModelsInGrid,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = TotalRunTime,
         BanditProbabilities = BanditProbs)

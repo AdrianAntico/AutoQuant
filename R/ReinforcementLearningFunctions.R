@@ -11,10 +11,10 @@
 #' @param SubDivisions Default is 100L in the stats package. Changed it to 1000 for this function.
 #' @return Probability of each arm being the best arm compared to all other arms.
 #' @export 
-RPM_Binomial_Bandit <- function(Success, 
-                                Trials, 
-                                Alpha = 1, 
-                                Beta = 1, 
+RPM_Binomial_Bandit <- function(Success,
+                                Trials,
+                                Alpha = 1L,
+                                Beta = 1L,
                                 SubDivisions = 1000L) {
   k <- length(Success)
   ans <- numeric(k)
@@ -55,8 +55,8 @@ RPM_Binomial_Bandit <- function(Success,
 #' BanditProbs <- RL_Start[["BanditProbs"]]
 #' @export 
 RL_Initialize <- function(ParameterGridSet = NULL, 
-                          Alpha = 1, 
-                          Beta = 1, 
+                          Alpha = 1L, 
+                          Beta = 1L,
                           SubDivisions = 1000L) {
   
   # Initialization----
@@ -354,7 +354,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     # Basis for creating parsimonous buckets----
     NTrees = if(!is.null(NTrees)) NTrees else seq(1000L, 10000L, 1000L),
     Depth = if(!is.null(Depth)) Depth else seq(4L, 16L, 2L),
-    LearningRate = if(!is.null(LearningRate)) LearningRate else seq(0.01,.10,0.01),
+    LearningRate = if(!is.null(LearningRate)) LearningRate else seq(0.01,0.10,0.01),
     
     # Random hyperparameters----
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
@@ -393,6 +393,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   # Define experimental grid----
   eGrid <- data.table::data.table(
     GridNumber = rep(-1, 10000L),
+    RunTime = rep(-1, 10000L),
     EvalMetric = rep(-1,10000L),
     TreesBuilt = rep(-1,10000L),
     NTrees = rep(-1,10000L),
@@ -401,7 +402,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     L2_Leaf_Reg = rep(-1,10000L),
     RSM = rep(-1,10000L),
     BootStrapType = rep("aa", 10000L),
-    GrowPolicy = rep(-1,10000))
+    GrowPolicy = rep("aa", 10000L))
   
   # Shuffle grid sets----
   for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
