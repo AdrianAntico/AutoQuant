@@ -391,15 +391,17 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   }
   
   # Define experimental grid----
-  eGrid <- data.table::data.table(EvalMetric = rep(-1,10000),
-                                  TreesBuilt = rep(-1,10000L),
-                                  NTrees = rep(-1,10000L),
-                                  Depth = rep(-1,10000L),
-                                  LearningRate = rep(-1,10000L),
-                                  L2_Leaf_Reg = rep(-1,10000L),
-                                  RSM = rep(-1,10000L),
-                                  BootStrapType = rep("aa", 10000L),
-                                  GrowPolicy = rep(-1,10000))
+  eGrid <- data.table::data.table(
+    GridNumber = rep(-1, 10000L),
+    EvalMetric = rep(-1,10000L),
+    TreesBuilt = rep(-1,10000L),
+    NTrees = rep(-1,10000L),
+    Depth = rep(-1,10000L),
+    LearningRate = rep(-1,10000L),
+    L2_Leaf_Reg = rep(-1,10000L),
+    RSM = rep(-1,10000L),
+    BootStrapType = rep("aa", 10000L),
+    GrowPolicy = rep(-1,10000))
   
   # Shuffle grid sets----
   for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]

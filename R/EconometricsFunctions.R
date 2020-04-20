@@ -270,9 +270,7 @@ RL_Performance <- function(Results = Results,
     data.table::set(ExperimentGrid, 
                     i = run,
                     j = c("Train_MSE","Train_MAE","Train_MAPE"),
-                    value = list(NA,
-                                 NA,
-                                 NA))
+                    value = list(NA,NA,NA))
   }
   
   # Validation Performance----
@@ -1226,13 +1224,8 @@ OptimizeArima <- function(Output,
       
       # Update Grid Column Values----
       if(run == 1L) {
-        data.table::set(
-          ExperimentGrid, 
-          i = run,
-          j = "GridName",
-          value = "DefaultAutoArima")
+        data.table::set(ExperimentGrid, i = run, j = "GridName", value = "DefaultAutoArima")
       } else {
-        
         for(cols in 1L:12L) {
           if(cols == 1L) {
             data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1L])
@@ -1314,9 +1307,9 @@ OptimizeArima <- function(Output,
       
       # Performance Metrics----
       tryCatch({ExperimentGrid <- RL_Performance(
-        Results = Results, 
+        Results = Results,
         NextGrid = NextGrid,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         MaxFourierTerms = NextGrid[["MaxFourierTerms"]][1],
         XREGFC = XREGFC,
         ExperimentGrid = ExperimentGrid,

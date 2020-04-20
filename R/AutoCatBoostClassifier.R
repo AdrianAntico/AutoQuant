@@ -395,9 +395,9 @@ AutoCatBoostClassifier <- function(data,
     
     # Initialize RL----
     RL_Start <- RL_Initialize(
-      ParameterGridSet = GridClusters, 
-      Alpha = 1, 
-      Beta = 1, 
+      ParameterGridSet = GridClusters,
+      Alpha = 1L,
+      Beta = 1L,
       SubDivisions = 1000L)
     BanditArmsN <- RL_Start[["BanditArmsN"]]
     Successes <- RL_Start[["Successes"]]
@@ -417,7 +417,7 @@ AutoCatBoostClassifier <- function(data,
       counter <- counter + 1L
       
       # Select Grid----
-      if(counter <= length(Grids)+1L) {
+      if(counter <= BanditArmsN + 1L) {
         
         # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
         # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
@@ -538,8 +538,12 @@ AutoCatBoostClassifier <- function(data,
         auc = TRUE,
         ci = TRUE)
       
+      # Performance measures----
+      NewPerformance <- as.numeric(AUC_Metrics$auc)
+      BestPerformance <- max(ExperimentalGrid$EvalMetric, na.rm = TRUE)
+      
       # Update Experimental Grid with Param values----
-      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = as.numeric(AUC_Metrics$auc))
+      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
       if(counter == 1L) {
         data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = max(Grid$NTrees))
@@ -555,9 +559,11 @@ AutoCatBoostClassifier <- function(data,
         data.table::set(ExperimentalGrid, i = counter, j = "GrowPolicy", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       }
       
-      # Update bandit probabilities
+      
+      
+      # Update bandit probabilities----
       RL_Update_Output <- RL_ML_Update(
-        ExperimentGrid = ExperimentGrid,
+        ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
         NewPerformance = NewPerformance,
         BestPerformance = BestPerformance,
@@ -576,54 +582,9 @@ AutoCatBoostClassifier <- function(data,
       Successes <- RL_Update_Output[["Successes"]]
       NewGrid <- RL_Update_Output[["NewGrid"]]
       
-      
       # Binary Remove Model and Collect Garbage----
       rm(model)
       gc()
-      
-      # Binary Grid Validation Data----
-      
-      
-      # Binary Grid Evaluation Metrics for Each Grid----
-      # if (tolower(grid_eval_metric) == "accuracy") {
-      #   j <- 0L
-      #   x <- data.table::data.table(Metric = "Accuracy", MetricValue = 5.0, Threshold = seq(0.01, 0.99, 0.001))
-      #   for (k in unique(x[["Threshold"]])) {
-      #     j <- j + 1L
-      #     Accuracy <- mean(calibEval[, data.table::fifelse(p1 > k & Target == 1 | p1 < k & Target == 0, 1, 0)])
-      #     data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4L))
-      #   }
-      #   data.table::setorderv(x, "MetricValue", order = -1L, na.last = TRUE)
-      #   Metric <- x[1L, MetricValue]
-      # } else {
-      #   x <- ROCR::prediction(predictions = calibEval[["p1"]], labels = calibEval[["Target"]])
-      #   y <- ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
-      #   if(any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
-      #     if(nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L) {
-      #       z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values))
-      #       Metric <- z[[1L]]
-      #     } else if(nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
-      #       z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1L]]))
-      #       Metric <- z[!is.infinite(Threshold)][[1L]]
-      #     } else if(!(nrow(data.table::as.data.table(y@y.values)) <= 1L) & nrow(data.table::as.data.table(y@x.values) <= 1L)) {
-      #       if(grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-      #         z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
-      #         Metric <- z[order(-Metric)][!is.infinite(Metric)][[1]]
-      #       } else {
-      #         z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
-      #         Metric <- z[order(Metric)][!is.infinite(Metric)][[1L]]
-      #       }
-      #     }
-      #   } else {
-      #     if(grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-      #       z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
-      #       Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
-      #     } else {
-      #       z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
-      #       Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
-      #     }
-      #   }
-      # }
     }
   }
   
