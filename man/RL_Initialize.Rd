@@ -32,7 +32,8 @@ GridIDs <- RL_Start[["GridIDs"]]
 BanditProbs <- RL_Start[["BanditProbs"]]
 }
 \seealso{
-Other Reinforcement Learning: \code{\link{RL_Update}}
+Other Reinforcement Learning: \code{\link{RL_ML_Update}},
+  \code{\link{RL_Update}}
 }
 \author{
 Adrian Antico
