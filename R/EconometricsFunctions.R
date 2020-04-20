@@ -1219,10 +1219,9 @@ OptimizeArima <- function(Output,
       
       # Select new grid----
       if(run <= BanditArmsN + 1L) {
-        if(run != 1L) 
-          NextGrid <- GridClusters[[names(GridClusters)[run-1]]][1]
+        if(run != 1L) NextGrid <- GridClusters[[names(GridClusters)[run-1L]]][1L]
       } else {
-        NextGrid <- as.list(GridClusters[[names(GridClusters)[NewGrid]]][Trials[NewGrid]+1])
+        NextGrid <- as.list(GridClusters[[names(GridClusters)[NewGrid]]][Trials[NewGrid]+1L])
       }
       
       # Update Grid Column Values----
@@ -1234,38 +1233,22 @@ OptimizeArima <- function(Output,
           value = "DefaultAutoArima")
       } else {
         
-        for(cols in as.integer(1:12)) {
+        for(cols in 1L:12L) {
           if(cols == 1L) {
-            data.table::set(
-              ExperimentGrid, 
-              i = run,
-              j = cols,
-              value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1])
-          } else if(cols == 12) {
-            data.table::set(
-              ExperimentGrid, 
-              i = run,
-              j = cols,
-              value = names(GridClusters)[NewGrid])
+            data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1L])
+          } else if(cols == 12L) {
+            data.table::set(ExperimentGrid, i = run, j = cols, value = names(GridClusters)[NewGrid])
           } else {
             # Grab correct cluster group, cluster column, and cluster row
-            data.table::set(
-              ExperimentGrid, 
-              i = run,
-              j = cols,
-              value = GridClusters[[names(GridClusters)[NewGrid]]][[cols]][Trials[NewGrid]+1])
+            data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][[cols]][Trials[NewGrid]+1L])
           }
         }
         
         # Fill bandit probabilities
         banditindex <- 0L
-        for(BanditCols in c(ncol(ExperimentGrid)-BanditArmsN):(ncol(ExperimentGrid)-1)) {
+        for(BanditCols in c(ncol(ExperimentGrid)-BanditArmsN):(ncol(ExperimentGrid)-1L)) {
           banditindex <- banditindex + 1L 
-          data.table::set(
-            ExperimentGrid, 
-            i = run, 
-            j = BanditCols, 
-            value = round(BanditProbs[banditindex],2))          
+          data.table::set(ExperimentGrid, i = run, j = BanditCols, value = round(BanditProbs[banditindex], 2L))
         }
       }
       
@@ -1284,8 +1267,8 @@ OptimizeArima <- function(Output,
           XREG <- FALSE
           XREGFC <- FALSE
         } else {
-          XREG <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1])}, error = function(x) FALSE)
-          XREGFC <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1], h = HoldOutPeriods)}, error = function(x) FALSE)
+          XREG <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L])}, error = function(x) FALSE)
+          XREGFC <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L], h = HoldOutPeriods)}, error = function(x) FALSE)
         }
       }
       

@@ -39,8 +39,8 @@
 #' \donttest{
 #' Correl <- 0.85
 #' N <- 1000L
-#' data <- data.table::data.table(Target = runif(N))
-#' data[, x1 := qnorm(Target)]
+#' data <- data.table::data.table(Adrian = runif(N))
+#' data[, x1 := qnorm(Adrian)]
 #' data[, x2 := runif(N)]
 #' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
 #' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
@@ -58,7 +58,7 @@
 #'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
 #'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' data[, Target := ifelse(Target < 0.5, 1, 0)]
+#' data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
 #' TestModel <- AutoCatBoostClassifier(
 #'     
 #'     # Data arguments
@@ -83,7 +83,7 @@
 #'     SaveModelObjects = FALSE,
 #'     
 #'     # Grid tuning arguments
-#'     PassInGrid = NULL
+#'     PassInGrid = NULL,
 #'     GridTune = FALSE,
 #'     grid_eval_metric = "f",
 #'     MaxModelsInGrid = 10L,
@@ -109,7 +109,7 @@ AutoCatBoostClassifier <- function(data,
                                    ClassWeights = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
-                                   eval_metric = "AUC",
+                                   eval_metric = "MCC",
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -388,23 +388,46 @@ AutoCatBoostClassifier <- function(data,
       BootStrapType = BootStrapType,
       GrowPolicy    = GrowPolicy)
     
+    # Initialize RL----
+    RL_Start <- RL_Initialize(
+      ParameterGridSet = Grids, 
+      Alpha = 1, 
+      Beta = 1, 
+      SubDivisions = 1000L)
+    BanditArmsN <- RL_Start[["BanditArmsN"]]
+    Successes <- RL_Start[["Successes"]]
+    Trials <- RL_Start[["Trials"]]
+    GridIDs <- RL_Start[["GridIDs"]]
+    BanditProbs <- RL_Start[["BanditProbs"]]
+    rm(RL_Start)
+    
+    # Add bandit probs columns to ExperimentGrid----
+    data.table::set(ExperimentGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
+    
     # Binary Grid Tuning Main Loop----
-    for (i in as.integer(seq_len(MaxModelsInGrid + 1L))) {
+    counter <- 0L
+    repeat {
+    
+      # Increment counter----
+      counter <- counter + 1L
       
       # Select Grid----
+      if(counter <= length(Grids)) {
+        
+      }
       
       # Define parameters----
       if (!is.null(ClassWeights)) {
         base_params <- list(
           has_time             = HasTime,
           metric_period        = 1L,
-          loss_function        = LossFunction,
+          loss_function        = eval_metric,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
           class_weights        = ClassWeights,
-          train_dir            = model_path
+          train_dir            = model_path,
           Shuffles             = Shuffles,
           iterations           = Trees,
           Depth                = Depth,
@@ -415,15 +438,22 @@ AutoCatBoostClassifier <- function(data,
           GrowPolicy           = GrowPolicy)
       } else {
         base_params <- list(
-          iterations           = Trees,
-          loss_function        = LossFunction,
+          has_time             = HasTime,
+          metric_period        = 1L,
+          loss_function        = eval_metric,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
-          metric_period        = 1L,
-          has_time             = HasTime,
+          task_type            = task_type,
           train_dir            = model_path,
-          task_type            = task_type)
+          Shuffles             = Shuffles,
+          iterations           = Trees,
+          Depth                = Depth,
+          LearningRate         = LearningRate,
+          L2_Leaf_Reg          = L2_Leaf_Reg,
+          RSM                  = RSM,
+          BootStrapType        = BootStrapType,
+          GrowPolicy           = GrowPolicy)
       }
       
       # Run model

@@ -8,7 +8,7 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "AUC", model_path = NULL, metadata_path = NULL,
+  eval_metric = "MCC", model_path = NULL, metadata_path = NULL,
   ModelID = "FirstModel", NumOfParDepPlots = 0L,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL, GridTune = FALSE, grid_eval_metric = "f",
@@ -92,8 +92,8 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 \donttest{
 Correl <- 0.85
 N <- 1000L
-data <- data.table::data.table(Target = runif(N))
-data[, x1 := qnorm(Target)]
+data <- data.table::data.table(Adrian = runif(N))
+data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
 data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
 data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
@@ -111,7 +111,7 @@ data[, Independent_Variable11 := as.factor(
                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
-data[, Target := ifelse(Target < 0.5, 1, 0)]
+data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
 TestModel <- AutoCatBoostClassifier(
     
     # Data arguments
@@ -136,7 +136,7 @@ TestModel <- AutoCatBoostClassifier(
     SaveModelObjects = FALSE,
     
     # Grid tuning arguments
-    PassInGrid = NULL
+    PassInGrid = NULL,
     GridTune = FALSE,
     grid_eval_metric = "f",
     MaxModelsInGrid = 10L,
