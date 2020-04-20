@@ -138,39 +138,34 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
                       BanditProbabilities = BanditProbs) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Compute Baseline performance----
-  if(ModelRun == 1L) {
-    Baseline <- min(ExperimentGrid[Blended_MSE > 0 & Blended_MAE > 0 & Blended_MAPE > 0][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
-  }
+  if(ModelRun == 1L) Baseline <- min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
   
   # Compute best performance----
-  if(is.na(min(ExperimentGrid[Blended_MSE > 0 & Blended_MAE > 0 & Blended_MAPE > 0][[paste0("Blended_",MetricSelection)]], na.rm = TRUE))) {
-    BestPerformance <- -10
+  if(is.na(min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE))) {
+    BestPerformance <- -10L
   } else {
-    BestPerformance <- min(ExperimentGrid[Blended_MSE > 0 & Blended_MAE > 0 & Blended_MAPE > 0][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
+    BestPerformance <- min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
   }
+
   
   # New performance----
   if(is.na(ExperimentGrid[ModelRun, get(paste0("Blended_",MetricSelection))])) {
-    NewPerformance <- -10
+    NewPerformance <- -10L
   } else {
     NewPerformance <- ExperimentGrid[ModelRun, get(paste0("Blended_",MetricSelection))]
   }
   
   # Comparison----
-  if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1) {
-    BestGrid <- ModelRun
-  }
+  if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun
   
   # Update trial counts----
-  if(ModelRun != 1) {
-    TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1
-  }
+  if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1L
   
   # Best Metric----
-  if(ModelRun != 1) {
+  if(ModelRun != 1L) {
     
     # Compute Runs of Consecutive Failures----
     if(NewPerformance > BestPerformance) {
@@ -178,45 +173,152 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
     } else {
       RunsWithoutNewWinner <- 0L
       if(ModelRun == BanditArmsCount) {
-        SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1
+        SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
       } else {
-        SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1            
+        SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
       }
     }
     
     # Update Bandit Probabilities----
     if(any(TrialVector < SuccessVector )) {
-      TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1
+      TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
     }
     
     # Create Bandit Probabilities----
     BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
     
     # Sample from bandit to select next grid row----
-    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1, replace = TRUE, prob = BanditProbabilities)]
+    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   } else {
     
     # Sample from bandit to select next grid row----
-    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1, replace = TRUE, prob = BanditProbabilities)]
+    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   }
   
   # Loop Break Conditions (No new winners; Max models built; Max time reached)----
-  if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60) {
+  if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
     Break <- "exit"      
   } else {
     Break <- "stay"
   }
   
   # Return----
-  return(
-    list(
-      NewGrid = NewGrid,
-      Trials = TrialVector,
-      Successes = SuccessVector,
-      BanditProbs = BanditProbabilities,
-      BreakLoop = Break
-    )
-  )
+  return(list(
+    NewGrid = NewGrid,
+    Trials = TrialVector,
+    Successes = SuccessVector,
+    BanditProbs = BanditProbabilities,
+    BreakLoop = Break))
+}
+
+#' RL_ML_Update 
+#' 
+#' RL_ML_Update updates the bandit probabilities for selecting different grids
+#'
+#' @author Adrian Antico
+#' @family Reinforcement Learning
+#' @param ExperimentGrid This is a data.table of grid params and model results
+#' @param ModelRun Model iteration number
+#' @param NEWGrid Previous grid passed in
+#' @param TrialVector Numeric vector with the total trials for each arm
+#' @param SuccessVector Numeric vector with the total successes for each arm
+#' @param GridIDS The numeric vector that identifies which grid is which
+#' @param BanditArmsCount The number of arms in the bandit
+#' @param RunsWithoutNewWinner Counter of the number of models previously built without being a new winner
+#' @param MaxRunsWithoutNewWinner Maximum number of models built without a new best model (constraint)
+#' @param MaxNumberModels Maximum number of models to build (constraint)
+#' @param MaxRunMinutes Run time constraint
+#' @param TotalRunTime Cumulative run time in minutes
+#' @param BanditProbabilities Inital probabilities from RL_Initialize()
+#' @examples 
+#' RL_Update_Output <- RL_ML_Update(
+#'   ExperimentGrid = ExperimentGrid,
+#'   ModelRun = run,
+#'   NEWGrid = NewGrid,
+#'   TrialVector = Trials,
+#'   SuccessVector = Successes,
+#'   GridIDS = GridIDs,
+#'   BanditArmsCount = BanditArmsN,
+#'   RunsWithoutNewWinner = RunsWithoutNewWinner,
+#'   MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+#'   MaxNumberModels = MaxNumberModels,
+#'   MaxRunMinutes = MaxRunMinutes,
+#'   TotalRunTime = TotalRunTime,
+#'   BanditProbabilities = BanditProbs)
+#' BanditProbs <- RL_Update_Output[["BanditProbs"]]
+#' Trials <- RL_Update_Output[["Trials"]]
+#' Successes <- RL_Update_Output[["Successes"]]
+#' NewGrid <- RL_Update_Output[["NewGrid"]]
+#' @export 
+RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
+                         ModelRun = counter,
+                         NewPerformance = NewPerformance,
+                         BestPerformance = BestPerformance,
+                         TrialVector = Trials,
+                         SuccessVector = Successes,
+                         GridIDS = GridIDs,
+                         BanditArmsCount = BanditArmsN,
+                         RunsWithoutNewWinner = RunsWithoutNewWinner,
+                         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+                         MaxNumberModels = MaxNumberModels,
+                         MaxRunMinutes = MaxRunMinutes,
+                         TotalRunTime = TotalRunTime,
+                         BanditProbabilities = BanditProbs) {
+  
+  # Turn on full speed ahead----
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  
+  # Comparison----
+  if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun
+  
+  # Update trial counts----
+  if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1L
+  
+  # Best Metric----
+  if(ModelRun != 1L) {
+    
+    # Compute Runs of Consecutive Failures----
+    if(NewPerformance > BestPerformance) {
+      RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+    } else {
+      RunsWithoutNewWinner <- 0L
+      if(ModelRun == BanditArmsCount) {
+        SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
+      } else {
+        SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
+      }
+    }
+    
+    # Update Bandit Probabilities----
+    if(any(TrialVector < SuccessVector )) {
+      TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
+    }
+    
+    # Create Bandit Probabilities----
+    BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
+    
+    # Sample from bandit to select next grid row----
+    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
+  } else {
+    
+    # Sample from bandit to select next grid row----
+    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
+  }
+  
+  # Loop Break Conditions (No new winners; Max models built; Max time reached)----
+  if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
+    Break <- "exit"      
+  } else {
+    Break <- "stay"
+  }
+  
+  # Return----
+  return(list(
+    NewGrid = NewGrid,
+    Trials = TrialVector,
+    Successes = SuccessVector,
+    BanditProbs = BanditProbabilities,
+    BreakLoop = Break))
 }
 
 #' CatBoostParameterGrids 

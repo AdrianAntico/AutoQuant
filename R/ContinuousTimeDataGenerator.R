@@ -313,7 +313,7 @@ ContinuousTimeDataGenerator <- function(data,
     data.table::setorderv(data, cols = c(eval(DateVariableName)), order = c(-1L))
     data[, TimeTrend := 1L:.N]
   }
-  AutoLagRollStatsEnd <- Sys.time()
+  TimeTrendEnd <- Sys.time()
   ProfilerList[["TimeTrend"]] <- TimeTrendEnd - TimeTrendStart
   print("TimeTrend run time")
   print(ProfilerList[["TimeTrend"]])

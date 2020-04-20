@@ -510,7 +510,7 @@ AutoCatBoostClassifier <- function(data,
       }
       
       # Build model----
-      model <- catboost::catboost.train(learn_pool = TrainPool, test_pool  = TestPool, params = base_params)
+      model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
       
       # Score model----
       if (!is.null(TestData)) {
@@ -518,14 +518,14 @@ AutoCatBoostClassifier <- function(data,
           model = model,
           pool = FinalTestPool,
           prediction_type = "Probability",
-          thread_count = -1)
+          thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
       } else {
         predict <- catboost::catboost.predict(
           model = model,
           pool = TestPool,
           prediction_type = "Probability",
-          thread_count = -1)
+          thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
       }
 
@@ -534,16 +534,47 @@ AutoCatBoostClassifier <- function(data,
         response = calibEval[["Target"]],
         predictor = calibEval[["p1"]],
         na.rm = TRUE,
-        algorithm = 3,
+        algorithm = 3L,
         auc = TRUE,
         ci = TRUE)
-      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = as.numeric(AUC_Metrics$auc))
       
       # Update Experimental Grid with Param values----
-      data.table::set(ExperimentalGrid, i = counter, NTrees = model$tree_count)
+      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = as.numeric(AUC_Metrics$auc))
+      data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
+      if(counter == 1L) {
+        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = max(Grid$NTrees))
+      } else {
+        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      }
+      if(counter > 1L) {
+        data.table::set(ExperimentalGrid, i = counter, j = "Depth", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "LearningRate", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "L2_Leaf_Reg", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "RSM", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "BootStrapType", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "GrowPolicy", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      }
       
       # Update bandit probabilities
-      
+      RL_Update_Output <- RL_ML_Update(
+        ExperimentGrid = ExperimentGrid,
+        ModelRun = counter,
+        NewPerformance = NewPerformance,
+        BestPerformance = BestPerformance,
+        TrialVector = Trials,
+        SuccessVector = Successes,
+        GridIDS = GridIDs,
+        BanditArmsCount = BanditArmsN,
+        RunsWithoutNewWinner = RunsWithoutNewWinner,
+        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+        MaxNumberModels = MaxNumberModels,
+        MaxRunMinutes = MaxRunMinutes,
+        TotalRunTime = TotalRunTime,
+        BanditProbabilities = BanditProbs)
+      BanditProbs <- RL_Update_Output[["BanditProbs"]]
+      Trials <- RL_Update_Output[["Trials"]]
+      Successes <- RL_Update_Output[["Successes"]]
+      NewGrid <- RL_Update_Output[["NewGrid"]]
       
       
       # Binary Remove Model and Collect Garbage----
