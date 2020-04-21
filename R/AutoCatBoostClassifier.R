@@ -478,8 +478,7 @@ AutoCatBoostClassifier <- function(data,
               learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
               l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
               rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-              grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
           }
         }
       } else {
@@ -517,8 +516,7 @@ AutoCatBoostClassifier <- function(data,
             learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
             l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
             rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
-            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L],
-            grow_policy          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["GrowPolicy"]][1L])
+            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
         }
       }
       
@@ -642,8 +640,7 @@ AutoCatBoostClassifier <- function(data,
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
         rsm                  = PassInGrid[["RSM"]],
-        bootstrap_type       = PassInGrid[["BootStrapType"]],
-        grow_policy          = PassInGrid[["GrowPolicy"]])
+        bootstrap_type       = PassInGrid[["BootStrapType"]])
     }
   }
   
@@ -654,6 +651,7 @@ AutoCatBoostClassifier <- function(data,
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
     if(tolower(task_type) == "gpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
     if(tolower(task_type) == "gpu") grid_params <- grid_params[!names(grid_params) %chin% "RSM"]
+    if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
     if (BestGrid == 1L) {
@@ -713,8 +711,7 @@ AutoCatBoostClassifier <- function(data,
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
           rsm                  = BestGrid[["RSM"]],
-          bootstrap_type       = BestGrid[["BootStrapType"]],
-          grow_policy          = BestGrid[["GrowPolicy"]])
+          bootstrap_type       = BestGrid[["BootStrapType"]])
       }
     }
   }
