@@ -129,7 +129,7 @@ TestModel <- AutoCatBoostClassifier(
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = Adrian,
+    TargetColumnName = "Adrian",
     FeatureColNames = names(data)[2L:ncol(data)],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L),
