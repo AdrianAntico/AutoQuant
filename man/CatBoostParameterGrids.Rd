@@ -8,7 +8,7 @@ CatBoostParameterGrids(TaskType = "CPU", Shuffles = 1L,
   NTrees = seq(1000L, 10000L, 1000L), Depth = seq(4L, 16L, 2L),
   LearningRate = c(0.01, 0.02, 0.03, 0.04), L2_Leaf_Reg = seq(1, 10,
   1), RSM = c(0.8, 0.85, 0.9, 0.95, 1), BootStrapType = c("Bayesian",
-  "Bernoulli", "Poisson", "MVS", "No"), GrowPolicy = c("SymmertricTree",
+  "Bernoulli", "Poisson", "MVS", "No"), GrowPolicy = c("SymmetricTree",
   "Depthwise", "Lossguide"))
 }
 \arguments{
@@ -28,7 +28,7 @@ CatBoostParameterGrids(TaskType = "CPU", Shuffles = 1L,
 
 \item{BootStrapType}{c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
-\item{GrowPolicy}{c("SymmertricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{c("SymmetricTree", "Depthwise", "Lossguide")}
 }
 \value{
 A list containing data.table's with the parameters shuffled and ready to test in the bandit framework

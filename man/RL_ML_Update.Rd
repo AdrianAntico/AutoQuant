@@ -5,8 +5,9 @@
 \title{RL_ML_Update}
 \usage{
 RL_ML_Update(ExperimentGrid = ExperimentGrid, ModelRun = counter,
-  NewPerformance = NewPerformance, BestPerformance = BestPerformance,
-  TrialVector = Trials, SuccessVector = Successes, GridIDS = GridIDs,
+  NEWGrid = NewGrid, NewPerformance = NewPerformance,
+  BestPerformance = BestPerformance, TrialVector = Trials,
+  SuccessVector = Successes, GridIDS = GridIDs,
   BanditArmsCount = BanditArmsN,
   RunsWithoutNewWinner = RunsWithoutNewWinner,
   MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
@@ -17,6 +18,8 @@ RL_ML_Update(ExperimentGrid = ExperimentGrid, ModelRun = counter,
 \item{ExperimentGrid}{This is a data.table of grid params and model results}
 
 \item{ModelRun}{Model iteration number}
+
+\item{NEWGrid}{Previous grid passed in}
 
 \item{TrialVector}{Numeric vector with the total trials for each arm}
 
@@ -37,8 +40,6 @@ RL_ML_Update(ExperimentGrid = ExperimentGrid, ModelRun = counter,
 \item{TotalRunTime}{Cumulative run time in minutes}
 
 \item{BanditProbabilities}{Inital probabilities from RL_Initialize()}
-
-\item{NEWGrid}{Previous grid passed in}
 }
 \description{
 RL_ML_Update updates the bandit probabilities for selecting different grids

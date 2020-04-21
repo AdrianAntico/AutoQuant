@@ -4,7 +4,7 @@
 \alias{RPM_Binomial_Bandit}
 \title{RPM_Binomial_Bandit}
 \usage{
-RPM_Binomial_Bandit(Success, Trials, Alpha = 1, Beta = 1,
+RPM_Binomial_Bandit(Success, Trials, Alpha = 1L, Beta = 1L,
   SubDivisions = 1000L)
 }
 \arguments{

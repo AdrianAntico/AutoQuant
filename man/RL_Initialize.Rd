@@ -4,7 +4,7 @@
 \alias{RL_Initialize}
 \title{RL_Initialize}
 \usage{
-RL_Initialize(ParameterGridSet = NULL, Alpha = 1, Beta = 1,
+RL_Initialize(ParameterGridSet = NULL, Alpha = 1L, Beta = 1L,
   SubDivisions = 1000L)
 }
 \arguments{
