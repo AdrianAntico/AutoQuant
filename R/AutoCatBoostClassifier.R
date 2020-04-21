@@ -479,7 +479,7 @@ AutoCatBoostClassifier <- function(data,
         }
       } else {
         data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-        if (!is.null(ClassWeights)) {
+        if (tolower(task_type) == "gpu") {
           base_params <- list(
             has_time             = HasTime,
             metric_period        = 1L,
@@ -490,13 +490,12 @@ AutoCatBoostClassifier <- function(data,
             task_type            = task_type,
             class_weights        = ClassWeights,
             train_dir            = model_path,
-            iterations           = Trees,
-            depth                = Depth,
-            learning_rate         = LearningRate,
-            l2_leaf_reg          = L2_Leaf_Reg,
-            rsm                  = RSM,
-            bootstrap_type       = BootStrapType,
-            grow_policy          = GrowPolicy)
+            iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+            grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
         } else {
           base_params <- list(
             has_time             = HasTime,
@@ -507,13 +506,14 @@ AutoCatBoostClassifier <- function(data,
             best_model_min_trees = 10L,
             task_type            = task_type,
             train_dir            = model_path,
-            iterations           = Trees,
-            depth                = Depth,
-            learning_rate         = LearningRate,
-            l2_leaf_reg          = L2_Leaf_Reg,
-            rsm                  = RSM,
-            bootstrap_type       = BootStrapType,
-            grow_policy          = GrowPolicy)
+            class_weights        = ClassWeights,
+            iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+            rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+            grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
         }
       }
       
@@ -522,13 +522,13 @@ AutoCatBoostClassifier <- function(data,
       
       # Score model----
       if (!is.null(TestData)) {
-        predict <- catboost::catboost.predict(model = model,pool = FinalTestPool,prediction_type = "Probability",thread_count = -1L)
+        predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
-        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]],predictor = calibEval[["p1"]],na.rm = TRUE,algorithm = 3L,auc = TRUE,ci = TRUE)
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
       } else {
-        predict <- catboost::catboost.predict(model = model,pool = TestPool,prediction_type = "Probability",thread_count = -1L)
+        predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
-        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]],predictor = calibEval[["p1"]],na.rm = TRUE,algorithm = 3L,auc = TRUE,ci = TRUE)
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
       }
 
       # Update Experimental Grid with Param values----
@@ -542,9 +542,9 @@ AutoCatBoostClassifier <- function(data,
       data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
+      BestPerformance <- max(ExperimentalGrid[["EvalMetric"]], na.rm = TRUE)
       
       # Performance measures----
-      BestPerformance <- max(ExperimentalGrid[["EvalMetric"]], na.rm = TRUE)
       TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
       if(BestPerformance < NewPerformance) {
         RunsWithoutNewWinner <- 0L
