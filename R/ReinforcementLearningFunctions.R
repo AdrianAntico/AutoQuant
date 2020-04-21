@@ -168,7 +168,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
   if(ModelRun != 1L) {
     
     # Compute Runs of Consecutive Failures----
-    if(NewPerformance > BestPerformance) {
+    if(NewPerformance < BestPerformance) {
       RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
     } else {
       RunsWithoutNewWinner <- 0L
@@ -270,23 +270,22 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Comparison----
-  if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun
+  if(ModelRun <= BanditArmsCount + 1L) {
+    BestGrid <- ModelRun
+  } else {
+    BestGrid <- NewGrid
+  }
   
   # Update trial counts----
-  if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1L
+  if(ModelRun > 1L) TrialVector[BestGrid] <- TrialVector[BestGrid] + 1L
   
   # Best Metric----
   if(ModelRun != 1L) {
     
-    # Compute Runs of Consecutive Failures----
-    if(NewPerformance > BestPerformance) {
-      RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
-    } else {
-      RunsWithoutNewWinner <- 0L
-      if(ModelRun == BanditArmsCount) {
+    # Consecutive failures and updating success vectors----
+    if(ModelRun > 1L) {
+      if(NewPerformance > BestPerformance) {
         SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
-      } else {
-        SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
       }
     }
     

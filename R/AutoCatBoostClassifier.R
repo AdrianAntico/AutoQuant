@@ -543,7 +543,12 @@ AutoCatBoostClassifier <- function(data,
       data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
-      BestPerformance <- max(ExperimentalGrid[["EvalMetric"]], na.rm = TRUE)
+      if(counter == 1L) {
+        BestPerformance <- 1L
+      } else {
+        BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+      }
+        
       
       # Performance measures----
       TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
