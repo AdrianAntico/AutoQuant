@@ -518,6 +518,7 @@ AutoCatBoostClassifier <- function(data,
       }
       
       # Build model----
+      print(base_params)
       RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
       
       # Score model----
