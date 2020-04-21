@@ -11,10 +11,9 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   eval_metric = "MCC", model_path = NULL, metadata_path = NULL,
   ModelID = "FirstModel", NumOfParDepPlots = 0L,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, GridTune = FALSE, grid_eval_metric = "f",
-  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24 * 60, IncludeDefault = TRUE, Shuffles = 1L,
-  Trees = 50L, Depth = NULL, LearningRate = NULL,
+  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
+  Shuffles = 1L, Trees = 50L, Depth = NULL, LearningRate = NULL,
   L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
   GrowPolicy = NULL)
 }
@@ -57,31 +56,23 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{grid_eval_metric}{This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"}
-
 \item{MaxModelsInGrid}{Number of models to test from grid options.}
-
-\item{IncludeDefault}{TRUE or FALSE. Setting to TRUE when running a grid tune will force a default catboost model to be fitted using 1000L trees}
 
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
-\item{Trees}{The maximum number of trees you want in your models}
+\item{Trees}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
-\item{Depth}{NULL, number, or vector for depth to test. For grid tuning, supply a vector of values}
+\item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
 
-\item{LearningRate}{NULL, number, or vector for learning rate to test. For grid tuning, supply a vector of values}
+\item{LearningRate}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
 
-\item{L2_Leaf_Reg}{NULL, number, or vector for l2 regularization to test. For grid tuning, supply a vector of values}
+\item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
 
-\item{RSM}{NULL, number, or vector for random subspace method to test. For grid tuning, supply a vector of values}
+\item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{NULL, character, or vector for BootstrapType to test. For grid tuning, supply a vector of values}
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
-\item{GrowPolicy}{NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values}
-
-\item{IncludeDefault}{= TRUE,}
-
-\item{Trees}{NULL, number, or vector for trees to test. For grid tuning, supply a vector of values}
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -91,8 +82,15 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 }
 \examples{
 \donttest{
+# Create some dummy correlated data with numeric and categorical features
+
+# Alter correlation value for the simulated data
 Correl <- 0.85
+
+# Number of rows you want to use
 N <- 1000L
+
+
 data <- data.table::data.table(Adrian = runif(N))
 data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
@@ -111,45 +109,50 @@ data[, Independent_Variable11 := as.factor(
          data.table::fifelse(Independent_Variable2 < 0.40, "B",
                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, ':=' (x1 = NULL, x2 = NULL)]
 data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
+
+# Run function
 TestModel <- AutoCatBoostClassifier(
     
+    # GPU or CPU
+    task_type = "GPU",
+    
+    # Metadata arguments
+    ModelID = "Test_Model_1",
+    model_path = getwd(),
+    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+    
     # Data arguments
-    data,
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = NULL,
-    FeatureColNames = NULL,
+    TargetColumnName = Adrian,
+    FeatureColNames = names(data)[2L:ncol(data)],
     PrimaryDateColumn = NULL,
-    ClassWeights = NULL,
-    IDcols = NULL,
+    ClassWeights = c(1L,1L),
+    IDcols = c("x1","x2"),
     
-    # Meta data arguments
-    task_type = "GPU",
+    # Model evaluation
     eval_metric = "AUC",
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    NumOfParDepPlots = 0L,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    
-    # Grid tuning arguments
+    NumOfParDepPlots = ncol(data)-1L-2L,
+
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics 
     PassInGrid = NULL,
-    GridTune = FALSE,
-    grid_eval_metric = "f",
-    MaxModelsInGrid = 10L,
-    IncludeDefault = TRUE,
-    Shuffles = 1L,
-    Trees = 50L,
-    Depth = NULL, 
-    LearningRate = NULL, 
-    L2_Leaf_Reg = NULL, 
-    RSM = NULL, 
-    BootStrapType = NULL,
-    GrowPolicy = NULL)
+    GridTune = TRUE,
+    MaxModelsInGrid = 100L,
+    Shuffles = 4L,
+    
+    # Trees, Depth, and LearningRate used in the bandit grid tuning. Must set Trees if you are not grid tuning. The ones below can be set to NULL and the values in the example will be used.
+    Trees = seq(1000L, 10000L, 1000L),
+    Depth = seq(4L, 16L, 2L), 
+    LearningRate = c(0.01,0.02,0.03,0.04), 
+    L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 }
 }
 \seealso{

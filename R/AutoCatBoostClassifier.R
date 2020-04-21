@@ -22,23 +22,26 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param grid_eval_metric This is the metric used to find the threshold "f", "auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds"
 #' @param MaxModelsInGrid Number of models to test from grid options.
-#' @param IncludeDefault TRUE or FALSE. Setting to TRUE when running a grid tune will force a default catboost model to be fitted using 1000L trees
-#' @param Trees The maximum number of trees you want in your models
-#' @param IncludeDefault = TRUE,
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
-#' @param Trees NULL, number, or vector for trees to test. For grid tuning, supply a vector of values
-#' @param Depth NULL, number, or vector for depth to test. For grid tuning, supply a vector of values
-#' @param LearningRate NULL, number, or vector for learning rate to test. For grid tuning, supply a vector of values
-#' @param L2_Leaf_Reg NULL, number, or vector for l2 regularization to test. For grid tuning, supply a vector of values
-#' @param RSM NULL, number, or vector for random subspace method to test. For grid tuning, supply a vector of values
-#' @param BootStrapType NULL, character, or vector for BootstrapType to test. For grid tuning, supply a vector of values
-#' @param GrowPolicy NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values
+#' @param Trees Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
+#' @param Depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
+#' @param LearningRate Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
+#' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
+#' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
+#' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+#' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @examples
 #' \donttest{
+#' # Create some dummy correlated data with numeric and categorical features
+#' 
+#' # Alter correlation value for the simulated data
 #' Correl <- 0.85
+#' 
+#' # Number of rows you want to use
 #' N <- 1000L
+#' 
+#' 
 #' data <- data.table::data.table(Adrian = runif(N))
 #' data[, x1 := qnorm(Adrian)]
 #' data[, x2 := runif(N)]
@@ -57,45 +60,50 @@
 #'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
 #'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
 #'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-#' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
+#' 
+#' # Run function
 #' TestModel <- AutoCatBoostClassifier(
 #'     
+#'     # GPU or CPU
+#'     task_type = "GPU",
+#'     
+#'     # Metadata arguments
+#'     ModelID = "Test_Model_1",
+#'     model_path = getwd(),
+#'     metadata_path = file.path(getwd(),"R_Model_Testing"),
+#'     SaveModelObjects = FALSE,
+#'     ReturnModelObjects = TRUE,
+#'     
 #'     # Data arguments
-#'     data,
+#'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
-#'     TargetColumnName = NULL,
-#'     FeatureColNames = NULL,
+#'     TargetColumnName = Adrian,
+#'     FeatureColNames = names(data)[2L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
-#'     ClassWeights = NULL,
-#'     IDcols = NULL,
+#'     ClassWeights = c(1L,1L),
+#'     IDcols = c("x1","x2"),
 #'     
-#'     # Meta data arguments
-#'     task_type = "GPU",
+#'     # Model evaluation
 #'     eval_metric = "AUC",
-#'     model_path = NULL,
-#'     metadata_path = NULL,
-#'     ModelID = "FirstModel",
-#'     NumOfParDepPlots = 0L,
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,
-#'     
-#'     # Grid tuning arguments
+#'     NumOfParDepPlots = ncol(data)-1L-2L,
+#'
+#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
 #'     PassInGrid = NULL,
-#'     GridTune = FALSE,
-#'     grid_eval_metric = "f",
-#'     MaxModelsInGrid = 10L,
-#'     IncludeDefault = TRUE,
-#'     Shuffles = 1L,
-#'     Trees = 50L,
-#'     Depth = NULL, 
-#'     LearningRate = NULL, 
-#'     L2_Leaf_Reg = NULL, 
-#'     RSM = NULL, 
-#'     BootStrapType = NULL,
-#'     GrowPolicy = NULL)
+#'     GridTune = TRUE,
+#'     MaxModelsInGrid = 100L,
+#'     Shuffles = 4L,
+#'     
+#'     # Trees, Depth, and LearningRate used in the bandit grid tuning. Must set Trees if you are not grid tuning. The ones below can be set to NULL and the values in the example will be used.
+#'     Trees = seq(1000L, 10000L, 1000L),
+#'     Depth = seq(4L, 16L, 2L), 
+#'     LearningRate = c(0.01,0.02,0.03,0.04), 
+#'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+#'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+#'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -116,17 +124,11 @@ AutoCatBoostClassifier <- function(data,
                                    NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
-                                   
-                                   
                                    PassInGrid = NULL,
                                    GridTune = FALSE,
-                                   grid_eval_metric = "f",
-                                   
                                    MaxModelsInGrid = 10L,
                                    MaxRunsWithoutNewWinner = 20L,
-                                   MaxRunMinutes = 24*60,
-                                   
-                                   IncludeDefault = TRUE,
+                                   MaxRunMinutes = 24L*60L,
                                    Shuffles = 1L,
                                    Trees = 50L,
                                    Depth = NULL, 
@@ -602,7 +604,7 @@ AutoCatBoostClassifier <- function(data,
     ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
   }
   
-  # Binary Define Final Model Parameters----
+  # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
   if (!is.null(PassInGrid)) {
     if (tolower(task_type) == "gpu") {
       base_params <- list(
@@ -640,9 +642,10 @@ AutoCatBoostClassifier <- function(data,
         bootstrap_type       = PassInGrid[["BootStrapType"]],
         grow_policy          = PassInGrid[["GrowPolicy"]])
     }
-    base_params <- unique(c(base_params, as.list(PassInGrid[1L,])))
-    
-  } else if (GridTune & TrainOnFull == FALSE) {
+  }
+  
+  # Define parameters for case where you want to run grid tuning----
+  if (GridTune & TrainOnFull == FALSE) {
     
     # Prepare winning grid----
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
@@ -651,7 +654,6 @@ AutoCatBoostClassifier <- function(data,
     
     # Set parameters from winning grid----
     if (BestGrid == 1L) {
-      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
       if (!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
@@ -712,31 +714,34 @@ AutoCatBoostClassifier <- function(data,
           grow_policy          = BestGrid[["GrowPolicy"]])
       }
     }
-  } else {
+  }
+  
+  # Not pass in GridMetric and not grid tuning----
+  if(is.null(PassInGrid) & GridTune == FALSE) {
     if (!is.null(ClassWeights)) {
       base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = 10L,
         iterations           = Trees,
         loss_function        = LossFunction,
         eval_metric          = eval_metric,
-        use_best_model       = TRUE,
         has_time             = HasTime,
-        best_model_min_trees = 10,
-        metric_period        = 10,
         task_type            = task_type,
         class_weights        = ClassWeights)
     } else {
       base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = 10L,
         iterations           = Trees,
         loss_function        = LossFunction,
         eval_metric          = eval_metric,
-        use_best_model       = TRUE,
         has_time             = HasTime,
-        best_model_min_trees = 10,
-        metric_period        = 10,
         task_type            = task_type)
     }
   }
-  
+
   # Binary Train Final Model----
   if(!TrainOnFull) {
     model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
