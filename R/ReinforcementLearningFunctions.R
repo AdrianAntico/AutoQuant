@@ -273,7 +273,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   if(ModelRun <= BanditArmsCount + 1L) {
     BestGrid <- ModelRun - 1L
   } else {
-    BestGrid <- NewGrid
+    BestGrid <- NEWGrid
   }
   
   # Update trial counts----

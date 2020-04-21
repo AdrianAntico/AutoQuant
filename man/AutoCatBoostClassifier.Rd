@@ -13,9 +13,9 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L, Trees = 50L, Depth = NULL, LearningRate = NULL,
-  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
-  GrowPolicy = NULL)
+  Shuffles = 1L, MetricPeriods = 10L, Trees = 50L, Depth = NULL,
+  LearningRate = NULL, L2_Leaf_Reg = NULL, RSM = NULL,
+  BootStrapType = NULL, GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -59,6 +59,8 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 \item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
+
+\item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
 
 \item{Trees}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -144,6 +146,7 @@ TestModel <- AutoCatBoostClassifier(
     GridTune = TRUE,
     MaxModelsInGrid = 100L,
     Shuffles = 4L,
+    MetricPeriods = 10L,
     
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
