@@ -538,19 +538,6 @@ AutoCatBoostClassifier <- function(data,
       data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
-      if(counter == 1L) {
-        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = max(Grid$NTrees))
-      } else {
-        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][[counter-1L]])
-      }
-      if(counter > 1L) {
-        data.table::set(ExperimentalGrid, i = counter, j = "Depth", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        data.table::set(ExperimentalGrid, i = counter, j = "LearningRate", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        data.table::set(ExperimentalGrid, i = counter, j = "L2_Leaf_Reg", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        data.table::set(ExperimentalGrid, i = counter, j = "RSM", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        data.table::set(ExperimentalGrid, i = counter, j = "BootStrapType", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        data.table::set(ExperimentalGrid, i = counter, j = "GrowPolicy", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-      }
       
       # Performance measures----
       BestPerformance <- max(ExperimentalGrid[["EvalMetric"]], na.rm = TRUE)
@@ -563,21 +550,20 @@ AutoCatBoostClassifier <- function(data,
       
       # Update bandit probabilities----
       
-      
-      ExperimentGrid = ExperimentalGrid
-      ModelRun = counter
-      NewPerformance = NewPerformance
-      BestPerformance = BestPerformance
-      TrialVector = Trials
-      SuccessVector = Successes
-      GridIDS = GridIDs
-      BanditArmsCount = BanditArmsN
-      RunsWithoutNewWinner = RunsWithoutNewWinner
-      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-      MaxNumberModels = MaxModelsInGrid
-      MaxRunMinutes = MaxRunMinutes
-      TotalRunTime = TotalRunTime
-      BanditProbabilities = BanditProbs
+      # ExperimentGrid = ExperimentalGrid
+      # ModelRun = counter
+      # NewPerformance = NewPerformance
+      # BestPerformance = BestPerformance
+      # TrialVector = Trials
+      # SuccessVector = Successes
+      # GridIDS = GridIDs
+      # BanditArmsCount = BanditArmsN
+      # RunsWithoutNewWinner = RunsWithoutNewWinner
+      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+      # MaxNumberModels = MaxModelsInGrid
+      # MaxRunMinutes = MaxRunMinutes
+      # TotalRunTime = TotalRunTime
+      # BanditProbabilities = BanditProbs
       
       # Update bandit probabilities and whatnot----
       RL_Update_Output <- RL_ML_Update(
@@ -606,6 +592,17 @@ AutoCatBoostClassifier <- function(data,
       
       # Continue or stop----
       if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "L2_Leaf_Reg", value = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][Trials[NewGrid]+1L])
+      if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
+      for(bandit in seq_len(length(BanditProbs))) {
+        data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
+      }
     }
   }
   
