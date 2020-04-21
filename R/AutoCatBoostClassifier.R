@@ -532,10 +532,14 @@ AutoCatBoostClassifier <- function(data,
       }
 
       # Update Experimental Grid with Param values----
-      GridNumber <- counter - 1L
+      if(!exists("NewGrid")) {
+        GridNumber <- counter - 1L
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
+      } else {
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
+      }
       NewPerformance <- as.numeric(AUC_Metrics$auc)
       data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-      data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
       

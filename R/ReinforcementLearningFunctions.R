@@ -273,7 +273,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun
   
   # Update trial counts----
-  if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[z] + 1L
+  if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1L
   
   # Best Metric----
   if(ModelRun != 1L) {
