@@ -367,8 +367,8 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     data.table::set(Grid, j = "RSM", value = NULL)
     Grid <- Grid[!BootStrapType %chin% c("MVS")]
   } else {
-    Grid <- unique(Grid[!BootStrapType %chin% c("poisson")])
-    Grid <- unique(Grid[!GrowPolicy %chin% "Depthwise"])
+    Grid <- Grid[!BootStrapType %chin% c("poisson")]
+    Grid <- unique(data[, GrowPolicy := NULL])
   }
   Grid <- unique(Grid[BootStrapType != "Poisson" & GrowPolicy != "Lossguide"])
 
