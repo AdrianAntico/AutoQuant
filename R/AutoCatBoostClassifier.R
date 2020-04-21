@@ -553,23 +553,6 @@ AutoCatBoostClassifier <- function(data,
         RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
       }
       
-      # Update bandit probabilities----
-      
-      # ExperimentGrid = ExperimentalGrid
-      # ModelRun = counter
-      # NewPerformance = NewPerformance
-      # BestPerformance = BestPerformance
-      # TrialVector = Trials
-      # SuccessVector = Successes
-      # GridIDS = GridIDs
-      # BanditArmsCount = BanditArmsN
-      # RunsWithoutNewWinner = RunsWithoutNewWinner
-      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-      # MaxNumberModels = MaxModelsInGrid
-      # MaxRunMinutes = MaxRunMinutes
-      # TotalRunTime = TotalRunTime
-      # BanditProbabilities = BanditProbs
-      
       # Update bandit probabilities and whatnot----
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
@@ -609,66 +592,65 @@ AutoCatBoostClassifier <- function(data,
         data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
       }
     }
+    
+    # Remove unneeded rows----
+    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
   }
   
   # Binary Define Final Model Parameters----
   if (GridTune & TrainOnFull == FALSE) {
-    if (grid_eval_metric %chin% c("accuracy", "auc", "tpr", "tnr", "prbe", "f", "odds")) {
-      BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
-      if (BestGrid == 1) {
-        BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        if (!is.null(ClassWeights)) {
-          base_params <- list(
-            iterations           = Trees,
-            loss_function        = LossFunction,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            has_time             = HasTime,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type,
-            class_weights        = ClassWeights)
-        } else {
-          base_params <- list(
-            iterations           = Trees,
-            loss_function        = LossFunction,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            has_time             = HasTime,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type)
-        }
+    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    if (BestGrid == 1) {
+      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
+      if (!is.null(ClassWeights)) {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
       } else {
-        BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        if (!is.null(ClassWeights)) {
-          base_params <- list(
-            iterations           = Trees,
-            loss_function        = LossFunction,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            has_time             = HasTime,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type,
-            class_weights        = ClassWeights)
-        } else {
-          base_params <- list(
-            iterations           = Trees,
-            loss_function        = LossFunction,
-            eval_metric          = eval_metric,
-            use_best_model       = TRUE,
-            has_time             = HasTime,
-            best_model_min_trees = 10,
-            metric_period        = 10,
-            task_type            = task_type)
-        }
-        base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type)
       }
     } else {
-      BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
-      BestThresh <- GridCollect[order(EvalStat)][1, EvalStat]
+      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
+      if (!is.null(ClassWeights)) {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
+      } else {
+        base_params <- list(
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          has_time             = HasTime,
+          best_model_min_trees = 10,
+          metric_period        = 10,
+          task_type            = task_type)
+      }
+      base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
     }
+
     if (!is.null(ClassWeights)) {
       base_params <- list(
         iterations           = Trees,

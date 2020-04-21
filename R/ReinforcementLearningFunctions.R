@@ -394,6 +394,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   # Define experimental grid----
   eGrid <- data.table::data.table(
     GridNumber = rep(-1, 10000L),
+    RunNumber = rep(-1, 10000L),
     RunTime = rep(-1, 10000L),
     EvalMetric = rep(-1,10000L),
     TreesBuilt = rep(-1,10000L),
