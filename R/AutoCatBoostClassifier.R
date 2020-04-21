@@ -431,7 +431,7 @@ AutoCatBoostClassifier <- function(data,
           base_params <- list(
             has_time             = HasTime,
             metric_period        = 1L,
-            loss_function        = eval_metric,
+            loss_function        = "Logloss",
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
             best_model_min_trees = 10L,
@@ -445,7 +445,7 @@ AutoCatBoostClassifier <- function(data,
             base_params <- list(
               has_time             = HasTime,
               metric_period        = 1L,
-              loss_function        = eval_metric,
+              loss_function        = "Logloss",
               eval_metric          = eval_metric,
               use_best_model       = TRUE,
               best_model_min_trees = 10L,
@@ -453,32 +453,32 @@ AutoCatBoostClassifier <- function(data,
               class_weights        = ClassWeights,
               train_dir            = model_path,
               iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-              Depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-              LearningRate         = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-              L2_Leaf_Reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-              BootStrapType        = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-              GrowPolicy           = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+              grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
           } else {
             base_params <- list(
               has_time             = HasTime,
               metric_period        = 1L,
-              loss_function        = eval_metric,
+              loss_function        = "Logloss",
               eval_metric          = eval_metric,
               use_best_model       = TRUE,
               best_model_min_trees = 10L,
               task_type            = task_type,
               train_dir            = model_path,
               iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-              Depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-              LearningRate         = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-              L2_Leaf_Reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-              RSM                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-              BootStrapType        = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-              GrowPolicy           = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+              grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
           }
         }
       } else {
-        data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
+        data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
         if (!is.null(ClassWeights)) {
           base_params <- list(
             has_time             = HasTime,
@@ -491,12 +491,12 @@ AutoCatBoostClassifier <- function(data,
             class_weights        = ClassWeights,
             train_dir            = model_path,
             iterations           = Trees,
-            Depth                = Depth,
-            LearningRate         = LearningRate,
-            L2_Leaf_Reg          = L2_Leaf_Reg,
-            RSM                  = RSM,
-            BootStrapType        = BootStrapType,
-            GrowPolicy           = GrowPolicy)
+            depth                = Depth,
+            learning_rate         = LearningRate,
+            l2_leaf_reg          = L2_Leaf_Reg,
+            rsm                  = RSM,
+            bootstrap_type       = BootStrapType,
+            grow_policy          = GrowPolicy)
         } else {
           base_params <- list(
             has_time             = HasTime,
@@ -508,12 +508,12 @@ AutoCatBoostClassifier <- function(data,
             task_type            = task_type,
             train_dir            = model_path,
             iterations           = Trees,
-            Depth                = Depth,
-            LearningRate         = LearningRate,
-            L2_Leaf_Reg          = L2_Leaf_Reg,
-            RSM                  = RSM,
-            BootStrapType        = BootStrapType,
-            GrowPolicy           = GrowPolicy)
+            depth                = Depth,
+            learning_rate         = LearningRate,
+            l2_leaf_reg          = L2_Leaf_Reg,
+            rsm                  = RSM,
+            bootstrap_type       = BootStrapType,
+            grow_policy          = GrowPolicy)
         }
       }
       
@@ -620,7 +620,7 @@ AutoCatBoostClassifier <- function(data,
       gc()
       
       # Continue or stop----
-      if(RL_Update_Output$BreakLoop != "stay") break
+      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
     }
   }
   
