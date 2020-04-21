@@ -595,7 +595,7 @@ AutoCatBoostClassifier <- function(data,
       data.table::set(ExperimentalGrid, i = counter+1L, j = "L2_Leaf_Reg", value = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][Trials[NewGrid]+1L])
       if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
       data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
+      if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
       for(bandit in seq_len(length(BanditProbs))) {
         data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
       }
@@ -971,11 +971,28 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Variable Importance----
   if(GridTune) {
-    if(!BestGrid$GrowPolicy %chin% c("Depthwise","Lossguide")) {
+    if(tolower(task_type) == "gpu") {
+      if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+        temp <- catboost::catboost.get_feature_importance(model)
+        VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
+        data.table::setnames(VariableImportance, "V2", "Importance")
+        VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+        VariableImportance <- VariableImportance[order(-Importance)]
+        if (SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+          } else {
+            data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+          }
+        }
+      } else {
+        VariableImportance <- NULL
+      }
+    } else {
       temp <- catboost::catboost.get_feature_importance(model)
       VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
       data.table::setnames(VariableImportance, "V2", "Importance")
-      VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+      VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
       VariableImportance <- VariableImportance[order(-Importance)]
       if (SaveModelObjects) {
         if(!is.null(metadata_path)) {
@@ -984,8 +1001,6 @@ AutoCatBoostClassifier <- function(data,
           data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
         }
       }
-    } else {
-      VariableImportance <- NULL
     }
   } else {
     temp <- catboost::catboost.get_feature_importance(model)
