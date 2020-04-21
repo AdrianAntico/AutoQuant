@@ -365,7 +365,8 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   # Filter out invalid grids----  
   if(tolower(TaskType) == "gpu") {
     data.table::set(Grid, j = "RSM", value = NULL)
-    Grid <- unique(Grid[!BootStrapType %chin% c("MVS")])
+    Grid <- Grid[!BootStrapType %chin% c("MVS")]
+    Grid <- unique(Grid[!GrowPolicy %chin% "Depthwise"])
   } else {
     Grid <- unique(Grid[!BootStrapType %chin% c("poisson")])
   }
