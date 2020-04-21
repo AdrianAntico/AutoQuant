@@ -334,7 +334,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param Depth seq(4L, 16L, 2L)
 #' @param LearningRate seq(0.01,.10,0.01)
 #' @param L2_Leaf_Reg c(1.0:10.0)
-#' @param GrowPolicy c("SymmertricTree", "Depthwise", "Lossguide")
+#' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
 #' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0) 
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
 #' @export
@@ -346,7 +346,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
                                    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
                                    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                                   GrowPolicy = c("SymmertricTree", "Depthwise", "Lossguide")) {
+                                   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
   
   # Create grid sets----
   Grid <- data.table::CJ(
@@ -360,7 +360,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
     RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = if(!is.null(BootStrapType)) BootStrapType else c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = if(!is.null(GrowPolicy)) GrowPolicy else c("SymmertricTree", "Depthwise", "Lossguide"))
+    GrowPolicy = if(!is.null(GrowPolicy)) GrowPolicy else c("SymmetricTree", "Depthwise", "Lossguide"))
   
   # Filter out invalid grids----  
   if(tolower(TaskType) == "gpu") {

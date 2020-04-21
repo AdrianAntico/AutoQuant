@@ -522,30 +522,15 @@ AutoCatBoostClassifier <- function(data,
       
       # Score model----
       if (!is.null(TestData)) {
-        predict <- catboost::catboost.predict(
-          model = model,
-          pool = FinalTestPool,
-          prediction_type = "Probability",
-          thread_count = -1L)
+        predict <- catboost::catboost.predict(model = model,pool = FinalTestPool,prediction_type = "Probability",thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]],predictor = calibEval[["p1"]],na.rm = TRUE,algorithm = 3L,auc = TRUE,ci = TRUE)
       } else {
-        predict <- catboost::catboost.predict(
-          model = model,
-          pool = TestPool,
-          prediction_type = "Probability",
-          thread_count = -1L)
+        predict <- catboost::catboost.predict(model = model,pool = TestPool,prediction_type = "Probability",thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]],predictor = calibEval[["p1"]],na.rm = TRUE,algorithm = 3L,auc = TRUE,ci = TRUE)
       }
 
-      # Evaluate scores----
-      AUC_Metrics <- pROC::roc(
-        response = calibEval[["Target"]],
-        predictor = calibEval[["p1"]],
-        na.rm = TRUE,
-        algorithm = 3L,
-        auc = TRUE,
-        ci = TRUE)
-      
       # Update Experimental Grid with Param values----
       GridNumber <- counter - 1L
       NewPerformance <- as.numeric(AUC_Metrics$auc)
@@ -556,7 +541,7 @@ AutoCatBoostClassifier <- function(data,
       if(counter == 1L) {
         data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = max(Grid$NTrees))
       } else {
-        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        data.table::set(ExperimentalGrid, i = counter, j = "NTrees", value = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][[counter-1L]])
       }
       if(counter > 1L) {
         data.table::set(ExperimentalGrid, i = counter, j = "Depth", value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
