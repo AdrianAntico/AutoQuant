@@ -24,6 +24,7 @@
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
+#' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
 #' @param Trees Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param Depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param LearningRate Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -95,6 +96,7 @@
 #'     GridTune = TRUE,
 #'     MaxModelsInGrid = 100L,
 #'     Shuffles = 4L,
+#'     MetricPeriods = 10L,
 #'     
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
 #'     # Must set Trees to a single value if you are not grid tuning
@@ -132,6 +134,7 @@ AutoCatBoostClassifier <- function(data,
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24L*60L,
                                    Shuffles = 1L,
+                                   MetricPeriods = 10L,
                                    Trees = 50L,
                                    Depth = NULL, 
                                    LearningRate = NULL, 
@@ -432,7 +435,7 @@ AutoCatBoostClassifier <- function(data,
         if(counter == 1L) {
           base_params <- list(
             has_time             = HasTime,
-            metric_period        = 1L,
+            metric_period        = MetricPeriods,
             loss_function        = "Logloss",
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
@@ -446,7 +449,7 @@ AutoCatBoostClassifier <- function(data,
           if(tolower(task_type) == "gpu") {
             base_params <- list(
               has_time             = HasTime,
-              metric_period        = 1L,
+              metric_period        = MetricPeriods,
               loss_function        = "Logloss",
               eval_metric          = eval_metric,
               use_best_model       = TRUE,
@@ -463,7 +466,7 @@ AutoCatBoostClassifier <- function(data,
           } else {
             base_params <- list(
               has_time             = HasTime,
-              metric_period        = 1L,
+              metric_period        = MetricPeriods,
               loss_function        = "Logloss",
               eval_metric          = eval_metric,
               use_best_model       = TRUE,
@@ -484,7 +487,7 @@ AutoCatBoostClassifier <- function(data,
         if (tolower(task_type) == "gpu") {
           base_params <- list(
             has_time             = HasTime,
-            metric_period        = 1L,
+            metric_period        = MetricPeriods,
             loss_function        = "Logloss",
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
@@ -501,7 +504,7 @@ AutoCatBoostClassifier <- function(data,
         } else {
           base_params <- list(
             has_time             = HasTime,
-            metric_period        = 1L,
+            metric_period        = MetricPeriods,
             loss_function        = "Logloss",
             eval_metric          = eval_metric,
             use_best_model       = TRUE,
@@ -563,6 +566,7 @@ AutoCatBoostClassifier <- function(data,
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
+        NEWGrid = NewGrid,
         NewPerformance = NewPerformance,
         BestPerformance = BestPerformance,
         TrialVector = Trials,
@@ -657,7 +661,7 @@ AutoCatBoostClassifier <- function(data,
         base_params <- list(
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
-          metric_period        = 10L,
+          metric_period        = MetricPeriods,
           iterations           = BestGrid[["TreesBuilt"]],
           loss_function        = "Logloss",
           eval_metric          = eval_metric,
@@ -668,7 +672,7 @@ AutoCatBoostClassifier <- function(data,
         base_params <- list(
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
-          metric_period        = 10L,
+          metric_period        = MetricPeriods,
           iterations           = Trees,
           loss_function        = LossFunction,
           eval_metric          = eval_metric,
@@ -679,7 +683,7 @@ AutoCatBoostClassifier <- function(data,
       if (tolower(task_type) == "gpu") {
         base_params <- list(
           has_time             = HasTime,
-          metric_period        = 1L,
+          metric_period        = MetricPeriods,
           loss_function        = "Logloss",
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
@@ -696,7 +700,7 @@ AutoCatBoostClassifier <- function(data,
       } else {
         base_params <- list(
           has_time             = HasTime,
-          metric_period        = 1L,
+          metric_period        = MetricPeriods,
           loss_function        = "Logloss",
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
