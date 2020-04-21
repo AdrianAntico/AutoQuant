@@ -116,12 +116,13 @@ AutoCatBoostClassifier <- function(data,
                                    NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
+                                   
+                                   
                                    PassInGrid = NULL,
                                    GridTune = FALSE,
                                    grid_eval_metric = "f",
+                                   
                                    MaxModelsInGrid = 10L,
-                                   
-                                   
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24*60,
                                    
@@ -548,11 +549,10 @@ AutoCatBoostClassifier <- function(data,
       } else {
         BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
       }
-        
       
       # Performance measures----
       TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
-      if(BestPerformance < NewPerformance) {
+      if(NewPerformance > BestPerformance) {
         RunsWithoutNewWinner <- 0L
       } else {
         RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
@@ -603,82 +603,115 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Define Final Model Parameters----
-  if (GridTune & TrainOnFull == FALSE) {
-    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
-    if (BestGrid == 1) {
-      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-      if (!is.null(ClassWeights)) {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type)
-      }
-    } else {
-      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-      if (!is.null(ClassWeights)) {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type)
-      }
-      base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
-    }
-
-    if (!is.null(ClassWeights)) {
+  if (!is.null(PassInGrid)) {
+    if (tolower(task_type) == "gpu") {
       base_params <- list(
-        iterations           = Trees,
-        loss_function        = LossFunction,
+        has_time             = HasTime,
+        metric_period        = 1L,
+        loss_function        = "Logloss",
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
-        has_time             = HasTime,
-        best_model_min_trees = 10,
-        metric_period        = 10,
+        best_model_min_trees = 10L,
         task_type            = task_type,
-        class_weights        = ClassWeights)
+        class_weights        = ClassWeights,
+        train_dir            = model_path,
+        iterations           = PassInGrid[["TreesBuilt"]],
+        depth                = PassInGrid[["Depth"]],
+        learning_rate        = PassInGrid[["LearningRate"]],
+        l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        bootstrap_type       = PassInGrid[["BootStrapType"]],
+        grow_policy          = PassInGrid[["GrowPolicy"]])
     } else {
       base_params <- list(
-        iterations           = Trees,
-        loss_function        = LossFunction,
+        has_time             = HasTime,
+        metric_period        = 1L,
+        loss_function        = "Logloss",
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
-        has_time             = HasTime,
-        best_model_min_trees = 10,
-        metric_period        = 10,
-        task_type            = task_type)
+        best_model_min_trees = 10L,
+        task_type            = task_type,
+        train_dir            = model_path,
+        class_weights        = ClassWeights,
+        iterations           = PassInGrid[["TreesBuilt"]],
+        depth                = PassInGrid[["Depth"]],
+        learning_rate        = PassInGrid[["LearningRate"]],
+        l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        rsm                  = PassInGrid[["RSM"]],
+        bootstrap_type       = PassInGrid[["BootStrapType"]],
+        grow_policy          = PassInGrid[["GrowPolicy"]])
     }
-    base_params <- c(as.list(catboostGridList[BestGrid, ]), base_params)
+    base_params <- unique(c(base_params, as.list(PassInGrid[1L,])))
+    
+  } else if (GridTune & TrainOnFull == FALSE) {
+    
+    # Prepare winning grid----
+    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    if(tolower(task_type) == "gpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
+    if(tolower(task_type) == "gpu") grid_params <- grid_params[!names(grid_params) %chin% "RSM"]
+    
+    # Set parameters from winning grid----
+    if (BestGrid == 1L) {
+      BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
+      if (!is.null(ClassWeights)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = 10L,
+          iterations           = BestGrid[["TreesBuilt"]],
+          loss_function        = "Logloss",
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = 10L,
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type)
+      }
+    } else {
+      if (tolower(task_type) == "gpu") {
+        base_params <- list(
+          has_time             = HasTime,
+          metric_period        = 1L,
+          loss_function        = "Logloss",
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          task_type            = task_type,
+          class_weights        = ClassWeights,
+          train_dir            = model_path,
+          iterations           = BestGrid[["NTrees"]],
+          depth                = BestGrid[["Depth"]],
+          learning_rate        = BestGrid[["LearningRate"]],
+          l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          bootstrap_type       = BestGrid[["BootStrapType"]],
+          grow_policy          = BestGrid[["GrowPolicy"]])
+      } else {
+        base_params <- list(
+          has_time             = HasTime,
+          metric_period        = 1L,
+          loss_function        = "Logloss",
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          task_type            = task_type,
+          train_dir            = model_path,
+          class_weights        = ClassWeights,
+          iterations           = BestGrid[["NTrees"]],
+          depth                = BestGrid[["Depth"]],
+          learning_rate        = BestGrid[["LearningRate"]],
+          l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          rsm                  = BestGrid[["RSM"]],
+          bootstrap_type       = BestGrid[["BootStrapType"]],
+          grow_policy          = BestGrid[["GrowPolicy"]])
+      }
+    }
   } else {
     if (!is.null(ClassWeights)) {
       base_params <- list(
@@ -701,9 +734,6 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10,
         metric_period        = 10,
         task_type            = task_type)
-    }
-    if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
     }
   }
   
@@ -935,16 +965,35 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Variable Importance----
-  temp <- catboost::catboost.get_feature_importance(model)
-  VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
-  data.table::setnames(VariableImportance, "V2", "Importance")
-  VariableImportance[, Importance := round(as.numeric(Importance), 4)]
-  VariableImportance <- VariableImportance[order(-Importance)]
-  if (SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+  if(GridTune) {
+    if(!BestGrid$GrowPolicy %chin% c("Depthwise","Lossguide")) {
+      temp <- catboost::catboost.get_feature_importance(model)
+      VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
+      data.table::setnames(VariableImportance, "V2", "Importance")
+      VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+      VariableImportance <- VariableImportance[order(-Importance)]
+      if (SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+        } else {
+          data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+        }
+      }
     } else {
-      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      VariableImportance <- NULL
+    }
+  } else {
+    temp <- catboost::catboost.get_feature_importance(model)
+    VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
+    data.table::setnames(VariableImportance, "V2", "Importance")
+    VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+    VariableImportance <- VariableImportance[order(-Importance)]
+    if (SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+      } else {
+        data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      }
     }
   }
   
@@ -953,51 +1002,53 @@ AutoCatBoostClassifier <- function(data,
   j <- 0
   ParDepBoxPlots <- list()
   k <- 0
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-    tryCatch({
-      Out <- ParDepCalPlots(
-        data = ValidationData,
-        PredictionColName = "p1",
-        TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Variable],
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x) mean(x, na.rm = TRUE))
-      j <- j + 1
-      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-    }, error = function(x) "skip")
+  if(!is.null(VariableImportance)) {
+    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = ValidationData,
+          PredictionColName = "p1",
+          TargetColName = eval(TargetColumnName),
+          IndepVar = VariableImportance[i, Variable],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x) mean(x, na.rm = TRUE))
+        j <- j + 1
+        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+      }, error = function(x) "skip")
+    }
+  } else {
+    ParDepPlots <- NULL
   }
   
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+      if(!is.null(VariableImportance)) save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
     } else {
-      save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+      if(!is.null(VariableImportance)) save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
     }
   }
   
-  # Binary Save GridCollect and catboostGridList----
+  # Binary Save GridCollect and ExperimentalGrid----
   if (SaveModelObjects & GridTune == TRUE) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(catboostGridList, file = paste0(metadata_path, "/", ModelID, "_catboostGridList.csv"))
-      data.table::fwrite(GridCollect, file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
+      data.table::fwrite(ExperimentalGrid, file = paste0(metadata_path, "/", ModelID, "_ExperimentalGrid.csv"))
     } else {
-      data.table::fwrite(catboostGridList, file = paste0(model_path, "/", ModelID, "_catboostGridList.csv"))
-      data.table::fwrite(GridCollect, file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
+      data.table::fwrite(ExperimentalGrid, file = paste0(model_path, "/", ModelID, "_ExperimentalGrid.csv"))
     }
   }
   
   # Final Garbage Collection----
-  if (tolower(task_type) == "gpu") gc()
+  gc()
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
+      ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
@@ -1007,8 +1058,6 @@ AutoCatBoostClassifier <- function(data,
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
-      GridMetrics <- cbind(catboostGridList,GridCollect)
-      data.table::setorderv(GridMetrics, cols = "EvalStat", order = -1, na.last = TRUE)
       return(
         list(
           Model = model,
@@ -1019,7 +1068,7 @@ AutoCatBoostClassifier <- function(data,
           VariableImportance = VariableImportance,
           VI_Plot = VI_Plot(VariableImportance),
           PartialDependencePlots = ParDepPlots,
-          GridMetrics = GridMetrics,
+          GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1, na.last = TRUE),
           ColNames = Names))
     }
   } else if(TrainOnFull) {
