@@ -409,6 +409,7 @@ AutoCatBoostClassifier <- function(data,
     Trials <- RL_Start[["Trials"]]
     GridIDs <- RL_Start[["GridIDs"]]
     BanditProbs <- RL_Start[["BanditProbs"]]
+    RunsWithoutNewWinner <- 0L
     rm(RL_Start)
     
     # Add bandit probs columns to ExperimentalGrid----
@@ -423,10 +424,6 @@ AutoCatBoostClassifier <- function(data,
       
       # Select Grid----
       if(counter <= BanditArmsN + 1L) {
-        
-        # Define GridNumber----
-        GridNumber <- counter - 1L
-        BanditProbs <- rep(1/BanditArmsN, BanditArmsN)
         
         # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
         # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
@@ -443,6 +440,7 @@ AutoCatBoostClassifier <- function(data,
             train_dir            = model_path,
             iterations           = max(Grid$NTrees))
         } else {
+          if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
           if(tolower(task_type) == "gpu") {
             base_params <- list(
               has_time             = HasTime,
@@ -480,10 +478,7 @@ AutoCatBoostClassifier <- function(data,
           }
         }
       } else {
-        
-        # Define GridNumber----
-        GridNumber <- counter - 1L
-        
+        data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
         if (!is.null(ClassWeights)) {
           base_params <- list(
             has_time             = HasTime,
@@ -523,7 +518,7 @@ AutoCatBoostClassifier <- function(data,
       }
       
       # Build model----
-      model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
+      RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
       
       # Score model----
       if (!is.null(TestData)) {
@@ -552,6 +547,9 @@ AutoCatBoostClassifier <- function(data,
         ci = TRUE)
       
       # Update Experimental Grid with Param values----
+      GridNumber <- counter - 1L
+      NewPerformance <- as.numeric(AUC_Metrics$auc)
+      data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
       data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
@@ -570,9 +568,13 @@ AutoCatBoostClassifier <- function(data,
       }
       
       # Performance measures----
-      NewPerformance <- as.numeric(AUC_Metrics$auc)
-      BestPerformance <- max(ExperimentalGrid$EvalMetric, na.rm = TRUE)
-      TotalRunTime <- ExperimentalGrid
+      BestPerformance <- max(ExperimentalGrid[["EvalMetric"]], na.rm = TRUE)
+      TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
+      if(BestPerformance < NewPerformance) {
+        RunsWithoutNewWinner <- 0L
+      } else {
+        RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+      }
       
       # Update bandit probabilities----
       
@@ -592,7 +594,7 @@ AutoCatBoostClassifier <- function(data,
       TotalRunTime = TotalRunTime
       BanditProbabilities = BanditProbs
       
-      
+      # Update bandit probabilities and whatnot----
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
@@ -616,6 +618,9 @@ AutoCatBoostClassifier <- function(data,
       # Binary Remove Model and Collect Garbage----
       rm(model)
       gc()
+      
+      # Continue or stop----
+      if(RL_Update_Output$BreakLoop != "stay") break
     }
   }
   
