@@ -13,9 +13,10 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L, MetricPeriods = 10L, Trees = 50L, Depth = NULL,
-  LearningRate = NULL, L2_Leaf_Reg = NULL, RSM = NULL,
-  BootStrapType = NULL, GrowPolicy = NULL)
+  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
+  Trees = 50L, Depth = NULL, LearningRate = NULL,
+  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
+  GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -59,6 +60,8 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 \item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
+
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
 
@@ -146,6 +149,7 @@ TestModel <- AutoCatBoostClassifier(
     GridTune = TRUE,
     MaxModelsInGrid = 100L,
     Shuffles = 4L,
+    BaselineComparison = "default",
     MetricPeriods = 10L,
     
     # Trees, Depth, and LearningRate used in the bandit grid tuning

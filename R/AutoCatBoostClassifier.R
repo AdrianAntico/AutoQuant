@@ -24,6 +24,7 @@
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
+#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
 #' @param Trees Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param Depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
@@ -96,6 +97,7 @@
 #'     GridTune = TRUE,
 #'     MaxModelsInGrid = 100L,
 #'     Shuffles = 4L,
+#'     BaselineComparison = "default",
 #'     MetricPeriods = 10L,
 #'     
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
@@ -134,6 +136,7 @@ AutoCatBoostClassifier <- function(data,
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24L*60L,
                                    Shuffles = 1L,
+                                   BaselineComparison = "default",
                                    MetricPeriods = 10L,
                                    Trees = 50L,
                                    Depth = NULL, 
@@ -549,7 +552,11 @@ AutoCatBoostClassifier <- function(data,
       if(counter == 1L) {
         BestPerformance <- 1L
       } else {
-        BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+        if(tolower(BaselineComparison) == "default") {
+          BestPerformance <- max(ExperimentalGrid[RunNumber == 1L][["EvalMetric"]], na.rm = TRUE)
+        } else {
+          BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+        }
       }
       
       # Performance measures----
