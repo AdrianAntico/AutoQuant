@@ -96,7 +96,9 @@
 #'     MaxModelsInGrid = 100L,
 #'     Shuffles = 4L,
 #'     
-#'     # Trees, Depth, and LearningRate used in the bandit grid tuning. Must set Trees if you are not grid tuning. The ones below can be set to NULL and the values in the example will be used.
+#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
+#'     # Must set Trees to a single value if you are not grid tuning
+#'     # The ones below can be set to NULL and the values in the example will be used
 #'     Trees = seq(1000L, 10000L, 1000L),
 #'     Depth = seq(4L, 16L, 2L), 
 #'     LearningRate = c(0.01,0.02,0.03,0.04), 
