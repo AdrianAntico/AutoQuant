@@ -271,7 +271,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   
   # Comparison----
   if(ModelRun <= BanditArmsCount + 1L) {
-    BestGrid <- ModelRun
+    BestGrid <- ModelRun - 1L
   } else {
     BestGrid <- NewGrid
   }
