@@ -129,7 +129,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 3,
   task_type = "GPU",
   eval_metric = "RMSE",
-  grid_eval_metric = "mae",
   Trees = 50,
   GridTune = FALSE,
   model_path = "C:/Users/aantico/Documents/Package/GUI_Package",
