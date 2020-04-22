@@ -60,6 +60,10 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 
 \item{MaxModelsInGrid}{Number of models to test from grid options}
 
+\item{MaxRunsWithoutNewWinner}{Number of models built before calling it quits}
+
+\item{MaxRunMinutes}{Maximum number of minutes to let this run}
+
 \item{Trees}{The maximum number of trees you want in your models}
 
 \item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
@@ -143,6 +147,8 @@ TestModel <- AutoCatBoostRegression(
     PassInGrid = NULL,
     GridTune = TRUE,
     MaxModelsInGrid = 100L,
+    MaxRunsWithoutNewWinner = 100L, 
+    MaxRunMinutes = 60*60,
     Shuffles = 4L,
     BaselineComparison = "default",
     MetricPeriods = 10L,

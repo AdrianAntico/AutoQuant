@@ -24,6 +24,8 @@
 #' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options
+#' @param MaxRunMinutes Maximum number of minutes to let this run
+#' @param MaxRunsWithoutNewWinner Number of models built before calling it quits
 #' @param Trees The maximum number of trees you want in your models
 #' @param Depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param LearningRate Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -92,6 +94,8 @@
 #'     PassInGrid = NULL,
 #'     GridTune = TRUE,
 #'     MaxModelsInGrid = 100L,
+#'     MaxRunsWithoutNewWinner = 100L, 
+#'     MaxRunMinutes = 60*60,
 #'     Shuffles = 4L,
 #'     BaselineComparison = "default",
 #'     MetricPeriods = 10L,
