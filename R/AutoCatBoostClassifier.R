@@ -661,7 +661,7 @@ AutoCatBoostClassifier <- function(data,
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
-    if (BestGrid == 1L) {
+    if (BestGrid$RunNumber[1L] == 1L) {
       if (!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
