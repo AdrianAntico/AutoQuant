@@ -103,9 +103,11 @@
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
 #'     # Must set Trees to a single value if you are not grid tuning
 #'     # The ones below can be set to NULL and the values in the example will be used
-#'     Trees = seq(1000L, 10000L, 1000L),
-#'     Depth = seq(4L, 16L, 2L), 
-#'     LearningRate = c(0.01,0.02,0.03,0.04), 
+#'     # GrowPolicy is turned off for CPU runs
+#'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     Trees = seq(1000L, 5000L, 500L),
+#'     Depth = seq(4L, 8L, 1L), 
+#'     LearningRate = seq(0.01,0.10,0.01), 
 #'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
