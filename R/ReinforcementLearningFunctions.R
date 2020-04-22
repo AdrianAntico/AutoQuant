@@ -378,7 +378,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   N_Depth <- length(unique(Grid[["Depth"]]))
   N_LearningRate <- length(unique(Grid[["LearningRate"]]))
   N_L2_Leaf_Reg <- length(unique(Grid[["L2_Leaf_Reg"]]))
-  Runs <- max(N_NTrees, N_Depth, N_LearningRate, N_L2_Leaf_Reg)
+  Runs <- max(N_NTrees, N_Depth, N_LearningRate)
   Grids <- list()
   
   # Create grid sets----
