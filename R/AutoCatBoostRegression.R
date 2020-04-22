@@ -61,7 +61,7 @@
 #'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' 
 #' # Run function
-#' TestModel <- AutoCatBoostClassifier(
+#' TestModel <- AutoCatBoostRegression(
 #'     
 #'     # GPU or CPU
 #'     task_type = "GPU",
