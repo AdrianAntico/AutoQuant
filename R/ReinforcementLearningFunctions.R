@@ -366,11 +366,12 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   if(tolower(TaskType) == "gpu") {
     data.table::set(Grid, j = "RSM", value = NULL)
     Grid <- Grid[!BootStrapType %chin% c("MVS")]
+    Grid <- unique(Grid[BootStrapType != "Poisson" & GrowPolicy != "Lossguide"])
   } else {
     Grid <- Grid[!tolower(BootStrapType) %chin% c("poisson")]
     Grid <- unique(Grid[, GrowPolicy := NULL])
   }
-  Grid <- unique(Grid[BootStrapType != "Poisson" & GrowPolicy != "Lossguide"])
+  
 
   # Total loops----
   N_NTrees <- length(unique(Grid[["NTrees"]]))
