@@ -385,11 +385,11 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   for (i in seq_len(Runs)) {
     if(i == 1L) {
       Grids[[paste0("Grid_",i)]] <- 
-        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i, N_L2_Leaf_Reg)]]
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
     } else {
       Grids[[paste0("Grid_",i)]] <- data.table::fsetdiff(
-        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i, N_L2_Leaf_Reg)]],
-        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)] & L2_Leaf_Reg <= unique(Grid[["L2_Leaf_Reg"]])[min(i-1L,N_L2_Leaf_Reg)]])
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]],
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)]])
     }
   }
   
