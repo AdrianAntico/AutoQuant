@@ -7,17 +7,17 @@
 AutoCatBoostRegression(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL, IDcols = NULL,
-  task_type = "GPU", eval_metric = "RMSE", model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
-  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
-  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
-  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
-  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit",
-  "YeoJohnson"))
+  TransformNumericColumns = NULL, task_type = "GPU",
+  eval_metric = "RMSE", model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", NumOfParDepPlots = 0L,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
+  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
+  Trees = 50L, Depth = NULL, LearningRate = NULL,
+  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
+  GrowPolicy = NULL, Methods = c("BoxCox", "Asinh", "Asin", "Log",
+  "LogPlus1", "Logit", "YeoJohnson"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -35,6 +35,8 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
@@ -73,8 +75,6 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 
 \item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
-
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -133,6 +133,7 @@ TestModel <- AutoCatBoostRegression(
     FeatureColNames = names(data)[2L:ncol(data)],
     PrimaryDateColumn = NULL,
     IDcols = c("x1","x2"),
+    TransformNumericColumns = NULL,
     
     # Model evaluation
     eval_metric = "RMSE",

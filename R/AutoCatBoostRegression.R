@@ -82,6 +82,7 @@
 #'     FeatureColNames = names(data)[2L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
 #'     IDcols = c("x1","x2"),
+#'     TransformNumericColumns = NULL,
 #'     
 #'     # Model evaluation
 #'     eval_metric = "RMSE",
@@ -119,6 +120,7 @@ AutoCatBoostRegression <- function(data,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
                                    IDcols = NULL,
+                                   TransformNumericColumns = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
                                    model_path = NULL,
