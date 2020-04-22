@@ -157,7 +157,6 @@ AutoCatBoostRegression <- function(data,
   } else {
     HasTime <- FALSE
   }
-  if (Trees < 1) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (!is.null(model_path)) {
     if (!is.character(model_path)) stop("model_path needs to be a character type")
@@ -206,8 +205,7 @@ AutoCatBoostRegression <- function(data,
       Methods = Methods,
       Path = model_path,
       TransID = ModelID,
-      SaveOutput = SaveModelObjects
-    )
+      SaveOutput = SaveModelObjects)
     data <- Output$Data
     TransformationResults <- Output$FinalResults
     
@@ -217,8 +215,7 @@ AutoCatBoostRegression <- function(data,
       Type = "Apply",
       FinalResults = TransformationResults,
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
     
     # Transform TestData----
     if (!is.null(TestData)) {
@@ -227,8 +224,7 @@ AutoCatBoostRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
     }
   }
   
@@ -251,12 +247,11 @@ AutoCatBoostRegression <- function(data,
     if (!is.null(TransformNumericColumns)) {
       dataSets <- AutoDataPartition(
         data,
-        NumDataSets = 3,
+        NumDataSets = 3L,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
+        TimeColumnName = NULL)
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
@@ -271,8 +266,7 @@ AutoCatBoostRegression <- function(data,
         Methods = Methods,
         Path = model_path,
         TransID = ModelID,
-        SaveOutput = SaveModelObjects
-      )
+        SaveOutput = SaveModelObjects)
       data <- Output$Data
       TransformationResults <- Output$FinalResults
       
@@ -282,8 +276,7 @@ AutoCatBoostRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
       
       # Transform TestData----
       if (!is.null(TestData)) {
@@ -292,18 +285,16 @@ AutoCatBoostRegression <- function(data,
           Type = "Apply",
           FinalResults = TransformationResults,
           TransID = NULL,
-          Path = NULL
-        )
+          Path = NULL)
       }
     } else {
       dataSets <- AutoDataPartition(
         data,
-        NumDataSets = 3,
+        NumDataSets = 3L,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
-        TimeColumnName = NULL
-      )
+        TimeColumnName = NULL)
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
@@ -316,32 +307,20 @@ AutoCatBoostRegression <- function(data,
   # Regression Sort data if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn)) {
     data <- data[order(get(PrimaryDateColumn))]
-    if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data.table::set(data,
-                      j = eval(PrimaryDateColumn),
-                      value = NULL)
-    }
+    if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(data, j = eval(PrimaryDateColumn), value = NULL)
   }
   
   # Regression Sort ValidationData if PrimaryDateColumn----
   if (!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
     ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
-    if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data.table::set(ValidationData,
-                      j = eval(PrimaryDateColumn),
-                      value = NULL)
-    }
+    if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(ValidationData, j = eval(PrimaryDateColumn), value = NULL)
   }
   
   # Regression Sort TestData if PrimaryDateColumn----
   if (!is.null(TestData) & TrainOnFull != TRUE) {
     if (!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-        data.table::set(TestData,
-                        j = eval(PrimaryDateColumn),
-                        value = NULL)
-      }
+      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
   
@@ -386,14 +365,11 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))),
-                        as.numeric(which(sapply(dataTrain, is.character)))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
   
   # Regression Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
-    }
+    for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   }
   
   # Regression Train ModelDataPrep----
@@ -403,8 +379,7 @@ AutoCatBoostRegression <- function(data,
     CharToFactor = TRUE,
     RemoveDates = TRUE,
     MissFactor = "0",
-    MissNum = -1
-  )
+    MissNum = -1L)
   
   # Regression Validation ModelDataPrep----
   if(TrainOnFull != TRUE) {
@@ -415,7 +390,7 @@ AutoCatBoostRegression <- function(data,
         CharToFactor = TRUE,
         RemoveDates = TRUE,
         MissFactor = "0",
-        MissNum = -1)    
+        MissNum = -1)
     }    
   }
 
@@ -442,9 +417,7 @@ AutoCatBoostRegression <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
-  }
+  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
@@ -460,8 +433,7 @@ AutoCatBoostRegression <- function(data,
 
   # Regression eval_metric checks
   if(TrainOnFull != TRUE) {
-    if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0 |
-                                             min(TestTarget) < 0)) {
+    if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) {
       warning("eval_metric Poisson requires positive values for Target")
     }    
   }
@@ -469,17 +441,11 @@ AutoCatBoostRegression <- function(data,
   # Regression Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
     if (!is.null(TestData)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                                label = TrainTarget,
-                                                cat_features = CatFeatures)
-      
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL],
-                                                label = TrainTarget,
-                                                cat_features = CatFeatures)
-      
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
     }
   } else {
@@ -549,7 +515,6 @@ AutoCatBoostRegression <- function(data,
             use_best_model       = TRUE,
             best_model_min_trees = 10L,
             task_type            = task_type,
-            class_weights        = ClassWeights,
             train_dir            = model_path,
             iterations           = max(Grid$NTrees))
         } else {
@@ -563,7 +528,6 @@ AutoCatBoostRegression <- function(data,
               use_best_model       = TRUE,
               best_model_min_trees = 10L,
               task_type            = task_type,
-              class_weights        = ClassWeights,
               train_dir            = model_path,
               iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
               depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
@@ -600,7 +564,6 @@ AutoCatBoostRegression <- function(data,
             use_best_model       = TRUE,
             best_model_min_trees = 10L,
             task_type            = task_type,
-            class_weights        = ClassWeights,
             train_dir            = model_path,
             iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
             depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
@@ -618,7 +581,6 @@ AutoCatBoostRegression <- function(data,
             best_model_min_trees = 10L,
             task_type            = task_type,
             train_dir            = model_path,
-            class_weights        = ClassWeights,
             iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
             depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
             learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
@@ -728,7 +690,6 @@ AutoCatBoostRegression <- function(data,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
-        class_weights        = ClassWeights,
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -746,7 +707,6 @@ AutoCatBoostRegression <- function(data,
         best_model_min_trees = 10L,
         task_type            = task_type,
         train_dir            = model_path,
-        class_weights        = ClassWeights,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
         learning_rate        = PassInGrid[["LearningRate"]],
@@ -767,28 +727,15 @@ AutoCatBoostRegression <- function(data,
     
     # Set parameters from winning grid----
     if (BestGrid$RunNumber[1L] == 1L) {
-      if (!is.null(ClassWeights)) {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = BestGrid[["TreesBuilt"]],
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type)
-      }
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = BestGrid[["TreesBuilt"]],
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type)
     } else {
       if (tolower(task_type) == "gpu") {
         base_params <- list(
@@ -799,7 +746,6 @@ AutoCatBoostRegression <- function(data,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
-          class_weights        = ClassWeights,
           train_dir            = model_path,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
@@ -817,7 +763,6 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10L,
           task_type            = task_type,
           train_dir            = model_path,
-          class_weights        = ClassWeights,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
           learning_rate        = BestGrid[["LearningRate"]],
@@ -830,28 +775,15 @@ AutoCatBoostRegression <- function(data,
   
   # Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & GridTune == FALSE) {
-    if (!is.null(ClassWeights)) {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = 10L,
-        iterations           = Trees,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        class_weights        = ClassWeights)
-    } else {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = 10L,
-        iterations           = Trees,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type)
-    }
+    base_params <- list(
+      use_best_model       = TRUE,
+      best_model_min_trees = 10L,
+      metric_period        = 10L,
+      iterations           = Trees,
+      loss_function        = eval_metric,
+      eval_metric          = eval_metric,
+      has_time             = HasTime,
+      task_type            = task_type)
   }
   
   # Regression Train Final Model----
@@ -891,17 +823,13 @@ AutoCatBoostRegression <- function(data,
   if (!is.null(TransformNumericColumns)) {
     
     # Append record for Predicted Column----
-    if (GridTune & TrainOnFull == FALSE) {
-      TransformationResults <- TransformationResults[ColumnName != "Predicted"]
-    }
+    if (GridTune & TrainOnFull == FALSE) TransformationResults <- TransformationResults[ColumnName != "Predicted"]
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
         ColumnName = c("Predict", eval(TargetColumnName)),
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                               MethodName], 2),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName),
-                                           Lambda], 2),
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 2),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 2),
         NormalizedStatistics = rep(0, 2))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
@@ -923,16 +851,14 @@ AutoCatBoostRegression <- function(data,
         Type = "Inverse",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )      
+        Path = NULL)      
     } else {
       data <- AutoTransformationScore(
         ScoringData = data,
         Type = "Inverse",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
     }
   }
   
