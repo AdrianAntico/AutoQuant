@@ -14,10 +14,6 @@
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param grid_eval_metric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
-#' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -26,68 +22,92 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param MaxModelsInGrid Number of models to test from grid options
+#' @param Trees The maximum number of trees you want in your models
+#' @param Depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
+#' @param LearningRate Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
+#' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
+#' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
+#' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+#' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @examples
 #' \donttest{
+#' # Create some dummy correlated data with numeric and categorical features
+#' 
+#' # Alter correlation value for the simulated data
 #' Correl <- 0.85
-#' N <- 1000
-#' data <- data.table::data.table(Target = runif(N))
-#' data[, x1 := qnorm(Target)]
+#' 
+#' # Number of rows you want to use
+#' N <- 25000L 
+#' 
+#' data <- data.table::data.table(Adrian = runif(N))
+#' data[, x1 := qnorm(Adrian)]
 #' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 #' data[, Independent_Variable11 := as.factor(
-#'   ifelse(Independent_Variable2 < 0.20, "A",
-#'          ifelse(Independent_Variable2 < 0.40, "B",
-#'                 ifelse(Independent_Variable2 < 0.6,  "C",
-#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-#' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' TestModel <- AutoCatBoostRegression(data,
-#'                                     TrainOnFull = FALSE,
-#'                                     ValidationData = NULL,
-#'                                     TestData = NULL,
-#'                                     TargetColumnName = "Target",
-#'                                     FeatureColNames = c(2:12),
-#'                                     PrimaryDateColumn = NULL,
-#'                                     IDcols = NULL,
-#'                                     TransformNumericColumns = NULL,
-#'                                     MaxModelsInGrid = 1,
-#'                                     task_type = "GPU",
-#'                                     eval_metric = "RMSE",
-#'                                     grid_eval_metric = "r2",
-#'                                     Trees = 50,
-#'                                     GridTune = FALSE,
-#'                                     model_path = NULL,
-#'                                     metadata_path = NULL,
-#'                                     ModelID = "ModelTest",
-#'                                     NumOfParDepPlots = 3,
-#'                                     ReturnModelObjects = TRUE,
-#'                                     SaveModelObjects = FALSE,
-#'                                     PassInGrid = NULL,
-#'                                     Methods = c("BoxCox", 
-#'                                                 "Asinh", 
-#'                                                 "Asin",
-#'                                                 "Log",
-#'                                                 "LogPlus1",
-#'                                                 "Logit",
-#'                                                 "YeoJohnson"))
+#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
+#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
+#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' 
+#' # Run function
+#' TestModel <- AutoCatBoostClassifier(
+#'     
+#'     # GPU or CPU
+#'     task_type = "GPU",
+#'     
+#'     # Metadata arguments
+#'     ModelID = "Test_Model_1",
+#'     model_path = getwd(),
+#'     metadata_path = file.path(getwd(),"R_Model_Testing"),
+#'     SaveModelObjects = FALSE,
+#'     ReturnModelObjects = TRUE,
+#'     
+#'     # Data arguments
+#'     data = data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     PrimaryDateColumn = NULL,
+#'     IDcols = c("x1","x2"),
+#'     
+#'     # Model evaluation
+#'     eval_metric = "RMSE",
+#'     NumOfParDepPlots = ncol(data)-1L-2L,
+#'
+#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
+#'     PassInGrid = NULL,
+#'     GridTune = TRUE,
+#'     MaxModelsInGrid = 100L,
+#'     Shuffles = 4L,
+#'     BaselineComparison = "default",
+#'     MetricPeriods = 10L,
+#'     
+#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
+#'     # Must set Trees to a single value if you are not grid tuning
+#'     # The ones below can be set to NULL and the values in the example will be used
+#'     # GrowPolicy is turned off for CPU runs
+#'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     Trees = seq(1000L, 5000L, 500L),
+#'     Depth = seq(4L, 8L, 1L), 
+#'     LearningRate = seq(0.01,0.10,0.01), 
+#'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+#'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+#'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
@@ -99,20 +119,29 @@ AutoCatBoostRegression <- function(data,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
                                    IDcols = NULL,
-                                   TransformNumericColumns = NULL,
                                    task_type = "GPU",
                                    eval_metric = "RMSE",
-                                   Trees = 50,
-                                   GridTune = FALSE,
-                                   grid_eval_metric = "mae",
-                                   MaxModelsInGrid = 10,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
-                                   NumOfParDepPlots = 3,
+                                   NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL,
+                                   GridTune = FALSE,
+                                   MaxModelsInGrid = 10L,
+                                   MaxRunsWithoutNewWinner = 20L,
+                                   MaxRunMinutes = 24L*60L,
+                                   Shuffles = 1L,
+                                   BaselineComparison = "default",
+                                   MetricPeriods = 10L,
+                                   Trees = 50L,
+                                   Depth = NULL, 
+                                   LearningRate = NULL, 
+                                   L2_Leaf_Reg = NULL, 
+                                   RSM = NULL, 
+                                   BootStrapType = NULL,
+                                   GrowPolicy = NULL,
                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")) {
   # Load catboost----
   loadNamespace(package = "catboost")
@@ -128,12 +157,6 @@ AutoCatBoostRegression <- function(data,
   }
   if (Trees < 1) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if (!(tolower(grid_eval_metric) %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2"))) {
-    stop("grid_eval_metric not in c('poisson','mae','mape','mse','msle','kl','cs','r2')")
-  }
-  if((MaxModelsInGrid < 1 | MaxModelsInGrid > 1080) & GridTune == TRUE) {
-    stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  }
   if (!is.null(model_path)) {
     if (!is.character(model_path)) stop("model_path needs to be a character type")
   }
@@ -469,345 +492,383 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Grid Tune or Not Check----
-  if (GridTune == TRUE & TrainOnFull == FALSE) {
+  if (GridTune == TRUE & TrainOnFull != TRUE) {
     
-    # Regression Grid Create data.table To Store Results----
-    GridCollect <- data.table::data.table(
-      ParamRow = 1:(MaxModelsInGrid + 1),
-      EvalStat = rep(9999999, MaxModelsInGrid + 1)
-    )
+    # Pull in Grid sets----
+    Grids <- CatBoostParameterGrids(
+      TaskType      = task_type,
+      Shuffles      = Shuffles,
+      NTrees        = Trees,
+      Depth         = Depth,
+      LearningRate  = LearningRate,
+      L2_Leaf_Reg   = L2_Leaf_Reg,
+      RSM           = RSM,
+      BootStrapType = BootStrapType,
+      GrowPolicy    = GrowPolicy)
+    Grid <- Grids$Grid
+    GridClusters <- Grids$Grids
+    ExperimentalGrid <- Grids$ExperimentalGrid
     
-    # Regression Grid Define Hyper Parameters----
-    if (!is.null(PassInGrid)) {
-      if (!data.table::is.data.table(PassInGrid)) {
-        PassInGrid <- data.table::as.data.table(PassInGrid)
-      }
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:15)
-      )
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <-
-        catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-      catboostGridList <-
-        data.table::rbindlist(list(PassInGrid, catboostGridList))
-    } else {
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:15)
-      )
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <-
-        catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
-    }
+    # Initialize RL----
+    RL_Start <- RL_Initialize(
+      ParameterGridSet = GridClusters,
+      Alpha = 1L,
+      Beta = 1L,
+      SubDivisions = 1000L)
+    BanditArmsN <- RL_Start[["BanditArmsN"]]
+    Successes <- RL_Start[["Successes"]]
+    Trials <- RL_Start[["Trials"]]
+    GridIDs <- RL_Start[["GridIDs"]]
+    BanditProbs <- RL_Start[["BanditProbs"]]
+    RunsWithoutNewWinner <- 0L
+    rm(RL_Start)
     
-    # Regression Grid Tuning Main Loop----
-    for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
-      # Print i
-      print(i)
+    # Add bandit probs columns to ExperimentalGrid----
+    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
+    
+    # Binary Grid Tuning Main Loop----
+    counter <- 0L
+    repeat {
       
-      # Regression Grid Define Base Parameters----
-      base_params <- list(
-        iterations           = Trees,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        use_best_model       = UseBestModel,
-        has_time             = HasTime,
-        best_model_min_trees = 10,
-        metric_period        = 10,
-        task_type            = task_type
-        #, early_stopping_rounds = TRUE
-        #, od_wait = 50
-      )
-
-      # Regression Grid Merge Model Parameters----
-      # Have first model be the baseline model
-      if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
-      }
+      # Increment counter----
+      counter <- counter + 1L
       
-      # Regression Grid Train Model----
-      model <- catboost::catboost.train(learn_pool = TrainPool,
-                                        test_pool  = TestPool,
-                                        params     = base_params)
-      
-      # Regression Grid Score Model----
-      if (!is.null(TestData)) {
-        predict <- catboost::catboost.predict(
-          model = model,
-          pool = FinalTestPool,
-          prediction_type = "RawFormulaVal",
-          thread_count = -1
-        )
-      } else if(!is.null(dataTest)) {
-        predict <- catboost::catboost.predict(
-          model = model,
-          pool = TestPool,
-          prediction_type = "RawFormulaVal",
-          thread_count = -1
-        )
+      # Select Grid----
+      if(counter <= BanditArmsN + 1L) {
+        
+        # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
+        # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
+        if(counter == 1L) {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            class_weights        = ClassWeights,
+            train_dir            = model_path,
+            iterations           = max(Grid$NTrees))
+        } else {
+          if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
+          if(tolower(task_type) == "gpu") {
+            base_params <- list(
+              has_time             = HasTime,
+              metric_period        = MetricPeriods,
+              loss_function        = eval_metric,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              best_model_min_trees = 10L,
+              task_type            = task_type,
+              class_weights        = ClassWeights,
+              train_dir            = model_path,
+              iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+              grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+          } else {
+            base_params <- list(
+              has_time             = HasTime,
+              metric_period        = MetricPeriods,
+              loss_function        = eval_metric,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              best_model_min_trees = 10L,
+              task_type            = task_type,
+              train_dir            = model_path,
+              iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
+          }
+        }
       } else {
-        predict <- catboost::catboost.predict(
-          model = model,
-          pool = TrainPool,
-          prediction_type = "RawFormulaVal",
-          thread_count = -1)
+        data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
+        if (tolower(task_type) == "gpu") {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            class_weights        = ClassWeights,
+            train_dir            = model_path,
+            iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
+            grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
+        } else {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            train_dir            = model_path,
+            class_weights        = ClassWeights,
+            iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
+            rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
+        }
       }
       
-      # Regression Remove Model and Collect Garbage----
+      # Build model----
+      print(base_params)
+      RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
+      
+      # Score model----
+      if (!is.null(TestData)) {
+        predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
+        calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+      } else {
+        predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
+        calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+      }
+      
+      # Update Experimental Grid with Param values----
+      if(!exists("NewGrid")) {
+        GridNumber <- counter - 1L
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
+      } else {
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
+      }
+      NewPerformance <- as.numeric(AUC_Metrics$auc)
+      data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
+      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
+      data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
+      if(counter == 1L) {
+        BestPerformance <- 1L
+      } else {
+        if(tolower(BaselineComparison) == "default") {
+          BestPerformance <- max(ExperimentalGrid[RunNumber == 1L][["EvalMetric"]], na.rm = TRUE)
+        } else {
+          BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+        }
+      }
+      
+      # Performance measures----
+      TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
+      if(NewPerformance > BestPerformance) {
+        RunsWithoutNewWinner <- 0L
+      } else {
+        RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+      }
+      
+      # Update bandit probabilities and whatnot----
+      RL_Update_Output <- RL_ML_Update(
+        ExperimentGrid = ExperimentalGrid,
+        ModelRun = counter,
+        NEWGrid = NewGrid,
+        NewPerformance = NewPerformance,
+        BestPerformance = BestPerformance,
+        TrialVector = Trials,
+        SuccessVector = Successes,
+        GridIDS = GridIDs,
+        BanditArmsCount = BanditArmsN,
+        RunsWithoutNewWinner = RunsWithoutNewWinner,
+        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+        MaxNumberModels = MaxModelsInGrid,
+        MaxRunMinutes = MaxRunMinutes,
+        TotalRunTime = TotalRunTime,
+        BanditProbabilities = BanditProbs)
+      BanditProbs <- RL_Update_Output[["BanditProbs"]]
+      Trials <- RL_Update_Output[["Trials"]]
+      Successes <- RL_Update_Output[["Successes"]]
+      NewGrid <- RL_Update_Output[["NewGrid"]]
+      
+      # Binary Remove Model and Collect Garbage----
       rm(model)
       gc()
       
-      # Regression Grid Validation Data----
-      if (!is.null(TestData)) {
-        calibEval <-
-          data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
-      } else {
-        calibEval <-
-          data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
-      }
-      
-      # Inverse Transform----
-      if (!is.null(TransformNumericColumns)) {
-        # Make copy of TransformationResults----
-        grid_trans_results <-
-          data.table::copy(TransformationResults)
-        
-        # Append record for Predicted Column----
-        data.table::set(
-          grid_trans_results,
-          i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
-          j = "ColumnName",
-          value = "Target"
-        )
-        grid_trans_results <- data.table::rbindlist(list(
-          grid_trans_results,
-          data.table::data.table(
-            ColumnName = c("Predicted"),
-            MethodName = grid_trans_results[ColumnName == "Target",
-                                            MethodName],
-            Lambda = grid_trans_results[ColumnName == "Target",
-                                        Lambda],
-            NormalizedStatistics = 0
-          )
-        ))
-        
-        # If Actual target columnname == "Target" remove the duplicate version----
-        if (length(unique(grid_trans_results[["ColumnName"]])) != nrow(grid_trans_results)) {
-          grid_trans_results <-
-            grid_trans_results[, .N, by = "ColumnName"][N != 1][[1]]
-          temp1 <- which(names(calibEval) == temp)[1]
-          calibEval[, eval(names(data)[temp1]) := NULL]
-          grid_trans_results <- grid_trans_results[, ID := 1:.N][ID != which(grid_trans_results[["ID"]] == temp)][, ID := NULL]
-        }
-        
-        # Run Back-Transform----
-        calibEval <- AutoTransformationScore(
-          ScoringData = calibEval,
-          Type = "Inverse",
-          FinalResults = grid_trans_results,
-          TransID = NULL,
-          Path = NULL
-        )
-      }
-      
-      # Regression Grid Evaluation Metrics----
-      if (tolower(grid_eval_metric) == "poisson") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := Predicted - Target * log(Predicted + 1)]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "mae") {
-        calibEval[, Metric := abs(Target - Predicted)]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "mape") {
-        calibEval[, Metric := abs((Target - Predicted) / (Target + 1))]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "mse") {
-        calibEval[, Metric := (Target - Predicted) ^ 2]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "msle") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := (log(Target + 1) - log(Predicted + 1)) ^ 2]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "kl") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := Target * log((Target + 1) / (Predicted + 1))]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "cs") {
-        calibEval[, ':=' (
-          Metric1 = Target * Predicted,
-          Metric2 = Target ^ 2,
-          Metric3 = Predicted ^ 2
-        )]
-        Metric <-
-          calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
-                                                       sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(grid_eval_metric) == "r2") {
-        Metric <- (calibEval[, stats::cor(Target, Predicted)]) ^ 2
-      }
-      
-      # Regression Metrics Collection----
-      data.table::set(GridCollect,
-                      i = i,
-                      j = 1L,
-                      value = i)
-      data.table::set(
-        GridCollect,
-        i = i,
-        j = 2L,
-        value = round(Metric, 4)
-      )
-    }
-  }
-  
-  # Regression Define Final Model Parameters----
-  if (GridTune & TrainOnFull == FALSE) {
-    if (grid_eval_metric %chin% c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-      BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
-      if (BestGrid == 1) {
-        BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        base_params <- list(
-          iterations           = Trees,
-          learning_rate        = 0.03,
-          depth                = 10,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = UseBestModel,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-          #, early_stopping_rounds = TRUE
-          #, od_wait = 50
-        )
-      } else {
-        BestThresh <- GridCollect[order(-EvalStat)][1, EvalStat]
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = UseBestModel,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-          #, early_stopping_rounds = TRUE
-          #, od_wait = 50
-        )
-        base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), base_params)
-      }
-    } else {
-      if(BestGrid == 1) {
-        BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
-        BestThresh <- GridCollect[order(EvalStat)][1, EvalStat]
-        base_params <- list(
-          iterations           = Trees,
-          learning_rate        = 0.03,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = UseBestModel,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-          #, early_stopping_rounds = TRUE
-          #, od_wait = 50
-        )
-        base_params <- c(as.list(catboostGridList[BestGrid, ]),
-                         base_params)
-      } else {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = UseBestModel,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type
-          #, early_stopping_rounds = TRUE
-          #, od_wait = 50
-        )
-        base_params <-
-          c(as.list(catboostGridList[BestGrid, ]), base_params)
+      # Continue or stop----
+      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "L2_Leaf_Reg", value = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][Trials[NewGrid]+1L])
+      if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
+      if(tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
+      for(bandit in seq_len(length(BanditProbs))) {
+        data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
       }
     }
     
-  } else {
-    base_params <- list(
-      iterations           = Trees,
-      learning_rate        = 0.03,
-      depth                = 10,
-      loss_function        = eval_metric,
-      eval_metric          = eval_metric,
-      use_best_model       = UseBestModel,
-      has_time             = HasTime,
-      best_model_min_trees = 10,
-      metric_period        = 10,
-      task_type            = task_type
-      #, early_stopping_rounds = TRUE
-      #, od_wait = 50
-    )
-    if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+    # Remove unneeded rows----
+    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
+  }
+  
+  # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
+  if (!is.null(PassInGrid)) {
+    if (tolower(task_type) == "gpu") {
+      base_params <- list(
+        has_time             = HasTime,
+        metric_period        = 1L,
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        task_type            = task_type,
+        class_weights        = ClassWeights,
+        train_dir            = model_path,
+        iterations           = PassInGrid[["TreesBuilt"]],
+        depth                = PassInGrid[["Depth"]],
+        learning_rate        = PassInGrid[["LearningRate"]],
+        l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        bootstrap_type       = PassInGrid[["BootStrapType"]],
+        grow_policy          = PassInGrid[["GrowPolicy"]])
+    } else {
+      base_params <- list(
+        has_time             = HasTime,
+        metric_period        = 1L,
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        task_type            = task_type,
+        train_dir            = model_path,
+        class_weights        = ClassWeights,
+        iterations           = PassInGrid[["TreesBuilt"]],
+        depth                = PassInGrid[["Depth"]],
+        learning_rate        = PassInGrid[["LearningRate"]],
+        l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        rsm                  = PassInGrid[["RSM"]],
+        bootstrap_type       = PassInGrid[["BootStrapType"]])
+    }
+  }
+  
+  # Define parameters for case where you want to run grid tuning----
+  if (GridTune & TrainOnFull == FALSE) {
+    
+    # Prepare winning grid----
+    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    if(tolower(task_type) == "gpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
+    if(tolower(task_type) == "gpu") grid_params <- grid_params[!names(grid_params) %chin% "RSM"]
+    if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
+    
+    # Set parameters from winning grid----
+    if (BestGrid$RunNumber[1L] == 1L) {
+      if (!is.null(ClassWeights)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = BestGrid[["TreesBuilt"]],
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          loss_function        = LossFunction,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type)
+      }
+    } else {
+      if (tolower(task_type) == "gpu") {
+        base_params <- list(
+          has_time             = HasTime,
+          metric_period        = MetricPeriods,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          task_type            = task_type,
+          class_weights        = ClassWeights,
+          train_dir            = model_path,
+          iterations           = BestGrid[["NTrees"]],
+          depth                = BestGrid[["Depth"]],
+          learning_rate        = BestGrid[["LearningRate"]],
+          l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          bootstrap_type       = BestGrid[["BootStrapType"]],
+          grow_policy          = BestGrid[["GrowPolicy"]])
+      } else {
+        base_params <- list(
+          has_time             = HasTime,
+          metric_period        = MetricPeriods,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          task_type            = task_type,
+          train_dir            = model_path,
+          class_weights        = ClassWeights,
+          iterations           = BestGrid[["NTrees"]],
+          depth                = BestGrid[["Depth"]],
+          learning_rate        = BestGrid[["LearningRate"]],
+          l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          rsm                  = BestGrid[["RSM"]],
+          bootstrap_type       = BestGrid[["BootStrapType"]])
+      }
+    }
+  }
+  
+  # Not pass in GridMetric and not grid tuning----
+  if(is.null(PassInGrid) & GridTune == FALSE) {
+    if (!is.null(ClassWeights)) {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = 10L,
+        iterations           = Trees,
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        class_weights        = ClassWeights)
+    } else {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = 10L,
+        iterations           = Trees,
+        loss_function        = eval_metric,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type)
     }
   }
   
   # Regression Train Final Model----
   if(TrainOnFull) {
-    model <- catboost::catboost.train(learn_pool = TrainPool,
-                                      params     = base_params)    
+    model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)    
   } else {
-    model <- catboost::catboost.train(learn_pool = TrainPool,
-                                      test_pool  = TestPool,
-                                      params     = base_params)
+    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool  = TestPool, params = base_params)
   }
   
   # Regression Save Model----
-  if (SaveModelObjects) {
-    catboost::catboost.save_model(model = model,
-                                  model_path = paste0(model_path, "/", ModelID))
-  }
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
   
   # Regression Score Final Test Data----
   if (!is.null(TestData)) {
-    predict <- catboost::catboost.predict(
-      model = model,
-      pool = FinalTestPool,
-      prediction_type = "RawFormulaVal",
-      thread_count = -1)
+    predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
   } else if(TrainOnFull) {
-    predict <- catboost::catboost.predict(
-      model = model,
-      pool = TrainPool,
-      prediction_type = "RawFormulaVal",
-      thread_count = -1)
+    predict <- catboost::catboost.predict(model = model, pool = TrainPool, prediction_type = "RawFormulaVal", thread_count = -1L)
   } else {
-    predict <- catboost::catboost.predict(
-      model = model,
-      pool = TestPool,
-      prediction_type = "RawFormulaVal",
-      thread_count = -1)
+    predict <- catboost::catboost.predict(model = model, pool = TestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
   }
   
   # Regression Validation Data----
@@ -880,31 +941,15 @@ AutoCatBoostRegression <- function(data,
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
       if(!TrainOnFull) {
-        data.table::fwrite(ValidationData,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_ValidationData.csv"))        
+        data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))        
       } else {
-        data.table::fwrite(data,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_FullDataPredictions.csv"))
+        data.table::fwrite(data, file = paste0(metadata_path, "/", ModelID, "_FullDataPredictions.csv"))
       }
     } else {
       if(!TrainOnFull) {
-        data.table::fwrite(ValidationData,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_ValidationData.csv"))
+        data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))
       } else {
-        data.table::fwrite(data,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_FullDataPredictions.csv"))
+        data.table::fwrite(data, file = paste0(model_path, "/", ModelID, "_FullDataPredictions.csv"))
       }
     }
   }
@@ -917,9 +962,7 @@ AutoCatBoostRegression <- function(data,
       TargetColName = eval(TargetColumnName),
       GraphType = "calibration",
       PercentileBucket = 0.05,
-      aggrfun = function(x)
-        mean(x, na.rm = TRUE)
-    )    
+      aggrfun = function(x) mean(x, na.rm = TRUE))    
   }
 
   # Add Number of Trees to Title
@@ -929,13 +972,9 @@ AutoCatBoostRegression <- function(data,
   if(!TrainOnFull) {
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path,
-                               "/",
-                               ModelID, "_EvaluationPlot.png"))
+        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationPlot.png")) 
       } else {
-        ggplot2::ggsave(paste0(model_path,
-                               "/",
-                               ModelID, "_EvaluationPlot.png"))      
+        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))      
       }
     }    
   }
@@ -948,9 +987,7 @@ AutoCatBoostRegression <- function(data,
       TargetColName = eval(TargetColumnName),
       GraphType = "boxplot",
       PercentileBucket = 0.05,
-      aggrfun = function(x)
-        mean(x, na.rm = TRUE)
-    )    
+      aggrfun = function(x) mean(x, na.rm = TRUE))    
   }
 
   # Add Number of Trees to Title
@@ -960,33 +997,22 @@ AutoCatBoostRegression <- function(data,
   if(!TrainOnFull) {
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationBoxPlot.png"))
+        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationBoxPlot.png"))
       } else {
-        ggplot2::ggsave(paste0(model_path,
-                               "/",
-                               ModelID,
-                               "_EvaluationBoxPlot.png"))      
+        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationBoxPlot.png"))      
       }
     }
   }
 
   # Regression Evaluation Metrics----
   if(!TrainOnFull) {
-    EvaluationMetrics <-
-      data.table::data.table(
-        Metric = c("MAE","MAPE","MSE","R2"),
-        MetricValue = rep(999999, 8))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8))
     i <- 0L
     for (metric in c("mae", "mape", "mse", "r2")) {
-      i <- as.integer(i + 1)
+      i <- i + 1L
       tryCatch({
-        # Regression Grid Evaluation Metrics----
         if (tolower(metric) == "poisson") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
             ValidationData[, Metric := Predict - ValidationData[[eval(TargetColumnName)]] * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
@@ -1000,187 +1026,140 @@ AutoCatBoostRegression <- function(data,
           ValidationData[, Metric := (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if (tolower(metric) == "msle") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
             ValidationData[, Metric := (log(ValidationData[[eval(TargetColumnName)]] + 1) - log(Predict + 1)) ^ 2]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "kl") {
-          if (MinVal > 0 &
-              min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := ValidationData[[eval(TargetColumnName)]] * log((ValidationData[[eval(TargetColumnName)]] + 1) /
-                                                      (Predict + 1))]
+          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+            ValidationData[, Metric := ValidationData[[eval(TargetColumnName)]] * log((ValidationData[[eval(TargetColumnName)]] + 1) / (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "cs") {
-          ValidationData[, ':=' (
-            Metric1 = ValidationData[[eval(TargetColumnName)]] * Predict,
-            Metric2 = ValidationData[[eval(TargetColumnName)]] ^ 2,
-            Metric3 = Predict ^ 2
-          )]
-          Metric <-
-            ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
-                                                              sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
+          ValidationData[, ':=' (Metric1 = ValidationData[[eval(TargetColumnName)]] * Predict, Metric2 = ValidationData[[eval(TargetColumnName)]] ^ 2, Metric3 = Predict ^ 2)]
+          Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) * sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
-          ValidationData[, ':=' (
-            Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2,
-            Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2
-          )]
-          Metric <-
-            1 - ValidationData[, sum(Metric2, na.rm = TRUE)] /
-            ValidationData[, sum(Metric1, na.rm = TRUE)]
+          ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2)]
+          Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] / ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
-        data.table::set(
-          EvaluationMetrics,
-          i = i,
-          j = 2L,
-          value = round(Metric, 4))
-      }, error = function(x)
-        "skip")
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
+      }, error = function(x) "skip")
     }
     
     # Remove Cols
-    ValidationData[, ':=' (
-      Metric = NULL
-    )]
+    ValidationData[, ':=' (Metric = NULL)]
     
     # Save EvaluationMetrics to File
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID, "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv")) 
       } else {
-        data.table::fwrite(EvaluationMetrics,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID, "_EvaluationMetrics.csv"))      
+        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
       }
     }
     
     # Regression Variable Importance----
-    temp <- catboost::catboost.get_feature_importance(model)
-    VariableImportance <-
-      data.table::data.table(cbind(Variable = row.names(temp), temp))
-    data.table::setnames(VariableImportance, "V2", "Importance")
-    VariableImportance[, Importance := round(as.numeric(Importance), 4)]
-    VariableImportance <- VariableImportance[order(-Importance)]
-    if (SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID, "_VariableImportance.csv"))
+    if(tolower(task_type) == "gpu") {
+      if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+        temp <- catboost::catboost.get_feature_importance(model)
+        VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
+        data.table::setnames(VariableImportance, "V2", "Importance")
+        VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+        VariableImportance <- VariableImportance[order(-Importance)]
+        if (SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+          } else {
+            data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+          }
+        }
       } else {
-        data.table::fwrite(VariableImportance,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID, "_VariableImportance.csv"))      
+        VariableImportance <- NULL
+      }
+    } else {
+      temp <- catboost::catboost.get_feature_importance(model)
+      VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
+      data.table::setnames(VariableImportance, "V2", "Importance")
+      VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+      VariableImportance <- VariableImportance[order(-Importance)]
+      if (SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+        } else {
+          data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+        }
       }
     }
     
     # Regression Partial Dependence----
-    ParDepBoxPlots <- list()
-    ParDepPlots <- list()
-    if(NumOfParDepPlots == 0) {
-      j <- 0
-      k <- 0
-      for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
-        tryCatch({
-          Out <- ParDepCalPlots(
-            data = ValidationData,
-            PredictionColName = "Predict",
-            TargetColName = eval(TargetColumnName),
-            IndepVar = VariableImportance[i, Variable],
-            GraphType = "calibration",
-            PercentileBucket = 0.05,
-            FactLevels = 10,
-            Function = function(x)
-              mean(x, na.rm = TRUE)
-          )
-          
-          j <- j + 1
-          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <-
-            Out
-        }, error = function(x)
-          "skip")
-        tryCatch({
-          Out1 <- ParDepCalPlots(
-            data = ValidationData,
-            PredictionColName = "Predict",
-            TargetColName = eval(TargetColumnName),
-            IndepVar = VariableImportance[i, Variable],
-            GraphType = "boxplot",
-            PercentileBucket = 0.05,
-            FactLevels = 10,
-            Function = function(x)
-              mean(x, na.rm = TRUE)
-          )
-          
-          k <- k + 1
-          ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <-
-            Out1
-        }, error = function(x)
-          "skip")
-      }
-      
-      # Regression Save ParDepPlots to file----
-      if (SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          save(ParDepPlots,
-               file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
-        } else {
-          save(ParDepPlots,
-               file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+    if(!is.null(VariableImportance)) {
+      ParDepBoxPlots <- list()
+      ParDepPlots <- list()
+      if(NumOfParDepPlots == 0L) {
+        j <- 0L
+        k <- 0L
+        for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+          tryCatch({
+            Out <- ParDepCalPlots(
+              data = ValidationData,
+              PredictionColName = "Predict",
+              TargetColName = eval(TargetColumnName),
+              IndepVar = VariableImportance[i, Variable],
+              GraphType = "calibration",
+              PercentileBucket = 0.05,
+              FactLevels = 10L,
+              Function = function(x) mean(x, na.rm = TRUE))
+            j <- j + 1L
+            ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+          }, error = function(x) "skip")
+          tryCatch({
+            Out1 <- ParDepCalPlots(
+              data = ValidationData,
+              PredictionColName = "Predict",
+              TargetColName = eval(TargetColumnName),
+              IndepVar = VariableImportance[i, Variable],
+              GraphType = "boxplot",
+              PercentileBucket = 0.05,
+              FactLevels = 10L,
+              Function = function(x) mean(x, na.rm = TRUE))
+            k <- k + 1L
+            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+          }, error = function(x) "skip")
         }
-      }
-      
-      # Regression Save ParDepBoxPlots to file----
-      if (SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          save(ParDepBoxPlots,
-               file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
-        } else {
-          save(ParDepBoxPlots,
-               file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+        
+        # Regression Save ParDepPlots to file----
+        if (SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+          } else {
+            save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+          }
         }
-      }    
+        
+        # Regression Save ParDepBoxPlots to file----
+        if (SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            save(ParDepBoxPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepBoxPlots.R"))
+          } else {
+            save(ParDepBoxPlots, file = paste0(model_path, "/", ModelID, "_ParDepBoxPlots.R"))      
+          }
+        }    
+      }
     }
     
     # Regression Save GridCollect and catboostGridList----
     if (SaveModelObjects & GridTune == TRUE) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(catboostGridList,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_catboostGridList.csv"))
-        data.table::fwrite(GridCollect,
-                           file = paste0(metadata_path,
-                                         "/",
-                                         ModelID,
-                                         "_GridCollect.csv"))
+        data.table::fwrite(catboostGridList, file = paste0(metadata_path, "/", ModelID, "_ExperimentalGrid.csv"))
       } else {
-        data.table::fwrite(catboostGridList,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_catboostGridList.csv"))
-        data.table::fwrite(GridCollect,
-                           file = paste0(model_path,
-                                         "/",
-                                         ModelID,
-                                         "_GridCollect.csv"))      
+        data.table::fwrite(catboostGridList, file = paste0(model_path, "/", ModelID, "_ExperimentalGrid.csv"))
       }
     }    
   }
 
   # Final Garbage Collection----
-  if (tolower(task_type) == "gpu") {
-    gc()
-  }
+  if (tolower(task_type) == "gpu") gc()
   
   # Subset Transformation Object----
   if(!is.null(TransformNumericColumns)) {
@@ -1193,10 +1172,10 @@ AutoCatBoostRegression <- function(data,
   
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+    ggplot2::ggplot(VI_Data[1L:min(10L, .N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
+      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
@@ -1219,12 +1198,9 @@ AutoCatBoostRegression <- function(data,
               VI_Plot = VI_Plot(VariableImportance),
               PartialDependencePlots = ParDepPlots,
               PartialDependenceBoxPlots = ParDepBoxPlots,
-              GridList = catboostGridList,
-              GridMetrics = GridCollect,
+              GridList = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE),
               ColNames = Names,
-              TransformationResults = TransformationResults
-            )
-          )
+              TransformationResults = TransformationResults))
         }
       } else {
         return(
@@ -1238,11 +1214,8 @@ AutoCatBoostRegression <- function(data,
             VI_Plot = VI_Plot(VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
-            GridList = catboostGridList,
-            GridMetrics = GridCollect,
-            ColNames = Names
-          )
-        )
+            GridList = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE),
+            ColNames = Names))
       }
     } else {
       if (!is.null(TransformNumericColumns)) {
@@ -1259,9 +1232,7 @@ AutoCatBoostRegression <- function(data,
               PartialDependencePlots = ParDepPlots,
               PartialDependenceBoxPlots = ParDepBoxPlots,
               ColNames = Names,
-              TransformationResults = TransformationResults
-            )
-          )
+              TransformationResults = TransformationResults))
         }
       } else {
         return(
@@ -1275,9 +1246,7 @@ AutoCatBoostRegression <- function(data,
             VI_Plot = VI_Plot(VariableImportance),
             PartialDependencePlots = ParDepPlots,
             PartialDependenceBoxPlots = ParDepBoxPlots,
-            ColNames = Names
-          )
-        )
+            ColNames = Names))
       }
     }
   } else {
@@ -1293,7 +1262,6 @@ AutoCatBoostRegression <- function(data,
           Model = model,
           data = data,
           ColNames = Names)
-      }
-    )
+      })
   }
 }

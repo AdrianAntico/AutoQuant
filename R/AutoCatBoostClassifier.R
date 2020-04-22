@@ -23,6 +23,8 @@
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxModelsInGrid Number of models to test from grid options.
+#' @param MaxRunsWithoutNewWinner A number
+#' @param MaxRunMinutes In minutes
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
@@ -41,8 +43,7 @@
 #' Correl <- 0.85
 #' 
 #' # Number of rows you want to use
-#' N <- 1000L
-#' 
+#' N <- 25000L 
 #' 
 #' data <- data.table::data.table(Adrian = runif(N))
 #' data[, x1 := qnorm(Adrian)]
@@ -96,6 +97,8 @@
 #'     PassInGrid = NULL,
 #'     GridTune = TRUE,
 #'     MaxModelsInGrid = 100L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 24L*60L,
 #'     Shuffles = 4L,
 #'     BaselineComparison = "default",
 #'     MetricPeriods = 10L,
@@ -681,7 +684,7 @@ AutoCatBoostClassifier <- function(data,
           best_model_min_trees = 10L,
           metric_period        = MetricPeriods,
           iterations           = Trees,
-          loss_function        = LossFunction,
+          loss_function        = "Logloss",
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type)
@@ -733,7 +736,7 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10L,
         metric_period        = 10L,
         iterations           = Trees,
-        loss_function        = LossFunction,
+        loss_function        = "Logloss",
         eval_metric          = eval_metric,
         has_time             = HasTime,
         task_type            = task_type,
@@ -744,7 +747,7 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10L,
         metric_period        = 10L,
         iterations           = Trees,
-        loss_function        = LossFunction,
+        loss_function        = "Logloss",
         eval_metric          = eval_metric,
         has_time             = HasTime,
         task_type            = task_type)
@@ -1097,7 +1100,7 @@ AutoCatBoostClassifier <- function(data,
           VariableImportance = VariableImportance,
           VI_Plot = VI_Plot(VariableImportance),
           PartialDependencePlots = ParDepPlots,
-          GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1, na.last = TRUE),
+          GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
           ColNames = Names))
     }
   } else if(TrainOnFull) {

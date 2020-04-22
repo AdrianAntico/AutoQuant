@@ -59,6 +59,10 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 
 \item{MaxModelsInGrid}{Number of models to test from grid options.}
 
+\item{MaxRunsWithoutNewWinner}{A number}
+
+\item{MaxRunMinutes}{In minutes}
+
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
@@ -93,8 +97,7 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 Correl <- 0.85
 
 # Number of rows you want to use
-N <- 1000L
-
+N <- 25000L 
 
 data <- data.table::data.table(Adrian = runif(N))
 data[, x1 := qnorm(Adrian)]
@@ -148,6 +151,8 @@ TestModel <- AutoCatBoostClassifier(
     PassInGrid = NULL,
     GridTune = TRUE,
     MaxModelsInGrid = 100L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
     Shuffles = 4L,
     BaselineComparison = "default",
     MetricPeriods = 10L,

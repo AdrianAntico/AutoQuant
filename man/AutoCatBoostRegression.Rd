@@ -7,13 +7,17 @@
 AutoCatBoostRegression(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL, IDcols = NULL,
-  TransformNumericColumns = NULL, task_type = "GPU",
-  eval_metric = "RMSE", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "mae", MaxModelsInGrid = 10, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, Methods = c("BoxCox", "Asinh", "Asin", "Log",
-  "LogPlus1", "Logit", "YeoJohnson"))
+  task_type = "GPU", eval_metric = "RMSE", model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
+  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
+  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
+  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
+  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit",
+  "YeoJohnson"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -32,19 +36,9 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
-
-\item{Trees}{The maximum number of trees you want in your models}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{grid_eval_metric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -60,7 +54,27 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options}
+
+\item{Trees}{The maximum number of trees you want in your models}
+
+\item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
+
+\item{LearningRate}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
+
+\item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
+
+\item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
+
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+
 \item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
+
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -70,66 +84,81 @@ AutoCatBoostRegression is an automated modeling function that runs a variety of 
 }
 \examples{
 \donttest{
+# Create some dummy correlated data with numeric and categorical features
+
+# Alter correlation value for the simulated data
 Correl <- 0.85
-N <- 1000
-data <- data.table::data.table(Target = runif(N))
-data[, x1 := qnorm(Target)]
+
+# Number of rows you want to use
+N <- 25000L 
+
+data <- data.table::data.table(Adrian = runif(N))
+data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-                                                sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-                                             sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
+data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 data[, Independent_Variable11 := as.factor(
-  ifelse(Independent_Variable2 < 0.20, "A",
-         ifelse(Independent_Variable2 < 0.40, "B",
-                ifelse(Independent_Variable2 < 0.6,  "C",
-                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, ':=' (x1 = NULL, x2 = NULL)]
-TestModel <- AutoCatBoostRegression(data,
-                                    TrainOnFull = FALSE,
-                                    ValidationData = NULL,
-                                    TestData = NULL,
-                                    TargetColumnName = "Target",
-                                    FeatureColNames = c(2:12),
-                                    PrimaryDateColumn = NULL,
-                                    IDcols = NULL,
-                                    TransformNumericColumns = NULL,
-                                    MaxModelsInGrid = 1,
-                                    task_type = "GPU",
-                                    eval_metric = "RMSE",
-                                    grid_eval_metric = "r2",
-                                    Trees = 50,
-                                    GridTune = FALSE,
-                                    model_path = NULL,
-                                    metadata_path = NULL,
-                                    ModelID = "ModelTest",
-                                    NumOfParDepPlots = 3,
-                                    ReturnModelObjects = TRUE,
-                                    SaveModelObjects = FALSE,
-                                    PassInGrid = NULL,
-                                    Methods = c("BoxCox", 
-                                                "Asinh", 
-                                                "Asin",
-                                                "Log",
-                                                "LogPlus1",
-                                                "Logit",
-                                                "YeoJohnson"))
+  data.table::fifelse(Independent_Variable2 < 0.20, "A",
+         data.table::fifelse(Independent_Variable2 < 0.40, "B",
+                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+
+# Run function
+TestModel <- AutoCatBoostClassifier(
+    
+    # GPU or CPU
+    task_type = "GPU",
+    
+    # Metadata arguments
+    ModelID = "Test_Model_1",
+    model_path = getwd(),
+    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+    
+    # Data arguments
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[2L:ncol(data)],
+    PrimaryDateColumn = NULL,
+    IDcols = c("x1","x2"),
+    
+    # Model evaluation
+    eval_metric = "RMSE",
+    NumOfParDepPlots = ncol(data)-1L-2L,
+
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics 
+    PassInGrid = NULL,
+    GridTune = TRUE,
+    MaxModelsInGrid = 100L,
+    Shuffles = 4L,
+    BaselineComparison = "default",
+    MetricPeriods = 10L,
+    
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    # GrowPolicy is turned off for CPU runs
+    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    Trees = seq(1000L, 5000L, 500L),
+    Depth = seq(4L, 8L, 1L), 
+    LearningRate = seq(0.01,0.10,0.01), 
+    L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
 }
 }
 \seealso{
