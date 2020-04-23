@@ -504,109 +504,23 @@ AutoCatBoostRegression <- function(data,
       # Check if there are any grid elements left in the specific grid----
       if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["BootStrapType"]][1L])) {
         
-        # Select Grid----
-        if(counter <= BanditArmsN + 1L) {
-          
-          # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
-          # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
-          if(counter == 1L) {
-            base_params <- list(
-              has_time             = HasTime,
-              metric_period        = MetricPeriods,
-              loss_function        = eval_metric,
-              eval_metric          = eval_metric,
-              use_best_model       = TRUE,
-              best_model_min_trees = 10L,
-              task_type            = task_type,
-              train_dir            = model_path,
-              iterations           = max(Grid$NTrees))
-          } else {
-            if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
-            if(tolower(task_type) == "gpu") {
-              base_params <- list(
-                has_time             = HasTime,
-                metric_period        = MetricPeriods,
-                loss_function        = eval_metric,
-                eval_metric          = eval_metric,
-                use_best_model       = TRUE,
-                best_model_min_trees = 10L,
-                task_type            = task_type,
-                train_dir            = model_path,
-                iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-                depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-                learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-                l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-                bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-                grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
-            } else {
-              base_params <- list(
-                has_time             = HasTime,
-                metric_period        = MetricPeriods,
-                loss_function        = eval_metric,
-                eval_metric          = eval_metric,
-                use_best_model       = TRUE,
-                best_model_min_trees = 10L,
-                task_type            = task_type,
-                train_dir            = model_path,
-                iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-                depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-                learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-                l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-                rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-                bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
-            }
-          }
-        } else {
-          data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-          if (tolower(task_type) == "gpu") {
-            base_params <- list(
-              has_time             = HasTime,
-              metric_period        = MetricPeriods,
-              loss_function        = eval_metric,
-              eval_metric          = eval_metric,
-              use_best_model       = TRUE,
-              best_model_min_trees = 10L,
-              task_type            = task_type,
-              train_dir            = model_path,
-              iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-              depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-              learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-              l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-              bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
-              grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
-          } else {
-            base_params <- list(
-              has_time             = HasTime,
-              metric_period        = MetricPeriods,
-              loss_function        = eval_metric,
-              eval_metric          = eval_metric,
-              use_best_model       = TRUE,
-              best_model_min_trees = 10L,
-              task_type            = task_type,
-              train_dir            = model_path,
-              iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
-              depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
-              learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
-              l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
-              rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
-              bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
-          }
-        }
+        # Define prameters----
+        base_params <- CatBoostRegressionParams(counter,HasTime,MetricPeriods,eval_metric,task_type,model_path,NewGrid,Grid,ExperimentalGrid,GridClusters)
         
         # Build model----
         print(base_params)
         RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
         
-        # Score model----
+        # Score and measure model----
         if (!is.null(TestData)) {
           predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
-          calibEval[, Metric := (Target - p1) ^ 2]
+          calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
         } else {
           predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
           calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
-          calibEval[, Metric := (Target - p1) ^ 2]
+          calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
         }
         
@@ -624,9 +538,9 @@ AutoCatBoostRegression <- function(data,
           BestPerformance <- 1L
         } else {
           if(tolower(BaselineComparison) == "default") {
-            BestPerformance <- max(ExperimentalGrid[RunNumber == 1L][["EvalMetric"]], na.rm = TRUE)
+            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
           } else {
-            BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+            BestPerformance <- min(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
           }
         }
         
@@ -834,20 +748,20 @@ AutoCatBoostRegression <- function(data,
       TransformationResults,
       data.table::data.table(
         ColumnName = c("Predict", eval(TargetColumnName)),
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 2),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 2),
-        NormalizedStatistics = rep(0, 2))))
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 2L),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 2L),
+        NormalizedStatistics = rep(0L, 2L))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
     if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
-      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
-      temp1 <- which(names(ValidationData) == temp)[1]
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1L][[1L]]
+      temp1 <- which(names(ValidationData) == temp)[1L]
       if(!TrainOnFull) {
         ValidationData[, eval(names(data)[temp1]) := NULL]
       } else {
         data[, eval(names(data)[temp1]) := NULL]
       }
-      TransformationResults <- TransformationResults[, ID := 1:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
+      TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
     }
     
     # Transform Target and Predicted Value----
@@ -869,7 +783,7 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression r2 via sqrt of correlation
-  if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(ValidationData[[eval(TargetColumnName)]], Predict)]) ^ 2
+  if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(ValidationData[[eval(TargetColumnName)]], Predict)]) ^ 2L
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
@@ -900,7 +814,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Add Number of Trees to Title
-  if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
+  if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file
   if(!TrainOnFull) {
@@ -925,7 +839,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Add Number of Trees to Title
-  if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
+  if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file
   if(!TrainOnFull) {
@@ -1083,7 +997,7 @@ AutoCatBoostRegression <- function(data,
     }
     
     # Regression Save GridCollect and catboostGridList----
-    if (SaveModelObjects & GridTune == TRUE) {
+    if (SaveModelObjects & GridTune) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(catboostGridList, file = paste0(metadata_path, "/", ModelID, "_ExperimentalGrid.csv"))
       } else {
@@ -1093,7 +1007,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Final Garbage Collection----
-  if (tolower(task_type) == "gpu") gc()
+  if(tolower(task_type) == "gpu") gc()
   
   # Subset Transformation Object----
   if(!is.null(TransformNumericColumns)) {
@@ -1184,18 +1098,10 @@ AutoCatBoostRegression <- function(data,
       }
     }
   } else {
-    return(
-      if(!is.null(TransformNumericColumns)) {
-        list(
-          Model = model,
-          data = data,
-          ColNames = Names,
-          TransformationResults = TransformationResults)
-      } else {
-        list(
-          Model = model,
-          data = data,
-          ColNames = Names)
-      })
+    if(!is.null(TransformNumericColumns)) {
+      return(list(Model = model, data = data, ColNames = Names, TransformationResults = TransformationResults))
+    } else {
+      return(list(Model = model, data = data, ColNames = Names))
+    }
   }
 }
