@@ -502,7 +502,7 @@ AutoCatBoostRegression <- function(data,
       counter <- counter + 1L
       
       # Check if there are any grid elements left in the specific grid----
-      if(!is.null(GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["BootStrapType"]][1L])) {
         
         # Select Grid----
         if(counter <= BanditArmsN + 1L) {
