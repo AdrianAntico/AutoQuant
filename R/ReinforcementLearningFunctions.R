@@ -354,9 +354,9 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   Grid <- data.table::CJ(
     
     # Basis for creating parsimonous buckets----
-    NTrees = if(!is.null(NTrees)) NTrees else seq(1000L, 10000L, 1000L),
-    Depth = if(!is.null(Depth)) Depth else seq(4L, 16L, 2L),
-    LearningRate = if(!is.null(LearningRate)) LearningRate else seq(0.01,0.10,0.01),
+    NTrees = if(!is.null(NTrees)) sort(NTrees, decreasing = FALSE) else seq(1000L, 10000L, 1000L),
+    Depth = if(!is.null(Depth)) sort(Depth, decreasing = FALSE) else seq(4L, 16L, 2L),
+    LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
     
     # Random hyperparameters----
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
