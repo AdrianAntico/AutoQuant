@@ -8,11 +8,16 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "MultiClassOneVsAll", Trees = 50, GridTune = FALSE,
-  grid_eval_metric = "Accuracy", MaxModelsInGrid = 10,
-  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL)
+  eval_metric = "MultiClassOneVsAll", model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
+  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L, grid_eval_metric = "Accuracy",
+  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
+  Trees = 50L, Depth = NULL, LearningRate = NULL,
+  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
+  GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -37,19 +42,13 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. MultiClass or MultiClassOneVsAll}
 
-\item{Trees}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options.}
-
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
+
+\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
 
@@ -57,17 +56,23 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{MaxRunsWithoutNewWinner}{A number}
 
 \item{MaxRunMinutes}{In minutes}
+
+\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
 
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
+
+\item{Trees}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
 \item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
 
