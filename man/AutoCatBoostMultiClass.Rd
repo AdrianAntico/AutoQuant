@@ -89,8 +89,14 @@ AutoCatBoostMultiClass is an automated modeling function that runs a variety of 
 }
 \examples{
 \donttest{
+# Create some dummy correlated data with numeric and categorical features
+
+# Alter correlation value for the simulated data
 Correl <- 0.85
-N <- 1000
+
+# Number of rows you want to use
+N <- 25000L 
+
 data <- data.table::data.table(Adrian = runif(N))
 data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
@@ -103,34 +109,64 @@ data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2
 data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
 data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
 data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
+data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 data[, Adrian := as.factor(
   ifelse(Independent_Variable2 < 0.20, "A",
          ifelse(Independent_Variable2 < 0.40, "B",
                 ifelse(Independent_Variable2 < 0.6,  "C",
                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, ':=' (x1 = NULL, x2 = NULL)]
-TestModel <- AutoCatBoostMultiClass(data,
-                                    TrainOnFull = FALSE,
-                                    ValidationData = NULL,
-                                    TestData = NULL,
-                                    TargetColumnName = "Adrian",
-                                    FeatureColNames = c(2:11),
-                                    PrimaryDateColumn = NULL,
-                                    ClassWeights = NULL,
-                                    IDcols = NULL,
-                                    MaxModelsInGrid = 1,
-                                    task_type = "GPU",
-                                    eval_metric = "MultiClass",
-                                    grid_eval_metric = "Accuracy",
-                                    Trees = 50,
-                                    GridTune = FALSE,
-                                    model_path = NULL,
-                                    metadata_path = NULL,
-                                    ModelID = "ModelTest",
-                                    ReturnModelObjects = TRUE,
-                                    SaveModelObjects = FALSE,
-                                    PassInGrid = NULL)
+
+# Run function
+TestModel <- AutoCatBoostMultiClass(
+    
+    # GPU or CPU
+    task_type = "GPU",
+    
+    # Metadata arguments
+    ModelID = "Test_Model_1",
+    model_path = getwd(),
+    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+    
+    # Data arguments
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[2L:ncol(data)],
+    PrimaryDateColumn = NULL,
+    ClassWeights = c(1L,1L),
+    IDcols = c("x1","x2"),
+    
+    # Model evaluation
+    "MultiClass",
+    grid_eval_metric = "Accuracy",
+    NumOfParDepPlots = ncol(data)-1L-2L,
+
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics 
+    PassInGrid = NULL,
+    GridTune = TRUE,
+    MaxModelsInGrid = 100L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    Shuffles = 4L,
+    BaselineComparison = "default",
+    MetricPeriods = 10L,
+    
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    # GrowPolicy is turned off for CPU runs
+    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    Trees = seq(1000L, 5000L, 500L),
+    Depth = seq(4L, 8L, 1L), 
+    LearningRate = seq(0.01,0.10,0.01), 
+    L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 }
 }
 \seealso{
