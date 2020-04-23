@@ -637,6 +637,10 @@ AutoCatBoostRegression <- function(data,
         } else {
           RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
         }
+        
+        # Regression Remove Model and Collect Garbage----
+        rm(model)
+        gc()
       }
       
       # Update bandit probabilities and whatnot----
@@ -661,10 +665,6 @@ AutoCatBoostRegression <- function(data,
       Trials <- RL_Update_Output[["Trials"]]
       Successes <- RL_Update_Output[["Successes"]]
       NewGrid <- RL_Update_Output[["NewGrid"]]
-      
-      # Binary Remove Model and Collect Garbage----
-      rm(model)
-      gc()
       
       # Continue or stop----
       if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
