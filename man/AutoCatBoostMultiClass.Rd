@@ -139,7 +139,7 @@ TestModel <- AutoCatBoostMultiClass(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[2L:ncol(data)],
     PrimaryDateColumn = NULL,
-    ClassWeights = c(1L,1L),
+    ClassWeights = c(1L,1L,1L,1L,1L),
     IDcols = c("x1","x2"),
     
     # Model evaluation
