@@ -23,7 +23,7 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
-\item{TargetColumnName}{Either supply the target column name OR the column number where the target is located, but not mixed types.}
+\item{TargetColumnName}{Either supply the target column name OR the column number where the target is located, but not mixed types. Note that the target column needs to be a 0 | 1 numeric variable.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
@@ -35,15 +35,15 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "MultiClass" or "MultiClassOneVsAll"}
+\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. MultiClass or MultiClassOneVsAll}
 
-\item{Trees}{The maximum number of trees you want in your models}
+\item{Trees}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{grid_eval_metric}{This is the metric used to find the threshold "auc","accuracy"}
+\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
 
-\item{MaxModelsInGrid}{Number of models to test from grid options. 1080 total possible options}
+\item{MaxModelsInGrid}{Number of models to test from grid options.}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -56,6 +56,30 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
+
+\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
+
+\item{MaxRunsWithoutNewWinner}{A number}
+
+\item{MaxRunMinutes}{In minutes}
+
+\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
+
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+
+\item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
+
+\item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
+
+\item{LearningRate}{Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
+
+\item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
+
+\item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
+
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList

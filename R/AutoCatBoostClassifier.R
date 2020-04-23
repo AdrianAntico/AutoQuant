@@ -397,26 +397,13 @@ AutoCatBoostClassifier <- function(data,
   if (GridTune == TRUE & TrainOnFull != TRUE) {
     
     # Pull in Grid sets----
-    Grids <- CatBoostParameterGrids(
-      TaskType      = task_type,
-      Shuffles      = Shuffles,
-      NTrees        = Trees,
-      Depth         = Depth,
-      LearningRate  = LearningRate,
-      L2_Leaf_Reg   = L2_Leaf_Reg,
-      RSM           = RSM,
-      BootStrapType = BootStrapType,
-      GrowPolicy    = GrowPolicy)
+    Grids <- CatBoostParameterGrids(TaskType=task_type,Shuffles=Shuffles,NTrees=Trees,Depth=Depth,LearningRate=LearningRate,L2_Leaf_Reg=L2_Leaf_Reg,RSM=RSM,BootStrapType=BootStrapType,GrowPolicy=GrowPolicy)
     Grid <- Grids$Grid
     GridClusters <- Grids$Grids
     ExperimentalGrid <- Grids$ExperimentalGrid
     
     # Initialize RL----
-    RL_Start <- RL_Initialize(
-      ParameterGridSet = GridClusters,
-      Alpha = 1L,
-      Beta = 1L,
-      SubDivisions = 1000L)
+    RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
     BanditArmsN <- RL_Start[["BanditArmsN"]]
     Successes <- RL_Start[["Successes"]]
     Trials <- RL_Start[["Trials"]]
@@ -647,7 +634,7 @@ AutoCatBoostClassifier <- function(data,
     }
   }
   
-  # Not pass in GridMetric and not grid tuning----
+  # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & GridTune == FALSE) {
     if (!is.null(ClassWeights)) {
       base_params <- list(

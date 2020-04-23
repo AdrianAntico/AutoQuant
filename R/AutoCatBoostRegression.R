@@ -517,12 +517,12 @@ AutoCatBoostRegression <- function(data,
         
         # Score and measure model----
         if (!is.null(TestData)) {
-          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
           calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
         } else {
-          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
           calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
           calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
@@ -544,12 +544,11 @@ AutoCatBoostRegression <- function(data,
           if(tolower(BaselineComparison) == "default") {
             BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
           } else {
-            BestPerformance <- min(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+            BestPerformance <- ExperimentalGrid[RunNumber < counter, min(EvalMetric, na.rm = TRUE)]
           }
         }
         
         # Performance measures----
-        TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
         if(NewPerformance < BestPerformance) {
           RunsWithoutNewWinner <- 0L
         } else {
@@ -577,7 +576,7 @@ AutoCatBoostRegression <- function(data,
         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
         MaxNumberModels = MaxModelsInGrid,
         MaxRunMinutes = MaxRunMinutes,
-        TotalRunTime = TotalRunTime,
+        TotalRunTime = ExperimentalGrid[RunTime != -1L][, sum(RunTime, na.rm = TRUE)],
         BanditProbabilities = BanditProbs)
       BanditProbs <- RL_Update_Output[["BanditProbs"]]
       Trials <- RL_Update_Output[["Trials"]]
