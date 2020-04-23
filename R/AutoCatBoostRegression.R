@@ -639,6 +639,7 @@ AutoCatBoostRegression <- function(data,
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
+        ModelType = "regression",
         NEWGrid = NewGrid,
         NewPerformance = NewPerformance,
         BestPerformance = BestPerformance,

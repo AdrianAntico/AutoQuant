@@ -576,6 +576,7 @@ AutoCatBoostClassifier <- function(data,
       RL_Update_Output <- RL_ML_Update(
         ExperimentGrid = ExperimentalGrid,
         ModelRun = counter,
+        ModelType = "classification",
         NEWGrid = NewGrid,
         NewPerformance = NewPerformance,
         BestPerformance = BestPerformance,
