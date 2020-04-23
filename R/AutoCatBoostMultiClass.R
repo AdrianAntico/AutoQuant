@@ -996,7 +996,7 @@ AutoCatBoostMultiClass <- function(data,
           EvaluationMetrics = EvaluationMetrics,
           VariableImportance = VariableImportance,
           VI_Plot = VI_Plot(VariableImportance),
-          GridMetrics = BestGrid,
+          GridMetrics = ExperimentalGrid,
           ColNames = Names,
           TargetLevels = TargetLevels))
     }
