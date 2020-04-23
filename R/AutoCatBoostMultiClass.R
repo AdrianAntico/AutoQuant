@@ -490,7 +490,7 @@ AutoCatBoostMultiClass <- function(data,
       
       # MultiClass Grid Validation Data----
       if (!is.null(TestData)) {
-        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = names(TestMerge)[c(1L:(ncol(TestMerge)-1L))]]))
+        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = unique(names(TestMerge)[c(1L:(ncol(TestMerge)-1L))])]))
       } else if(!TrainOnFull) {
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, predict))
       } else {
@@ -842,7 +842,7 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Grid Validation Data----
   if (!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = names(TestMerge)[c(1L:(ncol(TestMerge)-1L))]]))
+    ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = unique(names(TestMerge)[c(1L:(ncol(TestMerge)-1L))])]))
   } else if(!TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, predict))
   } else {
