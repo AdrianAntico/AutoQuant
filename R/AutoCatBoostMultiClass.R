@@ -543,20 +543,15 @@ AutoCatBoostMultiClass <- function(data,
       } else {
         data.table::setnames(ValidationData, "V2", "Predict")
       }
-      if(!TrainOnFull) {
-        data.table::set(ValidationData,j = eval(TargetColumnName),value = as.character(ValidationData[[eval(TargetColumnName)]]))
-      } else {
-        data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
-        data.table::set(ValidationData,j = eval(TargetColumnName),value = as.character(ValidationData[[eval(TargetColumnName)]]))
-      }
-      data.table::set(ValidationData,j = "Predict",value = as.character(ValidationData[["Predict"]]))
+      data.table::set(ValidationData, j = "Target", value = as.character(ValidationData[["Target"]]))
+      data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
       
       # MultiClass Metrics Accuracy----
       if(tolower(grid_eval_metric) == "accuracy") {
         NewPerformance <- ValidationData[, mean(data.table::fifelse(as.character(Target) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
         
       } else if(tolower(grid_eval_metric) == "microauc") {
-        NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[[eval(TargetColumnName)]], predictor = as.matrix(ValidationData[, .SD, .SDcols = names(ValidationData)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
+        NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[["Target"]], predictor = as.matrix(ValidationData[, .SD, .SDcols = names(ValidationData)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
         
       } else if(tolower(grid_eval_metric) == "logloss") {
         temp <- ValidationData[, 1L]  
@@ -611,7 +606,6 @@ AutoCatBoostMultiClass <- function(data,
           RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
         }
       }
-      
       
       # Update bandit probabilities and whatnot----
       RL_Update_Output <- RL_ML_Update(
@@ -707,7 +701,7 @@ AutoCatBoostMultiClass <- function(data,
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
-    if (BestGrid$RunNumber[1L] == 1L) {
+    if (BestGrid$RunNumber == 1L) {
       if (!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
@@ -803,9 +797,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Save Model----
-  if (SaveModelObjects) {
-    catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
-  }
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
   
   # MultiClass Score Final Test Data----
   if (!is.null(TestData)) {
@@ -881,11 +873,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Update Names for Predicted Value Columns----
-  if(!TrainOnFull) {
-    k <- 1L
-  } else {
-    k <- 2L
-  }
+  if(!TrainOnFull) k <- 1L else k <- 2L
   for (name in as.character(TargetLevels[[1L]])) {
     k <- k + 1L
     data.table::setnames(ValidationData, paste0("V", k), name)
@@ -896,18 +884,19 @@ AutoCatBoostMultiClass <- function(data,
     data.table::setnames(ValidationData, "V2", "Predict")
   }
   if(!TrainOnFull) {
-    data.table::set(ValidationData,j = eval(TargetColumnName),value = as.character(ValidationData[[eval(TargetColumnName)]]))
+    data.table::setnames(ValidationData, "Target", eval(TargetColumnName))
+    data.table::set(ValidationData, j = eval(TargetColumnName), value = as.character(ValidationData[[eval(TargetColumnName)]]))
   } else {
-    data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
-    data.table::set(ValidationData,j = eval(TargetColumnName),value = as.character(ValidationData[[eval(TargetColumnName)]]))
+    data.table::setnames(ValidationData, "Target", eval(TargetColumnName))
+    data.table::set(ValidationData, j = eval(TargetColumnName), value = as.character(ValidationData[[eval(TargetColumnName)]]))
   }
-  data.table::set(ValidationData,j = "Predict",value = as.character(ValidationData[["Predict"]]))
+  data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
   
   # MultiClass Metrics Accuracy----
   MetricAcc <- ValidationData[, mean(data.table::fifelse(as.character(Target) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
   
   # MultiClass Metrics MicroAUC----
-  MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[[eval(TargetColumnName)]], predictor = as.matrix(ValidationData[, .SD, .SDcols = names(ValidationData)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
+  MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[[eval(TargetColumnName)]], predictor = as.matrix(ValidationData[, .SD, .SDcols = unique(names(ValidationData)[3L:(ncol(predict)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
   
   # Logloss----
   if(!TrainOnFull) {
