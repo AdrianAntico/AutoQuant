@@ -219,6 +219,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @family Reinforcement Learning
 #' @param ExperimentGrid This is a data.table of grid params and model results
 #' @param ModelRun Model iteration number
+#' @param ModelType "classification", "regression", and "multiclass"
 #' @param NEWGrid Previous grid passed in
 #' @param TrialVector Numeric vector with the total trials for each arm
 #' @param SuccessVector Numeric vector with the total successes for each arm
@@ -234,6 +235,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' RL_Update_Output <- RL_ML_Update(
 #'   ExperimentGrid = ExperimentGrid,
 #'   ModelRun = run,
+#'   ModelType = "classification",
 #'   NEWGrid = NewGrid,
 #'   TrialVector = Trials,
 #'   SuccessVector = Successes,
@@ -251,6 +253,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
 #' @export 
 RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
+                         ModelType = "classification",
                          ModelRun = counter,
                          NEWGrid = NewGrid,
                          NewPerformance = NewPerformance,
@@ -284,9 +287,8 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
     
     # Consecutive failures and updating success vectors----
     if(ModelRun > 1L) {
-      if(NewPerformance > BestPerformance) {
-        SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
-      }
+      if(tolower(ModelType) == "classification") if(NewPerformance > BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
+      if(tolower(ModelType) %chin% c("regression","multiclass")) if(NewPerformance < BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
     }
     
     # Update Bandit Probabilities----

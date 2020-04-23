@@ -29,30 +29,20 @@
 #' \donttest{
 #' Correl <- 0.85
 #' N <- 1000
-#' data <- data.table::data.table(Target = runif(N))
-#' data[, x1 := qnorm(Target)]
+#' data <- data.table::data.table(Adrian = runif(N))
+#' data[, x1 := qnorm(Adrian)]
 #' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
-#' data[, Target := as.factor(
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Adrian := as.factor(
 #'   ifelse(Independent_Variable2 < 0.20, "A",
 #'          ifelse(Independent_Variable2 < 0.40, "B",
 #'                 ifelse(Independent_Variable2 < 0.6,  "C",
@@ -62,7 +52,7 @@
 #'                                     TrainOnFull = FALSE,
 #'                                     ValidationData = NULL,
 #'                                     TestData = NULL,
-#'                                     TargetColumnName = "Target",
+#'                                     TargetColumnName = "Adrian",
 #'                                     FeatureColNames = c(2:11),
 #'                                     PrimaryDateColumn = NULL,
 #'                                     ClassWeights = NULL,
@@ -119,12 +109,9 @@ AutoCatBoostMultiClass <- function(data,
   } else {
     HasTime <- FALSE
   }
-  if (Trees < 1) stop("Trees must be greater than 1")
+  if (any(Trees < 1)) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if (!(tolower(grid_eval_metric) %chin% c("accuracy", "auc"))) {
-    stop("grid_eval_metric not in c('accuracy','auc')")
-  }
-  if((MaxModelsInGrid < 1 | MaxModelsInGrid > 1080) & GridTune == TRUE) {
+  if(MaxModelsInGrid < 1 & GridTune == TRUE) {
     stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   }
   if (!is.null(model_path)) {
@@ -138,24 +125,14 @@ AutoCatBoostMultiClass <- function(data,
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
 
   # MultiClass Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # MultiClass Ensure ValidationData is a data.table----
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) {
-      ValidationData <- data.table::as.data.table(ValidationData)
-    }
-  }
+  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
   
   # MultiClass Ensure TestData is a data.table----
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
-  }
-  
+  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+
   # MultiClass Target Name Storage----
   if (is.character(TargetColumnName)) {
     Target <- TargetColumnName
@@ -171,10 +148,10 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
+  if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
-      NumDataSets = 3,
+      NumDataSets = 3L,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = Target,
@@ -185,20 +162,16 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Sort data if PrimaryDateColumn----
-  if (!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
+  if (!is.null(PrimaryDateColumn) & TrainOnFull) {
     data <- data[order(get(PrimaryDateColumn))]
-    if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-      data.table::set(data,j = eval(PrimaryDateColumn),value = NULL)
-    }
+    if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(data,j = eval(PrimaryDateColumn),value = NULL)
   }
   
   # MultiClass Sort ValidationData if PrimaryDateColumn----
   if (!is.null(TestData) & TrainOnFull != TRUE) {
     if(!is.null(PrimaryDateColumn)) {
-      data.table::setorderv(x = ValidationData, cols = eval(PrimaryDateColumn), order = 1)
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-        data.table::set(ValidationData,j = eval(PrimaryDateColumn),value = NULL)
-      }
+      data.table::setorderv(x = ValidationData, cols = eval(PrimaryDateColumn), order = 1L)
+      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(ValidationData,j = eval(PrimaryDateColumn),value = NULL)
     }
   }
   
@@ -206,9 +179,7 @@ AutoCatBoostMultiClass <- function(data,
   if (!is.null(TestData)) {
     if (!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) {
-        data.table::set(TestData,j = eval(PrimaryDateColumn),value = NULL)
-      }
+      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData,j = eval(PrimaryDateColumn),value = NULL)
     }
   }
   
@@ -261,16 +232,13 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))),
-                        as.numeric(which(sapply(data, is.character)))))
+  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   TargetNum <- which(names(data) == Target)
   CatFeatures <- setdiff(CatFeatures, TargetNum)
   
   # MultiClass Convert CatFeatures to 1-indexed----
   if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) {
-      CatFeatures[i] <- CatFeatures[i] - 1
-    }
+    for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   }
   
   # MultiClass Train ModelDataPrep----
@@ -350,13 +318,9 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Reorder Colnames
-  data.table::setcolorder(dataTrain, c(2:ncol(dataTrain), 1))
-  if(!is.null(dataTest)) {
-    data.table::setcolorder(dataTest, c(2:ncol(dataTest), 1))  
-  }
-  if (!is.null(TestData)) {
-    data.table::setcolorder(TestData, c(2:ncol(TestData), 1))
-  }
+  data.table::setcolorder(dataTrain, c(2L:ncol(dataTrain), 1L))
+  if(!is.null(dataTest)) data.table::setcolorder(dataTest, c(2L:ncol(dataTest), 1L))
+  if (!is.null(TestData)) data.table::setcolorder(TestData, c(2L:ncol(TestData), 1L))
   
   # MultiClass Save Names of data----
   if(is.numeric(FeatureColNames)) {
@@ -370,18 +334,12 @@ AutoCatBoostMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
-  }
+  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   
   # MultiClass Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, as.numeric(get(Target))]}, error = function(x) dataTrain[, as.numeric(eval(Target))])
-  if(!is.null(dataTest)) {
-    TestTarget <- tryCatch({dataTest[, as.numeric(get(Target))]}, error = function(x) dataTest[, as.numeric(eval(Target))])  
-  }
-  if (!is.null(TestData)) {
-    FinalTestTarget <- tryCatch({TestData[, as.numeric(get(Target))]}, error = function(x) TestData[, as.numeric(eval(Target))])
-  }
+  if(!is.null(dataTest)) TestTarget <- tryCatch({dataTest[, as.numeric(get(Target))]}, error = function(x) dataTest[, as.numeric(eval(Target))])  
+  if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, as.numeric(get(Target))]}, error = function(x) TestData[, as.numeric(eval(Target))])
   
   # MultiClass Initialize Catboost Data Conversion----
   if (!is.null(CatFeatures)) {
@@ -405,173 +363,223 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Tune or Not Check----
-  if (GridTune & TrainOnFull == FALSE) {
+  if (GridTune & !TrainOnFull) {
     
-    # MultiClass Grid Create data.table To Store Results----
-    GridCollect <-
-      data.table::data.table(
-        ParamRow = 1:(MaxModelsInGrid + 1),
-        EvalStat = rep(9999999, MaxModelsInGrid + 1))
+    # Pull in Grid sets----
+    Grids <- CatBoostParameterGrids(
+      TaskType      = task_type,
+      Shuffles      = Shuffles,
+      NTrees        = Trees,
+      Depth         = Depth,
+      LearningRate  = LearningRate,
+      L2_Leaf_Reg   = L2_Leaf_Reg,
+      RSM           = RSM,
+      BootStrapType = BootStrapType,
+      GrowPolicy    = GrowPolicy)
+    Grid <- Grids$Grid
+    GridClusters <- Grids$Grids
+    ExperimentalGrid <- Grids$ExperimentalGrid
     
-    # MultiClass Grid Define Hyper Parameters----
-    if (!is.null(PassInGrid)) {
-      if (!data.table::is.data.table(PassInGrid)) {
-        PassInGrid <- data.table::as.data.table(PassInGrid)
-      }
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:15))
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-      catboostGridList <- data.table::rbindlist(list(PassInGrid, catboostGridList))
-    } else {
-      catboostGridList <- data.table::CJ(
-        l2_leaf_reg = c(0, 1, 2, 3),
-        learning_rate = c(0.01, 0.02, 0.03, 0.04, 0.05),
-        bootstrap_type = c("Poisson", "Bayesian", "Bernoulli", "No"),
-        depth = c(4:15))
-      if (tolower(task_type) != "gpu") {
-        catboostGridList <- catboostGridList[bootstrap_type != "Poisson"]
-      }
-      if (tolower(task_type) == "gpu") {
-        catboostGridList <- catboostGridList[depth <= 8L]
-      }
-      catboostGridList[, ID := runif(nrow(catboostGridList))]
-      catboostGridList <- catboostGridList[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
-    }
+    # Initialize RL----
+    RL_Start <- RL_Initialize(
+      ParameterGridSet = GridClusters,
+      Alpha = 1L,
+      Beta = 1L,
+      SubDivisions = 1000L)
+    BanditArmsN <- RL_Start[["BanditArmsN"]]
+    Successes <- RL_Start[["Successes"]]
+    Trials <- RL_Start[["Trials"]]
+    GridIDs <- RL_Start[["GridIDs"]]
+    BanditProbs <- RL_Start[["BanditProbs"]]
+    RunsWithoutNewWinner <- 0L
+    rm(RL_Start)
     
-    # MultiClass Grid Tuning Main Loop----
-    for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
+    # Add bandit probs columns to ExperimentalGrid----
+    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
+    
+    # Binary Grid Tuning Main Loop----
+    counter <- 0L
+    repeat {
       
-      # Print i
-      print(i)
+      # Increment counter----
+      counter <- counter + 1L
       
-      # MultiClass Grid Define Base Parameters----
-      if (!is.null(ClassWeights)) {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          iterations           = Trees,
-          loss_function        = eval_metric,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          has_time             = HasTime,
-          best_model_min_trees = 10,
-          metric_period        = 10,
-          task_type            = task_type)
-      }
-      
-      # MultiClass Grid Merge Model Parameters----
-      if (i != 1) {
-        base_params <- c(as.list(catboostGridList[i, ]), base_params)
-      }
-      
-      # MultiClass Grid Train Model----
-      model <- catboost::catboost.train(learn_pool = TrainPool,
-                                        test_pool  = TestPool,
-                                        params     = base_params)
-      
-      # MultiClass Grid Score Model----
-      tryCatch({
-        if (!is.null(TestData)) {
-          predict <- cbind(
-            1 + catboost::catboost.predict(
-              model = model,
-              pool = FinalTestPool,
-              prediction_type = "Class"),
-            catboost::catboost.predict(
-              model = model,
-              pool = FinalTestPool,
-              prediction_type = "Probability"))
+      # Select Grid----
+      if(counter <= BanditArmsN + 1L) {
+        
+        # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
+        # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
+        if(counter == 1L) {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            train_dir            = model_path,
+            iterations           = max(Grid$NTrees))
         } else {
-          predict <- cbind(
-            1 + catboost::catboost.predict(
-              model = model,
-              pool = TestPool,
-              prediction_type = "Class"),
-            catboost::catboost.predict(
-              model = model,
-              pool = TestPool,
-              prediction_type = "Probability"))
-        }
-        
-        # MultiClass Remove Model and Collect Garbage----
-        rm(model)
-        gc()
-        
-        # MultiClass Grid Validation Data----
-        if (!is.null(TestData)) {
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict))
-        } else {
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, predict))
-        }
-        ValidationData <- merge(
-          calibEval,
-          TargetLevels,
-          by.x = "V2",
-          by.y = "NewLevels",
-          all = FALSE)
-        ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-        ValidationData <- merge(
-          ValidationData,
-          TargetLevels,
-          by.x = "Target",
-          by.y = "NewLevels",
-          all = FALSE)
-        ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-        
-        # MultiClass Update Names for Predicted Value Columns
-        k <- 2
-        for (name in as.character(TargetLevels[[1]])) {
-          k <- k + 1
-          data.table::setnames(ValidationData, paste0("V", k), name)
-        }
-        data.table::setnames(ValidationData, "V2", "Predict")
-        data.table::set(ValidationData,j = "Target",value = as.character(ValidationData[["Target"]]))
-        data.table::set(ValidationData,j = "Predict",value = as.character(ValidationData[["Predict"]]))
-        
-        # MultiClass Metric----
-        if (tolower(grid_eval_metric) == "accuracy") {
-          Metric <- ValidationData[, mean(data.table::fifelse(as.character(Target) == as.character(Predict),1,0),na.rm = TRUE)]
-        } else {
-          # MultiClass Metric for MicroAUC----
-          ValidationData[, vals := 0.5]
-          z <- ncol(ValidationData)
-          col <- "Target"
-          for (l in seq_len(nrow(ValidationData))) {
-            cols <- ValidationData[l, get(col)][[1]]
-            valss <- ValidationData[l, ..cols][[1]]
-            data.table::set(ValidationData,i = l,j = z,value = valss)
+          if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
+          if(tolower(task_type) == "gpu") {
+            base_params <- list(
+              has_time             = HasTime,
+              metric_period        = MetricPeriods,
+              loss_function        = eval_metric,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              best_model_min_trees = 10L,
+              task_type            = task_type,
+              train_dir            = model_path,
+              iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
+              grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+          } else {
+            base_params <- list(
+              has_time             = HasTime,
+              metric_period        = MetricPeriods,
+              loss_function        = eval_metric,
+              eval_metric          = eval_metric,
+              use_best_model       = TRUE,
+              best_model_min_trees = 10L,
+              task_type            = task_type,
+              train_dir            = model_path,
+              iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
+              depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+              learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+              l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
+              rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
+              bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
           }
-          Metric <- round(as.numeric(noquote(
-            stringr::str_extract(
-              pROC::multiclass.roc(
-                ValidationData[["Target"]], ValidationData[["vals"]])$auc,
-              "\\d+\\.*\\d*"))), 4)
         }
-        
-        # Collect Metrics and Corresponding Grids----
-        data.table::set(GridCollect,i = i,j = 1L,value = i)
-        data.table::set(GridCollect,i = i,j = 2L,value = Metric)
-      }, error = function(x) "skip")
+      } else {
+        data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
+        if (tolower(task_type) == "gpu") {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            train_dir            = model_path,
+            iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
+            grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
+        } else {
+          base_params <- list(
+            has_time             = HasTime,
+            metric_period        = MetricPeriods,
+            loss_function        = eval_metric,
+            eval_metric          = eval_metric,
+            use_best_model       = TRUE,
+            best_model_min_trees = 10L,
+            task_type            = task_type,
+            train_dir            = model_path,
+            iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
+            depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
+            learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
+            l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
+            rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
+            bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
+        }
+      }
+      
+      # Build model----
+      print(base_params)
+      RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
+      
+      # Score model----
+      if (!is.null(TestData)) {
+        predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
+        calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+      } else {
+        predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
+        calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+      }
+      
+      # Update Experimental Grid with Param values----
+      if(!exists("NewGrid")) {
+        GridNumber <- counter - 1L
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
+      } else {
+        data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
+      }
+      NewPerformance <- as.numeric(AUC_Metrics$auc)
+      data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
+      data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
+      data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
+      if(counter == 1L) {
+        BestPerformance <- 1L
+      } else {
+        if(tolower(BaselineComparison) == "default") {
+          BestPerformance <- max(ExperimentalGrid[RunNumber == 1L][["EvalMetric"]], na.rm = TRUE)
+        } else {
+          BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["EvalMetric"]], na.rm = TRUE)
+        }
+      }
+      
+      # Performance measures----
+      TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
+      if(NewPerformance > BestPerformance) {
+        RunsWithoutNewWinner <- 0L
+      } else {
+        RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+      }
+      
+      # Update bandit probabilities and whatnot----
+      RL_Update_Output <- RL_ML_Update(
+        ExperimentGrid = ExperimentalGrid,
+        ModelRun = counter,
+        NEWGrid = NewGrid,
+        NewPerformance = NewPerformance,
+        BestPerformance = BestPerformance,
+        TrialVector = Trials,
+        SuccessVector = Successes,
+        GridIDS = GridIDs,
+        BanditArmsCount = BanditArmsN,
+        RunsWithoutNewWinner = RunsWithoutNewWinner,
+        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+        MaxNumberModels = MaxModelsInGrid,
+        MaxRunMinutes = MaxRunMinutes,
+        TotalRunTime = TotalRunTime,
+        BanditProbabilities = BanditProbs)
+      BanditProbs <- RL_Update_Output[["BanditProbs"]]
+      Trials <- RL_Update_Output[["Trials"]]
+      Successes <- RL_Update_Output[["Successes"]]
+      NewGrid <- RL_Update_Output[["NewGrid"]]
+      
+      # Binary Remove Model and Collect Garbage----
+      rm(model)
+      gc()
+      
+      # Continue or stop----
+      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "L2_Leaf_Reg", value = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][Trials[NewGrid]+1L])
+      if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
+      if(tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
+      for(bandit in seq_len(length(BanditProbs))) {
+        data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
+      }
     }
+    
+    # Remove unneeded rows----
+    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
   }
   
   # MultiClass Define Final Model Parameters----

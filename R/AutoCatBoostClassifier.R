@@ -177,7 +177,7 @@ AutoCatBoostClassifier <- function(data,
   }
   if (any(Trees) < 1) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if((MaxModelsInGrid < 1 | MaxModelsInGrid > 1080) & GridTune == TRUE) {
+  if(MaxModelsInGrid < 1 & GridTune == TRUE) {
     stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   }
   if(!is.null(model_path)) {

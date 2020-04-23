@@ -372,9 +372,7 @@ AutoCatBoostRegression <- function(data,
   CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
   
   # Regression Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
-  }
+  if (length(CatFeatures) > 0) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # Regression Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
@@ -427,19 +425,17 @@ AutoCatBoostRegression <- function(data,
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
   
   # Regression Subset Target Variables----
-  TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1]]
+  TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1L]]
   if(TrainOnFull != TRUE) {
-    TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1]]
+    TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1L]]
     if (!is.null(TestData)) {
-      FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1]]
+      FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
     }
   }
 
   # Regression eval_metric checks
   if(TrainOnFull != TRUE) {
-    if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) {
-      warning("eval_metric Poisson requires positive values for Target")
-    }    
+    if (tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) warning("eval_metric Poisson requires positive values for Target")
   }
   
   # Regression Initialize Catboost Data Conversion----
@@ -602,11 +598,13 @@ AutoCatBoostRegression <- function(data,
       if (!is.null(TestData)) {
         predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
-        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+        calibEval[, Metric := (Target - p1) ^ 2]
+        NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
       } else {
         predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
         calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
-        AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
+        calibEval[, Metric := (Target - p1) ^ 2]
+        NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
       }
       
       # Update Experimental Grid with Param values----
@@ -616,7 +614,6 @@ AutoCatBoostRegression <- function(data,
       } else {
         data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
       }
-      NewPerformance <- as.numeric(AUC_Metrics$auc)
       data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
       data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
       data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
@@ -632,7 +629,7 @@ AutoCatBoostRegression <- function(data,
       
       # Performance measures----
       TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
-      if(NewPerformance > BestPerformance) {
+      if(NewPerformance < BestPerformance) {
         RunsWithoutNewWinner <- 0L
       } else {
         RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
@@ -794,7 +791,7 @@ AutoCatBoostRegression <- function(data,
   if(TrainOnFull) {
     model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)    
   } else {
-    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool  = TestPool, params = base_params)
+    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
   }
   
   # Regression Save Model----

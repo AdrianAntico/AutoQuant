@@ -4,7 +4,8 @@
 \alias{RL_ML_Update}
 \title{RL_ML_Update}
 \usage{
-RL_ML_Update(ExperimentGrid = ExperimentGrid, ModelRun = counter,
+RL_ML_Update(ExperimentGrid = ExperimentGrid,
+  ModelType = "classification", ModelRun = counter,
   NEWGrid = NewGrid, NewPerformance = NewPerformance,
   BestPerformance = BestPerformance, TrialVector = Trials,
   SuccessVector = Successes, GridIDS = GridIDs,
@@ -16,6 +17,8 @@ RL_ML_Update(ExperimentGrid = ExperimentGrid, ModelRun = counter,
 }
 \arguments{
 \item{ExperimentGrid}{This is a data.table of grid params and model results}
+
+\item{ModelType}{"classification", "regression", and "multiclass"}
 
 \item{ModelRun}{Model iteration number}
 
@@ -48,6 +51,7 @@ RL_ML_Update updates the bandit probabilities for selecting different grids
 RL_Update_Output <- RL_ML_Update(
   ExperimentGrid = ExperimentGrid,
   ModelRun = run,
+  ModelType = "classification",
   NEWGrid = NewGrid,
   TrialVector = Trials,
   SuccessVector = Successes,
