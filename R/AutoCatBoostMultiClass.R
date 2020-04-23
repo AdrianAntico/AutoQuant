@@ -19,7 +19,6 @@
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
@@ -134,7 +133,6 @@ AutoCatBoostMultiClass <- function(data,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
-                                   NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL,

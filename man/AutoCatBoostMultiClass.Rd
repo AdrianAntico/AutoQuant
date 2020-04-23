@@ -10,14 +10,13 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
   eval_metric = "MultiClassOneVsAll", model_path = NULL,
   metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
-  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24L * 60L, grid_eval_metric = "Accuracy",
-  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
-  Trees = 50L, Depth = NULL, LearningRate = NULL,
-  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
-  GrowPolicy = NULL)
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
+  grid_eval_metric = "Accuracy", Shuffles = 1L,
+  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
+  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
+  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -47,8 +46,6 @@ AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
-
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
 
