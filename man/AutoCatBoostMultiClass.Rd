@@ -143,9 +143,8 @@ TestModel <- AutoCatBoostMultiClass(
     IDcols = c("x1","x2"),
     
     # Model evaluation
-    "MultiClass",
+    eval_metric = "MultiClass",
     grid_eval_metric = "Accuracy",
-    NumOfParDepPlots = ncol(data)-1L-2L,
 
     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
     PassInGrid = NULL,
