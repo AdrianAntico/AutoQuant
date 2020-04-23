@@ -506,9 +506,9 @@ AutoCatBoostRegression <- function(data,
         
         # Define prameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostRegressionParams(counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostRegressionParams(counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Build model----
