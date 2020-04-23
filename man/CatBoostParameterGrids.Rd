@@ -37,9 +37,7 @@ A list containing data.table's with the parameters shuffled and ready to test in
 CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.html
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OScoring}},
-  \code{\link{CatBoostClassifierParams}},
-  \code{\link{CatBoostRegressionParams}}
+Other Supervised Learning: \code{\link{AutoH2OScoring}}
 }
 \author{
 Adrian Antico

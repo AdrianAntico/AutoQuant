@@ -436,18 +436,18 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @export 
-CatBoostRegressionParams <- function(counter,
-                                     BanditArmsN,
-                                     HasTime,
-                                     MetricPeriods,
-                                     eval_metric,
-                                     task_type,
-                                     model_path,
-                                     NewGrid,
-                                     Grid,
-                                     ExperimentalGrid,
-                                     GridClusters) {
+#' @noRd
+CatBoostRegressionParams <- function(counter = NULL,
+                                     BanditArmsN = NULL,
+                                     HasTime = NULL,
+                                     MetricPeriods = NULL,
+                                     eval_metric = NULL,
+                                     task_type = NULL,
+                                     model_path = NULL,
+                                     NewGrid = NULL,
+                                     Grid = NULL,
+                                     ExperimentalGrid = NULL,
+                                     GridClusters = NULL) {
   
   # Select Grid----
   if(counter <= BanditArmsN + 1L) {
@@ -558,19 +558,19 @@ CatBoostRegressionParams <- function(counter,
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @export 
-CatBoostClassifierParams <- function(counter,
-                                     BanditArmsN,
-                                     HasTime,
-                                     MetricPeriods,
-                                     ClassWeights,
-                                     eval_metric,
-                                     task_type,
-                                     model_path,
-                                     NewGrid,
-                                     Grid,
-                                     ExperimentalGrid,
-                                     GridClusters) {
+#' @noRd
+CatBoostClassifierParams <- function(counter = NULL,
+                                     BanditArmsN = NULL,
+                                     HasTime = NULL,
+                                     MetricPeriods = NULL,
+                                     ClassWeights = NULL,
+                                     eval_metric = NULL,
+                                     task_type = NULL,
+                                     model_path = NULL,
+                                     NewGrid = NULL,
+                                     Grid = NULL,
+                                     ExperimentalGrid = NULL,
+                                     GridClusters = NULL) {
   
   # Select Grid----
   if(counter <= BanditArmsN + 1L) {

@@ -505,7 +505,11 @@ AutoCatBoostRegression <- function(data,
       if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["BootStrapType"]][1L])) {
         
         # Define prameters----
-        base_params <- CatBoostRegressionParams(counter,HasTime,MetricPeriods,eval_metric,task_type,model_path,NewGrid,Grid,ExperimentalGrid,GridClusters)
+        if(!exists("NewGrid")) {
+          base_params <- CatBoostRegressionParams(counter,HasTime,MetricPeriods,eval_metric,task_type,model_path,Grid,ExperimentalGrid,GridClusters)
+        } else {
+          base_params <- CatBoostRegressionParams(counter,HasTime,MetricPeriods,eval_metric,task_type,model_path,NewGrid,Grid,ExperimentalGrid,GridClusters)
+        }
         
         # Build model----
         print(base_params)

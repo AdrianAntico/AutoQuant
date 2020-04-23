@@ -439,7 +439,11 @@ AutoCatBoostClassifier <- function(data,
       if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["L2_Leaf_Reg"]][1L])) {
         
         # Define parameters----
-        base_params <- CatBoostClassifierParams(counter,BanditArmsN,HasTime,MetricPeriods,ClassWeights,eval_metric,task_type,model_path,NewGrid,Grid,ExperimentalGrid,GridClusters)
+        if(!exists("NewGrid")) {
+          base_params <- CatBoostClassifierParams(counter,BanditArmsN,HasTime,MetricPeriods,ClassWeights,eval_metric,task_type,model_path,Grid,ExperimentalGrid,GridClusters)
+        } else {
+          base_params <- CatBoostClassifierParams(counter,BanditArmsN,HasTime,MetricPeriods,ClassWeights,eval_metric,task_type,model_path,NewGrid,Grid,ExperimentalGrid,GridClusters)
+        }
         
         # Build model----
         print(base_params)
