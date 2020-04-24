@@ -10,7 +10,8 @@ AutoXGBoostMultiClass(data, TrainOnFull = FALSE, ValidationData = NULL,
   ModelID = "FirstModel", Objective = "multi:softmax",
   ReturnFactorLevels = TRUE, ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE, Verbose = 0L, NumOfParDepPlots = 3L,
-  NThreads = 8L, eval_metric = "merror", TreeMethod = "hist",
+  NThreads = 8L, eval_metric = "merror",
+  grid_eval_metric = "accuracy", TreeMethod = "hist",
   GridTune = FALSE, BaselineComparison = "default",
   MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L, PassInGrid = NULL, Shuffles = 1L,
@@ -53,6 +54,8 @@ AutoXGBoostMultiClass(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
+
+\item{grid_eval_metric}{"accuracy", "logloss", "microauc"}
 
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
 
@@ -144,6 +147,7 @@ TestModel <- AutoXGBoostMultiClass(
     # Model evaluation
     eval_metric = "auc",
     Objective = 'multi:softmax',
+    grid_eval_metric = "accuracy",
     NumOfParDepPlots = 3L,
   
     # Grid tuning arguments - PassInGrid is the best of GridMetrics

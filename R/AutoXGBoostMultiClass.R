@@ -23,6 +23,7 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param GridTune Set to TRUE to run a grid tuning procedure
 #' @param Objective 'multi:softmax'
+#' @param grid_eval_metric "accuracy", "logloss", "microauc"
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param eta Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
 #' @param max_depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
@@ -91,6 +92,7 @@
 #'     # Model evaluation
 #'     eval_metric = "auc",
 #'     Objective = 'multi:softmax',
+#'     grid_eval_metric = "accuracy",
 #'     NumOfParDepPlots = 3L,
 #'   
 #'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
@@ -133,6 +135,7 @@ AutoXGBoostMultiClass <- function(data,
                                   NumOfParDepPlots = 3L,
                                   NThreads = 8L,
                                   eval_metric = "merror",
+                                  grid_eval_metric = "accuracy",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
                                   BaselineComparison = "default",
