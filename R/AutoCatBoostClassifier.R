@@ -469,7 +469,7 @@ AutoCatBoostClassifier <- function(data,
         }
         
         # Performance measures----
-        TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
+        TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
         if(NewPerformance > BestPerformance) {
           RunsWithoutNewWinner <- 0L
         } else {
