@@ -12,10 +12,9 @@
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param GridTune Set to TRUE to run a grid tuning procedure
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
-#' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -25,6 +24,11 @@
 #' @param ReturnFactorLevels TRUE or FALSE. Set to FALSE to not return factor levels.
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
+#' @param MaxModelsInGrid Number of models to test from grid options.
+#' @param MaxRunsWithoutNewWinner A number
+#' @param MaxRunMinutes In minutes
+#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
+#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -86,6 +90,7 @@
 #'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
 #'     PassInGrid = NULL,
 #'     GridTune = FALSE,
+#'     BaselineComparison = "default",
 #'     MaxModelsInGrid = 10L,
 #'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 24L*60L,
@@ -123,6 +128,7 @@ AutoXGBoostClassifier <- function(data,
                                   eval_metric = "auc",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
+                                  BaselineComparison = "default",
                                   MaxModelsInGrid = 10L,
                                   MaxRunsWithoutNewWinner = 20L,
                                   MaxRunMinutes = 24L*60L,

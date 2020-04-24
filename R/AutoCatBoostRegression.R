@@ -23,6 +23,7 @@
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MaxModelsInGrid Number of models to test from grid options
 #' @param MaxRunMinutes Maximum number of minutes to let this run
 #' @param MaxRunsWithoutNewWinner Number of models built before calling it quits

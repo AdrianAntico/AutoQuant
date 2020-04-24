@@ -64,6 +64,8 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 
 \item{MaxRunMinutes}{Maximum number of minutes to let this run}
 
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+
 \item{Trees}{The maximum number of trees you want in your models}
 
 \item{Depth}{Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}

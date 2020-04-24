@@ -10,7 +10,8 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   ModelID = "FirstModel", ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE, Verbose = 0L,
   NumOfParDepPlots = 3L, NThreads = 8L, eval_metric = "auc",
-  TreeMethod = "hist", GridTune = FALSE, MaxModelsInGrid = 10L,
+  TreeMethod = "hist", GridTune = FALSE,
+  BaselineComparison = "default", MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL, Shuffles = 1L, Trees = 50L, eta = NULL,
   max_depth = NULL, min_child_weight = NULL, subsample = NULL,
@@ -53,11 +54,19 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
 
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+\item{GridTune}{Set to TRUE to run a grid tuning procedure}
 
-\item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options.}
+
+\item{MaxRunsWithoutNewWinner}{A number}
+
+\item{MaxRunMinutes}{In minutes}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
+
+\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{Trees}{The maximum number of trees you want in your models}
 }
@@ -128,6 +137,7 @@ TestModel <- AutoXGBoostClassifier(
     # Grid tuning arguments - PassInGrid is the best of GridMetrics
     PassInGrid = NULL,
     GridTune = FALSE,
+    BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
