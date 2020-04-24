@@ -112,72 +112,39 @@ AutoXGBoostRegression <- function(data,
                                   PassInGrid = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Regression Check Arguments----
-  if (!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) {
-    stop("eval_metric not in RMSE, MAE, MAPE, R2")
-  }
-  if (Trees < 1) stop("Trees must be greater than 1")
+  if (!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) stop("eval_metric not in RMSE, MAE, MAPE, R2")
+  if (any(Trees < 1)) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if (MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
-    stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  }
-  if (!is.null(model_path)) {
-    if (!is.character(model_path)) stop("model_path needs to be a character type")
-  }
-  if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  }
+  if (MaxModelsInGrid < 1 & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
+  if (!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type")
+  if (!is.null(metadata_path)) if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   if (!is.character(ModelID)) stop("ModelID needs to be a character type")
   if (NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
-  
-  # Regression Ensure data is a data.table----
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) {
-      ValidationData <- data.table::as.data.table(ValidationData)
-    }
-  }
-  
-  # Regression Ensure TestData is a data.table----
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }
-  }
-  
+  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
+  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+
   # Regression Target Name Storage----
-  if (is.character(TargetColumnName)) {
-    Target <- TargetColumnName
-  } else {
-    Target <- names(data)[TargetColumnName]
-  }
+  if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # Regression IDcol Name Storage----
-  if (!is.null(IDcols)) {
-    if (!is.character(IDcols)) {
-      IDcols <- names(data)[IDcols]
-    }
-  }
+  if (!is.null(IDcols)) if (!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # Regression Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   CatFeatures <- names(data)[CatFeatures]
   CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols]
-  if(length(CatFeatures) == 0) {
-    CatFeatures <- NULL
-  }
+  if(length(CatFeatures) == 0L) CatFeatures <- NULL
   
   # Transform data, ValidationData, and TestData----
-  if (!is.null(ValidationData) &
-      !is.null(TransformNumericColumns)) {
+  if (!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
     MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     Output <- AutoTransformationCreate(
       data,
@@ -209,13 +176,13 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
+  if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     if (!is.null(TransformNumericColumns)) {
       
       # Partition----
       dataSets <- AutoDataPartition(
         data,
-        NumDataSets = 3,
+        NumDataSets = 3L,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
@@ -244,8 +211,7 @@ AutoXGBoostRegression <- function(data,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL
-      )
+        Path = NULL)
       
       # Transform TestData----
       if (!is.null(TestData)) {
@@ -259,7 +225,7 @@ AutoXGBoostRegression <- function(data,
     } else {
       dataSets <- AutoDataPartition(
         data,
-        NumDataSets = 3,
+        NumDataSets = 3L,
         Ratios = c(0.70, 0.20, 0.10),
         PartitionType = "random",
         StratifyColumnNames = NULL,
@@ -272,14 +238,14 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression data Subset Columns Needed----
-  if ((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & TrainOnFull == FALSE) {
+  if ((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & !TrainOnFull) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     TrainMerge <- data.table::copy(data)
     dataTrain <- data[, ..keep]
     ValidMerge <- data.table::copy(ValidationData)
     dataTest <- ValidationData[, ..keep]
-  } else if((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & TrainOnFull == TRUE) {
+  } else if((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & TrainOnFull) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
@@ -375,7 +341,6 @@ AutoXGBoostRegression <- function(data,
         data.table::set(TestData, j = "ID_Factorizer", value = NULL)
       } else {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        
         if(!TrainOnFull) {
           data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
           temp <- data.table::rbindlist(list(dataTrain, dataTest))        
@@ -410,8 +375,7 @@ AutoXGBoostRegression <- function(data,
               SaveFactorLevels = TRUE,
               ReturnFactorLevels = ReturnFactorLevels,
               SavePath = model_path,
-              ImportFactorLevels = FALSE
-            )
+              ImportFactorLevels = FALSE)
             IDcols <- c(IDcols,CatFeatures)
           } else {
             FactorLevelsList <- NULL
@@ -493,8 +457,6 @@ AutoXGBoostRegression <- function(data,
           FactorLevelsList <- NULL
         }
         
-        # Needs second element of list to return more than just "Store" - needs to be "Store" "Dept" and "Store-Dept"
-        
         # Dummify
         temp <- DummifyDT(
           data = temp,
@@ -506,18 +468,6 @@ AutoXGBoostRegression <- function(data,
           ReturnFactorLevels = ReturnFactorLevels,
           SavePath = NULL,
           ImportFactorLevels = FALSE)
-        
-        # Why is Dummify Failing to Return the correct factor variable names (only returning 'Store')
-        # data = temp
-        # cols = CatFeatures
-        # KeepFactorCols = FALSE
-        # OneHot = FALSE
-        # SaveFactorLevels = FALSE
-        # ReturnFactorLevels = ReturnFactorLevels
-        # SavePath = NULL
-        # ImportFactorLevels = FALSE
-        # ClustScore = FALSE
-        
         IDcols <- c(IDcols,CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
@@ -543,9 +493,7 @@ AutoXGBoostRegression <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
-  }
+  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   
   # Regression Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -560,12 +508,8 @@ AutoXGBoostRegression <- function(data,
   
   # Regression Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
-  if(!TrainOnFull) {
-    dataTest[, eval(Target) := NULL]
-    if (!is.null(TestData)) {
-      TestData[, eval(Target) := NULL]
-    }    
-  }
+  if(!TrainOnFull) dataTest[, eval(Target) := NULL]
+  if (!is.null(TestData)) TestData[, eval(Target) := NULL]
   
   # Regression Initialize Catboost Data Conversion----
   if("GroupVar" %chin% names(dataTrain)) data.table::set(dataTrain, j = "GroupVar", value = NULL)
@@ -587,160 +531,160 @@ AutoXGBoostRegression <- function(data,
   # Regression Grid Tune or Not Check----
   if (GridTune == TRUE & TrainOnFull == FALSE) {
     
-    # Regression Grid Create data.table To Store Results----
-    GridCollect <-
-      data.table::data.table(
-        ParamRow = 1:(MaxModelsInGrid + 1),
-        EvalStat = rep(9999999, MaxModelsInGrid + 1))
+    # Pull in Grid sets----
+    Grids <- XGBoostParameterGrids(TaskType=TreeMethod,Shuffles=Shuffles,NTrees=Trees,Depth=max_depth,LearningRate=eta,MinChildWeight=min_child_weight,SubSample=subsample,ColSampleByTree=colsample_bytree)
+    Grid <- Grids$Grid
+    GridClusters <- Grids$Grids
+    ExperimentalGrid <- Grids$ExperimentalGrid
     
-    # Regression Grid Define Hyper Parameters----
-    if (!is.null(PassInGrid)) {
-      if (!data.table::is.data.table(PassInGrid)) {
-        PassInGrid <- data.table::as.data.table(PassInGrid)
+    # Initialize RL----
+    RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
+    BanditArmsN <- RL_Start[["BanditArmsN"]]
+    Successes <- RL_Start[["Successes"]]
+    Trials <- RL_Start[["Trials"]]
+    GridIDs <- RL_Start[["GridIDs"]]
+    BanditProbs <- RL_Start[["BanditProbs"]]
+    RunsWithoutNewWinner <- 0L
+    rm(RL_Start)
+    
+    # Add bandit probs columns to ExperimentalGrid----
+    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_", names(GridClusters)), value = -10)
+    
+    # Binary Grid Tuning Main Loop----
+    counter <- 0L
+    TotalRunTime <- 0
+    repeat {
+      
+      # Increment counter----
+      counter <- counter + 1L
+      
+      # Check if grid still has elements in it----
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["Depth"]][1L])) {
+        
+        # Define parameters----
+        if(!exists("NewGrid")) {
+          base_params <- XGBoostRegressionParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+        } else {
+          base_params <- XGBoostRegressionParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+        }
+        
+        # Run model----
+        if(counter <= BanditArmsN + 1L) {
+          if(counter == 1L) {
+            nrounds <- max(Grid$NTrees)
+            print(base_params)
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+          } else {
+            nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
+            print(base_params)
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+          }
+        } else {
+          nrounds <- GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L]
+          print(base_params)
+          RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+        }
+        
+        # Binary Grid Score Model----
+        if (!is.null(TestData)) {
+          predict <- stats::predict(model, datatest)
+          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
+          NewPerformance <- XGBoostRegressionMetrics(grid_eval_metric,MinVal,calibEval)
+        } else {
+          predict <- stats::predict(model, datavalidate)
+          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
+          NewPerformance <- XGBoostRegressionMetrics(grid_eval_metric,MinVal,calibEval)
+        }
+        
+        # Update Experimental Grid with Param values----
+        if(!exists("NewGrid")) {
+          GridNumber <- counter - 1L
+          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
+        } else {
+          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
+        }
+        data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
+        data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
+        data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$niter)
+        if(counter == 1L) {
+          BestPerformance <- 1L
+        } else {
+          if(tolower(BaselineComparison) == "default") {
+            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
+          } else {
+            BestPerformance <- ExperimentalGrid[RunNumber < counter, max(EvalMetric, na.rm = TRUE)]
+          }
+        }
+        
+        # Performance measures----
+        TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
+        if(NewPerformance > BestPerformance) {
+          RunsWithoutNewWinner <- 0L
+        } else {
+          RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+        }
+        
+        # Binary Remove Model and Collect Garbage----
+        rm(model)
+        gc()
       }
-      grid_params <- data.table::CJ(
-        eta = c(0.30, 0.2, 0.4),
-        max_depth = c(4, 8, 12, 15),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80))
-      grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <- grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
-      grid_params <- data.table::rbindlist(list(PassInGrid, grid_params))
-    } else {
-      grid_params <- data.table::CJ(
-        eta = c(0.30, 0.25, 0.35),
-        max_depth = c(4, 8, 12, 15),
-        min_child_weight = c(1, 2, 3),
-        subsample = c(1, 0.90, 0.80),
-        colsample_bytree = c(1, 0.90, 0.80)
-      )
-      grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <- grid_params[order(ID)][1:(MaxModelsInGrid + 1)][, ID := NULL]
+      
+      # Update bandit probabilities and whatnot----
+      RL_Update_Output <- RL_ML_Update(
+        ExperimentGrid = ExperimentalGrid,
+        ModelRun = counter,
+        ModelType = "classification",
+        NEWGrid = NewGrid,
+        NewPerformance = NewPerformance,
+        BestPerformance = BestPerformance,
+        TrialVector = Trials,
+        SuccessVector = Successes,
+        GridIDS = GridIDs,
+        BanditArmsCount = BanditArmsN,
+        RunsWithoutNewWinner = RunsWithoutNewWinner,
+        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+        MaxNumberModels = MaxModelsInGrid,
+        MaxRunMinutes = MaxRunMinutes,
+        TotalRunTime = TotalRunTime,
+        BanditProbabilities = BanditProbs)
+      BanditProbs <- RL_Update_Output[["BanditProbs"]]
+      Trials <- RL_Update_Output[["Trials"]]
+      Successes <- RL_Update_Output[["Successes"]]
+      NewGrid <- RL_Update_Output[["NewGrid"]]
+      
+      # Continue or stop----
+      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "MinChildWeight", value = GridClusters[[paste0("Grid_",NewGrid)]][["MinChildWeight"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "SubSample", value = GridClusters[[paste0("Grid_",NewGrid)]][["SubSample"]][Trials[NewGrid]+1L])
+      data.table::set(ExperimentalGrid, i = counter+1L, j = "ColSampleByTree", value = GridClusters[[paste0("Grid_",NewGrid)]][["ColSampleByTree"]][Trials[NewGrid]+1L])
+      for(bandit in seq_len(length(BanditProbs))) data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
     }
     
-    # Regression Grid Tuning Main Loop----
-    for (i in as.integer(seq_len(MaxModelsInGrid + 1))) {
-      # Print i
-      print(i)
-      
-      # Regression Grid Define Base Parameters----
-      if (i == 1) {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
-          subsample = 1,
-          colsample_bytree = 1,
-          nthread = NThreads,
-          max_bin = 64,
-          tree_method = TreeMethod)
-      } else {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          nthread = NThreads,
-          max_bin = 64,
-          tree_method = TreeMethod)
-      }
-      
-      # Regression Grid Merge Model Parameters----
-      # Have first model be the baseline model
-      if (i != 1) {
-        base_params <- c(as.list(grid_params[i, ]), base_params)
-      }
-      
-      # Regression Grid Train Model----
-      if (Verbose == 0) {
-        model <- xgboost::xgb.train(
-          params = base_params,
-          data = datatrain,
-          watchlist = EvalSets,
-          nrounds = Trees,
-          verbose = Verbose,
-          early_stopping_rounds = 50)
-      } else {
-        model <- xgboost::xgb.train(
-          params = base_params,
-          data = datatrain,
-          watchlist = EvalSets,
-          nrounds = Trees,
-          early_stopping_rounds = 50)
-      }
-      
-      # Regression Grid Score Model----
-      if (!is.null(TestData)) {
-        predict <- stats::predict(model, datatest)
-      } else {
-        predict <- stats::predict(model, datavalidate)
-      }
-      
-      # Regression Grid Validation Data----
-      if (!is.null(TestData)) {
-        calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, Predicted = predict))
-      } else {
-        calibEval <- data.table::as.data.table(cbind(Target = TestTarget, Predicted = predict))
-      }
-      
-      # Regression Grid Evaluation Metrics----
-      if (tolower(grid_eval_metric) == "poisson") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := Predicted - Target * log(Predicted + 1)]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "mae") {
-        calibEval[, Metric := abs(Target - Predicted)]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "mape") {
-        calibEval[, Metric := abs((Target - Predicted) / (Target + 1))]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "mse") {
-        calibEval[, Metric := (Target - Predicted) ^ 2]
-        Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(grid_eval_metric) == "msle") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := (log(Target + 1) - log(Predicted + 1)) ^ 2]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "kl") {
-        if (MinVal > 0 & min(calibEval[["Predicted"]], na.rm = TRUE) > 0) {
-          calibEval[, Metric := Target * log((Target + 1) / (Predicted + 1))]
-          Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(grid_eval_metric) == "cs") {
-        calibEval[, ':=' (Metric1 = Target * Predicted, Metric2 = Target ^ 2, Metric3 = Predicted ^ 2)]
-        Metric <- calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) *
-                                                       sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(grid_eval_metric) == "r2") {
-        Metric <- (calibEval[, stats::cor(eval(Target), Predicted)][[1]]) ^ 2
-      }
-      
-      # Regression Metrics Collection----
-      data.table::set(GridCollect, i = i, j = 1L, value = i)
-      data.table::set(GridCollect, i = i, j = 2L, value = round(Metric, 4))
-    }
+    # Remove unneeded rows----
+    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
+    gc()
   }
   
   # Regression Define Final Model Parameters----
   if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (grid_eval_metric %chin% c("kl", "cs", "r2")) {
       BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
-      if (BestGrid == 1) {
+      if (BestGrid == 1L) {
         base_params <- list(
           booster = "gbtree",
           objective = 'reg:linear',
           eval_metric = tolower(eval_metric),
           eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
-          subsample = 1,
-          colsample_bytree = 1,
+          max_depth = 6L,
+          min_child_weight = 1L,
+          subsample = 1L,
+          colsample_bytree = 1L,
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         
       } else {
@@ -749,24 +693,24 @@ AutoXGBoostRegression <- function(data,
           objective = 'reg:linear',
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
     } else {
-      BestGrid <- GridCollect[order(EvalStat)][1, ParamRow]
-      if (BestGrid == 1) {
+      BestGrid <- GridCollect[order(EvalStat)][1L, ParamRow]
+      if (BestGrid == 1L) {
         base_params <- list(
           booster = "gbtree",
           objective = 'reg:linear',
           eval_metric = tolower(eval_metric),
           eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
-          subsample = 1,
-          colsample_bytree = 1,
+          max_depth = 6L,
+          min_child_weight = 1L,
+          subsample = 1L,
+          colsample_bytree = 1L,
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         
       } else {
@@ -775,7 +719,7 @@ AutoXGBoostRegression <- function(data,
           objective = 'reg:linear',
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
@@ -786,29 +730,29 @@ AutoXGBoostRegression <- function(data,
       objective = 'reg:linear',
       eval_metric = tolower(eval_metric),
       nthread = NThreads,
-      max_bin = 64,
+      max_bin = 64L,
       tree_method = TreeMethod)
     if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1,]))
+      base_params <- c(base_params, as.list(PassInGrid[1L,]))
     }
   }
   
   # Regression Train Final Model----
-  if (Verbose == 0) {
+  if (Verbose == 0L) {
     model <- xgboost::xgb.train(
       params = base_params,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
       verbose = Verbose,
-      early_stopping_rounds = 50)
+      early_stopping_rounds = 50L)
   } else {
     model <- xgboost::xgb.train(
       params = base_params,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
-      early_stopping_rounds = 50)
+      early_stopping_rounds = 50L)
   }
   
   # Regression Save Model----
@@ -844,25 +788,21 @@ AutoXGBoostRegression <- function(data,
   if (!is.null(TransformNumericColumns)) {
     
     # Append record for Predicted Column----
-    if (GridTune) {
-      TransformationResults <- TransformationResults[ColumnName != "Predict"]
-    }
+    if (GridTune) TransformationResults <- TransformationResults[ColumnName != "Predict"]
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
         ColumnName = "Predict",
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 1),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 1),
+        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 1L),
+        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 1L),
         NormalizedStatistics = rep(0, 1))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
     if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
-      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1]]
-      temp1 <- which(names(ValidationData) == temp)[1]
+      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1L][[1L]]
+      temp1 <- which(names(ValidationData) == temp)[1L]
       ValidationData[, eval(names(data)[temp1]) := NULL]
-      TransformationResults <- TransformationResults[, ID := 1:.N][
-        ID != which(TransformationResults[["ID"]] == temp1)][
-          , ID := NULL]
+      TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
     }
     
     # Transform Target and Predicted Value----
@@ -906,7 +846,7 @@ AutoXGBoostRegression <- function(data,
     
     # Add Number of Trees to Title
     EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
+      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
     
     # Save plot to file
     if (SaveModelObjects) {
@@ -928,7 +868,7 @@ AutoXGBoostRegression <- function(data,
     
     # Add Number of Trees to Title
     EvaluationBoxPlot <- EvaluationBoxPlot + 
-      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3)))
+      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
     
     # Save plot to file
     if (SaveModelObjects) {
@@ -942,14 +882,13 @@ AutoXGBoostRegression <- function(data,
     # Regression Evaluation Metrics----
     EvaluationMetrics <- data.table::data.table(
       Metric = c("MAE","MAPE","MSE","R2"),
-      MetricValue = rep(999999, 8))
-    i <- 0
+      MetricValue = rep(999999, 8L))
+    i <- 0L
     for (metric in c("mae", "mape", "mse", "r2")) {
-      i <- as.integer(i + 1)
+      i <- i + 1L
       tryCatch({
-        # Regression Grid Evaluation Metrics----
         if (tolower(metric) == "poisson") {
-          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0L & min(ValidationData[["Predict"]], na.rm = TRUE) > 0L) {
             ValidationData[, Metric := Predict - get(Target) * log(Predict + 1)]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
@@ -960,24 +899,24 @@ AutoXGBoostRegression <- function(data,
           ValidationData[, Metric := abs((get(Target) - Predict) / (get(Target) + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if (tolower(metric) == "mse") {
-          ValidationData[, Metric := (get(Target) - Predict) ^ 2]
+          ValidationData[, Metric := (get(Target) - Predict) ^ 2L]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if (tolower(metric) == "msle") {
-          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
-            ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1)) ^ 2]
+          if (MinVal > 0L & min(ValidationData[["Predict"]], na.rm = TRUE) > 0L) {
+            ValidationData[, Metric := (log(get(Target) + 1) - log(Predict + 1)) ^ 2L]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "kl") {
-          if (MinVal > 0 & min(ValidationData[["Predict"]], na.rm = TRUE) > 0) {
+          if (MinVal > 0L & min(ValidationData[["Predict"]], na.rm = TRUE) > 0L) {
             ValidationData[, Metric := get(Target) * log((get(Target) + 1) / (Predict + 1))]
             Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
           }
         } else if (tolower(metric) == "cs") {
-          ValidationData[, ':=' (Metric1 = get(Target) * Predict, Metric2 = get(Target) ^ 2, Metric3 = Predict ^ 2)]
+          ValidationData[, ':=' (Metric1 = get(Target) * Predict, Metric2 = get(Target) ^ 2L, Metric3 = Predict ^ 2L)]
           Metric <- ValidationData[, sum(Metric1, na.rm = TRUE)] / (sqrt(ValidationData[, sum(Metric2, na.rm = TRUE)]) *
                                                                       sqrt(ValidationData[, sum(Metric3, na.rm = TRUE)]))
         } else if (tolower(metric) == "r2") {
-          Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1]]) ^ 2
+          Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1L]]) ^ 2L
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = Metric)
       }, error = function(x) "skip")
@@ -999,8 +938,8 @@ AutoXGBoostRegression <- function(data,
       error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
     
     # Variable Importance Formatting----
-    if(VariableImportance[, .N] != 0) {
-      VariableImportance[, ':=' (Gain = round(Gain, 4), Cover = round(Cover, 4), Frequency = round(Frequency, 4))]
+    if(VariableImportance[, .N] != 0L) {
+      VariableImportance[, ':=' (Gain = round(Gain, 4), Cover = round(Cover, 4), Frequency = round(Frequency, 4L))]
       if (SaveModelObjects) {
         if(!is.null(metadata_path)) {
           data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
@@ -1012,9 +951,9 @@ AutoXGBoostRegression <- function(data,
       # Regression Partial Dependence----
       ParDepPlots <- list()
       ParDepBoxPlots <- list()
-      if(NumOfParDepPlots == 0) {
-        j <- 0
-        k <- 0
+      if(NumOfParDepPlots == 0L) {
+        j <- 0L
+        k <- 0L
         for (i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
           
           # Calibration Line Plots----
@@ -1026,9 +965,9 @@ AutoXGBoostRegression <- function(data,
               IndepVar = VariableImportance[i, Feature],
               GraphType = "calibration",
               PercentileBucket = 0.05,
-              FactLevels = 10,
+              FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
-            j <- j + 1
+            j <- j + 1L
             ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out}, 
             error = function(x) "skip")
           
@@ -1040,9 +979,9 @@ AutoXGBoostRegression <- function(data,
             IndepVar = VariableImportance[i, Feature],
             GraphType = "boxplot",
             PercentileBucket = 0.05,
-            FactLevels = 10,
+            FactLevels = 10L,
             Function = function(x) mean(x, na.rm = TRUE))
-            k <- k + 1
+            k <- k + 1L
             ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1}, 
             error = function(x) "skip")
         }
@@ -1085,7 +1024,7 @@ AutoXGBoostRegression <- function(data,
     ValidationData[, ':=' (Metric = NULL)]
     
     # Regression Formal Evaluation Table
-    EvaluationMetrics[, MetricValue := round(MetricValue, 4)]    
+    EvaluationMetrics[, MetricValue := round(MetricValue, 4L)]    
   }
   
   # Subset Transformation Object----
@@ -1099,10 +1038,10 @@ AutoXGBoostRegression <- function(data,
   
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12,AngleX = 0,LegendPosition = "right") +
+      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
@@ -1115,7 +1054,7 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Return Model Objects----
-  if (GridTune == TRUE & TrainOnFull == FALSE) {
+  if (GridTune & !TrainOnFull) {
     if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
         if(ReturnFactorLevels & !is.null(CatFeatures)) {

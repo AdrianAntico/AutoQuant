@@ -269,9 +269,6 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
                          TotalRunTime = TotalRunTime,
                          BanditProbabilities = BanditProbs) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
   # Comparison----
   if(ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun - 1L else BestGrid <- NEWGrid
   
@@ -927,4 +924,122 @@ XGBoostClassifierParams <- function(counter = NULL,
       colsample_bytree      = GridClusters[[paste0("Grid_",NewGrid)]][["ColSampleByTree"]][1L])
   }
   return(base_params)
+}
+
+#' XGBoostRegressionParams
+#'
+#' @author Adrian Antico
+#' @family Supervised Learning 
+#' @param counter Passthrough
+#' @param NThreads = -1L,
+#' @param BanditArmsN Passthrough
+#' @param eval_metric Passthrough
+#' @param task_type Passthrough
+#' @param model_path Passthrough
+#' @param NewGrid Passthrough
+#' @param Grid Passthrough
+#' @param ExperimentalGrid Passthrough
+#' @param GridClusters Passthrough
+#' @noRd
+XGBoostRegressionParams <- function(counter = NULL,
+                                    NThreads = -1L,
+                                    BanditArmsN = NULL,
+                                    eval_metric = NULL,
+                                    task_type = NULL,
+                                    model_path = NULL,
+                                    NewGrid = NULL,
+                                    Grid = NULL,
+                                    ExperimentalGrid = NULL,
+                                    GridClusters = NULL) {
+  
+  # Select Grid
+  if(counter <= BanditArmsN + 1L) {
+    
+    # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
+    # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
+    if(counter == 1L) {
+      base_params <- list(
+        booster               = "gbtree",
+        objective             = 'reg:linear',
+        eval_metric           = tolower(eval_metric),
+        nthread               = NThreads,
+        max_bin               = 64L,
+        early_stopping_rounds = 10L,
+        eval_metric           = eval_metric,
+        task_type             = task_type)
+    } else {
+      if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
+      base_params <- list(
+        booster               = "gbtree",
+        objective             = 'reg:linear',
+        eval_metric           = tolower(eval_metric),
+        nthread               = NThreads,
+        max_bin               = 64L,
+        early_stopping_rounds = 10L,
+        tree_method           = task_type,
+        max_depth             = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
+        eta                   = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
+        subsample             = GridClusters[[paste0("Grid_",counter-1L)]][["SubSample"]][1L],
+        colsample_bytree      = GridClusters[[paste0("Grid_",counter-1L)]][["ColSampleByTree"]][1L])
+    }
+  } else {
+    data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
+    base_params <- list(
+      booster               = "gbtree",
+      objective             = 'reg:linear',
+      eval_metric           = tolower(eval_metric),
+      nthread               = NThreads,
+      max_bin               = 64L,
+      early_stopping_rounds = 10L,
+      tree_method           = task_type,
+      max_depth             = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+      eta                   = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+      subsample             = GridClusters[[paste0("Grid_",NewGrid)]][["SubSample"]][1L],
+      colsample_bytree      = GridClusters[[paste0("Grid_",NewGrid)]][["ColSampleByTree"]][1L])
+  }
+  return(base_params)
+}
+
+#' XGBoostRegressionMetrics
+#'
+#' @author Adrian Antico
+#' @family Supervised Learning 
+#' @param grid_eval_metric Passthrough
+#' @param MinVal = -1L,
+#' @param calibEval Passthrough
+#' @noRd
+XGBoostRegressionMetrics <- function(grid_eval_metric,
+                                     MinVal,
+                                     calibEval) {
+  if (tolower(grid_eval_metric) == "poisson") {
+    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+      calibEval[, Metric := p1 - Target * log(p1 + 1)]
+      Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+    }
+  } else if (tolower(grid_eval_metric) == "mae") {
+    calibEval[, Metric := abs(Target - p1)]
+    Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+  } else if (tolower(grid_eval_metric) == "mape") {
+    calibEval[, Metric := abs((Target - p1) / (Target + 1))]
+    Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+  } else if (tolower(grid_eval_metric) == "mse") {
+    calibEval[, Metric := (Target - p1) ^ 2L]
+    Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+  } else if (tolower(grid_eval_metric) == "msle") {
+    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+      calibEval[, Metric := (log(Target + 1) - log(p1 + 1)) ^ 2L]
+      Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+    }
+  } else if (tolower(grid_eval_metric) == "kl") {
+    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+      calibEval[, Metric := Target * log((Target + 1) / (p1 + 1))]
+      Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
+    }
+  } else if (tolower(grid_eval_metric) == "cs") {
+    calibEval[, ':=' (Metric1 = Target * p1, Metric2 = Target ^ 2L, Metric3 = p1 ^ 2L)]
+    Metric <- calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) * sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
+  } else if (tolower(grid_eval_metric) == "r2") {
+    Metric <- (calibEval[, stats::cor(eval(Target), p1)][[1L]]) ^ 2L
+  }
+  return(Metric)
 }
