@@ -514,9 +514,22 @@ AutoXGBoostClassifier <- function(data,
           base_params <- XGBoostClassifierParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
-        # Build model----
-        print(base_params)
-        RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, verbose=Verbose))
+        # Run model----
+        if(counter <= BanditArmsN + 1L) {
+          if(counter == 1L) {
+            nrounds <- max(Grid$NTrees)
+            print(base_params)
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+          } else {
+            nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
+            print(base_params)
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+          }
+        } else {
+          nrounds <- GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L]
+          print(base_params)
+          RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+        }
         
         # Binary Grid Score Model----
         if (!is.null(TestData)) {

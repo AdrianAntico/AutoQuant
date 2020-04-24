@@ -909,8 +909,7 @@ XGBoostClassifierParams <- function(counter = NULL,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
         eval_metric           = eval_metric,
-        task_type             = task_type,
-        nrounds               = max(Grid$NTrees))
+        task_type             = task_type)
     } else {
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       base_params <- list(
@@ -921,7 +920,6 @@ XGBoostClassifierParams <- function(counter = NULL,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
         tree_method           = task_type,
-        nrounds               = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
         max_depth             = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
         eta                   = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
         subsample             = GridClusters[[paste0("Grid_",counter-1L)]][["SubSample"]][1L],
@@ -937,7 +935,6 @@ XGBoostClassifierParams <- function(counter = NULL,
       max_bin               = 64L,
       early_stopping_rounds = 10L,
       tree_method           = task_type,
-      nrounds               = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
       max_depth             = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
       eta                   = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
       subsample             = GridClusters[[paste0("Grid_",NewGrid)]][["SubSample"]][1L],
