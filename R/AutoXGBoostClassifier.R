@@ -737,27 +737,13 @@ AutoXGBoostClassifier <- function(data,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities)
   
-  # Binary Rbind AUC
-  if (GridTune == TRUE & MaxModelsInGrid <= 15L) {
-    temp <- data.table::rbindlist(AUC_List)
-    AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
-    AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-    
-    # Binary Plot ROC Curve----
-    ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity, group = ModelNumber, color = ModelNumber)) +
-      ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
-      ggplot2::geom_abline(slope = 1, color = "black") +
-      ggplot2::ggtitle(paste0("XGBoost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3L),"%")) +
-      ChartTheme() + ggplot2::xlab("Specificity") +
-      ggplot2::ylab("Sensitivity")
-  } else {
-    ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
-      ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
-      ggplot2::geom_abline(slope = 1L, color = "black") +
-      ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
-      ChartTheme() + ggplot2::xlab("Specificity") +
-      ggplot2::ylab("Sensitivity")
-  }
+  # Binary Rbind AUC----
+  ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
+    ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
+    ggplot2::geom_abline(slope = 1L, color = "black") +
+    ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
+    ChartTheme() + ggplot2::xlab("Specificity") +
+    ggplot2::ylab("Sensitivity")
   
   # Save plot to file----
   if (SaveModelObjects) {
