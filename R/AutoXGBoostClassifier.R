@@ -788,8 +788,8 @@ AutoXGBoostClassifier <- function(data,
   x <- ROCR::prediction(predictions = ValidationData[["p1"]], labels = ValidationData[["Target"]])
   EvaluationMetrics <- data.table::data.table(
     Metric = c("AUC","TruePositiveRate","FalseNegativeRate","FalsePositiveRate","TrueNegativeRate","PreceisionRecallBreakEven","F1_Score","Odds"),
-    MetricValue = rep(999999L, 8L),
-    Threshold   = rep(999999L, 8L))
+    MetricValue = rep(999999, 8L),
+    Threshold   = rep(999999, 8L))
   i <- 0L
   for (metric in c("auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds")) {
     i <- i + 1L

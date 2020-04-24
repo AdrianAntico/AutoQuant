@@ -273,11 +273,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Comparison----
-  if(ModelRun <= BanditArmsCount + 1L) {
-    BestGrid <- ModelRun - 1L
-  } else {
-    BestGrid <- NEWGrid
-  }
+  if(ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun - 1L else BestGrid <- NEWGrid
   
   # Update trial counts----
   if(ModelRun > 1L) TrialVector[BestGrid] <- TrialVector[BestGrid] + 1L
@@ -292,9 +288,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
     }
     
     # Update Bandit Probabilities----
-    if(any(TrialVector < SuccessVector )) {
-      TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
-    }
+    if(any(TrialVector < SuccessVector )) TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
     
     # Create Bandit Probabilities----
     BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
@@ -821,16 +815,6 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
     MinChildWeight = if(!is.null(MinChildWeight)) MinChildWeight else seq(1.0, 10.0, 1.0),
     SubSample = if(!is.null(SubSample)) SubSample else seq(0.55, 1.0, 0.05),
     ColSampleByTree = if(!is.null(ColSampleByTree)) ColSampleByTree else seq(0.55, 1.0, 0.05))
-  
-  # Filter out invalid grids----  
-  if(tolower(TaskType) == "gpu") {
-    data.table::set(Grid, j = "RSM", value = NULL)
-    Grid <- Grid[!BootStrapType %chin% c("MVS")]
-    Grid <- unique(Grid[BootStrapType != "Poisson" & GrowPolicy != "Lossguide"])
-  } else {
-    Grid <- Grid[!tolower(BootStrapType) %chin% c("poisson")]
-    Grid <- unique(Grid[, GrowPolicy := NULL])
-  }
   
   # Total loops----
   N_NTrees <- length(unique(Grid[["NTrees"]]))
