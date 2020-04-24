@@ -517,7 +517,7 @@ AutoXGBoostClassifier <- function(data,
           if(counter == 1L) {
             nrounds <- max(Grid$NTrees)
             print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(verbose=1L,params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
           } else {
             nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
             print(base_params)
@@ -550,7 +550,7 @@ AutoXGBoostClassifier <- function(data,
         NewPerformance <- as.numeric(AUC_Metrics$auc)
         data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
         data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
-        data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
+        data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$niter)
         if(counter == 1L) {
           BestPerformance <- 1L
         } else {
