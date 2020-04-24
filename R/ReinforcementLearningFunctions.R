@@ -417,12 +417,8 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
 
-
-
 #' CatBoostRegressionParams
 #'
-#' CatBoostRegressionParams
-#' 
 #' @author Adrian Antico
 #' @family Supervised Learning 
 #' @param counter Passthrough
@@ -542,8 +538,6 @@ CatBoostRegressionParams <- function(counter = NULL,
 
 #' CatBoostRegressionParams
 #'
-#' CatBoostRegressionParams
-#' 
 #' @author Adrian Antico
 #' @family Supervised Learning 
 #' @param counter Passthrough
@@ -669,8 +663,6 @@ CatBoostClassifierParams <- function(counter = NULL,
 
 #' CatBoostMultiClassParams
 #'
-#' CatBoostMultiClassParams
-#' 
 #' @author Adrian Antico
 #' @family Supervised Learning 
 #' @param counter Passthrough
@@ -792,4 +784,89 @@ CatBoostMultiClassParams <- function(counter = NULL,
     }
   }
   return(base_params)
+}
+
+#' XGBoostParameterGrids 
+#'  
+#' @author Adrian Antico
+#' @family Supervised Learning 
+#' @param TaskType "GPU" or "CPU"
+#' @param Shuffles The number of shuffles you want to apply to each grid
+#' @param NTrees seq(500L, 5000L, 500L)
+#' @param Depth seq(4L, 16L, 2L)
+#' @param LearningRate seq(0.05,0.40,0.05)
+#' @param MinChildWeight seq(1.0, 10.0, 1.0)
+#' @param SubSample seq(0.55, 1.0, 0.05)
+#' @param ColSampleByTree seq(0.55, 1.0, 0.05)
+#' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
+#' @export
+XGBoostParameterGrids <- function(TaskType = "CPU",
+                                  Shuffles = 1L,
+                                  NTrees = seq(500L, 5000L, 500L),
+                                  Depth = seq(4L, 16L, 2L),
+                                  LearningRate = seq(0.05,0.40,0.05),
+                                  MinChildWeight = seq(1.0, 10.0, 1.0),
+                                  SubSample = seq(0.55, 1.0, 0.05),
+                                  ColSampleByTree = seq(0.55, 1.0, 0.05)) {
+  
+  # Create grid sets----
+  Grid <- data.table::CJ(
+    
+    # Basis for creating parsimonous buckets----
+    NTrees = if(!is.null(NTrees)) sort(NTrees, decreasing = FALSE) else seq(500L, 5000L, 500L),
+    Depth = if(!is.null(Depth)) sort(Depth, decreasing = FALSE) else seq(4L, 16L, 2L),
+    LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
+    
+    # Random hyperparameters----
+    MinChildWeight = if(!is.null(MinChildWeight)) MinChildWeight else seq(1.0, 10.0, 1.0),
+    SubSample = if(!is.null(SubSample)) SubSample else seq(0.55, 1.0, 0.05),
+    ColSampleByTree = if(!is.null(ColSampleByTree)) ColSampleByTree else seq(0.55, 1.0, 0.05))
+  
+  # Filter out invalid grids----  
+  if(tolower(TaskType) == "gpu") {
+    data.table::set(Grid, j = "RSM", value = NULL)
+    Grid <- Grid[!BootStrapType %chin% c("MVS")]
+    Grid <- unique(Grid[BootStrapType != "Poisson" & GrowPolicy != "Lossguide"])
+  } else {
+    Grid <- Grid[!tolower(BootStrapType) %chin% c("poisson")]
+    Grid <- unique(Grid[, GrowPolicy := NULL])
+  }
+  
+  # Total loops----
+  N_NTrees <- length(unique(Grid[["NTrees"]]))
+  N_Depth <- length(unique(Grid[["Depth"]]))
+  N_LearningRate <- length(unique(Grid[["LearningRate"]]))
+  Runs <- max(N_NTrees, N_Depth, N_LearningRate)
+  Grids <- list()
+  
+  # Create grid sets----
+  for (i in seq_len(Runs)) {
+    if(i == 1L) {
+      Grids[[paste0("Grid_",i)]] <- Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
+    } else {
+      Grids[[paste0("Grid_",i)]] <- data.table::fsetdiff(
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]],
+        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)]])
+    }
+  }
+  
+  # Define experimental grid----
+  eGrid <- data.table::data.table(
+    GridNumber = rep(-1, 10000L),
+    RunNumber = 1L:10000L,
+    RunTime = rep(-1, 10000L),
+    EvalMetric = rep(-1,10000L),
+    TreesBuilt = rep(-1,10000L),
+    NTrees = rep(-1,10000L),
+    Depth = rep(-1,10000L),
+    LearningRate = rep(-1,10000L),
+    MinChildWeight = rep(-1,10000L),
+    SubSample = rep(-1,10000L),
+    ColSampleByTree = rep("aa", 10000L))
+  
+  # Shuffle grid sets----
+  for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
+  
+  # Return grid----
+  return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }

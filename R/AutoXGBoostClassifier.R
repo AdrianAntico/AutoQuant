@@ -93,30 +93,35 @@ AutoXGBoostClassifier <- function(data,
                                   FeatureColNames = NULL,
                                   IDcols = NULL,
                                   eval_metric = "auc",
-                                  Trees = 50,
                                   GridTune = FALSE,
                                   grid_eval_metric = "auc",
                                   TreeMethod = "hist",
-                                  MaxModelsInGrid = 10,
-                                  NThreads = 8,
+                                  MaxModelsInGrid = 10L,
+                                  NThreads = 8L,
                                   model_path = NULL,
                                   metadata_path = NULL,
                                   ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
-                                  Verbose = 0,
+                                  NumOfParDepPlots = 3L,
+                                  Verbose = 0L,
                                   ReturnModelObjects = TRUE,
                                   ReturnFactorLevels = TRUE,
                                   SaveModelObjects = FALSE,
-                                  PassInGrid = NULL) {
+                                  PassInGrid = NULL,
+                                  Trees = 50L,
+                                  eta = NULL,
+                                  max_depth = NULL,
+                                  min_child_weight = NULL,
+                                  subsample = NULL,
+                                  colsample_bytree = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Binary Check Arguments----
   if (!(tolower(grid_eval_metric) %chin% c("accuracy","auc","tpr","fnr","fpr","tnr","prbe","f","odds","chisq"))) {
     stop("grid_eval_metric not in c('accuracy','auc','tpr','fnr','fpr','tnr','prbe','f','odds','chisq')")
   }
-  if (Trees < 1) stop("Trees must be greater than 1")
+  if (any(Trees < 1)) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1 | MaxModelsInGrid > 1080 & GridTune == TRUE) {
     stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
@@ -182,7 +187,7 @@ AutoXGBoostClassifier <- function(data,
   if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
-      NumDataSets = 3,
+      NumDataSets = 3L,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
       StratifyColumnNames = Target,
@@ -385,7 +390,6 @@ AutoXGBoostClassifier <- function(data,
         }
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
         data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        
         if(!TrainOnFull) {
           dataTest <- temp[ID_Factorizer == "VALIDATE"]
           data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
@@ -396,7 +400,6 @@ AutoXGBoostClassifier <- function(data,
         }
       } else {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        
         if(!TrainOnFull) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
           FactorLevelsList <- temp$FactorLevelsList
@@ -431,7 +434,6 @@ AutoXGBoostClassifier <- function(data,
         temp <- temp$data
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
         data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        
         if(!TrainOnFull) {
           dataTest <- temp[ID_Factorizer == "VALIDATE"]
           data.table::set(dataTest, j = "ID_Factorizer", value = NULL)        
@@ -452,23 +454,17 @@ AutoXGBoostClassifier <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) {
-    data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
-  }
+  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   
   # Binary Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
   if(!TrainOnFull) TestTarget <- tryCatch({ dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
-  if (!is.null(TestData)) {
-    FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
-  }
+  if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
   
   # Binary Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
   if(!TrainOnFull) dataTest[, eval(Target) := NULL]
-  if (!is.null(TestData)) {
-    TestData[, eval(Target) := NULL]
-  }
+  if (!is.null(TestData)) TestData[, eval(Target) := NULL]
   
   # Binary Initialize Catboost Data Conversion----
   datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -483,24 +479,23 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Binary Grid Tune or Not Check----
-  if (GridTune == TRUE & TrainOnFull == FALSE) {
+  if (GridTune & !TrainOnFull) {
     
     # Binary Grid Create data.table To Store Results----
-    GridCollect <- data.table::data.table(ParamRow = 1:(MaxModelsInGrid + 1),EvalStat = rep(9999999, MaxModelsInGrid + 1))
+    GridCollect <- data.table::data.table(ParamRow = 1L:(MaxModelsInGrid + 1L),EvalStat = rep(9999999L, MaxModelsInGrid + 1L))
     
     # Binary Grid Define Hyper Parameters----
     if (!is.null(PassInGrid)) {
-      if (!data.table::is.data.table(PassInGrid)) {
-        PassInGrid <- data.table::as.data.table(PassInGrid)
-      }
+      if (!data.table::is.data.table(PassInGrid)) PassInGrid <- data.table::as.data.table(PassInGrid)
       grid_params <- data.table::CJ(
+        nrounds = Trees,
         eta = c(0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40),
         max_depth = c(4,6,8,10,12,14,16,18,20),
         min_child_weight = c(1,2,3,4,5),
         subsample = c(1,0.95,0.90,0.85,0.80,0.75),
         colsample_bytree = c(1, 0.90, 0.80))
       grid_params[, ID := runif(nrow(grid_params))]
-      grid_params <- grid_params[order(ID)][1:(MaxModelsInGrid)][, ID := NULL]
+      grid_params <- grid_params[order(ID)][1L:(MaxModelsInGrid)][, ID := NULL]
       grid_params <- data.table::rbindlist(list(PassInGrid, grid_params))
     } else {
       grid_params <- data.table::CJ(
@@ -525,12 +520,12 @@ AutoXGBoostClassifier <- function(data,
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
+          max_depth = 6L,
+          min_child_weight = 1L,
           subsample = 1,
-          colsample_bytree = 1,
+          colsample_bytree = 1L,
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
       } else {
         base_params <- list(
@@ -538,34 +533,30 @@ AutoXGBoostClassifier <- function(data,
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
       }
       
       # Binary Grid Merge Model Parameters----
       # Have first model be the baseline model
-      if (i != 1) {
-        base_params <- c(as.list(grid_params[i,]), base_params)
-      }
+      if (i != 1L) base_params <- c(as.list(grid_params[i,]), base_params)
       
       # Binary Grid Train Model----
-      if (Verbose == 0) {
+      if (Verbose == 0L) {
         model <- xgboost::xgb.train(
           params = base_params,
           data = datatrain,
           watchlist = EvalSets,
           nrounds = Trees,
           verbose = Verbose,
-          early_stopping_rounds = 10
-        )
+          early_stopping_rounds = 10L)
       } else {
         model <- xgboost::xgb.train(
           params = base_params,
           data = datatrain,
           watchlist = EvalSets,
           nrounds = Trees,
-          early_stopping_rounds = 10
-        )
+          early_stopping_rounds = 10L)
       }
       
       # Binary Grid Score Model----
@@ -587,92 +578,44 @@ AutoXGBoostClassifier <- function(data,
       
       # Binary Grid Evaluation Metrics for Each Grid----
       if (tolower(grid_eval_metric) == "accuracy") {
-        j <- 0
+        j <- 0L
         x <- data.table::data.table(
           Metric = "Accuracy",
           MetricValue = 5.0,
-          Threshold = seq(0.01, 0.99, 0.001)
-        )
+          Threshold = seq(0.01, 0.99, 0.001))
         for (k in unique(x[["Threshold"]])) {
-          j = as.integer(j + 1)
-          Accuracy <-
-            mean(calibEval[, ifelse(p1 > k &
-                                      Target == 1 |
-                                      p1 < k & Target == 0, 1, 0)])
-          data.table::set(x,
-                          i = j,
-                          j = 2L,
-                          value = round(Accuracy, 4))
+          j <- j + 1L
+          Accuracy <- mean(calibEval[, ifelse(p1 > k & Target == 1L | p1 < k & Target == 0, 1, 0)])
+          data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4L))
         }
-        data.table::setorderv(x,
-                              "MetricValue",
-                              order = -1,
-                              na.last = TRUE)
-        Metric <- x[1, MetricValue]
+        data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
+        Metric <- x[1L, MetricValue]
       } else {
-        x <-
-          ROCR::prediction(predictions = calibEval[["p1"]], labels = calibEval[["Target"]])
-        y <-
-          ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
-        if (any(
-          nrow(data.table::as.data.table(y@y.values)) <= 1 |
-          nrow(data.table::as.data.table(y@x.values)) <= 1
-        )) {
-          if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-              nrow(data.table::as.data.table(y@x.values)) <= 1) {
-            z <-
-              data.table::as.data.table(cbind(
-                Metric = y@y.values,
-                Threshold = y@x.values
-              ))
+        x <- ROCR::prediction(predictions = calibEval[["p1"]], labels = calibEval[["Target"]])
+        y <- ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
+        if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+          if (nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values))
             Metric <- z[[1]]
-          } else if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-                     !(nrow(data.table::as.data.table(y@x.values) <= 1))) {
-            z <-
-              data.table::as.data.table(cbind(
-                Metric = y@y.values,
-                Threshold = y@x.values[[1]]
-              ))
-            Metric <- z[!is.infinite(Threshold)][[1]]
-          } else if (!(nrow(data.table::as.data.table(y@y.values)) <= 1) &
-                     nrow(data.table::as.data.table(y@x.values) <= 1)) {
+          } else if (nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1L]]))
+            Metric <- z[!is.infinite(Threshold)][[1L]]
+          } else if (!(nrow(data.table::as.data.table(y@y.values)) <= 1) & nrow(data.table::as.data.table(y@x.values) <= 1L)) {
             if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-              z <-
-                data.table::as.data.table(cbind(
-                  Metric = y@y.values[[1]],
-                  Threshold = y@x.values
-                ))
-              Metric <-
-                z[order(-Metric)][!is.infinite(Metric)][[1]]
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+              Metric <- z[order(-Metric)][!is.infinite(Metric)][[1L]]
             } else {
-              z <-
-                data.table::as.data.table(cbind(
-                  Metric = y@y.values[[1]],
-                  Threshold = y@x.values
-                ))
-              Metric <-
-                z[order(Metric)][!is.infinite(Metric)][[1]]
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+              Metric <- z[order(Metric)][!is.infinite(Metric)][[1L]]
             }
           }
         } else {
           if (grid_eval_metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-            z <-
-              data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values[[1]]
-              ))
-            Metric <-
-              z[order(-Metric)][!is.infinite(Threshold) &
-                                  !is.infinite(Metric)][1, ]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
           } else {
-            z <-
-              data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values[[1]]
-              ))
-            Metric <-
-              z[order(Metric)][!is.infinite(Threshold) &
-                                 !is.infinite(Metric)][1, ]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
           }
         }
       }
@@ -682,7 +625,7 @@ AutoXGBoostClassifier <- function(data,
         response = calibEval[["Target"]],
         predictor = calibEval[["p1"]],
         na.rm = TRUE,
-        algorithm = 3,
+        algorithm = 3L,
         auc = TRUE,
         ci = TRUE)
       
@@ -690,39 +633,19 @@ AutoXGBoostClassifier <- function(data,
       AUC_List[[i]] <- data.table::data.table(
         ModelNumber = i,
         Sensitivity = as.numeric(AUC_Metrics$sensitivities + 0.0001),
-        Specificity = as.numeric(AUC_Metrics$specificities + 0.0001)
-      )
+        Specificity = as.numeric(AUC_Metrics$specificities + 0.0001))
       
-      # Collect Metrics and Corresponding Grids
+      # Collect Metrics and Corresponding Grids----
       # Store Output Information
       if (tolower(grid_eval_metric) == "accuracy") {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric)
-      } else if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
-                     nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric)
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric)
+      } else if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric)
       } else {
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 1L,
-                        value = i)
-        data.table::set(GridCollect,
-                        i = i,
-                        j = 2L,
-                        value = Metric[, 1])
+        data.table::set(GridCollect, i = i, j = 1L, value = i)
+        data.table::set(GridCollect, i = i, j = 2L, value = Metric[, 1L])
       }
       gc()
     }
@@ -732,18 +655,18 @@ AutoXGBoostClassifier <- function(data,
   if (GridTune == TRUE & TrainOnFull == FALSE) {
     if (eval_metric %chin% c("accuracy", "auc", "tpr", "prbe", "f", "odds")) {
       BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
-      if (BestGrid == 1) {
+      if (BestGrid == 1L) {
         base_params <- list(
           booster = "gbtree",
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
-          subsample = 1,
-          colsample_bytree = 1,
+          max_depth = 6L,
+          min_child_weight = 1L,
+          subsample = 1L,
+          colsample_bytree = 1L,
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         
       } else {
@@ -752,7 +675,7 @@ AutoXGBoostClassifier <- function(data,
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
@@ -765,12 +688,12 @@ AutoXGBoostClassifier <- function(data,
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           eta = 0.30,
-          max_depth = 6,
-          min_child_weight = 1,
-          subsample = 1,
-          colsample_bytree = 1,
+          max_depth = 6L,
+          min_child_weight = 1L,
+          subsample = 1L,
+          colsample_bytree = 1L,
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
       } else {
         base_params <- list(
@@ -778,7 +701,7 @@ AutoXGBoostClassifier <- function(data,
           objective = 'reg:logistic',
           eval_metric = tolower(eval_metric),
           nthread = NThreads,
-          max_bin = 64,
+          max_bin = 64L,
           tree_method = TreeMethod)
         base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
       }
@@ -789,7 +712,7 @@ AutoXGBoostClassifier <- function(data,
       objective = 'reg:logistic',
       eval_metric = tolower(eval_metric),
       nthread = NThreads,
-      max_bin = 64,
+      max_bin = 64L,
       tree_method = TreeMethod)
     if (!is.null(PassInGrid)) {
       base_params <- c(base_params, as.list(PassInGrid[1,]))
@@ -797,21 +720,21 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Binary Train Final Model----
-  if (Verbose == 0) {
+  if (Verbose == 0L) {
     model <- xgboost::xgb.train(
       params = base_params,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
       verbose = Verbose,
-      early_stopping_rounds = 10)
+      early_stopping_rounds = 10L)
   } else {
     model <- xgboost::xgb.train(
       params = base_params,
       data = datatrain,
       watchlist = EvalSets,
       nrounds = Trees,
-      early_stopping_rounds = 10)
+      early_stopping_rounds = 10L)
   }
   
   # Binary Save Model----
@@ -846,35 +769,33 @@ AutoXGBoostClassifier <- function(data,
     response = ValidationData[["Target"]],
     predictor = ValidationData[["p1"]],
     na.rm = TRUE,
-    algorithm = 3,
+    algorithm = 3L,
     auc = TRUE,
     ci = TRUE)
   
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
-    ModelNumber = 0,
+    ModelNumber = 0L,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities)
   
   # Binary Rbind AUC
-  if (GridTune == TRUE & MaxModelsInGrid <= 15) {
+  if (GridTune == TRUE & MaxModelsInGrid <= 15L) {
     temp <- data.table::rbindlist(AUC_List)
     AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
     AUC_Data[, ModelNumber := as.factor(ModelNumber)]
     
     # Binary Plot ROC Curve----
-    ROC_Plot <-
-      ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity, group = ModelNumber, color = ModelNumber)) +
+    ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity, group = ModelNumber, color = ModelNumber)) +
       ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
       ggplot2::geom_abline(slope = 1, color = "black") +
-      ggplot2::ggtitle(paste0("XGBoost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3),"%")) +
+      ggplot2::ggtitle(paste0("XGBoost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3L),"%")) +
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
-    
   } else {
     ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
       ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
-      ggplot2::geom_abline(slope = 1, color = "black") +
+      ggplot2::geom_abline(slope = 1L, color = "black") +
       ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
       ChartTheme() + ggplot2::xlab("Specificity") +
       ggplot2::ylab("Sensitivity")
@@ -913,77 +834,64 @@ AutoXGBoostClassifier <- function(data,
   # Evaluation Metrics at Optimial Threshold----
   x <- ROCR::prediction(predictions = ValidationData[["p1"]], labels = ValidationData[["Target"]])
   EvaluationMetrics <- data.table::data.table(
-    Metric = c(
-      "AUC",
-      "TruePositiveRate",
-      "FalseNegativeRate",
-      "FalsePositiveRate",
-      "TrueNegativeRate",
-      "PreceisionRecallBreakEven",
-      "F1_Score",
-      "Odds"),
-    MetricValue = rep(999999, 8),
-    Threshold   = rep(999999, 8))
-  i <- 0
+    Metric = c("AUC","TruePositiveRate","FalseNegativeRate","FalsePositiveRate","TrueNegativeRate","PreceisionRecallBreakEven","F1_Score","Odds"),
+    MetricValue = rep(999999L, 8L),
+    Threshold   = rep(999999L, 8L))
+  i <- 0L
   for (metric in c("auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds")) {
-    i <- as.integer(i + 1)
+    i <- i + 1L
     tryCatch({
       y <- ROCR::performance(prediction.obj = x, measure = metric)
-      if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
-              nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-        if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-            nrow(data.table::as.data.table(y@x.values)) <= 1) {
+      if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+        if (nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L) {
           z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values))
-          Metric <- z[[1]]
-        } else if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-                   !(nrow(data.table::as.data.table(y@x.values) <= 1))) {
-          z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1]]))
-          Metric <- z[!is.infinite(Threshold)][[1]]
-        } else if (!(nrow(data.table::as.data.table(y@y.values)) <= 1) &
-                   nrow(data.table::as.data.table(y@x.values) <= 1)) {
+          Metric <- z[[1L]]
+        } else if (nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
+          z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1L]]))
+          Metric <- z[!is.infinite(Threshold)][[1L]]
+        } else if (!(nrow(data.table::as.data.table(y@y.values)) <= 1L) & nrow(data.table::as.data.table(y@x.values) <= 1L)) {
           if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]], Threshold = y@x.values))
-            Metric <- z[order(-Metric)][!is.infinite(Metric)][[1]]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+            Metric <- z[order(-Metric)][!is.infinite(Metric)][[1L]]
           } else {
-            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]], Threshold = y@x.values))
-            Metric <- z[order(Metric)][!is.infinite(Metric)][[1]]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+            Metric <- z[order(Metric)][!is.infinite(Metric)][[1L]]
           }
         }
       } else {
         if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-          z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]], Threshold = y@x.values[[1]]))
-          Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1, ]
+          z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+          Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
         } else {
-          z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]], Threshold = y@x.values[[1]]))
-          Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1, ]
+          z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+          Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L, ]
         }
       }
       
       # Store Output Information
-      if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 | nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric[[1]], 4))
+      if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric[[1L]], 4L))
         data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
       } else {
-        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric[[1]], 4))
-        data.table::set(EvaluationMetrics, i = i, j = 3L, value = Metric[[2]])
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric[[1L]], 4L))
+        data.table::set(EvaluationMetrics, i = i, j = 3L, value = Metric[[2L]])
       }
     }, error = function(x) "skip")
   }
   
   # Binary Accuracy Threshold and Metric----
-  j <- 0
+  j <- 0L
   x <- data.table(Metric = "Accuracy", MetricValue = 5.0, Threshold = seq(0.01, 0.99, 0.001))
   for (i in unique(x[["Threshold"]])) {
-    j = as.integer(j + 1)
+    j <- j + 1L
     Accuracy <- mean(ValidationData[, ifelse(p1 > i & Target == 1 | p1 < i & Target == 0, 1, 0)])
-    data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4))
+    data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4L))
   }
-  data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-  x <- x[1, ]
-  EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics, x))
+  data.table::setorderv(x, "MetricValue", order = -1L, na.last = TRUE)
+  EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics, x[1L, ]))
   
   # Save EvaluationMetrics to File
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
@@ -993,14 +901,9 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Binary Variable Importance----
-  VariableImportance <- tryCatch({
-    data.table::as.data.table(xgboost::xgb.importance(model = model))}, 
-    error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
-  if(VariableImportance[, .N] != 0) {
-    VariableImportance[, ':=' (
-      Gain = round(Gain, 4),
-      Cover = round(Cover, 4),
-      Frequency = round(Frequency, 4))]
+  VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model))}, error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
+  if(VariableImportance[, .N] != 0L) {
+    VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
@@ -1011,9 +914,9 @@ AutoXGBoostClassifier <- function(data,
     
     # Binary Partial Dependence----
     ParDepPlots <- list()
-    j <- 0
+    j <- 0L
     ParDepBoxPlots <- list()
-    k <- 0
+    k <- 0L
     for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
       tryCatch({
         Out <- ParDepCalPlots(
@@ -1023,9 +926,9 @@ AutoXGBoostClassifier <- function(data,
           IndepVar = VariableImportance[i, Feature],
           GraphType = "calibration",
           PercentileBucket = 0.05,
-          FactLevels = 10,
+          FactLevels = 10L,
           Function = function(x) mean(x, na.rm = TRUE))
-        j <- j + 1
+        j <- j + 1L
         ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
       }, error = function(x) "skip")
     }  
@@ -1053,10 +956,10 @@ AutoXGBoostClassifier <- function(data,
   
   # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-      ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
@@ -1067,15 +970,13 @@ AutoXGBoostClassifier <- function(data,
   VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
   
   # Binary Return Model Objects----
-  if(!exists("FactorLevelsList")) {
-    FactorLevelsList <- NULL
-  }
+  if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
   
   # Return objects----
   if (GridTune) {
     if (ReturnModelObjects) {
       GridMetrics <- cbind(grid_params,GridCollect)
-      data.table::setorderv(GridMetrics, cols = "EvalStat", order = -1, na.last = TRUE)
+      data.table::setorderv(GridMetrics, cols = "EvalStat", order = -1L, na.last = TRUE)
       return(list(Model = model,
                   ValidationData = ValidationData,
                   ROC_Plot = ROC_Plot,
