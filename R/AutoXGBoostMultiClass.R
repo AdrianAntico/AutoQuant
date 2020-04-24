@@ -65,7 +65,7 @@
 #'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' 
 #' # Run function
-#' TestModel <- AutoXGBoostClassifier(
+#' TestModel <- AutoXGBoostMultiClass(
 #' 
 #'     # GPU or CPU
 #'     TreeMethod = "hist",
@@ -152,7 +152,6 @@ AutoXGBoostMultiClass <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # MultiClass Check Arguments----
-  if (!(tolower(grid_eval_metric) %chin% c("accuracy"))) stop("grid_eval_metric not accuracy")
   if (Trees < 1L) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1L & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")

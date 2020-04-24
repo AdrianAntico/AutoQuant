@@ -118,7 +118,7 @@ data[, Adrian := as.factor(
                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 
 # Run function
-TestModel <- AutoXGBoostClassifier(
+TestModel <- AutoXGBoostMultiClass(
 
     # GPU or CPU
     TreeMethod = "hist",
