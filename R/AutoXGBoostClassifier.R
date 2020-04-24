@@ -11,8 +11,6 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
-#' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param model_path A character string of your path file to where you want your output saved
@@ -23,6 +21,13 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param ReturnFactorLevels TRUE or FALSE. Set to FALSE to not return factor levels.
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param GridTune Set to TRUE to run a grid tuning procedure
+#' @param Trees Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
+#' @param eta Bandit grid partioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
+#' @param max_depth Bandit gartioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
+#' @param min_child_weight Bandit gartioned. Number, or vector for min_child_weight to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
+#' @param subsample = NULL,
+#' @param colsample_bytree = NULL
 #' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
 #' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param MaxRunsWithoutNewWinner A number
@@ -89,7 +94,7 @@
 #'   
 #'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
 #'     PassInGrid = NULL,
-#'     GridTune = FALSE,
+#'     GridTune = TRUE,
 #'     BaselineComparison = "default",
 #'     MaxModelsInGrid = 10L,
 #'     MaxRunsWithoutNewWinner = 20L,

@@ -27,62 +27,86 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
+#' @param MaxRunsWithoutNewWinner A number
+#' @param MaxRunMinutes In minutes
+#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
+#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @examples
 #' \donttest{
+#' # Create some dummy correlated data with numeric and categorical features
+#' 
+#' # Alter correlation value for the simulated data
 #' Correl <- 0.85
-#' N <- 10000
-#' data <- data.table::data.table(Target = runif(N))
-#' data[, x1 := qnorm(Target)]
+#' 
+#' # Number of rows you want to use
+#' N <- 25000L 
+#' 
+#' data <- data.table::data.table(Adrian = runif(N))
+#' data[, x1 := qnorm(Adrian)]
 #' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                 sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                              sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 #' data[, Independent_Variable11 := as.factor(
-#'   ifelse(Independent_Variable2 < 0.20, "A",
-#'          ifelse(Independent_Variable2 < 0.40, "B",
-#'                 ifelse(Independent_Variable2 < 0.6,  "C",
-#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-#' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' TestModel <- AutoXGBoostRegression(data,
-#'                                    TrainOnFull = FALSE,
-#'                                    ValidationData = NULL,
-#'                                    TestData = NULL,
-#'                                    TargetColumnName = 1,
-#'                                    FeatureColNames = 2:12,
-#'                                    IDcols = NULL,
-#'                                    ReturnFactorLevels = FALSE,
-#'                                    TransformNumericColumns = NULL,
-#'                                    eval_metric = "RMSE",
-#'                                    Trees = 50,
-#'                                    GridTune = TRUE,
-#'                                    grid_eval_metric = "mae",
-#'                                    MaxModelsInGrid = 10,
-#'                                    NThreads = max(1, parallel::detectCores()-2),
-#'                                    TreeMethod = "hist",
-#'                                    model_path = NULL,
-#'                                    metadata_path = NULL,
-#'                                    ModelID = "FirstModel",
-#'                                    NumOfParDepPlots = 3,
-#'                                    ReturnModelObjects = TRUE,
-#'                                    SaveModelObjects = FALSE,
-#'                                    PassInGrid = NULL)
+#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
+#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
+#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' 
+#' # Run function
+#' TestModel <- AutoXGBoostRegression(
+#' 
+#'     # GPU or CPU
+#'     TreeMethod = "hist",
+#'     NThreads = 8L,
+#'   
+#'     # Metadata arguments
+#'     model_path = getwd(),
+#'     metadata_path = file.path(getwd(),"R_Model_Testing"),
+#'     ModelID = "Test_Model_1",
+#'     ReturnFactorLevels = TRUE,
+#'     ReturnModelObjects = TRUE,
+#'     SaveModelObjects = FALSE,   
+#'   
+#'     # Data arguments
+#'     data = data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     IDcols = c("x1","x2"),
+#'   
+#'     # Model evaluation
+#'     eval_metric = "rmse",
+#'     NumOfParDepPlots = 3L,
+#'   
+#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
+#'     PassInGrid = NULL,
+#'     GridTune = TRUE,
+#'     BaselineComparison = "default",
+#'     MaxModelsInGrid = 10L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 24L*60L,
+#'     Verbose = 1L,
+#'   
+#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
+#'     # Must set Trees to a single value if you are not grid tuning
+#'     # The ones below can be set to NULL and the values in the example will be used 
+#'     Shuffles = 1L,
+#'     Trees = seq(50L, 500L, 50L),
+#'     eta = seq(0.05,0.40,0.05),
+#'     max_depth = seq(4L, 16L, 2L),
+#'     min_child_weight = seq(1.0, 10.0, 1.0),
+#'     subsample = seq(0.55, 1.0, 0.05),
+#'     colsample_bytree = seq(0.55, 1.0, 0.05))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
 #' @export
@@ -93,23 +117,30 @@ AutoXGBoostRegression <- function(data,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
                                   IDcols = NULL,
-                                  ReturnFactorLevels = FALSE,
-                                  TransformNumericColumns = NULL,
-                                  eval_metric = "RMSE",
-                                  Trees = 50,
-                                  GridTune = FALSE,
-                                  grid_eval_metric = "mae",
-                                  TreeMethod = "hist",
-                                  MaxModelsInGrid = 10,
-                                  NThreads = max(1, parallel::detectCores()-2),
                                   model_path = NULL,
                                   metadata_path = NULL,
                                   ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
-                                  Verbose = 0,
+                                  ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
-                                  PassInGrid = NULL) {
+                                  Verbose = 0L,
+                                  NumOfParDepPlots = 3L,
+                                  NThreads = 8L,
+                                  eval_metric = "rmse",
+                                  TreeMethod = "hist",
+                                  GridTune = FALSE,
+                                  BaselineComparison = "default",
+                                  MaxModelsInGrid = 10L,
+                                  MaxRunsWithoutNewWinner = 20L,
+                                  MaxRunMinutes = 24L*60L,
+                                  PassInGrid = NULL,
+                                  Shuffles = 1L,
+                                  Trees = 50L,
+                                  eta = NULL,
+                                  max_depth = NULL,
+                                  min_child_weight = NULL,
+                                  subsample = NULL,
+                                  colsample_bytree = NULL) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
@@ -669,90 +700,79 @@ AutoXGBoostRegression <- function(data,
     gc()
   }
   
-  # Regression Define Final Model Parameters----
-  if (GridTune == TRUE & TrainOnFull == FALSE) {
-    if (grid_eval_metric %chin% c("kl", "cs", "r2")) {
-      BestGrid <- GridCollect[order(-EvalStat)][1, ParamRow]
-      if (BestGrid == 1L) {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          eta = 0.30,
-          max_depth = 6L,
-          min_child_weight = 1L,
-          subsample = 1L,
-          colsample_bytree = 1L,
-          nthread = NThreads,
-          max_bin = 64L,
-          tree_method = TreeMethod)
-        
-      } else {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          nthread = NThreads,
-          max_bin = 64L,
-          tree_method = TreeMethod)
-        base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
-      }
-    } else {
-      BestGrid <- GridCollect[order(EvalStat)][1L, ParamRow]
-      if (BestGrid == 1L) {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          eta = 0.30,
-          max_depth = 6L,
-          min_child_weight = 1L,
-          subsample = 1L,
-          colsample_bytree = 1L,
-          nthread = NThreads,
-          max_bin = 64L,
-          tree_method = TreeMethod)
-        
-      } else {
-        base_params <- list(
-          booster = "gbtree",
-          objective = 'reg:linear',
-          eval_metric = tolower(eval_metric),
-          nthread = NThreads,
-          max_bin = 64L,
-          tree_method = TreeMethod)
-        base_params <- c(as.list(grid_params[BestGrid, ]), base_params)
-      }
-    }
-  } else {
+  # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
+  if (!is.null(PassInGrid)) {
     base_params <- list(
-      booster = "gbtree",
-      objective = 'reg:linear',
-      eval_metric = tolower(eval_metric),
-      nthread = NThreads,
-      max_bin = 64L,
-      tree_method = TreeMethod)
-    if (!is.null(PassInGrid)) {
-      base_params <- c(base_params, as.list(PassInGrid[1L,]))
+      booster               = "gbtree",
+      objective             = 'reg:linear',
+      eval_metric           = tolower(eval_metric),
+      nthread               = NThreads,
+      max_bin               = 64L,
+      early_stopping_rounds = 10L,
+      tree_method           = task_type,
+      max_depth             = PassInGrid[["Depth"]],
+      eta                   = PassInGrid[["LearningRate"]],
+      subsample             = PassInGrid[["SubSample"]],
+      colsample_bytree      = PassInGrid[["ColSampleByTree"]])
+    
+    # Binary Train Final Model----
+    model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=PassInGrid[["NTrees"]])
+  }
+  
+  # Define parameters for case where you want to run grid tuning----
+  if (GridTune & !TrainOnFull) {
+    
+    # Prepare winning grid----
+    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    
+    # Set parameters from winning grid----
+    if (BestGrid$RunNumber == 1L) {
+      base_params <- list(
+        booster               = "gbtree",
+        objective             = 'reg:linear',
+        eval_metric           = tolower(eval_metric),
+        nthread               = NThreads,
+        max_bin               = 64L,
+        early_stopping_rounds = 10L,
+        eval_metric           = eval_metric,
+        tree_method           = TreeMethod)
+      
+      # Binary Train Final Model----
+      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = max(ExperimentalGrid$NTrees), Verbose = Verbose)
+      
+    } else {
+      base_params <- list(
+        booster               = "gbtree",
+        objective             = 'reg:linear',
+        eval_metric           = tolower(eval_metric),
+        nthread               = NThreads,
+        max_bin               = 64L,
+        early_stopping_rounds = 10L,
+        tree_method           = TreeMethod,
+        max_depth             = BestGrid[["Depth"]],
+        eta                   = BestGrid[["LearningRate"]],
+        subsample             = BestGrid[["SubSample"]],
+        colsample_bytree      = BestGrid[["ColSampleByTree"]])
+      
+      # Binary Train Final Model----
+      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = BestGrid[["NTrees"]], verbose = Verbose)
     }
   }
   
-  # Regression Train Final Model----
-  if (Verbose == 0L) {
-    model <- xgboost::xgb.train(
-      params = base_params,
-      data = datatrain,
-      watchlist = EvalSets,
-      nrounds = Trees,
-      verbose = Verbose,
-      early_stopping_rounds = 50L)
-  } else {
-    model <- xgboost::xgb.train(
-      params = base_params,
-      data = datatrain,
-      watchlist = EvalSets,
-      nrounds = Trees,
-      early_stopping_rounds = 50L)
+  # Define parameters Not pass in GridMetric and not grid tuning----
+  if(is.null(PassInGrid) & !GridTune) {
+    base_params <- list(
+      booster               = "gbtree",
+      objective             = 'reg:linear',
+      eval_metric           = tolower(eval_metric),
+      nthread               = NThreads,
+      max_bin               = 64L,
+      tree_method           = TreeMethod,
+      verbose               = Verbose,
+      early_stopping_rounds = 10L)
+    
+    # Binary Train Final Model----
+    model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=Trees)
   }
   
   # Regression Save Model----
@@ -767,7 +787,7 @@ AutoXGBoostRegression <- function(data,
   # Regression Grid Score Model----
   if (!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
-  } else if(!is.null(ValidationData) & TrainOnFull == FALSE) {
+  } else if(!is.null(ValidationData) & !TrainOnFull) {
     predict <- stats::predict(model, datavalidate)
   } else {
     predict <- stats::predict(model, datatrain)
@@ -776,7 +796,7 @@ AutoXGBoostRegression <- function(data,
   # Regression Validation Data----
   if (!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestMerge, Predict = predict))
-  } else if(!is.null(ValidationData) & TrainOnFull == FALSE) {
+  } else if(!is.null(ValidationData) & !TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, ValidMerge, Predict = predict))
     data.table::setnames(ValidationData, "Target", eval(TargetColumnName))
   } else {
@@ -845,8 +865,7 @@ AutoXGBoostRegression <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Add Number of Trees to Title
-    EvaluationPlot <- EvaluationPlot +
-      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
+    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
     
     # Save plot to file
     if (SaveModelObjects) {
@@ -867,8 +886,7 @@ AutoXGBoostRegression <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Add Number of Trees to Title
-    EvaluationBoxPlot <- EvaluationBoxPlot + 
-      ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
+    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
     
     # Save plot to file
     if (SaveModelObjects) {
@@ -880,9 +898,7 @@ AutoXGBoostRegression <- function(data,
     }
     
     # Regression Evaluation Metrics----
-    EvaluationMetrics <- data.table::data.table(
-      Metric = c("MAE","MAPE","MSE","R2"),
-      MetricValue = rep(999999, 8L))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
     for (metric in c("mae", "mape", "mse", "r2")) {
       i <- i + 1L
@@ -968,8 +984,8 @@ AutoXGBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out}, 
-            error = function(x) "skip")
+            ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+            }, error = function(x) "skip")
           
           # Calibration Box Plots----
           tryCatch({Out1 <- ParDepCalPlots(
@@ -982,8 +998,8 @@ AutoXGBoostRegression <- function(data,
             FactLevels = 10L,
             Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1}, 
-            error = function(x) "skip")
+            ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
+            }, error = function(x) "skip")
         }
       }
     } else {
@@ -1010,13 +1026,11 @@ AutoXGBoostRegression <- function(data,
     }
     
     # Regression Save GridCollect and GridList----
-    if (SaveModelObjects & GridTune == TRUE) {
+    if (SaveModelObjects & GridTune) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(grid_params, file = file.path(metadata_path, paste0(ModelID,"_grid_params.csv")))
-        data.table::fwrite(GridCollect, file = file.path(metadata_path, paste0(ModelID,"_GridCollect.csv")))
+        data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID,"ExperimentalGrid.csv")))
       } else {
-        data.table::fwrite(grid_params, file = file.path(model_path, paste0(ModelID,"_grid_params.csv")))
-        data.table::fwrite(GridCollect, file = file.path(model_path, paste0(ModelID,"_GridCollect.csv")))
+        data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID,"ExperimentalGrid.csv")))
       }
     }
     
@@ -1049,73 +1063,31 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Regression Return Model Objects----
-  if(!exists("FactorLevelsList")) {
-    FactorLevelsList <- NULL
-  }
+  if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
   
   # Regression Return Model Objects----
   if (GridTune & !TrainOnFull) {
     if (!is.null(TransformNumericColumns)) {
       if (ReturnModelObjects) {
         if(ReturnFactorLevels & !is.null(CatFeatures)) {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      EvaluationPlot = EvaluationPlot,
-                      EvaluationBoxPlot = EvaluationBoxPlot,
-                      EvaluationMetrics = EvaluationMetrics,
-                      VariableImportance = VariableImportance,
-                      VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                      PartialDependencePlots = ParDepPlots,
-                      PartialDependenceBoxPlots = ParDepBoxPlots,
-                      GridList = grid_params,
-                      GridMetrics = GridCollect,
-                      ColNames = Names,
-                      TransformationResults = TransformationResults,
-                      FactorLevelsList = FactorLevelsList))
+          return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
+                      VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots,
+                      GridMetrics = ExperimentalGrid, ColNames = Names, TransformationResults = TransformationResults, FactorLevelsList = FactorLevelsList))
         } else {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      EvaluationPlot = EvaluationPlot,
-                      EvaluationBoxPlot = EvaluationBoxPlot,
-                      EvaluationMetrics = EvaluationMetrics,
-                      VariableImportance = VariableImportance,
-                      VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                      PartialDependencePlots = ParDepPlots,
-                      PartialDependenceBoxPlots = ParDepBoxPlots,
-                      GridList = grid_params,
-                      GridMetrics = GridCollect,
-                      ColNames = Names,
-                      TransformationResults = TransformationResults))
+          return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
+                      VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots,
+                      GridMetrics = ExperimentalGrid, ColNames = Names, TransformationResults = TransformationResults))
         }
       }
     } else {
       if(ReturnFactorLevels & !is.null(CatFeatures)) {
-        return(list(Model = model,
-                    ValidationData = ValidationData,
-                    EvaluationPlot = EvaluationPlot,
-                    EvaluationBoxPlot = EvaluationBoxPlot,
-                    EvaluationMetrics = EvaluationMetrics,
-                    VariableImportance = VariableImportance,
-                    VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                    PartialDependencePlots = ParDepPlots,
-                    PartialDependenceBoxPlots = ParDepBoxPlots,
-                    GridList = grid_params,
-                    GridMetrics = GridCollect,
-                    ColNames = Names,
-                    FactorLevelsList = FactorLevelsList))
+        return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
+                    VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots,
+                    GridList = grid_params, GridMetrics = GridCollect, ColNames = Names, FactorLevelsList = FactorLevelsList))
       } else {
-        return(list(Model = model,
-                    ValidationData = ValidationData,
-                    EvaluationPlot = EvaluationPlot,
-                    EvaluationBoxPlot = EvaluationBoxPlot,
-                    EvaluationMetrics = EvaluationMetrics,
-                    VariableImportance = VariableImportance,
-                    VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                    PartialDependencePlots = ParDepPlots,
-                    PartialDependenceBoxPlots = ParDepBoxPlots,
-                    GridList = grid_params,
-                    GridMetrics = GridCollect,
-                    ColNames = Names))        
+        return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
+                    VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, 
+                    PartialDependenceBoxPlots = ParDepBoxPlots, GridList = grid_params, GridMetrics = GridCollect, ColNames = Names))        
       }
     }
   } else {
@@ -1123,56 +1095,24 @@ AutoXGBoostRegression <- function(data,
       if (!is.null(TransformNumericColumns)) {
         if (ReturnModelObjects) {
           if(ReturnFactorLevels & !is.null(CatFeatures)) {
-            return(list(Model = model,
-                        ValidationData = ValidationData,
-                        EvaluationPlot = EvaluationPlot,
-                        EvaluationBoxPlot = EvaluationBoxPlot,
-                        EvaluationMetrics = EvaluationMetrics,
-                        VariableImportance = VariableImportance,
-                        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                        PartialDependencePlots = ParDepPlots,
-                        PartialDependenceBoxPlots = ParDepBoxPlots,
-                        ColNames = Names,
-                        TransformationResults = TransformationResults,
-                        FactorLevelsList = FactorLevelsList))
+            return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot,EvaluationMetrics = EvaluationMetrics, 
+                        VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, 
+                        PartialDependenceBoxPlots = ParDepBoxPlots, ColNames = Names, TransformationResults = TransformationResults, FactorLevelsList = FactorLevelsList))
           } else {
-            return(list(Model = model,
-                        ValidationData = ValidationData,
-                        EvaluationPlot = EvaluationPlot,
-                        EvaluationBoxPlot = EvaluationBoxPlot,
-                        EvaluationMetrics = EvaluationMetrics,
-                        VariableImportance = VariableImportance,
-                        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                        PartialDependencePlots = ParDepPlots,
-                        PartialDependenceBoxPlots = ParDepBoxPlots,
-                        ColNames = Names,
-                        TransformationResults = TransformationResults))
+            return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot,
+                        EvaluationMetrics = EvaluationMetrics, VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                        PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots, ColNames = Names, TransformationResults = TransformationResults))
           }
         }
       } else {
         if(ReturnFactorLevels & !is.null(CatFeatures)) {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      EvaluationPlot = EvaluationPlot,
-                      EvaluationBoxPlot = EvaluationBoxPlot,
-                      EvaluationMetrics = EvaluationMetrics,
-                      VariableImportance = VariableImportance,
-                      VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                      PartialDependencePlots = ParDepPlots,
-                      PartialDependenceBoxPlots = ParDepBoxPlots,
-                      ColNames = Names,
-                      FactorLevelsList = FactorLevelsList))
+          return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot,
+                      EvaluationMetrics = EvaluationMetrics, VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                      PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots, ColNames = Names, FactorLevelsList = FactorLevelsList))
         } else {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      EvaluationPlot = EvaluationPlot,
-                      EvaluationBoxPlot = EvaluationBoxPlot,
-                      EvaluationMetrics = EvaluationMetrics,
-                      VariableImportance = VariableImportance,
-                      VI_Plot = VI_Plot(VI_Data = VariableImportance),
-                      PartialDependencePlots = ParDepPlots,
-                      PartialDependenceBoxPlots = ParDepBoxPlots,
-                      ColNames = Names))
+          return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot,
+                      EvaluationMetrics = EvaluationMetrics, VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance),
+                      PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots, ColNames = Names))
             
         }
       }      
@@ -1180,28 +1120,16 @@ AutoXGBoostRegression <- function(data,
       if (!is.null(TransformNumericColumns)) {
         if (ReturnModelObjects) {
           if(ReturnFactorLevels & !is.null(CatFeatures)) {
-            return(list(Model = model,
-                        ValidationData = ValidationData,
-                        ColNames = Names,
-                        TransformationResults = TransformationResults,
-                        FactorLevelsList = FactorLevelsList))
+            return(list(Model = model, ValidationData = ValidationData, ColNames = Names, TransformationResults = TransformationResults, FactorLevelsList = FactorLevelsList))
           } else {
-            return(list(Model = model,
-                        ValidationData = ValidationData,
-                        ColNames = Names,
-                        TransformationResults = TransformationResults))          
+            return(list(Model = model, ValidationData = ValidationData, ColNames = Names, TransformationResults = TransformationResults))          
           }
         }
       } else {
         if(ReturnFactorLevels & !is.null(CatFeatures)) {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      ColNames = Names,
-                      FactorLevelsList = FactorLevelsList))
+          return(list(Model = model, ValidationData = ValidationData, ColNames = Names, FactorLevelsList = FactorLevelsList))
         } else {
-          return(list(Model = model,
-                      ValidationData = ValidationData,
-                      ColNames = Names))        
+          return(list(Model = model, ValidationData = ValidationData, ColNames = Names))        
         }
       }
     }
