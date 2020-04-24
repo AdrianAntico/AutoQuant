@@ -1083,7 +1083,6 @@ XGBoostMultiClassParams <- function(counter = NULL,
         nthread               = NThreads,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
-        eval_metric           = eval_metric,
         task_type             = task_type)
     } else {
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)

@@ -508,7 +508,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Tune or Not Check----
-  if (GridTune == TRUE & TrainOnFull == FALSE) {
+  if (GridTune & !TrainOnFull) {
     
     # Pull in Grid sets----
     Grids <- XGBoostParameterGrids(TaskType=TreeMethod,Shuffles=Shuffles,NTrees=Trees,Depth=max_depth,LearningRate=eta,MinChildWeight=min_child_weight,SubSample=subsample,ColSampleByTree=colsample_bytree)
