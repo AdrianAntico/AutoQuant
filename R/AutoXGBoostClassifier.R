@@ -496,13 +496,14 @@ AutoXGBoostClassifier <- function(data,
     
     # Binary Grid Tuning Main Loop----
     counter <- 0L
+    TotalRunTime <- 0
     repeat {
       
       # Increment counter----
       counter <- counter + 1L
       
       # Check if grid still has elements in it----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][[""]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["Depth"]][1L])) {
         
         # Define parameters----
         if(!exists("NewGrid")) {
