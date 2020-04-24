@@ -558,7 +558,7 @@ AutoXGBoostClassifier <- function(data,
           if(tolower(BaselineComparison) == "default") {
             BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
           } else {
-            BestPerformance <- ExperimentalGrid[RunNumber < counter, max(EvalMetric, na.rm = TRUE]
+            BestPerformance <- ExperimentalGrid[RunNumber < counter, max(EvalMetric, na.rm = TRUE)]
           }
         }
         
