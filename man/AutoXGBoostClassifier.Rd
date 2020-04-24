@@ -68,7 +68,17 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 
 \item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
-\item{Trees}{The maximum number of trees you want in your models}
+\item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
+
+\item{eta}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
+
+\item{max_depth}{Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
+
+\item{min_child_weight}{Number, or vector for min_child_weight to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
+
+\item{subsample}{Number, or vector for subsample to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
+
+\item{colsample_bytree}{Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -136,7 +146,7 @@ TestModel <- AutoXGBoostClassifier(
   
     # Grid tuning arguments - PassInGrid is the best of GridMetrics
     PassInGrid = NULL,
-    GridTune = FALSE,
+    GridTune = TRUE,
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
