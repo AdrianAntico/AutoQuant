@@ -1092,11 +1092,11 @@ AutoXGBoostRegression <- function(data,
       if(ReturnFactorLevels & !is.null(CatFeatures)) {
         return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
                     VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, PartialDependenceBoxPlots = ParDepBoxPlots,
-                    GridList = grid_params, GridMetrics = GridCollect, ColNames = Names, FactorLevelsList = FactorLevelsList))
+                    GridMetrics = ExperimentalGrid, ColNames = Names, FactorLevelsList = FactorLevelsList))
       } else {
         return(list(Model = model, ValidationData = ValidationData, EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, EvaluationMetrics = EvaluationMetrics,
                     VariableImportance = VariableImportance, VI_Plot = VI_Plot(VI_Data = VariableImportance), PartialDependencePlots = ParDepPlots, 
-                    PartialDependenceBoxPlots = ParDepBoxPlots, GridList = grid_params, GridMetrics = GridCollect, ColNames = Names))        
+                    PartialDependenceBoxPlots = ParDepBoxPlots, GridMetrics = ExperimentalGrid, ColNames = Names))        
       }
     }
   } else {
