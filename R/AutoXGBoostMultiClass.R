@@ -674,7 +674,7 @@ AutoXGBoostMultiClass <- function(data,
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
   if (!is.null(PassInGrid)) {
     base_params <- list(
-      num_class             = NumClasses,
+      num_class             = NumLevels,
       booster               = "gbtree",
       objective             = Objective,
       eval_metric           = tolower(eval_metric),
@@ -715,7 +715,7 @@ AutoXGBoostMultiClass <- function(data,
       
     } else {
       base_params <- list(
-        num_class             = NumClasses,
+        num_class             = NumLevels,
         booster               = "gbtree",
         objective             = Objective,
         eval_metric           = tolower(eval_metric),
@@ -736,7 +736,7 @@ AutoXGBoostMultiClass <- function(data,
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
-      num_class             = NumClasses,
+      num_class             = NumLevels,
       booster               = "gbtree",
       objective             = Objective,
       eval_metric           = tolower(eval_metric),
