@@ -860,6 +860,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @author Adrian Antico
 #' @family Supervised Learning 
 #' @param counter Passthrough
+#' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
 #' @param eval_metric Passthrough
 #' @param task_type Passthrough
@@ -870,6 +871,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @param GridClusters Passthrough
 #' @noRd
 XGBoostClassifierParams <- function(counter = NULL,
+                                    NThreads = -1L,
                                     BanditArmsN = NULL,
                                     eval_metric = NULL,
                                     task_type = NULL,
