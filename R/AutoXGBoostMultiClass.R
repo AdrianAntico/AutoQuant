@@ -623,7 +623,7 @@ AutoXGBoostMultiClass <- function(data,
         
         # Performance measures----
         TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
-        if(tolwoer(grid_eval_metric) != "logloss") {
+        if(tolower(grid_eval_metric) != "logloss") {
           if(NewPerformance > BestPerformance) {
             RunsWithoutNewWinner <- 0L
           } else {
