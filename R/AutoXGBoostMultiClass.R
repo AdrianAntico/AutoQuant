@@ -711,7 +711,7 @@ AutoXGBoostMultiClass <- function(data,
     # Set parameters from winning grid----
     if (BestGrid$RunNumber == 1L) {
       base_params <- list(
-        num_class             = NumClasses,
+        num_class             = NumLevels,
         booster               = "gbtree",
         objective             = Objective,
         eval_metric           = tolower(eval_metric),
