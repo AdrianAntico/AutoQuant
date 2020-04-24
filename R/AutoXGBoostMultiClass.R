@@ -578,7 +578,7 @@ AutoXGBoostMultiClass <- function(data,
         
         # MultiClass Metrics Accuracy----
         if(tolower(grid_eval_metric) == "accuracy") {
-          NewPerformance <- calibEval[, mean(data.table::fifelse(as.character(Target) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
+          NewPerformance <- calibEval[, mean(data.table::fifelse(as.character(Target) == as.character(p1), 1.0, 0.0), na.rm = TRUE)]
           
         } else if(tolower(grid_eval_metric) == "microauc") {
           NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = calibEval[["Target"]], predictor = as.matrix(calibEval[, .SD, .SDcols = names(calibEval)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
@@ -623,10 +623,18 @@ AutoXGBoostMultiClass <- function(data,
         
         # Performance measures----
         TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
-        if(NewPerformance > BestPerformance) {
-          RunsWithoutNewWinner <- 0L
+        if(tolwoer(grid_eval_metric) != "logloss") {
+          if(NewPerformance > BestPerformance) {
+            RunsWithoutNewWinner <- 0L
+          } else {
+            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          }
         } else {
-          RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          if(NewPerformance < BestPerformance) {
+            RunsWithoutNewWinner <- 0L
+          } else {
+            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          }
         }
         
         # Binary Remove Model and Collect Garbage----
