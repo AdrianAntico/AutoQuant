@@ -394,7 +394,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Grid Tune or Not Check----
-  if (GridTune == TRUE & TrainOnFull != TRUE) {
+  if (GridTune & !TrainOnFull) {
     
     # Pull in Grid sets----
     Grids <- CatBoostParameterGrids(TaskType=task_type,Shuffles=Shuffles,NTrees=Trees,Depth=Depth,LearningRate=LearningRate,L2_Leaf_Reg=L2_Leaf_Reg,RSM=RSM,BootStrapType=BootStrapType,GrowPolicy=GrowPolicy)
@@ -563,7 +563,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Define parameters for case where you want to run grid tuning----
-  if (GridTune & TrainOnFull == FALSE) {
+  if (GridTune & !TrainOnFull) {
     
     # Prepare winning grid----
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
@@ -572,7 +572,7 @@ AutoCatBoostClassifier <- function(data,
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
-    if (BestGrid$RunNumber[1L] == 1L) {
+    if (BestGrid$RunNumber == 1L) {
       if (!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
@@ -635,7 +635,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Define parameters Not pass in GridMetric and not grid tuning----
-  if(is.null(PassInGrid) & GridTune == FALSE) {
+  if(is.null(PassInGrid) & !GridTune) {
     if (!is.null(ClassWeights)) {
       base_params <- list(
         use_best_model       = TRUE,

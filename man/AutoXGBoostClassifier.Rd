@@ -6,14 +6,15 @@
 \usage{
 AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, eval_metric = "auc", GridTune = FALSE,
-  grid_eval_metric = "auc", TreeMethod = "hist",
-  MaxModelsInGrid = 10L, NThreads = 8L, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 3L, Verbose = 0L, ReturnModelObjects = TRUE,
-  ReturnFactorLevels = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, Trees = 50L, eta = NULL, max_depth = NULL,
-  min_child_weight = NULL, subsample = NULL, colsample_bytree = NULL)
+  IDcols = NULL, model_path = NULL, metadata_path = NULL,
+  ModelID = "FirstModel", ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE, Verbose = 0L,
+  NumOfParDepPlots = 3L, NThreads = 8L, eval_metric = "auc",
+  TreeMethod = "hist", GridTune = FALSE, MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
+  PassInGrid = NULL, Shuffles = 1L, Trees = 50L, eta = NULL,
+  max_depth = NULL, min_child_weight = NULL, subsample = NULL,
+  colsample_bytree = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -30,37 +31,37 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{grid_eval_metric}{Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
-
-\item{TreeMethod}{Choose from "hist", "gpu_hist"}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
-
-\item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
-
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ModelID}{A character string to name your model and output}
 
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
-
-\item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
+\item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
-\item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
-
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
+
+\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
+
+\item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
+
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
+
+\item{TreeMethod}{Choose from "hist", "gpu_hist"}
+
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
 
 \item{Trees}{The maximum number of trees you want in your models}
+
+\item{grid_eval_metric}{Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -70,60 +71,82 @@ AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tunin
 }
 \examples{
 \donttest{
+# Create some dummy correlated data with numeric and categorical features
+
+# Alter correlation value for the simulated data
 Correl <- 0.85
-N <- 10000
-data <- data.table::data.table(Target = runif(N))
-data[, x1 := qnorm(Target)]
+
+# Number of rows you want to use
+N <- 25000L 
+
+data <- data.table::data.table(Adrian = runif(N))
+data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-                                                sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-                                             sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
+data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
 data[, Independent_Variable11 := as.factor(
-  ifelse(Independent_Variable2 < 0.20, "A",
-         ifelse(Independent_Variable2 < 0.40, "B",
-                ifelse(Independent_Variable2 < 0.6,  "C",
-                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, ':=' (x1 = NULL, x2 = NULL)]
-data[, Target := ifelse(Target > 0.5, 1, 0)]
-TestModel <- AutoXGBoostClassifier(data,
-                                   TrainOnFull = FALSE,
-                                   ValidationData = NULL,
-                                   TestData = NULL,
-                                   TargetColumnName = 1,
-                                   FeatureColNames = 2:12,
-                                   IDcols = NULL,
-                                   eval_metric = "auc",
-                                   Trees = 50,
-                                   GridTune = TRUE,
-                                   grid_eval_metric = "auc",
-                                   MaxModelsInGrid = 10,
-                                   NThreads = 8,
-                                   TreeMethod = "hist",
-                                   model_path = NULL,
-                                   metadata_path = NULL,
-                                   ModelID = "FirstModel",
-                                   NumOfParDepPlots = 3,
-                                   ReturnModelObjects = TRUE,
-                                   ReturnFactorLevels = TRUE,
-                                   SaveModelObjects = FALSE,
-                                   PassInGrid = NULL)
+  data.table::fifelse(Independent_Variable2 < 0.20, "A",
+         data.table::fifelse(Independent_Variable2 < 0.40, "B",
+                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
+
+# Run function
+TestModel <- AutoXGBoostClassifier(
+
+    # GPU or CPU
+    TreeMethod = "hist",
+    NThreads = 8L,
+  
+    # Metadata arguments
+    model_path = getwd(),
+    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    ModelID = "Test_Model_1",
+    ReturnFactorLevels = TRUE,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,   
+  
+    # Data arguments
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[2L:ncol(data)],
+    IDcols = c("x1","x2"),
+  
+    # Model evaluation
+    eval_metric = "auc",
+    NumOfParDepPlots = 3L,
+  
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    PassInGrid = NULL,
+    GridTune = FALSE,
+    MaxModelsInGrid = 10L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    Verbose = 0L,
+  
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    # GrowPolicy is turned off for CPU runs
+    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU   
+    Shuffles = 1L,
+    Trees = 50L,
+    eta = NULL,
+    max_depth = NULL,
+    min_child_weight = NULL,
+    subsample = NULL,
+    colsample_bytree = NULL)
 }
 }
 \seealso{
