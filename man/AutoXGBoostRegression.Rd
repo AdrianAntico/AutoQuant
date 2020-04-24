@@ -8,7 +8,8 @@ AutoXGBoostRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
   TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
   IDcols = NULL, model_path = NULL, metadata_path = NULL,
   ModelID = "FirstModel", ReturnFactorLevels = TRUE,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE, Verbose = 0L,
+  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
+  TransformNumericColumns = NULL, Verbose = 0L,
   NumOfParDepPlots = 3L, NThreads = 8L, eval_metric = "rmse",
   TreeMethod = "hist", GridTune = FALSE, grid_eval_metric = "rmse",
   BaselineComparison = "default", MaxModelsInGrid = 10L,
@@ -43,6 +44,8 @@ AutoXGBoostRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
 \item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
 
@@ -81,8 +84,6 @@ AutoXGBoostRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{subsample}{Number, or vector for subsample to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
 
 \item{colsample_bytree}{Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
-
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and GridList
@@ -142,6 +143,7 @@ TestModel <- AutoXGBoostRegression(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[2L:ncol(data)],
     IDcols = c("x1","x2"),
+    TransformNumericColumns = NULL,
   
     # Model evaluation
     eval_metric = "rmse",

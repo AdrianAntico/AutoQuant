@@ -88,6 +88,7 @@
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[2L:ncol(data)],
 #'     IDcols = c("x1","x2"),
+#'     TransformNumericColumns = NULL,
 #'   
 #'     # Model evaluation
 #'     eval_metric = "rmse",
@@ -129,6 +130,7 @@ AutoXGBoostRegression <- function(data,
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
+                                  TransformNumericColumns = NULL,
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
                                   NThreads = 8L,
