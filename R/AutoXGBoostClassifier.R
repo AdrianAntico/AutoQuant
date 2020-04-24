@@ -629,11 +629,13 @@ AutoXGBoostClassifier <- function(data,
       max_bin               = 64L,
       early_stopping_rounds = 10L,
       tree_method           = task_type,
-      nrounds               = PassInGrid[["NTrees"]],
       max_depth             = PassInGrid[["Depth"]],
       eta                   = PassInGrid[["LearningRate"]],
       subsample             = PassInGrid[["SubSample"]],
       colsample_bytree      = PassInGrid[["ColSampleByTree"]])
+    
+    # Binary Train Final Model----
+    model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=PassInGrid[["NTrees"]])
   }
   
   # Define parameters for case where you want to run grid tuning----
@@ -652,8 +654,11 @@ AutoXGBoostClassifier <- function(data,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
         eval_metric           = eval_metric,
-        task_type             = task_type,
-        nrounds               = max(ExperimentalGrid$NTrees))
+        task_type             = task_type)
+      
+      # Binary Train Final Model----
+      model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=max(ExperimentalGrid$NTrees))
+      
     } else {
       base_params <- list(
         booster               = "gbtree",
@@ -663,11 +668,13 @@ AutoXGBoostClassifier <- function(data,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
         tree_method           = task_type,
-        nrounds               = BestGrid[["NTrees"]],
         max_depth             = BestGrid[["Depth"]],
         eta                   = BestGrid[["LearningRate"]],
         subsample             = BestGrid[["SubSample"]],
         colsample_bytree      = BestGrid[["ColSampleByTree"]])
+      
+      # Binary Train Final Model----
+      model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=BestGrid[["NTrees"]])
     }
   }
   
@@ -680,14 +687,13 @@ AutoXGBoostClassifier <- function(data,
       nthread               = NThreads,
       max_bin               = 64L,
       tree_method           = TreeMethod,
-      nrounds               = Trees,
       verbose               = Verbose,
       early_stopping_rounds = 10L)
+    
+    # Binary Train Final Model----
+    model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=Trees)
   }
   
-  # Binary Train Final Model----
-  model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets)
-
   # Binary Save Model----
   if (SaveModelObjects) {
     if(getwd() == model_path) {
