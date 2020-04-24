@@ -131,7 +131,8 @@ data <- AutoH2OScoring(Features     = aa,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{CatBoostParameterGrids}}
+Other Supervised Learning: \code{\link{CatBoostParameterGrids}},
+  \code{\link{XGBoostParameterGrids}}
 }
 \author{
 Adrian Antico

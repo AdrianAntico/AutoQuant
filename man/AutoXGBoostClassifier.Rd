@@ -6,12 +6,14 @@
 \usage{
 AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, eval_metric = "auc", Trees = 50, GridTune = FALSE,
+  IDcols = NULL, eval_metric = "auc", GridTune = FALSE,
   grid_eval_metric = "auc", TreeMethod = "hist",
-  MaxModelsInGrid = 10, NThreads = 8, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  Verbose = 0, ReturnModelObjects = TRUE, ReturnFactorLevels = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL)
+  MaxModelsInGrid = 10L, NThreads = 8L, model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 3L, Verbose = 0L, ReturnModelObjects = TRUE,
+  ReturnFactorLevels = TRUE, SaveModelObjects = FALSE,
+  PassInGrid = NULL, Trees = 50L, eta = NULL, max_depth = NULL,
+  min_child_weight = NULL, subsample = NULL, colsample_bytree = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -29,8 +31,6 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
-
-\item{Trees}{The maximum number of trees you want in your models}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
@@ -59,6 +59,8 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
+
+\item{Trees}{The maximum number of trees you want in your models}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList

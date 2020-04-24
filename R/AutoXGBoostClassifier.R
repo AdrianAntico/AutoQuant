@@ -594,7 +594,7 @@ AutoXGBoostClassifier <- function(data,
         x <- ROCR::prediction(predictions = calibEval[["p1"]], labels = calibEval[["Target"]])
         y <- ROCR::performance(prediction.obj = x, measure = grid_eval_metric)
         if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
-          if (nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L {
+          if (nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L) {
             z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values))
             Metric <- z[[1]]
           } else if (nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
