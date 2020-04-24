@@ -152,7 +152,7 @@ AutoXGBoostMultiClass <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # MultiClass Check Arguments----
-  if (Trees < 1L) stop("Trees must be greater than 1")
+  if (any(Trees < 1L)) stop("Trees must be greater than 1")
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1L & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   if (!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type")
@@ -542,9 +542,9 @@ AutoXGBoostMultiClass <- function(data,
         
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- XGBoostClassifierParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostMultiClassParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- XGBoostClassifierParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostMultiClassParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Run model----
