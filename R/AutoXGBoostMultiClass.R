@@ -542,9 +542,9 @@ AutoXGBoostMultiClass <- function(data,
         
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- XGBoostMultiClassParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostMultiClassParams(num_class=NumLevels,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- XGBoostMultiClassParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostMultiClassParams(num_class=NumLevels,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Run model----
@@ -552,16 +552,16 @@ AutoXGBoostMultiClass <- function(data,
           if(counter == 1L) {
             nrounds <- max(Grid$NTrees)
             print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose = Verbose))
           } else {
             nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
             print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose = Verbose))
           }
         } else {
           nrounds <- GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L]
           print(base_params)
-          RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+          RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose = Verbose))
         }
         
         # Binary Grid Score Model----
@@ -674,6 +674,7 @@ AutoXGBoostMultiClass <- function(data,
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
   if (!is.null(PassInGrid)) {
     base_params <- list(
+      num_class             = NumClasses,
       booster               = "gbtree",
       objective             = Objective,
       eval_metric           = tolower(eval_metric),
@@ -699,6 +700,7 @@ AutoXGBoostMultiClass <- function(data,
     # Set parameters from winning grid----
     if (BestGrid$RunNumber == 1L) {
       base_params <- list(
+        num_class             = NumClasses,
         booster               = "gbtree",
         objective             = Objective,
         eval_metric           = tolower(eval_metric),
@@ -713,6 +715,7 @@ AutoXGBoostMultiClass <- function(data,
       
     } else {
       base_params <- list(
+        num_class             = NumClasses,
         booster               = "gbtree",
         objective             = Objective,
         eval_metric           = tolower(eval_metric),
@@ -733,6 +736,7 @@ AutoXGBoostMultiClass <- function(data,
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
+      num_class             = NumClasses,
       booster               = "gbtree",
       objective             = Objective,
       eval_metric           = tolower(eval_metric),

@@ -1060,6 +1060,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @param GridClusters Passthrough
 #' @noRd
 XGBoostMultiClassParams <- function(counter = NULL,
+                                    num_class=NULL,
                                     NThreads = -1L,
                                     BanditArmsN = NULL,
                                     eval_metric = NULL,
@@ -1077,6 +1078,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {
       base_params <- list(
+        num_class             = num_class,
         booster               = "gbtree",
         objective             = 'multi:softmax',
         eval_metric           = tolower(eval_metric),
@@ -1087,6 +1089,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
     } else {
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       base_params <- list(
+        num_class             = num_class,
         booster               = "gbtree",
         objective             = 'multi:softmax',
         eval_metric           = tolower(eval_metric),
@@ -1102,6 +1105,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
   } else {
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
     base_params <- list(
+      num_class             = num_class,
       booster               = "gbtree",
       objective             = 'multi:softmax',
       eval_metric           = tolower(eval_metric),
