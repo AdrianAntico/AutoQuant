@@ -60,8 +60,6 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
 
 \item{Trees}{The maximum number of trees you want in your models}
-
-\item{grid_eval_metric}{Set to "f","auc","tpr","fnr","fpr","tnr","prbe","f","odds"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
