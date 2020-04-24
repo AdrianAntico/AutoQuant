@@ -135,9 +135,7 @@ TestModel <- AutoXGBoostClassifier(
   
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
-    # GrowPolicy is turned off for CPU runs
-    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU   
+    # The ones below can be set to NULL and the values in the example will be used 
     Shuffles = 1L,
     Trees = seq(50L, 500L, 50L),
     eta = seq(0.05,0.40,0.05),
