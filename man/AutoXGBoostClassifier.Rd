@@ -131,7 +131,7 @@ TestModel <- AutoXGBoostClassifier(
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
-    Verbose = 0L,
+    Verbose = 1L,
   
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning

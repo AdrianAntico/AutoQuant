@@ -89,7 +89,7 @@
 #'     MaxModelsInGrid = 10L,
 #'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 24L*60L,
-#'     Verbose = 0L,
+#'     Verbose = 1L,
 #'   
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
 #'     # Must set Trees to a single value if you are not grid tuning
@@ -517,7 +517,7 @@ AutoXGBoostClassifier <- function(data,
           if(counter == 1L) {
             nrounds <- max(Grid$NTrees)
             print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(verbose=1L,params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
+            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
           } else {
             nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
             print(base_params)
@@ -652,7 +652,7 @@ AutoXGBoostClassifier <- function(data,
         task_type             = task_type)
       
       # Binary Train Final Model----
-      model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=max(ExperimentalGrid$NTrees))
+      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = max(ExperimentalGrid$NTrees), Verbose = Verbose)
       
     } else {
       base_params <- list(
@@ -669,7 +669,7 @@ AutoXGBoostClassifier <- function(data,
         colsample_bytree      = BestGrid[["ColSampleByTree"]])
       
       # Binary Train Final Model----
-      model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=BestGrid[["NTrees"]])
+      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = BestGrid[["NTrees"]], verbose = Verbose)
     }
   }
   
