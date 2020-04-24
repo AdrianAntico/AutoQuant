@@ -655,7 +655,7 @@ AutoXGBoostClassifier <- function(data,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
         eval_metric           = eval_metric,
-        task_type             = task_type)
+        tree_method           = TreeMethod)
       
       # Binary Train Final Model----
       model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = max(ExperimentalGrid$NTrees), Verbose = Verbose)
@@ -668,7 +668,7 @@ AutoXGBoostClassifier <- function(data,
         nthread               = NThreads,
         max_bin               = 64L,
         early_stopping_rounds = 10L,
-        tree_method           = task_type,
+        tree_method           = TreeMethod,
         max_depth             = BestGrid[["Depth"]],
         eta                   = BestGrid[["LearningRate"]],
         subsample             = BestGrid[["SubSample"]],
