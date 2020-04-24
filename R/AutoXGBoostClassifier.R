@@ -844,7 +844,7 @@ AutoXGBoostClassifier <- function(data,
   EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics, x[1L, ]))
   
   # Save EvaluationMetrics to File
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
+  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
@@ -934,7 +934,7 @@ AutoXGBoostClassifier <- function(data,
                   VariableImportance = VariableImportance,
                   VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
-                  GridMetrics = ExperimentalGrid,
+                  GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
                   ColNames = Names,
                   FactorLevels = FactorLevelsList))
     }

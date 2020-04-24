@@ -801,57 +801,46 @@ AutoCatBoostClassifier <- function(data,
     EvaluationMetrics <- data.table::data.table(
       Metric = c("AUC","TruePositiveRate","FalseNegativeRate","FalsePositiveRate","TrueNegativeRate",
                  "PreceisionRecallBreakEven","F1_Score","Odds"),
-      MetricValue = rep(999999, 8),
-      Threshold   = rep(999999, 8))
-    i <- 0
+      MetricValue = rep(999999, 8L),
+      Threshold   = rep(999999, 8L))
+    i <- 0L
     for (metric in c("auc", "tpr", "fnr", "fpr", "tnr", "prbe", "f", "odds")) {
-      i <- as.integer(i + 1)
+      i <- i + 1L
       tryCatch({
         y <- ROCR::performance(prediction.obj = x, measure = metric)
-        if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
-                nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-          if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-              nrow(data.table::as.data.table(y@x.values)) <= 1) {
+        if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+          if (nrow(data.table::as.data.table(y@y.values)) <= 1L & nrow(data.table::as.data.table(y@x.values)) <= 1L) {
             z <- data.table::as.data.table(cbind(Metric = y@y.values,Threshold = y@x.values))
             Metric <- z[[1]]
-          } else if (nrow(data.table::as.data.table(y@y.values)) <= 1 &
-                     !(nrow(data.table::as.data.table(y@x.values) <= 1))) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values,
-              Threshold = y@x.values[[1]]))
-            Metric <- z[!is.infinite(Threshold)][[1]]
-          } else if(!(nrow(data.table::as.data.table(y@y.values)) <= 1) &
-                    nrow(data.table::as.data.table(y@x.values) <= 1)) {
+          } else if (nrow(data.table::as.data.table(y@y.values)) <= 1L & !(nrow(data.table::as.data.table(y@x.values) <= 1L))) {
+            z <- data.table::as.data.table(cbind(Metric = y@y.values, Threshold = y@x.values[[1L]]))
+            Metric <- z[!is.infinite(Threshold)][[1L]]
+          } else if(!(nrow(data.table::as.data.table(y@y.values)) <= 1L) & nrow(data.table::as.data.table(y@x.values) <= 1L)) {
             if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-              z <- data.table::as.data.table(cbind(
-                Metric = y@y.values[[1]],
-                Threshold = y@x.values))
-              Metric <- z[order(-Metric)][!is.infinite(Metric)][[1]]
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values))
+              Metric <- z[order(-Metric)][!is.infinite(Metric)][[1L]]
             } else {
-              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]],Threshold = y@x.values))
-              Metric <- z[order(Metric)][!is.infinite(Metric)][[1]]
+              z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]],Threshold = y@x.values))
+              Metric <- z[order(Metric)][!is.infinite(Metric)][[1L]]
             }
           }
         } else {
           if (metric %chin% c("auc", "tpr", "tnr", "prbe", "f", "odds")) {
-            z <- data.table::as.data.table(cbind(
-              Metric = y@y.values[[1]],
-              Threshold = y@x.values[[1]]))
-            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1,]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]], Threshold = y@x.values[[1L]]))
+            Metric <- z[order(-Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L,]
           } else {
-            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1]],Threshold = y@x.values[[1]]))
-            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1,]
+            z <- data.table::as.data.table(cbind(Metric = y@y.values[[1L]],Threshold = y@x.values[[1L]]))
+            Metric <- z[order(Metric)][!is.infinite(Threshold) & !is.infinite(Metric)][1L,]
           }
         }
         
         # Store Output Information
-        if (any(nrow(data.table::as.data.table(y@y.values)) <= 1 |
-                nrow(data.table::as.data.table(y@x.values)) <= 1)) {
-          data.table::set(EvaluationMetrics,i = i,j = 2L,value = round(Metric[[1]], 4))
-          data.table::set(EvaluationMetrics,i = i,j = 3L,value = NA)
+        if (any(nrow(data.table::as.data.table(y@y.values)) <= 1L | nrow(data.table::as.data.table(y@x.values)) <= 1L)) {
+          data.table::set(EvaluationMetrics,i = i, j = 2L, value = round(Metric[[1L]], 4L))
+          data.table::set(EvaluationMetrics,i = i, j = 3L, value = NA)
         } else {
-          data.table::set(EvaluationMetrics,i = i,j = 2L,value = round(Metric[[1]], 4))
-          data.table::set(EvaluationMetrics,i = i,j = 3L,value = Metric[[2]])
+          data.table::set(EvaluationMetrics,i = i, j = 2L, value = round(Metric[[1L]], 4L))
+          data.table::set(EvaluationMetrics,i = i, j = 3L, value = Metric[[2L]])
         }
       }, error = function(x) "skip")
     }
@@ -860,18 +849,14 @@ AutoCatBoostClassifier <- function(data,
   # Binary Accuracy Threshold and Metric----
   if(!TrainOnFull) {
     j <- 0
-    x <- data.table::data.table(
-      Metric = "Accuracy",
-      MetricValue = 5.0,
-      Threshold = seq(0.01, 0.99, 0.001))
+    x <- data.table::data.table(Metric = "Accuracy", MetricValue = 5.0, Threshold = seq(0.01, 0.99, 0.001))
     for (i in unique(x[["Threshold"]])) {
-      j = as.integer(j + 1)
-      Accuracy <- mean(ValidationData[, data.table::fifelse(
-        (p1 > i & get(TargetColumnName) == 1) | (p1 < i & get(TargetColumnName) == 0), 1, 0)])
-      data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4))
+      j <- j + 1L
+      Accuracy <- mean(ValidationData[, data.table::fifelse((p1 > i & get(TargetColumnName) == 1) | (p1 < i & get(TargetColumnName) == 0), 1, 0)])
+      data.table::set(x, i = j, j = 2L, value = round(Accuracy, 4L))
     }
-    data.table::setorderv(x, "MetricValue", order = -1, na.last = TRUE)
-    x <- x[1, ]
+    data.table::setorderv(x, "MetricValue", order = -1L, na.last = TRUE)
+    x <- x[1L, ]
     EvaluationMetrics <- data.table::rbindlist(list(EvaluationMetrics, x))
     
     # Save EvaluationMetrics to File
@@ -922,7 +907,7 @@ AutoCatBoostClassifier <- function(data,
     temp <- catboost::catboost.get_feature_importance(model)
     VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
     data.table::setnames(VariableImportance, "V2", "Importance")
-    VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+    VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
     VariableImportance <- VariableImportance[order(-Importance)]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
@@ -935,9 +920,9 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Partial Dependence----
   ParDepPlots <- list()
-  j <- 0
+  j <- 0L
   ParDepBoxPlots <- list()
-  k <- 0
+  k <- 0L
   if(!is.null(VariableImportance)) {
     for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
       tryCatch({
@@ -981,10 +966,10 @@ AutoCatBoostClassifier <- function(data,
   
   # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12, AngleX = 0, LegendPosition = "right") +
+      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
@@ -994,42 +979,39 @@ AutoCatBoostClassifier <- function(data,
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          ROC_Plot = ROC_Plot,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          PartialDependencePlots = ParDepPlots,
-          GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
-          ColNames = Names))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        ROC_Plot = ROC_Plot,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        PartialDependencePlots = ParDepPlots,
+        GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
+        ColNames = Names))
     }
   } else if(TrainOnFull) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          ColNames = Names))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        ColNames = Names))
     }
   } else {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          ROC_Plot = ROC_Plot,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          PartialDependencePlots = ParDepPlots,
-          ColNames = Names))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        ROC_Plot = ROC_Plot,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        PartialDependencePlots = ParDepPlots,
+        ColNames = Names))
     }
   }
 }
