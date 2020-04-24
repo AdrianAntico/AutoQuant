@@ -139,12 +139,12 @@ TestModel <- AutoXGBoostClassifier(
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU   
     Shuffles = 1L,
-    Trees = 50L,
-    eta = NULL,
-    max_depth = NULL,
-    min_child_weight = NULL,
-    subsample = NULL,
-    colsample_bytree = NULL)
+    Trees = seq(50L, 500L, 50L),
+    eta = seq(0.05,0.40,0.05),
+    max_depth = seq(4L, 16L, 2L),
+    min_child_weight = seq(1.0, 10.0, 1.0),
+    subsample = seq(0.55, 1.0, 0.05),
+    colsample_bytree = seq(0.55, 1.0, 0.05))
 }
 }
 \seealso{
