@@ -529,20 +529,12 @@ AutoCatBoostMultiClass <- function(data,
       }
       
       # MultiClass Update Names for Predicted Value Columns----
-      if(!TrainOnFull) {
-        k <- 1L
-      } else {
-        k <- 2L
-      }
+      if(!TrainOnFull) k <- 1L else k <- 2L
       for (name in as.character(TargetLevels[[1L]])) {
         k <- k + 1L
         data.table::setnames(ValidationData, paste0("V", k), name)
       }
-      if(!TrainOnFull) {
-        data.table::setnames(ValidationData, "V1", "Predict")  
-      } else {
-        data.table::setnames(ValidationData, "V2", "Predict")
-      }
+      if(!TrainOnFull) data.table::setnames(ValidationData, "V1", "Predict") else data.table::setnames(ValidationData, "V2", "Predict")
       data.table::set(ValidationData, j = "Target", value = as.character(ValidationData[["Target"]]))
       data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
       
