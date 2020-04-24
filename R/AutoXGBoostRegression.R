@@ -658,10 +658,18 @@ AutoXGBoostRegression <- function(data,
         
         # Performance measures----
         TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
-        if(NewPerformance > BestPerformance) {
-          RunsWithoutNewWinner <- 0L
+        if(tolower(grid_eval_metric) != "r2") {
+          if(NewPerformance < BestPerformance) {
+            RunsWithoutNewWinner <- 0L
+          } else {
+            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          }
         } else {
-          RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          if(NewPerformance > BestPerformance) {
+            RunsWithoutNewWinner <- 0L
+          } else {
+            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
+          }
         }
         
         # Binary Remove Model and Collect Garbage----
