@@ -515,9 +515,9 @@ AutoXGBoostMultiClass <- function(data,
     
     # Pull in Grid sets----
     Grids <- XGBoostParameterGrids(TaskType=TreeMethod,Shuffles=Shuffles,NTrees=Trees,Depth=max_depth,LearningRate=eta,MinChildWeight=min_child_weight,SubSample=subsample,ColSampleByTree=colsample_bytree)
-    Grid <- Grids$Grid
-    GridClusters <- Grids$Grids
-    ExperimentalGrid <- Grids$ExperimentalGrid
+    Grid <- Grids[["Grid"]]
+    GridClusters <- Grids[["Grids"]]
+    ExperimentalGrid <- Grids[["ExperimentalGrid"]]
     
     # Initialize RL----
     RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
@@ -579,10 +579,8 @@ AutoXGBoostMultiClass <- function(data,
         # MultiClass Metrics Accuracy----
         if(tolower(grid_eval_metric) == "accuracy") {
           NewPerformance <- calibEval[, mean(data.table::fifelse(as.character(Target) == as.character(p1), 1.0, 0.0), na.rm = TRUE)]
-          
         } else if(tolower(grid_eval_metric) == "microauc") {
           NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = calibEval[["Target"]], predictor = as.matrix(calibEval[, .SD, .SDcols = names(calibEval)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
-          
         } else if(tolower(grid_eval_metric) == "logloss") {
           temp <- calibEval[, 1L]  
           temp[, Truth := get(TargetColumnName)]
@@ -771,7 +769,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Score Model----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     predict <- stats::predict(model, datatest)
   } else if(!TrainOnFull) {
     predict <- stats::predict(model, datavalidate)
@@ -782,7 +780,7 @@ AutoXGBoostMultiClass <- function(data,
   # Convert predict object if softprob----
   if(Objective == "multi:softprob") {
     for(counter in seq.int(NumLevels)) {
-      if(counter == 1) {
+      if(counter == 1L) {
         Final <- data.table::as.data.table(predict[1:(length(predict)/NumLevels)])
         data.table::setnames(x = Final, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
       } else {
@@ -833,10 +831,7 @@ AutoXGBoostMultiClass <- function(data,
   
   # MultiClass Variable Importance----
   VariableImportance <- xgboost::xgb.importance(model = model)
-  VariableImportance[, ':=' (
-    Gain = round(Gain, 4L),
-    Cover = round(Cover, 4L),
-    Frequency = round(Frequency, 4))]
+  VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
@@ -848,15 +843,13 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Save GridCollect and grid_metrics----
   if (SaveModelObjects & GridTune == TRUE) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(grid_params, file = paste0(metadata_path, "/", ModelID, "_grid_params.csv"))
-      data.table::fwrite(GridCollect, file = paste0(metadata_path, "/", ModelID, "_GridCollect.csv"))
+      data.table::fwrite(ExperimentalGrid, file = paste0(metadata_path, "/", ModelID, "ExperimentalGrid.csv"))
     } else {
-      data.table::fwrite(grid_params, file = paste0(model_path, "/", ModelID, "_grid_params.csv"))
-      data.table::fwrite(GridCollect, file = paste0(model_path, "/", ModelID, "_GridCollect.csv"))      
+      data.table::fwrite(ExperimentalGrid, file = paste0(model_path, "/", ModelID, "ExperimentalGrid.csv"))     
     }
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
       ggplot2::geom_bar(stat = "identity") +
@@ -872,57 +865,14 @@ AutoXGBoostMultiClass <- function(data,
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
   
   # MultiClass Return Model Objects----
-  if (GridTune) {
-    if (ReturnModelObjects) {
-      if(Objective != "multi:softprob") {
-        return(
-          list(
-            Model = model,
-            ValidationData = ValidationData,
-            EvaluationMetrics = EvaluationMetrics,
-            VariableImportance = VariableImportance,
-            VI_Plot = VI_Plot(VI_Data = VariableImportance),
-            GridMetrics = ExperimentalGrid,
-            ColNames = Names,
-            TargetLevels = TargetLevels,
-            FactorLevels = FactorLevelsList))
-      } else {
-        return(
-          list(
-            Model = model,
-            ValidationData = ValidationData,
-            VariableImportance = VariableImportance,
-            VI_Plot = VI_Plot(VI_Data = VariableImportance),
-            GridMetrics = ExperimentalGrid,
-            ColNames = Names,
-            TargetLevels = TargetLevels,
-            FactorLevels = FactorLevelsList))
-      }
-    }
-  } else {
-    if (ReturnModelObjects) {
-      if(Objective != "multi:softprob") {
-        return(
-          list(
-            Model = model,
-            ValidationData = ValidationData,
-            EvaluationMetrics = EvaluationMetrics,
-            VariableImportance = VariableImportance,
-            VI_Plot = VI_Plot(VI_Data = VariableImportance),
-            ColNames = Names,
-            TargetLevels = TargetLevels,
-            FactorLevels = FactorLevelsList))
-      } else {
-        return(
-          list(
-            Model = model,
-            ValidationData = ValidationData,
-            VariableImportance = VariableImportance,
-            VI_Plot = VI_Plot(VI_Data = VariableImportance),
-            ColNames = Names,
-            TargetLevels = TargetLevels,
-            FactorLevels = FactorLevelsList))
-      }
+  if(!GridTune) GridMetrics <- NULL
+  if (ReturnModelObjects) {
+    if(Objective != "multi:softprob") {
+      return(list(Model=model, ValidationData=ValidationData, EvaluationMetrics=EvaluationMetrics, VariableImportance=VariableImportance, 
+                  VI_Plot=VI_Plot(VI_Data = VariableImportance), GridMetrics=ExperimentalGrid, ColNames=Names, TargetLevels=TargetLevels, FactorLevels=FactorLevelsList))
+    } else {
+      return(list(Model=model, ValidationData=ValidationData, VariableImportance=VariableImportance, VI_Plot=VI_Plot(VI_Data = VariableImportance), 
+                  GridMetrics=ExperimentalGrid, ColNames = Names, TargetLevels = TargetLevels, FactorLevels = FactorLevelsList))
     }
   }
 }
