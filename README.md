@@ -152,7 +152,7 @@ ________________________________________________________________________________
 5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets, utilizing the <code>DummifyDT()</code> function
 6. Save the final modeling column names for reference
 7. Handles the data conversion to the appropriate modeling type, such as CatBoost, H2O, and XGBoost
-8. Build out a random hyperparameter set for a random grid search for model grid tuning (which includes the default model hyperparameters) if you choose to run a grid tune
+8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
 9. Loop through the grid-tuning process, building N models
 10. Collect the evaluation metrics for each grid tune run
 11. Identify the best model of the set of models built in the grid tuning search
@@ -200,7 +200,7 @@ ________________________________________________________________________________
 4. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
 5. Saves the final column names for modeling to a csv for later reference
 6. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-7. Build out a random hyperparameter set for a random grid search for model tuning (includes the default model hyperparameters) if you want to utilize that feature
+7. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
 8. Build the grid tuned models
 9. Collect the evaluation metrics for each grid tune run
 10. Identify the best model of the set of models built in the grid tuning setup
@@ -248,7 +248,7 @@ ________________________________________________________________________________
 5. Saves the final column names for modeling to a csv for later reference
 6. Ensures the target levels are consistent across train, validate, and test sets and save the levels to file
 7. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-8. Build out a random hyperparameter set for a random grid search for model tuning (includes the default model hyperparameters) if you want to utilize that feature
+8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
 9. Build the grid tuned models
 10. Collect the evaluation metrics for each grid tune run
 11. Identify the best model of the set of models built in the grid tuning setup
