@@ -4,7 +4,7 @@
 #'
 #' @family Automated Regression
 #' @author Adrian Antico
-#' @param TrainOnFull Set to TRUE to train model on 100% of data
+#' @param TrainOnFull Set to TRUE to train model on 100 percent of data
 #' @param grid_eval_metric Select the metric to optimize in grid tuning. "accuracy", "microauc", "logloss"
 #' @param BaselineComparison "default"
 #' @param MaxRunsWithoutNewWinner Number of runs without a new winner before stopping the grid tuning

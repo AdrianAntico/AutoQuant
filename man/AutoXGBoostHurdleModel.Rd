@@ -21,7 +21,7 @@ AutoXGBoostHurdleModel(TreeMethod = "hist", TrainOnFull = FALSE,
 \arguments{
 \item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
 
-\item{TrainOnFull}{Set to TRUE to train model on 100% of data}
+\item{TrainOnFull}{Set to TRUE to train model on 100 percent of data}
 
 \item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
 
