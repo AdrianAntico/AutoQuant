@@ -13,9 +13,10 @@ AutoXGBoostClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   TreeMethod = "hist", GridTune = FALSE,
   BaselineComparison = "default", MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  PassInGrid = NULL, Shuffles = 1L, Trees = 50L, eta = NULL,
-  max_depth = NULL, min_child_weight = NULL, subsample = NULL,
-  colsample_bytree = NULL)
+  PassInGrid = NULL, Shuffles = 1L, Trees = 50L, eta = seq(0.05,
+  0.4, 0.05), max_depth = seq(4L, 16L, 2L), min_child_weight = seq(1,
+  10, 1), subsample = seq(0.55, 1, 0.05), colsample_bytree = seq(0.55,
+  1, 0.05))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}

@@ -4,16 +4,35 @@
 \alias{AutoXGBoostHurdleModel}
 \title{AutoXGBoostHurdleModel is generalized hurdle modeling framework}
 \usage{
-AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, TransformNumericColumns = NULL, SplitRatios = c(0.7,
-  0.2, 0.1), TreeMethod = "hist", NThreads = max(1,
-  parallel::detectCores() - 2L), ModelID = "ModelTest", Paths = NULL,
-  MetaDataPaths = NULL, SaveModelObjects = TRUE, Trees = 1000L,
-  GridTune = TRUE, MaxModelsInGrid = 1L, NumOfParDepPlots = 10L,
-  PassInGrid = NULL)
+AutoXGBoostHurdleModel(TreeMethod = "hist", TrainOnFull = FALSE,
+  PassInGrid = NULL, NThreads = max(1L, parallel::detectCores() - 2L),
+  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL, data,
+  ValidationData = NULL, TestData = NULL, Buckets = 0L,
+  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
+  TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
+  SaveModelObjects = FALSE, NumOfParDepPlots = 10L, GridTune = FALSE,
+  grid_eval_metric = "accuracy", MaxModelsInGrid = 1L,
+  BaselineComparison = "default", MaxRunsWithoutNewWinner = 10L,
+  MaxRunMinutes = 60L, Trees = 1000L, eta = seq(0.05, 0.4, 0.05),
+  max_depth = seq(4L, 16L, 2L), min_child_weight = seq(1, 10, 1),
+  subsample = seq(0.55, 1, 0.05), colsample_bytree = seq(0.55, 1,
+  0.05))
 }
 \arguments{
+\item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
+
+\item{TrainOnFull}{Set to TRUE to train model on 100% of data}
+
+\item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
+
+\item{NThreads}{Set to the number of threads you would like to dedicate to training}
+
+\item{ModelID}{Define a character name for your models}
+
+\item{Paths}{The path to your folder where you want your model information saved}
+
+\item{MetaDataPaths}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
+
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
 
 \item{ValidationData}{Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -32,27 +51,33 @@ AutoXGBoostHurdleModel(data, ValidationData = NULL, TestData = NULL,
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
-\item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
-
-\item{NThreads}{Set to the number of threads you would like to dedicate to training}
-
-\item{ModelID}{Define a character name for your models}
-
-\item{Paths}{The path to your folder where you want your model information saved}
-
-\item{MetaDataPaths}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
-
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
-
-\item{Trees}{Default 1000}
-
-\item{GridTune}{Set to TRUE if you want to grid tune the models}
-
-\item{MaxModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
 
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
-\item{PassInGrid}{Pass in a grid for changing up the parameter settings for catboost}
+\item{GridTune}{Set to TRUE if you want to grid tune the models}
+
+\item{grid_eval_metric}{Select the metric to optimize in grid tuning. "accuracy", "microauc", "logloss"}
+
+\item{MaxModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
+
+\item{BaselineComparison}{"default"}
+
+\item{MaxRunsWithoutNewWinner}{Number of runs without a new winner before stopping the grid tuning}
+
+\item{MaxRunMinutes}{Max number of minutes to allow the grid tuning to run for}
+
+\item{Trees}{Default 1000}
+
+\item{eta}{Learning rates seq(0.05,0.40,0.05)}
+
+\item{max_depth}{Depth seq(4L, 16L, 2L)}
+
+\item{min_child_weight}{seq(1.0, 10.0, 1.0)}
+
+\item{subsample}{seq(0.55, 1.0, 0.05)}
+
+\item{colsample_bytree}{seq(0.55, 1.0, 0.05)}
 }
 \value{
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
@@ -63,26 +88,49 @@ AutoXGBoostHurdleModel is generalized hurdle modeling framework
 \examples{
 \donttest{
 Output <- RemixAutoML::AutoXGBoostHurdleModel(
-  data,
-  ValidationData = NULL,
-  TestData = NULL,
-  Buckets = 1L,
-  TargetColumnName = "Target_Variable",
-  FeatureColNames = 4L:ncol(data),
-  IDcols = 1L:3L,
-  TransformNumericColumns = NULL,
-  SplitRatios = c(0.7, 0.2, 0.1),
-  TreeMethod = "hist",
-  NThreads = max(1L, parallel::detectCores()-2L),
-  ModelID = "ModelID",
-  Paths = NULL,
-  MetaDataPaths = NULL,
-  SaveModelObjects = TRUE,
-  Trees = 1000L,
-  GridTune = FALSE,
-  MaxModelsInGrid = 1L,
-  NumOfParDepPlots = 10L,
-  PassInGrid = NULL)
+# Operationalization args
+TreeMethod = "hist",
+TrainOnFull = FALSE,
+PassInGrid = NULL,
+
+# Metadata args
+NThreads = max(1L, parallel::detectCores()-2L),
+ModelID = "ModelTest",
+Paths = NULL,
+MetaDataPaths = NULL,
+
+# data args
+data,
+ValidationData = NULL,
+TestData = NULL,
+Buckets = 0L,
+TargetColumnName = NULL,
+FeatureColNames = NULL,
+IDcols = NULL,
+
+# options
+TransformNumericColumns = NULL,
+SplitRatios = c(0.70, 0.20, 0.10),
+SaveModelObjects = FALSE,
+NumOfParDepPlots = 10L,
+
+# grid tuning args
+GridTune = FALSE,
+grid_eval_metric = "accuracy",
+MaxModelsInGrid = 1L,
+BaselineComparison = "default",
+MaxRunsWithoutNewWinner = 10L,
+MaxRunMinutes = 60L,
+
+# bandit hyperparameters
+Trees = 1000L,
+eta = seq(0.05,0.40,0.05),
+max_depth = seq(4L, 16L, 2L),
+
+# random hyperparameters
+min_child_weight = seq(1.0, 10.0, 1.0),
+subsample = seq(0.55, 1.0, 0.05),
+colsample_bytree = seq(0.55, 1.0, 0.05))
 }
 }
 \seealso{

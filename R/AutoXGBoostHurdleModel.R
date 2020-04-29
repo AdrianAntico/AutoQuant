@@ -1,6 +1,16 @@
 #' AutoXGBoostHurdleModel is generalized hurdle modeling framework
 #'
 #' @family Automated Regression
+#' @param TrainOnFull Set to TRUE to train model on 100% of data
+#' @param grid_eval_metric Select the metric to optimize in grid tuning. "accuracy", "microauc", "logloss"
+#' @param BaselineComparison "default"
+#' @param MaxRunsWithoutNewWinner Number of runs without a new winner before stopping the grid tuning
+#' @param MaxRunMinutes Max number of minutes to allow the grid tuning to run for
+#' @param eta Learning rates seq(0.05,0.40,0.05)
+#' @param max_depth Depth seq(4L, 16L, 2L)
+#' @param min_child_weight seq(1.0, 10.0, 1.0)
+#' @param subsample seq(0.55, 1.0, 0.05)
+#' @param colsample_bytree seq(0.55, 1.0, 0.05) 
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -25,103 +35,125 @@
 #' @examples
 #' \donttest{
 #' Output <- RemixAutoML::AutoXGBoostHurdleModel(
-#'   data,
-#'   ValidationData = NULL,
-#'   TestData = NULL,
-#'   Buckets = 1L,
-#'   TargetColumnName = "Target_Variable",
-#'   FeatureColNames = 4L:ncol(data),
-#'   IDcols = 1L:3L,
-#'   TransformNumericColumns = NULL,
-#'   SplitRatios = c(0.7, 0.2, 0.1),
-#'   TreeMethod = "hist",
-#'   NThreads = max(1L, parallel::detectCores()-2L),
-#'   ModelID = "ModelID",
-#'   Paths = NULL,
-#'   MetaDataPaths = NULL,
-#'   SaveModelObjects = TRUE,
-#'   Trees = 1000L,
-#'   GridTune = FALSE,
-#'   MaxModelsInGrid = 1L,
-#'   NumOfParDepPlots = 10L,
-#'   PassInGrid = NULL)
+#' # Operationalization args
+#' TreeMethod = "hist",
+#' TrainOnFull = FALSE,
+#' PassInGrid = NULL,
+#' 
+#' # Metadata args
+#' NThreads = max(1L, parallel::detectCores()-2L),
+#' ModelID = "ModelTest",
+#' Paths = NULL,
+#' MetaDataPaths = NULL,
+#' 
+#' # data args
+#' data,
+#' ValidationData = NULL,
+#' TestData = NULL,
+#' Buckets = 0L,
+#' TargetColumnName = NULL,
+#' FeatureColNames = NULL,
+#' IDcols = NULL,
+#' 
+#' # options
+#' TransformNumericColumns = NULL,
+#' SplitRatios = c(0.70, 0.20, 0.10),
+#' SaveModelObjects = FALSE,
+#' NumOfParDepPlots = 10L,
+#' 
+#' # grid tuning args
+#' GridTune = FALSE,
+#' grid_eval_metric = "accuracy",
+#' MaxModelsInGrid = 1L,
+#' BaselineComparison = "default",
+#' MaxRunsWithoutNewWinner = 10L,
+#' MaxRunMinutes = 60L,
+#' 
+#' # bandit hyperparameters
+#' Trees = 1000L,
+#' eta = seq(0.05,0.40,0.05),
+#' max_depth = seq(4L, 16L, 2L),
+#' 
+#' # random hyperparameters
+#' min_child_weight = seq(1.0, 10.0, 1.0),
+#' subsample = seq(0.55, 1.0, 0.05),
+#' colsample_bytree = seq(0.55, 1.0, 0.05))
 #' }
 #' @export
-AutoXGBoostHurdleModel <- function(data,
+AutoXGBoostHurdleModel <- function(# Operationalization args
+                                   TreeMethod = "hist",
+                                   TrainOnFull = FALSE,
+                                   PassInGrid = NULL,
+                                   
+                                   # Metadata args
+                                   NThreads = max(1L, parallel::detectCores()-2L),
+                                   ModelID = "ModelTest",
+                                   Paths = NULL,
+                                   MetaDataPaths = NULL,
+                                   
+                                   # data args
+                                   data,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    Buckets = 0L,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    IDcols = NULL,
+                                   
+                                   # options
                                    TransformNumericColumns = NULL,
                                    SplitRatios = c(0.70, 0.20, 0.10),
-                                   TreeMethod = "hist",
-                                   NThreads = max(1, parallel::detectCores()-2L),
-                                   ModelID = "ModelTest",
-                                   Paths = NULL,
-                                   MetaDataPaths = NULL,
-                                   SaveModelObjects = TRUE,
-                                   Trees = 1000L,
-                                   GridTune = TRUE,
-                                   MaxModelsInGrid = 1L,
+                                   SaveModelObjects = FALSE,
                                    NumOfParDepPlots = 10L,
-                                   PassInGrid = NULL) {
+                                   
+                                   # grid tuning args
+                                   GridTune = FALSE,
+                                   grid_eval_metric = "accuracy",
+                                   MaxModelsInGrid = 1L,
+                                   BaselineComparison = "default",
+                                   MaxRunsWithoutNewWinner = 10L,
+                                   MaxRunMinutes = 60L,
+                                   
+                                   # bandit hyperparameters
+                                   Trees = 1000L,
+                                   eta = seq(0.05,0.40,0.05),
+                                   max_depth = seq(4L, 16L, 2L),
+                                   
+                                   # random hyperparameters
+                                   min_child_weight = seq(1.0, 10.0, 1.0),
+                                   subsample = seq(0.55, 1.0, 0.05),
+                                   colsample_bytree = seq(0.55, 1.0, 0.05)) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
   
   # Check args----
-  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
-    return("Buckets needs to be a numeric scalar or vector")
-  }
-  if (!is.logical(SaveModelObjects)) {
-    return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  }
-  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) {
-    return("NumTrees needs to be a numeric scalar")
-  }
-  if (!is.logical(GridTune)) {
-    return("GridTune needs to be either TRUE or FALSE")
-  }
-  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) {
-    return("NumberModelsInGrid needs to be a numeric scalar")
-  }
+  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
+  if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) {
-    if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  }
-  if(!is.null(MetaDataPaths)) {
-    if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-  }
+  if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
+  if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
   if (!data.table::is.data.table(data)) data.table::setDT(data)
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  }
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  }
+  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # IDcols to Names----
-  if (!is.null(IDcols)) {
-    if (is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  }
+  if (!is.null(IDcols)) if (is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
   
   # FeatureColumnNames----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    FeatureNames <- names(data)[FeatureColNames]
-  } else {
-    FeatureNames <- FeatureColNames
-  }
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
   
   # Add target bucket column----
   if(length(Buckets) == 1L) {
-    data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1]), j = "Target_Buckets", value = 0L)
-    data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1]), j = "Target_Buckets", value = 1L)
+    data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
+    data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1L]), j = "Target_Buckets", value = 1L)
   } else {
     for (i in seq_len(length(Buckets) + 1L)) {
       if (i == 1L) {
@@ -180,70 +212,117 @@ AutoXGBoostHurdleModel <- function(data,
   # Begin classification model building----
   if (length(Buckets) == 1L) {
     ClassifierModel <- AutoXGBoostClassifier(
-      data = data,
-      ValidationData = ValidationData,
-      TestData = TestData,
-      TargetColumnName = "Target_Buckets",
-      FeatureColNames = FeatureNames,
-      IDcols = IDcols,
-      eval_metric = "AUC",
-      Trees = Trees,
-      GridTune = GridTune,
-      MaxModelsInGrid = MaxModelsInGrid,
-      NThreads = NThreads,
+      
+      # general args----
+      eval_metric = "auc",
+      TrainOnFull = TrainOnFull,
       TreeMethod = TreeMethod,
+      PassInGrid = PassInGrid,
+      NThreads = NThreads,
       model_path = Paths[1L],
       metadata_path = MetaDataPaths[1L],
       ModelID = ModelID,
-      NumOfParDepPlots = NumOfParDepPlots,
+      
+      # options----
       ReturnModelObjects = TRUE,
+      ReturnFactorLevels = TRUE,
+      Verbose = 1L,
+      NumOfParDepPlots = NumOfParDepPlots,
       SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL)
+      
+      # data args----
+      TargetColumnName = "Target_Buckets",
+      data = data,
+      ValidationData = ValidationData,
+      TestData = TestData,
+      FeatureColNames = FeatureNames,
+      IDcols = IDcols,
+      
+      # Grid tuning args----
+      GridTune = GridTune,
+      BaselineComparison = BaselineComparison,
+      MaxModelsInGrid = MaxModelsInGrid,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = MaxRunMinutes,
+      Shuffles = 2L,
+      
+      # bandit args----
+      Trees = Trees,
+      eta = eta,
+      max_depth = max_depth,
+      
+      # random args----
+      min_child_weight = min_child_weight,
+      subsample = subsample,
+      colsample_bytree = colsample_bytree)
+    
   } else {
     ClassifierModel <- AutoXGBoostMultiClass(
+      
+      # type
+      grid_eval_metric = grid_eval_metric,
+      eval_metric = "merror",
+      Objective = 'multi:softprob',
+
+            
+      # general args----
+      TrainOnFull = TrainOnFull,
+      TreeMethod = TreeMethod,
+      PassInGrid = PassInGrid,
+      NThreads = NThreads,
+      model_path = Paths[1L],
+      metadata_path = MetaDataPaths[1L],
+      ModelID = ModelID,
+      
+      # options----
+      ReturnModelObjects = TRUE,
+      ReturnFactorLevels = TRUE,
+      NumOfParDepPlots = NumOfParDepPlots,
+      SaveModelObjects = SaveModelObjects,
+      Verbose = 1L,
+      
+      # data args----
       data = data,
       ValidationData = ValidationData,
       TestData = TestData,
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
       IDcols = IDcols,
-      eval_metric = "merror",
-      Trees = Trees,
-      Objective = 'multi:softprob',
+      
+      # Grid tuning args----
       GridTune = GridTune,
+      BaselineComparison = BaselineComparison,
       MaxModelsInGrid = MaxModelsInGrid,
-      NThreads = NThreads,
-      TreeMethod = TreeMethod,
-      model_path = Paths[1L],
-      metadata_path = MetaDataPaths[1L],
-      ModelID = ModelID,
-      ReturnModelObjects = TRUE,
-      SaveModelObjects = SaveModelObjects,
-      PassInGrid = NULL)
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = MaxRunMinutes,
+      Shuffles = 2L,
+      
+      # bandit args----
+      Trees = Trees,
+      eta = eta,
+      max_depth = max_depth,
+      
+      # random args----
+      min_child_weight = min_child_weight,
+      subsample = subsample,
+      colsample_bytree = colsample_bytree)
+    
   }
   
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets > 1L)) {
-    TargetLevels <- ClassifierModel$TargetLevels
-  } else {
-    TargetLevels <- NULL
-  }
+  if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
   FactorLevelsListOutput <- ClassifierModel$FactorLevels
-  if(!is.null(FactorLevelsListOutput)) {
-    FactorLevelsList <- FactorLevelsListOutput
-  } else {
-    FactorLevelsList <- NULL
-  }
+  if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
   rm(ClassifierModel)
   
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
   
   # Score Classification Model----
-  if (length(Buckets) == 1) {
+  if (length(Buckets) == 1L) {
     TargetType <- "Classification"
     Objective <- NULL
   } else {
@@ -298,7 +377,8 @@ AutoXGBoostHurdleModel <- function(data,
   counter <- 0L
   Degenerate <- 0L
   for (bucket in rev(seq_len(length(Buckets) + 1L))) {
-    # Filter By Buckets----
+    
+    # Partition data----
     if (bucket == max(seq_len(length(Buckets) + 1L))) {
       if (!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -335,16 +415,12 @@ AutoXGBoostHurdleModel <- function(data,
     }
     
     # Create Modified IDcols----
-    IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
+    IDcolsModified <- unique(c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName))
     
     # Load Winning Grid if it exists----
-    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
-    }
-    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
-    }
-    
+    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
+    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+
     # AutoCatBoostRegression()----
     if (trainBucket[, .N] != 0L) {
       if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
@@ -402,14 +478,8 @@ AutoXGBoostHurdleModel <- function(data,
         # Store Model----
         RegressionModel <- TestModel$Model
         FactorLevelsListOutput <- TestModel$FactorLevelsList
-        if(!is.null(TransformNumericColumns)) {
-          TransformationResults <- TestModel$TransformationResults
-        }
-        if(!is.null(FactorLevelsListOutput)) {
-          FactorLevelsList <- FactorLevelsListOutput
-        } else {
-          FactorLevelsList <- NULL
-        }
+        if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel[["TransformationResults"]]
+        if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
         rm(TestModel)
         
         # Garbage Collection----
@@ -597,7 +667,7 @@ AutoXGBoostHurdleModel <- function(data,
     data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]])
   }
   
-  # Regression r2 via sqrt of correlation
+  # R-Sq----
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
   
   # Regression Save Validation Data to File----
@@ -619,15 +689,14 @@ AutoXGBoostHurdleModel <- function(data,
     aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title----
-  EvaluationPlot <- EvaluationPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
+  EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
+    if(!is.null(MetaDataPaths[1L])) {
       ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationPlot.png"))
     } else {
-      ggplot2::ggsave(paste0(Paths[1], "/", ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationPlot.png"))      
     }
   }
   
@@ -641,12 +710,11 @@ AutoXGBoostHurdleModel <- function(data,
     aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title----
-  EvaluationBoxPlot <- EvaluationBoxPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
+  EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
+    if(!is.null(MetaDataPaths[1L])) {
       ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))
     } else {
       ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))      
@@ -654,7 +722,7 @@ AutoXGBoostHurdleModel <- function(data,
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999L, 8L))
+  EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999, 8L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
   for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
