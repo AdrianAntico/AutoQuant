@@ -1,6 +1,9 @@
 #' AutoXGBoostHurdleModel is generalized hurdle modeling framework
+#' 
+#' AutoXGBoostHurdleModel is generalized hurdle modeling framework
 #'
 #' @family Automated Regression
+#' @author Adrian Antico
 #' @param TrainOnFull Set to TRUE to train model on 100% of data
 #' @param grid_eval_metric Select the metric to optimize in grid tuning. "accuracy", "microauc", "logloss"
 #' @param BaselineComparison "default"
@@ -35,49 +38,49 @@
 #' @examples
 #' \donttest{
 #' Output <- RemixAutoML::AutoXGBoostHurdleModel(
-#' # Operationalization args
-#' TreeMethod = "hist",
-#' TrainOnFull = FALSE,
-#' PassInGrid = NULL,
+#'    # Operationalization args
+#'    TreeMethod = "hist",
+#'    TrainOnFull = FALSE,
+#'    PassInGrid = NULL,
 #' 
-#' # Metadata args
-#' NThreads = max(1L, parallel::detectCores()-2L),
-#' ModelID = "ModelTest",
-#' Paths = NULL,
-#' MetaDataPaths = NULL,
+#'    # Metadata args
+#'    NThreads = max(1L, parallel::detectCores()-2L),
+#'    ModelID = "ModelTest",
+#'    Paths = NULL,
+#'    MetaDataPaths = NULL,
 #' 
-#' # data args
-#' data,
-#' ValidationData = NULL,
-#' TestData = NULL,
-#' Buckets = 0L,
-#' TargetColumnName = NULL,
-#' FeatureColNames = NULL,
-#' IDcols = NULL,
+#'    # data args
+#'    data,
+#'    ValidationData = NULL,
+#'    TestData = NULL,
+#'    Buckets = 0L,
+#'    TargetColumnName = NULL,
+#'    FeatureColNames = NULL,
+#'    IDcols = NULL,
 #' 
-#' # options
-#' TransformNumericColumns = NULL,
-#' SplitRatios = c(0.70, 0.20, 0.10),
-#' SaveModelObjects = FALSE,
-#' NumOfParDepPlots = 10L,
+#'    # options
+#'    TransformNumericColumns = NULL,
+#'    SplitRatios = c(0.70, 0.20, 0.10),
+#'    SaveModelObjects = FALSE,
+#'    NumOfParDepPlots = 10L,
 #' 
-#' # grid tuning args
-#' GridTune = FALSE,
-#' grid_eval_metric = "accuracy",
-#' MaxModelsInGrid = 1L,
-#' BaselineComparison = "default",
-#' MaxRunsWithoutNewWinner = 10L,
-#' MaxRunMinutes = 60L,
+#'    # grid tuning args
+#'    GridTune = FALSE,
+#'    grid_eval_metric = "accuracy",
+#'    MaxModelsInGrid = 1L,
+#'    BaselineComparison = "default",
+#'    MaxRunsWithoutNewWinner = 10L,
+#'    MaxRunMinutes = 60L,
 #' 
-#' # bandit hyperparameters
-#' Trees = 1000L,
-#' eta = seq(0.05,0.40,0.05),
-#' max_depth = seq(4L, 16L, 2L),
+#'    # bandit hyperparameters
+#'    Trees = 1000L,
+#'    eta = seq(0.05,0.40,0.05),
+#'    max_depth = seq(4L, 16L, 2L),
 #' 
-#' # random hyperparameters
-#' min_child_weight = seq(1.0, 10.0, 1.0),
-#' subsample = seq(0.55, 1.0, 0.05),
-#' colsample_bytree = seq(0.55, 1.0, 0.05))
+#'    # random hyperparameters
+#'    min_child_weight = seq(1.0, 10.0, 1.0),
+#'    subsample = seq(0.55, 1.0, 0.05),
+#'    colsample_bytree = seq(0.55, 1.0, 0.05))
 #' }
 #' @export
 AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
