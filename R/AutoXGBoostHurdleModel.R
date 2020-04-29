@@ -80,18 +80,13 @@
 #' colsample_bytree = seq(0.55, 1.0, 0.05))
 #' }
 #' @export
-AutoXGBoostHurdleModel <- function(# Operationalization args
-                                   TreeMethod = "hist",
+AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    TrainOnFull = FALSE,
                                    PassInGrid = NULL,
-                                   
-                                   # Metadata args
                                    NThreads = max(1L, parallel::detectCores()-2L),
                                    ModelID = "ModelTest",
                                    Paths = NULL,
                                    MetaDataPaths = NULL,
-                                   
-                                   # data args
                                    data,
                                    ValidationData = NULL,
                                    TestData = NULL,
@@ -99,27 +94,19 @@ AutoXGBoostHurdleModel <- function(# Operationalization args
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    IDcols = NULL,
-                                   
-                                   # options
                                    TransformNumericColumns = NULL,
                                    SplitRatios = c(0.70, 0.20, 0.10),
                                    SaveModelObjects = FALSE,
                                    NumOfParDepPlots = 10L,
-                                   
-                                   # grid tuning args
                                    GridTune = FALSE,
                                    grid_eval_metric = "accuracy",
                                    MaxModelsInGrid = 1L,
                                    BaselineComparison = "default",
                                    MaxRunsWithoutNewWinner = 10L,
                                    MaxRunMinutes = 60L,
-                                   
-                                   # bandit hyperparameters
                                    Trees = 1000L,
                                    eta = seq(0.05,0.40,0.05),
                                    max_depth = seq(4L, 16L, 2L),
-                                   
-                                   # random hyperparameters
                                    min_child_weight = seq(1.0, 10.0, 1.0),
                                    subsample = seq(0.55, 1.0, 0.05),
                                    colsample_bytree = seq(0.55, 1.0, 0.05)) {
