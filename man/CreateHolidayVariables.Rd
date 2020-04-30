@@ -47,7 +47,8 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{ContinuousTimeDataGenerator}},
   \code{\link{CreateCalendarVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{ModelDataPrep}},
+  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
+  \code{\link{ModelDataPrep}},
   \code{\link{Partial_DT_GDL_Feature_Engineering}},
   \code{\link{TimeSeriesFill}}
 }

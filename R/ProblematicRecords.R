@@ -1,6 +1,6 @@
-#' ProblematicRecords identifies problematic records for further investigation
+#' AutoH2oIsolationForest identifies problematic records for further investigation
 #'
-#' ProblematicRecords identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
+#' AutoH2oIsolationForest identifies problematic records for further investigation and data.table with 3 additional columns at the beginning of the data.table: PredictedOutlier (0 = no outlier, 1 = outlier), predict (raw H2O predicted value from Isolation Forest), and mean_length (mean length of number of splits)
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
@@ -19,74 +19,58 @@
 #' data <- data.table::data.table(Target = runif(N))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                            sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                            sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                                sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 #' data[, Target := as.factor(
-#'  ifelse(Independent_Variable2 < 0.20, "A",
-#'         ifelse(Independent_Variable2 < 0.40, "B",
-#'                ifelse(Independent_Variable2 < 0.6,  "C",
-#'                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#'  data.table::fifelse(Independent_Variable2 < 0.20, "A",
+#'         data.table::fifelse(Independent_Variable2 < 0.40, "B",
+#'                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
+#'                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #' data[, Independent_Variable11 := as.factor(
-#'  ifelse(Independent_Variable2 < 0.15, "A",
-#'         ifelse(Independent_Variable2 < 0.45, "B",
-#'                ifelse(Independent_Variable2 < 0.65,  "C",
-#'                       ifelse(Independent_Variable2 < 0.85,  "D", "E")))))]
+#'  data.table::fifelse(Independent_Variable2 < 0.15, "A",
+#'         data.table::fifelse(Independent_Variable2 < 0.45, "B",
+#'                data.table::fifelse(Independent_Variable2 < 0.65,  "C",
+#'                       data.table::fifelse(Independent_Variable2 < 0.85,  "D", "E")))))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' Outliers <- ProblematicRecords(data,
 #'                                TestData = NULL,
 #'                                ColumnNumbers = NULL,
 #'                                Threshold = 0.95,
 #'                                MaxMem = "28G",
-#'                                NThreads = -1)
+#'                                NThreads = -1,
+#'                                NTrees = 100,
+#'                                SampleRate = (sqrt(5)-1)/2)
 #' }
 #' @return A data.table
 #' @export
-ProblematicRecords <- function(data,
-                               TestData = NULL,
-                               ColumnNumbers = NULL,
-                               Threshold = 0.975,
-                               MaxMem = "28G",
-                               NThreads = -1,
-                               NTrees = 100,
-                               SampleRate = (sqrt(5)-1)/2) {
+AutoH2oIsolationForest <- function(data,
+                                   TestData = NULL,
+                                   ColumnNumbers = NULL,
+                                   Threshold = 0.975,
+                                   MaxMem = "28G",
+                                   NThreads = -1,
+                                   NTrees = 100,
+                                   SampleRate = (sqrt(5)-1)/2) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
   
   # Ensure H2O is installed----
-  if (!requireNamespace("h2o")) {
-    warning("Install H2O to run this function")
-  }
+  if (!requireNamespace("h2o")) return("Install H2O to run this function")
   
   # Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Ensure data is a data.table----
-  if(!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) {
-      TestData <- data.table::as.data.table(TestData)
-    }  
-  }
+  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
   
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)

@@ -45,7 +45,7 @@
 #' \donttest{
 #' data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 #' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-#' Forecast1 <- AutoCatBoostCARMA(
+#' Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
 #'   
 #'   # Data Artifacts
 #'   data = data,

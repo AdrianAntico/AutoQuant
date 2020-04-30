@@ -54,8 +54,9 @@ AutoKMeans adds a column to your original data with a cluster number identifier.
 }
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{GenTSAnomVars}},
-  \code{\link{ProblematicRecords}},
+Other Unsupervised Learning: \code{\link{AutoH2oIsolationForest}},
+  \code{\link{GenTSAnomVars}},
+  \code{\link{H2oIsolationForest}},
   \code{\link{ResidualOutliers}}
 }
 \author{

@@ -103,8 +103,8 @@ Other Feature Engineering: \code{\link{AutoDataPartition}},
   \code{\link{CreateCalendarVariables}},
   \code{\link{CreateHolidayVariables}},
   \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{ModelDataPrep}},
-  \code{\link{TimeSeriesFill}}
+  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
+  \code{\link{ModelDataPrep}}, \code{\link{TimeSeriesFill}}
 }
 \author{
 Adrian Antico
