@@ -80,8 +80,8 @@ Outliers <- H2oIsolationForest(data,
 }
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{AutoH2oIsolationForest}},
-  \code{\link{AutoKMeans}}, \code{\link{GenTSAnomVars}},
+Other Unsupervised Learning: \code{\link{AutoKMeans}},
+  \code{\link{GenTSAnomVars}},
   \code{\link{ResidualOutliers}}
 }
 \author{

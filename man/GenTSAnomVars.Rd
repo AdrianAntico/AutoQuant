@@ -55,8 +55,7 @@ stuff <- GenTSAnomVars(data,
                     IsDataScaled  = FALSE)
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{AutoH2oIsolationForest}},
-  \code{\link{AutoKMeans}},
+Other Unsupervised Learning: \code{\link{AutoKMeans}},
   \code{\link{H2oIsolationForest}},
   \code{\link{ResidualOutliers}}
 }
