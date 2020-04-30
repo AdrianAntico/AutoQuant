@@ -586,8 +586,11 @@ For each of the models tested internally, several aspects should be noted:
 ##### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
-##### **ProblematicRecords()**
-<code>ProblematicRecords()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
+##### **H2oAutoencoder()**
+<code>H2oAutoencoder()</code> Use for dimension reduction and anomaly detection
+
+##### **H2oIsolationForest()**
+<code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 </p>
 </details>
