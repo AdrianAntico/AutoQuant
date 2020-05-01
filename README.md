@@ -52,12 +52,12 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-# Installing RemixAutoML in 2 Easy Steps:
+### Installing RemixAutoML in 2 Easy Steps:
 
 <details><summary>Expand to view content</summary>
 <p>
 
-### 1. First, install R package dependencies: 
+#### 1. First, install R package dependencies: 
 XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
  [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
  
@@ -86,14 +86,14 @@ for (i in to_install) {
 ```
 
 
-### 2. Next, install RemixAutoML via GitHub:
+#### 2. Next, install RemixAutoML via GitHub:
 
 ```
 # Install RemixAutoML:
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
-## Installation Troubleshooting 
+### Installation Troubleshooting 
 The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
 If you're still having trouble submit an issue and I'll work with you to get it installed.
 
