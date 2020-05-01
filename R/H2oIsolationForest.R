@@ -21,7 +21,7 @@
 #' Correl <- 0.85
 #' 
 #' # Number of rows you want returned
-#' N <- 10000
+#' N <- 10000L
 #' 
 #' # Create data
 #' data <- data.table::data.table(Target = runif(N))
@@ -47,7 +47,7 @@
 #'         data.table::fifelse(Independent_Variable2 < 0.45, "B",
 #'                data.table::fifelse(Independent_Variable2 < 0.65,  "C",
 #'                       data.table::fifelse(Independent_Variable2 < 0.85,  "D", "E")))))]
-#' data.table::set(data, j = c("x1", "x2"))
+#' data.table::set(data, j = c("x1", "x2"), value = NULL)
 #' 
 #' # Run algo
 #' Outliers <- H2oIsolationForest(data,
