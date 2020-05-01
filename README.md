@@ -54,6 +54,9 @@ Supply a data.table to run the functions below:
 
 # Installing RemixAutoML in 2 Easy Steps:
 
+<details><summary>Expand to view content</summary>
+<p>
+
 ### 1. First, install R package dependencies: 
 XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
  [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
@@ -103,6 +106,9 @@ install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3
 If you're having still having trouble installing see if the issue below helps out:
 
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
+
+</p>
+</details>
 
 ## RemixAutoML Blogs: 
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
