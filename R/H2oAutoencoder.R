@@ -191,7 +191,7 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
         data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
       ValData <- cbind(
         ValidationData, 
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer))
+        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer)))
     } else {
       Data <- cbind(
         data,
