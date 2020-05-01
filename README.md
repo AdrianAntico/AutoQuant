@@ -8,7 +8,7 @@
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
-### Install RemixAutoML:
+## Install RemixAutoML:
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -66,7 +66,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-### Intro to RemixAutoML:
+## Intro to RemixAutoML:
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -83,7 +83,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-### Common Workflows with RemixAutoML:
+## Common Workflows with RemixAutoML:
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -127,6 +127,10 @@ Supply a data.table to run the functions below:
 </details>
 
 ## RemixAutoML Blogs: 
+
+<details><summary>Expand to view content</summary>
+<p>
+
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
 
 [AI for Small to Medium Size Businesses: A Management Take On The Challenges...](https://www.remixinstitute.com/blog/business-ai-for-small-to-medium-sized-businesses-with-remixautoml/#.XX-lD2ZlD8A)
@@ -141,10 +145,13 @@ Supply a data.table to run the functions below:
 
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
+</p>
+</details>
+
 ## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-  
+
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 <code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
 
