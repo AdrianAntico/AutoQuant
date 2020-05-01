@@ -172,7 +172,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Automated Supervised Learning Training Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
+## Automated Supervised Learning Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary> 
 <p>
   
