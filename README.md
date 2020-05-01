@@ -11,47 +11,6 @@
 # RemixAutoML
 > Automated Machine Learning - In my view, AutoML should consist of functions to help make the model development and operationalization process more efficient. Most projects include some form of data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and operationalization. All functions here are written with optimized data.table code so they're fast and memory efficient, and they cover all the areas in the model process that matter, instead of only focusing on things like grid tuning. The current set of models were chosen for their ability to work with big data and their ability to outperform other models, as demonstrated in real world projects. The focus of the package is quality, not quantity. If you have limited time to deliver a model this package can get you there fast with high performance. If you don't have limited time, you can use this package to get you to a baseline starting point quickly. Once there, you can spend time exploring alternative methods and compare them to what you've put together from this package, to help guide your exploration process.
 
-> Supervised Learning - Currently, I'm utilizing CatBoost, H2O, and XGBoost for all of the automated Machine Learning related functions because they're highly accurate, flexible, can handle big data, and GPU is enabled for CatBoost and XGBoost. Multi-armed bandit grid tuning is also available for CatBoost and XGBoost models, which utilize randomized probability matching. For time series forecasting models, I've automated the steps to utilize the forecast package to its upmost, along with blending methods from reinforcement learning, to make forecasting even more accurate and automated. There are also some pretty sophisticated forecasting models for panel data (can also use for single series) that utilize machine learning algos and offer a rich variety of feature engineering and transformation methods built in and controlled via function arguments so they're highly flexible.
-
-> Feature Engineering - Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function runs extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the data.table guys admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeated to deliver those features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically for on-demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
-
-> Documentation - I'm aware the documentation isn't as complete as I'd like so here is some guidance for navigating and using the package. For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me over an email there.
-
-### Supervised Learning
-#### An example workflow with function references
-<details><summary>Expand to view content</summary>
-<p>
- 
-1. Pull in data from your data warehouse (or from wherever) and clean it up
-2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoWord2VecModeler()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
-3. Partition your data with <code>AutoDataPartition()</code> if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
-4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
-5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
-6. Run <code>AutoH2oGBMRegression()</code> or <code>AutoH2oGBMClassifier()</code> or <code>AutoH2oGBMMultiClass()</code> if you have the patience to wait for a CPU build.
-7. Run <code>AutoH2oGLMRegression()</code> or <code>AutoH2oGLMClassifier()</code> or <code>AutoH2oGLMMultiClass()</code> if you want to give a generalized linear model a shot.
-8. Run <code>AutoH2oMLRegression()</code> or <code>AutoH2oMLClassifier()</code> or <code>AutoH2oMLMultiClass()</code> to run H2O's AutoML function inside the RemixAutoML framework.
-9. Run <code>AutoH2oDRFRegression()</code> or <code>AutoH2oDRFClassifier()</code> or <code>AutoH2oDRFMultiClass()</code> H2O's Distributed Random Forest can take a really long time to build. H2O's documentation has a great explanation for the reason why it takes much longer compared to their GBM algo.
-10. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
-12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
-12. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
-13. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get that time to explore so you can learn new things.
-
-</p>
-</details>
-
-### Forecasting
-#### Single series and panel data using Time Series models or Machine Learning models
-
-<details><summary>Expand to view content</summary>
-<p>
- 
-Supply a data.table to run the functions below:
-1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
-
-</p>
-</details>
-
 ### Installing RemixAutoML in 2 Easy Steps:
 
 <details><summary>Expand to view content</summary>
@@ -106,6 +65,47 @@ install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3
 If you're having still having trouble installing see if the issue below helps out:
 
 ![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
+
+</p>
+</details>
+
+> Supervised Learning - Currently, I'm utilizing CatBoost, H2O, and XGBoost for all of the automated Machine Learning related functions because they're highly accurate, flexible, can handle big data, and GPU is enabled for CatBoost and XGBoost. Multi-armed bandit grid tuning is also available for CatBoost and XGBoost models, which utilize randomized probability matching. For time series forecasting models, I've automated the steps to utilize the forecast package to its upmost, along with blending methods from reinforcement learning, to make forecasting even more accurate and automated. There are also some pretty sophisticated forecasting models for panel data (can also use for single series) that utilize machine learning algos and offer a rich variety of feature engineering and transformation methods built in and controlled via function arguments so they're highly flexible.
+
+> Feature Engineering - Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function runs extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the data.table guys admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeated to deliver those features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically for on-demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
+
+> Documentation - I'm aware the documentation isn't as complete as I'd like so here is some guidance for navigating and using the package. For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me over an email there.
+
+### Supervised Learning
+#### An example workflow with function references
+<details><summary>Expand to view content</summary>
+<p>
+ 
+1. Pull in data from your data warehouse (or from wherever) and clean it up
+2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoWord2VecModeler()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
+3. Partition your data with <code>AutoDataPartition()</code> if you don't want to go with a 70/20/10 split that is automatically applied in the supervised learning model functions if you don't supply the ValidationData and TestData.
+4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
+5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
+6. Run <code>AutoH2oGBMRegression()</code> or <code>AutoH2oGBMClassifier()</code> or <code>AutoH2oGBMMultiClass()</code> if you have the patience to wait for a CPU build.
+7. Run <code>AutoH2oGLMRegression()</code> or <code>AutoH2oGLMClassifier()</code> or <code>AutoH2oGLMMultiClass()</code> if you want to give a generalized linear model a shot.
+8. Run <code>AutoH2oMLRegression()</code> or <code>AutoH2oMLClassifier()</code> or <code>AutoH2oMLMultiClass()</code> to run H2O's AutoML function inside the RemixAutoML framework.
+9. Run <code>AutoH2oDRFRegression()</code> or <code>AutoH2oDRFClassifier()</code> or <code>AutoH2oDRFMultiClass()</code> H2O's Distributed Random Forest can take a really long time to build. H2O's documentation has a great explanation for the reason why it takes much longer compared to their GBM algo.
+10. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
+12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
+12. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
+13. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get that time to explore so you can learn new things.
+
+</p>
+</details>
+
+### Forecasting
+#### Single series and panel data using Time Series models or Machine Learning models
+
+<details><summary>Expand to view content</summary>
+<p>
+ 
+Supply a data.table to run the functions below:
+1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
+2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
 
 </p>
 </details>
