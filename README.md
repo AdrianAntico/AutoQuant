@@ -611,7 +611,7 @@ For each of the models tested internally, several aspects should be noted:
 <code>ModelDataPrep()</code> This functions creates new columns that extract the calendar information from date columns, such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
 
 ##### **CreateHolidayVariable()**
-<code>ModelDataPrep()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp.
+<code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp.
 
 ##### **AutoHierarchicalFourier()**
 <code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
