@@ -202,5 +202,5 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
   if(H2oShutdown) h2o::h2o.shutdown(prompt = FALSE)
   
   # Return output----
-  return(list(Data = data, Model = Model, ValidationData = if(!is.null(ValidationData)) ValidationData else NULL))
+  return(list(Data = Data, Model = Model, ValidationData = if(!is.null(ValidationData)) ValidationData else NULL))
 }
