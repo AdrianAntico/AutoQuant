@@ -170,31 +170,46 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
   if(AnomalyDetection & DimensionReduction) {
     if(!is.null(ValidationData)) {
       Data <- cbind(
+        data,
         data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
         data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
-      ValidationData <- cbind(
+      ValData <- cbind(
+        ValidationData,
         data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer)),
         data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Validation, per_feature = per_feature)))
     } else {
       Data <- cbind(
+        data,
         data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
         data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
     }
   }
   if(!AnomalyDetection & DimensionReduction) {
     if(!is.null(ValidationData)) {
-      Data <- data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer))
-      ValidationData <- data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer))
+      Data <- cbind(
+        data, 
+        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
+      ValData <- cbind(
+        ValidationData, 
+        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer))
     } else {
-      Data <- data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer))
+      Data <- cbind(
+        data,
+        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
     }
   }
   if(AnomalyDetection & !DimensionReduction) {
     if(!is.null(ValidationData)) {
-      Data <- data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature))
-      ValidationData <- data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Validation, per_feature = per_feature))
+      Data <- cbind(
+        data,
+        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
+      ValData <- cbind(
+        ValidationData,
+        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Validation, per_feature = per_feature)))
     } else {
-      Data <- data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature))
+      Data <- cbind(
+        data, 
+        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
     }
   }
   
@@ -202,5 +217,5 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
   if(H2oShutdown) h2o::h2o.shutdown(prompt = FALSE)
   
   # Return output----
-  return(list(Data = Data, Model = Model, ValidationData = if(!is.null(ValidationData)) ValidationData else NULL))
+  return(list(Data = Data, Model = Model, ValidationData = if(!is.null(ValidationData)) ValData else NULL))
 }
