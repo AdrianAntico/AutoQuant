@@ -11,7 +11,7 @@
 # RemixAutoML
 > Automated Machine Learning - In my view, AutoML should consist of functions to help make the model development and operationalization process more efficient. Most projects include some form of data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and operationalization. All functions here are written with optimized data.table code so they're fast and memory efficient, and they cover all the areas in the model process that matter, instead of only focusing on things like grid tuning. The current set of models were chosen for their ability to work with big data and their ability to outperform other models, as demonstrated in real world projects. The focus of the package is quality, not quantity. If you have limited time to deliver a model this package can get you there fast with high performance. If you don't have limited time, you can use this package to get you to a baseline starting point quickly. Once there, you can spend time exploring alternative methods and compare them to what you've put together from this package, to help guide your exploration process.
 
-## Installing RemixAutoML in 2 Easy Steps:
+## Install RemixAutoML:
 
 <details><summary>Expand to view content</summary>
 <p>
