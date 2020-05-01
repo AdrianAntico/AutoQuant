@@ -76,6 +76,12 @@ If you're having still having trouble installing see if the issue below helps ou
 
 > Documentation - I'm aware the documentation isn't as complete as I'd like so here is some guidance for navigating and using the package. For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me over an email there.
 
+
+## Common Workflows with RemixAutoML:
+
+<details><summary>Expand to view content</summary>
+<p>
+
 ### Supervised Learning
 #### An example workflow with function references
 <details><summary>Expand to view content</summary>
@@ -107,6 +113,9 @@ If you're having still having trouble installing see if the issue below helps ou
 Supply a data.table to run the functions below:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
 2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
+
+</p>
+</details>
 
 </p>
 </details>
