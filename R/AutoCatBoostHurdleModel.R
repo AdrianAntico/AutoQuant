@@ -74,68 +74,35 @@ AutoCatBoostHurdleModel <- function(data,
                                     NumOfParDepPlots = 10L,
                                     PassInGrid = NULL) {
   # Check args----
-  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
-    return("Buckets needs to be a numeric scalar or vector")
-  }
-  if (!is.logical(SaveModelObjects)) {
-    return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  }
-  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) {
-    return("NumTrees needs to be a numeric scalar")
-  }
-  if (!is.logical(GridTune)) {
-    return("GridTune needs to be either TRUE or FALSE")
-  }
-  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) {
-    return("NumberModelsInGrid needs to be a numeric scalar")
-  }
-  
+  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
+  if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
+
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
 
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) {
-    if (length(Paths) == 1L) {
-      Paths <- rep(Paths, length(Buckets) + 1L)
-    }    
-  }
+  if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
 
   # Initialize collection and counter----
-  if(!is.null(MetaDataPaths)) {
-    if (length(MetaDataPaths) == 1L) {
-      MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-    }    
-  }
+  if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
   if (!data.table::is.data.table(data)) data.table::setDT(data)
-  
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  }
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  }
+  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # IDcols to Names----
-  if (!is.null(IDcols)) {
-    if (is.numeric(IDcols) | is.integer(IDcols)) {
-      IDcols <- names(data)[IDcols]
-    }
-  }
+  if (!is.null(IDcols)) if (is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
   
   # Primary Date Column----
-  if (is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) {
-    PrimaryDateColumn <- names(data)[PrimaryDateColumn]
-  }
+  if (is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
   
   # FeatureColumnNames----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    FeatureNames <- names(data)[FeatureColNames]
-  } else {
-    FeatureNames <- FeatureColNames
-  }
+  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
   
   # Add target bucket column----
   if(length(Buckets) == 1L) {
@@ -246,22 +213,14 @@ AutoCatBoostHurdleModel <- function(data,
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets > 1L)) {
-    TargetLevels <- ClassifierModel$TargetLevels
-  } else {
-    TargetLevels <- NULL
-  }
+  if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
   rm(ClassifierModel)
   
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
   
   # Score Classification Model----
-  if (length(Buckets) == 1) {
-    TargetType <- "Classification"
-  } else {
-    TargetType <- "Multiclass"
-  }
+  if (length(Buckets) == 1) TargetType <- "Classification" else TargetType <- "Multiclass"
    
   # Model Scoring---- 
   TestData <- AutoCatBoostScoring(
@@ -304,9 +263,7 @@ AutoCatBoostHurdleModel <- function(data,
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   
   # Change Name of Predicted MultiClass Column----
-  if(length(Buckets) != 1L) {
-    data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-  }
+  if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   
   # Begin regression model building----
   counter <- 0L
@@ -410,9 +367,7 @@ AutoCatBoostHurdleModel <- function(data,
         
         # Store Model----
         RegressionModel <- TestModel$Model
-        if(!is.null(TransformNumericColumns)) {
-          TransformationResults <- TestModel$TransformationResults
-        }
+        if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel$TransformationResults
         rm(TestModel)
         
         # Garbage Collection----
@@ -635,8 +590,7 @@ AutoCatBoostHurdleModel <- function(data,
     aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title----
-  EvaluationBoxPlot <- EvaluationBoxPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
+  EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
   
   # Save plot to file----
   if (SaveModelObjects) {
@@ -652,7 +606,7 @@ AutoCatBoostHurdleModel <- function(data,
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
   for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1L)
+    i <- i + 1L
     tryCatch({
       if (tolower(metric) == "poisson") {
         if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
