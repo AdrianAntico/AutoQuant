@@ -148,7 +148,7 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FunctionReference.png" align="center" width="500" />
 
 ## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
