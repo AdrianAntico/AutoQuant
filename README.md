@@ -8,14 +8,85 @@
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
-# RemixAutoML
+## Install RemixAutoML:
+
+<details><summary>Expand to view content</summary>
+<p>
+
+#### 1. First, install R package dependencies: 
+XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
+ [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
+ 
+```
+library(devtools)
+to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
+  "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
+  "magick","Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
+  "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud","Rcpp","RODBC")
+for (i in to_install) {
+  message(paste("looking for ", i))
+  if(i == "catboost" & !requireNamespace(i)) {
+    devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Windows-0.22.tgz', build_opts = c("--no-multiarch"))
+  } else if(i == "h2o" & !requireNamespace(i)) {
+    pkgs <- c("RCurl","jsonlite")
+    for (pkg in pkgs) {
+      if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+    }
+    install.packages("h2o", type="source", repos="http://h2o-release.s3.amazonaws.com/h2o/rel-zahradnik/1/R")
+  } else if (!requireNamespace(i)) {
+    message(paste("     installing", i))
+    install.packages(i)
+  }
+}
+```
+
+
+#### 2. Next, install RemixAutoML via GitHub:
+
+```
+# Install RemixAutoML:
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+```
+
+### Installation Troubleshooting 
+The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+If you're still having trouble submit an issue and I'll work with you to get it installed.
+
+```
+# Be sure to use the version you want versus what is listed below
+options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+```
+ 
+If you're having still having trouble installing see if the issue below helps out:
+
+![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
+
+</p>
+</details>
+
+## Intro to RemixAutoML:
+
+<details><summary>Expand to view content</summary>
+<p>
+
 > Automated Machine Learning - In my view, AutoML should consist of functions to help make the model development and operationalization process more efficient. Most projects include some form of data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and operationalization. All functions here are written with optimized data.table code so they're fast and memory efficient, and they cover all the areas in the model process that matter, instead of only focusing on things like grid tuning. The current set of models were chosen for their ability to work with big data and their ability to outperform other models, as demonstrated in real world projects. The focus of the package is quality, not quantity. If you have limited time to deliver a model this package can get you there fast with high performance. If you don't have limited time, you can use this package to get you to a baseline starting point quickly. Once there, you can spend time exploring alternative methods and compare them to what you've put together from this package, to help guide your exploration process.
 
+### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, H2O, and XGBoost for all of the automated Machine Learning related functions because they're highly accurate, flexible, can handle big data, and GPU is enabled for CatBoost and XGBoost. Multi-armed bandit grid tuning is also available for CatBoost and XGBoost models, which utilize randomized probability matching. For time series forecasting models, I've automated the steps to utilize the forecast package to its upmost, along with blending methods from reinforcement learning, to make forecasting even more accurate and automated. There are also some pretty sophisticated forecasting models for panel data (can also use for single series) that utilize machine learning algos and offer a rich variety of feature engineering and transformation methods built in and controlled via function arguments so they're highly flexible.
 
 > Feature Engineering - Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function runs extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the data.table guys admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeated to deliver those features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically for on-demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
 
 > Documentation - I'm aware the documentation isn't as complete as I'd like so here is some guidance for navigating and using the package. For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. You can contact me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me over an email there.
+
+</p>
+</details>
+
+## Common Workflows with RemixAutoML:
+
+<details><summary>Expand to view content</summary>
+<p>
 
 ### Supervised Learning
 #### An example workflow with function references
@@ -52,59 +123,14 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-# Installing RemixAutoML in 2 Easy Steps:
-
-### 1. First, install R package dependencies: 
-XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
- [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
- 
-```
-library(devtools)
-to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
-  "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
-  "magick","Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
-  "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud","Rcpp","RODBC")
-for (i in to_install) {
-  message(paste("looking for ", i))
-  if(i == "catboost" & !requireNamespace(i)) {
-    devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Windows-0.22.tgz', build_opts = c("--no-multiarch"))
-  } else if(i == "h2o" & !requireNamespace(i)) {
-    pkgs <- c("RCurl","jsonlite")
-    for (pkg in pkgs) {
-      if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
-    }
-    install.packages("h2o", type="source", repos="http://h2o-release.s3.amazonaws.com/h2o/rel-zahradnik/1/R")
-  } else if (!requireNamespace(i)) {
-    message(paste("     installing", i))
-    install.packages(i)
-  }
-}
-```
-
-
-### 2. Next, install RemixAutoML via GitHub:
-
-```
-# Install RemixAutoML:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
-```
-
-## Installation Troubleshooting 
-The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
-If you're still having trouble submit an issue and I'll work with you to get it installed.
-
-```
-# Be sure to use the version you want versus what is listed below
-options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
-install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
-```
- 
-If you're having still having trouble installing see if the issue below helps out:
-
-![Issue #19](https://github.com/AdrianAntico/RemixAutoML/issues/19)
+</p>
+</details>
 
 ## RemixAutoML Blogs: 
+
+<details><summary>Expand to view content</summary>
+<p>
+
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
 
 [AI for Small to Medium Size Businesses: A Management Take On The Challenges...](https://www.remixinstitute.com/blog/business-ai-for-small-to-medium-sized-businesses-with-remixautoml/#.XX-lD2ZlD8A)
@@ -119,10 +145,15 @@ If you're having still having trouble installing see if the issue below helps ou
 
 [The Easiest Way to Create Thresholds And Improve Your Classification Model](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
 
+</p>
+</details>
+
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
+
 ## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-  
+
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 <code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
 
