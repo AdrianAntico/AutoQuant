@@ -19,6 +19,7 @@ Other Data Wrangling: \code{\link{AutoDataDictionaries}},
   \code{\link{AutoHierarchicalFourier}},
   \code{\link{ColumnSubsetDataTable}},
   \code{\link{DataDisplayMeta}},
+  \code{\link{FakeDataGenerator}},
   \code{\link{SQL_Server_DBConnection}},
   \code{\link{TimeSeriesMelt}}
 }
