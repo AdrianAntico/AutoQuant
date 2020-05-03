@@ -461,29 +461,54 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         if(!is.null(TransformNumericColumns)) Trans <- TransformationResults  else TransformationResults <- NULL
           
         # Score model----
-        TestData <- AutoXGBoostScoring(
-          TargetType = "regression",
-          ScoringData = TestData,
-          FeatureColumnNames = FeatureNames,
-          IDcols = IDcolsModified,
-          FactorLevelsList = FactorLevelsList,
-          OneHot = FALSE,
-          ModelObject = RegressionModel,
-          ModelPath = Paths[1L],
-          ModelID = ModelIDD,
-          ReturnFeatures = TRUE,
-          TransformNumeric = TRUE,
-          BackTransNumeric = TRUE,
-          TargetColumnName = eval(TargetColumnName),
-          TransformationObject = TransformationResults,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = FALSE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
-        
+        if(!is.null(TransformNumericColumns)) {
+          TestData <- AutoXGBoostScoring(
+            TargetType = "regression",
+            ScoringData = TestData,
+            FeatureColumnNames = FeatureNames,
+            IDcols = IDcolsModified,
+            FactorLevelsList = FactorLevelsList,
+            OneHot = FALSE,
+            ModelObject = RegressionModel,
+            ModelPath = Paths[1L],
+            ModelID = ModelIDD,
+            ReturnFeatures = TRUE,
+            TransformNumeric = TRUE,
+            BackTransNumeric = TRUE,
+            TargetColumnName = eval(TargetColumnName),
+            TransformationObject = TransformationResults,
+            TransID = NULL,
+            TransPath = NULL,
+            MDP_Impute = TRUE,
+            MDP_CharToFactor = TRUE,
+            MDP_RemoveDates = FALSE,
+            MDP_MissFactor = "0",
+            MDP_MissNum = -1)
+        } else {
+          TestData <- AutoXGBoostScoring(
+            TargetType = "regression",
+            ScoringData = TestData,
+            FeatureColumnNames = FeatureNames,
+            IDcols = IDcolsModified,
+            FactorLevelsList = FactorLevelsList,
+            OneHot = FALSE,
+            ModelObject = RegressionModel,
+            ModelPath = Paths[1L],
+            ModelID = ModelIDD,
+            ReturnFeatures = TRUE,
+            TransformNumeric = TRUE,
+            BackTransNumeric = TRUE,
+            TargetColumnName = NULL,
+            TransformationObject = NULL,
+            TransID = NULL,
+            TransPath = NULL,
+            MDP_Impute = TRUE,
+            MDP_CharToFactor = TRUE,
+            MDP_RemoveDates = FALSE,
+            MDP_MissFactor = "0",
+            MDP_MissNum = -1)
+        }
+          
         # Clear TestModel From Memory----
         rm(RegressionModel)
         
