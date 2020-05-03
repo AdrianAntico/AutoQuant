@@ -38,6 +38,7 @@
 #' @examples
 #' \donttest{
 #' Output <- RemixAutoML::AutoXGBoostHurdleModel(
+#' 
 #'    # Operationalization args
 #'    TreeMethod = "hist",
 #'    TrainOnFull = FALSE,
@@ -414,57 +415,38 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     # AutoCatBoostRegression()----
     if (trainBucket[, .N] != 0L) {
       if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
-        counter <- counter + 1L
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
-          TestModel <- RemixAutoML::AutoXGBoostRegression(
-            data = trainBucket,
-            ValidationData = validBucket,
-            TestData = testBucket,
-            TargetColumnName = TargetColumnName,
-            FeatureColNames = FeatureNames,
-            IDcols = IDcols,
-            ReturnFactorLevels = TRUE,
-            TransformNumericColumns = TransformNumericColumns,
-            eval_metric = "RMSE",
-            Trees = Trees,
-            GridTune = GridTune,
-            TreeMethod = TreeMethod,
-            MaxModelsInGrid = MaxModelsInGrid,
-            NThreads = NThreads,
-            model_path = Paths[1L],
-            metadata_path = MetaDataPaths[1L],
-            ModelID = paste0(ModelID,"_",bucket-1L,"+"),
-            NumOfParDepPlots = NumOfParDepPlots,
-            Verbose = 0L,
-            ReturnModelObjects = TRUE,
-            SaveModelObjects = SaveModelObjects,
-            PassInGrid = PassInGrid)
-        } else {
-          TestModel <- RemixAutoML::AutoXGBoostRegression(
-            data = trainBucket,
-            ValidationData = validBucket,
-            TestData = testBucket,
-            TargetColumnName = TargetColumnName,
-            FeatureColNames = FeatureNames,
-            IDcols = IDcols,
-            ReturnFactorLevels = TRUE,
-            TransformNumericColumns = TransformNumericColumns,
-            eval_metric = "RMSE",
-            Trees = Trees,
-            GridTune = GridTune,
-            TreeMethod = TreeMethod,
-            MaxModelsInGrid = MaxModelsInGrid,
-            NThreads = NThreads,
-            model_path = Paths[1L],
-            metadata_path = MetaDataPaths[1L],
-            ModelID = paste0(ModelID, "_", bucket),
-            NumOfParDepPlots = NumOfParDepPlots,
-            Verbose = 0L,
-            ReturnModelObjects = TRUE,
-            SaveModelObjects = SaveModelObjects,
-            PassInGrid = PassInGrid)
-        }
         
+        # Increment----
+        counter <- counter + 1L
+        
+        # Define ModelIDD----
+        if (bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket-1L,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
+        
+        # Build model----
+        TestModel <- RemixAutoML::AutoXGBoostRegression(
+          data = trainBucket,
+          ValidationData = validBucket,
+          TestData = testBucket,
+          TargetColumnName = TargetColumnName,
+          FeatureColNames = FeatureNames,
+          IDcols = IDcols,
+          ReturnFactorLevels = TRUE,
+          TransformNumericColumns = TransformNumericColumns,
+          eval_metric = "RMSE",
+          Trees = Trees,
+          GridTune = GridTune,
+          TreeMethod = TreeMethod,
+          MaxModelsInGrid = MaxModelsInGrid,
+          NThreads = NThreads,
+          model_path = Paths[1L],
+          metadata_path = MetaDataPaths[1L],
+          ModelID = ModelIDD,
+          NumOfParDepPlots = NumOfParDepPlots,
+          Verbose = 0L,
+          ReturnModelObjects = TRUE,
+          SaveModelObjects = SaveModelObjects,
+          PassInGrid = PassInGrid)
+
         # Store Model----
         RegressionModel <- TestModel$Model
         FactorLevelsListOutput <- TestModel$FactorLevelsList
@@ -474,105 +456,33 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         
         # Garbage Collection----
         gc()
-        
-        # Score TestData----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
-          if(!is.null(TransformNumericColumns)) {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
-              ModelObject = RegressionModel,
-              ModelPath = Paths[1L],
-              ModelID = paste0(ModelID,"_",bucket-1L,"+"),
-              ReturnFeatures = TRUE,
-              TransformNumeric = TRUE,
-              BackTransNumeric = TRUE,
-              TargetColumnName = eval(TargetColumnName),
-              TransformationObject = TransformationResults,
-              TransID = NULL,
-              TransPath = NULL,
-              MDP_Impute = TRUE,
-              MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
-              MDP_MissFactor = "0",
-              MDP_MissNum = -1)
-          } else {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
-              ModelObject = RegressionModel,
-              ModelPath = Paths[1L],
-              ModelID = paste0(ModelID,"_",bucket-1L,"+"),
-              ReturnFeatures = TRUE,
-              TransformNumeric = FALSE,
-              BackTransNumeric = FALSE,
-              TargetColumnName = NULL,
-              TransformationObject = NULL,
-              TransID = NULL,
-              TransPath = NULL,
-              MDP_Impute = TRUE,
-              MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
-              MDP_MissFactor = "0",
-              MDP_MissNum = -1)
-          }
-        } else {
-          if(!is.null(TransformNumericColumns)) {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
-              ModelObject = RegressionModel,
-              ModelPath = Paths[1L],
-              ModelID = paste0(ModelID, "_", bucket),
-              ReturnFeatures = TRUE,
-              TransformNumeric = TRUE,
-              BackTransNumeric = TRUE,
-              TargetColumnName = eval(TargetColumnName),
-              TransformationObject = TransformationResults,
-              TransID = NULL,
-              TransPath = NULL,
-              MDP_Impute = TRUE,
-              MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
-              MDP_MissFactor = "0",
-              MDP_MissNum = -1)
-          } else {
-            TestData <- AutoXGBoostScoring(
-              TargetType = "regression",
-              ScoringData = TestData,
-              FeatureColumnNames = FeatureNames,
-              IDcols = IDcolsModified,
-              FactorLevelsList = FactorLevelsList,
-              OneHot = FALSE,
-              ModelObject = RegressionModel,
-              ModelPath = Paths[1L],
-              ModelID = paste0(ModelID, "_", bucket),
-              ReturnFeatures = TRUE,
-              TransformNumeric = FALSE,
-              BackTransNumeric = FALSE,
-              TargetColumnName = NULL,
-              TransformationObject = NULL,
-              TransID = NULL,
-              TransPath = NULL,
-              MDP_Impute = TRUE,
-              MDP_CharToFactor = TRUE,
-              MDP_RemoveDates = FALSE,
-              MDP_MissFactor = "0",
-              MDP_MissNum = -1)
-          }
-        }
+          
+        # Define TranformationResults----
+        if(!is.null(TransformNumericColumns)) Trans <- TransformationResults  else TransformationResults <- NULL
+          
+        # Score model----
+        TestData <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = TestData,
+          FeatureColumnNames = FeatureNames,
+          IDcols = IDcolsModified,
+          FactorLevelsList = FactorLevelsList,
+          OneHot = FALSE,
+          ModelObject = RegressionModel,
+          ModelPath = Paths[1L],
+          ModelID = ModelIDD,
+          ReturnFeatures = TRUE,
+          TransformNumeric = TRUE,
+          BackTransNumeric = TRUE,
+          TargetColumnName = eval(TargetColumnName),
+          TransformationObject = TransformationResults,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = FALSE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
         
         # Clear TestModel From Memory----
         rm(RegressionModel)
@@ -583,6 +493,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         } else {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
         }
+        
       } else {
         
         # Use single value for predictions in the case of zero variance----

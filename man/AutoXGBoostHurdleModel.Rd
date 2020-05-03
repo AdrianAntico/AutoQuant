@@ -88,6 +88,7 @@ AutoXGBoostHurdleModel is generalized hurdle modeling framework
 \examples{
 \donttest{
 Output <- RemixAutoML::AutoXGBoostHurdleModel(
+
    # Operationalization args
    TreeMethod = "hist",
    TrainOnFull = FALSE,

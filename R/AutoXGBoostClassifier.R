@@ -463,7 +463,7 @@ AutoXGBoostClassifier <- function(data,
   
   # Binary Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
-  if(!TrainOnFull) TestTarget <- tryCatch({ dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
+  if(!TrainOnFull) TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
   if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
   
   # Binary Remove Target Variable from Feature Data
