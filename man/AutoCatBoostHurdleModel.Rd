@@ -74,6 +74,10 @@ AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd
 \examples{
 \donttest{
 Output <- AutoCatBoostHurdleModel( 
+
+  # Operationalization
+  task_type = "GPU",
+  ModelID = "ModelTest",
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -83,16 +87,14 @@ Output <- AutoCatBoostHurdleModel(
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
   IDcols = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-  ClassWeights = NULL,
-  SplitRatios = c(0.70, 0.20, 0.10),
-  task_type = "GPU",
-  ModelID = "ModelTest",
   Paths = NULL,
   MetaDataPaths = NULL,
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  ClassWeights = NULL,
+  SplitRatios = c(0.70, 0.20, 0.10),
   NumOfParDepPlots = 10L,
   PassInGrid = NULL,
   GridTune = FALSE,

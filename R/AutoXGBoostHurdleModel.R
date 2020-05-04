@@ -297,11 +297,12 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       min_child_weight = min_child_weight,
       subsample = subsample,
       colsample_bytree = colsample_bytree)
-    
   }
   
   # Store metadata----
+  ModelList <- list()
   ClassModel <- ClassifierModel$Model
+  ModelList[["ClassificationModel"]] <- ClassModel
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
   if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
@@ -424,7 +425,6 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         
         # Build model----
         TestModel <- RemixAutoML::AutoXGBoostRegression(
-          
           TrainOnFull = TrainOnFull,
           data = trainBucket,
           ValidationData = validBucket,
@@ -461,6 +461,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
 
         # Store Model----
         RegressionModel <- TestModel$Model
+        ModelList[[paste0("RegressionModel_",bucket)]] <- RegressionModel
         FactorLevelsListOutput <- TestModel$FactorLevelsList
         if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel[["TransformationResults"]]
         if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
@@ -518,34 +519,10 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
             MDP_RemoveDates = FALSE,
             MDP_MissFactor = "0",
             MDP_MissNum = -1)
-          
-          # TargetType = "regression"
-          # ScoringData = TestData
-          # FeatureColumnNames = FeatureNames
-          # IDcols = IDcolsModified
-          # FactorLevelsList = FactorLevelsList
-          # OneHot = FALSE
-          # ModelObject = RegressionModel
-          # ModelPath = Paths[1L]
-          # ModelID = ModelIDD
-          # ReturnFeatures = TRUE
-          # TransformNumeric = FALSE
-          # BackTransNumeric = TRUE
-          # TargetColumnName = NULL
-          # TransformationObject = NULL
-          # TransID = NULL
-          # TransPath = NULL
-          # MDP_Impute = TRUE
-          # MDP_CharToFactor = TRUE
-          # MDP_RemoveDates = FALSE
-          # MDP_MissFactor = "0"
-          # MDP_MissNum = -1
-          
         }
           
         # Clear TestModel From Memory----
-        rm(TestModel)
-        rm(RegressionModel)
+        rm(TestModel, RegressionModel)
         
         # Change prediction name to prevent duplicates----
         if (bucket == max(seq_len(length(Buckets) + 1L))) {
@@ -784,6 +761,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Return Output----
   return(
     list(
+      ModelList = ModelList,
       ClassificationMetrics = ClassEvaluationMetrics,
       FinalTestData = TestData,
       EvaluationPlot = EvaluationPlot,

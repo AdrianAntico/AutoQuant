@@ -29,6 +29,10 @@
 #' @examples
 #' \donttest{
 #' Output <- AutoCatBoostHurdleModel( 
+#' 
+#'   # Operationalization
+#'   task_type = "GPU",
+#'   ModelID = "ModelTest",
 #'   data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
@@ -38,16 +42,14 @@
 #'   FeatureColNames = NULL,
 #'   PrimaryDateColumn = NULL,
 #'   IDcols = NULL,
-#'   TransformNumericColumns = NULL,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-#'   ClassWeights = NULL,
-#'   SplitRatios = c(0.70, 0.20, 0.10),
-#'   task_type = "GPU",
-#'   ModelID = "ModelTest",
 #'   Paths = NULL,
 #'   MetaDataPaths = NULL,
 #'   SaveModelObjects = FALSE,
 #'   ReturnModelObjects = TRUE,
+#'   TransformNumericColumns = NULL,
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   ClassWeights = NULL,
+#'   SplitRatios = c(0.70, 0.20, 0.10),
 #'   NumOfParDepPlots = 10L,
 #'   PassInGrid = NULL,
 #'   GridTune = FALSE,
@@ -288,7 +290,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
   
   # Store metadata----
+  ModelList <- list()
   ClassModel <- ClassifierModel$Model
+  ModelList[["ClassificationModel"]] <- ClassModel
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
   if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
@@ -457,6 +461,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         
         # Store Model----
         RegressionModel <- RegressionModel$Model
+        ModelList[[paste0("RegressionModel_",bucket)]] <- RegressionModel
         if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults
         if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         
