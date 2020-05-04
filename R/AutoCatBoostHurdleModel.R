@@ -470,7 +470,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         gc()
         
         # Score TestData----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket-1L,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
+        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket-1L,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
           
         # Manage TransformationResults
         if(is.null(TransformNumericColumns)) TransformationResults <- NULL
