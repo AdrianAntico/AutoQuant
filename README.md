@@ -405,7 +405,7 @@ ________________________________________________________________________________
 
 <img src="Images/AutoNLS_Image.png" align="center" width="400" />
 
-<code>AutoNLS()</code> is an automated nonlinear regression modeling. This function automatically finds the best model fit from the suite of models below and merges predictions to source data file. Great for forecasting growth over time or estimating single variable nonlinear functions.
+<code>AutoNLS()</code> is an automated nonlinear regression modeling function. This function automatically finds the best model fit from the set of models listed below and merges predictions to source data file. Great for forecasting growth (extrapolation) when domain knowledge can guide model selection.
 * Models included:
   * Asymptotic
   * Asymptotic through origin
