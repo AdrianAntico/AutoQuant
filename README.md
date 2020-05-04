@@ -160,40 +160,40 @@ Supply a data.table to run the functions below:
 <code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
 
 ##### **AutoWord2VecModeler()**
-<code>AutoWord2VecModeler()</code> generates a specified number of vectors for each column of text data in your data set and save the models for re-creating them later in the scoring process. You can choose to build individual models for each columns or one model for all your columns.
+<code>AutoWord2VecModeler()</code> generates a specified number of vectors (word2vec) for each column of text data in your data set that you specify and it will save the models if you specify for re-creating them later in a model scoring process. You can choose to build individual models for each columns or one model for all your columns. If you need to run several models for groups of text variables you can run the function several times. 
 
 ##### **CreateCalendarVariables()**
-<code>ModelDataPrep()</code> This functions creates new columns that extract the calendar information from date columns, such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+<code>ModelDataPrep()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
 
 ##### **CreateHolidayVariable()**
-<code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp.
+<code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
 
 ##### **AutoHierarchicalFourier()**
 <code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
 
 ##### **AutoTransformationCreate()** and **AutoTransformationScore()**
-<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Asin, and Logit) and find the one that produces data that is the closest to normally distributed data. It then makes the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects (always) or saving them to file (optional).
+<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
 
-<code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling. It's also useful for back-transforming your target and prediction columns after you have build and score your models so you can obtain statistics on the original features.
+<code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling, which is done automatically for you if you specify.
 
 ##### **ModelDataPrep()**
 <code>ModelDataPrep()</code> This function will loop through every column in your data and apply a variety of functions based on argument settings. For all columns not ignored, these tasks include:
-* Charter type to factor type converstion
-* Factor type to character type conversion
+* Character type to Factor type converstion
+* Factor type to Character type conversion
 * Constant value imputation for numeric and categorical columns
-* Integer type to numeric type conversion
-* Date type to character type conversion
+* Integer type to Numeric type conversion
+* Date type to Character type conversion
 * Remove date columns
 * Ignore specified columns
 
 ##### **DummifyDT()** 
-<code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels for model scoring processes, where ensuring the exact levels used to train models are then applied in scoring environments.
+<code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
 
 ##### **AutoDataPartition()**
-<code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
+<code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
 
 ##### **AutoDataDictionary()**
-<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R.
+<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
 ##### **DT_GDL_Feature_Engineering()** and **Partial_DT_GDL_Feature_Engineering()**
 <code>DT_GDL_Feature_Engineering()</code> Runs in the background of AutoLagRollStats(). It builds autoregressive and moving average features from target columns and distributed lags and distributed moving average from independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups. 100% data.table built. It runs super fast and can handle big data.
@@ -212,10 +212,10 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostRegression()** GPU + CPU
+##### **AutoCatBoostRegression()** GPU Capable
 <code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
 
-##### **AutoXGBoostRegression()** GPU + CPU
+##### **AutoXGBoostRegression()** GPU Capable
 <code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
 
 ##### **AutoH2oGBMRegression()**
@@ -261,10 +261,10 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostClassifier()** GPU + CPU
+##### **AutoCatBoostClassifier()** GPU Capable
 <code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the below steps
 
-##### **AutoXGBoostClassifier()** GPU + CPU
+##### **AutoXGBoostClassifier()** GPU Capable
 <code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the below steps
 
 ##### **AutoH2oGBMClassifier()**
@@ -308,10 +308,10 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostMultiClass()** GPU + CPU
+##### **AutoCatBoostMultiClass()** GPU Capable
 <code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
 
-##### **AutoXGBoostMultiClass()** GPU + CPU
+##### **AutoXGBoostMultiClass()** GPU Capable
 <code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
 
 ##### **AutoH2oGBMMultiClass()**
