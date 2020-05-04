@@ -312,7 +312,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
   
-  # Score Classification Model----
+  # Define args----
   if (length(Buckets) == 1L) {
     TargetType <- "Classification"
     Objective <- NULL
@@ -367,7 +367,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Begin regression model building----
   counter <- 0L
   Degenerate <- 0L
-  for (bucket in rev(seq_len(length(Buckets) + 1L))) {
+  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Partition data----
     if (bucket == max(seq_len(length(Buckets) + 1L))) {
@@ -413,8 +413,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
 
     # AutoCatBoostRegression()----
-    if (trainBucket[, .N] != 0L) {
-      if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
+    if(trainBucket[, .N] != 0L) {
+      if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         
         # Increment----
         counter <- counter + 1L
@@ -424,6 +424,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         
         # Build model----
         TestModel <- RemixAutoML::AutoXGBoostRegression(
+          
+          TrainOnFull = TrainOnFull,
           data = trainBucket,
           ValidationData = validBucket,
           TestData = testBucket,
@@ -432,27 +434,36 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           IDcols = IDcols,
           ReturnFactorLevels = TRUE,
           TransformNumericColumns = TransformNumericColumns,
-          eval_metric = "rmse",
-          Trees = Trees,
-          GridTune = GridTune,
-          TreeMethod = TreeMethod,
-          MaxModelsInGrid = MaxModelsInGrid,
           NThreads = NThreads,
           model_path = Paths[1L],
           metadata_path = MetaDataPaths[1L],
           ModelID = ModelIDD,
           NumOfParDepPlots = NumOfParDepPlots,
-          Verbose = 0L,
+          Verbose = 1L,
           ReturnModelObjects = TRUE,
           SaveModelObjects = SaveModelObjects,
-          PassInGrid = PassInGrid)
+          PassInGrid = PassInGrid,
+          GridTune = GridTune,
+          grid_eval_metric = "mse",
+          eval_metric = "rmse",
+          Trees = Trees,
+          TreeMethod = TreeMethod,
+          MaxModelsInGrid = MaxModelsInGrid,
+          BaselineComparison = "default",
+          MaxRunsWithoutNewWinner = 20L,
+          MaxRunMinutes = 60*60, 
+          Shuffles = 2L, 
+          eta = eta, 
+          max_depth = max_depth, 
+          min_child_weight = min_child_weight, 
+          subsample = subsample, 
+          colsample_bytree = colsample_bytree)
 
         # Store Model----
         RegressionModel <- TestModel$Model
         FactorLevelsListOutput <- TestModel$FactorLevelsList
         if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel[["TransformationResults"]]
         if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
-        rm(TestModel)
         
         # Garbage Collection----
         gc()
@@ -492,11 +503,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
             IDcols = IDcolsModified,
             FactorLevelsList = FactorLevelsList,
             OneHot = FALSE,
-            ModelObject = RegressionModel,
+            ModelObject = TestModel,
             ModelPath = Paths[1L],
             ModelID = ModelIDD,
             ReturnFeatures = TRUE,
-            TransformNumeric = TRUE,
+            TransformNumeric = FALSE,
             BackTransNumeric = TRUE,
             TargetColumnName = NULL,
             TransformationObject = NULL,
@@ -510,6 +521,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         }
           
         # Clear TestModel From Memory----
+        rm(TestModel)
         rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
