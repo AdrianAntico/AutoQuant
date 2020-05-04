@@ -28,11 +28,15 @@
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
 #' \donttest{
-#' Output <- AutoCatBoostHurdleModel( 
+#' Output <- RemixAutoML::AutoCatBoostHurdleModel( 
 #' 
 #'   # Operationalization
 #'   task_type = "GPU",
 #'   ModelID = "ModelTest",
+#'   SaveModelObjects = FALSE,
+#'   ReturnModelObjects = TRUE,
+#'   
+#'   # Data related args
 #'   data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
@@ -42,15 +46,17 @@
 #'   FeatureColNames = NULL,
 #'   PrimaryDateColumn = NULL,
 #'   IDcols = NULL,
+#'   
+#'   # Metadata args
 #'   Paths = NULL,
 #'   MetaDataPaths = NULL,
-#'   SaveModelObjects = FALSE,
-#'   ReturnModelObjects = TRUE,
 #'   TransformNumericColumns = NULL,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'   ClassWeights = NULL,
 #'   SplitRatios = c(0.70, 0.20, 0.10),
 #'   NumOfParDepPlots = 10L,
+#'   
+#'   # Grid tuning setup
 #'   PassInGrid = NULL,
 #'   GridTune = FALSE,
 #'   BaselineComparison = "default",
@@ -59,6 +65,8 @@
 #'   MaxRunMinutes = 60L*60L,
 #'   Shuffles = 2L,
 #'   MetricPeriods = 25L,
+#'   
+#'   # Bandit grid args
 #'   Trees = seq(1000L, 5000L, 500L),
 #'   Depth = seq(4L, 8L, 1L),
 #'   LearningRate = seq(0.01,0.10,0.01),
