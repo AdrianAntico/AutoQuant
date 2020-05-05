@@ -913,7 +913,24 @@ AutoCatBoostRegression <- function(data,
     
     # Regression Variable Importance----
     if(tolower(task_type) == "gpu") {
-      if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+      if(GridTune) {
+        if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+          temp <- catboost::catboost.get_feature_importance(model)
+          VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
+          data.table::setnames(VariableImportance, "V2", "Importance")
+          VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+          VariableImportance <- VariableImportance[order(-Importance)]
+          if (SaveModelObjects) {
+            if(!is.null(metadata_path)) {
+              data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+            } else {
+              data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+            }
+          }
+        } else {
+          VariableImportance <- NULL
+        }
+      } else {
         temp <- catboost::catboost.get_feature_importance(model)
         VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
         data.table::setnames(VariableImportance, "V2", "Importance")
@@ -926,20 +943,35 @@ AutoCatBoostRegression <- function(data,
             data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
           }
         }
-      } else {
-        VariableImportance <- NULL
       }
     } else {
-      temp <- catboost::catboost.get_feature_importance(model)
-      VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
-      data.table::setnames(VariableImportance, "V2", "Importance")
-      VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
-      VariableImportance <- VariableImportance[order(-Importance)]
-      if (SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
-        } else {
-          data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      if(GridTune) {
+        if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+          temp <- catboost::catboost.get_feature_importance(model)
+          VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
+          data.table::setnames(VariableImportance, "V2", "Importance")
+          VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+          VariableImportance <- VariableImportance[order(-Importance)]
+          if (SaveModelObjects) {
+            if(!is.null(metadata_path)) {
+              data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+            } else {
+              data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+            }
+          }
+        }
+      } else {
+        temp <- catboost::catboost.get_feature_importance(model)
+        VariableImportance <- data.table::data.table(cbind(Variable = row.names(temp), temp))
+        data.table::setnames(VariableImportance, "V2", "Importance")
+        VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+        VariableImportance <- VariableImportance[order(-Importance)]
+        if (SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+          } else {
+            data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+          }
         }
       }
     }
