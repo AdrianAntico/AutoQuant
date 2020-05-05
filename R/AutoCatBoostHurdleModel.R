@@ -476,7 +476,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         
         # Garbage Collection----
-        rm(RegressionModel)
         gc()
         
         # Score TestData----
@@ -497,8 +496,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           ReturnFeatures = TRUE,
           TransformationObject = TransformationResults,
           TargetColumnName = eval(TargetColumnName),
-          TransformNumeric = TRUE,
-          BackTransNumeric = TRUE,
+          TransformNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
+          BackTransNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
           TransID = NULL,
           TransPath = NULL,
           MDP_Impute = TRUE,
