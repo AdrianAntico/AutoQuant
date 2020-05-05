@@ -154,32 +154,20 @@ AutoCatBoostMultiClass <- function(data,
   loadNamespace(package = "catboost")
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # MultiClass Check Arguments----
-  if (!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
-  if (!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) {
-    stop("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
-  }
-  if (!is.null(PrimaryDateColumn)) {
-    HasTime <- TRUE
-  } else {
-    HasTime <- FALSE
-  }
-  if (any(Trees < 1L)) stop("Trees must be greater than 1")
-  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1 & GridTune == TRUE) {
-    stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  }
-  if (!is.null(model_path)) {
-    if (!is.character(model_path)) stop("model_path needs to be a character type")
-  }
-  if (!is.null(metadata_path)) {
-    if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  }
-  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+  if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
+  if(!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) return("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
+  if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
+  if(any(Trees < 1L)) return("Trees must be greater than 1")
+  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1 & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
+  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
+  if(!is.character(ModelID)) return("ModelID needs to be a character type")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
 
   # MultiClass Ensure data is a data.table----
   if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
@@ -187,18 +175,10 @@ AutoCatBoostMultiClass <- function(data,
   if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
 
   # MultiClass Target Name Storage----
-  if (is.character(TargetColumnName)) {
-    Target <- TargetColumnName
-  } else {
-    Target <- names(data)[TargetColumnName]
-  }
+  if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # MultiClass IDcol Name Storage----
-  if (!is.null(IDcols)) {
-    if (!is.character(IDcols)) {
-      IDcols <- names(data)[IDcols]
-    }
-  }
+  if (!is.null(IDcols)) if (!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -290,9 +270,7 @@ AutoCatBoostMultiClass <- function(data,
   CatFeatures <- setdiff(CatFeatures, TargetNum)
   
   # MultiClass Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) {
-    for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
-  }
+  if (length(CatFeatures) > 0) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # MultiClass Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
@@ -326,7 +304,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Obtain Unique Target Levels----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
   } else if(!is.null(dataTest)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest))
@@ -336,9 +314,7 @@ AutoCatBoostMultiClass <- function(data,
   TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName)]])))
   data.table::setnames(TargetLevels, "V1", "OriginalLevels")
   TargetLevels[, NewLevels := 1:.N]
-  if (SaveModelObjects) {
-    data.table::fwrite(TargetLevels,file = paste0(model_path,"/",ModelID,"_TargetLevels.csv"))
-  }
+  if(SaveModelObjects) data.table::fwrite(TargetLevels,file = paste0(model_path,"/",ModelID,"_TargetLevels.csv"))
   
   # MultiClass Convert Target to Numeric Factor----
   dataTrain <- merge(
@@ -416,7 +392,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Tune or Not Check----
-  if (GridTune & !TrainOnFull) {
+  if(GridTune & !TrainOnFull) {
     
     # Pull in Grid sets----
     Grids <- CatBoostParameterGrids(TaskType=task_type,Shuffles=Shuffles,NTrees=Trees,Depth=Depth,LearningRate=LearningRate,L2_Leaf_Reg=L2_Leaf_Reg,RSM=RSM,BootStrapType=BootStrapType,GrowPolicy=GrowPolicy)
@@ -684,7 +660,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Define parameters for case where you want to run grid tuning----
-  if (GridTune & TrainOnFull == FALSE) {
+  if(GridTune & TrainOnFull == FALSE) {
     
     # Prepare winning grid----
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
@@ -693,7 +669,7 @@ AutoCatBoostMultiClass <- function(data,
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
-    if (BestGrid$RunNumber == 1L) {
+    if(BestGrid$RunNumber == 1L) {
       if (!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
@@ -717,7 +693,7 @@ AutoCatBoostMultiClass <- function(data,
           task_type            = task_type)
       }
     } else {
-      if (tolower(task_type) == "gpu") {
+      if(tolower(task_type) == "gpu") {
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
@@ -792,7 +768,7 @@ AutoCatBoostMultiClass <- function(data,
   if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
   
   # MultiClass Score Final Test Data----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     predict <- cbind(
       1 + catboost::catboost.predict(
         model = model,
@@ -825,7 +801,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Validation Data----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = unique(names(TestMerge)[c(1L:(ncol(TestMerge)-1L))])]))
   } else if(!TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, predict))
@@ -866,15 +842,11 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Update Names for Predicted Value Columns----
   if(!TrainOnFull) k <- 1L else k <- 2L
-  for (name in as.character(TargetLevels[[1L]])) {
+  for(name in as.character(TargetLevels[[1L]])) {
     k <- k + 1L
     data.table::setnames(ValidationData, paste0("V", k), name)
   }
-  if(!TrainOnFull) {
-    data.table::setnames(ValidationData, "V1", "Predict")  
-  } else {
-    data.table::setnames(ValidationData, "V2", "Predict")
-  }
+  if(!TrainOnFull) data.table::setnames(ValidationData, "V1", "Predict") else data.table::setnames(ValidationData, "V2", "Predict")
   if(!TrainOnFull) {
     data.table::setnames(ValidationData, "Target", eval(TargetColumnName))
     data.table::set(ValidationData, j = eval(TargetColumnName), value = as.character(ValidationData[[eval(TargetColumnName)]]))
@@ -891,11 +863,7 @@ AutoCatBoostMultiClass <- function(data,
   MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[[eval(TargetColumnName)]], predictor = as.matrix(ValidationData[, .SD, .SDcols = unique(names(ValidationData)[3L:(ncol(predict)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
   
   # Logloss----
-  if(!TrainOnFull) {
-    temp <- ValidationData[, 1L]  
-  } else {
-    temp <- ValidationData[, 2L]
-  }
+  if(!TrainOnFull) temp <- ValidationData[, 1L] else temp <- ValidationData[, 2L]
   temp[, Truth := get(TargetColumnName)]
   temp <- DummifyDT(
     data = temp, 
@@ -912,8 +880,8 @@ AutoCatBoostMultiClass <- function(data,
   logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData[, 3L:(2L+N)]), y_true = as.matrix(temp[, 2L:(1L+N)]))
   
   # MultiClass Save Validation Data to File----
-  if (SaveModelObjects) {
-    if (!is.null(metadata_path)) {
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
       data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
     } else {
       data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
@@ -922,13 +890,9 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Evaluation Metrics----
   if(!TrainOnFull) {
-    
-    # Eval metrics
     EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
-    
-    # MultiClass Save EvaluationMetrics to File
-    if (SaveModelObjects) {
-      if (!is.null(metadata_path)) {
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
         data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
       } else {
         data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
@@ -940,9 +904,9 @@ AutoCatBoostMultiClass <- function(data,
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
   data.table::setnames(VariableImportance, "V2", "Importance")
-  VariableImportance[, Importance := round(as.numeric(Importance), 4)]
+  VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
   VariableImportance <- VariableImportance[order(-Importance)]
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if (!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
     } else {
@@ -951,7 +915,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Save GridCollect and catboostGridList----
-  if (SaveModelObjects & GridTune == TRUE) {
+  if(SaveModelObjects & GridTune == TRUE) {
     if (!is.null(metadata_path)) {
       data.table::fwrite(catboostGridList,file = paste0(metadata_path,"/",ModelID,"_catboostGridList.csv"))
       data.table::fwrite(GridCollect,file = paste0(metadata_path,"/",ModelID,"_GridCollect.csv"))
@@ -962,9 +926,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Final Garbage Collection----
-  if (tolower(task_type) == "gpu") {
-    gc()
-  }
+  if(tolower(task_type) == "gpu") gc()
   
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
@@ -979,41 +941,38 @@ AutoCatBoostMultiClass <- function(data,
   }
 
   # MultiClass Return Model Objects----
-  if (GridTune) {
+  if(GridTune) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          GridMetrics = ExperimentalGrid,
-          ColNames = Names,
-          TargetLevels = TargetLevels))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        GridMetrics = ExperimentalGrid,
+        ColNames = Names,
+        TargetLevels = TargetLevels))
     }
   } else if(!TrainOnFull) {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          ColNames = Names,
-          TargetLevels = TargetLevels))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        ColNames = Names,
+        TargetLevels = TargetLevels))
     }
   } else {
     if (ReturnModelObjects) {
-      return(
-        list(
-          Model = model,
-          ValidationData = ValidationData,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VariableImportance),
-          ColNames = Names,
-          TargetLevels = TargetLevels))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VariableImportance),
+        ColNames = Names,
+        TargetLevels = TargetLevels))
     }
   }
 }

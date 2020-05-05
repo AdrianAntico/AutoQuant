@@ -154,37 +154,33 @@ AutoCatBoostClassifier <- function(data,
   loadNamespace(package = "catboost")
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Binary Check Arguments----
-  if (!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
-  if (!(tolower(eval_metric) %chin% c("logloss","crossentropy","precision","recall","f1",
-                                      "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
-                                      "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
-                                      "wkappa","loglikelihoodofprediction"))) {
-    stop("eval_metric not in c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC',
+  if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
+  if(!(tolower(eval_metric) %chin% c("logloss","crossentropy","precision","recall","f1",
+                                     "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
+                                     "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
+                                     "wkappa","loglikelihoodofprediction"))) {
+    return("eval_metric not in c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC',
     'Accuracy','CtrFactor','AUC','BrierScore','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa','LogLikelihoodOfPrediction')")
   }
   if(!is.null(ClassWeights)) LossFunction <- "Logloss" else ClassWeights <- c(1,1)
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
-  if(any(Trees) < 1) stop("Trees must be greater than 1")
-  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1 & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type") else model_path <- getwd()
-  if(!is.null(metadata_path)) if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  if(!is.character(ModelID)) stop("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+  if(any(Trees) < 1) return("Trees must be greater than 1")
+  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1 & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
+  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type") else model_path <- getwd()
+  if(!is.null(metadata_path)) if (!is.character(metadata_path)) return("metadata_path needs to be a character type")
+  if(!is.character(ModelID)) return("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0) return("NumOfParDepPlots needs to be a positive number")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
-  # Binary Ensure ValidationData is a data.table----
-  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  
-  # Binary Ensure TestData is a data.table----
-  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -262,7 +258,7 @@ AutoCatBoostClassifier <- function(data,
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
   
   # Binary Convert CatFeatures to 1-indexed----
-  if(length(CatFeatures) > 0) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
+  if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # Binary Train ModelDataPrep----
   dataTrain <- ModelDataPrep(data = dataTrain, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)  
@@ -644,7 +640,7 @@ AutoCatBoostClassifier <- function(data,
       response = ValidationData[[eval(TargetColumnName)]],
       predictor = ValidationData[["p1"]],
       na.rm = TRUE,
-      algorithm = 3,
+      algorithm = 3L,
       auc = TRUE,
       ci = TRUE)  
   }
@@ -838,9 +834,8 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Partial Dependence----
   ParDepPlots <- list()
-  j <- 0L
   ParDepBoxPlots <- list()
-  k <- 0L
+  j <- 0L
   if(!is.null(VariableImportance)) {
     for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
       tryCatch({

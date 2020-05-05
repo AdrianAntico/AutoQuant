@@ -194,7 +194,7 @@ AutoCatBoostCARMA <- function(data,
     }
     
     # Stop if XREGS doesn't supply forward looking data
-    if(FC_Periods < 1) stop("Your XREGS does not have forward looking data")
+    if(FC_Periods < 1) return("Your XREGS does not have forward looking data")
     
   } else if(!is.null(XREGS)) {
     FC_Periods <- HoldOutPeriods
