@@ -249,7 +249,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       RSM = RSM,
       BootStrapType = BootStrapType,
       GrowPolicy = GrowPolicy)
+    
   } else {
+    
     ClassifierModel <- AutoCatBoostMultiClass(
       
       # GPU or CPU
