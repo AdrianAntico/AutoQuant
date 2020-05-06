@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Regression
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
+#' @param TrainOnFull Set to TRUE to use all data
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param Buckets A numeric vector of the buckets used for subsetting the data. NOTE: the final Bucket value will first create a subset of data that is less than the value and a second one thereafter for data greater than the bucket value.
@@ -20,11 +21,23 @@
 #' @param Paths The path to your folder where you want your model information saved
 #' @param MetaDataPaths TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
-#' @param Trees Default 1000
 #' @param GridTune Set to TRUE if you want to grid tune the models
 #' @param MaxModelsInGrid Set to a numeric value for the number of models to try in grid tune
 #' @param NumOfParDepPlots Set to pull back N number of partial dependence calibration plots.
 #' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
+#' @param BaselineComparison = "default",
+#' @param MaxModelsInGrid = 1L,
+#' @param MaxRunsWithoutNewWinner = 20L,
+#' @param MaxRunMinutes = 60L*60L,
+#' @param Shuffles = 2L,
+#' @param MetricPeriods = 25L,
+#' @param Trees = seq(1000L, 5000L, 500L),
+#' @param Depth = seq(4L, 8L, 1L),
+#' @param LearningRate = seq(0.01,0.10,0.01),
+#' @param L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+#' @param RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+#' @param BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#' @param GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
 #' \donttest{
@@ -37,7 +50,7 @@
 #'   ReturnModelObjects = TRUE,
 #'   
 #'   # Data related args
-#'   data,
+#'   data = data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
