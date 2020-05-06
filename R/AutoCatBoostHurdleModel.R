@@ -123,7 +123,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   data.table::setDTthreads(percent = 100L)
 
   # Initialize collection and counter----
-  ModelInformationList <- list()
   if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
 
   # Initialize collection and counter----
@@ -332,7 +331,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TransID = NULL, 
     TransPath = Paths[1],
     MDP_Impute = FALSE,
-    MDP_CharToFactor = TRUE,
+    MDP_CharToFactor = TRUE,``
     MDP_RemoveDates = FALSE, 
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
@@ -576,18 +575,18 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for (i in seq_len(length(Buckets)+1)) {
       if (i == 1L) {
-        data.table::set(TestData,j = "UpdatedPrediction",value = TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] *TestData[[(Cols - ((length(Buckets) + 1L) - i))]])
+        TestData[, UpdatedPrediction := TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       } else {
-        data.table::set(TestData,j = "UpdatedPrediction",value = TestData[["UpdatedPrediction"]] +TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] *TestData[[(Cols - ((length(Buckets) + 1L) - i))]])
+        TestData[, UpdatedPrediction := TestData[["UpdatedPrediction"]] + TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       }
     }  
   } else if(counter == 2L & length(Buckets) == 1L) {
-    data.table::set(TestData,j = "UpdatedPrediction",value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[ncol(TestData)-1L]] * (TestData[[(ncol(TestData)-3L)]]))
+    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[ncol(TestData)-1L]] * (TestData[[(ncol(TestData)-3L)]])]
   } else {
-    data.table::set(TestData,j = "UpdatedPrediction",value = TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[(ncol(TestData)-1L)]] * TestData[[(ncol(TestData)-3L)]])
+    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[(ncol(TestData)-1L)]] * TestData[[(ncol(TestData)-3L)]]]
   }
   
-  # Regression r2 via sqrt of correlation
+  # Regression r2 via sqrt of correlation----
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
   
   # Regression Save Validation Data to File----
@@ -608,11 +607,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
   
-  # Add Number of Trees to Title
-  EvaluationPlot <- EvaluationPlot +
-    ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3)))
+  # Add Number of Trees to Title----
+  EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3)))
   
-  # Save plot to file
+  # Save plot to file----
   if (SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
       ggplot2::ggsave(paste0(MetaDataPaths[1L],"/",ModelID, "_EvaluationPlot.png"))
@@ -693,7 +691,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Remove Cols----
   TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
   
-  # Save EvaluationMetrics to File
+  # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if (SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
