@@ -25,6 +25,8 @@ AutoCatBoostHurdleModel(data = NULL, TrainOnFull = FALSE,
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
 
+\item{TrainOnFull}{Set to TRUE to use all data}
+
 \item{ValidationData}{Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.}
 
 \item{TestData}{Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -61,9 +63,33 @@ AutoCatBoostHurdleModel(data = NULL, TrainOnFull = FALSE,
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
+\item{BaselineComparison}{= "default",}
+
 \item{MaxModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
 
-\item{Trees}{Default 1000}
+\item{MaxRunsWithoutNewWinner}{= 20L,}
+
+\item{MaxRunMinutes}{= 60L*60L,}
+
+\item{Shuffles}{= 2L,}
+
+\item{MetricPeriods}{= 25L,}
+
+\item{Trees}{= seq(1000L, 5000L, 500L),}
+
+\item{Depth}{= seq(4L, 8L, 1L),}
+
+\item{LearningRate}{= seq(0.01,0.10,0.01),}
+
+\item{L2_Leaf_Reg}{= seq(1.0, 10.0, 1.0),}
+
+\item{RSM}{= c(0.80, 0.85, 0.90, 0.95, 1.0),}
+
+\item{BootStrapType}{= c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),}
+
+\item{GrowPolicy}{= c("SymmetricTree", "Depthwise", "Lossguide")}
+
+\item{MaxModelsInGrid}{= 1L,}
 }
 \value{
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
@@ -82,7 +108,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   ReturnModelObjects = TRUE,
   
   # Data related args
-  data,
+  data = data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
