@@ -208,18 +208,10 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Target Name Storage----
-  if(is.character(TargetColumnName)) {
-    Target <- TargetColumnName
-  } else {
-    Target <- names(data)[TargetColumnName]
-  }
+  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # Regression IDcol Name Storage----
-  if(!is.null(IDcols)) {
-    if(!is.character(IDcols)) {
-      IDcols <- names(data)[IDcols]
-    }
-  }
+  if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # Regression Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
@@ -347,7 +339,7 @@ AutoCatBoostRegression <- function(data,
   CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
   
   # Regression Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
+  if (length(CatFeatures) > 0L) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # Regression Train ModelDataPrep----
   dataTrain <- ModelDataPrep(

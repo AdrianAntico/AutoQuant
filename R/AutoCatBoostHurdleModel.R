@@ -365,7 +365,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   
   # Begin regression model building----
-  counter <- 0L
+  counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
   for (bucket in rev(seq_len(length(Buckets) + 1L))) {
     
@@ -409,12 +409,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)      
     
     # Load Winning Grid if it exists----
-    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
-    }
-    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
-    }
+    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
+    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
     
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
@@ -423,10 +419,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         
         # Increment----
-        counter <- counter + 1L
+        counter <- counter - 1L
         
         # Modify filepath and file name----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID, "_", bucket) else ModelIDD <- paste0(ModelID,"_",bucket-1L,"+")
+        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket) 
           
         # Build model----
         RegressionModel <- AutoCatBoostRegression(
