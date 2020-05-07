@@ -136,9 +136,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
 
-  # Initialize collection and counter----
-  if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-
   # Data.table check----
   if (!data.table::is.data.table(data)) data.table::setDT(data)
   if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
@@ -602,10 +599,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   
   # Regression Save Validation Data to File----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      data.table::fwrite(TestData,file = paste0(MetaDataPaths[1L],"/",ModelID,"_ValidationData.csv"))
+    if(!is.null(MetaDataPaths)) {
+      data.table::fwrite(TestData,file = paste0(MetaDataPaths,"/",ModelID,"_ValidationData.csv"))
     } else {
-      data.table::fwrite(TestData,file = paste0(Paths[1L],"/",ModelID,"_ValidationData.csv"))      
+      data.table::fwrite(TestData,file = paste0(Paths,"/",ModelID,"_ValidationData.csv"))      
     }
   }
   
