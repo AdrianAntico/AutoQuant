@@ -137,9 +137,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   data.table::setDTthreads(percent = 100L)
 
   # Initialize collection and counter----
-  if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-
-  # Initialize collection and counter----
   if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
@@ -224,8 +221,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       
       # Metadata arguments
       ModelID = ModelID,
-      model_path = Paths[1L],
-      metadata_path = Paths[1L],
+      model_path = Paths,
+      metadata_path = Paths,
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
       
@@ -769,3 +766,4 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     PartialDependencePlots = ParDepPlots,
     PartialDependenceBoxPlots = ParDepBoxPlots))
 }
+
