@@ -224,8 +224,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       
       # Metadata arguments
       ModelID = ModelID,
-      model_path = Paths,
-      metadata_path = Paths,
+      model_path = Paths[1L],
+      metadata_path = Paths[1L],
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
       
