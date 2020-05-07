@@ -167,7 +167,7 @@ AutoCatBoostClassifier <- function(data,
   }
   if(!is.null(ClassWeights)) LossFunction <- "Logloss" else ClassWeights <- c(1,1)
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
-  if(any(Trees) < 1L) return("Trees must be greater than 1")
+  if(any(Trees < 1L)) return("Trees must be greater than 1")
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
   if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type") else model_path <- getwd()
