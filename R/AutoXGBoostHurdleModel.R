@@ -122,6 +122,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   

@@ -161,6 +161,7 @@ AutoCatBoostMultiClass <- function(data,
   if(!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) return("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(any(Trees < 1L)) return("Trees must be greater than 1")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(MaxModelsInGrid < 1 & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
   if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")

@@ -165,6 +165,7 @@ AutoCatBoostRegression <- function(data,
   if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   
   # Regression Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)

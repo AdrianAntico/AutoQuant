@@ -157,6 +157,7 @@ AutoXGBoostRegression <- function(data,
   # Regression Check Arguments----
   if (!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) stop("eval_metric not in RMSE, MAE, MAPE, R2")
   if (any(Trees < 1)) stop("Trees must be greater than 1")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
   if (MaxModelsInGrid < 1 & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
   if (!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type")

@@ -130,6 +130,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   ModelList <- list()
   
   # Turn on full speed ahead----
