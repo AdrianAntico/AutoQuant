@@ -161,8 +161,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if (!is.null(ModelObject)) {
     model <- ModelObject
   } else {
-    model <- tryCatch({catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))}, error = function(x) return("Model not found in ModelPath"))
-    if(model == "Model not found in ModelPath") return("Model not found in ModelPath")
+    model <- tryCatch({catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))}, error = function(x) NULL)
+    if(is.null(model)) return("Model not found in ModelPath")
   }
   
   # Score model----
