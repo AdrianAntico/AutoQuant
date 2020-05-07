@@ -171,7 +171,7 @@ AutoCatBoostClassifier <- function(data,
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type") else model_path <- getwd()
+  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
   if(!is.null(metadata_path)) if (!is.character(metadata_path)) return("metadata_path needs to be a character type")
   if(!is.character(ModelID)) return("ModelID needs to be a character type")
   if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
