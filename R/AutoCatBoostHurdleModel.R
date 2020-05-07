@@ -422,7 +422,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         counter <- counter - 1L
         
         # Modify filepath and file name----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket) 
+        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
           
         # Build model----
         RegressionModel <- AutoCatBoostRegression(
