@@ -125,6 +125,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
   
+  ArgsList <- list()
+  ArgsList[["Buckets"]] <- Buckets
+  ArgsList[["FeatureColNames"]] <- Buckets
+  ArgsList[["PrimaryDateColumn"]] <- PrimaryDateColumn
+  ArgsList[["IDcols"]] <- IDcols
+  ArgsList[["TransformNumericColumns"]] <- TransformNumericColumns
+  ArgsList[["ClassWeights"]] <- ClassWeights
+  ArgsList[["SplitRatios"]] <- SplitRatios
+  ArgsList[["task_type"]] <- task_type
+  ArgsList[["ModelID"]] <- ModelID
+  ArgsList[["Paths"]] <- Paths
+  ArgsList[["MetaDataPaths"]] <- MetaDataPaths
+  ArgsList[["SaveModelObjects"]] <- SaveModelObjects
+  
   # Check args----
   if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
@@ -367,7 +381,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Begin regression model building----
   counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
-  for (bucket in rev(seq_len(length(Buckets) + 1L))) {
+  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Define data sets----
     if (bucket == max(seq_len(length(Buckets) + 1L))) {
@@ -382,7 +396,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         testBucket <- NULL
       }
     } else if (bucket == 1L) {
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
@@ -513,14 +527,17 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", Buckets[bucket - 1L], "+") else Val <- paste0("Predictions_", Buckets[bucket])
+        if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
         data.table::setnames(TestData, "Predictions", Val)
 
       } else {
         
+        # Account for degenerate distributions----
+        ArgsList[[paste0(bucket)]] <- "degenerate"
+        
         # Use single value for predictions in the case of zero variance----
         if (bucket == max(seq_len(length(Buckets) + 1L))) {
-          Degenerate <- Degenerate + 1
+          Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
           data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
         } else {
