@@ -531,7 +531,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       } else {
         
         # Account for degenerate distributions----
-        ArgsList[[paste0(bucket)]] <- "degenerate"
+        ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
         
         # Use single value for predictions in the case of zero variance----
         if (bucket == max(seq_len(length(Buckets) + 1L))) {
@@ -756,12 +756,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   
   # Regression Save ParDepBoxPlots to file----
   if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      save(ParDepBoxPlots, file = paste0(MetaDataPaths[1], "/", ModelID, "_ParDepBoxPlots.R"))
+    if(!is.null(MetaDataPaths)) {
+      save(ParDepBoxPlots, file = paste0(MetaDataPaths, "/", ModelID, "_ParDepBoxPlots.R"))
     } else {
-      save(ParDepBoxPlots, file = paste0(Paths[1], "/", ModelID, "_ParDepBoxPlots.R"))      
+      save(ParDepBoxPlots, file = paste0(Paths, "/", ModelID, "_ParDepBoxPlots.R"))
     }
   }
+  
+  # Save args list to file----
+  if(SaveModelObjects) save(ArgsList, file = paste0(Paths, "/", ArgsList, "HurdleArgList.R"))
   
   # Return Output----
   return(list(
