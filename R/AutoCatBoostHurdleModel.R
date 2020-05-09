@@ -385,13 +385,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Define data sets----
     if (bucket == max(seq_len(length(Buckets) + 1L))) {
       if (!is.null(TestData)) {
-        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
+        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
-        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1])]
+        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
     } else if (bucket == 1L) {
@@ -407,13 +407,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     } else {
       if (!is.null(TestData)) {
-        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1])]
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
-        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1])]
-        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1])]
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
     }
@@ -544,6 +544,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
         }
       }
+    } else {
+      
+      # Account for degenerate distributions----
+      ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
     }
   }
   
