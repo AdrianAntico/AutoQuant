@@ -531,7 +531,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       } else {
         
         # Account for degenerate distributions----
-        ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
+        ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
         
         # Use single value for predictions in the case of zero variance----
         if (bucket == max(seq_len(length(Buckets) + 1L))) {
