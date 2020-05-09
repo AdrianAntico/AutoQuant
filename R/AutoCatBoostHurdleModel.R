@@ -764,7 +764,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
   
   # Save args list to file----
-  if(SaveModelObjects) save(ArgsList, file = paste0(Paths, "/", ArgsList, "HurdleArgList.Rdata"))
+  if(SaveModelObjects) save(ArgsList, file = paste0(Paths, "/", "HurdleArgList.Rdata"))
   
   # Return Output----
   return(list(
