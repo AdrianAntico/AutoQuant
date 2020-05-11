@@ -50,9 +50,12 @@ FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classi
   if(Classification) data[, Adrian := data.table::fifelse(x1 > 0.5, 1, 0)]
   
   # MultiClass----
-  data[, Adrian := NULL]
-  if(MultiClass) data.table::setnames(data, "Independent_Variable11", "Adrian")
   
+  if(MultiClass) {
+    data[, Adrian := NULL]
+    data.table::setnames(data, "Independent_Variable11", "Adrian")
+  } 
+
   # Return data----
   return(data)
 }
