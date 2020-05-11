@@ -273,6 +273,20 @@ ClassificationMetrics <- function(TestData, Thresholds, Target, Predict, Positiv
 #' @param H2oDRFTestData Test data returned from AutoH2oDRFClassifier
 #' @param H2oGLMTestData Test data returned from AutoH2oGLMClassifier
 #' @param XGBoostTestData Test data returned from AutoXGBoostClassifier
+#' @examples 
+#' \donttest{
+#' RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
+#'   TargetVariable = "Value",
+#'   Thresholds = seq(0.01,0.99,0.01),
+#'   CostMatrix = c(1,0,0,1),
+#'   ClassLabels = c(1,0),
+#'   CatBoostTestData = NULL,
+#'   H2oAutoMLTestData = NULL,
+#'   H2oGBMTestData = NULL,
+#'   H2oDRFTestData = NULL,
+#'   H2oGLMTestData = NULL,
+#'   XGBoostTestData = NULL)
+#' }
 #' @export
 RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
                                        TargetVariable = "Value",

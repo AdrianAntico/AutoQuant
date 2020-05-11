@@ -38,6 +38,21 @@ RemixClassificationMetrics(MLModels = c("catboost", "h2oautoml",
 \description{
 RemixClassificationMetrics
 }
+\examples{
+\donttest{
+RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
+  TargetVariable = "Value",
+  Thresholds = seq(0.01,0.99,0.01),
+  CostMatrix = c(1,0,0,1),
+  ClassLabels = c(1,0),
+  CatBoostTestData = NULL,
+  H2oAutoMLTestData = NULL,
+  H2oGBMTestData = NULL,
+  H2oDRFTestData = NULL,
+  H2oGLMTestData = NULL,
+  XGBoostTestData = NULL)
+}
+}
 \seealso{
 Other Model Evaluation: \code{\link{ClassificationMetrics}},
   \code{\link{DT_BinaryConfusionMatrix}}
