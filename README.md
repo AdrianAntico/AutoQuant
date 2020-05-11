@@ -21,7 +21,7 @@ XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but
 library(devtools)
 to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
   "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
-  "magick","Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR","zoo",
+  "Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR",
   "pROC","scatterplot3d","stringr","sde","timeDate","tm","tsoutliers","wordcloud","Rcpp","RODBC")
 for (i in to_install) {
   message(paste("looking for ", i))
