@@ -890,6 +890,18 @@ AutoCatBoostClassifier <- function(data,
       ggplot2::ylab("Value")
   }
   
+  # Remove extenal files if GridTune is TRUE----
+  if(GridTune) {
+    if(file.exists("./catboost_training.json")) file.remove("./catboost_training.json")
+    if(file.exists("./learn_error.tsv")) file.remove("./learn_error.tsv")
+    if(file.exists("./test_error.tsv")) file.remove("./test_error.tsv")
+    if(file.exists("./time_left.tsv")) file.remove("./time_left.tsv")
+    if(dir.exists("./catboost_info")) unlink(x = "./catboost_info", recursive = TRUE)
+    if(dir.exists("./learn")) unlink(x = "./learn", recursive = TRUE)
+    if(dir.exists("./test")) unlink(x = "./test", recursive = TRUE)
+    if(dir.exists("./tmp")) unlink(x = "./tmp", recursive = TRUE)
+  }
+  
   # Binary Return Model Objects----
   if (GridTune) {
     if (ReturnModelObjects) {
