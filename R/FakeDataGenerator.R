@@ -40,9 +40,6 @@ FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classi
     data <- data[order(DateTime)]
   }
   
-  # IDcols----
-  if(ID == 1) data[, ':=' (x1 = NULL)] else if(ID == 0) data[, ':=' (x1 = NULL, x2 = NULL)]
-  
   # ZIP setup----
   if(!Classification & !MultiClass) if(ZIP == 1) data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, log(Adrian*10))] else if (ZIP == 2) data[, Adrian := data.table::fifelse(Adrian < 0.35, 0, data.table::fifelse(Adrian < 0.65, log(Adrian*10), log(Adrian*20)))]
   
@@ -54,7 +51,10 @@ FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classi
   if(MultiClass) {
     data[, Adrian := NULL]
     data.table::setnames(data, "Independent_Variable11", "Adrian")
-  } 
+  }
+  
+  # IDcols----
+  if(ID == 1) data[, ':=' (x1 = NULL)] else if(ID == 0) data[, ':=' (x1 = NULL, x2 = NULL)]
 
   # Return data----
   return(data)
