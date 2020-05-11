@@ -949,7 +949,7 @@ AutoCatBoostMultiClass <- function(data,
         ValidationData = ValidationData,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         GridMetrics = ExperimentalGrid,
         ColNames = Names,
         TargetLevels = TargetLevels))
@@ -961,7 +961,7 @@ AutoCatBoostMultiClass <- function(data,
         ValidationData = ValidationData,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         ColNames = Names,
         TargetLevels = TargetLevels))
     }
@@ -971,7 +971,7 @@ AutoCatBoostMultiClass <- function(data,
         Model = model,
         ValidationData = ValidationData,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         ColNames = Names,
         TargetLevels = TargetLevels))
     }

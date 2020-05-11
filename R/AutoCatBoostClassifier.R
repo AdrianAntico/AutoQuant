@@ -900,7 +900,7 @@ AutoCatBoostClassifier <- function(data,
         EvaluationPlot = EvaluationPlot,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         PartialDependencePlots = ParDepPlots,
         GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
         ColNames = Names))
@@ -911,7 +911,7 @@ AutoCatBoostClassifier <- function(data,
         Model = model,
         ValidationData = ValidationData,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         ColNames = Names))
     }
   } else {
@@ -923,7 +923,7 @@ AutoCatBoostClassifier <- function(data,
         EvaluationPlot = EvaluationPlot,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VariableImportance),
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         PartialDependencePlots = ParDepPlots,
         ColNames = Names))
     }
