@@ -19,6 +19,8 @@ FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE,
 \item{Classification}{Set to TRUE to build classification data}
 
 \item{MultiClass}{Set to TRUE to build MultiClass data}
+
+\item{Correlation}{Set the correlation value for simulated data}
 }
 \description{
 FakeDataGenerator

@@ -2,6 +2,7 @@
 #' 
 #' @author Adrian Antico
 #' @family Data Wrangling
+#' @param Correlation Set the correlation value for simulated data
 #' @param N Number of records
 #' @param ID Number of IDcols to include
 #' @param ZIP Parameter for zero inflated data generation
