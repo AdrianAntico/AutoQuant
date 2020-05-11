@@ -6,8 +6,10 @@
 #' @param ID Number of IDcols to include
 #' @param ZIP Parameter for zero inflated data generation
 #' @param AddDate Set to TRUE to include a date column
+#' @param Classification Set to TRUE to build classification data
+#' @param MultiClass Set to TRUE to build MultiClass data
 #' @export
-FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE) {
+FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE) {
   
   # Create data----
   Correl <- 0.85
@@ -41,7 +43,14 @@ FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE) {
   if(ID == 1) data[, ':=' (x1 = NULL)] else if(ID == 0) data[, ':=' (x1 = NULL, x2 = NULL)]
   
   # ZIP setup----
-  if(ZIP == 1) data[, Adrian := ifelse(Adrian < 0.5, 0, log(Adrian*10))] else if (ZIP == 2) data[, Adrian := ifelse(Adrian < 0.35, 0, ifelse(Adrian < 0.65, log(Adrian*10), log(Adrian*20)))]
+  if(!Classification & !MultiClass) if(ZIP == 1) data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, log(Adrian*10))] else if (ZIP == 2) data[, Adrian := data.table::fifelse(Adrian < 0.35, 0, data.table::fifelse(Adrian < 0.65, log(Adrian*10), log(Adrian*20)))]
+  
+  # Classification----
+  if(Classification) data[, Adrian := data.table::fifelse(x1 > 0.5, 1, 0)]
+  
+  # MultiClass----
+  data[, Adrian := NULL]
+  if(MultiClass) data.table::setnames(data, "Independent_Variable11", "Adrian")
   
   # Return data----
   return(data)

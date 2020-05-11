@@ -4,7 +4,8 @@
 \alias{FakeDataGenerator}
 \title{FakeDataGenerator}
 \usage{
-FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE)
+FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE,
+  Classification = FALSE, MultiClass = FALSE)
 }
 \arguments{
 \item{N}{Number of records}
@@ -14,6 +15,10 @@ FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE)
 \item{ZIP}{Parameter for zero inflated data generation}
 
 \item{AddDate}{Set to TRUE to include a date column}
+
+\item{Classification}{Set to TRUE to build classification data}
+
+\item{MultiClass}{Set to TRUE to build MultiClass data}
 }
 \description{
 FakeDataGenerator
