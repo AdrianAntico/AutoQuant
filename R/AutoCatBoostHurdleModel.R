@@ -125,6 +125,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
   
+  # Store args----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
   ArgsList[["FeatureColNames"]] <- Buckets
@@ -143,10 +144,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
-  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  ModelList <- list()
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
 
@@ -341,7 +340,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     FeatureColumnNames = FeatureNames,
     IDcols = IDcols,
     ModelObject = ClassModel,
-    ModelPath = Paths[1L],
+    ModelPath = Paths,
     ModelID = ModelID,
     ReturnFeatures = TRUE,
     MultiClassTargetLevels = TargetLevels,
@@ -350,7 +349,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TargetColumnName = NULL, 
     TransformationObject = NULL, 
     TransID = NULL, 
-    TransPath = Paths[1],
+    TransPath = Paths,
     MDP_Impute = FALSE,
     MDP_CharToFactor = TRUE,
     MDP_RemoveDates = FALSE, 
@@ -421,10 +420,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Create Modified IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)      
     
-    # Load Winning Grid if it exists----
-    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
-    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
-    
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
       
@@ -489,12 +484,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         RegressionModel <- RegressionModel$Model
         if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults
         if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
-        
-        # Garbage Collection----
         gc()
-        
-        # Score TestData----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
           
         # Manage TransformationResults
         if(is.null(TransformNumericColumns)) TransformationResults <- NULL
