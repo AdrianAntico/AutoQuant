@@ -347,15 +347,15 @@ AutoH2oDRFHurdleModel <- function(data,
           
         # Define args----
         if(!is.null(TransformNumericColumns)) {
-          TransformNumeric = TRUE,
-          BackTransNumeric = TRUE,
-          TargetColumnName = eval(TargetColumnName),
-          TransformationObject = TransformationResults,
+          TransformNumeric <- TRUE
+          BackTransNumeric <- TRUE
+          TargetColumnName <- eval(TargetColumnName)
+          TransformationObject <- TransformationResults
         } else {
-          TransformNumeric = FALSE,
-          BackTransNumeric = FALSE,
-          TargetColumnName = NULL,
-          TransformationObject = NULL,
+          TransformNumeric <- FALSE
+          BackTransNumeric <- FALSE
+          TargetColumnName <- NULL
+          TransformationObject <- NULL
         }
         
         # Score model----
