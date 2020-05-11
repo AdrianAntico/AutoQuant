@@ -784,9 +784,9 @@ AutoXGBoostClassifier <- function(data,
   # Save EvaluationMetrics to File
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
     }
   }
   
@@ -867,7 +867,7 @@ AutoXGBoostClassifier <- function(data,
                   ValidationData = ValidationData,
                   ROC_Plot = ROC_Plot,
                   EvaluationPlot = EvaluationPlot,
-                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData),
+                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
                   VariableImportance = VariableImportance,
                   VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
@@ -881,7 +881,7 @@ AutoXGBoostClassifier <- function(data,
                   ValidationData = ValidationData,
                   ROC_Plot = ROC_Plot,
                   EvaluationPlot = EvaluationPlot,
-                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData),
+                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
                   VariableImportance = VariableImportance,
                   VI_Plot = VI_Plot_Object,
                   PartialDependencePlots = ParDepPlots,
