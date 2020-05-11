@@ -892,14 +892,14 @@ AutoCatBoostClassifier <- function(data,
   
   # Remove extenal files if GridTune is TRUE----
   if(GridTune) {
-    if(file.exists("./catboost_training.json")) file.remove("./catboost_training.json")
-    if(file.exists("./learn_error.tsv")) file.remove("./learn_error.tsv")
-    if(file.exists("./test_error.tsv")) file.remove("./test_error.tsv")
-    if(file.exists("./time_left.tsv")) file.remove("./time_left.tsv")
-    if(dir.exists("./catboost_info")) unlink(x = "./catboost_info", recursive = TRUE)
-    if(dir.exists("./learn")) unlink(x = "./learn", recursive = TRUE)
-    if(dir.exists("./test")) unlink(x = "./test", recursive = TRUE)
-    if(dir.exists("./tmp")) unlink(x = "./tmp", recursive = TRUE)
+    if(file.exists(file.path(getwd(),"./catboost_training.json"))) file.remove(file.path(getwd(),"./catboost_training.json"))
+    if(file.exists(file.path(getwd(),"learn_error.tsv"))) file.remove(file.path(getwd(),"learn_error.tsv"))
+    if(file.exists(file.path(getwd(),"test_error.tsv"))) file.remove(file.path(getwd(),"test_error.tsv"))
+    if(file.exists(file.path(getwd(),"time_left.tsv"))) file.remove(file.path(getwd(),"time_left.tsv"))
+    if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
+    if(dir.exists(file.path(getwd(),"learn"))) unlink(x = file.path(getwd(),"learn"), recursive = TRUE)
+    if(dir.exists(file.path(getwd(),"test"))) unlink(x = file.path(getwd(),"test"), recursive = TRUE)
+    if(dir.exists(file.path(getwd(),"tmp"))) unlink(x = file.path(getwd(),"tmp"), recursive = TRUE)
   }
   
   # Binary Return Model Objects----
