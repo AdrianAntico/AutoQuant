@@ -309,9 +309,11 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   # Ensure DBConnection is proper----
   if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
   
+  library(RODBC)
+  
   # Queries----
   if(!is.null(Query)) {
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, Query))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, Query))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -343,7 +345,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
         table_name"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -368,7 +370,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
           view_name"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -513,7 +515,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
         column_name"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -551,7 +553,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
        fk_part"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -635,7 +637,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
    column_name"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
@@ -658,7 +660,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
       COUNT(*) DESC"
     
     # Return data----
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, qry))
+    x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
     if(CloseChannel) close(DBConnection)
     return(x)
   }
