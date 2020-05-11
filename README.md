@@ -18,35 +18,42 @@ XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but
  [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
  
 ```
-library(devtools)
-to_install <- c("arules","catboost","caTools","data.table","doParallel","xgboost",
-  "foreach","forecast","fpp","ggplot2","gridExtra","h2o","itertools","lubridate",
-  "Matrix", "MLmetrics","monreg","nortest","RColorBrewer","recommenderlab","ROCR",
-  "pROC","scatterplot3d","stringr","sde","timeDate","tsoutliers","wordcloud","Rcpp")
-for (i in to_install) {
-  message(paste("looking for ", i))
-  if(i == "catboost" & !requireNamespace(i)) {
-    devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
-    # remotes::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Windows-0.22.tgz', build_opts = c("--no-multiarch"))
-  } else if(i == "h2o" & !requireNamespace(i)) {
-    pkgs <- c("RCurl","jsonlite")
-    for (pkg in pkgs) {
-      if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
-    }
-    install.packages("h2o", type="source", repos="http://h2o-release.s3.amazonaws.com/h2o/rel-zahradnik/1/R")
-  } else if (!requireNamespace(i)) {
-    message(paste("     installing", i))
-    install.packages(i)
-  }
-}
-```
-
-
-#### 2. Next, install RemixAutoML via GitHub:
-
-```
-# Install RemixAutoML:
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+# Install Dependencies----
+install.packages("remotes"); print("remotes")
+install.packages("arules"); print("arules")
+install.packages("caTools"); print("caTools")
+install.packages("data.table"); print("data.table")
+install.packages("doParallel"); print("doParallel")
+install.packages("e1071"); print("e1071")
+install.packages("fBasics"); print("fBasics")
+install.packages("foreach"); print("foreach")
+install.packages("forecast"); print("forecast")
+install.packages("fpp"); print("fpp")
+install.packages("ggplot2"); print("ggplot2")
+install.packages("gridExtra"); print("gridExtra")
+install.packages("itertools"); print("itertools")
+install.packages("lime"); print("lime")
+install.packages("lubridate"); print("lubridate")
+install.packages("Matrix"); print("Matrix")
+install.packages("MLmetrics"); print("MLmetrics")
+install.packages("monreg"); print("monreg")
+install.packages("nortest"); print("nortest")
+install.packages("RColorBrewer"); print("RColorBrewer")
+install.packages("recommenderlab"); print("recommenderlab")
+install.packages("ROCR"); print("ROCR")
+install.packages("pROC"); print("pROC")
+install.packages("Rcpp"); print("Rcpp")
+install.packages("scatterplot3d"); print("scatterplot3d")
+install.packages("stringr"); print("stringr")
+install.packages("sde"); print("sde")
+install.packages("timeDate"); print("timeDate")
+install.packages("tsoutliers"); print("tsoutliers")
+install.packages("xgboost"); print("xgboost")
+install.packages("wordcloud"); print("wordcloud")
+remotes::install_github('catboost/catboost', subdir = 'catboost/R-package')
+for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+install.packages("h2o", type="source", repos="http://h2o-release.s3.amazonaws.com/h2o/rel-zahradnik/1/R")
+remotes::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
 ### Installation Troubleshooting 
