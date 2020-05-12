@@ -1040,76 +1040,28 @@ AutoCatBoostRegression <- function(data,
     if(dir.exists(file.path(getwd(),"learn"))) unlink(x = file.path(getwd(),"learn"), recursive = TRUE)
     if(dir.exists(file.path(getwd(),"test"))) unlink(x = file.path(getwd(),"test"), recursive = TRUE)
     if(dir.exists(file.path(getwd(),"tmp"))) unlink(x = file.path(getwd(),"tmp"), recursive = TRUE)
+  } else {
+    if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
   
   # Regression Return Model Objects----
   if(!TrainOnFull) {
-    if (GridTune) {
-      if (!is.null(TransformNumericColumns)) {
-        if (ReturnModelObjects) {
-          return(list(
-            Model = model,
-            ValidationData = ValidationData,
-            EvaluationPlot = EvaluationPlot,
-            EvaluationBoxPlot = EvaluationBoxPlot,
-            EvaluationMetrics = EvaluationMetrics,
-            VariableImportance = VariableImportance,
-            VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-            PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots,
-            GridList = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE),
-            ColNames = Names,
-            TransformationResults = TransformationResults))
-        }
-      } else {
-        return(list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          GridList = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE),
-          ColNames = Names))
-      }
-    } else {
-      if (!is.null(TransformNumericColumns)) {
-        if (ReturnModelObjects) {
-          return(list(
-            Model = model,
-            ValidationData = ValidationData,
-            EvaluationPlot = EvaluationPlot,
-            EvaluationBoxPlot = EvaluationBoxPlot,
-            EvaluationMetrics = EvaluationMetrics,
-            VariableImportance = VariableImportance,
-            VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-            PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots,
-            ColNames = Names,
-            TransformationResults = TransformationResults))
-        }
-      } else {
-        return(list(
-          Model = model,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          ColNames = Names))
-      }
+    if(ReturnModelObjects) {
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationBoxPlot = EvaluationBoxPlot,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        PartialDependencePlots = ParDepPlots,
+        PartialDependenceBoxPlots = ParDepBoxPlots,
+        GridList = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
+        ColNames = Names,
+        TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL))
     }
-  } else {
-    if(!is.null(TransformNumericColumns)) {
-      return(list(Model = model, data = data, ColNames = Names, TransformationResults = TransformationResults))
-    } else {
-      return(list(Model = model, data = data, ColNames = Names))
-    }
+  } else if(ReturnModelObjects) {
+    return(list(Model = model, data = data, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL))
   }
 }

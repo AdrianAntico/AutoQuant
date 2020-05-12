@@ -9,6 +9,10 @@
 #' @param AddDate Set to TRUE to include a date column
 #' @param Classification Set to TRUE to build classification data
 #' @param MultiClass Set to TRUE to build MultiClass data
+#' @examples 
+#' \donttest{
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+#' }
 #' @export
 FakeDataGenerator <- function(Correlation = 0.85, N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE) {
   

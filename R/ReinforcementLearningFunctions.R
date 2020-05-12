@@ -537,7 +537,9 @@ CatBoostRegressionParams <- function(counter = NULL,
 #' @param MetricPeriods Passthrough
 #' @param ClassWeights Passthrough
 #' @param eval_metric Passthrough
+#' @param LossFunction Passthrough
 #' @param task_type Passthrough
+#' @param NumGPUs Passthrough
 #' @param model_path Passthrough
 #' @param NewGrid Passthrough
 #' @param Grid Passthrough
@@ -550,7 +552,9 @@ CatBoostClassifierParams <- function(counter = NULL,
                                      MetricPeriods = NULL,
                                      ClassWeights = NULL,
                                      eval_metric = NULL,
+                                     LossFunction = NULL,
                                      task_type = NULL,
+                                     NumGPUs = NULL,
                                      model_path = NULL,
                                      NewGrid = NULL,
                                      Grid = NULL,
@@ -562,15 +566,17 @@ CatBoostClassifierParams <- function(counter = NULL,
     
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
+    if(is.null(LossFunction)) LossFunction <- "Logloss"
     if(counter == 1L) {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = "Logloss",
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        devices              = NumGPUs,
         class_weights        = ClassWeights,
         train_dir            = model_path,
         iterations           = max(Grid$NTrees))
@@ -580,11 +586,12 @@ CatBoostClassifierParams <- function(counter = NULL,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = "Logloss",
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
+          devices              = NumGPUs,
           class_weights        = ClassWeights,
           train_dir            = model_path,
           iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
@@ -597,11 +604,12 @@ CatBoostClassifierParams <- function(counter = NULL,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = "Logloss",
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
+          devices              = NumGPUs,
           train_dir            = model_path,
           iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
           depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
@@ -617,11 +625,12 @@ CatBoostClassifierParams <- function(counter = NULL,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = "Logloss",
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        devices              = NumGPUs,
         class_weights        = ClassWeights,
         train_dir            = model_path,
         iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
@@ -634,11 +643,12 @@ CatBoostClassifierParams <- function(counter = NULL,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = "Logloss",
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        devices              = NumGPUs,
         train_dir            = model_path,
         class_weights        = ClassWeights,
         iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],

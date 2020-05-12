@@ -62,38 +62,9 @@ AutoH2oMLClassifier is an automated H2O modeling framework with grid-tuning and 
 }
 \examples{
 \donttest{
-Correl <- 0.85
-N <- 1000
-data <- data.table::data.table(Target = runif(N))
-data[, x1 := qnorm(Target)]
-data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-                                                sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-                                             sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 +
-                                         sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))^4]
-data[, Independent_Variable11 := as.factor(
-  ifelse(Independent_Variable2 < 0.20, "A",
-         ifelse(Independent_Variable2 < 0.40, "B",
-                ifelse(Independent_Variable2 < 0.6,  "C",
-                       ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, ':=' (x1 = NULL, x2 = NULL)]
-data[, Target := as.factor(ifelse(Independent_Variable2 < 0.5, 1, 0))]
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+
 TestModel <- AutoH2oMLClassifier(data,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,

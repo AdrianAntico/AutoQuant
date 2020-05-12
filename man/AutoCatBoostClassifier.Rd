@@ -39,7 +39,9 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. Full list of all catboost eval metrics c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')}
+\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
+
+\item{loss_function}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -92,32 +94,7 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-
-# Alter correlation value for the simulated data
-Correl <- 0.85
-
-# Number of rows you want to use
-N <- 25000L 
-
-data <- data.table::data.table(Adrian = runif(N))
-data[, x1 := qnorm(Adrian)]
-data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-data[, Independent_Variable11 := as.factor(
-  data.table::fifelse(Independent_Variable2 < 0.20, "A",
-         data.table::fifelse(Independent_Variable2 < 0.40, "B",
-                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 
 # Run function
 TestModel <- AutoCatBoostClassifier(
@@ -145,6 +122,7 @@ TestModel <- AutoCatBoostClassifier(
     
     # Model evaluation
     eval_metric = "AUC",
+    loss_function = "Logloss",
     NumOfParDepPlots = ncol(data)-1L-2L,
 
     # Grid tuning arguments - PassInGrid is the best of GridMetrics 

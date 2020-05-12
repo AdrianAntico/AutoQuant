@@ -13,7 +13,9 @@
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
-#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. Full list of all catboost eval metrics c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')
+#' @param NumGPUs Numeric. If you have 4 GPUs supply 4 as a value.
+#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'
+#' @param loss_function Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -38,38 +40,14 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' 
-#' # Alter correlation value for the simulated data
-#' Correl <- 0.85
-#' 
-#' # Number of rows you want to use
-#' N <- 25000L 
-#' 
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-#' data[, Independent_Variable11 := as.factor(
-#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
-#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
-#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
-#' data[, Adrian := ifelse(Adrian < 0.5, 1, 0)]
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 #' 
 #' # Run function
 #' TestModel <- AutoCatBoostClassifier(
 #'     
 #'     # GPU or CPU
 #'     task_type = "GPU",
+#'     NumGPUs = 1L,
 #'     
 #'     # Metadata arguments
 #'     ModelID = "Test_Model_1",
@@ -91,6 +69,7 @@
 #'     
 #'     # Model evaluation
 #'     eval_metric = "AUC",
+#'     loss_function = "Logloss",
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'
 #'     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
@@ -128,6 +107,7 @@ AutoCatBoostClassifier <- function(data,
                                    ClassWeights = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
+                                   NumGPUs = 1L,
                                    eval_metric = "MCC",
                                    loss_function = NULL,
                                    model_path = NULL,
@@ -151,30 +131,25 @@ AutoCatBoostClassifier <- function(data,
                                    RSM = NULL, 
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {
+  
   # Load catboost----
   loadNamespace(package = "catboost")
   
   # Loss Function----
-  if(is.null(LossFunction)) LossFunction <- any(tolower(eval_metric) %chin% tolower(c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')))
+  if(is.null(loss_function)) LossFunction <- "Logloss" else LossFunction <- loss_function
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100L)
+  data.table::setDTthreads(threads = max(1L,parallel::detectCores()-2L))
   
   # Binary Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
-  if(!(tolower(eval_metric) %chin% c("logloss","crossentropy","precision","recall","f1",
-                                     "balancedaccuracy","balancederrorrate","mcc","accuracy","ctrfactor",
-                                     "auc","brierscore","hingeloss","hammingloss","zerooneloss","kappa",
-                                     "wkappa","loglikelihoodofprediction"))) {
-    return("eval_metric not in c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC',
-    'Accuracy','CtrFactor','AUC','BrierScore','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa','LogLikelihoodOfPrediction')")
-  }
-  if(!is.null(ClassWeights)) LossFunction <- "Logloss" else ClassWeights <- c(1,1)
+  if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'
+  if(is.null(ClassWeights)) ClassWeights <- c(1,1)
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(any(Trees < 1L)) return("Trees must be greater than 1")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
+  if(MaxModelsInGrid < 1L & GridTune) return("MaxModelsInGrid needs to be at least 1")
   if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
   if(!is.null(metadata_path)) if (!is.character(metadata_path)) return("metadata_path needs to be a character type")
   if(!is.character(ModelID)) return("ModelID needs to be a character type")
@@ -184,8 +159,8 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Binary Target Name Storage----
   if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -352,9 +327,9 @@ AutoCatBoostClassifier <- function(data,
         
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostClassifierParams(counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostClassifierParams(NumGPUs=NumGPUs,LossFunction=LossFunction,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostClassifierParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostClassifierParams(NumGPUs=NumGPUs,LossFunction=LossFunction,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Build model----
@@ -457,7 +432,7 @@ AutoCatBoostClassifier <- function(data,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
-        class_weights        = ClassWeights,
+        class_weights        = if(is.null(ClassWeights)) c(1,1) else ClassWeights,
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -475,13 +450,14 @@ AutoCatBoostClassifier <- function(data,
         best_model_min_trees = 10L,
         task_type            = task_type,
         train_dir            = model_path,
-        class_weights        = ClassWeights,
+        class_weights        = if(is.null(ClassWeights)) c(1,1) else ClassWeights,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
-        rsm                  = PassInGrid[["RSM"]],
-        bootstrap_type       = PassInGrid[["BootStrapType"]])
+        bootstrap_type       = PassInGrid[["BootStrapType"]],
+        grow_policy          = PassInGrid[["GrowPolicy"]],
+        rsm                  = PassInGrid[["RSM"]])
     }
   }
   
@@ -496,40 +472,30 @@ AutoCatBoostClassifier <- function(data,
     
     # Set parameters from winning grid----
     if(BestGrid$RunNumber == 1L) {
-      if(!is.null(ClassWeights)) {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = BestGrid[["TreesBuilt"]],
-          loss_function        = "Logloss",
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          loss_function        = "Logloss",
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type)
-      }
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = BestGrid[["TreesBuilt"]],
+        loss_function        = LossFunction,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        devices              = NumGPUs,
+        class_weights        = ClassWeights)
     } else {
       if(tolower(task_type) == "gpu") {
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = "Logloss",
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
-          class_weights        = ClassWeights,
+          devices              = NumGPUs,
           train_dir            = model_path,
+          class_weights        = ClassWeights,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
           learning_rate        = BestGrid[["LearningRate"]],
@@ -540,47 +506,38 @@ AutoCatBoostClassifier <- function(data,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = "Logloss",
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
+          devices              = NumGPUs,
           train_dir            = model_path,
           class_weights        = ClassWeights,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
-          rsm                  = BestGrid[["RSM"]],
-          bootstrap_type       = BestGrid[["BootStrapType"]])
+          bootstrap_type       = BestGrid[["BootStrapType"]],
+          grow_policy          = BestGrid[["GrowPolicy"]],
+          rsm                  = BestGrid[["RSM"]])
       }
     }
   }
   
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    if(!is.null(ClassWeights)) {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = 10L,
-        iterations           = Trees,
-        loss_function        = "Logloss",
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        class_weights        = ClassWeights)
-    } else {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = 10L,
-        iterations           = Trees,
-        loss_function        = "Logloss",
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type)
-    }
+    base_params <- list(
+      use_best_model       = TRUE,
+      best_model_min_trees = 10L,
+      metric_period        = MetricPeriods,
+      iterations           = Trees,
+      loss_function        = LossFunction,
+      eval_metric          = eval_metric,
+      has_time             = HasTime,
+      task_type            = task_type,
+      devices              = NumGPUs,
+      class_weights        = ClassWeights)
   }
 
   # Binary Train Final Model----
@@ -840,25 +797,13 @@ AutoCatBoostClassifier <- function(data,
     if(dir.exists(file.path(getwd(),"learn"))) unlink(x = file.path(getwd(),"learn"), recursive = TRUE)
     if(dir.exists(file.path(getwd(),"test"))) unlink(x = file.path(getwd(),"test"), recursive = TRUE)
     if(dir.exists(file.path(getwd(),"tmp"))) unlink(x = file.path(getwd(),"tmp"), recursive = TRUE)
+  } else {
+    if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
   
   # Binary Return Model Objects----
-  if (GridTune) {
-    if (ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData),
-        VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-        PartialDependencePlots = ParDepPlots,
-        GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
-        ColNames = Names))
-    }
-  } else if(TrainOnFull) {
-    if (ReturnModelObjects) {
+  if(TrainOnFull) {
+    if(ReturnModelObjects) {
       return(list(
         Model = model,
         ValidationData = ValidationData,
@@ -866,18 +811,17 @@ AutoCatBoostClassifier <- function(data,
         VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
         ColNames = Names))
     }
-  } else {
-    if (ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData),
-        VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-        PartialDependencePlots = ParDepPlots,
-        ColNames = Names))
-    }
+  } else if(ReturnModelObjects) {
+    return(list(
+      Model = model,
+      ValidationData = ValidationData,
+      ROC_Plot = ROC_Plot,
+      EvaluationPlot = EvaluationPlot,
+      EvaluationMetrics = RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData),
+      VariableImportance = VariableImportance,
+      VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+      PartialDependencePlots = ParDepPlots,
+      GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
+      ColNames = Names))
   }
 }
