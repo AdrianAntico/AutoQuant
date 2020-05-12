@@ -319,7 +319,6 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       temp, 
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("Cat_N","Cat_P","Cat_TN","Cat_TP","Cat_FP","Cat_FN","Cat_Utility","Cat_MCC","Cat_Acc","Cat_F1_Score","Cat_F0.5_Score","Cat_F2_Score","Cat_NPV","Cat_TPR","Cat_TNR","Cat_FNR","Cat_FPR","Cat_FDR","Cat_FOR","Cat_PPV","Cat_ThreatScore"))
-    print("catboost here")
     ThresholdOutput[["catboost"]] <- temp
   }
   
@@ -420,7 +419,6 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       temp, 
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("XGB_N","XGB_P","XGB_TN","XGB_TP","XGB_FP","XGB_FN","XGB_Utility","XGB_MCC","XGB_Acc","XGB_F1_Score","XGB_F0.5_Score","XGB_F2_Score","XGB_NPV","XGB_TPR","XGB_TNR","XGB_FNR","XGB_FPR","XGB_FDR","XGB_FOR","XGB_PPV","XGB_ThreatScore"))
-    print("xgboost here")
     ThresholdOutput[["xgboost"]] <- temp
   }
   
