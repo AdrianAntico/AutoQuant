@@ -47,7 +47,7 @@
 #'     
 #'     # GPU or CPU
 #'     task_type = "GPU",
-#'     NumGPUs = 1L,
+#'     NumGPUs = 1,
 #'     
 #'     # Metadata arguments
 #'     ModelID = "Test_Model_1",
@@ -107,7 +107,7 @@ AutoCatBoostClassifier <- function(data,
                                    ClassWeights = NULL,
                                    IDcols = NULL,
                                    task_type = "GPU",
-                                   NumGPUs = 1L,
+                                   NumGPUs = 1,
                                    eval_metric = "MCC",
                                    loss_function = NULL,
                                    model_path = NULL,

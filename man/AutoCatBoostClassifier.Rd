@@ -8,8 +8,8 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "MCC", loss_function = NULL, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel",
+  NumGPUs = 1, eval_metric = "MCC", loss_function = NULL,
+  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
   NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
   MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
@@ -38,6 +38,8 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
+
+\item{NumGPUs}{Numeric. If you have 4 GPUs supply 4 as a value.}
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
 
@@ -101,6 +103,7 @@ TestModel <- AutoCatBoostClassifier(
     
     # GPU or CPU
     task_type = "GPU",
+    NumGPUs = 1,
     
     # Metadata arguments
     ModelID = "Test_Model_1",
