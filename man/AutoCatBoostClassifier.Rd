@@ -8,15 +8,15 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL,
   ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "MCC", model_path = NULL, metadata_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 0L,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
-  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
-  Trees = 50L, Depth = NULL, LearningRate = NULL,
-  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
-  GrowPolicy = NULL)
+  eval_metric = "MCC", loss_function = NULL, model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
+  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
+  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
+  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
+  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -39,7 +39,7 @@ AutoCatBoostClassifier(data, TrainOnFull = FALSE,
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"}
+\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. Full list of all catboost eval metrics c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 

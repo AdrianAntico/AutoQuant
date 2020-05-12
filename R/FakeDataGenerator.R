@@ -10,10 +10,10 @@
 #' @param Classification Set to TRUE to build classification data
 #' @param MultiClass Set to TRUE to build MultiClass data
 #' @export
-FakeDataGenerator <- function(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE) {
+FakeDataGenerator <- function(Correlation = 0.85, N = 1000, ID = 1, ZIP = 1, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE) {
   
   # Create data----
-  Correl <- 0.85
+  Correl <- Correlation
   data <- data.table::data.table(Adrian = runif(N))
   data[, x1 := qnorm(Adrian)]
   data[, x2 := runif(N)]

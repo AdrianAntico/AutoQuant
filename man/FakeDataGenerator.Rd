@@ -4,10 +4,12 @@
 \alias{FakeDataGenerator}
 \title{FakeDataGenerator}
 \usage{
-FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE,
-  Classification = FALSE, MultiClass = FALSE)
+FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 1, ZIP = 1,
+  AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 }
 \arguments{
+\item{Correlation}{Set the correlation value for simulated data}
+
 \item{N}{Number of records}
 
 \item{ID}{Number of IDcols to include}
@@ -19,8 +21,6 @@ FakeDataGenerator(N = 1000, ID = 1, ZIP = 1, AddDate = FALSE,
 \item{Classification}{Set to TRUE to build classification data}
 
 \item{MultiClass}{Set to TRUE to build MultiClass data}
-
-\item{Correlation}{Set the correlation value for simulated data}
 }
 \description{
 FakeDataGenerator

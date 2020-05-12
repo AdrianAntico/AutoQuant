@@ -13,7 +13,7 @@
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
-#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default, but other options include "Logloss", "CrossEntropy", "Precision", "Recall", "F1", "BalancedAccuracy", "BalancedErrorRate", "MCC", "Accuracy", "CtrFactor", "AUC", "BrierScore", "HingeLoss", "HammingLoss", "ZeroOneLoss", "Kappa", "WKappa", "LogLikelihoodOfPrediction"
+#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. Full list of all catboost eval metrics c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -129,6 +129,7 @@ AutoCatBoostClassifier <- function(data,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "MCC",
+                                   loss_function = NULL,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -152,6 +153,9 @@ AutoCatBoostClassifier <- function(data,
                                    GrowPolicy = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
+  
+  # Loss Function----
+  if(is.null(LossFunction)) LossFunction <- any(tolower(eval_metric) %chin% tolower(c('Logloss','CrossEntropy','MultiClass','MultiClassOneVsAll','RMSE','MAE','Quantile','LogLinQuantile','MAPE','Poisson','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QueryRMSE','QuerySoftMax')))
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
