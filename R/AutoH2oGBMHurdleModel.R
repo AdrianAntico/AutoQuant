@@ -73,60 +73,41 @@ AutoH2oGBMHurdleModel <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
   
+  # Ensure Paths and metadata_path exists----
+  if(!dir.exists(file.path(Paths))) dir.create(Paths)
+
   # Check args----
-  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) {
-    return("Buckets needs to be a numeric scalar or vector")
-  }
-  if (!is.logical(SaveModelObjects)) {
-    return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  }
-  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) {
-    return("NumTrees needs to be a numeric scalar")
-  }
-  if (!is.logical(GridTune)) {
-    return("GridTune needs to be either TRUE or FALSE")
-  }
-  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) {
-    return("NumberModelsInGrid needs to be a numeric scalar")
-  }
+  if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if(is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
+  if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) {
-    if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)    
-  }
-  if(!is.null(MetaDataPaths)) {
-    if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)    
-  }
+  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
+  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
-  if (!data.table::is.data.table(data)) data.table::setDT(data)
-  if (!is.null(ValidationData)) {
-    if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  }
-  if (!is.null(TestData)) {
-    if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # FeatureColumnNames----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-    FeatureNames <- names(data)[FeatureColNames]
-  } else {
-    FeatureNames <- FeatureColNames
-  }
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
   
   # Add target bucket column----
   if(length(Buckets) == 1L) {
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1L]), j = "Target_Buckets", value = 1L)
   } else {
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
       } else {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -135,12 +116,12 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  if (!is.null(ValidationData)) {
+  if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1L])]
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -149,12 +130,12 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1L])]
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -163,7 +144,7 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # AutoDataPartition if Validation and TestData are NULL----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -178,7 +159,7 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Begin classification model building----
-  if (length(Buckets) == 1L) {
+  if(length(Buckets) == 1L) {
     ClassifierModel <- AutoH2oGBMClassifier(
       data = data,
       ValidationData = ValidationData,
@@ -272,8 +253,7 @@ AutoH2oGBMHurdleModel <- function(data,
   # Begin regression model building----
   counter <- 0L
   Degenerate <- 0L
-  for (bucket in rev(seq_len(length(Buckets) + 1L))) {
-    # Filter By Buckets----
+  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     if (bucket == max(seq_len(length(Buckets) + 1L))) {
       if (!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -310,18 +290,18 @@ AutoH2oGBMHurdleModel <- function(data,
     }
     
     # Load Winning Grid if it exists----
-    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
+    if(file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
       gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
-    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
+    if(file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
       gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
     }
     
     # AutoCatBoostRegression()----
-    if (trainBucket[, .N] != 0L) {
-      if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
+    if(trainBucket[, .N] != 0L) {
+      if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         counter <- counter + 1L
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           TestModel <- AutoH2oGBMRegression(
             data = trainBucket,
             ValidationData = validBucket,
@@ -371,16 +351,14 @@ AutoH2oGBMHurdleModel <- function(data,
         
         # Store Model----
         RegressionModel <- TestModel$Model
-        if(!is.null(TransformNumericColumns)) {
-          TransformationResults <- TestModel$TransformationInformation
-        }
+        if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel$TransformationInformation
         rm(TestModel)
         
         # Garbage Collection----
         gc()
         
         # Score TestData----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           if(!is.null(TransformNumericColumns)) {
             TestData <- AutoH2OMLScoring(
               ScoringData = TestData,
@@ -478,13 +456,13 @@ AutoH2oGBMHurdleModel <- function(data,
         rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
         } else {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
         }
       } else {
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
           data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
@@ -505,16 +483,16 @@ AutoH2oGBMHurdleModel <- function(data,
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
   if(counter > 2L) {
-    for (i in seq_len(length(Buckets)+1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets)+1L)) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + counter + Degenerate]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
       }
     }  
   } else if(counter == 2L & length(Buckets) != 1L) {
-    for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets)+1)) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + 1L + counter]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
@@ -530,7 +508,7 @@ AutoH2oGBMHurdleModel <- function(data,
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
   
   # Regression Save Validation Data to File----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
       data.table::fwrite(TestData, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ValidationData.csv"))
     } else {
@@ -552,7 +530,7 @@ AutoH2oGBMHurdleModel <- function(data,
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
       ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationPlot.png"))
     } else {
@@ -574,7 +552,7 @@ AutoH2oGBMHurdleModel <- function(data,
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
       ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))
     } else {
@@ -587,37 +565,37 @@ AutoH2oGBMHurdleModel <- function(data,
     data.table::data.table(Metric = c("Poisson","MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999L, 8L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1L)
+  for(metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+    i <- i + 1L
     tryCatch({
-      if (tolower(metric) == "poisson") {
+      if(tolower(metric) == "poisson") {
         if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1L)]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "mae") {
+      } else if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mape") {
+      } else if(tolower(metric) == "mape") {
         TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1L))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mse") {
+      } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "msle") {
+      } else if(tolower(metric) == "msle") {
         if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "kl") {
+      } else if(tolower(metric) == "kl") {
         if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "cs") {
+      } else if(tolower(metric) == "cs") {
         TestData[, ':=' (Metric1 = get(TargetColumnName) * UpdatedPrediction, Metric2 = get(TargetColumnName) ^ 2L, Metric3 = UpdatedPrediction ^ 2L)]
         Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(metric) == "r2") {
+      } else if(tolower(metric) == "r2") {
         TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2)]
         Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
       }
@@ -631,7 +609,7 @@ AutoH2oGBMHurdleModel <- function(data,
   
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1])) {
       data.table::fwrite(MetaDataPaths, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
@@ -644,7 +622,7 @@ AutoH2oGBMHurdleModel <- function(data,
   j <- 0L
   ParDepBoxPlots <- list()
   k <- 0L
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
@@ -674,7 +652,7 @@ AutoH2oGBMHurdleModel <- function(data,
   }
   
   # Regression Save ParDepBoxPlots to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
       save(ParDepBoxPlots, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ParDepBoxPlots.R"))
     } else {
@@ -683,13 +661,12 @@ AutoH2oGBMHurdleModel <- function(data,
   }
 
   # Return Output----
-  return(
-    list(
-      ClassificationMetrics = ClassEvaluationMetrics,
-      FinalTestData = TestData,
-      EvaluationPlot = EvaluationPlot,
-      EvaluationBoxPlot = EvaluationBoxPlot,
-      EvaluationMetrics = EvaluationMetrics,
-      PartialDependencePlots = ParDepPlots,
-      PartialDependenceBoxPlots = ParDepBoxPlots))
+  return(list(
+    ClassificationMetrics = ClassEvaluationMetrics,
+    FinalTestData = TestData,
+    EvaluationPlot = EvaluationPlot,
+    EvaluationBoxPlot = EvaluationBoxPlot,
+    EvaluationMetrics = EvaluationMetrics,
+    PartialDependencePlots = ParDepPlots,
+    PartialDependenceBoxPlots = ParDepBoxPlots))
 }
