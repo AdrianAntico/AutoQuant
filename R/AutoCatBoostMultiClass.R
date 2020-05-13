@@ -189,7 +189,7 @@ AutoCatBoostMultiClass <- function(data,
   if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -203,13 +203,13 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Sort data if PrimaryDateColumn----
-  if (!is.null(PrimaryDateColumn) & TrainOnFull) {
+  if(!is.null(PrimaryDateColumn) & TrainOnFull) {
     data <- data[order(get(PrimaryDateColumn))]
     if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(data,j = eval(PrimaryDateColumn),value = NULL)
   }
   
   # MultiClass Sort ValidationData if PrimaryDateColumn----
-  if (!is.null(TestData) & TrainOnFull != TRUE) {
+  if(!is.null(TestData) & TrainOnFull != TRUE) {
     if(!is.null(PrimaryDateColumn)) {
       data.table::setorderv(x = ValidationData, cols = eval(PrimaryDateColumn), order = 1L)
       if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(ValidationData,j = eval(PrimaryDateColumn),value = NULL)
@@ -217,15 +217,15 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Sort TestData if PrimaryDateColumn----
-  if (!is.null(TestData)) {
-    if (!is.null(PrimaryDateColumn)) {
+  if(!is.null(TestData)) {
+    if(!is.null(PrimaryDateColumn)) {
       TestData <- TestData[order(get(PrimaryDateColumn))]
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData,j = eval(PrimaryDateColumn),value = NULL)
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData,j = eval(PrimaryDateColumn),value = NULL)
     }
   }
   
   # MultiClass data Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
@@ -237,17 +237,17 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass TestData Subset Columns Needed----
-  if (!is.null(TestData)) {
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(!is.null(TestData)) {
+    if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      if (!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
     } else {
       keep1 <- c(FeatureColNames)
-      if (!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
-    if (!is.null(IDcols)) {
+    if(!is.null(IDcols)) {
       TestMerge <- data.table::copy(TestData)
       keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
@@ -262,7 +262,7 @@ AutoCatBoostMultiClass <- function(data,
   CatFeatures <- setdiff(CatFeatures, TargetNum)
   
   # MultiClass Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
+  if(length(CatFeatures) > 0) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # MultiClass Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
@@ -285,7 +285,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Test ModelDataPrep----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     TestData <- ModelDataPrep(
       data = TestData,
       Impute = TRUE,
@@ -326,7 +326,7 @@ AutoCatBoostMultiClass <- function(data,
       all = FALSE)
     dataTest[, paste0(Target) := NewLevels]
     dataTest[, NewLevels := NULL]
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       TestData <- merge(
         TestData,
         TargetLevels,
@@ -424,7 +424,7 @@ AutoCatBoostMultiClass <- function(data,
       RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
 
       # MultiClass Score Final Test Data----
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         predict <- cbind(
           1 + catboost::catboost.predict(
             model = model,
@@ -457,7 +457,7 @@ AutoCatBoostMultiClass <- function(data,
       }
       
       # MultiClass Grid Validation Data----
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = unique(names(TestMerge)[c(1L:(ncol(TestMerge)-1L))])]))
       } else if(!TrainOnFull) {
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, predict))
@@ -603,9 +603,7 @@ AutoCatBoostMultiClass <- function(data,
       if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
       data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
       if(tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
-      for(bandit in seq_len(length(BanditProbs))) {
-        data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
-      }
+      for(bandit in seq_len(length(BanditProbs))) data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
     }
     
     # Remove unneeded rows----
@@ -613,8 +611,8 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
-  if (!is.null(PassInGrid)) {
-    if (tolower(task_type) == "gpu") {
+  if(!is.null(PassInGrid)) {
+    if(tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
@@ -662,7 +660,7 @@ AutoCatBoostMultiClass <- function(data,
     
     # Set parameters from winning grid----
     if(BestGrid$RunNumber == 1L) {
-      if (!is.null(ClassWeights)) {
+      if(!is.null(ClassWeights)) {
         base_params <- list(
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
@@ -725,7 +723,7 @@ AutoCatBoostMultiClass <- function(data,
   
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & GridTune == FALSE) {
-    if (!is.null(ClassWeights)) {
+    if(!is.null(ClassWeights)) {
       base_params <- list(
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -899,7 +897,7 @@ AutoCatBoostMultiClass <- function(data,
   VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
   VariableImportance <- VariableImportance[order(-Importance)]
   if(SaveModelObjects) {
-    if (!is.null(metadata_path)) {
+    if(!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
     } else {
       data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
@@ -946,7 +944,7 @@ AutoCatBoostMultiClass <- function(data,
 
   # MultiClass Return Model Objects----
   if(!TrainOnFull) {
-    if (ReturnModelObjects) {
+    if(ReturnModelObjects) {
       return(list(
         Model = model,
         ValidationData = ValidationData,
@@ -958,7 +956,7 @@ AutoCatBoostMultiClass <- function(data,
         TargetLevels = TargetLevels))
     }
   } else {
-    if (ReturnModelObjects) {
+    if(ReturnModelObjects) {
       return(list(
         Model = model,,
         ColNames = Names,

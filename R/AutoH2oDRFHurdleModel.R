@@ -85,36 +85,36 @@ AutoH2oDRFHurdleModel <- function(data,
   if(!dir.exists(file.path(Paths))) dir.create(Paths)
   
   # Check args----
-  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
-  if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
+  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
+  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
-  if (!data.table::is.data.table(data)) data.table::setDT(data)
-  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # FeatureColumnNames----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
   
   # Add target bucket column----
   if(length(Buckets) == 1L) {
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1L]), j = "Target_Buckets", value = 1L)
   } else {
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
       } else {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -123,12 +123,12 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  if (!is.null(ValidationData)) {
+  if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
-    for (i in seq_len(length(Buckets) + 1)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1)) {
+      if(i == 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -137,12 +137,12 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # Add target bucket column----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1L])]
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -151,7 +151,7 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # AutoDataPartition if Validation and TestData are NULL----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -166,7 +166,7 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # Begin classification model building----
-  if (length(Buckets) == 1L) {
+  if(length(Buckets) == 1L) {
     ClassifierModel <- AutoH2oDRFClassifier(
       data = data,
       ValidationData = ValidationData,
@@ -262,11 +262,11 @@ AutoH2oDRFHurdleModel <- function(data,
   # Begin regression model building----
   counter <- 0L
   Degenerate <- 0L
-  for (bucket in rev(seq_len(length(Buckets) + 1L))) {
+  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Define data sets----
-    if (bucket == max(seq_len(length(Buckets) + 1L))) {
-      if (!is.null(TestData)) {
+    if(bucket == max(seq_len(length(Buckets) + 1L))) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -276,7 +276,7 @@ AutoH2oDRFHurdleModel <- function(data,
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
-    } else if (bucket == 1L) {
+    } else if(bucket == 1L) {
       if (!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
@@ -288,7 +288,7 @@ AutoH2oDRFHurdleModel <- function(data,
         testBucket <- NULL
       }
     } else {
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -301,10 +301,10 @@ AutoH2oDRFHurdleModel <- function(data,
     }
     
     # Check for degenerecy----
-    if (trainBucket[, .N] != 0L) {
+    if(trainBucket[, .N] != 0L) {
       
       # Check for constant values----
-      if (var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
+      if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         
         # Increment counter----
         counter <- counter + 1L
@@ -342,7 +342,7 @@ AutoH2oDRFHurdleModel <- function(data,
         gc()
         
         # Score TestData----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           ModelPath <- paste0(ModelID, "_", bucket,"_")
         } else {
           ModelPath <- paste0(ModelID, "_", bucket)
@@ -388,7 +388,7 @@ AutoH2oDRFHurdleModel <- function(data,
         rm(RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
         } else {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
@@ -400,7 +400,7 @@ AutoH2oDRFHurdleModel <- function(data,
         ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
         
         # Use single value for predictions in the case of zero variance----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
           data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
@@ -425,16 +425,16 @@ AutoH2oDRFHurdleModel <- function(data,
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
   if(counter > 2L) {
-    for (i in seq_len(length(Buckets)+1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets)+1L)) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + counter + Degenerate]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
       }
     }  
   } else if(counter == 2L & length(Buckets) != 1L) {
-    for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets)+1)) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + 1L + counter]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
@@ -450,7 +450,7 @@ AutoH2oDRFHurdleModel <- function(data,
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
   
   # Regression Save Validation Data to File----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
       data.table::fwrite(TestData, file = paste0(MetaDataPaths, "/", ModelID, "_ValidationData.csv"))
     } else {
@@ -471,7 +471,7 @@ AutoH2oDRFHurdleModel <- function(data,
   EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
       ggplot2::ggsave(paste0(MetaDataPaths, "/", ModelID, "_EvaluationPlot.png"))
     } else {
@@ -492,7 +492,7 @@ AutoH2oDRFHurdleModel <- function(data,
   EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
       ggplot2::ggsave(paste0(MetaDataPaths, "/", ModelID, "_EvaluationBoxPlot.png"))
     } else {
@@ -504,40 +504,40 @@ AutoH2oDRFHurdleModel <- function(data,
   EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999, 8))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+  for(metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
     i <- as.integer(i + 1L)
     tryCatch({
-      if (tolower(metric) == "poisson") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
+      if(tolower(metric) == "poisson") {
+        if(MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1)]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "mae") {
+      } else if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mape") {
+      } else if(tolower(metric) == "mape") {
         TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mse") {
+      } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "msle") {
+      } else if(tolower(metric) == "msle") {
         if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "kl") {
+      } else if(tolower(metric) == "kl") {
         if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
-      } else if (tolower(metric) == "cs") {
+      } else if(tolower(metric) == "cs") {
         TestData[, ':=' (
           Metric1 = get(TargetColumnName) * UpdatedPrediction,
           Metric2 = get(TargetColumnName) ^ 2L,
           Metric3 = UpdatedPrediction ^ 2L)]
         Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(metric) == "r2") {
+      } else if(tolower(metric) == "r2") {
         TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L, Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2)]
         Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
       }
@@ -551,7 +551,7 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
       data.table::fwrite(EvaluationMetrics, file = paste0(MetaDataPaths, "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
@@ -564,7 +564,7 @@ AutoH2oDRFHurdleModel <- function(data,
   j <- 0L
   ParDepBoxPlots <- list()
   k <- 0L
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
@@ -594,7 +594,7 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # Regression Save ParDepBoxPlots to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
       save(ParDepBoxPlots, file = paste0(MetaDataPaths, "/", ModelID, "_ParDepBoxPlots.R"))
     } else {
