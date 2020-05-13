@@ -165,15 +165,15 @@ AutoCatBoostMultiClass <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
 
   # MultiClass Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
 
   # MultiClass Target Name Storage----
-  if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
+  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # MultiClass IDcol Name Storage----
-  if (!is.null(IDcols)) if (!is.character(IDcols)) IDcols <- names(data)[IDcols]
+  if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # MultiClass Data Partition----
   if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -216,38 +216,22 @@ AutoCatBoostMultiClass <- function(data,
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
-    if(TrainOnFull != TRUE) {
-      dataTest <- ValidationData[, ..keep]
-    } else {
-      dataTest <- NULL
-    } 
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep] else dataTest <- NULL
   } else {
     keep <- c(FeatureColNames, Target)
     dataTrain <- data[, ..keep]
-    if(TrainOnFull != TRUE) {
-      dataTest <- ValidationData[, ..keep]
-    } else {
-      dataTest <- NULL
-    } 
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep] else dataTest <- NULL
   }
   
   # MultiClass TestData Subset Columns Needed----
   if (!is.null(TestData)) {
     if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      if (!is.null(IDcols)) {
-        keep <- c(IDcols, keep1, Target)
-      } else {
-        keep <- c(keep1, Target)
-      }
+      if (!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
     } else {
       keep1 <- c(FeatureColNames)
-      if (!is.null(IDcols)) {
-        keep <- c(IDcols, FeatureColNames, Target)
-      } else {
-        keep <- c(FeatureColNames, Target)
-      }
+      if (!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
     if (!is.null(IDcols)) {
@@ -344,7 +328,7 @@ AutoCatBoostMultiClass <- function(data,
   # Reorder Colnames----
   data.table::setcolorder(dataTrain, c(2L:ncol(dataTrain), 1L))
   if(!is.null(dataTest)) data.table::setcolorder(dataTest, c(2L:ncol(dataTest), 1L))
-  if (!is.null(TestData)) data.table::setcolorder(TestData, c(2L:ncol(TestData), 1L))
+  if(!is.null(TestData)) data.table::setcolorder(TestData, c(2L:ncol(TestData), 1L))
   
   # MultiClass Save Names of data----
   if(is.numeric(FeatureColNames)) {
@@ -358,16 +342,16 @@ AutoCatBoostMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
+  if(SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
   
   # MultiClass Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, as.numeric(get(Target))]}, error = function(x) dataTrain[, as.numeric(eval(Target))])
   if(!is.null(dataTest)) TestTarget <- tryCatch({dataTest[, as.numeric(get(Target))]}, error = function(x) dataTest[, as.numeric(eval(Target))])  
-  if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, as.numeric(get(Target))]}, error = function(x) TestData[, as.numeric(eval(Target))])
+  if(!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, as.numeric(get(Target))]}, error = function(x) TestData[, as.numeric(eval(Target))])
   
   # MultiClass Initialize Catboost Data Conversion----
-  if (!is.null(CatFeatures)) {
-    if (!is.null(TestData)) {
+  if(!is.null(CatFeatures)) {
+    if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = as.integer(TrainTarget), cat_features = CatFeatures)
       if(!is.null(dataTest)) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = as.integer(TestTarget), cat_features = CatFeatures)
       if(!is.null(TestData)) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = as.integer(FinalTestTarget), cat_features = CatFeatures)
@@ -376,7 +360,7 @@ AutoCatBoostMultiClass <- function(data,
       if(!is.null(dataTest)) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = as.integer(TestTarget), cat_features = CatFeatures)
     }
   } else {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = as.integer(TrainTarget))
       if(!is.null(dataTest)) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = as.integer(TestTarget))
       if(!is.null(TestData)) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = as.integer(FinalTestTarget))
@@ -501,7 +485,7 @@ AutoCatBoostMultiClass <- function(data,
       
       # MultiClass Update Names for Predicted Value Columns----
       if(!TrainOnFull) k <- 1L else k <- 2L
-      for (name in as.character(TargetLevels[[1L]])) {
+      for(name in as.character(TargetLevels[[1L]])) {
         k <- k + 1L
         data.table::setnames(ValidationData, paste0("V", k), name)
       }
@@ -754,13 +738,13 @@ AutoCatBoostMultiClass <- function(data,
   
   # MultiClass Train Final Model----
   if(TrainOnFull) {
-    model <- catboost::catboost.train(learn_pool = TrainPool,params = base_params)
+    model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
   } else {
-    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)  
+    model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
   }
   
   # MultiClass Save Model----
-  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
   
   # MultiClass Score Final Test Data----
   if(!is.null(TestData)) {
@@ -948,7 +932,7 @@ AutoCatBoostMultiClass <- function(data,
   }
 
   # MultiClass Return Model Objects----
-  if(GridTune) {
+  if(!TrainOnFull) {
     if (ReturnModelObjects) {
       return(list(
         Model = model,
@@ -956,28 +940,14 @@ AutoCatBoostMultiClass <- function(data,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
         VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
-        GridMetrics = ExperimentalGrid,
-        ColNames = Names,
-        TargetLevels = TargetLevels))
-    }
-  } else if(!TrainOnFull) {
-    if (ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
         TargetLevels = TargetLevels))
     }
   } else {
     if (ReturnModelObjects) {
       return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        Model = model,,
         ColNames = Names,
         TargetLevels = TargetLevels))
     }
