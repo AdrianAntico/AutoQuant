@@ -13,7 +13,9 @@
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
+#' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
+#' @param loss_function Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -37,37 +39,14 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' 
-#' # Alter correlation value for the simulated data
-#' Correl <- 0.85
-#' 
-#' # Number of rows you want to use
-#' N <- 25000L 
-#' 
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-#' data[, Independent_Variable11 := as.factor(
-#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
-#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
-#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 #' 
 #' # Run function
 #' TestModel <- AutoCatBoostRegression(
 #'     
 #'     # GPU or CPU
 #'     task_type = "GPU",
+#'     NumGPUs = 1,
 #'     
 #'     # Metadata arguments
 #'     ModelID = "Test_Model_1",
@@ -82,13 +61,14 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
 #'     IDcols = c("x1","x2"),
 #'     TransformNumericColumns = NULL,
 #'     
 #'     # Model evaluation
 #'     eval_metric = "RMSE",
+#'     loss_function = "RMSE",
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'
 #'     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
@@ -127,7 +107,9 @@ AutoCatBoostRegression <- function(data,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
                                    task_type = "GPU",
+                                   NumGPUs = 1,
                                    eval_metric = "RMSE",
+                                   loss_function = "RMSE",
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -153,11 +135,16 @@ AutoCatBoostRegression <- function(data,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # Loss Function----
+  if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
+  
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
   
   # Regression Check Arguments----
+  if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
+  if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
   if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
@@ -471,9 +458,9 @@ AutoCatBoostRegression <- function(data,
         
         # Define prameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostRegressionParams(BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostRegressionParams(BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Build model----
@@ -573,11 +560,12 @@ AutoCatBoostRegression <- function(data,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = 1L,
-        loss_function        = eval_metric,
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        devices              = NumGPUs,
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -589,11 +577,12 @@ AutoCatBoostRegression <- function(data,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = 1L,
-        loss_function        = eval_metric,
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        devices              = NumGPUs,
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -620,20 +609,22 @@ AutoCatBoostRegression <- function(data,
         best_model_min_trees = 10L,
         metric_period        = MetricPeriods,
         iterations           = BestGrid[["TreesBuilt"]],
-        loss_function        = eval_metric,
+        loss_function        = LossFunction,
         eval_metric          = eval_metric,
         has_time             = HasTime,
-        task_type            = task_type)
+        task_type            = task_type,
+        devices              = NumGPUs)
     } else {
       if (tolower(task_type) == "gpu") {
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
+          devices              = NumGPUs,
           train_dir            = model_path,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
@@ -645,11 +636,12 @@ AutoCatBoostRegression <- function(data,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = LossFunction,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
+          devices              = NumGPUs,
           train_dir            = model_path,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
@@ -662,16 +654,17 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Not pass in GridMetric and not grid tuning----
-  if(is.null(PassInGrid) & GridTune == FALSE) {
+  if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
       use_best_model       = TRUE,
       best_model_min_trees = 10L,
       metric_period        = 10L,
       iterations           = Trees,
-      loss_function        = eval_metric,
+      loss_function        = LossFunction,
       eval_metric          = eval_metric,
       has_time             = HasTime,
-      task_type            = task_type)
+      task_type            = task_type,
+      devices              = NumGPUs)
   }
   
   # Regression Train Final Model----
@@ -711,7 +704,7 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(TransformNumericColumns)) {
     
     # Append record for Predicted Column----
-    if(GridTune & TrainOnFull == FALSE) TransformationResults <- TransformationResults[ColumnName != "Predicted"]
+    if(GridTune & !TrainOnFull) TransformationResults <- TransformationResults[ColumnName != "Predicted"]
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
@@ -822,7 +815,7 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Evaluation Metrics----
   if(!TrainOnFull) {
-    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
     for (metric in c("mae", "mape", "mse", "r2")) {
       i <- i + 1L
@@ -862,10 +855,10 @@ AutoCatBoostRegression <- function(data,
       }, error = function(x) "skip")
     }
     
-    # Remove Cols
+    # Remove Cols----
     ValidationData[, ':=' (Metric = NULL)]
     
-    # Save EvaluationMetrics to File
+    # Save EvaluationMetrics to File----
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
@@ -1018,7 +1011,7 @@ AutoCatBoostRegression <- function(data,
     }  
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1L:min(10L, .N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +

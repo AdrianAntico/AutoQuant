@@ -40,7 +40,7 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 #' 
 #' # Run function
 #' TestModel <- AutoCatBoostClassifier(

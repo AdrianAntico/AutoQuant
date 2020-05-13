@@ -7,17 +7,18 @@
 AutoCatBoostRegression(data, TrainOnFull = FALSE,
   ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
   FeatureColNames = NULL, PrimaryDateColumn = NULL, IDcols = NULL,
-  TransformNumericColumns = NULL, task_type = "GPU",
-  eval_metric = "RMSE", model_path = NULL, metadata_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 0L,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
-  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L, BaselineComparison = "default", MetricPeriods = 10L,
-  Trees = 50L, Depth = NULL, LearningRate = NULL,
-  L2_Leaf_Reg = NULL, RSM = NULL, BootStrapType = NULL,
-  GrowPolicy = NULL, Methods = c("BoxCox", "Asinh", "Asin", "Log",
-  "LogPlus1", "Logit", "YeoJohnson"))
+  TransformNumericColumns = NULL, task_type = "GPU", NumGPUs = 1,
+  eval_metric = "RMSE", loss_function = "RMSE", model_path = NULL,
+  metadata_path = NULL, ModelID = "FirstModel",
+  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
+  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
+  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
+  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
+  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit",
+  "YeoJohnson"))
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -40,7 +41,11 @@ AutoCatBoostRegression(data, TrainOnFull = FALSE,
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
+\item{NumGPUs}{Set to 1, 2, 3, etc.}
+
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
+
+\item{loss_function}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -91,37 +96,14 @@ AutoCatBoostRegression is an automated modeling function that runs a variety of 
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-
-# Alter correlation value for the simulated data
-Correl <- 0.85
-
-# Number of rows you want to use
-N <- 25000L 
-
-data <- data.table::data.table(Adrian = runif(N))
-data[, x1 := qnorm(Adrian)]
-data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-data[, Independent_Variable11 := as.factor(
-  data.table::fifelse(Independent_Variable2 < 0.20, "A",
-         data.table::fifelse(Independent_Variable2 < 0.40, "B",
-                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 
 # Run function
 TestModel <- AutoCatBoostRegression(
     
     # GPU or CPU
     task_type = "GPU",
+    NumGPUs = 1,
     
     # Metadata arguments
     ModelID = "Test_Model_1",
@@ -136,13 +118,14 @@ TestModel <- AutoCatBoostRegression(
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[2L:ncol(data)],
+    FeatureColNames = names(data)[4L:ncol(data)],
     PrimaryDateColumn = NULL,
     IDcols = c("x1","x2"),
     TransformNumericColumns = NULL,
     
     # Model evaluation
     eval_metric = "RMSE",
+    loss_function = "RMSE",
     NumOfParDepPlots = ncol(data)-1L-2L,
 
     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
