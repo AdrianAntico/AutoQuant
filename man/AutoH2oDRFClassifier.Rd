@@ -6,10 +6,10 @@
 \usage{
 AutoH2oDRFClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
   TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  eval_metric = "auc", Trees = 50, GridTune = FALSE,
+  eval_metric = "auc", Trees = 50L, GridTune = FALSE,
   MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
   MaxModelsInGrid = 2, model_path = NULL, metadata_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3,
+  ModelID = "FirstModel", NumOfParDepPlots = 3L,
   ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
   IfSaveModel = "mojo", H2OShutdown = FALSE)
 }

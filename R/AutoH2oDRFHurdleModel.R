@@ -81,6 +81,9 @@ AutoH2oDRFHurdleModel <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
   
+  # Ensure Paths and metadata_path exists----
+  if(!dir.exists(file.path(Paths))) dir.create(Paths)
+  
   # Check args----
   if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")

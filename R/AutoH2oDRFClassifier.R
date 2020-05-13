@@ -58,7 +58,7 @@ AutoH2oDRFClassifier <- function(data,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
                                  eval_metric = "auc",
-                                 Trees = 50,
+                                 Trees = 50L,
                                  GridTune = FALSE,
                                  MaxMem = "32G",
                                  NThreads = max(1, parallel::detectCores()-2),
@@ -66,14 +66,14 @@ AutoH2oDRFClassifier <- function(data,
                                  model_path = NULL,
                                  metadata_path = NULL,
                                  ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
+                                 NumOfParDepPlots = 3L,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
   if(!dir.exists(file.path(model_path))) dir.create(model_path)

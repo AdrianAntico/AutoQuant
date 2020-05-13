@@ -71,7 +71,7 @@ AutoH2oDRFMultiClass <- function(data,
                                  H2OShutdown = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
   if(!dir.exists(file.path(model_path))) dir.create(model_path)
