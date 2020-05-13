@@ -94,31 +94,7 @@ AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tunin
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-
-# Alter correlation value for the simulated data
-Correl <- 0.85
-
-# Number of rows you want to use
-N <- 25000L 
-
-data <- data.table::data.table(Adrian = runif(N))
-data[, x1 := qnorm(Adrian)]
-data[, x2 := runif(N)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-data[, Independent_Variable11 := as.factor(
-  data.table::fifelse(Independent_Variable2 < 0.20, "A",
-         data.table::fifelse(Independent_Variable2 < 0.40, "B",
-                data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-                       data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 
 # Run function
 TestModel <- AutoXGBoostRegression(
@@ -141,7 +117,7 @@ TestModel <- AutoXGBoostRegression(
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[2L:ncol(data)],
+    FeatureColNames = names(data)[4L:ncol(data)],
     IDcols = c("x1","x2"),
     TransformNumericColumns = NULL,
   

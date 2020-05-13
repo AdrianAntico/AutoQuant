@@ -39,31 +39,7 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' 
-#' # Alter correlation value for the simulated data
-#' Correl <- 0.85
-#' 
-#' # Number of rows you want to use
-#' N <- 25000L 
-#' 
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-#' data[, Adrian := as.factor(
-#'   data.table::fifelse(Independent_Variable2 < 0.20, "A",
-#'          data.table::fifelse(Independent_Variable2 < 0.40, "B",
-#'                 data.table::fifelse(Independent_Variable2 < 0.6,  "C",
-#'                        data.table::fifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 #' 
 #' # Run function
 #' TestModel <- AutoXGBoostMultiClass(
@@ -86,7 +62,7 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     IDcols = c("x1","x2"),
 #'   
 #'     # Model evaluation
@@ -154,27 +130,31 @@ AutoXGBoostMultiClass <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100L)
   
+  # Ensure model_path and metadata_path exists----
+  if(!dir.exists(file.path(model_path))) dir.create(model_path)
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  
   # MultiClass Check Arguments----
-  if (any(Trees < 1L)) stop("Trees must be greater than 1")
+  if(any(Trees < 1L)) return("Trees must be greater than 1")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if (!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if (MaxModelsInGrid < 1L & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  if (!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type")
-  if (!is.null(metadata_path)) if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  if (!is.character(ModelID)) stop("ModelID needs to be a character type")
-  if (!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-  if (!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1 and less than 1080")
+  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
+  if(!is.character(ModelID)) return("ModelID needs to be a character type")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # MultiClass Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
+  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
 
   # MultiClass Target Name Storage----
-  if (is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
+  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # MultiClass IDcol Name Storage----
-  if (!is.null(IDcols)) if (!is.character(IDcols)) IDcols <- names(data)[IDcols]
+  if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # MultiClass Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
@@ -184,7 +164,7 @@ AutoXGBoostMultiClass <- function(data,
   CatFeatures <- setdiff(CatFeatures, Target)
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
+  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -198,7 +178,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass data Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
@@ -210,17 +190,17 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass TestData Subset Columns Needed----
-  if (!is.null(TestData)) {
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(!is.null(TestData)) {
+    if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      if (!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
     } else {
       keep1 <- c(FeatureColNames)
-      if (!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
-    if (!is.null(IDcols)) {
+    if(!is.null(IDcols)) {
       TestMerge <- data.table::copy(TestData)
       keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
@@ -230,7 +210,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Obtain Unique Target Levels
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
   } else if(!TrainOnFull) {
     temp <- data.table::rbindlist(list(dataTrain, dataTest))
@@ -240,7 +220,7 @@ AutoXGBoostMultiClass <- function(data,
   TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(Target)]])))
   data.table::setnames(TargetLevels, "V1", "OriginalLevels")
   TargetLevels[, NewLevels := 0L:(.N - 1L)]
-  if (SaveModelObjects) data.table::fwrite(TargetLevels, file = paste0(model_path, "/", ModelID, "_TargetLevels.csv"))
+  if(SaveModelObjects) data.table::fwrite(TargetLevels, file = file.path(model_path, paste0(ModelID, "_TargetLevels.csv")))
   
   # Number of levels----
   NumLevels <- TargetLevels[, .N]
@@ -263,7 +243,7 @@ AutoXGBoostMultiClass <- function(data,
       all = FALSE)
     dataTest[, paste0(Target) := NewLevels]
     dataTest[, NewLevels := NULL]
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       TestData <- merge(
         TestData,
         TargetLevels,
@@ -277,8 +257,8 @@ AutoXGBoostMultiClass <- function(data,
   
   # MultiClass Dummify dataTrain Categorical Features----
   if(!is.null(CatFeatures)) {
-    if (SaveModelObjects) {
-      if (!is.null(dataTest) & !is.null(TestData) & TrainOnFull == FALSE) {
+    if(SaveModelObjects) {
+      if(!is.null(dataTest) & !is.null(TestData) & TrainOnFull == FALSE) {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
         data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
         data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
@@ -421,7 +401,6 @@ AutoXGBoostMultiClass <- function(data,
         }
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
         data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        
         if(!TrainOnFull) {
           dataTest <- temp[ID_Factorizer == "VALIDATE"]
           data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
@@ -432,7 +411,6 @@ AutoXGBoostMultiClass <- function(data,
         }
       } else {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        
         if(!TrainOnFull) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
           FactorLevelsList <- temp$FactorLevelsList
@@ -487,22 +465,22 @@ AutoXGBoostMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if (SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(model_path, paste0(ModelID, "_ColNames.csv")))
   
   # MultiClass Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
   if(!TrainOnFull) TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
-  if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
+  if(!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
   
   # MultiClass Remove Target Variable from Feature Data
   dataTrain[, eval(Target) := NULL]
   if(!TrainOnFull) dataTest[, eval(Target) := NULL]
-  if (!is.null(TestData)) TestData[, eval(Target) := NULL]
+  if(!is.null(TestData)) TestData[, eval(Target) := NULL]
   
   # MultiClass Initialize XGBoost Data Conversion----
   datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
   if(!TrainOnFull) datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     datatest <- xgboost::xgb.DMatrix(as.matrix(TestData), label = FinalTestTarget)
     EvalSets <- list(train = datavalidate, test = datatest)
   } else if(!TrainOnFull) {
@@ -512,7 +490,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Grid Tune or Not Check----
-  if (GridTune & !TrainOnFull) {
+  if(GridTune & !TrainOnFull) {
     
     # Pull in Grid sets----
     Grids <- XGBoostParameterGrids(TaskType=TreeMethod,Shuffles=Shuffles,NTrees=Trees,Depth=max_depth,LearningRate=eta,MinChildWeight=min_child_weight,SubSample=subsample,ColSampleByTree=colsample_bytree)
@@ -682,7 +660,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
-  if (!is.null(PassInGrid)) {
+  if(!is.null(PassInGrid)) {
     base_params <- list(
       num_class             = NumLevels,
       booster               = "gbtree",
@@ -702,13 +680,13 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # Define parameters for case where you want to run grid tuning----
-  if (GridTune & !TrainOnFull) {
+  if(GridTune & !TrainOnFull) {
     
     # Prepare winning grid----
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
     
     # Set parameters from winning grid----
-    if (BestGrid$RunNumber == 1L) {
+    if(BestGrid$RunNumber == 1L) {
       base_params <- list(
         num_class             = NumLevels,
         booster               = "gbtree",
@@ -761,7 +739,7 @@ AutoXGBoostMultiClass <- function(data,
   }
   
   # MultiClass Save Model----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(getwd() == model_path) {
       xgboost::xgb.save(model = model, fname = ModelID)  
     } else {
@@ -835,18 +813,18 @@ AutoXGBoostMultiClass <- function(data,
   VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
   # MultiClass Save GridCollect and grid_metrics----
-  if (SaveModelObjects & GridTune == TRUE) {
+  if(SaveModelObjects & GridTune) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = paste0(metadata_path, "/", ModelID, "ExperimentalGrid.csv"))
+      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(ExperimentalGrid, file = paste0(model_path, "/", ModelID, "ExperimentalGrid.csv"))     
+      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "ExperimentalGrid.csv")))
     }
   }
   
@@ -867,7 +845,7 @@ AutoXGBoostMultiClass <- function(data,
   
   # MultiClass Return Model Objects----
   if(!GridTune) GridMetrics <- NULL
-  if (ReturnModelObjects) {
+  if(ReturnModelObjects) {
     if(Objective != "multi:softprob") {
       return(list(Model=model, ValidationData=ValidationData, EvaluationMetrics=EvaluationMetrics, VariableImportance=VariableImportance, 
                   VI_Plot=VI_Plot(VI_Data = VariableImportance), GridMetrics=ExperimentalGrid, ColNames=Names, TargetLevels=TargetLevels, FactorLevels=FactorLevelsList))

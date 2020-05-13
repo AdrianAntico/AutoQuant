@@ -90,7 +90,7 @@ AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tunin
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 
 # Run function
 TestModel <- AutoXGBoostClassifier(
@@ -113,7 +113,7 @@ TestModel <- AutoXGBoostClassifier(
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[2L:ncol(data)],
+    FeatureColNames = names(data)[4L:ncol(data)],
     IDcols = c("x1","x2"),
   
     # Model evaluation
