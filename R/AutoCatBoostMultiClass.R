@@ -39,52 +39,46 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' 
-#' # Alter correlation value for the simulated data
-#' Correl <- 0.85
-#' 
-#' # Number of rows you want to use
-#' N <- 25000L 
-#' 
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
-#' data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' data[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^3]
-#' data[, Adrian := as.factor(
-#'   ifelse(Independent_Variable2 < 0.20, "A",
-#'          ifelse(Independent_Variable2 < 0.40, "B",
-#'                 ifelse(Independent_Variable2 < 0.6,  "C",
-#'                        ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 #' 
 #' # Run function
 #' TestModel <- AutoCatBoostMultiClass(
 #'     
-#'     # GPU or CPU
+#'     # GPU or CPU and the number of available GPUs
 #'     task_type = "GPU",
 #'     
-#'     # Metadata arguments
+#'     # Metadata arguments: 
+#'     #   'ModelID' is used to create part of the file names generated when saving to file'
+#'     #   'model_path' is where the minimal model objects for scoring will be stored
+#'     #      'ModelID' will be the name of the saved model object
+#'     #   'metadata_path' is where model evaluation and model interpretation files are saved
+#'     #      objects saved to model_path if metadata_path is null
+#'     #      Saved objects include: 
+#'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+#'     #         'ModelID_VariableImportance.csv' is the variable importance. 
+#'     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+#'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+#'     #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
 #'     ModelID = "Test_Model_1",
 #'     model_path = getwd(),
 #'     metadata_path = file.path(getwd(),"R_Model_Testing"),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'     
-#'     # Data arguments
+#'     # Data arguments:
+#'     #   'TrainOnFull' is to train a model with 100 percent of your data. 
+#'     #     That means no holdout data will be used for evaluation
+#'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+#'     #     CatBoost categorical treatment is enhanced when supplied
+#'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L,1L,1L,1L),
 #'     IDcols = c("x1","x2"),
@@ -883,9 +877,9 @@ AutoCatBoostMultiClass <- function(data,
   # MultiClass Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
+      data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -894,9 +888,9 @@ AutoCatBoostMultiClass <- function(data,
     EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+        data.table::fwrite(EvaluationMetrics, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
   }
@@ -909,20 +903,18 @@ AutoCatBoostMultiClass <- function(data,
   VariableImportance <- VariableImportance[order(-Importance)]
   if(SaveModelObjects) {
     if (!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
-  # MultiClass Save GridCollect and catboostGridList----
-  if(SaveModelObjects & GridTune == TRUE) {
-    if (!is.null(metadata_path)) {
-      data.table::fwrite(catboostGridList,file = paste0(metadata_path,"/",ModelID,"_catboostGridList.csv"))
-      data.table::fwrite(GridCollect,file = paste0(metadata_path,"/",ModelID,"_GridCollect.csv"))
+  # MultiClass Save Grid output----
+  if(SaveModelObjects & GridTune) {
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "_ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(catboostGridList,file = paste0(model_path,"/",ModelID,"_catboostGridList.csv"))
-      data.table::fwrite(GridCollect,file = paste0(model_path,"/",ModelID,"_GridCollect.csv"))      
+      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "_ExperimentalGrid.csv")))
     }
   }
   
@@ -943,7 +935,7 @@ AutoCatBoostMultiClass <- function(data,
   
   # Remove extenal files if GridTune is TRUE----
   if(GridTune) {
-    if(file.exists(file.path(getwd(),"./catboost_training.json"))) file.remove(file.path(getwd(),"./catboost_training.json"))
+    if(file.exists(file.path(getwd(),"catboost_training.json"))) file.remove(file.path(getwd(),"catboost_training.json"))
     if(file.exists(file.path(getwd(),"learn_error.tsv"))) file.remove(file.path(getwd(),"learn_error.tsv"))
     if(file.exists(file.path(getwd(),"test_error.tsv"))) file.remove(file.path(getwd(),"test_error.tsv"))
     if(file.exists(file.path(getwd(),"time_left.tsv"))) file.remove(file.path(getwd(),"time_left.tsv"))

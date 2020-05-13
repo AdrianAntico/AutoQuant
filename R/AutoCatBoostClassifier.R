@@ -45,34 +45,66 @@
 #' # Run function
 #' TestModel <- AutoCatBoostClassifier(
 #'     
-#'     # GPU or CPU
+#'     # GPU or CPU and the number of available GPUs
 #'     task_type = "GPU",
 #'     NumGPUs = 1,
 #'     
-#'     # Metadata arguments
+#'     # Metadata arguments: 
+#'     #   'ModelID' is used to create part of the file names generated when saving to file'
+#'     #   'model_path' is where the minimal model objects for scoring will be stored
+#'     #      'ModelID' will be the name of the saved model object
+#'     #   'metadata_path' is where model evaluation and model interpretation files are saved
+#'     #      objects saved to model_path if metadata_path is null
+#'     #      Saved objects include: 
+#'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+#'     #         'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png' calibration plot
+#'     #         'ModelID_VariableImportance.csv' is the variable importance. 
+#'     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+#'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+#'     #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
 #'     ModelID = "Test_Model_1",
 #'     model_path = getwd(),
 #'     metadata_path = file.path(getwd(),"R_Model_Testing"),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'     
-#'     # Data arguments
+#'     # Data arguments:
+#'     #   'TrainOnFull' is to train a model with 100 percent of your data. 
+#'     #     That means no holdout data will be used for evaluation
+#'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+#'     #     CatBoost categorical treatment is enhanced when supplied
+#'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[2L:ncol(data)],
+#'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L),
 #'     IDcols = c("x1","x2"),
 #'     
-#'     # Model evaluation
+#'     # Model evaluation: 
+#'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+#'     #   'loss_function' the loss function used in training optimization
+#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
+#'     #     A value of 3 will return plots for the top 3 variables based on variable importance
+#'     #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+#'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
 #'     eval_metric = "AUC",
 #'     loss_function = "Logloss",
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'
-#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics 
+#'     # Grid tuning arguments:
+#'     #   'PassInGrid' is for retraining using a previous grid winning args
+#'     #   'MaxModelsInGrid' is a cap on the number of models that will run
+#'     #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
+#'     #   'MaxRunMinutes' is a cap on the number of minutes that will run
+#'     #   'Shuffles' is the number of times you want the random grid arguments shuffled
+#'     #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
+#'     #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
 #'     PassInGrid = NULL,
 #'     GridTune = TRUE,
 #'     MaxModelsInGrid = 100L,
@@ -150,8 +182,8 @@ AutoCatBoostClassifier <- function(data,
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(MaxModelsInGrid < 1L & GridTune) return("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if (!is.character(metadata_path)) return("metadata_path needs to be a character type")
+  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
   if(!is.character(ModelID)) return("ModelID needs to be a character type")
   if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
@@ -588,11 +620,11 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Save Validation Data to File----
-  if (SaveModelObjects & TrainOnFull != TRUE) {
+  if (SaveModelObjects & !TrainOnFull) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = paste0(metadata_path, "/", ModelID, "_ValidationData.csv"))
+      data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(ValidationData, file = paste0(model_path, "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -641,9 +673,9 @@ AutoCatBoostClassifier <- function(data,
   if(!TrainOnFull) {
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_ROC_Plot.png"))
+        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_ROC_Plot.png")))
       } else {
-        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_ROC_Plot.png"))      
+        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_ROC_Plot.png")))
       }
     }  
   }
@@ -666,9 +698,9 @@ AutoCatBoostClassifier <- function(data,
   if(!TrainOnFull) {
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(paste0(metadata_path, "/", ModelID, "_EvaluationPlot.png"))
+        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationPlot.png")))
       } else {
-        ggplot2::ggsave(paste0(model_path, "/", ModelID, "_EvaluationPlot.png"))      
+        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationPlot.png")))
       }
     }  
   }
@@ -684,9 +716,9 @@ AutoCatBoostClassifier <- function(data,
         VariableImportance <- VariableImportance[order(-Importance)]
         if (SaveModelObjects) {
           if(!is.null(metadata_path)) {
-            data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+            data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
           } else {
-            data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+            data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
           }
         }
       } else {
@@ -700,9 +732,9 @@ AutoCatBoostClassifier <- function(data,
       VariableImportance <- VariableImportance[order(-Importance)]
       if (SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+          data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
         } else {
-          data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+          data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
         }
       }
     }
@@ -714,9 +746,9 @@ AutoCatBoostClassifier <- function(data,
     VariableImportance <- VariableImportance[order(-Importance)]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance, file = paste0(metadata_path, "/", ModelID, "_VariableImportance.csv"))
+        data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
       } else {
-        data.table::fwrite(VariableImportance, file = paste0(model_path, "/", ModelID, "_VariableImportance.csv"))      
+        data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
       }
     }
   }
@@ -748,27 +780,27 @@ AutoCatBoostClassifier <- function(data,
   # Binary Save ParDepPlots to file----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      if(!is.null(VariableImportance)) save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
+      if(!is.null(VariableImportance)) save(ParDepPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepPlots.R")))
     } else {
-      if(!is.null(VariableImportance)) save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+      if(!is.null(VariableImportance)) save(ParDepPlots, file = file.path(model_path, paste0(ModelID, "_ParDepPlots.R")))
     }
   }
   
   # Binary Save ExperimentalGrid----
   if (SaveModelObjects & GridTune == TRUE) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = paste0(metadata_path, "/", ModelID, "_ExperimentalGrid.csv"))
+      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "_ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(ExperimentalGrid, file = paste0(model_path, "/", ModelID, "_ExperimentalGrid.csv"))
+      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "_ExperimentalGrid.csv")))
     }
   }
   
   # Save EvaluationMetrics to File
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   
@@ -789,7 +821,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Remove extenal files if GridTune is TRUE----
   if(GridTune) {
-    if(file.exists(file.path(getwd(),"./catboost_training.json"))) file.remove(file.path(getwd(),"./catboost_training.json"))
+    if(file.exists(file.path(getwd(),"catboost_training.json"))) file.remove(file.path(getwd(),"catboost_training.json"))
     if(file.exists(file.path(getwd(),"learn_error.tsv"))) file.remove(file.path(getwd(),"learn_error.tsv"))
     if(file.exists(file.path(getwd(),"test_error.tsv"))) file.remove(file.path(getwd(),"test_error.tsv"))
     if(file.exists(file.path(getwd(),"time_left.tsv"))) file.remove(file.path(getwd(),"time_left.tsv"))
