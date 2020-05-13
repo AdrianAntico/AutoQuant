@@ -173,6 +173,10 @@ AutoCatBoostClassifier <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L,parallel::detectCores()-2L))
   
+  # Ensure model_path and metadata_path exists----
+  if(!dir.exists(file.path(model_path))) dir.create(model_path)
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  
   # Binary Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
   if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'

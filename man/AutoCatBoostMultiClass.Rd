@@ -136,11 +136,20 @@ TestModel <- AutoCatBoostMultiClass(
     ClassWeights = c(1L,1L,1L,1L,1L),
     IDcols = c("x1","x2"),
     
-    # Model evaluation
+    # Model evaluation: 
+    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+    #   'loss_function' the loss function used in training optimization
     eval_metric = "MultiClass",
     grid_eval_metric = "Accuracy",
 
-    # Grid tuning arguments - PassInGrid is the best of GridMetrics 
+    # Grid tuning arguments:
+    #   'PassInGrid' is for retraining using a previous grid winning args
+    #   'MaxModelsInGrid' is a cap on the number of models that will run
+    #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
+    #   'MaxRunMinutes' is a cap on the number of minutes that will run
+    #   'Shuffles' is the number of times you want the random grid arguments shuffled
+    #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
+    #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
     PassInGrid = NULL,
     GridTune = TRUE,
     MaxModelsInGrid = 100L,
