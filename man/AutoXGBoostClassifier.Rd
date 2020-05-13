@@ -93,7 +93,7 @@ AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tunin
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 
 # Run function
-TestModel <- AutoXGBoostClassifier(
+TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
     # GPU or CPU
     TreeMethod = "hist",

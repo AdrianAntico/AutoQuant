@@ -28,26 +28,27 @@
 #' # Create some dummy correlated data with numeric and categorical features
 #' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 #'
-#' TestModel <- AutoH2oMLClassifier(data,
-#'                                  TrainOnFull = FALSE,
-#'                                  ValidationData = NULL,
-#'                                  TestData = NULL,
-#'                                  TargetColumnName = "Adrian",
-#'                                  FeatureColNames = 4:ncol(data),
-#'                                  ExcludeAlgos = NULL,
-#'                                  eval_metric = "auc",
-#'                                  Trees = 50,
-#'                                  MaxMem = "32G",
-#'                                  NThreads = max(1, parallel::detectCores()-2),
-#'                                  MaxModelsInGrid = 10,
-#'                                  model_path = NULL,
-#'                                  metadata_path = NULL,
-#'                                  ModelID = "FirstModel",
-#'                                  NumOfParDepPlots = 3,
-#'                                  ReturnModelObjects = TRUE,
-#'                                  SaveModelObjects = FALSE,
-#'                                  IfSaveModel = "mojo",
-#'                                  H2OShutdown = FALSE)
+#' TestModel <- RemixAutoML::AutoH2oMLClassifier(
+#'    data,
+#'    TrainOnFull = FALSE,
+#'    ValidationData = NULL,
+#'    TestData = NULL,
+#'    TargetColumnName = "Adrian",
+#'    FeatureColNames = 4:ncol(data),
+#'    ExcludeAlgos = NULL,
+#'    eval_metric = "auc",
+#'    Trees = 50,
+#'    MaxMem = "32G",
+#'    NThreads = max(1, parallel::detectCores()-2),
+#'    MaxModelsInGrid = 10,
+#'    model_path = NULL,
+#'    metadata_path = NULL,
+#'    ModelID = "FirstModel",
+#'    NumOfParDepPlots = 3,
+#'    ReturnModelObjects = TRUE,
+#'    SaveModelObjects = FALSE,
+#'    IfSaveModel = "mojo",
+#'    H2OShutdown = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export

@@ -99,7 +99,7 @@ AutoCatBoostRegression is an automated modeling function that runs a variety of 
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 
 # Run function
-TestModel <- AutoCatBoostRegression(
+TestModel <- RemixAutoML::AutoCatBoostRegression(
     
     # GPU or CPU and the number of available GPUs
     task_type = "GPU",

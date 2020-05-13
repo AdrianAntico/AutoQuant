@@ -71,28 +71,29 @@ AutoH2oGLMRegression is an automated H2O modeling framework with grid-tuning and
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
 
 # Run function
-TestModel <- AutoH2oGLMRegression(data,
-                                  TrainOnFull = FALSE,
-                                  ValidationData = NULL,
-                                  TestData = NULL,
-                                  TargetColumnName = "Target",
-                                  FeatureColNames = 2:ncol(data),
-                                  Distribution = "binomial",
-                                  link = NULL, 
-                                  TransformNumericColumns = NULL,
-                                  eval_metric = "RMSE",
-                                  GridTune = FALSE,
-                                  MaxMem = "32G",
-                                  NThreads = max(1, parallel::detectCores()-2),
-                                  MaxModelsInGrid = 10,
-                                  model_path = NULL,
-                                  metadata_path = NULL,
-                                  ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
-                                  ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo",
-                                  H2OShutdown = TRUE)
+TestModel <- RemixAutoML::AutoH2oGLMRegression(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Target",
+   FeatureColNames = 2:ncol(data),
+   Distribution = "binomial",
+   link = NULL, 
+   TransformNumericColumns = NULL,
+   eval_metric = "RMSE",
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = NULL,
+   metadata_path = NULL,
+   ModelID = "FirstModel",
+   NumOfParDepPlots = 3,
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = TRUE)
 }
 }
 \seealso{

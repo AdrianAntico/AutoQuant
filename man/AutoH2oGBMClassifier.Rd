@@ -65,26 +65,27 @@ AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 
-TestModel <- AutoH2oGBMClassifier(data,
-                                  TrainOnFull = FALSE,
-                                  ValidationData = NULL,
-                                  TestData = NULL,
-                                  TargetColumnName = "Target",
-                                  FeatureColNames = 2:ncol(data),
-                                  eval_metric = "auc",
-                                  Trees = 50,
-                                  GridTune = FALSE,
-                                  MaxMem = "32G",
-                                  NThreads = max(1, parallel::detectCores()-2),
-                                  MaxModelsInGrid = 10,
-                                  model_path = NULL,
-                                  metadata_path = NULL,
-                                  ModelID = "FirstModel",
-                                  NumOfParDepPlots = 3,
-                                  ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo",
-                                  H2OShutdown = FALSE)
+TestModel <- RemixAutoML::AutoH2oGBMClassifier(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Target",
+   FeatureColNames = 2:ncol(data),
+   eval_metric = "auc",
+   Trees = 50,
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = NULL,
+   metadata_path = NULL,
+   ModelID = "FirstModel",
+   NumOfParDepPlots = 3,
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE)
 }
 }
 \seealso{

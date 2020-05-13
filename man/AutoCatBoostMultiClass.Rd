@@ -95,7 +95,7 @@ AutoCatBoostMultiClass is an automated modeling function that runs a variety of 
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 
 # Run function
-TestModel <- AutoCatBoostMultiClass(
+TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     
     # GPU or CPU and the number of available GPUs
     task_type = "GPU",

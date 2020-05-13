@@ -64,25 +64,26 @@ AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 
 # Run function
-TestModel <- AutoH2oMLMultiClass(data,
-                                  TrainOnFull = FALSE,
-                                  ValidationData = NULL,
-                                  TestData = NULL,
-                                  TargetColumnName = "Adrian",
-                                  FeatureColNames = 4:ncol(data),
-                                  ExcludeAlgos = NULL,
-                                  eval_metric = "logloss",
-                                  Trees = 50,
-                                  MaxMem = "32G",
-                                  NThreads = max(1, parallel::detectCores()-2),
-                                  MaxModelsInGrid = 10,
-                                  model_path = NULL,
-                                  metadata_path = NULL,
-                                  ModelID = "FirstModel",
-                                  ReturnModelObjects = TRUE,
-                                  SaveModelObjects = FALSE,
-                                  IfSaveModel = "mojo",
-                                  H2OShutdown = FALSE)
+TestModel <- RemixAutoML::AutoH2oMLMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = 4:ncol(data),
+   ExcludeAlgos = NULL,
+   eval_metric = "logloss",
+   Trees = 50,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = NULL,
+   metadata_path = NULL,
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE)
 }
 }
 \seealso{
