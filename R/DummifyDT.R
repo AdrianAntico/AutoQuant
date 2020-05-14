@@ -29,7 +29,7 @@
 #'                   KeepFactorCols = FALSE,
 #'                   OneHot = FALSE,
 #'                   SaveFactorLevels = FALSE,
-#'                   SavePath = NULL,
+#'                   SavePath = normalizePath("./"),
 #'                   ImportFactorLevels = FALSE,
 #'                   FactorLevelsList = NULL,
 #'                   ClustScore = FALSE,
@@ -50,43 +50,23 @@ DummifyDT <- function(data,
                       ReturnFactorLevels = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Check arguments----
-  if (!is.character(cols)) {
-    warning("cols needs to be a character vector of names")
-  }
-  if (!is.logical(KeepFactorCols)) {
-    warning("KeepFactorCols needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(KeepFactorCols)) {
-    warning("KeepFactorCols needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(OneHot)) {
-    warning("OneHot needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(SaveFactorLevels)) {
-    warning("SaveFactorLevels needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(ImportFactorLevels)) {
-    warning("ImportFactorLevels needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(ClustScore)) {
-    warning("ClustScore needs to be either TRUE or FALSE")
-  }
-  if (!is.null(SavePath)) {
-    if (!is.character(SavePath)) {
-      warning("SavePath needs to be a character value of a folder location")
-    }
-  }
+  if(!is.character(cols)) return("cols needs to be a character vector of names")
+  if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
+  if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
+  if(!is.logical(OneHot)) return("OneHot needs to be either TRUE or FALSE")
+  if(!is.logical(SaveFactorLevels)) return("SaveFactorLevels needs to be either TRUE or FALSE")
+  if(!is.logical(ImportFactorLevels)) return("ImportFactorLevels needs to be either TRUE or FALSE")
+  if(!is.logical(ClustScore)) return("ClustScore needs to be either TRUE or FALSE")
+  if(!is.null(SavePath)) if(!is.character(SavePath)) return("SavePath needs to be a character value of a folder location")
   
   # Check data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Ensure correct argument settings----
-  if (OneHot == TRUE & ClustScore == TRUE) {
+  if(OneHot & ClustScore) {
     OneHot <- FALSE
     KeepFactorCols <- FALSE
   }
@@ -94,13 +74,11 @@ DummifyDT <- function(data,
   # Build dummies start----
   FactorsLevelsList <- list()
   if(length(cols) > 1 & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
-  for (col in rev(cols)) {
+  for(col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)
-    
-    # Import factor levels for scoring models----
-    if (ImportFactorLevels) {
-      temp <- data.table::fread(paste0(SavePath, "/", col, ".csv"))
+    if(ImportFactorLevels) {
+      temp <- data.table::fread(file.path(normalizePath(SavePath), paste0(col, ".csv")))
       inds <- sort(unique(temp[[eval(col)]]))
     } else if(!is.null(FactorLevelsList)) {
       temp <- FactorLevelsList[[eval(col)]]
@@ -113,30 +91,24 @@ DummifyDT <- function(data,
     data.table::alloc.col(data, n = ncol(data) + length(inds))
     
     # Save factor levels for scoring later----
-    if (SaveFactorLevels) {
-      data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = paste0(SavePath, "/", col, ".csv"))
-    }
+    if(SaveFactorLevels) data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
     
     # Collect Factor Levels----
-    if(ReturnFactorLevels) {
-      FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
-    }
+    if(ReturnFactorLevels) FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
     
     # Convert to character if col is factor----
-    if (is.factor(data[[eval(col)]])) {
-      data.table::set(data, j = eval(col), value = as.character(data[[eval(col)]]))
-    }
+    if(is.factor(data[[eval(col)]])) data.table::set(data, j = eval(col), value = as.character(data[[eval(col)]]))
     
     # If for clustering set up old school way----
-    if (!ClustScore) {
+    if(!ClustScore) {
       data.table::set(data, j = paste0(col, "_", inds), value = 0L)
     } else {
       data.table::set(data, j = paste0(col, inds), value = 0L)
     }
     
     # Build dummies----
-    for (ind in inds) {
-      if (!ClustScore) {
+    for(ind in inds) {
+      if(!ClustScore) {
         data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, "_", ind), value = 1L)
       } else {
         data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, ind),value = 1L)
@@ -144,28 +116,17 @@ DummifyDT <- function(data,
     }
     
     # Remove original factor columns----
-    if (!KeepFactorCols) {
-      data.table::set(data, j = eval(col), value = NULL)
-    }
-    if (ClustScore) {
-      setcolorder(data, c(setdiff(names(data), Names), Names))
-    }
-    
-    # If onehot, add extra column----
-    if (OneHot) {
-      data.table::set(data, j = paste0(col, "_Base"), value = 0L)
-    }
+    if(!KeepFactorCols) data.table::set(data, j = eval(col), value = NULL)
+    if(ClustScore) setcolorder(data, c(setdiff(names(data), Names), Names))
+    if(OneHot) data.table::set(data, j = paste0(col, "_Base"), value = 0L)
   }
   
   # Clustering section----
-  if (ClustScore) {
-    data.table::setnames(data, names(data), tolower(gsub('[[:punct:] ]+', replacement = "", names(data))))
-  }
+  if(ClustScore) data.table::setnames(data, names(data), tolower(gsub('[[:punct:] ]+', replacement = "", names(data))))
   
   # Return data----
   if(ReturnFactorLevels) {
-    return(list(data = data,
-                FactorLevelsList = FactorsLevelsList))
+    return(list(data = data, FactorLevelsList = FactorsLevelsList))
   } else {
     return(data)    
   }
