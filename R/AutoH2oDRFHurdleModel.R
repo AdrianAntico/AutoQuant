@@ -494,18 +494,13 @@ AutoH2oDRFHurdleModel <- function(data,
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999, 8))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 4L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for(metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+  for(metric in c("mae","mape","mse","r2")) {
     i <- as.integer(i + 1L)
     tryCatch({
-      if(tolower(metric) == "poisson") {
-        if(MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1)]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "mae") {
+      if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if(tolower(metric) == "mape") {
@@ -514,22 +509,6 @@ AutoH2oDRFHurdleModel <- function(data,
       } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "msle") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "kl") {
-        if(MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "cs") {
-        TestData[, ':=' (
-          Metric1 = get(TargetColumnName) * UpdatedPrediction,
-          Metric2 = get(TargetColumnName) ^ 2L,
-          Metric3 = UpdatedPrediction ^ 2L)]
-        Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if(tolower(metric) == "r2") {
         TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L, Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2)]
         Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]

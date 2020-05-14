@@ -657,7 +657,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 8L))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 4L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
   for(metric in c("mae","mape","mse","r2")) {
