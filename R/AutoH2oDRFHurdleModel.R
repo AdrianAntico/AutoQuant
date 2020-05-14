@@ -41,6 +41,8 @@
 #'   MetaDataPaths = NULL,
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "mojo",
+#'   MaxMem = "28G",
+#'   NThreads = max(1L, parallel::detectCores()-2L)
 #'   Trees = 1000L,
 #'   GridTune = FALSE,
 #'   MaxModelsInGrid = 1L,
@@ -98,9 +100,7 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-
+  
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)

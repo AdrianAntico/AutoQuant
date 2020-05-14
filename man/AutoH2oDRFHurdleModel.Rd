@@ -80,6 +80,8 @@ Output <- AutoH2oDRFHurdleModel(
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
+  MaxMem = "28G",
+  NThreads = max(1L, parallel::detectCores()-2L)
   Trees = 1000L,
   GridTune = FALSE,
   MaxModelsInGrid = 1L,
