@@ -205,7 +205,7 @@ AutoCatBoostClassifier <- function(data,
   if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # Binary Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
+  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -239,7 +239,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary data Subset Columns Needed----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
@@ -251,17 +251,17 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary TestData Subset Columns Needed----
-  if (!is.null(TestData)) {
-    if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(!is.null(TestData)) {
+    if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      if (!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, keep1, Target) else keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
     } else {
       keep1 <- c(FeatureColNames)
-      if (!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
+      if(!is.null(IDcols)) keep <- c(IDcols, FeatureColNames, Target) else keep <- c(FeatureColNames, Target)
       TestData <- TestData[, ..keep]
     }
-    if (!is.null(IDcols)) {
+    if(!is.null(IDcols)) {
       TestMerge <- data.table::copy(TestData)
       keep <- c(keep1, Target)
       TestData <- TestData[, ..keep]
@@ -299,12 +299,12 @@ AutoCatBoostClassifier <- function(data,
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
   if(TrainOnFull != TRUE) {
     TestTarget <- tryCatch({dataTest[, get(Target)]}, error = function(x) dataTest[, eval(Target)])
-    if (!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
+    if(!is.null(TestData)) FinalTestTarget <- tryCatch({TestData[, get(Target)]}, error = function(x) TestData[, eval(Target)])
   }
   
   # Binary Initialize Catboost Data Conversion----
-  if (!is.null(CatFeatures)) {
-    if (!is.null(TestData)) {
+  if(!is.null(CatFeatures)) {
+    if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
       if(TrainOnFull != TRUE) {
         TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
@@ -458,8 +458,8 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
-  if (!is.null(PassInGrid)) {
-    if (tolower(task_type) == "gpu") {
+  if(!is.null(PassInGrid)) {
+    if(tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = 1L,
@@ -584,11 +584,11 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Save Model----
-  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = paste0(model_path, "/", ModelID))
+  if(SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
   
   # Binary Score Final Test Data----
   if(TrainOnFull != TRUE) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       predict <- catboost::catboost.predict(
         model = model,
         pool = FinalTestPool,
@@ -611,7 +611,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary Validation Data----
   if(TrainOnFull != TRUE) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
       data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
     } else {
@@ -624,7 +624,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Save Validation Data to File----
-  if (SaveModelObjects & !TrainOnFull) {
+  if(SaveModelObjects & !TrainOnFull) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
     } else {
@@ -700,7 +700,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Save plot to file----
   if(!TrainOnFull) {
-    if (SaveModelObjects) {
+    if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
       } else {
@@ -718,7 +718,7 @@ AutoCatBoostClassifier <- function(data,
         data.table::setnames(VariableImportance, "V2", "Importance")
         VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
         VariableImportance <- VariableImportance[order(-Importance)]
-        if (SaveModelObjects) {
+        if(SaveModelObjects) {
           if(!is.null(metadata_path)) {
             data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
           } else {
@@ -748,7 +748,7 @@ AutoCatBoostClassifier <- function(data,
     data.table::setnames(VariableImportance, "V2", "Importance")
     VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
     VariableImportance <- VariableImportance[order(-Importance)]
-    if (SaveModelObjects) {
+    if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
       } else {
@@ -782,7 +782,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Save ParDepPlots to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       if(!is.null(VariableImportance)) save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
     } else {
@@ -791,7 +791,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary Save ExperimentalGrid----
-  if (SaveModelObjects & GridTune == TRUE) {
+  if(SaveModelObjects & GridTune == TRUE) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ExperimentalGrid.csv")))
     } else {
@@ -800,7 +800,7 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Save EvaluationMetrics to File
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {

@@ -37,7 +37,7 @@
 #'   SplitRatios = c(0.7, 0.2, 0.1),
 #'   NThreads = max(1L, parallel::detectCores()-2L),
 #'   ModelID = "ModelID",
-#'   Paths = NULL,
+#'   Paths = normalizePath("./"),
 #'   MetaDataPaths = NULL,
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "mojo",
@@ -74,7 +74,7 @@ AutoH2oGBMHurdleModel <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure Paths and metadata_path exists----
-  if(!dir.exists(file.path(Paths))) dir.create(Paths)
+  if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
 
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
@@ -88,9 +88,7 @@ AutoH2oGBMHurdleModel <- function(data,
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-
+  
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
@@ -277,7 +275,7 @@ AutoH2oGBMHurdleModel <- function(data,
         testBucket <- NULL
       }
     } else {
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -290,11 +288,11 @@ AutoH2oGBMHurdleModel <- function(data,
     }
     
     # Load Winning Grid if it exists----
-    if(file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
+    if(file.exists(file.path(normalizePath(Paths, paste0("grid", Buckets[bucket], ".csv"))))) {
+      gridSaved <- data.table::fread(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))
     }
-    if(file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) {
-      gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+    if(file.exists(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))) {
+      gridSaved <- data.table::fread(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))
     }
     
     # AutoCatBoostRegression()----
@@ -510,9 +508,9 @@ AutoH2oGBMHurdleModel <- function(data,
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
-      data.table::fwrite(TestData, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ValidationData.csv"))
+      data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(TestData, file = paste0(Paths[1L], "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -532,9 +530,9 @@ AutoH2oGBMHurdleModel <- function(data,
   # Save plot to file
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationPlot.png"))
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
   
@@ -554,26 +552,20 @@ AutoH2oGBMHurdleModel <- function(data,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     }
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <-
-    data.table::data.table(Metric = c("Poisson","MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999L, 8L))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE", "MSE","R2"), MetricValue = rep(999999L, 8L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for(metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+  for(metric in c("mae","mape","mse","r2")) {
     i <- i + 1L
     tryCatch({
-      if(tolower(metric) == "poisson") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1L)]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "mae") {
+      if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if(tolower(metric) == "mape") {
@@ -582,19 +574,6 @@ AutoH2oGBMHurdleModel <- function(data,
       } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "msle") {
-        if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "kl") {
-        if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "cs") {
-        TestData[, ':=' (Metric1 = get(TargetColumnName) * UpdatedPrediction, Metric2 = get(TargetColumnName) ^ 2L, Metric3 = UpdatedPrediction ^ 2L)]
-        Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if(tolower(metric) == "r2") {
         TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2)]
         Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
@@ -610,10 +589,10 @@ AutoH2oGBMHurdleModel <- function(data,
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
   if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1])) {
-      data.table::fwrite(MetaDataPaths, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(MetaDataPaths)) {
+      data.table::fwrite(MetaDataPaths, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(EvaluationMetrics, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   
@@ -654,9 +633,9 @@ AutoH2oGBMHurdleModel <- function(data,
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
-      save(ParDepBoxPlots, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
     } else {
-      save(ParDepBoxPlots, file = paste0(Paths[1L], "/", ModelID, "_ParDepBoxPlots.R"))      
+      save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
 

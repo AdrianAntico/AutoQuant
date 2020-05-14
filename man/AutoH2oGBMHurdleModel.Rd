@@ -76,7 +76,7 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
   SplitRatios = c(0.7, 0.2, 0.1),
   NThreads = max(1L, parallel::detectCores()-2L),
   ModelID = "ModelID",
-  Paths = NULL,
+  Paths = normalizePath("./"),
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
