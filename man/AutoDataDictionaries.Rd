@@ -4,8 +4,13 @@
 \alias{AutoDataDictionaries}
 \title{AutoDataDictionaries}
 \usage{
-AutoDataDictionaries(Type = "sqlserver", DBConnection, DDType = 1L,
-  Query = NULL, CloseChannel = TRUE)
+AutoDataDictionaries(
+  Type = "sqlserver",
+  DBConnection,
+  DDType = 1L,
+  Query = NULL,
+  CloseChannel = TRUE
+)
 }
 \arguments{
 \item{Type}{= "sqlserver" is currently the only system supported}
@@ -22,13 +27,14 @@ AutoDataDictionaries(Type = "sqlserver", DBConnection, DDType = 1L,
 AutoDataDictionaries is a function to return data dictionary data in table form
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoHierarchicalFourier}},
-  \code{\link{ColumnSubsetDataTable}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FakeDataGenerator}},
-  \code{\link{FullFactorialCatFeatures}},
-  \code{\link{SQL_Server_DBConnection}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

@@ -4,23 +4,43 @@
 \alias{AutoCatBoostHurdleModel}
 \title{AutoCatBoostHurdleModel for generalized hurdle modeling}
 \usage{
-AutoCatBoostHurdleModel(data = NULL, TrainOnFull = FALSE,
-  ValidationData = NULL, TestData = NULL, Buckets = 0L,
-  TargetColumnName = NULL, FeatureColNames = NULL,
-  PrimaryDateColumn = NULL, IDcols = NULL,
-  TransformNumericColumns = NULL, Methods = c("BoxCox", "Asinh",
-  "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"), ClassWeights = NULL,
-  SplitRatios = c(0.7, 0.2, 0.1), task_type = "GPU",
-  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
-  SaveModelObjects = FALSE, ReturnModelObjects = TRUE,
-  NumOfParDepPlots = 10L, PassInGrid = NULL, GridTune = FALSE,
-  BaselineComparison = "default", MaxModelsInGrid = 1L,
-  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 60L * 60L,
-  Shuffles = 2L, MetricPeriods = 25L, Trees = seq(1000L, 5000L,
-  500L), Depth = seq(4L, 8L, 1L), LearningRate = seq(0.01, 0.1, 0.01),
-  L2_Leaf_Reg = seq(1, 10, 1), RSM = c(0.8, 0.85, 0.9, 0.95, 1),
+AutoCatBoostHurdleModel(
+  data = NULL,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  Buckets = 0L,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
+  IDcols = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  ClassWeights = NULL,
+  SplitRatios = c(0.7, 0.2, 0.1),
+  task_type = "GPU",
+  ModelID = "ModelTest",
+  Paths = NULL,
+  MetaDataPaths = NULL,
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  NumOfParDepPlots = 10L,
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 1L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60L * 60L,
+  Shuffles = 2L,
+  MetricPeriods = 25L,
+  Trees = seq(1000L, 5000L, 500L),
+  Depth = seq(4L, 8L, 1L),
+  LearningRate = seq(0.01, 0.1, 0.01),
+  L2_Leaf_Reg = seq(1, 10, 1),
+  RSM = c(0.8, 0.85, 0.9, 0.95, 1),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")
+)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -65,7 +85,7 @@ AutoCatBoostHurdleModel(data = NULL, TrainOnFull = FALSE,
 
 \item{BaselineComparison}{= "default",}
 
-\item{MaxModelsInGrid}{Set to a numeric value for the number of models to try in grid tune}
+\item{MaxModelsInGrid}{= 1L,}
 
 \item{MaxRunsWithoutNewWinner}{= 20L,}
 
@@ -88,8 +108,6 @@ AutoCatBoostHurdleModel(data = NULL, TrainOnFull = FALSE,
 \item{BootStrapType}{= c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),}
 
 \item{GrowPolicy}{= c("SymmetricTree", "Depthwise", "Lossguide")}
-
-\item{MaxModelsInGrid}{= 1L,}
 }
 \value{
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
@@ -148,15 +166,17 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

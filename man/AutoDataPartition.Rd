@@ -4,10 +4,16 @@
 \alias{AutoDataPartition}
 \title{The AutoDataPartition function}
 \usage{
-AutoDataPartition(data, NumDataSets = 3L, Ratios = c(0.7, 0.2, 0.1),
-  PartitionType = "random", StratifyColumnNames = NULL,
-  StratifyNumericTarget = NULL, StratTargetPrecision = 3L,
-  TimeColumnName = NULL)
+AutoDataPartition(
+  data,
+  NumDataSets = 3L,
+  Ratios = c(0.7, 0.2, 0.1),
+  PartitionType = "random",
+  StratifyColumnNames = NULL,
+  StratifyNumericTarget = NULL,
+  StratTargetPrecision = 3L,
+  TimeColumnName = NULL
+)
 }
 \arguments{
 \item{data}{Source data to do your partitioning on}
@@ -45,20 +51,22 @@ dataSets <- AutoDataPartition(data,
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

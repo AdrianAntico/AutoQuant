@@ -4,19 +4,38 @@
 \alias{AutoXGBoostHurdleModel}
 \title{AutoXGBoostHurdleModel is generalized hurdle modeling framework}
 \usage{
-AutoXGBoostHurdleModel(TreeMethod = "hist", TrainOnFull = FALSE,
-  PassInGrid = NULL, NThreads = max(1L, parallel::detectCores() - 2L),
-  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL, data,
-  ValidationData = NULL, TestData = NULL, Buckets = 0L,
-  TargetColumnName = NULL, FeatureColNames = NULL, IDcols = NULL,
-  TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  SaveModelObjects = FALSE, NumOfParDepPlots = 10L, GridTune = FALSE,
-  grid_eval_metric = "accuracy", MaxModelsInGrid = 1L,
-  BaselineComparison = "default", MaxRunsWithoutNewWinner = 10L,
-  MaxRunMinutes = 60L, Trees = 1000L, eta = seq(0.05, 0.4, 0.05),
-  max_depth = seq(4L, 16L, 2L), min_child_weight = seq(1, 10, 1),
-  subsample = seq(0.55, 1, 0.05), colsample_bytree = seq(0.55, 1,
-  0.05))
+AutoXGBoostHurdleModel(
+  TreeMethod = "hist",
+  TrainOnFull = FALSE,
+  PassInGrid = NULL,
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  ModelID = "ModelTest",
+  Paths = NULL,
+  MetaDataPaths = NULL,
+  data,
+  ValidationData = NULL,
+  TestData = NULL,
+  Buckets = 0L,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  IDcols = NULL,
+  TransformNumericColumns = NULL,
+  SplitRatios = c(0.7, 0.2, 0.1),
+  SaveModelObjects = FALSE,
+  NumOfParDepPlots = 10L,
+  GridTune = FALSE,
+  grid_eval_metric = "accuracy",
+  MaxModelsInGrid = 1L,
+  BaselineComparison = "default",
+  MaxRunsWithoutNewWinner = 10L,
+  MaxRunMinutes = 60L,
+  Trees = 1000L,
+  eta = seq(0.05, 0.4, 0.05),
+  max_depth = seq(4L, 16L, 2L),
+  min_child_weight = seq(1, 10, 1),
+  subsample = seq(0.55, 1, 0.05),
+  colsample_bytree = seq(0.55, 1, 0.05)
+)
 }
 \arguments{
 \item{TreeMethod}{Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing}
@@ -135,15 +154,17 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

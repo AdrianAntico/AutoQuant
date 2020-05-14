@@ -22,11 +22,14 @@ data <- data.table::data.table(A = runif(100))
 data[, Percentile := percRank(A)]
 }
 \seealso{
-Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{RPM_Binomial_Bandit}},
-  \code{\link{SimpleCap}}, \code{\link{tempDatesFun}},
-  \code{\link{tokenizeH2O}}
+Other Misc: 
+\code{\link{AutoH2OTextPrepScoring}()},
+\code{\link{ChartTheme}()},
+\code{\link{PrintObjectsSize}()},
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{SimpleCap}()},
+\code{\link{tempDatesFun}()},
+\code{\link{tokenizeH2O}()}
 }
 \author{
 Adrian Antico

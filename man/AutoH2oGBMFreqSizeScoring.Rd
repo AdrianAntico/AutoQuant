@@ -4,11 +4,16 @@
 \alias{AutoH2oGBMFreqSizeScoring}
 \title{AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist()}
 \usage{
-AutoH2oGBMFreqSizeScoring(ScoringData, TargetColumnNames = NULL,
-  CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
-  0.1), ModelPath = NULL, ModelIDs = c("CountModel", "SizeModel"),
+AutoH2oGBMFreqSizeScoring(
+  ScoringData,
+  TargetColumnNames = NULL,
+  CountQuantiles = seq(0.1, 0.9, 0.1),
+  SizeQuantiles = seq(0.1, 0.9, 0.1),
+  ModelPath = NULL,
+  ModelIDs = c("CountModel", "SizeModel"),
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
-  KeepFeatures = TRUE)
+  KeepFeatures = TRUE
+)
 }
 \arguments{
 \item{ScoringData}{The scoring data returned from IntermittentDemandScoringDataGenerator()}
@@ -47,16 +52,18 @@ FinalData <- AutoH2oGBMFreqSizeScoring(
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoH2oGBMSizeFreqDist}},
-  \code{\link{AutoH2oGLMCARMA}},
-  \code{\link{AutoH2oMLCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandScoringDataGenerator}}
+Other Automated Time Series: 
+\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
+\code{\link{AutoH2oDRFCARMA}()},
+\code{\link{AutoH2oGBMCARMA}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
+\code{\link{AutoH2oGLMCARMA}()},
+\code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoTS}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico

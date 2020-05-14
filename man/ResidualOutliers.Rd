@@ -4,9 +4,15 @@
 \alias{ResidualOutliers}
 \title{ResidualOutliers is an automated time series outlier detection function}
 \usage{
-ResidualOutliers(data, DateColName = "DateTime",
-  TargetColName = "Target", PredictedColName = NULL,
-  TimeUnit = "day", maxN = 5, tstat = 2)
+ResidualOutliers(
+  data,
+  DateColName = "DateTime",
+  TargetColName = "Target",
+  PredictedColName = NULL,
+  TimeUnit = "day",
+  maxN = 5,
+  tstat = 2
+)
 }
 \arguments{
 \item{data}{the source residuals data.table}
@@ -55,9 +61,10 @@ model    <- stuff[[2]]
 outliers <- data[type != "<NA>"]
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{AutoKMeans}},
-  \code{\link{GenTSAnomVars}},
-  \code{\link{H2oIsolationForest}}
+Other Unsupervised Learning: 
+\code{\link{AutoKMeans}()},
+\code{\link{GenTSAnomVars}()},
+\code{\link{H2oIsolationForest}()}
 }
 \author{
 Adrian Antico

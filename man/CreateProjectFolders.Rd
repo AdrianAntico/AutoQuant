@@ -4,9 +4,12 @@
 \alias{CreateProjectFolders}
 \title{PathNormalizer Converts path files to proper path files}
 \usage{
-CreateProjectFolders(ProjectName = input$ID_NewProjectName,
-  RootPath = input$ID_Root_Folder, ExistsButNoProjectList = FALSE,
-  Local = FALSE)
+CreateProjectFolders(
+  ProjectName = input$ID_NewProjectName,
+  RootPath = input$ID_Root_Folder,
+  ExistsButNoProjectList = FALSE,
+  Local = FALSE
+)
 }
 \arguments{
 \item{ProjectName}{This is the name of a project which will be the name of the file created in the root folder}
@@ -22,7 +25,8 @@ Returns a proper path file string
 PathNormalizer Converts path files to proper path files
 }
 \seealso{
-Other System Functions: \code{\link{PathNormalizer}}
+Other System Functions: 
+\code{\link{PathNormalizer}()}
 }
 \author{
 Adrian Antico

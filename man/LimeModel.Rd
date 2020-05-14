@@ -4,9 +4,16 @@
 \alias{LimeModel}
 \title{LimeModel to build a lime model}
 \usage{
-LimeModel(data, Model = NULL, Bins = 10, ModelType = "xgboost",
-  NThreads = parallel::detectCores(), MaxMem = "32G",
-  ModelPath = NULL, ModelID = NULL)
+LimeModel(
+  data,
+  Model = NULL,
+  Bins = 10,
+  ModelType = "xgboost",
+  NThreads = parallel::detectCores(),
+  MaxMem = "32G",
+  ModelPath = NULL,
+  ModelID = NULL
+)
 }
 \arguments{
 \item{data}{Supply a training data set. This data set should be the data right before it gets converted to an h2o, catboost, or xgboost data object.}
@@ -32,9 +39,12 @@ Model for utilizing lime
 LimeModel to build a lime model for prediction explanations in this package#'
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
-  \code{\link{EvalPlot}}, \code{\link{ParDepCalPlots}},
-  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+Other Model Evaluation and Interpretation: 
+\code{\link{AutoLimeAid}()},
+\code{\link{EvalPlot}()},
+\code{\link{ParDepCalPlots}()},
+\code{\link{RedYellowGreen}()},
+\code{\link{threshOptim}()}
 }
 \author{
 Adrian Antico

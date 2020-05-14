@@ -13,10 +13,11 @@ CARMA_Get_IndepentVariablesPass(HierarchGroups)
 CARMA_Get_IndepentVariablesPass is to help manage carma code
 }
 \seealso{
-Other Carma Helper: \code{\link{CARMA_Define_Args}},
-  \code{\link{CarmaCatBoostKeepVarsGDL}},
-  \code{\link{CarmaH2OKeepVarsGDL}},
-  \code{\link{CarmaXGBoostKeepVarsGDL}}
+Other Carma Helper: 
+\code{\link{CARMA_Define_Args}()},
+\code{\link{CarmaCatBoostKeepVarsGDL}()},
+\code{\link{CarmaH2OKeepVarsGDL}()},
+\code{\link{CarmaXGBoostKeepVarsGDL}()}
 }
 \author{
 Adrian Antico

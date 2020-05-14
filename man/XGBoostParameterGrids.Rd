@@ -4,10 +4,16 @@
 \alias{XGBoostParameterGrids}
 \title{XGBoostParameterGrids}
 \usage{
-XGBoostParameterGrids(TaskType = "CPU", Shuffles = 1L,
-  NTrees = seq(500L, 5000L, 500L), Depth = seq(4L, 16L, 2L),
-  LearningRate = seq(0.05, 0.4, 0.05), MinChildWeight = seq(1, 10, 1),
-  SubSample = seq(0.55, 1, 0.05), ColSampleByTree = seq(0.55, 1, 0.05))
+XGBoostParameterGrids(
+  TaskType = "CPU",
+  Shuffles = 1L,
+  NTrees = seq(500L, 5000L, 500L),
+  Depth = seq(4L, 16L, 2L),
+  LearningRate = seq(0.05, 0.4, 0.05),
+  MinChildWeight = seq(1, 10, 1),
+  SubSample = seq(0.55, 1, 0.05),
+  ColSampleByTree = seq(0.55, 1, 0.05)
+)
 }
 \arguments{
 \item{TaskType}{"GPU" or "CPU"}
@@ -33,8 +39,9 @@ A list containing data.table's with the parameters shuffled and ready to test in
 XGBoostParameterGrids
 }
 \seealso{
-Other Supervised Learning: \code{\link{AutoH2OScoring}},
-  \code{\link{CatBoostParameterGrids}}
+Other Supervised Learning: 
+\code{\link{AutoH2OScoring}()},
+\code{\link{CatBoostParameterGrids}()}
 }
 \author{
 Adrian Antico

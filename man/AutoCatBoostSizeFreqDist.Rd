@@ -4,16 +4,31 @@
 \alias{AutoCatBoostSizeFreqDist}
 \title{AutoCatBoostSizeFreqDist for building size and frequency distributions via quantile regressions}
 \usage{
-AutoCatBoostSizeFreqDist(CountData = NULL, SizeData = NULL,
-  CountQuantiles = seq(0.1, 0.9, 0.1), SizeQuantiles = seq(0.1, 0.9,
-  0.1), AutoTransform = TRUE, DataPartitionRatios = c(0.75, 0.2, 0.05),
-  StratifyColumnNames = NULL, NTrees = 1500, TaskType = "GPU",
-  EvalMetric = "Quantile", GridTune = FALSE, GridEvalMetric = "mae",
-  CountTargetColumnName = NULL, SizeTargetColumnName = NULL,
-  CountFeatureColNames = NULL, SizeFeatureColNames = NULL,
-  CountIDcols = NULL, SizeIDcols = NULL, ModelIDs = c("CountModel",
-  "SizeModel"), MaxModelsGrid = 5, ModelPath = NULL,
-  MetaDataPath = NULL, NumOfParDepPlots = 0)
+AutoCatBoostSizeFreqDist(
+  CountData = NULL,
+  SizeData = NULL,
+  CountQuantiles = seq(0.1, 0.9, 0.1),
+  SizeQuantiles = seq(0.1, 0.9, 0.1),
+  AutoTransform = TRUE,
+  DataPartitionRatios = c(0.75, 0.2, 0.05),
+  StratifyColumnNames = NULL,
+  NTrees = 1500,
+  TaskType = "GPU",
+  EvalMetric = "Quantile",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  CountTargetColumnName = NULL,
+  SizeTargetColumnName = NULL,
+  CountFeatureColNames = NULL,
+  SizeFeatureColNames = NULL,
+  CountIDcols = NULL,
+  SizeIDcols = NULL,
+  ModelIDs = c("CountModel", "SizeModel"),
+  MaxModelsGrid = 5,
+  ModelPath = NULL,
+  MetaDataPath = NULL,
+  NumOfParDepPlots = 0
+)
 }
 \arguments{
 \item{CountData}{This is your CountData generated from the IntermittentDemandBootStrapper() function}
@@ -96,16 +111,18 @@ AutoCatBoostSizeFreqDist(CountData = CountData,
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoH2oGBMFreqSizeScoring}},
-  \code{\link{AutoH2oGBMSizeFreqDist}},
-  \code{\link{AutoH2oGLMCARMA}},
-  \code{\link{AutoH2oMLCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandScoringDataGenerator}}
+Other Automated Time Series: 
+\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoH2oDRFCARMA}()},
+\code{\link{AutoH2oGBMCARMA}()},
+\code{\link{AutoH2oGBMFreqSizeScoring}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
+\code{\link{AutoH2oGLMCARMA}()},
+\code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoTS}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico

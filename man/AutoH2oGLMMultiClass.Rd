@@ -4,13 +4,26 @@
 \alias{AutoH2oGLMMultiClass}
 \title{AutoH2oGLMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGLMMultiClass(data, TrainOnFull = FALSE, ValidationData = NULL,
-  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  eval_metric = "logloss", GridTune = FALSE, MaxMem = "32G",
-  NThreads = max(1, parallel::detectCores() - 2), MaxModelsInGrid = 2,
-  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = FALSE)
+AutoH2oGLMMultiClass(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  eval_metric = "logloss",
+  GridTune = FALSE,
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -85,11 +98,12 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 }
 }
 \seealso{
-Other Automated MultiClass Classification: \code{\link{AutoCatBoostMultiClass}},
-  \code{\link{AutoH2oDRFMultiClass}},
-  \code{\link{AutoH2oGBMMultiClass}},
-  \code{\link{AutoH2oMLMultiClass}},
-  \code{\link{AutoXGBoostMultiClass}}
+Other Automated MultiClass Classification: 
+\code{\link{AutoCatBoostMultiClass}()},
+\code{\link{AutoH2oDRFMultiClass}()},
+\code{\link{AutoH2oGBMMultiClass}()},
+\code{\link{AutoH2oMLMultiClass}()},
+\code{\link{AutoXGBoostMultiClass}()}
 }
 \author{
 Adrian Antico

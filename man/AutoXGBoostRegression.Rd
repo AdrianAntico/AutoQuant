@@ -4,19 +4,41 @@
 \alias{AutoXGBoostRegression}
 \title{AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoXGBoostRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
-  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  IDcols = NULL, model_path = NULL, metadata_path = NULL,
-  ModelID = "FirstModel", ReturnFactorLevels = TRUE,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  TransformNumericColumns = NULL, Verbose = 0L,
-  NumOfParDepPlots = 3L, NThreads = 8L, eval_metric = "rmse",
-  TreeMethod = "hist", GridTune = FALSE, grid_eval_metric = "rmse",
-  BaselineComparison = "default", MaxModelsInGrid = 10L,
-  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  PassInGrid = NULL, Shuffles = 1L, Trees = 50L, eta = NULL,
-  max_depth = NULL, min_child_weight = NULL, subsample = NULL,
-  colsample_bytree = NULL)
+AutoXGBoostRegression(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  IDcols = NULL,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  TransformNumericColumns = NULL,
+  Verbose = 0L,
+  NumOfParDepPlots = 3L,
+  NThreads = 8L,
+  eval_metric = "rmse",
+  TreeMethod = "hist",
+  GridTune = FALSE,
+  grid_eval_metric = "rmse",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L,
+  PassInGrid = NULL,
+  Shuffles = 1L,
+  Trees = 50L,
+  eta = NULL,
+  max_depth = NULL,
+  min_child_weight = NULL,
+  subsample = NULL,
+  colsample_bytree = NULL
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -148,15 +170,17 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{
 Adrian Antico

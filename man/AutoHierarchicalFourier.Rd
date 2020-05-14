@@ -4,11 +4,17 @@
 \alias{AutoHierarchicalFourier}
 \title{AutoHierarchicalFourier}
 \usage{
-AutoHierarchicalFourier(datax = data, xRegs = names(XREGS),
-  FourierTermS = FourierTerms, TimeUniT = TimeUnit,
-  FC_PeriodS = FC_Periods, TargetColumN = TargetColumn,
-  DateColumN = DateColumnName, HierarchGroups = NULL,
-  IndependentGroups = NULL)
+AutoHierarchicalFourier(
+  datax = data,
+  xRegs = names(XREGS),
+  FourierTermS = FourierTerms,
+  TimeUniT = TimeUnit,
+  FC_PeriodS = FC_Periods,
+  TargetColumN = TargetColumn,
+  DateColumN = DateColumnName,
+  HierarchGroups = NULL,
+  IndependentGroups = NULL
+)
 }
 \arguments{
 \item{datax}{data}
@@ -33,13 +39,14 @@ AutoHierarchicalFourier(datax = data, xRegs = names(XREGS),
 AutoHierarchicalFourier reverses the difference
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoDataDictionaries}},
-  \code{\link{ColumnSubsetDataTable}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FakeDataGenerator}},
-  \code{\link{FullFactorialCatFeatures}},
-  \code{\link{SQL_Server_DBConnection}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

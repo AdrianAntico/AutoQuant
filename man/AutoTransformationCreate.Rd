@@ -4,10 +4,15 @@
 \alias{AutoTransformationCreate}
 \title{AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.}
 \usage{
-AutoTransformationCreate(data, ColumnNames = NULL,
-  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Asin",
-  "Logit", "Identity"), Path = NULL, TransID = "ModelID",
-  SaveOutput = FALSE)
+AutoTransformationCreate(
+  data,
+  ColumnNames = NULL,
+  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Asin", "Logit",
+    "Identity"),
+  Path = NULL,
+  TransID = "ModelID",
+  SaveOutput = FALSE
+)
 }
 \arguments{
 \item{data}{This is your source data}
@@ -51,20 +56,22 @@ data <- AutoTransformationCreate(data,
                                  SaveOutput = FALSE)
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

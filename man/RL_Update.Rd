@@ -4,14 +4,22 @@
 \alias{RL_Update}
 \title{RL_Update}
 \usage{
-RL_Update(ExperimentGrid = ExperimentGrid,
-  MetricSelection = MetricSelection, ModelRun = run,
-  NEWGrid = NewGrid, TrialVector = Trials, SuccessVector = Successes,
-  GridIDS = GridIDs, BanditArmsCount = BanditArmsN,
+RL_Update(
+  ExperimentGrid = ExperimentGrid,
+  MetricSelection = MetricSelection,
+  ModelRun = run,
+  NEWGrid = NewGrid,
+  TrialVector = Trials,
+  SuccessVector = Successes,
+  GridIDS = GridIDs,
+  BanditArmsCount = BanditArmsN,
   RunsWithoutNewWinner = RunsWithoutNewWinner,
   MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-  MaxNumberModels = MaxNumberModels, MaxRunMinutes = MaxRunMinutes,
-  TotalRunTime = TotalRunTime, BanditProbabilities = BanditProbs)
+  MaxNumberModels = MaxNumberModels,
+  MaxRunMinutes = MaxRunMinutes,
+  TotalRunTime = TotalRunTime,
+  BanditProbabilities = BanditProbs
+)
 }
 \arguments{
 \item{ExperimentGrid}{This is a data.table of grid params and model results}
@@ -67,8 +75,9 @@ Successes <- RL_Update_Output[["Successes"]]
 NewGrid <- RL_Update_Output[["NewGrid"]]
 }
 \seealso{
-Other Reinforcement Learning: \code{\link{RL_Initialize}},
-  \code{\link{RL_ML_Update}}
+Other Reinforcement Learning: 
+\code{\link{RL_Initialize}()},
+\code{\link{RL_ML_Update}()}
 }
 \author{
 Adrian Antico

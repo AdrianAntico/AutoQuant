@@ -4,11 +4,24 @@
 \alias{AutoKMeans}
 \title{AutoKMeans Automated row clustering for mixed column types}
 \usage{
-AutoKMeans(data, nthreads = 8, MaxMem = "28G", SaveModels = NULL,
-  PathFile = NULL, GridTuneGLRM = TRUE, GridTuneKMeans = TRUE,
-  glrmCols = c(1:5), IgnoreConstCols = TRUE, glrmFactors = 5,
-  Loss = "Absolute", glrmMaxIters = 1000, SVDMethod = "Randomized",
-  MaxRunTimeSecs = 3600, KMeansK = 50, KMeansMetric = "totss")
+AutoKMeans(
+  data,
+  nthreads = 8,
+  MaxMem = "28G",
+  SaveModels = NULL,
+  PathFile = NULL,
+  GridTuneGLRM = TRUE,
+  GridTuneKMeans = TRUE,
+  glrmCols = c(1:5),
+  IgnoreConstCols = TRUE,
+  glrmFactors = 5,
+  Loss = "Absolute",
+  glrmMaxIters = 1000,
+  SVDMethod = "Randomized",
+  MaxRunTimeSecs = 3600,
+  KMeansK = 50,
+  KMeansMetric = "totss"
+)
 }
 \arguments{
 \item{data}{is the source time series data.table}
@@ -54,9 +67,10 @@ AutoKMeans adds a column to your original data with a cluster number identifier.
 }
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{GenTSAnomVars}},
-  \code{\link{H2oIsolationForest}},
-  \code{\link{ResidualOutliers}}
+Other Unsupervised Learning: 
+\code{\link{GenTSAnomVars}()},
+\code{\link{H2oIsolationForest}()},
+\code{\link{ResidualOutliers}()}
 }
 \author{
 Adrian Antico

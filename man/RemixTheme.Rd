@@ -25,8 +25,9 @@ p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::ge
 p <- p + RemixTheme()
 }
 \seealso{
-Other Graphics: \code{\link{TimeSeriesPlotter}},
-  \code{\link{multiplot}}
+Other Graphics: 
+\code{\link{TimeSeriesPlotter}()},
+\code{\link{multiplot}()}
 }
 \author{
 Douglas Pestana

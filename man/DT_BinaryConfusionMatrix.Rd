@@ -4,9 +4,12 @@
 \alias{DT_BinaryConfusionMatrix}
 \title{DT_BinaryConfusionMatrix}
 \usage{
-DT_BinaryConfusionMatrix(data = MetricsData,
-  GroupVariables = "IntervalNum", Target = "ActiveAtInterval",
-  Predicted = "p1")
+DT_BinaryConfusionMatrix(
+  data = MetricsData,
+  GroupVariables = "IntervalNum",
+  Target = "ActiveAtInterval",
+  Predicted = "p1"
+)
 }
 \arguments{
 \item{data}{Supply your model validation data with predictions}
@@ -30,8 +33,9 @@ AggMetricsByGroup <- DT_BinaryConfusionMatrix(
 }
 }
 \seealso{
-Other Model Evaluation: \code{\link{ClassificationMetrics}},
-  \code{\link{RemixClassificationMetrics}}
+Other Model Evaluation: 
+\code{\link{ClassificationMetrics}()},
+\code{\link{RemixClassificationMetrics}()}
 }
 \author{
 Adrian Antico

@@ -4,21 +4,39 @@
 \alias{TimeSeriesPlotter}
 \title{TimeSeriesPlotter}
 \usage{
-TimeSeriesPlotter(data = data, TargetVariable = "TargetVariableName",
+TimeSeriesPlotter(
+  data = data,
+  TargetVariable = "TargetVariableName",
   DateVariable = "DateVariableName",
-  GroupVariables = "GroupVariableName", VLineDate = NULL,
-  Aggregate = NULL, NumberGroupsDisplay = 5, LevelsToDisplay = NULL,
-  OtherGroupLabel = "Other", DisplayOtherGroup = FALSE,
-  TextSize = 12, LineWidth = 1, Color = "blue",
-  XTickMarks = "1 year", Size = 12, AngleX = 35, AngleY = 0,
-  ChartColor = "lightsteelblue1", BorderColor = "darkblue",
-  TextColor = "darkblue", GridColor = "white",
-  BackGroundColor = "gray95", LegendPosition = "bottom",
-  LegendTextColor = "darkblue", LegendTextSize = 10,
-  ForecastLineColor = "black", Forecast = FALSE,
-  PredictionIntervals = FALSE, TS_ModelID = NULL,
+  GroupVariables = "GroupVariableName",
+  VLineDate = NULL,
+  Aggregate = NULL,
+  NumberGroupsDisplay = 5,
+  LevelsToDisplay = NULL,
+  OtherGroupLabel = "Other",
+  DisplayOtherGroup = FALSE,
+  TextSize = 12,
+  LineWidth = 1,
+  Color = "blue",
+  XTickMarks = "1 year",
+  Size = 12,
+  AngleX = 35,
+  AngleY = 0,
+  ChartColor = "lightsteelblue1",
+  BorderColor = "darkblue",
+  TextColor = "darkblue",
+  GridColor = "white",
+  BackGroundColor = "gray95",
+  LegendPosition = "bottom",
+  LegendTextColor = "darkblue",
+  LegendTextSize = 10,
+  ForecastLineColor = "black",
+  Forecast = FALSE,
+  PredictionIntervals = FALSE,
+  TS_ModelID = NULL,
   PredictionIntervalColorInner = "aquamarine1",
-  PredictionIntervalColorOuter = "peachpuff1")
+  PredictionIntervalColorOuter = "peachpuff1"
+)
 }
 \arguments{
 \item{data}{Source data}
@@ -83,8 +101,9 @@ TimeSeriesPlotter(data = data, TargetVariable = "TargetVariableName",
 TimeSeriesPlotter is a function to plot single or multiple lines on a single plot
 }
 \seealso{
-Other Graphics: \code{\link{RemixTheme}},
-  \code{\link{multiplot}}
+Other Graphics: 
+\code{\link{RemixTheme}()},
+\code{\link{multiplot}()}
 }
 \author{
 Adrian Antico

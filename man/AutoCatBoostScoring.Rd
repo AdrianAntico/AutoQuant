@@ -4,14 +4,29 @@
 \alias{AutoCatBoostScoring}
 \title{AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
 \usage{
-AutoCatBoostScoring(TargetType = NULL, ScoringData = NULL,
-  FeatureColumnNames = NULL, IDcols = NULL, ModelObject = NULL,
-  ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
-  MultiClassTargetLevels = NULL, TransformNumeric = FALSE,
-  BackTransNumeric = FALSE, TargetColumnName = NULL,
-  TransformationObject = NULL, TransID = NULL, TransPath = NULL,
-  MDP_Impute = TRUE, MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
-  MDP_MissFactor = "0", MDP_MissNum = -1, RemoveModel = FALSE)
+AutoCatBoostScoring(
+  TargetType = NULL,
+  ScoringData = NULL,
+  FeatureColumnNames = NULL,
+  IDcols = NULL,
+  ModelObject = NULL,
+  ModelPath = NULL,
+  ModelID = NULL,
+  ReturnFeatures = TRUE,
+  MultiClassTargetLevels = NULL,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1,
+  RemoveModel = FALSE
+)
 }
 \arguments{
 \item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
@@ -88,9 +103,10 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
 }
 }
 \seealso{
-Other Automated Model Scoring: \code{\link{AutoH2OMLScoring}},
-  \code{\link{AutoH2OModeler}},
-  \code{\link{AutoXGBoostScoring}}
+Other Automated Model Scoring: 
+\code{\link{AutoH2OMLScoring}()},
+\code{\link{AutoH2OModeler}()},
+\code{\link{AutoXGBoostScoring}()}
 }
 \author{
 Adrian Antico

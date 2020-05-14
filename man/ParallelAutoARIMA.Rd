@@ -4,9 +4,15 @@
 \alias{ParallelAutoARIMA}
 \title{ParallelAutoARIMA to run the 4 data sets at once}
 \usage{
-ParallelAutoARIMA(Output, MetricSelection = "MAE", MaxFourierTerms = 1,
-  TrainValidateShare = c(0.5, 0.5), MaxNumberModels = 20,
-  MaxRunMinutes = 5, MaxRunsWithoutNewWinner = 12)
+ParallelAutoARIMA(
+  Output,
+  MetricSelection = "MAE",
+  MaxFourierTerms = 1,
+  TrainValidateShare = c(0.5, 0.5),
+  MaxNumberModels = 20,
+  MaxRunMinutes = 5,
+  MaxRunsWithoutNewWinner = 12
+)
 }
 \arguments{
 \item{Output}{The output returned from TimeSeriesDataPrepare()}
@@ -15,15 +21,13 @@ ParallelAutoARIMA(Output, MetricSelection = "MAE", MaxFourierTerms = 1,
 
 \item{MaxFourierTerms}{Fourier pairs}
 
-\item{TrainValidateShare}{The value returned from TimeSeriesPrepare()}
+\item{TrainValidateShare}{c(0.50,0.50)}
 
 \item{MaxNumberModels}{20}
 
 \item{MaxRunMinutes}{5}
 
 \item{MaxRunsWithoutNewWinner}{12}
-
-\item{TrainValidateShare}{c(0.50,0.50)}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -41,32 +45,36 @@ ParallelAutoARIMA(
   MaxRunMinutes = 5)
 }
 \seealso{
-Other Time Series: \code{\link{AutoBanditNNet}},
-  \code{\link{AutoBanditSarima}}, \code{\link{AutoTBATS}},
-  \code{\link{CarmaHoldoutMetrics}},
-  \code{\link{DifferenceDataReverse}},
-  \code{\link{DifferenceData}},
-  \code{\link{FinalBuildArfima}},
-  \code{\link{FinalBuildArima}},
-  \code{\link{FinalBuildETS}},
-  \code{\link{FinalBuildNNET}},
-  \code{\link{FinalBuildTBATS}},
-  \code{\link{FinalBuildTSLM}},
-  \code{\link{GenerateParameterGrids}},
-  \code{\link{OptimizeArfima}},
-  \code{\link{OptimizeArima}}, \code{\link{OptimizeETS}},
-  \code{\link{OptimizeNNET}}, \code{\link{OptimizeTBATS}},
-  \code{\link{OptimizeTSLM}},
-  \code{\link{ParallelAutoArfima}},
-  \code{\link{ParallelAutoETS}},
-  \code{\link{ParallelAutoNNET}},
-  \code{\link{ParallelAutoTBATS}},
-  \code{\link{ParallelAutoTSLM}},
-  \code{\link{RL_Performance}},
-  \code{\link{Regular_Performance}},
-  \code{\link{StackedTimeSeriesEnsembleForecast}},
-  \code{\link{TimeSeriesDataPrepare}},
-  \code{\link{WideTimeSeriesEnsembleForecast}}
+Other Time Series: 
+\code{\link{AutoBanditNNet}()},
+\code{\link{AutoBanditSarima}()},
+\code{\link{AutoTBATS}()},
+\code{\link{CarmaHoldoutMetrics}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
+\code{\link{FinalBuildArfima}()},
+\code{\link{FinalBuildArima}()},
+\code{\link{FinalBuildETS}()},
+\code{\link{FinalBuildNNET}()},
+\code{\link{FinalBuildTBATS}()},
+\code{\link{FinalBuildTSLM}()},
+\code{\link{GenerateParameterGrids}()},
+\code{\link{OptimizeArfima}()},
+\code{\link{OptimizeArima}()},
+\code{\link{OptimizeETS}()},
+\code{\link{OptimizeNNET}()},
+\code{\link{OptimizeTBATS}()},
+\code{\link{OptimizeTSLM}()},
+\code{\link{ParallelAutoArfima}()},
+\code{\link{ParallelAutoETS}()},
+\code{\link{ParallelAutoNNET}()},
+\code{\link{ParallelAutoTBATS}()},
+\code{\link{ParallelAutoTSLM}()},
+\code{\link{RL_Performance}()},
+\code{\link{Regular_Performance}()},
+\code{\link{StackedTimeSeriesEnsembleForecast}()},
+\code{\link{TimeSeriesDataPrepare}()},
+\code{\link{WideTimeSeriesEnsembleForecast}()}
 }
 \author{
 Adrian Antico

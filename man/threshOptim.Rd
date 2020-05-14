@@ -4,9 +4,18 @@
 \alias{threshOptim}
 \title{Utility maximizing thresholds for binary classification}
 \usage{
-threshOptim(data, actTar = "target", predTar = "p1", tpProfit = 0,
-  tnProfit = 0, fpProfit = -1, fnProfit = -2, MinThresh = 0.001,
-  MaxThresh = 0.999, ThresholdPrecision = 0.001)
+threshOptim(
+  data,
+  actTar = "target",
+  predTar = "p1",
+  tpProfit = 0,
+  tnProfit = 0,
+  fpProfit = -1,
+  fnProfit = -2,
+  MinThresh = 0.001,
+  MaxThresh = 0.999,
+  ThresholdPrecision = 0.001
+)
 }
 \arguments{
 \item{data}{data is the data table you are building the modeling on}
@@ -55,10 +64,12 @@ optimalThreshold <- data$Thresholds
 allResults <- data$EvaluationTable
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
-  \code{\link{EvalPlot}}, \code{\link{LimeModel}},
-  \code{\link{ParDepCalPlots}},
-  \code{\link{RedYellowGreen}}
+Other Model Evaluation and Interpretation: 
+\code{\link{AutoLimeAid}()},
+\code{\link{EvalPlot}()},
+\code{\link{LimeModel}()},
+\code{\link{ParDepCalPlots}()},
+\code{\link{RedYellowGreen}()}
 }
 \author{
 Adrian Antico

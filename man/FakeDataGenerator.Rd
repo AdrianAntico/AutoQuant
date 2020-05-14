@@ -4,8 +4,15 @@
 \alias{FakeDataGenerator}
 \title{FakeDataGenerator}
 \usage{
-FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 1, ZIP = 1,
-  AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 1,
+  ZIP = 1,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE
+)
 }
 \arguments{
 \item{Correlation}{Set the correlation value for simulated data}
@@ -31,13 +38,14 @@ data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP
 }
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoDataDictionaries}},
-  \code{\link{AutoHierarchicalFourier}},
-  \code{\link{ColumnSubsetDataTable}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FullFactorialCatFeatures}},
-  \code{\link{SQL_Server_DBConnection}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

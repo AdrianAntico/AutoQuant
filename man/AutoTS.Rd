@@ -4,12 +4,26 @@
 \alias{AutoTS}
 \title{AutoTS is an automated time series modeling function}
 \usage{
-AutoTS(data, TargetName = "Target", DateName = "DateTime",
-  FCPeriods = 30, HoldOutPeriods = 30, EvaluationMetric = "MAPE",
-  InnerEval = "AICc", TimeUnit = "day", Lags = 25, SLags = 2,
-  MaxFourierPairs = 0, NumCores = 4, SkipModels = NULL,
-  StepWise = TRUE, TSClean = TRUE, ModelFreq = TRUE,
-  PrintUpdates = FALSE, PlotPredictionIntervals = TRUE)
+AutoTS(
+  data,
+  TargetName = "Target",
+  DateName = "DateTime",
+  FCPeriods = 30,
+  HoldOutPeriods = 30,
+  EvaluationMetric = "MAPE",
+  InnerEval = "AICc",
+  TimeUnit = "day",
+  Lags = 25,
+  SLags = 2,
+  MaxFourierPairs = 0,
+  NumCores = 4,
+  SkipModels = NULL,
+  StepWise = TRUE,
+  TSClean = TRUE,
+  ModelFreq = TRUE,
+  PrintUpdates = FALSE,
+  PlotPredictionIntervals = TRUE
+)
 }
 \arguments{
 \item{data}{is the source time series data as a data.table - or a data structure that can be converted to a data.table}
@@ -104,17 +118,18 @@ WinningModel <- output$TimeSeriesModel
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoH2oGBMFreqSizeScoring}},
-  \code{\link{AutoH2oGBMSizeFreqDist}},
-  \code{\link{AutoH2oGLMCARMA}},
-  \code{\link{AutoH2oMLCARMA}},
-  \code{\link{AutoXGBoostCARMA}},
-  \code{\link{IntermittentDemandScoringDataGenerator}}
+Other Automated Time Series: 
+\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
+\code{\link{AutoH2oDRFCARMA}()},
+\code{\link{AutoH2oGBMCARMA}()},
+\code{\link{AutoH2oGBMFreqSizeScoring}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
+\code{\link{AutoH2oGLMCARMA}()},
+\code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

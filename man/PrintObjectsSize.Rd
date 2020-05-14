@@ -21,11 +21,14 @@ PrintObjectsSize(N = 10)
 }
 }
 \seealso{
-Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{ChartTheme}},
-  \code{\link{RPM_Binomial_Bandit}},
-  \code{\link{SimpleCap}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other Misc: 
+\code{\link{AutoH2OTextPrepScoring}()},
+\code{\link{ChartTheme}()},
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{SimpleCap}()},
+\code{\link{percRank}()},
+\code{\link{tempDatesFun}()},
+\code{\link{tokenizeH2O}()}
 }
 \author{
 Adrian Antico

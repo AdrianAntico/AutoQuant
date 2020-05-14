@@ -15,13 +15,14 @@ FullFactorialCatFeatures(GroupVars = GroupVariables, BottomsUp = TRUE)
 FullFactorialCatFeatures reverses the difference
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoDataDictionaries}},
-  \code{\link{AutoHierarchicalFourier}},
-  \code{\link{ColumnSubsetDataTable}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FakeDataGenerator}},
-  \code{\link{SQL_Server_DBConnection}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

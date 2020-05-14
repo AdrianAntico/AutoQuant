@@ -4,10 +4,17 @@
 \alias{ChartTheme}
 \title{ChartTheme function is a ggplot theme generator for ggplots}
 \usage{
-ChartTheme(Size = 12, AngleX = 35, AngleY = 0,
-  ChartColor = "lightsteelblue1", BorderColor = "darkblue",
-  TextColor = "darkblue", GridColor = "white",
-  BackGroundColor = "gray95", LegendPosition = "bottom")
+ChartTheme(
+  Size = 12,
+  AngleX = 35,
+  AngleY = 0,
+  ChartColor = "lightsteelblue1",
+  BorderColor = "darkblue",
+  TextColor = "darkblue",
+  GridColor = "white",
+  BackGroundColor = "gray95",
+  LegendPosition = "bottom"
+)
 }
 \arguments{
 \item{Size}{The size of the axis labels and title}
@@ -47,11 +54,14 @@ p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::ge
 p <- p + ChartTheme(Size = 12)
 }
 \seealso{
-Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{PrintObjectsSize}},
-  \code{\link{RPM_Binomial_Bandit}},
-  \code{\link{SimpleCap}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other Misc: 
+\code{\link{AutoH2OTextPrepScoring}()},
+\code{\link{PrintObjectsSize}()},
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{SimpleCap}()},
+\code{\link{percRank}()},
+\code{\link{tempDatesFun}()},
+\code{\link{tokenizeH2O}()}
 }
 \author{
 Adrian Antico

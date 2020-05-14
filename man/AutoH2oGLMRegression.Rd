@@ -4,15 +4,30 @@
 \alias{AutoH2oGLMRegression}
 \title{AutoH2oGLMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGLMRegression(data, TrainOnFull = FALSE, ValidationData = NULL,
-  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  Distribution = "binomial", link = NULL,
-  TransformNumericColumns = NULL, eval_metric = "RMSE",
-  GridTune = FALSE, MaxMem = "32G", NThreads = max(1,
-  parallel::detectCores() - 2), MaxModelsInGrid = 2, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = TRUE)
+AutoH2oGLMRegression(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  Distribution = "binomial",
+  link = NULL,
+  TransformNumericColumns = NULL,
+  eval_metric = "RMSE",
+  GridTune = FALSE,
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = TRUE
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -97,15 +112,17 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

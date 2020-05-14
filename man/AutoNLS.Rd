@@ -85,16 +85,17 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

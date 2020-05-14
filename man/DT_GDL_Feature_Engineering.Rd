@@ -4,13 +4,24 @@
 \alias{DT_GDL_Feature_Engineering}
 \title{An Automated Feature Engineering Function Using data.table frollmean}
 \usage{
-DT_GDL_Feature_Engineering(data, lags = c(seq(1, 50, 1)),
-  periods = c(seq(5, 95, 5)), SDperiods = c(seq(5, 95, 5)),
-  Skewperiods = c(seq(5, 95, 5)), Kurtperiods = c(seq(5, 95, 5)),
-  Quantileperiods = c(seq(5, 95, 5)), statsFUNs = c("mean"),
-  targets = NULL, groupingVars = NULL, sortDateName = NULL,
-  timeDiffTarget = NULL, timeAgg = c("days"), WindowingLag = 0,
-  Type = c("Lag"), SimpleImpute = TRUE)
+DT_GDL_Feature_Engineering(
+  data,
+  lags = c(seq(1, 50, 1)),
+  periods = c(seq(5, 95, 5)),
+  SDperiods = c(seq(5, 95, 5)),
+  Skewperiods = c(seq(5, 95, 5)),
+  Kurtperiods = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)),
+  statsFUNs = c("mean"),
+  targets = NULL,
+  groupingVars = NULL,
+  sortDateName = NULL,
+  timeDiffTarget = NULL,
+  timeAgg = c("days"),
+  WindowingLag = 0,
+  Type = c("Lag"),
+  SimpleImpute = TRUE
+)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -79,20 +90,22 @@ data <- DT_GDL_Feature_Engineering(data,
                                    SimpleImpute   = TRUE)
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

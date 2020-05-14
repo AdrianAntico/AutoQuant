@@ -4,9 +4,14 @@
 \alias{EvalPlot}
 \title{EvalPlot automatically builds calibration plots for model evaluation}
 \usage{
-EvalPlot(data, PredictionColName = c("PredictedValues"),
-  TargetColName = c("ActualValues"), GraphType = c("calibration"),
-  PercentileBucket = 0.05, aggrfun = function(x) mean(x, na.rm = TRUE))
+EvalPlot(
+  data,
+  PredictionColName = c("PredictedValues"),
+  TargetColName = c("ActualValues"),
+  GraphType = c("calibration"),
+  PercentileBucket = 0.05,
+  aggrfun = function(x) mean(x, na.rm = TRUE)
+)
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -44,9 +49,12 @@ EvalPlot(data,
          aggrfun = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
-  \code{\link{LimeModel}}, \code{\link{ParDepCalPlots}},
-  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+Other Model Evaluation and Interpretation: 
+\code{\link{AutoLimeAid}()},
+\code{\link{LimeModel}()},
+\code{\link{ParDepCalPlots}()},
+\code{\link{RedYellowGreen}()},
+\code{\link{threshOptim}()}
 }
 \author{
 Adrian Antico

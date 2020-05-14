@@ -4,8 +4,13 @@
 \alias{AutoH2OTextPrepScoring}
 \title{AutoH2OTextPrepScoring is for NLP scoring}
 \usage{
-AutoH2OTextPrepScoring(data, string = NULL, MaxMem = NULL,
-  NThreads = NULL, StartH2O = TRUE)
+AutoH2OTextPrepScoring(
+  data,
+  string = NULL,
+  MaxMem = NULL,
+  NThreads = NULL,
+  StartH2O = TRUE
+)
 }
 \arguments{
 \item{data}{The text data}
@@ -31,11 +36,14 @@ data <- AutoH2OTextPrepScoring(data = x,
 }
 }
 \seealso{
-Other Misc: \code{\link{ChartTheme}},
-  \code{\link{PrintObjectsSize}},
-  \code{\link{RPM_Binomial_Bandit}},
-  \code{\link{SimpleCap}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other Misc: 
+\code{\link{ChartTheme}()},
+\code{\link{PrintObjectsSize}()},
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{SimpleCap}()},
+\code{\link{percRank}()},
+\code{\link{tempDatesFun}()},
+\code{\link{tokenizeH2O}()}
 }
 \author{
 Adrian Antico

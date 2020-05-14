@@ -4,13 +4,23 @@
 \alias{IntermittentDemandScoringDataGenerator}
 \title{IntermittentDemandScoringDataGenerator creates the scoring data for forecasting}
 \usage{
-IntermittentDemandScoringDataGenerator(data = NULL, FC_Periods = 52,
-  SaveData = FALSE, FilePath = NULL, TargetVariableName = "qty",
-  DateVariableName = "date", GroupingVariables = "sku", Lags = 1:7,
-  MovingAverages = seq(7, 28, 7), TimeTrendVariable = TRUE,
-  TimeUnit = "day", CurrentDate = NULL, CalendarVariables = c("wday",
-  "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
-  HolidayGroups = "USPublicHolidays")
+IntermittentDemandScoringDataGenerator(
+  data = NULL,
+  FC_Periods = 52,
+  SaveData = FALSE,
+  FilePath = NULL,
+  TargetVariableName = "qty",
+  DateVariableName = "date",
+  GroupingVariables = "sku",
+  Lags = 1:7,
+  MovingAverages = seq(7, 28, 7),
+  TimeTrendVariable = TRUE,
+  TimeUnit = "day",
+  CurrentDate = NULL,
+  CalendarVariables = c("wday", "mday", "yday", "week", "isoweek", "month", "quarter",
+    "year"),
+  HolidayGroups = "USPublicHolidays"
+)
 }
 \arguments{
 \item{data}{This is your source data}
@@ -73,16 +83,18 @@ IntermittentDemandScoringDataGenerator creates the scoring data for forecasting.
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoH2oGBMFreqSizeScoring}},
-  \code{\link{AutoH2oGBMSizeFreqDist}},
-  \code{\link{AutoH2oGLMCARMA}},
-  \code{\link{AutoH2oMLCARMA}}, \code{\link{AutoTS}},
-  \code{\link{AutoXGBoostCARMA}}
+Other Automated Time Series: 
+\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
+\code{\link{AutoH2oDRFCARMA}()},
+\code{\link{AutoH2oGBMCARMA}()},
+\code{\link{AutoH2oGBMFreqSizeScoring}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
+\code{\link{AutoH2oGLMCARMA}()},
+\code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoTS}()},
+\code{\link{AutoXGBoostCARMA}()}
 }
 \author{
 Adrian Antico

@@ -4,10 +4,15 @@
 \alias{AutoWordFreq}
 \title{Automated Word Frequency and Word Cloud Creation}
 \usage{
-AutoWordFreq(data, TextColName = "DESCR",
-  GroupColName = "ClusterAllNoTarget", GroupLevel = 0,
-  RemoveEnglishStopwords = TRUE, Stemming = TRUE,
-  StopWords = c("bla", "bla2"))
+AutoWordFreq(
+  data,
+  TextColName = "DESCR",
+  GroupColName = "ClusterAllNoTarget",
+  GroupLevel = 0,
+  RemoveEnglishStopwords = TRUE,
+  Stemming = TRUE,
+  StopWords = c("bla", "bla2")
+)
 }
 \arguments{
 \item{data}{Source data table}
@@ -48,7 +53,8 @@ data <- AutoWordFreq(data,
                      StopWords = c("Bla"))
 }
 \seealso{
-Other EDA: \code{\link{ProblematicFeatures}}
+Other EDA: 
+\code{\link{ProblematicFeatures}()}
 }
 \author{
 Adrian Antico

@@ -4,11 +4,16 @@
 \alias{ParDepCalPlots}
 \title{ParDepCalPlots automatically builds partial dependence calibration plots for model evaluation}
 \usage{
-ParDepCalPlots(data, PredictionColName = c("PredictedValues"),
+ParDepCalPlots(
+  data,
+  PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"),
   IndepVar = c("Independent_Variable_Name"),
-  GraphType = c("calibration"), PercentileBucket = 0.05,
-  FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+  GraphType = c("calibration"),
+  PercentileBucket = 0.05,
+  FactLevels = 10,
+  Function = function(x) mean(x, na.rm = TRUE)
+)
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -52,9 +57,12 @@ p1 <- RemixAutoML::ParDepCalPlots(
 p1
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
-  \code{\link{EvalPlot}}, \code{\link{LimeModel}},
-  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+Other Model Evaluation and Interpretation: 
+\code{\link{AutoLimeAid}()},
+\code{\link{EvalPlot}()},
+\code{\link{LimeModel}()},
+\code{\link{RedYellowGreen}()},
+\code{\link{threshOptim}()}
 }
 \author{
 Adrian Antico

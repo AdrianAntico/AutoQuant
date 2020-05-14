@@ -4,10 +4,18 @@
 \alias{ModelDataPrep}
 \title{Final Data Preparation Function}
 \usage{
-ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE,
-  FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE,
-  RemoveDates = FALSE, MissFactor = "0", MissNum = -1,
-  IgnoreCols = NULL)
+ModelDataPrep(
+  data,
+  Impute = TRUE,
+  CharToFactor = TRUE,
+  FactorToChar = FALSE,
+  IntToNumeric = TRUE,
+  DateToChar = FALSE,
+  RemoveDates = FALSE,
+  MissFactor = "0",
+  MissNum = -1,
+  IgnoreCols = NULL
+)
 }
 \arguments{
 \item{data}{This is your source data you'd like to modify}
@@ -60,20 +68,22 @@ data <- ModelDataPrep(
    IgnoreCols   = NULL)
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

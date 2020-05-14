@@ -4,13 +4,24 @@
 \alias{AutoBanditSarima}
 \title{AutoBanditSarima}
 \usage{
-AutoBanditSarima(data, TargetVariableName, DateColumnName,
-  TimeAggLevel = "week", EvaluationMetric = "MAE",
-  NumHoldOutPeriods = 5L, NumFCPeriods = 5L, MaxLags = 5L,
-  MaxSeasonalLags = 0L, MaxMovingAverages = 5L,
-  MaxSeasonalMovingAverages = 0L, MaxFourierPairs = 2L,
-  TrainWeighting = 0.5, MaxConsecutiveFails = 25L,
-  MaxNumberModels = 100L, MaxRunTimeMinutes = 10L)
+AutoBanditSarima(
+  data,
+  TargetVariableName,
+  DateColumnName,
+  TimeAggLevel = "week",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 5L,
+  NumFCPeriods = 5L,
+  MaxLags = 5L,
+  MaxSeasonalLags = 0L,
+  MaxMovingAverages = 5L,
+  MaxSeasonalMovingAverages = 0L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.5,
+  MaxConsecutiveFails = 25L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L
+)
 }
 \arguments{
 \item{data}{Source data.table}
@@ -169,33 +180,36 @@ View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
 }
 }
 \seealso{
-Other Time Series: \code{\link{AutoBanditNNet}},
-  \code{\link{AutoTBATS}},
-  \code{\link{CarmaHoldoutMetrics}},
-  \code{\link{DifferenceDataReverse}},
-  \code{\link{DifferenceData}},
-  \code{\link{FinalBuildArfima}},
-  \code{\link{FinalBuildArima}},
-  \code{\link{FinalBuildETS}},
-  \code{\link{FinalBuildNNET}},
-  \code{\link{FinalBuildTBATS}},
-  \code{\link{FinalBuildTSLM}},
-  \code{\link{GenerateParameterGrids}},
-  \code{\link{OptimizeArfima}},
-  \code{\link{OptimizeArima}}, \code{\link{OptimizeETS}},
-  \code{\link{OptimizeNNET}}, \code{\link{OptimizeTBATS}},
-  \code{\link{OptimizeTSLM}},
-  \code{\link{ParallelAutoARIMA}},
-  \code{\link{ParallelAutoArfima}},
-  \code{\link{ParallelAutoETS}},
-  \code{\link{ParallelAutoNNET}},
-  \code{\link{ParallelAutoTBATS}},
-  \code{\link{ParallelAutoTSLM}},
-  \code{\link{RL_Performance}},
-  \code{\link{Regular_Performance}},
-  \code{\link{StackedTimeSeriesEnsembleForecast}},
-  \code{\link{TimeSeriesDataPrepare}},
-  \code{\link{WideTimeSeriesEnsembleForecast}}
+Other Time Series: 
+\code{\link{AutoBanditNNet}()},
+\code{\link{AutoTBATS}()},
+\code{\link{CarmaHoldoutMetrics}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
+\code{\link{FinalBuildArfima}()},
+\code{\link{FinalBuildArima}()},
+\code{\link{FinalBuildETS}()},
+\code{\link{FinalBuildNNET}()},
+\code{\link{FinalBuildTBATS}()},
+\code{\link{FinalBuildTSLM}()},
+\code{\link{GenerateParameterGrids}()},
+\code{\link{OptimizeArfima}()},
+\code{\link{OptimizeArima}()},
+\code{\link{OptimizeETS}()},
+\code{\link{OptimizeNNET}()},
+\code{\link{OptimizeTBATS}()},
+\code{\link{OptimizeTSLM}()},
+\code{\link{ParallelAutoARIMA}()},
+\code{\link{ParallelAutoArfima}()},
+\code{\link{ParallelAutoETS}()},
+\code{\link{ParallelAutoNNET}()},
+\code{\link{ParallelAutoTBATS}()},
+\code{\link{ParallelAutoTSLM}()},
+\code{\link{RL_Performance}()},
+\code{\link{Regular_Performance}()},
+\code{\link{StackedTimeSeriesEnsembleForecast}()},
+\code{\link{TimeSeriesDataPrepare}()},
+\code{\link{WideTimeSeriesEnsembleForecast}()}
 }
 \author{
 Adrian Antico

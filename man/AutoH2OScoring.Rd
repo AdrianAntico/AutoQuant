@@ -4,12 +4,21 @@
 \alias{AutoH2OScoring}
 \title{AutoH2OScoring is the complement of AutoH20Modeler.}
 \usage{
-AutoH2OScoring(Features = data, GridTuneRow = c(1:3),
-  ScoreMethod = "Standard", TargetType = rep("multinomial", 3),
-  ClassVals = rep("probs", 3), TextType = "individual",
-  TextNames = NULL, NThreads = 6, MaxMem = "28G",
+AutoH2OScoring(
+  Features = data,
+  GridTuneRow = c(1:3),
+  ScoreMethod = "Standard",
+  TargetType = rep("multinomial", 3),
+  ClassVals = rep("probs", 3),
+  TextType = "individual",
+  TextNames = NULL,
+  NThreads = 6,
+  MaxMem = "28G",
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
-  SaveToFile = FALSE, FilesPath = NULL, H20ShutDown = rep(FALSE, 3))
+  SaveToFile = FALSE,
+  FilesPath = NULL,
+  H20ShutDown = rep(FALSE, 3)
+)
 }
 \arguments{
 \item{Features}{This is a data.table of features for scoring.}
@@ -131,8 +140,9 @@ data <- AutoH2OScoring(Features     = aa,
 }
 }
 \seealso{
-Other Supervised Learning: \code{\link{CatBoostParameterGrids}},
-  \code{\link{XGBoostParameterGrids}}
+Other Supervised Learning: 
+\code{\link{CatBoostParameterGrids}()},
+\code{\link{XGBoostParameterGrids}()}
 }
 \author{
 Adrian Antico

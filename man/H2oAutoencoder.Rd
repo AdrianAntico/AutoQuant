@@ -4,14 +4,27 @@
 \alias{H2oAutoencoder}
 \title{H2oAutoencoder for anomaly detection and dimensionality reduction}
 \usage{
-H2oAutoencoder(AnomalyDetection = TRUE, DimensionReduction = TRUE,
-  data, ValidationData = NULL, Features = NULL,
-  RemoveFeatures = FALSE, NThreads = max(1L, parallel::detectCores() -
-  2L), MaxMem = "28G", H2oShutdown = TRUE, ModelID = "TestModel",
-  LayerStructure = NULL, ReturnLayer = 4L, per_feature = TRUE,
-  Activation = "Tanh", Epochs = 5L, L2 = 0.1,
-  ElasticAveraging = TRUE, ElasticAveragingMovingRate = 0.9,
-  ElasticAveragingRegularization = 0.001)
+H2oAutoencoder(
+  AnomalyDetection = TRUE,
+  DimensionReduction = TRUE,
+  data,
+  ValidationData = NULL,
+  Features = NULL,
+  RemoveFeatures = FALSE,
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  MaxMem = "28G",
+  H2oShutdown = TRUE,
+  ModelID = "TestModel",
+  LayerStructure = NULL,
+  ReturnLayer = 4L,
+  per_feature = TRUE,
+  Activation = "Tanh",
+  Epochs = 5L,
+  L2 = 0.1,
+  ElasticAveraging = TRUE,
+  ElasticAveragingMovingRate = 0.9,
+  ElasticAveragingRegularization = 0.001
+)
 }
 \arguments{
 \item{AnomalyDetection}{Set to TRUE to run anomaly detection}
@@ -128,20 +141,22 @@ Output <- RemixAutoML::H2oAutoencoder(
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

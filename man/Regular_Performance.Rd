@@ -4,10 +4,17 @@
 \alias{Regular_Performance}
 \title{Regular_Performance creates and stores model results in Experiment Grid}
 \usage{
-Regular_Performance(Model = NULL, Results = Results,
-  GridList = GridList, TrainValidateShare = c(0.5, 0.5),
-  ExperimentGrid = ExperimentGrid, run = run, train = train,
-  ValidationData = ValidationData, HoldOutPeriods = HoldOutPeriods)
+Regular_Performance(
+  Model = NULL,
+  Results = Results,
+  GridList = GridList,
+  TrainValidateShare = c(0.5, 0.5),
+  ExperimentGrid = ExperimentGrid,
+  run = run,
+  train = train,
+  ValidationData = ValidationData,
+  HoldOutPeriods = HoldOutPeriods
+)
 }
 \arguments{
 \item{Model}{Set to ets, tbats, arfima, tslm, nnetar}
@@ -30,32 +37,36 @@ Regular_Performance(Model = NULL, Results = Results,
 Regular_Performance creates and stores model results in Experiment Grid
 }
 \seealso{
-Other Time Series: \code{\link{AutoBanditNNet}},
-  \code{\link{AutoBanditSarima}}, \code{\link{AutoTBATS}},
-  \code{\link{CarmaHoldoutMetrics}},
-  \code{\link{DifferenceDataReverse}},
-  \code{\link{DifferenceData}},
-  \code{\link{FinalBuildArfima}},
-  \code{\link{FinalBuildArima}},
-  \code{\link{FinalBuildETS}},
-  \code{\link{FinalBuildNNET}},
-  \code{\link{FinalBuildTBATS}},
-  \code{\link{FinalBuildTSLM}},
-  \code{\link{GenerateParameterGrids}},
-  \code{\link{OptimizeArfima}},
-  \code{\link{OptimizeArima}}, \code{\link{OptimizeETS}},
-  \code{\link{OptimizeNNET}}, \code{\link{OptimizeTBATS}},
-  \code{\link{OptimizeTSLM}},
-  \code{\link{ParallelAutoARIMA}},
-  \code{\link{ParallelAutoArfima}},
-  \code{\link{ParallelAutoETS}},
-  \code{\link{ParallelAutoNNET}},
-  \code{\link{ParallelAutoTBATS}},
-  \code{\link{ParallelAutoTSLM}},
-  \code{\link{RL_Performance}},
-  \code{\link{StackedTimeSeriesEnsembleForecast}},
-  \code{\link{TimeSeriesDataPrepare}},
-  \code{\link{WideTimeSeriesEnsembleForecast}}
+Other Time Series: 
+\code{\link{AutoBanditNNet}()},
+\code{\link{AutoBanditSarima}()},
+\code{\link{AutoTBATS}()},
+\code{\link{CarmaHoldoutMetrics}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
+\code{\link{FinalBuildArfima}()},
+\code{\link{FinalBuildArima}()},
+\code{\link{FinalBuildETS}()},
+\code{\link{FinalBuildNNET}()},
+\code{\link{FinalBuildTBATS}()},
+\code{\link{FinalBuildTSLM}()},
+\code{\link{GenerateParameterGrids}()},
+\code{\link{OptimizeArfima}()},
+\code{\link{OptimizeArima}()},
+\code{\link{OptimizeETS}()},
+\code{\link{OptimizeNNET}()},
+\code{\link{OptimizeTBATS}()},
+\code{\link{OptimizeTSLM}()},
+\code{\link{ParallelAutoARIMA}()},
+\code{\link{ParallelAutoArfima}()},
+\code{\link{ParallelAutoETS}()},
+\code{\link{ParallelAutoNNET}()},
+\code{\link{ParallelAutoTBATS}()},
+\code{\link{ParallelAutoTSLM}()},
+\code{\link{RL_Performance}()},
+\code{\link{StackedTimeSeriesEnsembleForecast}()},
+\code{\link{TimeSeriesDataPrepare}()},
+\code{\link{WideTimeSeriesEnsembleForecast}()}
 }
 \author{
 Adrian Antico

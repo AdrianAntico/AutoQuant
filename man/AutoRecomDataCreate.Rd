@@ -4,9 +4,13 @@
 \alias{AutoRecomDataCreate}
 \title{Convert transactional data.table to a binary ratings matrix}
 \usage{
-AutoRecomDataCreate(data, EntityColName = "CustomerID",
-  ProductColName = "StockCode", MetricColName = "TotalSales",
-  ReturnMatrix = FALSE)
+AutoRecomDataCreate(
+  data,
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode",
+  MetricColName = "TotalSales",
+  ReturnMatrix = FALSE
+)
 }
 \arguments{
 \item{data}{This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).}
@@ -35,8 +39,9 @@ RatingsMatrix <- AutoRecomDataCreate(data,
 }
 }
 \seealso{
-Other Recommenders: \code{\link{AutoRecommenderScoring}},
-  \code{\link{AutoRecommender}}
+Other Recommenders: 
+\code{\link{AutoRecommenderScoring}()},
+\code{\link{AutoRecommender}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

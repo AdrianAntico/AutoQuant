@@ -4,8 +4,12 @@
 \alias{ColumnSubsetDataTable}
 \title{ColumnSubsetDataTable}
 \usage{
-ColumnSubsetDataTable(data, TargetColumnName = NULL,
-  DateColumnName = NULL, GroupVars = NULL)
+ColumnSubsetDataTable(
+  data,
+  TargetColumnName = NULL,
+  DateColumnName = NULL,
+  GroupVars = NULL
+)
 }
 \arguments{
 \item{data}{data.table}
@@ -20,13 +24,14 @@ ColumnSubsetDataTable(data, TargetColumnName = NULL,
 ColumnSubsetDataTable will subset data tables by column
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoDataDictionaries}},
-  \code{\link{AutoHierarchicalFourier}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FakeDataGenerator}},
-  \code{\link{FullFactorialCatFeatures}},
-  \code{\link{SQL_Server_DBConnection}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

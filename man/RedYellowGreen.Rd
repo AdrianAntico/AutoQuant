@@ -4,10 +4,19 @@
 \alias{RedYellowGreen}
 \title{RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option}
 \usage{
-RedYellowGreen(data, PredictColNumber = 2, ActualColNumber = 1,
-  TruePositiveCost = 0, TrueNegativeCost = 0,
-  FalsePositiveCost = -10, FalseNegativeCost = -50, MidTierCost = -2,
-  Cores = 8, Precision = 0.01, Boundaries = c(0.05, 0.75))
+RedYellowGreen(
+  data,
+  PredictColNumber = 2,
+  ActualColNumber = 1,
+  TruePositiveCost = 0,
+  TrueNegativeCost = 0,
+  FalsePositiveCost = -10,
+  FalseNegativeCost = -50,
+  MidTierCost = -2,
+  Cores = 8,
+  Precision = 0.01,
+  Boundaries = c(0.05, 0.75)
+)
 }
 \arguments{
 \item{data}{data is the data table with your predicted and actual values from a classification model}
@@ -58,9 +67,12 @@ data <- RedYellowGreen(data,
                        Boundaries = c(0.05,0.75))
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{AutoLimeAid}},
-  \code{\link{EvalPlot}}, \code{\link{LimeModel}},
-  \code{\link{ParDepCalPlots}}, \code{\link{threshOptim}}
+Other Model Evaluation and Interpretation: 
+\code{\link{AutoLimeAid}()},
+\code{\link{EvalPlot}()},
+\code{\link{LimeModel}()},
+\code{\link{ParDepCalPlots}()},
+\code{\link{threshOptim}()}
 }
 \author{
 Adrian Antico

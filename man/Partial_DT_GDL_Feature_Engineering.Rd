@@ -4,14 +4,28 @@
 \alias{Partial_DT_GDL_Feature_Engineering}
 \title{A version of the DT_GDL function for creating the GDL features for a new set of records}
 \usage{
-Partial_DT_GDL_Feature_Engineering(data, lags = c(seq(1, 5, 1)),
-  periods = c(3, 5, 10, 15, 20, 25), SDperiods = c(seq(5, 95, 5)),
-  Skewperiods = c(seq(5, 95, 5)), Kurtperiods = c(seq(5, 95, 5)),
-  Quantileperiods = c(seq(5, 95, 5)), statsFUNs = c("mean"),
-  targets = c("Target"), groupingVars = NULL, sortDateName = NULL,
-  timeDiffTarget = NULL, timeAgg = NULL, WindowingLag = 1,
-  Type = "Lag", Timer = TRUE, SimpleImpute = TRUE,
-  AscRowByGroup = "temp", RecordsKeep = 1, AscRowRemove = TRUE)
+Partial_DT_GDL_Feature_Engineering(
+  data,
+  lags = c(seq(1, 5, 1)),
+  periods = c(3, 5, 10, 15, 20, 25),
+  SDperiods = c(seq(5, 95, 5)),
+  Skewperiods = c(seq(5, 95, 5)),
+  Kurtperiods = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)),
+  statsFUNs = c("mean"),
+  targets = c("Target"),
+  groupingVars = NULL,
+  sortDateName = NULL,
+  timeDiffTarget = NULL,
+  timeAgg = NULL,
+  WindowingLag = 1,
+  Type = "Lag",
+  Timer = TRUE,
+  SimpleImpute = TRUE,
+  AscRowByGroup = "temp",
+  RecordsKeep = 1,
+  AscRowRemove = TRUE
+)
 }
 \arguments{
 \item{data}{A data.table you want to run the function on}
@@ -92,19 +106,22 @@ data <- Partial_DT_GDL_Feature_Engineering(data,
                                            AscRowRemove   = TRUE)
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}}, \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

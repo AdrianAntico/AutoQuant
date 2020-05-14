@@ -4,20 +4,41 @@
 \alias{ContinuousTimeDataGenerator}
 \title{ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling}
 \usage{
-ContinuousTimeDataGenerator(data, RestrictDateRange = TRUE, Case = 2L,
-  FC_Periods = 52L, SaveData = FALSE, FilePath = NULL,
-  TargetVariableName = "qty", DateVariableName = "date",
-  GDL_Targets = NULL, TimeUnit = "raw", TimeGroups = c("raw", "day",
-  "week"), GroupingVariables = "sku", HierarchyGroupVars = NULL,
-  MinTimeWindow = 1L, MinTxnRecords = 2L, Lags = 1L:7L,
-  MA_Periods = 10L, SD_Periods = 10L, Skew_Periods = 10L,
-  Kurt_Periods = 10L, Quantile_Periods = 10L,
-  Quantiles_Selected = c("q5"), HolidayLags = c(1L:7L),
-  HolidayMovingAverages = c(2L:14L), TimeBetween = NULL,
-  TimeTrendVariable = TRUE, CalendarVariables = c("wday", "mday",
-  "yday", "week", "isoweek", "month", "quarter", "year"),
-  HolidayGroups = "USPublicHolidays", PowerRate = 0.5,
-  SampleRate = 5, TargetWindowSamples = 5, PrintSteps = TRUE)
+ContinuousTimeDataGenerator(
+  data,
+  RestrictDateRange = TRUE,
+  Case = 2L,
+  FC_Periods = 52L,
+  SaveData = FALSE,
+  FilePath = NULL,
+  TargetVariableName = "qty",
+  DateVariableName = "date",
+  GDL_Targets = NULL,
+  TimeUnit = "raw",
+  TimeGroups = c("raw", "day", "week"),
+  GroupingVariables = "sku",
+  HierarchyGroupVars = NULL,
+  MinTimeWindow = 1L,
+  MinTxnRecords = 2L,
+  Lags = 1L:7L,
+  MA_Periods = 10L,
+  SD_Periods = 10L,
+  Skew_Periods = 10L,
+  Kurt_Periods = 10L,
+  Quantile_Periods = 10L,
+  Quantiles_Selected = c("q5"),
+  HolidayLags = c(1L:7L),
+  HolidayMovingAverages = c(2L:14L),
+  TimeBetween = NULL,
+  TimeTrendVariable = TRUE,
+  CalendarVariables = c("wday", "mday", "yday", "week", "isoweek", "month", "quarter",
+    "year"),
+  HolidayGroups = "USPublicHolidays",
+  PowerRate = 0.5,
+  SampleRate = 5,
+  TargetWindowSamples = 5,
+  PrintSteps = TRUE
+)
 }
 \arguments{
 \item{data}{This is your transactional level data}
@@ -128,20 +149,22 @@ rm(DataSets)
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

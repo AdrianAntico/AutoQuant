@@ -4,9 +4,15 @@
 \alias{ProblematicFeatures}
 \title{ProblematicFeatures identifies problematic features for machine learning}
 \usage{
-ProblematicFeatures(data, ColumnNumbers = c(1:ncol(data)),
-  NearZeroVarThresh = 0.05, CharUniqThresh = 0.5, NA_Rate = 0.2,
-  Zero_Rate = 0.2, HighSkewThresh = 10)
+ProblematicFeatures(
+  data,
+  ColumnNumbers = c(1:ncol(data)),
+  NearZeroVarThresh = 0.05,
+  CharUniqThresh = 0.5,
+  NA_Rate = 0.2,
+  Zero_Rate = 0.2,
+  HighSkewThresh = 10
+)
 }
 \arguments{
 \item{data}{The data.table with the columns you wish to have analyzed}
@@ -45,7 +51,8 @@ ProblematicFeatures(test,
                     HighSkewThresh = 10)
 }
 \seealso{
-Other EDA: \code{\link{AutoWordFreq}}
+Other EDA: 
+\code{\link{AutoWordFreq}()}
 }
 \author{
 Adrian Antico

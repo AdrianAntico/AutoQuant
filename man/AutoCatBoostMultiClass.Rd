@@ -4,19 +4,40 @@
 \alias{AutoCatBoostMultiClass}
 \title{AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system}
 \usage{
-AutoCatBoostMultiClass(data, TrainOnFull = FALSE,
-  ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, PrimaryDateColumn = NULL,
-  ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  eval_metric = "MultiClassOneVsAll", model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel",
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  PassInGrid = NULL, GridTune = FALSE, MaxModelsInGrid = 10L,
-  MaxRunsWithoutNewWinner = 20L, MaxRunMinutes = 24L * 60L,
-  grid_eval_metric = "Accuracy", Shuffles = 1L,
-  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
-  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
-  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL)
+AutoCatBoostMultiClass(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
+  ClassWeights = NULL,
+  IDcols = NULL,
+  task_type = "GPU",
+  eval_metric = "MultiClassOneVsAll",
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L,
+  grid_eval_metric = "Accuracy",
+  Shuffles = 1L,
+  BaselineComparison = "default",
+  MetricPeriods = 10L,
+  Trees = 50L,
+  Depth = NULL,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  RSM = NULL,
+  BootStrapType = NULL,
+  GrowPolicy = NULL
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -174,11 +195,12 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 }
 }
 \seealso{
-Other Automated MultiClass Classification: \code{\link{AutoH2oDRFMultiClass}},
-  \code{\link{AutoH2oGBMMultiClass}},
-  \code{\link{AutoH2oGLMMultiClass}},
-  \code{\link{AutoH2oMLMultiClass}},
-  \code{\link{AutoXGBoostMultiClass}}
+Other Automated MultiClass Classification: 
+\code{\link{AutoH2oDRFMultiClass}()},
+\code{\link{AutoH2oGBMMultiClass}()},
+\code{\link{AutoH2oGLMMultiClass}()},
+\code{\link{AutoH2oMLMultiClass}()},
+\code{\link{AutoXGBoostMultiClass}()}
 }
 \author{
 Adrian Antico

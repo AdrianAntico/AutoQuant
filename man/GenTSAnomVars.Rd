@@ -4,9 +4,16 @@
 \alias{GenTSAnomVars}
 \title{GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure}
 \usage{
-GenTSAnomVars(data, ValueCol = "Value", GroupVars = NULL,
-  DateVar = "DATE", HighThreshold = 1.96, LowThreshold = -1.96,
-  KeepAllCols = TRUE, IsDataScaled = FALSE)
+GenTSAnomVars(
+  data,
+  ValueCol = "Value",
+  GroupVars = NULL,
+  DateVar = "DATE",
+  HighThreshold = 1.96,
+  LowThreshold = -1.96,
+  KeepAllCols = TRUE,
+  IsDataScaled = FALSE
+)
 }
 \arguments{
 \item{data}{the source residuals data.table}
@@ -55,9 +62,10 @@ stuff <- GenTSAnomVars(data,
                     IsDataScaled  = FALSE)
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{AutoKMeans}},
-  \code{\link{H2oIsolationForest}},
-  \code{\link{ResidualOutliers}}
+Other Unsupervised Learning: 
+\code{\link{AutoKMeans}()},
+\code{\link{H2oIsolationForest}()},
+\code{\link{ResidualOutliers}()}
 }
 \author{
 Adrian Antico

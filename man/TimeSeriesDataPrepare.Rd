@@ -4,10 +4,21 @@
 \alias{TimeSeriesDataPrepare}
 \title{TimeSeriesDataPrepare is a function that takes raw data and returns time series data}
 \usage{
-TimeSeriesDataPrepare(data, TargetName, DateName, Lags, SeasonalLags,
-  MovingAverages, SeasonalMovingAverages, TimeUnit, FCPeriods,
-  HoldOutPeriods, TSClean = TRUE, ModelFreq = TRUE,
-  FinalBuild = FALSE)
+TimeSeriesDataPrepare(
+  data,
+  TargetName,
+  DateName,
+  Lags,
+  SeasonalLags,
+  MovingAverages,
+  SeasonalMovingAverages,
+  TimeUnit,
+  FCPeriods,
+  HoldOutPeriods,
+  TSClean = TRUE,
+  ModelFreq = TRUE,
+  FinalBuild = FALSE
+)
 }
 \arguments{
 \item{data}{Source data.table for forecasting}
@@ -60,32 +71,36 @@ TimeSeriesDataPrepare(
   FinalBuild = FALSE)
 }
 \seealso{
-Other Time Series: \code{\link{AutoBanditNNet}},
-  \code{\link{AutoBanditSarima}}, \code{\link{AutoTBATS}},
-  \code{\link{CarmaHoldoutMetrics}},
-  \code{\link{DifferenceDataReverse}},
-  \code{\link{DifferenceData}},
-  \code{\link{FinalBuildArfima}},
-  \code{\link{FinalBuildArima}},
-  \code{\link{FinalBuildETS}},
-  \code{\link{FinalBuildNNET}},
-  \code{\link{FinalBuildTBATS}},
-  \code{\link{FinalBuildTSLM}},
-  \code{\link{GenerateParameterGrids}},
-  \code{\link{OptimizeArfima}},
-  \code{\link{OptimizeArima}}, \code{\link{OptimizeETS}},
-  \code{\link{OptimizeNNET}}, \code{\link{OptimizeTBATS}},
-  \code{\link{OptimizeTSLM}},
-  \code{\link{ParallelAutoARIMA}},
-  \code{\link{ParallelAutoArfima}},
-  \code{\link{ParallelAutoETS}},
-  \code{\link{ParallelAutoNNET}},
-  \code{\link{ParallelAutoTBATS}},
-  \code{\link{ParallelAutoTSLM}},
-  \code{\link{RL_Performance}},
-  \code{\link{Regular_Performance}},
-  \code{\link{StackedTimeSeriesEnsembleForecast}},
-  \code{\link{WideTimeSeriesEnsembleForecast}}
+Other Time Series: 
+\code{\link{AutoBanditNNet}()},
+\code{\link{AutoBanditSarima}()},
+\code{\link{AutoTBATS}()},
+\code{\link{CarmaHoldoutMetrics}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
+\code{\link{FinalBuildArfima}()},
+\code{\link{FinalBuildArima}()},
+\code{\link{FinalBuildETS}()},
+\code{\link{FinalBuildNNET}()},
+\code{\link{FinalBuildTBATS}()},
+\code{\link{FinalBuildTSLM}()},
+\code{\link{GenerateParameterGrids}()},
+\code{\link{OptimizeArfima}()},
+\code{\link{OptimizeArima}()},
+\code{\link{OptimizeETS}()},
+\code{\link{OptimizeNNET}()},
+\code{\link{OptimizeTBATS}()},
+\code{\link{OptimizeTSLM}()},
+\code{\link{ParallelAutoARIMA}()},
+\code{\link{ParallelAutoArfima}()},
+\code{\link{ParallelAutoETS}()},
+\code{\link{ParallelAutoNNET}()},
+\code{\link{ParallelAutoTBATS}()},
+\code{\link{ParallelAutoTSLM}()},
+\code{\link{RL_Performance}()},
+\code{\link{Regular_Performance}()},
+\code{\link{StackedTimeSeriesEnsembleForecast}()},
+\code{\link{WideTimeSeriesEnsembleForecast}()}
 }
 \author{
 Adrian Antico

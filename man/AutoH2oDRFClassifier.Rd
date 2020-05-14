@@ -4,14 +4,28 @@
 \alias{AutoH2oDRFClassifier}
 \title{AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oDRFClassifier(data, TrainOnFull = FALSE, ValidationData = NULL,
-  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  eval_metric = "auc", Trees = 50L, GridTune = FALSE,
-  MaxMem = "32G", NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2, model_path = NULL, metadata_path = NULL,
-  ModelID = "FirstModel", NumOfParDepPlots = 3L,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = FALSE)
+AutoH2oDRFClassifier(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  eval_metric = "auc",
+  Trees = 50L,
+  GridTune = FALSE,
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 3L,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -89,11 +103,12 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 }
 }
 \seealso{
-Other Automated Binary Classification: \code{\link{AutoCatBoostClassifier}},
-  \code{\link{AutoH2oGBMClassifier}},
-  \code{\link{AutoH2oGLMClassifier}},
-  \code{\link{AutoH2oMLClassifier}},
-  \code{\link{AutoXGBoostClassifier}}
+Other Automated Binary Classification: 
+\code{\link{AutoCatBoostClassifier}()},
+\code{\link{AutoH2oGBMClassifier}()},
+\code{\link{AutoH2oGLMClassifier}()},
+\code{\link{AutoH2oMLClassifier}()},
+\code{\link{AutoXGBoostClassifier}()}
 }
 \author{
 Adrian Antico

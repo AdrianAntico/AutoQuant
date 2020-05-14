@@ -153,6 +153,11 @@ AutoH2oDRFHurdleModel <- function(data,
     }
   }
   
+  # Ensure target is a factor----
+  data.table::set(data, j = "Target_Buckets", value = as.factor(data[["Target_Buckets"]]))
+  if(!is.null(ValidationData)) data.table::set(ValidationData, j = "Target_Buckets", value = as.factor(ValidationData[["Target_Buckets"]]))
+  if(!is.null(TestData)) data.table::set(TestData, j = "Target_Buckets", value = as.factor(TestData[["Target_Buckets"]]))
+  
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -243,18 +248,18 @@ AutoH2oDRFHurdleModel <- function(data,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
   
-  # Remove classification Prediction----
-  TestData[, Predictions := NULL]
-  
   # Change name for classification----
   if(length(Buckets) == 1L) {
-    data.table::setnames(TestData, "p0","Predictions_C0")
-    data.table::setnames(TestData, "p1","Predictions_C1")
+    data.table::setnames(TestData, "Predictions", "Predictions_C0")
+    data.table::setnames(TestData, "Predictions", "Predictions_C1")
   } else {
     data.table::setnames(TestData, names(TestData)[1:length(Buckets)], paste0("P_",gsub('[[:punct:] ]+',' ',names(TestData)[1L:length(Buckets)])))
     data.table::setnames(TestData, names(TestData)[length(Buckets)+1L], paste0("P+_",gsub('[[:punct:] ]+',' ',names(TestData)[length(Buckets)+1L])))
   }
 
+  # Remove classification Prediction----
+  TestData[, Predictions := NULL]
+  
   # Remove Model Object----
   rm(ClassModel)
   

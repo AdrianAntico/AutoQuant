@@ -4,16 +4,29 @@
 \alias{AutoH2OMLScoring}
 \title{AutoH2OMLScoring is an automated scoring function that compliments the AutoH2o model training functions.}
 \usage{
-AutoH2OMLScoring(ScoringData = NULL, ModelObject = NULL,
-  ModelType = "mojo", H2OShutdown = TRUE, MaxMem = "28G",
+AutoH2OMLScoring(
+  ScoringData = NULL,
+  ModelObject = NULL,
+  ModelType = "mojo",
+  H2OShutdown = TRUE,
+  MaxMem = "28G",
   NThreads = max(1, parallel::detectCores() - 2),
   JavaOptions = "-Xmx1g -XX:ReservedCodeCacheSize=256m",
-  ModelPath = NULL, ModelID = NULL, ReturnFeatures = TRUE,
-  TransformNumeric = FALSE, BackTransNumeric = FALSE,
-  TargetColumnName = NULL, TransformationObject = NULL,
-  TransID = NULL, TransPath = NULL, MDP_Impute = TRUE,
-  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
-  MDP_MissFactor = "0", MDP_MissNum = -1)
+  ModelPath = NULL,
+  ModelID = NULL,
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1
+)
 }
 \arguments{
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
@@ -90,9 +103,10 @@ Preds <- AutoH2OMLScoring(ScoringData = data,
 }
 }
 \seealso{
-Other Automated Model Scoring: \code{\link{AutoCatBoostScoring}},
-  \code{\link{AutoH2OModeler}},
-  \code{\link{AutoXGBoostScoring}}
+Other Automated Model Scoring: 
+\code{\link{AutoCatBoostScoring}()},
+\code{\link{AutoH2OModeler}()},
+\code{\link{AutoXGBoostScoring}()}
 }
 \author{
 Adrian Antico

@@ -4,14 +4,29 @@
 \alias{AutoH2oGBMHurdleModel}
 \title{AutoH2oGBMHurdleModel is generalized hurdle modeling framework}
 \usage{
-AutoH2oGBMHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
-  TransformNumericColumns = NULL, Distribution = "gaussian",
-  SplitRatios = c(0.7, 0.2, 0.1), ModelID = "ModelTest",
-  Paths = NULL, MetaDataPaths = NULL, SaveModelObjects = TRUE,
-  IfSaveModel = "mojo", MaxMem = "28G", NThreads = max(1L,
-  parallel::detectCores() - 2L), Trees = 1000L, GridTune = TRUE,
-  MaxModelsInGrid = 1L, NumOfParDepPlots = 10L, PassInGrid = NULL)
+AutoH2oGBMHurdleModel(
+  data,
+  ValidationData = NULL,
+  TestData = NULL,
+  Buckets = 0L,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  TransformNumericColumns = NULL,
+  Distribution = "gaussian",
+  SplitRatios = c(0.7, 0.2, 0.1),
+  ModelID = "ModelTest",
+  Paths = NULL,
+  MetaDataPaths = NULL,
+  SaveModelObjects = TRUE,
+  IfSaveModel = "mojo",
+  MaxMem = "28G",
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  Trees = 1000L,
+  GridTune = TRUE,
+  MaxModelsInGrid = 1L,
+  NumOfParDepPlots = 10L,
+  PassInGrid = NULL
+)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -88,14 +103,16 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \concept{Automated Regression}

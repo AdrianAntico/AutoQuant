@@ -4,10 +4,21 @@
 \alias{CarmaXGBoostKeepVarsGDL}
 \title{CarmaXGBoostKeepVarsGDL}
 \usage{
-CarmaXGBoostKeepVarsGDL(data, IndepVarPassTRUE = "GroupVar", UpdateData,
-  CalendarFeatures, XREGS, Difference, HierarchGroups, GroupVariables,
-  GroupVarVector, CalendarVariables, HolidayVariable, TargetColumnName,
-  DateColumnName)
+CarmaXGBoostKeepVarsGDL(
+  data,
+  IndepVarPassTRUE = "GroupVar",
+  UpdateData,
+  CalendarFeatures,
+  XREGS,
+  Difference,
+  HierarchGroups,
+  GroupVariables,
+  GroupVarVector,
+  CalendarVariables,
+  HolidayVariable,
+  TargetColumnName,
+  DateColumnName
+)
 }
 \arguments{
 \item{data}{Supply data}
@@ -40,10 +51,11 @@ CarmaXGBoostKeepVarsGDL(data, IndepVarPassTRUE = "GroupVar", UpdateData,
 CarmaXGBoostKeepVarsGDL is to help manage carma code
 }
 \seealso{
-Other Carma Helper: \code{\link{CARMA_Define_Args}},
-  \code{\link{CARMA_Get_IndepentVariablesPass}},
-  \code{\link{CarmaCatBoostKeepVarsGDL}},
-  \code{\link{CarmaH2OKeepVarsGDL}}
+Other Carma Helper: 
+\code{\link{CARMA_Define_Args}()},
+\code{\link{CARMA_Get_IndepentVariablesPass}()},
+\code{\link{CarmaCatBoostKeepVarsGDL}()},
+\code{\link{CarmaH2OKeepVarsGDL}()}
 }
 \author{
 Adrian Antico

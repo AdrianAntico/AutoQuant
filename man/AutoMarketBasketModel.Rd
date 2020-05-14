@@ -4,9 +4,17 @@
 \alias{AutoMarketBasketModel}
 \title{AutoMarketBasketModel function runs a market basket analysis automatically}
 \usage{
-AutoMarketBasketModel(data, OrderIDColumnName, ItemIDColumnName,
-  LHS_Delimeter = ",", Support = 0.001, Confidence = 0.1,
-  MaxLength = 2, MinLength = 2, MaxTime = 5)
+AutoMarketBasketModel(
+  data,
+  OrderIDColumnName,
+  ItemIDColumnName,
+  LHS_Delimeter = ",",
+  Support = 0.001,
+  Confidence = 0.1,
+  MaxLength = 2,
+  MinLength = 2,
+  MaxTime = 5
+)
 }
 \arguments{
 \item{data}{This is your transactions data set}

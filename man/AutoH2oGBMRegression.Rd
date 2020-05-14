@@ -4,16 +4,32 @@
 \alias{AutoH2oGBMRegression}
 \title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
 \usage{
-AutoH2oGBMRegression(data, TrainOnFull = FALSE, ValidationData,
-  TestData = NULL, TargetColumnName = NULL, FeatureColNames = NULL,
-  TransformNumericColumns = NULL, Alpha = NULL,
-  Distribution = "poisson", eval_metric = "RMSE", Trees = 50,
-  GridTune = FALSE, MaxMem = "32G", NThreads = max(1,
-  parallel::detectCores() - 2), MaxModelsInGrid = 2, model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel", NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE, SaveModelObjects = FALSE,
-  IfSaveModel = "mojo", H2OShutdown = TRUE, Methods = c("BoxCox",
-  "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+AutoH2oGBMRegression(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  TransformNumericColumns = NULL,
+  Alpha = NULL,
+  Distribution = "poisson",
+  eval_metric = "RMSE",
+  Trees = 50,
+  GridTune = FALSE,
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2),
+  MaxModelsInGrid = 2,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = TRUE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -104,15 +120,17 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoCatBoostRegression}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

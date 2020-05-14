@@ -4,9 +4,16 @@
 \alias{H2oIsolationForest}
 \title{H2oIsolationForest for anomaly detection}
 \usage{
-H2oIsolationForest(data, TestData = NULL, ColumnNumbers = NULL,
-  Threshold = 0.975, MaxMem = "28G", NThreads = -1, NTrees = 100,
-  SampleRate = (sqrt(5) - 1)/2)
+H2oIsolationForest(
+  data,
+  TestData = NULL,
+  ColumnNumbers = NULL,
+  Threshold = 0.975,
+  MaxMem = "28G",
+  NThreads = -1,
+  NTrees = 100,
+  SampleRate = (sqrt(5) - 1)/2
+)
 }
 \arguments{
 \item{data}{The data.table with the columns you wish to have analyzed}
@@ -80,9 +87,10 @@ Outliers <- H2oIsolationForest(data,
 }
 }
 \seealso{
-Other Unsupervised Learning: \code{\link{AutoKMeans}},
-  \code{\link{GenTSAnomVars}},
-  \code{\link{ResidualOutliers}}
+Other Unsupervised Learning: 
+\code{\link{AutoKMeans}()},
+\code{\link{GenTSAnomVars}()},
+\code{\link{ResidualOutliers}()}
 }
 \author{
 Adrian Antico

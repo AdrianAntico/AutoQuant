@@ -4,9 +4,17 @@
 \alias{AutoRecommender}
 \title{Automatically build the best recommender model among models available.}
 \usage{
-AutoRecommender(data, Partition = "Split", KFolds = 1, Ratio = 0.75,
-  Given = 1, RatingType = "TopN", RatingsKeep = 20,
-  SkipModels = "AssociationRules", ModelMetric = "TPR")
+AutoRecommender(
+  data,
+  Partition = "Split",
+  KFolds = 1,
+  Ratio = 0.75,
+  Given = 1,
+  RatingType = "TopN",
+  RatingsKeep = 20,
+  SkipModels = "AssociationRules",
+  ModelMetric = "TPR"
+)
 }
 \arguments{
 \item{data}{This is your BinaryRatingsMatrix. See function RecomDataCreate}
@@ -47,8 +55,9 @@ WinningModel <- AutoRecommender(RatingsMatrix,
 }
 }
 \seealso{
-Other Recommenders: \code{\link{AutoRecomDataCreate}},
-  \code{\link{AutoRecommenderScoring}}
+Other Recommenders: 
+\code{\link{AutoRecomDataCreate}()},
+\code{\link{AutoRecommenderScoring}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

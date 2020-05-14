@@ -4,8 +4,13 @@
 \alias{RPM_Binomial_Bandit}
 \title{RPM_Binomial_Bandit}
 \usage{
-RPM_Binomial_Bandit(Success, Trials, Alpha = 1L, Beta = 1L,
-  SubDivisions = 1000L)
+RPM_Binomial_Bandit(
+  Success,
+  Trials,
+  Alpha = 1L,
+  Beta = 1L,
+  SubDivisions = 1000L
+)
 }
 \arguments{
 \item{Success}{Vector of successes. One slot per arm.}
@@ -25,10 +30,14 @@ Probability of each arm being the best arm compared to all other arms.
 RPM_Binomial_Bandit computes randomized probability matching probabilities for each arm being best in a multi-armed bandit. Close cousin to Thomson Sampling.
 }
 \seealso{
-Other Misc: \code{\link{AutoH2OTextPrepScoring}},
-  \code{\link{ChartTheme}}, \code{\link{PrintObjectsSize}},
-  \code{\link{SimpleCap}}, \code{\link{percRank}},
-  \code{\link{tempDatesFun}}, \code{\link{tokenizeH2O}}
+Other Misc: 
+\code{\link{AutoH2OTextPrepScoring}()},
+\code{\link{ChartTheme}()},
+\code{\link{PrintObjectsSize}()},
+\code{\link{SimpleCap}()},
+\code{\link{percRank}()},
+\code{\link{tempDatesFun}()},
+\code{\link{tokenizeH2O}()}
 }
 \author{
 Adrian Antico

@@ -4,8 +4,13 @@
 \alias{AutoRecommenderScoring}
 \title{The AutoRecomScoring function scores recommender models from AutoRecommender()}
 \usage{
-AutoRecommenderScoring(data, WinningModel, EntityColName = "CustomerID",
-  ProductColName = "StockCode", NumItemsReturn = 1)
+AutoRecommenderScoring(
+  data,
+  WinningModel,
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode",
+  NumItemsReturn = 1
+)
 }
 \arguments{
 \item{data}{The binary ratings matrix from RecomDataCreate()}
@@ -51,8 +56,9 @@ Results <- AutoRecommenderScoring(
 }
 }
 \seealso{
-Other Recommenders: \code{\link{AutoRecomDataCreate}},
-  \code{\link{AutoRecommender}}
+Other Recommenders: 
+\code{\link{AutoRecomDataCreate}()},
+\code{\link{AutoRecommender}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

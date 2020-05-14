@@ -15,13 +15,14 @@ SQL_Server_DBConnection(DataBaseName = "", Server = "")
 SQL_Server_DBConnection is a function to return data dictionary data in table form
 }
 \seealso{
-Other Data Wrangling: \code{\link{AutoDataDictionaries}},
-  \code{\link{AutoHierarchicalFourier}},
-  \code{\link{ColumnSubsetDataTable}},
-  \code{\link{DataDisplayMeta}},
-  \code{\link{FakeDataGenerator}},
-  \code{\link{FullFactorialCatFeatures}},
-  \code{\link{TimeSeriesMelt}}
+Other Data Wrangling: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico

@@ -4,8 +4,15 @@
 \alias{ClassificationMetrics}
 \title{ClassificationMetrics}
 \usage{
-ClassificationMetrics(TestData, Thresholds, Target, Predict,
-  PositiveOutcome, NegativeOutcome, CostMatrix = c(1, 0, 0, 1))
+ClassificationMetrics(
+  TestData,
+  Thresholds,
+  Target,
+  Predict,
+  PositiveOutcome,
+  NegativeOutcome,
+  CostMatrix = c(1, 0, 0, 1)
+)
 }
 \arguments{
 \item{TestData}{Test data from your modeling}
@@ -24,8 +31,9 @@ ClassificationMetrics(TestData, Thresholds, Target, Predict,
 ClassificationMetrics
 }
 \seealso{
-Other Model Evaluation: \code{\link{DT_BinaryConfusionMatrix}},
-  \code{\link{RemixClassificationMetrics}}
+Other Model Evaluation: 
+\code{\link{DT_BinaryConfusionMatrix}()},
+\code{\link{RemixClassificationMetrics}()}
 }
 \author{
 Adrian Antico

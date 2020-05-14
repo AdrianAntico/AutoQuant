@@ -4,9 +4,14 @@
 \alias{CreateHolidayVariables}
 \title{CreateHolidayVariables Create Holiday Count Columns}
 \usage{
-CreateHolidayVariables(data, DateCols = NULL,
+CreateHolidayVariables(
+  data,
+  DateCols = NULL,
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
-  "OtherEcclesticalFeasts"), Holidays = NULL, GroupingVars = NULL)
+    "OtherEcclesticalFeasts"),
+  Holidays = NULL,
+  GroupingVars = NULL
+)
 }
 \arguments{
 \item{data}{This is your data}
@@ -37,20 +42,22 @@ data <- CreateHolidayVariables(
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

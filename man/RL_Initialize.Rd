@@ -4,8 +4,12 @@
 \alias{RL_Initialize}
 \title{RL_Initialize}
 \usage{
-RL_Initialize(ParameterGridSet = NULL, Alpha = 1L, Beta = 1L,
-  SubDivisions = 1000L)
+RL_Initialize(
+  ParameterGridSet = NULL,
+  Alpha = 1L,
+  Beta = 1L,
+  SubDivisions = 1000L
+)
 }
 \arguments{
 \item{ParameterGridSet}{This is a list of tuning grids}
@@ -32,8 +36,9 @@ GridIDs <- RL_Start[["GridIDs"]]
 BanditProbs <- RL_Start[["BanditProbs"]]
 }
 \seealso{
-Other Reinforcement Learning: \code{\link{RL_ML_Update}},
-  \code{\link{RL_Update}}
+Other Reinforcement Learning: 
+\code{\link{RL_ML_Update}()},
+\code{\link{RL_Update}()}
 }
 \author{
 Adrian Antico

@@ -49,8 +49,9 @@ p2 <- RemixAutoML::ParDepCalPlots(data,
 RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
 }
 \seealso{
-Other Graphics: \code{\link{RemixTheme}},
-  \code{\link{TimeSeriesPlotter}}
+Other Graphics: 
+\code{\link{RemixTheme}()},
+\code{\link{TimeSeriesPlotter}()}
 }
 \author{
 Adrian Antico

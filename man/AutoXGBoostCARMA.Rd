@@ -4,21 +4,46 @@
 \alias{AutoXGBoostCARMA}
 \title{AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
 \usage{
-AutoXGBoostCARMA(data, TrainOnFull = FALSE, TargetColumnName = NULL,
-  DateColumnName = NULL, HierarchGroups = NULL,
-  GroupVariables = NULL, FC_Periods = 5, TimeUnit = "week",
-  TimeGroups = c("weeks", "months"), TargetTransformation = FALSE,
-  XREGS = NULL, Lags = c(1:5), MA_Periods = c(1:5),
-  SD_Periods = c(2:5), Skew_Periods = c(3:5), Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5), Quantiles_Selected = c("q5", "q95"),
-  Difference = TRUE, FourierTerms = 6, CalendarVariables = FALSE,
-  HolidayVariable = TRUE, HolidayLags = 1L,
-  HolidayMovingAverages = 3L, TimeTrendVariable = FALSE,
-  DataTruncate = FALSE, ZeroPadSeries = NULL, SplitRatios = c(1 -
-  10/100, 10/100), TreeMethod = "hist", NThreads = max(1,
-  parallel::detectCores() - 2L), EvalMetric = "MAE", GridTune = FALSE,
-  GridEvalMetric = "mae", ModelCount = 1L, NTrees = 1000L,
-  PartitionType = "timeseries", Timer = TRUE, DebugMode = FALSE)
+AutoXGBoostCARMA(
+  data,
+  TrainOnFull = FALSE,
+  TargetColumnName = NULL,
+  DateColumnName = NULL,
+  HierarchGroups = NULL,
+  GroupVariables = NULL,
+  FC_Periods = 5,
+  TimeUnit = "week",
+  TimeGroups = c("weeks", "months"),
+  TargetTransformation = FALSE,
+  XREGS = NULL,
+  Lags = c(1:5),
+  MA_Periods = c(1:5),
+  SD_Periods = c(2:5),
+  Skew_Periods = c(3:5),
+  Kurt_Periods = c(4:5),
+  Quantile_Periods = c(3:5),
+  Quantiles_Selected = c("q5", "q95"),
+  Difference = TRUE,
+  FourierTerms = 6,
+  CalendarVariables = FALSE,
+  HolidayVariable = TRUE,
+  HolidayLags = 1L,
+  HolidayMovingAverages = 3L,
+  TimeTrendVariable = FALSE,
+  DataTruncate = FALSE,
+  ZeroPadSeries = NULL,
+  SplitRatios = c(1 - 10/100, 10/100),
+  TreeMethod = "hist",
+  NThreads = max(1, parallel::detectCores() - 2L),
+  EvalMetric = "MAE",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  ModelCount = 1L,
+  NTrees = 1000L,
+  PartitionType = "timeseries",
+  Timer = TRUE,
+  DebugMode = FALSE
+)
 }
 \arguments{
 \item{data}{Supply your full series data set here}
@@ -159,16 +184,18 @@ Forecast$ModelInformation$...
 }
 }
 \seealso{
-Other Automated Time Series: \code{\link{AutoCatBoostCARMA}},
-  \code{\link{AutoCatBoostFreqSizeScoring}},
-  \code{\link{AutoCatBoostSizeFreqDist}},
-  \code{\link{AutoH2oDRFCARMA}},
-  \code{\link{AutoH2oGBMCARMA}},
-  \code{\link{AutoH2oGBMFreqSizeScoring}},
-  \code{\link{AutoH2oGBMSizeFreqDist}},
-  \code{\link{AutoH2oGLMCARMA}},
-  \code{\link{AutoH2oMLCARMA}}, \code{\link{AutoTS}},
-  \code{\link{IntermittentDemandScoringDataGenerator}}
+Other Automated Time Series: 
+\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
+\code{\link{AutoH2oDRFCARMA}()},
+\code{\link{AutoH2oGBMCARMA}()},
+\code{\link{AutoH2oGBMFreqSizeScoring}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
+\code{\link{AutoH2oGLMCARMA}()},
+\code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoTS}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico

@@ -4,12 +4,23 @@
 \alias{AutoWord2VecModeler}
 \title{Automated word2vec data generation via H2O}
 \usage{
-AutoWord2VecModeler(data, BuildType = "Combined",
-  stringCol = c("Text_Col1", "Text_Col2"), KeepStringCol = FALSE,
-  model_path = NULL, vects = 100, SaveStopWords = FALSE,
-  MinWords = 1, WindowSize = 12, Epochs = 25, StopWords = NULL,
-  SaveModel = "standard", Threads = max(1, parallel::detectCores() -
-  2), MaxMemory = "28G", SaveOutput = FALSE)
+AutoWord2VecModeler(
+  data,
+  BuildType = "Combined",
+  stringCol = c("Text_Col1", "Text_Col2"),
+  KeepStringCol = FALSE,
+  model_path = NULL,
+  vects = 100,
+  SaveStopWords = FALSE,
+  MinWords = 1,
+  WindowSize = 12,
+  Epochs = 25,
+  StopWords = NULL,
+  SaveModel = "standard",
+  Threads = max(1, parallel::detectCores() - 2),
+  MaxMemory = "28G",
+  SaveOutput = FALSE
+)
 }
 \arguments{
 \item{data}{Source data table to merge vects onto}
@@ -65,20 +76,22 @@ data <- AutoWord2VecModeler(data,
 }
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{DummifyDT}}, \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

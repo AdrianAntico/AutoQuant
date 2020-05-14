@@ -4,11 +4,20 @@
 \alias{CARMA_Define_Args}
 \title{CARMA_Define_Args}
 \usage{
-CARMA_Define_Args(TimeUnit = NULL, TimeGroups = NULL,
-  HierarchGroups = NULL, GroupVariables = NULL, FC_Periods = NULL,
-  PartitionType = NULL, TrainOnFull = NULL, SplitRatios = NULL,
-  SD_Periods = 0L, Skew_Periods = 0L, Kurt_Periods = 0L,
-  Quantile_Periods = 0L)
+CARMA_Define_Args(
+  TimeUnit = NULL,
+  TimeGroups = NULL,
+  HierarchGroups = NULL,
+  GroupVariables = NULL,
+  FC_Periods = NULL,
+  PartitionType = NULL,
+  TrainOnFull = NULL,
+  SplitRatios = NULL,
+  SD_Periods = 0L,
+  Skew_Periods = 0L,
+  Kurt_Periods = 0L,
+  Quantile_Periods = 0L
+)
 }
 \arguments{
 \item{TimeUnit}{= TimeUnit}
@@ -39,10 +48,11 @@ CARMA_Define_Args(TimeUnit = NULL, TimeGroups = NULL,
 CARMA_Define_Args is to help manage carma code
 }
 \seealso{
-Other Carma Helper: \code{\link{CARMA_Get_IndepentVariablesPass}},
-  \code{\link{CarmaCatBoostKeepVarsGDL}},
-  \code{\link{CarmaH2OKeepVarsGDL}},
-  \code{\link{CarmaXGBoostKeepVarsGDL}}
+Other Carma Helper: 
+\code{\link{CARMA_Get_IndepentVariablesPass}()},
+\code{\link{CarmaCatBoostKeepVarsGDL}()},
+\code{\link{CarmaH2OKeepVarsGDL}()},
+\code{\link{CarmaXGBoostKeepVarsGDL}()}
 }
 \author{
 Adrian Antico

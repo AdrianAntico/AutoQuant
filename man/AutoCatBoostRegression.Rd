@@ -4,21 +4,43 @@
 \alias{AutoCatBoostRegression}
 \title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostRegression(data, TrainOnFull = FALSE,
-  ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, PrimaryDateColumn = NULL, IDcols = NULL,
-  TransformNumericColumns = NULL, task_type = "GPU", NumGPUs = 1,
-  eval_metric = "RMSE", loss_function = "RMSE", model_path = NULL,
-  metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
-  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
-  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
-  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
-  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit",
-  "YeoJohnson"))
+AutoCatBoostRegression(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
+  IDcols = NULL,
+  TransformNumericColumns = NULL,
+  task_type = "GPU",
+  NumGPUs = 1,
+  eval_metric = "RMSE",
+  loss_function = "RMSE",
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 0L,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L,
+  Shuffles = 1L,
+  BaselineComparison = "default",
+  MetricPeriods = 10L,
+  Trees = 50L,
+  Depth = NULL,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  RSM = NULL,
+  BootStrapType = NULL,
+  GrowPolicy = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -186,15 +208,17 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 }
 }
 \seealso{
-Other Automated Regression: \code{\link{AutoCatBoostHurdleModel}},
-  \code{\link{AutoH2oDRFHurdleModel}},
-  \code{\link{AutoH2oDRFRegression}},
-  \code{\link{AutoH2oGBMHurdleModel}},
-  \code{\link{AutoH2oGBMRegression}},
-  \code{\link{AutoH2oGLMRegression}},
-  \code{\link{AutoH2oMLRegression}}, \code{\link{AutoNLS}},
-  \code{\link{AutoXGBoostHurdleModel}},
-  \code{\link{AutoXGBoostRegression}}
+Other Automated Regression: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoNLS}()},
+\code{\link{AutoXGBoostHurdleModel}()},
+\code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico

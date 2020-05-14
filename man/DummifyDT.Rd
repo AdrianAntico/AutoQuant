@@ -4,10 +4,18 @@
 \alias{DummifyDT}
 \title{DummifyDT creates dummy variables for the selected columns.}
 \usage{
-DummifyDT(data, cols, KeepFactorCols = FALSE, OneHot = FALSE,
-  SaveFactorLevels = FALSE, SavePath = NULL,
-  ImportFactorLevels = FALSE, FactorLevelsList = NULL,
-  ClustScore = FALSE, ReturnFactorLevels = FALSE)
+DummifyDT(
+  data,
+  cols,
+  KeepFactorCols = FALSE,
+  OneHot = FALSE,
+  SaveFactorLevels = FALSE,
+  SavePath = NULL,
+  ImportFactorLevels = FALSE,
+  FactorLevelsList = NULL,
+  ClustScore = FALSE,
+  ReturnFactorLevels = FALSE
+)
 }
 \arguments{
 \item{data}{The data set to run the micro auc on}
@@ -60,21 +68,22 @@ ncol(test)
 test[, sum(FactorCol_gg)]
 }
 \seealso{
-Other Feature Engineering: \code{\link{AutoDataPartition}},
-  \code{\link{AutoFourierFeatures}},
-  \code{\link{AutoLagRollStatsScoring}},
-  \code{\link{AutoLagRollStats}},
-  \code{\link{AutoTransformationCreate}},
-  \code{\link{AutoTransformationScore}},
-  \code{\link{AutoWord2VecModeler}},
-  \code{\link{ContinuousTimeDataGenerator}},
-  \code{\link{CreateCalendarVariables}},
-  \code{\link{CreateHolidayVariables}},
-  \code{\link{DT_GDL_Feature_Engineering}},
-  \code{\link{H2oAutoencoder}},
-  \code{\link{ModelDataPrep}},
-  \code{\link{Partial_DT_GDL_Feature_Engineering}},
-  \code{\link{TimeSeriesFill}}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico

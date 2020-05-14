@@ -4,19 +4,42 @@
 \alias{AutoCatBoostClassifier}
 \title{AutoCatBoostClassifier is an automated catboost model grid-tuning classifier and evaluation system}
 \usage{
-AutoCatBoostClassifier(data, TrainOnFull = FALSE,
-  ValidationData = NULL, TestData = NULL, TargetColumnName = NULL,
-  FeatureColNames = NULL, PrimaryDateColumn = NULL,
-  ClassWeights = NULL, IDcols = NULL, task_type = "GPU",
-  NumGPUs = 1, eval_metric = "MCC", loss_function = NULL,
-  model_path = NULL, metadata_path = NULL, ModelID = "FirstModel",
-  NumOfParDepPlots = 0L, ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE, PassInGrid = NULL, GridTune = FALSE,
-  MaxModelsInGrid = 10L, MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24L * 60L, Shuffles = 1L,
-  BaselineComparison = "default", MetricPeriods = 10L, Trees = 50L,
-  Depth = NULL, LearningRate = NULL, L2_Leaf_Reg = NULL,
-  RSM = NULL, BootStrapType = NULL, GrowPolicy = NULL)
+AutoCatBoostClassifier(
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = NULL,
+  FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
+  ClassWeights = NULL,
+  IDcols = NULL,
+  task_type = "GPU",
+  NumGPUs = 1,
+  eval_metric = "MCC",
+  loss_function = NULL,
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 0L,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L,
+  Shuffles = 1L,
+  BaselineComparison = "default",
+  MetricPeriods = 10L,
+  Trees = 50L,
+  Depth = NULL,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  RSM = NULL,
+  BootStrapType = NULL,
+  GrowPolicy = NULL
+)
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
@@ -185,11 +208,12 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 }
 }
 \seealso{
-Other Automated Binary Classification: \code{\link{AutoH2oDRFClassifier}},
-  \code{\link{AutoH2oGBMClassifier}},
-  \code{\link{AutoH2oGLMClassifier}},
-  \code{\link{AutoH2oMLClassifier}},
-  \code{\link{AutoXGBoostClassifier}}
+Other Automated Binary Classification: 
+\code{\link{AutoH2oDRFClassifier}()},
+\code{\link{AutoH2oGBMClassifier}()},
+\code{\link{AutoH2oGLMClassifier}()},
+\code{\link{AutoH2oMLClassifier}()},
+\code{\link{AutoXGBoostClassifier}()}
 }
 \author{
 Adrian Antico

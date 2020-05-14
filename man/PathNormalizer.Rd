@@ -16,7 +16,8 @@ Returns a proper path file string
 PathNormalizer Converts path files to proper path files
 }
 \seealso{
-Other System Functions: \code{\link{CreateProjectFolders}}
+Other System Functions: 
+\code{\link{CreateProjectFolders}()}
 }
 \author{
 Adrian Antico

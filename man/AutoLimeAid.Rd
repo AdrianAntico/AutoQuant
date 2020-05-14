@@ -4,20 +4,41 @@
 \alias{AutoLimeAid}
 \title{AutoLimeAid automated lime}
 \usage{
-AutoLimeAid(EvalPredsData = data, LimeTrainingData = data,
-  LimeBins = 10, LimeIterations = 7500, LimeNumFeatures = 0,
-  LimeModel = NULL, LimeModelPath = NULL, LimeModelID = NULL,
-  MLModel = NULL, MLModelPath = NULL, MLMetaDataPath = NULL,
-  MLModelID = NULL, ModelType = "xgboost",
-  TargetType = "classification", NThreads = parallel::detectCores(),
-  MaxMem = "32G", FeatureColumnNames = TestModel$ColNames,
-  IDcols = NULL, FactorLevelsList = TestModel$FactorLevels,
-  TargetLevels = NULL, OneHot = FALSE, ReturnFeatures = TRUE,
-  TransformNumeric = FALSE, BackTransNumeric = FALSE,
-  TargetColumnName = NULL, TransformationObject = NULL,
-  TransID = NULL, TransPath = NULL, MDP_Impute = TRUE,
-  MDP_CharToFactor = TRUE, MDP_RemoveDates = TRUE,
-  MDP_MissFactor = "0", MDP_MissNum = -1)
+AutoLimeAid(
+  EvalPredsData = data,
+  LimeTrainingData = data,
+  LimeBins = 10,
+  LimeIterations = 7500,
+  LimeNumFeatures = 0,
+  LimeModel = NULL,
+  LimeModelPath = NULL,
+  LimeModelID = NULL,
+  MLModel = NULL,
+  MLModelPath = NULL,
+  MLMetaDataPath = NULL,
+  MLModelID = NULL,
+  ModelType = "xgboost",
+  TargetType = "classification",
+  NThreads = parallel::detectCores(),
+  MaxMem = "32G",
+  FeatureColumnNames = TestModel$ColNames,
+  IDcols = NULL,
+  FactorLevelsList = TestModel$FactorLevels,
+  TargetLevels = NULL,
+  OneHot = FALSE,
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1
+)
 }
 \arguments{
 \item{EvalPredsData}{Data used for interpretation. Should be the same kind of data used on ML_Scoring functions.}
@@ -353,9 +374,12 @@ lime::plot_features(LimeOutput$LimeExplanations)
 suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
 }
 \seealso{
-Other Model Evaluation and Interpretation: \code{\link{EvalPlot}},
-  \code{\link{LimeModel}}, \code{\link{ParDepCalPlots}},
-  \code{\link{RedYellowGreen}}, \code{\link{threshOptim}}
+Other Model Evaluation and Interpretation: 
+\code{\link{EvalPlot}()},
+\code{\link{LimeModel}()},
+\code{\link{ParDepCalPlots}()},
+\code{\link{RedYellowGreen}()},
+\code{\link{threshOptim}()}
 }
 \author{
 Adrian Antico
