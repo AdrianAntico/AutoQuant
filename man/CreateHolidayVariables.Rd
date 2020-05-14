@@ -4,7 +4,7 @@
 \alias{CreateHolidayVariables}
 \title{CreateHolidayVariables Create Holiday Count Columns}
 \usage{
-CreateHolidayVariables(data, DateCols = "DateTime",
+CreateHolidayVariables(data, DateCols = NULL,
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
   "OtherEcclesticalFeasts"), Holidays = NULL, GroupingVars = NULL)
 }
@@ -28,12 +28,12 @@ CreateHolidayVariables Rapidly creates holiday count variables based on the date
 \examples{
 \donttest{
 data <- data.table::data.table(Date = '2018-01-01 00:00:00')
-data <- CreateHolidayVariables(data,
-                               DateCols = "DateTime",
-                               HolidayGroups = c("USPublicHolidays","EasterGroup",
-                                                 "ChristmasGroup","OtherEcclesticalFeasts"),
-                               Holidays = NULL,
-                               GroupingVars = NULL)
+data <- CreateHolidayVariables(
+   data,
+   DateCols = "DateTime",
+   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+   Holidays = NULL,
+   GroupingVars = NULL)
 }
 }
 \seealso{
