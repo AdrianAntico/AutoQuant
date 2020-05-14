@@ -34,7 +34,7 @@
 #'                           MaxMem = "28G",
 #'                           NThreads = max(1, parallel::detectCores()-2),
 #'                           JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-#'                           ModelPath = NULL,
+#'                           ModelPath = normalizePath("./"),
 #'                           ModelID = "ModelTest",
 #'                           ReturnFeatures = TRUE,
 #'                           TransformNumeric = FALSE,
@@ -136,7 +136,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       predict <- data.table::as.data.table(
         h2o::h2o.mojo_predict_df(
           frame = ScoreData,
-          mojo_zip_path = file.path(ModelPath, paste0(ModelID, ".zip")),
+          mojo_zip_path = file.path(normalizePath(ModelPath), paste0(ModelID, ".zip")),
           genmodel_jar_path = file.path(normalizePath(ModelPath), ModelID),
           java_options = JavaOptions))
       
