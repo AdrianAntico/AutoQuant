@@ -39,7 +39,7 @@
 #'                                         RestrictDateRange = TRUE,
 #'                                         FC_Periods = 52,
 #'                                         SaveData = FALSE,
-#'                                         FilePath = NULL,
+#'                                         FilePath = normalizePath("./"),
 #'                                         TargetVariableName = "qty",
 #'                                         DateVariableName = "date",
 #'                                         GDL_Targets = NULL,
@@ -141,9 +141,7 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Round down dates (add option to not do this)----
   RoundDatesStart <- Sys.time()
-  if(TimeUnit != "raw") {
-    data.table::set(data, j = eval(DateVariableName), value = lubridate::floor_date(data[[eval(DateVariableName)]], unit = TimeUnit))
-  }
+  if(TimeUnit != "raw") data.table::set(data, j = eval(DateVariableName), value = lubridate::floor_date(data[[eval(DateVariableName)]], unit = TimeUnit))
   RoundDatesEnd <- Sys.time()
   ProfilerList[["RoundDownDates"]] <- RoundDatesEnd - RoundDatesStart
   print("RoundDownDates run time")
@@ -151,7 +149,7 @@ ContinuousTimeDataGenerator <- function(data,
   
   # Group Concatenation----
   GroupConcatenationStart <- Sys.time()
-  if (!is.null(GroupingVariables)) {
+  if(!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupingVariables]
       data[, eval(GroupingVariables) := NULL]      
@@ -200,7 +198,7 @@ ContinuousTimeDataGenerator <- function(data,
   print(ProfilerList[["MetaDataGeneratorAll"]])
   
   # Save Data----
-  if(SaveData) data.table::fwrite(MetaData, file = file.path(FilePath, "MetaData.csv"))
+  if(SaveData) data.table::fwrite(MetaData, file = file.path(normalizePath(FilePath), "MetaData.csv"))
   
   # Add Calendar Variables----
   if(PrintSteps) print("Running CreateCalendarVariables()")
@@ -390,9 +388,7 @@ ContinuousTimeDataGenerator <- function(data,
           TargetWindowSamples = TargetWindowSamples)}, error = function(x) NULL)
         
         # Store individual file outputs----
-        if(!is.null(ModelDataSets)) {
-          ModelDataSets$CountModelData
-        }
+        if(!is.null(ModelDataSets)) ModelDataSets$CountModelData
       }
   }
   
@@ -434,17 +430,17 @@ ContinuousTimeDataGenerator <- function(data,
     
     # Save modeling data sets----
     if(Case == 1L) {
-      data.table::fwrite(CountModelData, file = file.path(FilePath, "CountModelData.csv"))
+      data.table::fwrite(CountModelData, file = file.path(normalizePath(FilePath), "CountModelData.csv"))
     } else if(Case == 2L) {
-      data.table::fwrite(CountModelData, file = file.path(FilePath, "ModelingData.csv"))
+      data.table::fwrite(CountModelData, file = file.path(normalizePath(FilePath), "ModelingData.csv"))
     }
-    if(exists("SizeModelData")) data.table::fwrite(SizeModelData, file = file.path(FilePath, "SizeModelData.csv"))
+    if(exists("SizeModelData")) data.table::fwrite(SizeModelData, file = file.path(normalizePath(FilePath), "SizeModelData.csv"))
     
     # Save column names for modeling data----
     CountPredNames <- names(CountModelData)
     if(exists("SizeModelData")) SizeModelData <- names(SizeModelData)
     save(CountPredNames, file = file.path(FilePath,"ModelDataColumnNames.csv"))
-    if(exists("SizeModelData")) save(SizeModelData, file = file.path(FilePath,"SizePredNames.Rdata"))
+    if(exists("SizeModelData")) save(SizeModelData, file = file.path(normalizePath(FilePath), "SizePredNames.Rdata"))
   }
   
   # Remove select rows----
@@ -574,7 +570,7 @@ ID_TrainingDataGenerator <- function(data,
   
   # Data within target window----
   counter <- 0L
-  for (tar in TargetWindow) {
+  for(tar in TargetWindow) {
     
     # Target variable data
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
@@ -588,22 +584,16 @@ ID_TrainingDataGenerator <- function(data,
     }
     
     # Add in the time since last demand instance from RandomStartDate----
-    histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][
-      , TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
+    histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][, TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
     
     # Remove meta data for feature creation set----
-    features <- histDemandRaw[order(-get(DateVariableName))][
-      , paste0(eval(DateVariableName)) := NULL][1L,]
-    data.table::set(features, 
-                    j = "FC_Window", 
-                    value = tar)
+    features <- histDemandRaw[order(-get(DateVariableName))][, paste0(eval(DateVariableName)) := NULL][1L,]
+    data.table::set(features, j = "FC_Window", value = tar)
     
     # Remove data and rename target variable----
     keep <- eval(TargetVariableName)
     targetDemand <- targetDemand[, ..keep]
-    data.table::setnames(targetDemand, 
-                         old = eval(TargetVariableName[1]), 
-                         new = "Size")
+    data.table::setnames(targetDemand, old = eval(TargetVariableName[1L]), new = "Size")
     
     # Merge Features and Targets----
     if(nrow(targetDemand) != 0L) {
@@ -657,39 +647,27 @@ ID_TrainingDataGenerator2 <- function(data,
   
   # Data within target window----
   counter <- 0L
-  for (tar in TargetWindow) {
+  for(tar in TargetWindow) {
     
     # Classification target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
-      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400L * eval(tar) <= eval(RandomStartDate), 
-                               get(TargetVariableName[1L])], na.rm = TRUE)
+      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400L * eval(tar) <= eval(RandomStartDate), get(TargetVariableName[1L])], na.rm = TRUE)
     } else {
-      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), 
-                               get(TargetVariableName[1L])], na.rm = TRUE)
+      binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), get(TargetVariableName[1L])], na.rm = TRUE)
     }
     
     # Build records----
-    if(!is.finite(binarytarget)) {
-      binarytarget <- 0L
-    }
+    if(!is.finite(binarytarget)) binarytarget <- 0L
     
     # Time to event target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[1L])]
       temp <- temp[!is.na(temp)]
-      if(is.na(temp[1L])) {
-        timetoevent <- 0L
-      } else {
-        timetoevent <- temp[length(temp)]
-      }
+      if(is.na(temp[1L])) timetoevent <- 0L else timetoevent <- temp[length(temp)]
     } else {
       temp <- data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[1L])]
       temp <- temp[!is.na(temp)]
-      if(is.na(temp[1L])) {
-        timetoevent <- 0L
-      } else {
-        timetoevent <- temp[length(temp)]
-      }
+      if(is.na(temp[1L])) timetoevent <- 0L else timetoevent <- temp[length(temp)]
     }
     
     # Build records----
@@ -720,11 +698,7 @@ ID_TrainingDataGenerator2 <- function(data,
       
       # Combine data sets----
       counter <- counter + 1L
-      if(counter == 1L) {
-        Final <- temp
-      } else {
-        Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
-      }
+      if(counter == 1L) Final <- temp else Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
     }
   }
   
@@ -809,7 +783,7 @@ ID_BuildTrainDataSets <- function(MetaData,
     DateRange <- MetaData[GroupVar == eval(level), "Date_Range"][[1]]
     
     # Data generator
-    for (i in seq_len(iterations)) {
+    for(i in seq_len(iterations)) {
       
       # Set Random Starting Date----
       if(lubridate::is.POSIXct(MetaData$MinDate[1])) {
