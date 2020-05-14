@@ -132,9 +132,7 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
   if(!is.null(ValidationData)) H2O_Validation <- h2o::as.h2o(ValidationData)
   
   # Layer selection - Eventually put in an arg for Type for some alternative pre-set LayerStructure----
-  if(is.null(LayerStructure)) {
-    LayerStructure <- c(F_Length,ceiling(F_Length * GR), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR ^ 3), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR), F_Length)
-  }
+  if(is.null(LayerStructure)) LayerStructure <- c(F_Length,ceiling(F_Length * GR), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR ^ 3), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR), F_Length)
   
   # Build model----
   if(!is.null(ValidationData)) {

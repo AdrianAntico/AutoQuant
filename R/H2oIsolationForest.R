@@ -71,16 +71,16 @@ H2oIsolationForest <- function(data,
                                SampleRate = (sqrt(5)-1)/2) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure H2O is installed----
-  if (!requireNamespace("h2o")) return("Install H2O to run this function")
+  if(!requireNamespace("h2o")) return("Install H2O to run this function")
   
   # Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Ensure data is a data.table----
-  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
   
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
@@ -98,7 +98,7 @@ H2oIsolationForest <- function(data,
   if(!is.null(TestData)) TestDataH2O <- h2o::as.h2o(TestData)
   
   # Build Isolation Forest----
-  if (is.null(ColumnNumbers)) {
+  if(is.null(ColumnNumbers)) {
     IsolationForest <- h2o::h2o.isolationForest(
       training_frame = Data,
       x = names(data),
@@ -142,7 +142,8 @@ H2oIsolationForest <- function(data,
   if(!is.null(TestData)) OutputDataTest <- cbind(OutliersRawTest, TestData)
   
   # Return data----
-  return(list(Data     = OutputData[order(-PredictIsoForest)],
-              TestData = tryCatch({OutputDataTest[order(-PredictIsoForest)]}, error = function(x) NULL),
-              Model    = IsolationForest))
+  return(list(
+    Data     = OutputData[order(-PredictIsoForest)],
+    TestData = tryCatch({OutputDataTest[order(-PredictIsoForest)]}, error = function(x) NULL),
+    Model    = IsolationForest))
 }

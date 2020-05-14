@@ -15,25 +15,27 @@
 #' @param MissNum Supply  the value to impute missing numeric values
 #' @param IgnoreCols Supply column numbers for columns you want the function to ignore
 #' @examples
-#' data <- data.table::data.table(Value = runif(100000),
-#'                                FactorCol = as.character(sample(x = c(letters,
-#'                                                                      LETTERS,
-#'                                                                      paste0(letters,letters),
-#'                                                                      paste0(LETTERS,LETTERS),
-#'                                                                      paste0(letters,LETTERS),
-#'                                                                      paste0(LETTERS,letters)),
-#'                                                                size = 100000,
-#'                                                                replace = TRUE)))
-#' data <- ModelDataPrep(data,
-#'                          Impute       = TRUE,
-#'                          CharToFactor = TRUE,
-#'                          FactorToChar = FALSE,
-#'                          IntToNumeric = TRUE,
-#'                          DateToChar   = FALSE,
-#'                          RemoveDates  = FALSE,
-#'                          MissFactor   = "0",
-#'                          MissNum      = -1,
-#'                          IgnoreCols   = NULL)
+#' data <- data.table::data.table(
+#'    Value = runif(100000),
+#'    FactorCol = as.character(sample(x = c(letters,
+#'                                          LETTERS,
+#'                                          paste0(letters,letters),
+#'                                          paste0(LETTERS,LETTERS),
+#'                                          paste0(letters,LETTERS),
+#'                                          paste0(LETTERS,letters)),
+#'                                    size = 100000,
+#'                                    replace = TRUE)))
+#' data <- ModelDataPrep(
+#'    data,
+#'    Impute       = TRUE,
+#'    CharToFactor = TRUE,
+#'    FactorToChar = FALSE,
+#'    IntToNumeric = TRUE,
+#'    DateToChar   = FALSE,
+#'    RemoveDates  = FALSE,
+#'    MissFactor   = "0",
+#'    MissNum      = -1,
+#'    IgnoreCols   = NULL)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
@@ -47,105 +49,44 @@ ModelDataPrep <- function(data,
                           MissNum      = -1,
                           IgnoreCols   = NULL) {
   # Check data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Prepare columns for action----
   x <- as.integer(seq_along(data))
-  if (!is.null(IgnoreCols)) {
-    x <- setdiff(x, IgnoreCols)
-  }
+  if(!is.null(IgnoreCols)) x <- setdiff(x, IgnoreCols)
   
   # Replace any inf values with NA----
-  for (col in x) {
-    data.table::set(data,
-                    j = col,
-                    value = replace(data[[col]],
-                                    is.infinite(data[[col]]), NA))
-  }
+  for(col in x) data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
   
   # Turn character columns into factors----
-  if (CharToFactor) {
-    for (col in x) {
-      if (is.character(data[[col]])) {
-        data.table::set(data,
-                        j = col,
-                        value = as.factor(data[[col]]))
-      }
-    }
-  }
+  if(CharToFactor) for(col in x) if(is.character(data[[col]])) data.table::set(data, j = col, value = as.factor(data[[col]]))
   
   # Turn factor columns into character----
-  if (FactorToChar) {
-    for (col in x) {
-      if (is.factor(data[[col]])) {
-        data.table::set(data,
-                        j = col,
-                        value = as.character(data[[col]]))
-      }
-    }
-  }
+  if(FactorToChar) for(col in x) if(is.factor(data[[col]])) data.table::set(data, j = col, value = as.character(data[[col]]))
   
   # Turn integers columns into numeric----
-  if (IntToNumeric) {
-    for (col in x) {
-      if (is.integer(data[[col]])) {
-        data.table::set(data,
-                        j = col,
-                        value = as.numeric(data[[col]]))
-      }
-    }
-  }
+  if(IntToNumeric) for(col in x) if(is.integer(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
   
   # Turn logical columns into numeric----
-  if (IntToNumeric) {
-    for (col in x) {
-      if (is.logical(data[[col]])) {
-        data.table::set(data,
-                        j = col,
-                        value = as.numeric(data[[col]]))
-      }
-    }
-  }
+  if(IntToNumeric) for(col in x) if(is.logical(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
   # Impute missing values----
-  if (Impute) {
-    for (col in x) {
-      if (is.factor(data[[col]])) {
-        
-        # Case factor
-        data.table::set(data,
-                        which(!(data[[col]] %in% levels(data[[col]]))),
-                        col,
-                        MissFactor)
-        
-        # Case character
+  if(Impute) {
+    for(col in x) {
+      if(is.factor(data[[col]])) {
+        data.table::set(data, which(!(data[[col]] %in% levels(data[[col]]))), col, MissFactor)
       } else if(is.character(data[[col]])) {
-        data.table::set(data,
-                        which(base::is.na(data[[col]])),
-                        col,
-                        MissFactor)
-        
-        # Case other
+        data.table::set(data, which(base::is.na(data[[col]])), col, MissFactor)
       } else if(is.numeric(data[[col]]) | is.integer(data[[col]])) {
-        data.table::set(data,
-                        which(base::is.na(data[[col]])),
-                        col,
-                        MissNum)
+        data.table::set(data, which(base::is.na(data[[col]])), col, MissNum)
       }
     }
   }
   
   # Remove Dates----
-  if (RemoveDates | DateToChar) {
-    for (col in rev(x)) {
-      if (!is.character(data[[col]]) &
-          !is.factor(data[[col]]) &
-          !is.numeric(data[[col]]) &
-          !is.integer(data[[col]]) &
-          !is.logical(data[[col]]) &
-          !is.complex(data[[col]])) {
+  if(RemoveDates | DateToChar) {
+    for(col in rev(x)) {
+      if(!is.character(data[[col]]) & !is.factor(data[[col]]) & !is.numeric(data[[col]]) & !is.integer(data[[col]]) & !is.logical(data[[col]]) & !is.complex(data[[col]])) {
         if(DateToChar) {
           data.table::set(data, j = paste0(names(data)[col]), value = as.character(data[[eval(col)]]))
         } else {
@@ -154,5 +95,7 @@ ModelDataPrep <- function(data,
       }
     }
   }
+  
+  # Return data----
   return(data)
 }
