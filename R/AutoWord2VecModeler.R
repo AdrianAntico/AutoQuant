@@ -39,7 +39,7 @@
 #' @export
 AutoWord2VecModeler <- function(data,
                                 BuildType     = "Combined",
-                                stringCol     = c("Text_Col1", "Text_Col2"),
+                                stringCol     = c("Text_Col1","Text_Col2"),
                                 KeepStringCol = FALSE,
                                 model_path    = NULL,
                                 vects         = 100,
