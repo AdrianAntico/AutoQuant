@@ -4,17 +4,19 @@
 \alias{AutoH2oDRFHurdleModel}
 \title{AutoH2oDRFHurdleModel is generalized hurdle modeling framework}
 \usage{
-AutoH2oDRFHurdleModel(data, ValidationData = NULL, TestData = NULL,
-  Buckets = 0L, TargetColumnName = NULL, FeatureColNames = NULL,
-  TransformNumericColumns = NULL, SplitRatios = c(0.7, 0.2, 0.1),
-  ModelID = "ModelTest", Paths = NULL, MetaDataPaths = NULL,
-  SaveModelObjects = TRUE, IfSaveModel = "mojo", MaxMem = "28G",
-  NThreads = max(1L, parallel::detectCores() - 2L), Trees = 1000L,
-  GridTune = TRUE, MaxModelsInGrid = 1L, NumOfParDepPlots = 10L,
-  PassInGrid = NULL)
+AutoH2oDRFHurdleModel(data, TrainOnFull = FALSE, ValidationData = NULL,
+  TestData = NULL, Buckets = 0L, TargetColumnName = NULL,
+  FeatureColNames = NULL, TransformNumericColumns = NULL,
+  SplitRatios = c(0.7, 0.2, 0.1), ModelID = "ModelTest",
+  Paths = NULL, MetaDataPaths = NULL, SaveModelObjects = TRUE,
+  IfSaveModel = "mojo", MaxMem = "28G", NThreads = max(1L,
+  parallel::detectCores() - 2L), Trees = 1000L, GridTune = TRUE,
+  MaxModelsInGrid = 1L, NumOfParDepPlots = 10L, PassInGrid = NULL)
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
+
+\item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{ValidationData}{Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.}
 
@@ -64,6 +66,7 @@ AutoH2oDRFHurdleModel is generalized hurdle modeling framework
 \donttest{
 Output <- AutoH2oDRFHurdleModel(
   data,
+  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   Buckets = 1L,

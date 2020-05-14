@@ -2,6 +2,7 @@
 #'
 #' @family Automated Regression
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
+#' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param Buckets A numeric vector of the buckets used for subsetting the data. NOTE: the final Bucket value will first create a subset of data that is less than the value and a second one thereafter for data greater than the bucket value.
@@ -26,6 +27,7 @@
 #' \donttest{
 #' Output <- AutoH2oDRFHurdleModel(
 #'   data,
+#'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
 #'   Buckets = 1L,
@@ -47,6 +49,7 @@
 #' }
 #' @export
 AutoH2oDRFHurdleModel <- function(data,
+                                  TrainOnFull = FALSE,
                                   ValidationData = NULL,
                                   TestData = NULL,
                                   Buckets = 0L,
