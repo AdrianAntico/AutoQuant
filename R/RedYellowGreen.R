@@ -49,8 +49,7 @@ RedYellowGreen <- function(data,
                            Boundaries        = c(0.05, 0.75)) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
-  
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace('parallel', quietly = FALSE)
   

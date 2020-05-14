@@ -171,7 +171,7 @@ AutoCatBoostRegression <- function(data,
   if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100L)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
   if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
@@ -815,7 +815,7 @@ AutoCatBoostRegression <- function(data,
   
   # Save plot to file
   if(!TrainOnFull) {
-    if (SaveModelObjects) {
+    if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
       } else {
@@ -853,19 +853,19 @@ AutoCatBoostRegression <- function(data,
   if(!TrainOnFull) {
     EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
-    for (metric in c("mae", "mape", "mse", "r2")) {
+    for(metric in c("mae", "mape", "mse", "r2")) {
       i <- i + 1L
       tryCatch({
         if (tolower(metric) == "mae") {
           ValidationData[, Metric := abs(ValidationData[[eval(TargetColumnName)]] - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "mape") {
+        } else if(tolower(metric) == "mape") {
           ValidationData[, Metric := abs((ValidationData[[eval(TargetColumnName)]] - Predict) / (ValidationData[[eval(TargetColumnName)]] + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "mse") {
+        } else if(tolower(metric) == "mse") {
           ValidationData[, Metric := (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "r2") {
+        } else if(tolower(metric) == "r2") {
           ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] / ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
@@ -895,7 +895,7 @@ AutoCatBoostRegression <- function(data,
           data.table::setnames(VariableImportance, "V2", "Importance")
           VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
           VariableImportance <- VariableImportance[order(-Importance)]
-          if (SaveModelObjects) {
+          if(SaveModelObjects) {
             if(!is.null(metadata_path)) {
               data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
             } else {
@@ -911,7 +911,7 @@ AutoCatBoostRegression <- function(data,
         data.table::setnames(VariableImportance, "V2", "Importance")
         VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
         VariableImportance <- VariableImportance[order(-Importance)]
-        if (SaveModelObjects) {
+        if(SaveModelObjects) {
           if(!is.null(metadata_path)) {
             data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
           } else {
@@ -927,7 +927,7 @@ AutoCatBoostRegression <- function(data,
           data.table::setnames(VariableImportance, "V2", "Importance")
           VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
           VariableImportance <- VariableImportance[order(-Importance)]
-          if (SaveModelObjects) {
+          if(SaveModelObjects) {
             if(!is.null(metadata_path)) {
               data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
             } else {
@@ -958,7 +958,7 @@ AutoCatBoostRegression <- function(data,
       if(NumOfParDepPlots == 0L) {
         j <- 0L
         k <- 0L
-        for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+        for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
           tryCatch({
             Out <- ParDepCalPlots(
               data = ValidationData,

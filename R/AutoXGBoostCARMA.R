@@ -138,7 +138,7 @@ AutoXGBoostCARMA <- function(data,
                              DebugMode = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
   Args <- CARMA_Define_Args(

@@ -139,7 +139,7 @@ AutoH2oDRFCARMA <- function(data,
                             DebugMode = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")

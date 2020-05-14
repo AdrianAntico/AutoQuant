@@ -18,8 +18,7 @@
 #' data <- data.table::data.table(Target = runif(10))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(10)]
-#' data[, Predict := log(pnorm(0.85 * x1 +
-#'                               sqrt(1-0.85^2) * qnorm(x2)))]
+#' data[, Predict := log(pnorm(0.85 * x1 + sqrt(1-0.85^2) * qnorm(x2)))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
 #' data <- threshOptim(data     = data,
 #'                     actTar   = "Target",
@@ -47,12 +46,10 @@ threshOptim <- function(data,
                         ThresholdPrecision = 0.001) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
-  # Check data.table
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  # Check data.table----
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -62,7 +59,7 @@ threshOptim <- function(data,
   store <- list()
   j <- 0
   options(warn = -1)
-  for (i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
+  for(i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
     j <- j + 1
     tp <- sum(data.table::fifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
     tn <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))

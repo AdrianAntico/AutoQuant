@@ -79,7 +79,7 @@ AutoH2oDRFHurdleModel <- function(data,
   ArgsList[["SaveModelObjects"]] <- SaveModelObjects
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100L)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure Paths and metadata_path exists----
   if(!dir.exists(file.path(Paths))) dir.create(Paths)

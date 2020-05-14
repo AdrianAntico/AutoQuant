@@ -116,7 +116,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    colsample_bytree = seq(0.55, 1.0, 0.05)) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100L)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")

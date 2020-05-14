@@ -23,7 +23,7 @@ CreateCalendarVariables <- function(data,
                                     TimeUnits = "wday") {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Check args----

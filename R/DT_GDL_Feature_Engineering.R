@@ -64,10 +64,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Type            = c("Lag"),
                                        SimpleImpute    = TRUE) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
-  
-  # timeAgg
+  # timeAgg----
   if(is.null(timeAgg)) {
     timeAgg <- "TimeUnitNULL"
   } else if(tolower(timeAgg) == "raw") {

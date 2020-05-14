@@ -48,6 +48,10 @@ ModelDataPrep <- function(data,
                           MissFactor   = "0",
                           MissNum      = -1,
                           IgnoreCols   = NULL) {
+  
+  # Full speed ahead----
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  
   # Check data.table----
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
