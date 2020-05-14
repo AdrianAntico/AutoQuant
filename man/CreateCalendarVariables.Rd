@@ -4,8 +4,8 @@
 \alias{CreateCalendarVariables}
 \title{CreateCalendarVariables Create Caledar Variables}
 \usage{
-CreateCalendarVariables(data, DateCols = c("Date", "Date2"),
-  AsFactor = FALSE, TimeUnits = "wday")
+CreateCalendarVariables(data, DateCols = NULL, AsFactor = FALSE,
+  TimeUnits = "wday")
 }
 \arguments{
 \item{data}{This is your data}
@@ -24,10 +24,11 @@ CreateCalendarVariables Rapidly creates calendar variables based on the date col
 }
 \examples{
 data <- data.table::data.table(Date = "2018-01-01 00:00:00")
-data <- CreateCalendarVariables(data,
-                                DateCols = "Date",
-                                AsFactor = FALSE,
-                                TimeUnits = c("wday", "month", "year"))
+data <- CreateCalendarVariables(
+   data,
+   DateCols = "Date",
+   AsFactor = FALSE,
+   TimeUnits = c("wday", "month", "year"))
 }
 \seealso{
 Other Feature Engineering: \code{\link{AutoDataPartition}},
