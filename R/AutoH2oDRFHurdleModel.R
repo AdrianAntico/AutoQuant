@@ -576,6 +576,9 @@ AutoH2oDRFHurdleModel <- function(data,
       save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
+  
+  # Shutdown h2o----
+  h2o::h2o.shutdown(prompt = FALSE)
 
   # Return Output----
   return(list(
