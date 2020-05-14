@@ -31,6 +31,7 @@ if(!("forecast" %in% rownames(installed.packages()))) install.packages("forecast
 if(!("fpp" %in% rownames(installed.packages()))) install.packages("fpp"); print("fpp")
 if(!("ggplot2" %in% rownames(installed.packages()))) install.packages("ggplot2"); print("ggplot2")
 if(!("gridExtra" %in% rownames(installed.packages()))) install.packages("gridExtra"); print("gridExtra")
+if(!("here" %in% rownames(installed.packages()))) install.packages("here"); print("here")
 if(!("itertools" %in% rownames(installed.packages()))) install.packages("itertools"); print("itertools")
 if(!("lime" %in% rownames(installed.packages()))) install.packages("lime"); print("lime")
 if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
