@@ -27,7 +27,7 @@
 #                    nthreads = 8,
 #                    MaxMem = "28G",
 #                    SaveModels = NULL,
-#                    PathFile = NULL,
+#                    PathFile = normalizePath("./"),
 #                    GridTuneGLRM = TRUE,
 #                    GridTuneKMeans = TRUE,
 #                    glrmCols = 1:(ncol(data)-1),
@@ -75,102 +75,49 @@ AutoKMeans <- function(data,
   data.table::setDTthreads(percent = 100)
   
   # Check Arguments----
-  if (nthreads < 0) {
-    warning("nthreads needs to be a positive integer")
-  }
-  if (!is.character(MaxMem)) {
-    warning("MaxMem needs to be a character value. E.g. MaxMem = '28G'")
-  }
-  if (!is.null(SaveModels)) {
-    if (!(tolower(SaveModels) %chin% c("mojo", "standard"))) {
-      warning("SaveModels needs to be either NULL, 'mojo', or 'standard'")
-    }
-  }
-  if (!is.null(PathFile)) {
-    if (!is.character(PathFile)) {
-      warning("PathFile needs to resolve to a character value. E.g. getwd()")
-    }
-  }
-  if (!is.logical(GridTuneGLRM)) {
-    warning("GridTuneGLRM needs to be either TRUE or FALSE")
-  }
-  if (!is.logical(GridTuneKMeans)) {
-    warning("GridTuneKMeans needs to be either TRUE or FALSE")
-  }
-  if (!(is.numeric(glrmCols) | is.integer(glrmCols))) {
-    warning("glrmCols needs to be the column numbers")
-  }
-  if (!is.logical(IgnoreConstCols)) {
-    warning("IgnoreConstCols needs to be either TRUE or FALSE")
-  }
-  if (!(is.numeric(glrmFactors) | is.integer(glrmFactors))) {
-    warning("glrmFactors needs to be an integer value")
-  }
+  if(nthreads < 0) return("nthreads needs to be a positive integer")
+  if(!is.character(MaxMem)) return("MaxMem needs to be a character value. E.g. MaxMem = '28G'")
+  if(!is.null(SaveModels)) if(!(tolower(SaveModels) %chin% c("mojo", "standard"))) return("SaveModels needs to be either NULL, 'mojo', or 'standard'")
+  if(!is.null(PathFile)) if(!is.character(PathFile)) return("PathFile needs to resolve to a character value. E.g. getwd()")
+  if(!is.logical(GridTuneGLRM)) return("GridTuneGLRM needs to be either TRUE or FALSE")
+  if(!is.logical(GridTuneKMeans)) return("GridTuneKMeans needs to be either TRUE or FALSE")
+  if(!(is.numeric(glrmCols) | is.integer(glrmCols))) return("glrmCols needs to be the column numbers")
+  if(!is.logical(IgnoreConstCols)) return("IgnoreConstCols needs to be either TRUE or FALSE")
+  if(!(is.numeric(glrmFactors) | is.integer(glrmFactors))) return("glrmFactors needs to be an integer value")
   
   # Check data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Set up Scoring File if SaveModels is not NULL----
-  if (!is.null(SaveModels)) {
+  if(!is.null(SaveModels)) {
     KMeansModelFile <- data.table::data.table(
       Name = c("GLMR", "AutoKMeans"),
-      FilePath1 = rep("bla", 2),
-      FilePath2 = rep("bla", 2)
-    )
+      FilePath1 = rep("bla", 2L),
+      FilePath2 = rep("bla", 2L))
   }
   
   # Build glmr model----
   h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
   datax <- h2o::as.h2o(data)
-  if (GridTuneGLRM) {
-    # Define grid tune search scheme in a named list----
-    search_criteria  <-
-      list(
-        strategy             = "RandomDiscrete",
-        max_runtime_secs     = 3600,
-        max_models           = 30,
-        seed                 = 1234,
-        stopping_rounds      = 10,
-        stopping_metric      = "MSE",
-        stopping_tolerance   = 1e-3
-      )
+  if(GridTuneGLRM) {
+    search_criteria  <- list(
+      strategy             = "RandomDiscrete",
+      max_runtime_secs     = 3600,
+      max_models           = 30,
+      seed                 = 1234,
+      stopping_rounds      = 10,
+      stopping_metric      = "MSE",
+      stopping_tolerance   = 1e-3)
     
     # Define hyperparameters----
-    HyperParams <-
-      list(
-        transform        = c("NONE",
-                             "DEMEAN",
-                             "DESCALE",
-                             "STANDARDIZE"),
-        k                = 1:5,
-        regularization_x = c(
-          "None",
-          "Quadratic",
-          "L2",
-          "L1",
-          "NonNegative",
-          "OneSparse",
-          "UnitOneSparse",
-          "Simplex"
-        ),
-        regularization_y = c(
-          "None",
-          "Quadratic",
-          "L2",
-          "L1",
-          "NonNegative",
-          "OneSparse",
-          "UnitOneSparse",
-          "Simplex"
-        ),
+    HyperParams <- list(
+      transform = c("NONE","DEMEAN","DESCALE","STANDARDIZE"), 
+      k = 1:5, 
+      regularization_x = c("None","Quadratic","L2","L1","NonNegative","OneSparse","UnitOneSparse","Simplex"),
+        regularization_y = c("None","Quadratic","L2","L1","NonNegative","OneSparse","UnitOneSparse","Simplex"),
         gamma_x          = seq(0.01, 0.10, 0.01),
         gamma_y          = seq(0.01, 0.10, 0.01),
-        svd_method       = c("Randomized",
-                             "GramSVD",
-                             "Power")
-      )
+        svd_method       = c("Randomized","GramSVD","Power"))
     
     # Run grid tune----
     grid <- h2o::h2o.grid(
@@ -180,17 +127,11 @@ AutoKMeans <- function(data,
       grid_id           = "GLRM",
       ignore_const_cols = IgnoreConstCols,
       loss              = Loss,
-      hyper_params      = HyperParams
-    )
+      hyper_params      = HyperParams)
     
     # Get best performer----
-    Grid_Out <-
-      h2o::h2o.getGrid(
-        grid_id = "GLRM",
-        sort_by = search_criteria$stopping_metric,
-        decreasing = FALSE
-      )
-    model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+    Grid_Out <- h2o::h2o.getGrid(grid_id = "GLRM", sort_by = search_criteria$stopping_metric, decreasing = FALSE)
+    model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
   } else {
     model <- h2o::h2o.glrm(
       training_frame    = datax,
@@ -200,55 +141,36 @@ AutoKMeans <- function(data,
       loss              = Loss,
       max_iterations    = glrmMaxIters,
       svd_method        = SVDMethod,
-      max_runtime_secs  = MaxRunTimeSecs
-    )
+      max_runtime_secs  = MaxRunTimeSecs)
   }
   
   # Save model if requested----
-  if (!is.null(SaveModels)) {
-    # Save archetypes and colnames----
+  if(!is.null(SaveModels)) {
     fitY <- model@model$archetypes
-    save(fitY, file = paste0(PathFile, "/fitY"))
-    data.table::set(
-      KMeansModelFile,
-      i = 1L,
-      j = 2L,
-      value = paste0(PathFile, "/fitY")
-    )
+    save(fitY, file = file.path(normalizePath(PathFile), "fitY"))
+    data.table::set(KMeansModelFile, i = 1L, j = 2L, value = file.path(normalizePath(PathFile), "fitY"))
   }
   
   # Run k-means----
-  if (GridTuneKMeans) {
-    # GLRM output----
+  if(GridTuneKMeans) {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
-    if (!is.null(SaveModels)) {
-      save(Names, file = paste0(PathFile, "/Names.Rdata"))
-      data.table::set(
-        KMeansModelFile,
-        i = 1L,
-        j = 3L,
-        value = paste0(PathFile, "/Names.Rdata")
-      )
-      save(KMeansModelFile,
-           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+    if(!is.null(SaveModels)) {
+      save(Names, file = file.path(normalizePath(PathFile), "Names.Rdata"))
+      data.table::set(KMeansModelFile, i = 1L, j = 3L, value = file.path(normalizePath(PathFile), "Names.Rdata"))
+      save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
     
     # Define grid tune search scheme in a named list----
-    search_criteria  <-
-      list(
-        strategy             = "RandomDiscrete",
-        max_runtime_secs     = 3600,
-        max_models           = 30,
-        seed                 = 1234,
-        stopping_rounds      = 10
-      )
+    search_criteria  <- list(
+      strategy             = "RandomDiscrete",
+      max_runtime_secs     = 3600,
+      max_models           = 30,
+      seed                 = 1234,
+      stopping_rounds      = 10)
     
     # Define hyperparameters----
-    HyperParams <- list(
-      max_iterations   = c(10, 20, 50, 100),
-      init             = c("Random", "PlusPlus", "Furthest")
-    )
+    HyperParams <- list(max_iterations   = c(10, 20, 50, 100), init = c("Random","PlusPlus","Furthest"))
     
     # Run grid tune----
     grid <- h2o::h2o.grid(
@@ -259,79 +181,36 @@ AutoKMeans <- function(data,
       k                 = KMeansK,
       grid_id           = "KMeans",
       estimate_k        = TRUE,
-      hyper_params      = HyperParams
-    )
+      hyper_params      = HyperParams)
     
     # Get best performer----
-    Grid_Out <-
-      h2o::h2o.getGrid(grid_id = "KMeans",
-                       sort_by = KMeansMetric,
-                       decreasing = FALSE)
-    model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1]])
+    Grid_Out <- h2o::h2o.getGrid(grid_id = "KMeans", sort_by = KMeansMetric, decreasing = FALSE)
+    model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
   } else {
-    # GLRM output----
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
     Names <- colnames(x_raw)
-    if (!is.null(SaveModels)) {
+    if(!is.null(SaveModels)) {
       save(Names, file = paste0(PathFile, "/Names.Rdata"))
-      data.table::set(
-        KMeansModelFile,
-        i = 1L,
-        j = 3L,
-        value = paste0(PathFile, "/Names.Rdata")
-      )
-      save(KMeansModelFile,
-           file = paste0(PathFile, "/KMeansModelFile.Rdata"))
+      data.table::set(KMeansModelFile, i = 1L, j = 3L, value = file.path(normalizePath(PathFile), "Names.Rdata"))
+      save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
     
     # Train KMeans----
-    model <- h2o::h2o.kmeans(
-      training_frame = x_raw,
-      x              = Names,
-      k              = KMeansK,
-      estimate_k     = TRUE
-    )
+    model <- h2o::h2o.kmeans(training_frame = x_raw, x = Names, k = KMeansK, estimate_k = TRUE)
   }
   
   # Save model if requested----
-  if (!is.null(SaveModels)) {
-    if (tolower(SaveModels) == "mojo") {
-      save_model <-
-        h2o::h2o.saveMojo(object = model,
-                          path = PathFile,
-                          force = TRUE)
-      h2o::h2o.download_mojo(
-        model = model,
-        path = PathFile,
-        get_genmodel_jar = TRUE,
-        genmodel_path = PathFile,
-        genmodel_name = "KMeans"
-      )
-      data.table::set(KMeansModelFile,
-                      i = 2L,
-                      j = 2L,
-                      value = save_model)
-      data.table::set(
-        KMeansModelFile,
-        i = 2L,
-        j = 3L,
-        value = paste0(PathFile, "/KMeans")
-      )
-      save(KMeansModelFile,
-           file = paste0(PathFile,
-                         "/KMeansModelFile.Rdata"))
-    } else if (tolower(SaveModels) == "standard") {
-      save_model <-
-        h2o::h2o.saveModel(object = model,
-                           path = PathFile,
-                           force = TRUE)
-      data.table::set(KMeansModelFile,
-                      i = 2L,
-                      j = 2L,
-                      value = save_model)
-      save(KMeansModelFile,
-           file = paste0(PathFile,
-                         "/KMeansModelFile.Rdata"))
+  if(!is.null(SaveModels)) {
+    if(tolower(SaveModels) == "mojo") {
+      save_model <- h2o::h2o.saveMojo(object = model, path = PathFile, force = TRUE)
+      h2o::h2o.download_mojo(model = model, path = PathFile, get_genmodel_jar = TRUE, genmodel_path = PathFile, genmodel_name = "KMeans")
+      data.table::set(KMeansModelFile, i = 2L, j = 2L, value = save_model)
+      data.table::set(KMeansModelFile, i = 2L, j = 3L, value = file.path(normalizePath(PathFile), "KMeans"))
+      save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
+    } else if(tolower(SaveModels) == "standard") {
+      save_model <- h2o::h2o.saveModel(object = model, path = PathFile, force = TRUE)
+      data.table::set(KMeansModelFile, i = 2L, j = 2L, value = save_model)
+      save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
   }
   
