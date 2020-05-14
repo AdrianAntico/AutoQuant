@@ -41,8 +41,8 @@
 #'    MaxMem = "32G",
 #'    NThreads = max(1, parallel::detectCores()-2),
 #'    MaxModelsInGrid = 10,
-#'    model_path = NULL,
-#'    metadata_path = NULL,
+#'    model_path = normalizePath("./"),
+#'    metadata_path = file.path(normalizePath("./"), "Metadata"),
 #'    ModelID = "FirstModel",
 #'    NumOfParDepPlots = 3,
 #'    ReturnModelObjects = TRUE,
@@ -77,8 +77,8 @@ AutoH2oDRFClassifier <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Binary Check Arguments----
   if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) return("eval_metric not in AUC, logloss")
@@ -137,7 +137,7 @@ AutoH2oDRFClassifier <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
@@ -362,9 +362,9 @@ AutoH2oDRFClassifier <- function(data,
   # Binary Save Variable Importance----
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
@@ -386,9 +386,9 @@ AutoH2oDRFClassifier <- function(data,
   # Binary Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID,"_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID,"_ValidationData.csv")))
     } else {
-      data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID,"_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID,"_ValidationData.csv")))
     }
   }
   
@@ -423,9 +423,9 @@ AutoH2oDRFClassifier <- function(data,
   # Binary Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(metadata_path, paste0(ModelID,"_EvaluationPlot.png")))
+      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID,"_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(file.path(model_path, paste0(ModelID,"_EvaluationPlot.png")))
+      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID,"_EvaluationPlot.png")))
     }
   }
   
@@ -456,16 +456,16 @@ AutoH2oDRFClassifier <- function(data,
   ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
-    ggplot2::ggtitle(paste0("RandomForest AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
+    ggplot2::ggtitle(paste0("RandomForest AUC: ", 100 * round(AUC_Metrics$auc, 3L), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
   
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(metadata_path, paste0(ModelID,"_ROC_Plot.png")))
+      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
     } else {
-      ggplot2::ggsave(file.path(model_path, paste0(ModelID,"_ROC_Plot.png")))
+      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
     }
   }
   
@@ -473,9 +473,9 @@ AutoH2oDRFClassifier <- function(data,
   if(exists("FinalThresholdTable")) {
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(FinalThresholdTable, file = file.path(metadata_path, paste0(ModelID,"_EvaluationMetrics.csv")))
+        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(metadata_path), paste0(ModelID,"_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(FinalThresholdTable, file = file.path(model_path, paste0(ModelID,"_EvaluationMetrics.csv")))
+        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }  
   }

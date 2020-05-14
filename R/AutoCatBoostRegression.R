@@ -62,8 +62,8 @@
 #'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
 #'     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
 #'     ModelID = "Test_Model_1",
-#'     model_path = getwd(),
-#'     metadata_path = file.path(getwd(),"R_Model_Testing"),
+#'     model_path = normalizePath("./"),
+#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'     
@@ -174,8 +174,8 @@ AutoCatBoostRegression <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Regression Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
@@ -711,7 +711,7 @@ AutoCatBoostRegression <- function(data,
   }
   
   # Regression Save Model----
-  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
   
   # Regression Score Final Test Data----
   if(!is.null(TestData)) {
@@ -786,15 +786,15 @@ AutoCatBoostRegression <- function(data,
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       if(!TrainOnFull) {
-        data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
       } else {
-        data.table::fwrite(data, file = file.path(metadata_path, paste0(ModelID, "_FullDataPredictions.csv")))
+        data.table::fwrite(data, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_FullDataPredictions.csv")))
       }
     } else {
       if(!TrainOnFull) {
-        data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
       } else {
-        data.table::fwrite(data, file = file.path(model_path, paste0(ModelID, "_FullDataPredictions.csv")))
+        data.table::fwrite(data, file = file.path(normalizePath(model_path), paste0(ModelID, "_FullDataPredictions.csv")))
       }
     }
   }
@@ -817,9 +817,9 @@ AutoCatBoostRegression <- function(data,
   if(!TrainOnFull) {
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
       } else {
-        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
       }
     }    
   }
@@ -842,9 +842,9 @@ AutoCatBoostRegression <- function(data,
   if(!TrainOnFull) {
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationBoxPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
       } else {
-        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationBoxPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
       }
     }
   }
@@ -880,9 +880,9 @@ AutoCatBoostRegression <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
     
@@ -897,9 +897,9 @@ AutoCatBoostRegression <- function(data,
           VariableImportance <- VariableImportance[order(-Importance)]
           if (SaveModelObjects) {
             if(!is.null(metadata_path)) {
-              data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+              data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
             } else {
-              data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+              data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
             }
           }
         } else {
@@ -913,9 +913,9 @@ AutoCatBoostRegression <- function(data,
         VariableImportance <- VariableImportance[order(-Importance)]
         if (SaveModelObjects) {
           if(!is.null(metadata_path)) {
-            data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+            data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
           } else {
-            data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+            data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
           }
         }
       }
@@ -929,9 +929,9 @@ AutoCatBoostRegression <- function(data,
           VariableImportance <- VariableImportance[order(-Importance)]
           if (SaveModelObjects) {
             if(!is.null(metadata_path)) {
-              data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+              data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
             } else {
-              data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+              data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
             }
           }
         }
@@ -943,9 +943,9 @@ AutoCatBoostRegression <- function(data,
         VariableImportance <- VariableImportance[order(-Importance)]
         if(SaveModelObjects) {
           if(!is.null(metadata_path)) {
-            data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+            data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
           } else {
-            data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+            data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
           }
         }
       }
@@ -990,18 +990,18 @@ AutoCatBoostRegression <- function(data,
         # Regression Save ParDepPlots to file----
         if(SaveModelObjects) {
           if(!is.null(metadata_path)) {
-            save(ParDepPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepPlots.R")))
+            save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
           } else {
-            save(ParDepPlots, file = file.path(model_path, paste0(ModelID, "_ParDepPlots.R")))
+            save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
           }
         }
         
         # Regression Save ParDepBoxPlots to file----
         if(SaveModelObjects) {
           if(!is.null(metadata_path)) {
-            save(ParDepBoxPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepBoxPlots.R")))
+            save(ParDepBoxPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepBoxPlots.R")))
           } else {
-            save(ParDepBoxPlots, file = file.path(model_path, paste0(ModelID, "_ParDepBoxPlots.R")))
+            save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepBoxPlots.R")))
           }
         }    
       }
@@ -1010,9 +1010,9 @@ AutoCatBoostRegression <- function(data,
     # Regression Save Grid output----
     if(SaveModelObjects & GridTune) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "_ExperimentalGrid.csv")))
+        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ExperimentalGrid.csv")))
       } else {
-        data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "_ExperimentalGrid.csv")))
+        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "_ExperimentalGrid.csv")))
       }
     }
   }

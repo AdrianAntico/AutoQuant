@@ -340,14 +340,7 @@ AutoH2oDRFHurdleModel <- function(data,
         if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults
         if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         gc()
-        
-        # Score TestData----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) {
-          ModelPath <- paste0(ModelID, "_", bucket,"_")
-        } else {
-          ModelPath <- paste0(ModelID, "_", bucket)
-        }
-          
+
         # Define args----
         if(!is.null(TransformNumericColumns)) {
           TransformNumeric <- TRUE
@@ -369,8 +362,8 @@ AutoH2oDRFHurdleModel <- function(data,
           H2OShutdown = FALSE,
           MaxMem = "28G",
           JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-          ModelPath = ModelPath,
-          ModelID = "ModelTest",
+          ModelPath = NULL,
+          ModelID = ModelIDD,
           ReturnFeatures = TRUE,
           TransformNumeric = TransformNumeric,
           BackTransNumeric = BackTransNumeric,
@@ -452,9 +445,9 @@ AutoH2oDRFHurdleModel <- function(data,
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(TestData, file = paste0(MetaDataPaths, "/", ModelID, "_ValidationData.csv"))
+      data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(TestData, file = paste0(Paths, "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -473,9 +466,9 @@ AutoH2oDRFHurdleModel <- function(data,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      ggplot2::ggsave(paste0(MetaDataPaths, "/", ModelID, "_EvaluationPlot.png"))
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths, "/", ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
   
@@ -494,9 +487,9 @@ AutoH2oDRFHurdleModel <- function(data,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      ggplot2::ggsave(paste0(MetaDataPaths, "/", ModelID, "_EvaluationBoxPlot.png"))
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths, "/", ModelID, "_EvaluationBoxPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     }
   }
   
@@ -527,7 +520,7 @@ AutoH2oDRFHurdleModel <- function(data,
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
       } else if(tolower(metric) == "kl") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
+        if(MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
           TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
           Metric <- TestData[, mean(Metric, na.rm = TRUE)]
         }
@@ -553,9 +546,9 @@ AutoH2oDRFHurdleModel <- function(data,
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(EvaluationMetrics, file = paste0(MetaDataPaths, "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(EvaluationMetrics, file = paste0(Paths, "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   
@@ -596,9 +589,9 @@ AutoH2oDRFHurdleModel <- function(data,
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      save(ParDepBoxPlots, file = paste0(MetaDataPaths, "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
     } else {
-      save(ParDepBoxPlots, file = paste0(Paths, "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
 

@@ -61,8 +61,8 @@
 #'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
 #'     #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
 #'     ModelID = "Test_Model_1",
-#'     model_path = getwd(),
-#'     metadata_path = file.path(getwd(),"R_Model_Testing"),
+#'     model_path = normalizePath("./"),
+#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'     
@@ -160,8 +160,8 @@ AutoCatBoostMultiClass <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # MultiClass Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
@@ -755,7 +755,7 @@ AutoCatBoostMultiClass <- function(data,
   }
   
   # MultiClass Save Model----
-  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
+  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
   
   # MultiClass Score Final Test Data----
   if(!is.null(TestData)) {
@@ -872,9 +872,9 @@ AutoCatBoostMultiClass <- function(data,
   # MultiClass Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -883,9 +883,9 @@ AutoCatBoostMultiClass <- function(data,
     EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
   }
@@ -898,18 +898,18 @@ AutoCatBoostMultiClass <- function(data,
   VariableImportance <- VariableImportance[order(-Importance)]
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
   # MultiClass Save Grid output----
   if(SaveModelObjects & GridTune) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "_ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "_ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "_ExperimentalGrid.csv")))
     }
   }
   

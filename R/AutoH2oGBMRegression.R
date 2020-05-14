@@ -49,8 +49,8 @@
 #'    MaxMem = "32G",
 #'    NThreads = max(1,parallel::detectCores()-2),
 #'    MaxModelsInGrid = 10,
-#'    model_path = NULL,
-#'    metadata_path = NULL,
+#'    model_path = normalizePath("./"),
+#'    metadata_path = file.path(normalizePath("./"), "MetaData"),
 #'    ModelID = "FirstModel",
 #'    NumOfParDepPlots = 3,
 #'    ReturnModelObjects = TRUE,
@@ -90,8 +90,8 @@ AutoH2oGBMRegression <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Regression Check Arguments----
   if(!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) return("eval_metric not in MSE, RMSE, MAE, RMSLE")
@@ -239,7 +239,7 @@ AutoH2oGBMRegression <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(model_path, paste0(ModelID, "_ColNames.csv")))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # Regression Grid Tune Check----
   if(GridTune & !TrainOnFull) {
@@ -503,9 +503,9 @@ AutoH2oGBMRegression <- function(data,
     VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+        data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
       } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+        data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
       }
     }
     
@@ -567,15 +567,15 @@ AutoH2oGBMRegression <- function(data,
   if (SaveModelObjects) {
     if(!TrainOnFull) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
       } else {
-        data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
       }      
     } else {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_FullDataPredictions.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_FullDataPredictions.csv")))
       } else {
-        data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_FullDataPredictions.csv")))
+        data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_FullDataPredictions.csv")))
       }
     }
   }
@@ -611,9 +611,9 @@ AutoH2oGBMRegression <- function(data,
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
       } else {
-        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
       }
     }
     
@@ -637,9 +637,9 @@ AutoH2oGBMRegression <- function(data,
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationBoxPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
       } else {
-        ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationBoxPlot.png")))
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
       }
     }
     
@@ -672,9 +672,9 @@ AutoH2oGBMRegression <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
     
@@ -745,18 +745,18 @@ AutoH2oGBMRegression <- function(data,
       # Regression Save ParDepPlots to file----
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          save(ParDepPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepPlots.R")))
+          save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
         } else {
-          save(ParDepPlots, file = file.path(model_path, paste0(ModelID, "_ParDepPlots.R")))
+          save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
         }
       }
       
       # Regression Save ParDepBoxPlots to file----
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          save(ParDepBoxPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepBoxPlots.R")))
+          save(ParDepBoxPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepBoxPlots.R")))
         } else {
-          save(ParDepBoxPlots, file = file.path(model_path, paste0(ModelID, "_ParDepBoxPlots.R")))
+          save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepBoxPlots.R")))
         }
       }  
     }

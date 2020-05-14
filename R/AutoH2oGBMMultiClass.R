@@ -41,8 +41,8 @@
 #'    MaxMem = "32G",
 #'    NThreads = max(1, parallel::detectCores()-2),
 #'    MaxModelsInGrid = 10,
-#'    model_path = NULL,
-#'    metadata_path = NULL,
+#'    model_path = normalizePath("./"),
+#'    metadata_path = file.path(normalizePath("./"), "MetaData"),
 #'    ModelID = "FirstModel",
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
@@ -75,8 +75,8 @@ AutoH2oGBMMultiClass <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Ensure model_path and metadata_path exists----
   if(!dir.exists(file.path(model_path))) dir.create(model_path)
@@ -142,7 +142,7 @@ AutoH2oGBMMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(model_path, paste0(ModelID, "_ColNames.csv")))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # MultiClass Grid Tune Check----
   if(GridTune & !TrainOnFull) {
@@ -355,9 +355,9 @@ AutoH2oGBMMultiClass <- function(data,
   # MultiClass Save Variable Importance----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
@@ -396,18 +396,18 @@ AutoH2oGBMMultiClass <- function(data,
   # MultiClass Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(metadata_path, paste0(ModelID, "_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(ValidationData, file = file.path(model_path, paste0(ModelID, "_ValidationData.csv")))
+      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
   # MultiClass Save ConfusionMatrix to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ConfusionMatrix, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(ConfusionMatrix, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   

@@ -61,7 +61,7 @@
 #'   IDcols = NULL,
 #'   
 #'   # Metadata args
-#'   Paths = NULL,
+#'   Paths = normalizePath("./"),
 #'   MetaDataPaths = NULL,
 #'   TransformNumericColumns = NULL,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -150,7 +150,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure Paths and metadata_path exists----
-  if(!dir.exists(file.path(Paths))) dir.create(Paths)
+  if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
 
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -629,9 +629,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L],"/",ModelID, "_EvaluationPlot.png"))
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L],"/",ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
   
@@ -649,26 +649,21 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   
   # Save plot to file----
   if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L],"/",ModelID,"_EvaluationBoxPlot.png"))
+    if(!is.null(MetaDataPaths)) {
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_EvaluationBoxPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L],"/",ModelID,"_EvaluationBoxPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID,"_EvaluationBoxPlot.png")))
     }
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"),MetricValue = rep(999999, 8))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 8L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for(metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
+  for(metric in c("mae","mape","mse","r2")) {
     i <- i + 1L
     tryCatch({
-      if(tolower(metric) == "poisson") {
-        if(MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1)]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "mae") {
+      if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
       } else if(tolower(metric) == "mape") {
@@ -677,22 +672,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "msle") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "kl") {
-        if (MinVal > 0 & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if(tolower(metric) == "cs") {
-        TestData[, ':=' (
-          Metric1 = get(TargetColumnName) * UpdatedPrediction,
-          Metric2 = get(TargetColumnName) ^ 2L,
-          Metric3 = UpdatedPrediction ^ 2L)]
-        Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
       } else if(tolower(metric) == "r2") {
         TestData[, ':=' (
           Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,
@@ -710,10 +689,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      data.table::fwrite(EvaluationMetrics, file = paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationMetrics.csv"))
+    if(!is.null(MetaDataPaths)) {
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(EvaluationMetrics, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   
@@ -754,14 +733,14 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      save(ParDepBoxPlots, file = paste0(MetaDataPaths, "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
     } else {
-      save(ParDepBoxPlots, file = paste0(Paths, "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
   
   # Save args list to file----
-  if(SaveModelObjects) save(ArgsList, file = paste0(Paths, "/", ModelID, "_HurdleArgList.Rdata"))
+  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, "_HurdleArgList.Rdata")))
   
   # Return Output----
   return(list(

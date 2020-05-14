@@ -77,42 +77,25 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   data.table::setDTthreads(percent = 100)
   
   # Check arguments----
-  if (is.null(ScoringData)) {
-    warning("ScoringData cannot be NULL")
-  }
-  if (!data.table::is.data.table(ScoringData)) {
-    ScoringData <- data.table::as.data.table(ScoringData)
-  }
-  if (!is.logical(MDP_Impute)) {
-    warning("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.logical(MDP_CharToFactor)) {
-    warning("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.logical(MDP_RemoveDates)) {
-    warning("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) {
-    warning("MDP_MissFactor should be a character or factor value")
-  }
-  if (!is.numeric(MDP_MissNum)) {
-    warning("MDP_MissNum should be a numeric or integer value")
-  }
+  if(is.null(ScoringData)) return("ScoringData cannot be NULL")
+  if(!data.table::is.data.table(ScoringData)) ScoringData <- data.table::as.data.table(ScoringData)
+  if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
+  if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
 
   # Pull In Transformation Object----
-  if (is.null(TransformationObject)) {
-    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
-      if(is.null(TargetColumnName)) {
-        return("TargetColumnName needs to be supplied")
-      }
-      TransformationObject <-
-        data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
+  if(is.null(TransformationObject)) {
+    if(TransformNumeric | BackTransNumeric) {
+      if(is.null(TargetColumnName)) return("TargetColumnName needs to be supplied")
+      TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
     }
   }
 
   # Apply Transform Numeric Variables----
-  if (!is.null(TransformationObject)) {
-    if (TransformNumeric == TRUE | BackTransNumeric == TRUE) {
+  if(!is.null(TransformationObject)) {
+    if(TransformNumeric | BackTransNumeric) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
       ScoringData <- AutoTransformationScore(
@@ -120,15 +103,12 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
         FinalResults = tempTrans,
         Type = "Apply",
         TransID = TransID,
-        Path = TransPath
-      )
+        Path = TransPath)
     }
   }
   
   # Initialize H2O----
-  if(tolower(ModelType) == "standard") {
-    h2o::h2o.init(enable_assertions = FALSE, nthreads = NThreads)
-  }
+  if(tolower(ModelType) == "standard") h2o::h2o.init(enable_assertions = FALSE, nthreads = NThreads)
   
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
@@ -141,7 +121,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   
   # Initialize H2O Data Conversion----
   if(!is.null(ModelType)) {
-    if (tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
+    if(tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
       ScoreData <- h2o::as.h2o(ScoringData)
     } else {
       ScoreData <- ScoringData
@@ -150,21 +130,18 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
   # Make Predictions----
   if(!is.null(ModelObject)) {
-    predict <- data.table::as.data.table(
-      h2o::h2o.predict(ModelObject, newdata = ScoreData))
+    predict <- data.table::as.data.table(h2o::h2o.predict(ModelObject, newdata = ScoreData))
   } else {
-    if (tolower(ModelType) == "mojo") {
+    if(tolower(ModelType) == "mojo") {
       predict <- data.table::as.data.table(
         h2o::h2o.mojo_predict_df(
           frame = ScoreData,
           mojo_zip_path = file.path(ModelPath, paste0(ModelID, ".zip")),
-          genmodel_jar_path = file.path(ModelPath, paste0(ModelID)),
-          java_options = JavaOptions
-        )
-      )
+          genmodel_jar_path = file.path(normalizePath(ModelPath), ModelID),
+          java_options = JavaOptions))
       
-    } else if (tolower(ModelType) == "standard") {
-      model <- h2o::h2o.loadModel(path = file.path(ModelPath, ModelID))
+    } else if(tolower(ModelType) == "standard") {
+      model <- h2o::h2o.loadModel(path = file.path(normalizePath(ModelPath), ModelID))
       predict <- data.table::as.data.table(h2o::h2o.predict(object = model, newdata = ScoreData))
     }    
   }
@@ -173,19 +150,13 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   data.table::setnames(predict, "predict", "Predictions")
   
   # Shut down H2O----
-  if (tolower(ModelType) != "mojo") {
-    if (H2OShutdown) {
-      h2o::h2o.shutdown(prompt = FALSE)
-    }
-  }
+  if(tolower(ModelType) != "mojo") if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
   
   # Merge features back on----
-  if (ReturnFeatures) {
-    predict <- cbind(predict, ScoringData)
-  }
+  if(ReturnFeatures) predict <- cbind(predict, ScoringData)
   
   # Back Transform Numeric Variables----
-  if (BackTransNumeric) {
+  if(BackTransNumeric) {
     
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
@@ -198,8 +169,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       value = "Predictions")
     
     # Remove target variable----
-    grid_trans_results <-
-      grid_trans_results[ColumnName != eval(TargetColumnName)]
+    grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
     
     # Run Back-Transform----
     predict <- AutoTransformationScore(
@@ -207,8 +177,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       Type = "Inverse",
       FinalResults = grid_trans_results,
       TransID = NULL,
-      Path = NULL
-    )
+      Path = NULL)
   }
   
   # Return data----

@@ -119,7 +119,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   IDcols = NULL,
   
   # Metadata args
-  Paths = NULL,
+  Paths = normalizePath("./"),
   MetaDataPaths = NULL,
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),

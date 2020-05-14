@@ -15,118 +15,87 @@
 #' @examples
 #' \donttest{
 #' dataSets <- AutoDataPartition(data,
-#'                               NumDataSets = 3,
+#'                               NumDataSets = 3L,
 #'                               Ratios = c(0.70,0.20,0.10),
 #'                               PartitionType = "random",
 #'                               StratifyColumnNames = NULL,
 #'                               StratifyNumericTarget = NULL,
-#'                               StratTargetPrecision = 1,
+#'                               StratTargetPrecision = 1L,
 #'                               TimeColumnName = NULL)
 #' }
 #' @export
 AutoDataPartition <- function(data,
-                              NumDataSets = 3,
+                              NumDataSets = 3L,
                               Ratios = c(0.70, 0.20, 0.10),
                               PartitionType = "random",
                               StratifyColumnNames = NULL,
                               StratifyNumericTarget = NULL,
-                              StratTargetPrecision = 3,
+                              StratTargetPrecision = 3L,
                               TimeColumnName = NULL) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
   
   # Arguments----
-  if (NumDataSets < 0) {
-    warning("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
+  if(NumDataSets < 0) return("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
+  if(!is.null(StratifyNumericTarget)) {
+    if(!is.character(StratifyNumericTarget)) return("StratifyNumericTarget is your target column name in quotes")
+    if(!is.numeric(StratTargetPrecision)) return("StratTargetPrecision needs to be values of 1,2,...,N")
   }
-  if (!is.null(StratifyNumericTarget)) {
-    if (!is.character(StratifyNumericTarget)) {
-      warning("StratifyNumericTarget is your target column name in quotes")
-    }
-    if (!is.numeric(StratTargetPrecision)) {
-      warning("StratTargetPrecision needs to be values of 1,2,...,N")
-    }
+  if(abs(round(NumDataSets) - NumDataSets) > 0.01) return("NumDataSets needs to be an integer valued positive number")
+  if(length(Ratios) != NumDataSets) return("You need to supply the percentage of data used for each data set.")
+  if(sum(Ratios) != 1.0) return("The sum of Ratios needs to equal 1.0")
+  if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) return("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
+  if(!is.null(StratifyColumnNames)) {
+    if(!is.character(StratifyColumnNames)) return("StratifyColumnNames needs to be a character vector of column names")
+    if (!all(StratifyColumnNames %chin% names(data))) return("StratifyColumnNames not in vector of data names")
   }
-  if (abs(round(NumDataSets) - NumDataSets) > 0.01) {
-    warning("NumDataSets needs to be an integer valued positive number")
-  }
-  if (length(Ratios) != NumDataSets) {
-    warning("You need to supply the percentage of data used for each data set.")
-  }
-  if (sum(Ratios) != 1.0) {
-    warning("The sum of Ratios needs to equal 1.0")
-  }
-  if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
-    warning("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
-  }
-  if (!is.null(StratifyColumnNames)) {
-    if (!is.character(StratifyColumnNames)) {
-      warning("StratifyColumnNames needs to be a character vector of column names")
-    }
-    if (!all(StratifyColumnNames %chin% names(data))) {
-      warning("StratifyColumnNames not in vector of data names")
-    }
-  }
-  if (!is.null(TimeColumnName)) {
-    if (!(TimeColumnName %chin% names(data))) {
-      warning("TimeColumnName not in vector of data names")
-    }
-    if (is.character(data[[eval(TimeColumnName)]]) |
-        is.factor(data[[eval(TimeColumnName)]])) {
-      warning("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
-    }
+  if(!is.null(TimeColumnName)) {
+    if(!(TimeColumnName %chin% names(data))) return("TimeColumnName not in vector of data names")
+    if(is.character(data[[eval(TimeColumnName)]]) | is.factor(data[[eval(TimeColumnName)]])) return("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
   }
   
   # Ensure data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Stratify Numeric Target----
-  if (PartitionType == "random") {
-    if (!is.null(StratifyNumericTarget)) {
+  if(PartitionType == "random") {
+    if(!is.null(StratifyNumericTarget)) {
       data[, StratCol := as.factor(round(percRank(data[[eval(StratifyNumericTarget)]]), StratTargetPrecision))]
       StratifyColumnNames <- "StratCol"
     }
   }
   
   # Partition Steps----
-  if (is.null(TimeColumnName)) {
-    # Copy data----
-    copy_data <- data.table::copy(data)
+  if(is.null(TimeColumnName)) {
     
-    # Put Stratify Column Names in Variable----
+    # Data prep----
+    copy_data <- data.table::copy(data)
     DataCollect <- list()
-    if (!is.null(StratifyColumnNames)) {
-      keep <- c(eval(StratifyColumnNames))
-    }
+    if(!is.null(StratifyColumnNames)) keep <- c(eval(StratifyColumnNames))
     
     # Modify ratios to account for data decrements----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
-    for (i in (NumDataSets - 1):1) {
+    for(i in (NumDataSets - 1L):1L) {
       tempRatio <- 0
-      for (j in (i + 1):NumDataSets) {
-        tempRatio <- Ratios[j] + tempRatio
-      }
+      for(j in (i + 1L):NumDataSets) tempRatio <- Ratios[j] + tempRatio
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
     
     # Gather Row Numbers----
     RowList <- list()
-    for (i in NumDataSets:1) {
-      if (!is.null(StratifyColumnNames)) {
-        if (i == 1) {
+    for(i in NumDataSets:1L) {
+      if(!is.null(StratifyColumnNames)) {
+        if(i == 1L) {
           temp <- copy_data
         } else {
-          x <-
-            copy_data[, .I[sample(.N, max(1,.N * RatioList[i]))], by = list(get(keep))]$V1
+          x <- copy_data[, .I[sample(.N, max(1L, .N * RatioList[i]))], by = list(get(keep))]$V1
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }
       } else {
-        if (i == 1) {
+        if(i == 1L) {
           temp <- copy_data
         } else {
           x <- copy_data[, .I[sample(.N, .N * RatioList[i])]]
@@ -137,22 +106,21 @@ AutoDataPartition <- function(data,
     }
     
     # Partition Data----
-    for (i in seq_len(NumDataSets)) {
-      if (i == 1) {
+    for(i in seq_len(NumDataSets)) {
+      if(i == 1L) {
         DataCollect[["TrainData"]] <- temp
-      } else if (i == 2) {
+      } else if(i == 2L) {
         DataCollect[["ValidationData"]] <- data[eval(RowList[[i]])]
-      } else if (i == 3) {
+      } else if(i == 3L) {
         DataCollect[["TestData"]] <- data[RowList[[i]]]
       } else {
-        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
-          data[RowList[[i]]]
+        DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[RowList[[i]]]
       }
     }
     
     # Remove StratCol from StratifyNumericTarget----
-    if (PartitionType == "random") {
-      if (!is.null(StratifyNumericTarget)) {
+    if(PartitionType == "random") {
+      if(!is.null(StratifyNumericTarget)) {
         x1 <- DataCollect$TrainData
         x1[, StratCol := NULL]
         x2 <- DataCollect$ValidationData
@@ -165,89 +133,69 @@ AutoDataPartition <- function(data,
       }
     }
     
-  } else if (tolower(PartitionType) == "timeseries" &
-             !is.null(StratifyColumnNames)) {
-    # Initialize DataCollect
+  } else if(tolower(PartitionType) == "timeseries" & !is.null(StratifyColumnNames)) {
+    
+    # Initalize collection----
     DataCollect <- list()
-    
-    # Add ID by Strata Groups
     data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
-    
-    # Ensure row counts are all equal by strata
-    if (var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
-      return(
-        "There are an unequal number of records by strata.
-             PartitionType 'timeseries' requires equal number of observations for each strata"
-      )
-    }
-    
-    # Get Total Row Count
+    if(var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) return("There are an unequal number of records by strata. PartitionType 'timeseries' requires equal number of observations for each strata")
     Rows <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
     
     # Figure out which rows go to which data set
-    for (i in NumDataSets:1) {
-      if (i == 1) {
+    for(i in NumDataSets:1L) {
+      if(i == 1L) {
         DataCollect[["TrainData"]] <- data
-      } else if (i == 2) {
-        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+      } else if(i == 2L) {
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1L, N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[["ValidationData"]] <-
-          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
-        DataCollect[["ValidationData"]] <-
-          DataCollect[["ValidationData"]][, ID := NULL]
-        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)][, ID := NULL]
-      } else if (i == 3) {
-        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+        DataCollect[["ValidationData"]] <- data[ID %in% (RowEnd - NumRows + 1L):RowEnd]
+        DataCollect[["ValidationData"]] <- DataCollect[["ValidationData"]][, ID := NULL]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1L):RowEnd)][, ID := NULL]
+      } else if(i == 3L) {
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1L, N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[["TestData"]] <-
-          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
-        DataCollect[["TestData"]] <-
-          DataCollect[["TestData"]][, ID := NULL]
-        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)]
+        DataCollect[["TestData"]] <- data[ID %in% (RowEnd - NumRows + 1L):RowEnd]
+        DataCollect[["TestData"]] <- DataCollect[["TestData"]][, ID := NULL]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1L):RowEnd)]
       } else {
-        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
+        RowEnd <- data[, .N, by = c(eval(StratifyColumnNames))][1L, N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
-          data[ID %in% (RowEnd - NumRows + 1):RowEnd]
-        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
-          DataCollect[[paste0("TestData", NumDataSets - 2)]][, ID := NULL]
-        data <- data[!(ID %in% (RowEnd - NumRows + 1):RowEnd)]
+        DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[ID %in% (RowEnd - NumRows + 1L):RowEnd]
+        DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- DataCollect[[paste0("TestData", NumDataSets - 2L)]][, ID := NULL]
+        data <- data[!(ID %in% (RowEnd - NumRows + 1L):RowEnd)]
       }
     }
   } else {
+    
     # Initialize DataCollect
     DataCollect <- list()
-    
-    # Sort data by TimeColumnName
     data <- data[order(get(TimeColumnName))]
-    
-    # Get Total Row Count
     Rows <- data[, .N]
     
     # Figure out which rows go to which data set
-    for (i in NumDataSets:1) {
-      if (i == 1) {
+    for(i in NumDataSets:1L) {
+      if(i == 1L) {
         DataCollect[["TrainData"]] <- data
-      } else if (i == 2) {
+      } else if(i == 2L) {
         RowEnd <- data[, .N]
         NumRows <- floor(Ratios[i] * Rows)
         DataCollect[["ValidationData"]] <-
-          data[(RowEnd - NumRows + 1):RowEnd]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
-      } else if (i == 3) {
+          data[(RowEnd - NumRows + 1L):RowEnd]
+        data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
+      } else if(i == 3L) {
         RowEnd <- data[, .N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[["TestData"]] <-
-          data[(RowEnd - NumRows + 1):RowEnd]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
+        DataCollect[["TestData"]] <- data[(RowEnd - NumRows + 1L):RowEnd]
+        data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
       } else {
         RowEnd <- data[, .N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[[paste0("TestData", NumDataSets - 2)]] <-
-          data[(RowEnd - NumRows + 1):RowEnd]
-        data <- data[-((RowEnd - NumRows + 1):RowEnd)]
+        DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[(RowEnd - NumRows + 1L):RowEnd]
+        data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
       }
     }
   }
+  
+  # Return data----
   return(DataCollect)
 }

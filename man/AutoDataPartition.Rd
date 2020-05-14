@@ -4,9 +4,9 @@
 \alias{AutoDataPartition}
 \title{The AutoDataPartition function}
 \usage{
-AutoDataPartition(data, NumDataSets = 3, Ratios = c(0.7, 0.2, 0.1),
+AutoDataPartition(data, NumDataSets = 3L, Ratios = c(0.7, 0.2, 0.1),
   PartitionType = "random", StratifyColumnNames = NULL,
-  StratifyNumericTarget = NULL, StratTargetPrecision = 3,
+  StratifyNumericTarget = NULL, StratTargetPrecision = 3L,
   TimeColumnName = NULL)
 }
 \arguments{
@@ -35,12 +35,12 @@ This function will take your ratings matrix and model and score your data in par
 \examples{
 \donttest{
 dataSets <- AutoDataPartition(data,
-                              NumDataSets = 3,
+                              NumDataSets = 3L,
                               Ratios = c(0.70,0.20,0.10),
                               PartitionType = "random",
                               StratifyColumnNames = NULL,
                               StratifyNumericTarget = NULL,
-                              StratTargetPrecision = 1,
+                              StratTargetPrecision = 1L,
                               TimeColumnName = NULL)
 }
 }

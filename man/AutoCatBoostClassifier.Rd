@@ -120,8 +120,8 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
     #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
     ModelID = "Test_Model_1",
-    model_path = getwd(),
-    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
     

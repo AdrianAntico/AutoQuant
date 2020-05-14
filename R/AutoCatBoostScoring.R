@@ -32,7 +32,7 @@
 #'                              FeatureColumnNames = 2:12,
 #'                              IDcols = NULL,
 #'                              ModelObject = NULL,
-#'                              ModelPath = "home",
+#'                              ModelPath = normalizePath("./"),
 #'                              ModelID = "ModelTest",
 #'                              ReturnFeatures = TRUE,
 #'                              MultiClassTargetLevels = NULL,
@@ -75,26 +75,23 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Load catboost----
   loadNamespace(package = "catboost")
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100L)
-  
   # Check arguments----
-  if (is.null(ScoringData)) return("ScoringData cannot be NULL")
-  if (!data.table::is.data.table(ScoringData)) ScoringData <- data.table::as.data.table(ScoringData)
-  if (!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
-  if (!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
-  if (!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
-  if (!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
-  if (!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
+  if(is.null(ScoringData)) return("ScoringData cannot be NULL")
+  if(!data.table::is.data.table(ScoringData)) ScoringData <- data.table::as.data.table(ScoringData)
+  if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
+  if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
   
   # Pull in ColNames----
-  if (is.null(FeatureColumnNames)) FeatureColumnNames <- data.table::fread(file = paste0(ModelID, "_ColNames.csv"))
+  if(is.null(FeatureColumnNames)) FeatureColumnNames <- data.table::fread(file = file.path(normalizePath(ModelID), "_ColNames.csv"))
   
   # Pull In Transformation Object----
-  if (is.null(TransformationObject)) {
-    if (TransformNumeric | BackTransNumeric) {
+  if(is.null(TransformationObject)) {
+    if(TransformNumeric | BackTransNumeric) {
       if(is.null(TargetColumnName)) return("TargetColumnName needs to be supplied")
-      TransformationObject <- data.table::fread(paste0(TransPath,"/",TransID, "_transformation.csv"))
+      TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
     }
   }
   
@@ -111,13 +108,13 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
   
   # Convert CatFeatures to 1-indexed----
-  if (!is.null(CatFeatures)) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
+  if(!is.null(CatFeatures)) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
   
   # IDcols conversion----
-  if (is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
   
   # Apply Transform Numeric Variables----
-  if (TransformNumeric) {
+  if(TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
     tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
     ScoringData <- AutoTransformationScore(
@@ -129,20 +126,20 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Convert FeatureColumnNames to Character Names----
-  if (data.table::is.data.table(FeatureColumnNames)) {
+  if(data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
-  } else if (is.numeric(FeatureColumnNames)) {
+  } else if(is.numeric(FeatureColumnNames)) {
     FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
   }
   
   # Remove Target from FeatureColumnNames----
-  if (TransformNumeric | BackTransNumeric) if(!is.null(TargetColumnName)) if (TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+  if(TransformNumeric | BackTransNumeric) if(!is.null(TargetColumnName)) if(TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
   
   # Subset Columns Needed----
   keep1 <- c(FeatureColumnNames)
-  if (!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
+  if(!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
   ScoringData <- ScoringData[, ..keep]
-  if (!is.null(IDcols)) {
+  if(!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(ScoringData)
     keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
@@ -151,36 +148,36 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Initialize Catboost Data Conversion----
-  if (!is.null(CatFeatures)) {
+  if(!is.null(CatFeatures)) {
     ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
     ScoringPool <- catboost::catboost.load_pool(ScoringData)
   }
   
   # Load model----
-  if (!is.null(ModelObject)) {
+  if(!is.null(ModelObject)) {
     model <- ModelObject
   } else {
-    model <- tryCatch({catboost::catboost.load_model(paste0(ModelPath, "/", ModelID))}, error = function(x) NULL)
+    model <- tryCatch({catboost::catboost.load_model(file.path(normalizePath(ModelPath), ModelID))}, error = function(x) NULL)
     if(is.null(model)) return("Model not found in ModelPath")
   }
   
   # Score model----
-  if (tolower(TargetType) == "regression") {
+  if(tolower(TargetType) == "regression") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = model,
         pool = ScoringPool,
         prediction_type = "RawFormulaVal",
-        thread_count = -1))
-  } else if (tolower(TargetType) == "classification") {
+        thread_count = -1L))
+  } else if(tolower(TargetType) == "classification") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = model,
         pool = ScoringPool,
         prediction_type = "Probability",
-        thread_count = -1))
-  } else if (tolower(TargetType) == "multiclass") {
+        thread_count = -1L))
+  } else if(tolower(TargetType) == "multiclass") {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = model,
@@ -195,17 +192,16 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Remove Model----
   if(RemoveModel) rm(model)
   
-  # Change Output Predictions Column Name----
-  if (tolower(TargetType) != "multiclass") {
+  # Score model-----
+  if(tolower(TargetType) == "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
-  } else if (tolower(TargetType) == "multiclass") {
     if(!is.null(MultiClassTargetLevels)) {
       TargetLevels <- MultiClassTargetLevels
     } else {
-      TargetLevels <- data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))      
+      TargetLevels <- data.table::fread(file.path(normalizePath(ModelPath), paste0(ModelID, "_TargetLevels.csv")))
     }
     k <- 1L
-    for (name in as.character(TargetLevels[[1]])) {
+    for(name in as.character(TargetLevels[[1L]])) {
       k <- k + 1L
       data.table::setnames(predict, paste0("V", k), name)
     }
@@ -220,10 +216,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
   
   # Merge features back on----
-  if (ReturnFeatures) predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
   
   # Back Transform Numeric Variables----
-  if (BackTransNumeric) {
+  if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
