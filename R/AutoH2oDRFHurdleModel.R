@@ -85,7 +85,7 @@ AutoH2oDRFHurdleModel <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure Paths and metadata_path exists----
-  if(!dir.exists(file.path(Paths))) dir.create(Paths)
+  if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
   
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
