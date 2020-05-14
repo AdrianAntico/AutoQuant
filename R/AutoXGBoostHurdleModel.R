@@ -47,7 +47,7 @@
 #'    # Metadata args
 #'    NThreads = max(1L, parallel::detectCores()-2L),
 #'    ModelID = "ModelTest",
-#'    Paths = NULL,
+#'    Paths = normalizePath("./"),
 #'    MetaDataPaths = NULL,
 #' 
 #'    # data args

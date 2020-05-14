@@ -104,8 +104,8 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     NThreads = 8L,
   
     # Metadata arguments
-    model_path = getwd(),
-    metadata_path = file.path(getwd(),"R_Model_Testing"),
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
