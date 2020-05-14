@@ -22,10 +22,9 @@
 #' \donttest{
 #' data <- AutoWord2VecModeler(data,
 #'                             BuildType = "individual",
-#'                             stringCol = c("Text_Col1",
-#'                                           "Text_Col2"),
+#'                             stringCol = c("Text_Col1","Text_Col2"),
 #'                             KeepStringCol = FALSE,
-#'                             model_path = NULL,
+#'                             model_path = normalizePath("./"),
 #'                             vects = 100,
 #'                             SaveStopWords = FALSE,
 #'                             MinWords = 1,
@@ -40,8 +39,7 @@
 #' @export
 AutoWord2VecModeler <- function(data,
                                 BuildType     = "Combined",
-                                stringCol     = c("Text_Col1",
-                                                  "Text_Col2"),
+                                stringCol     = c("Text_Col1", "Text_Col2"),
                                 KeepStringCol = FALSE,
                                 model_path    = NULL,
                                 vects         = 100,
@@ -56,46 +54,34 @@ AutoWord2VecModeler <- function(data,
                                 SaveOutput    = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L,parallel::detectCores()-2L))
   
   # Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Two processes----
   if(tolower(BuildType) == "combined") {
     
     # Create storage file----
     N <- length(stringCol)
-    StoreFile <-
-      data.table::data.table(
-        ModelName = rep("a", 1),
-        Path = rep("a", 1),
-        Jar = rep("a", 1)
-      )
-    i <- 0
-    
-    # Loop through all the string columns----
-    for (string in stringCol) {
+    StoreFile <- data.table::data.table(ModelName = rep("a", 1), Path = rep("a", 1), Jar = rep("a", 1))
+    i <- 0L
+    for(string in stringCol) {
       
       # Increment----
-      i <- as.integer(i + 1)
+      i <- i + 1L
       
       # Ensure stringCol is character (not factor)----
-      if (!is.character(data[[eval(string)]])) {
-        data[, eval(string) := as.character(get(string))]
-      }
+      if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
       
       # Build single column----
-      if(i == 1) {
+      if(i == 1L) {
         Final <- data[, .(get(string))]
         data.table::setnames(Final, "V1", "Text")
       } else {
         temp <- data[, .(get(string))]
         data.table::setnames(temp, "V1", "Text")
-        Final <- data.table::rbindlist(
-          list(Final, temp))
+        Final <- data.table::rbindlist(list(Final, temp)) 
       }
     }
     
@@ -103,7 +89,7 @@ AutoWord2VecModeler <- function(data,
     rm(temp)
     
     # word2vec time----
-    Sys.sleep(10)
+    Sys.sleep(10L)
     h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
     
     # It is important to remove "\n"----
@@ -125,65 +111,33 @@ AutoWord2VecModeler <- function(data,
       window_size        = WindowSize,
       init_learning_rate = 0.025,
       sent_sample_rate   = 0.05,
-      epochs             = Epochs
-    )
+      epochs             = Epochs)
     
     # Save model----
-    if (SaveOutput) {
-      if (tolower(SaveModel) == "standard") {
-        w2vPath <-
-          h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-        data.table::set(StoreFile,
-                        i = 1L,
-                        j = 1L,
-                        value = BuildType)
-        data.table::set(StoreFile,
-                        i = 1L,
-                        j = 2L,
-                        value = w2vPath)
-        data.table::set(StoreFile,
-                        i = 1L,
-                        j = 3L,
-                        value = "NA")
-        save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+    if(SaveOutput) {
+      if(tolower(SaveModel) == "standard") {
+        w2vPath <- h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+        data.table::set(StoreFile, i = 1L, j = 1L, value = BuildType)
+        data.table::set(StoreFile, i = 1L, j = 2L, value = w2vPath)
+        data.table::set(StoreFile, i = 1L, j = 3L, value = "NA")
+        save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
       } else {
-        w2vPath <-
-          h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
-        h2o::h2o.download_mojo(
-          model = w2v.model,
-          path = model_path,
-          get_genmodel_jar = TRUE,
-          genmodel_path = model_path,
-          genmodel_name = model_id
-        )
-        data.table::set(StoreFile,
-                        i = 1L,
-                        j = 1L,
-                        value = BuildType)
-        data.table::set(StoreFile,
-                        i = 1L,
-                        j = 2L,
-                        value = w2vPath)
-        data.table::set(
-          StoreFile,
-          i = 1L,
-          j = 3L,
-          value = paste0(model_path, "/", string)
-        )
-        save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+        w2vPath <- h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+        h2o::h2o.download_mojo(model = w2v.model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = model_id)
+        data.table::set(StoreFile, i = 1L, j = 1L, value = BuildType)
+        data.table::set(StoreFile, i = 1L, j = 2L, value = w2vPath)
+        data.table::set(StoreFile, i = 1L, j = 3L, value = file.path(normalizePath(model_path), string))
+        save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
       }
     }
     
     # Loop through all the string columns and score them----
-    for (string in stringCol) {
-      # Ensure stringCol is character (not factor)
-      if (!is.character(data[[eval(string)]])) {
-        data[, eval(string) := as.character(get(string))]
-      }
+    for(string in stringCol) {
+      if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
       
       # word2vec time
-      i <- as.integer(i + 1)
-      Sys.sleep(10)
+      i <- i + 1L
+      Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
       
       # It is important to remove "\n" --
@@ -196,22 +150,18 @@ AutoWord2VecModeler <- function(data,
       rm(data2)
       
       # Score model----
-      all_vecs <-
-        h2o::h2o.transform(w2v.model, tokenized_words,
-                           aggregate_method = "AVERAGE")
+      all_vecs <- h2o::h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
       
       # Convert to data.table----
       all_vecs <- data.table::as.data.table(all_vecs)
       data <- data.table::data.table(cbind(data, all_vecs))
       
       # Remove string cols----
-      if (!KeepStringCol) {
-        data[, eval(string) := NULL]
-      }
+      if(!KeepStringCol) data[, eval(string) := NULL]
       
       # Replace Colnames----
       cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
-      for (c in cols) {
+      for(c in cols) {
         data[, paste0(string, "_", c) := get(c)]
         data[, eval(c) := NULL]
       }
@@ -225,24 +175,12 @@ AutoWord2VecModeler <- function(data,
     
     # Create storage file----
     N <- length(stringCol)
-    StoreFile <-
-      data.table::data.table(
-        ModelName = rep("a", N),
-        Path = rep("a", N),
-        Jar = rep("a", N)
-      )
-    i <- 0
-    
-    # Loop through all the string columns
-    for (string in stringCol) {
-      # Ensure stringCol is character (not factor)
-      if (!is.character(data[[eval(string)]])) {
-        data[, eval(string) := as.character(get(string))]
-      }
-      
-      # word2vec time
-      i <- as.integer(i + 1)
-      Sys.sleep(10)
+    StoreFile <- data.table::data.table(ModelName = rep("a", N), Path = rep("a", N), Jar = rep("a", N))
+    i <- 0L
+    for(string in stringCol) {
+      if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
+      i <- i + 1L
+      Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
       
       # It is important to remove "\n" --
@@ -265,72 +203,39 @@ AutoWord2VecModeler <- function(data,
         window_size        = WindowSize,
         init_learning_rate = 0.025,
         sent_sample_rate   = 0.05,
-        epochs             = Epochs
-      )
+        epochs             = Epochs)
       
       # Save model
-      if (SaveOutput) {
-        if (tolower(SaveModel) == "standard") {
-          w2vPath <-
-            h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
-          data.table::set(StoreFile,
-                          i = i,
-                          j = 1L,
-                          value = string)
-          data.table::set(StoreFile,
-                          i = i,
-                          j = 2L,
-                          value = w2vPath)
-          data.table::set(StoreFile,
-                          i = i,
-                          j = 3L,
-                          value = "NA")
-          save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+      if(SaveOutput) {
+        if(tolower(SaveModel) == "standard") {
+          w2vPath <- h2o::h2o.saveModel(w2v.model, path = model_path, force = TRUE)
+          data.table::set(StoreFile, i = i, j = 1L, value = string)
+          data.table::set(StoreFile, i = i, j = 2L, value = w2vPath)
+          data.table::set(StoreFile, i = i, j = 3L, value = "NA")
+          save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
         } else {
-          w2vPath <-
-            h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
-          h2o::h2o.download_mojo(
-            model = w2v.model,
-            path = model_path,
-            get_genmodel_jar = TRUE,
-            genmodel_path = model_path,
-            genmodel_name = string
-          )
-          data.table::set(StoreFile,
-                          i = i,
-                          j = 1L,
-                          value = string)
-          data.table::set(StoreFile,
-                          i = i,
-                          j = 2L,
-                          value = w2vPath)
-          data.table::set(
-            StoreFile,
-            i = i,
-            j = 3L,
-            value = paste0(model_path, "/", string)
-          )
-          save(StoreFile, file = paste0(model_path, "/StoreFile.Rdata"))
+          w2vPath <- h2o::h2o.saveMojo(w2v.model, path = model_path, force = TRUE)
+          h2o::h2o.download_mojo(model = w2v.model, path = model_path, get_genmodel_jar = TRUE, genmodel_path = model_path, genmodel_name = string)
+          data.table::set(StoreFile, i = i, j = 1L, value = string)
+          data.table::set(StoreFile, i = i, j = 2L, value = w2vPath)
+          data.table::set(StoreFile, i = i, j = 3L, value = file.path(normalizePath(model_path), string))
+          save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
         }
       }
       
       # Score model
-      all_vecs <-
-        h2o::h2o.transform(w2v.model, tokenized_words,
-                           aggregate_method = "AVERAGE")
+      all_vecs <- h2o::h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
       
       # Convert to data.table
       all_vecs <- data.table::as.data.table(all_vecs)
       data <- data.table::data.table(cbind(data, all_vecs))
       
       # Remove string cols
-      if (!KeepStringCol) {
-        data[, eval(string) := NULL]
-      }
+      if(!KeepStringCol) data[, eval(string) := NULL]
       
       # Replace Colnames
       cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
-      for (c in cols) {
+      for(c in cols) {
         data[, paste0(string, "_", c) := get(c)]
         data[, eval(c) := NULL]
       }
@@ -340,5 +245,7 @@ AutoWord2VecModeler <- function(data,
       h2o::h2o.shutdown(prompt = FALSE)
     }
   }
+  
+  # Return data----
   return(data) 
 }

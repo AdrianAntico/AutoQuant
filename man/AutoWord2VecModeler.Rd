@@ -49,10 +49,9 @@ This function allows you to automatically build a word2vec model and merge the d
 \donttest{
 data <- AutoWord2VecModeler(data,
                             BuildType = "individual",
-                            stringCol = c("Text_Col1",
-                                          "Text_Col2"),
+                            stringCol = c("Text_Col1","Text_Col2"),
                             KeepStringCol = FALSE,
-                            model_path = NULL,
+                            model_path = normalizePath("./"),
                             vects = 100,
                             SaveStopWords = FALSE,
                             MinWords = 1,
