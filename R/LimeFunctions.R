@@ -409,99 +409,61 @@ AutoLimeAid <- function(EvalPredsData = data,
                         MDP_MissNum = -1) {
   
   # Check Lime Arguments----
-  if(is.null(EvalPredsData) & is.null(LimeTrainingData)) {
-    stop("EvalPredsData and LimeTrainingData cannot both be NULL.")
-  }
+  if(is.null(EvalPredsData) & is.null(LimeTrainingData)) return("EvalPredsData and LimeTrainingData cannot both be NULL.")
   if(is.null(LimeModelPath)) {
-    if(is.null(LimeModel)) {
-      stop("You need to either supply a model or a path to a model if you aren't supplying training data to build a model")        
-    }
-    if(is.null(LimeTrainingData)) {
-      stop("You need to supply LimeTrainingData to train your lime model.")
-    }
+    if(is.null(LimeModel)) return("You need to either supply a model or a path to a model if you aren't supplying training data to build a model")        
+    if(is.null(LimeTrainingData)) return("You need to supply LimeTrainingData to train your lime model.")
   } else {
     if(!dir.exists(LimeModelPath)) {
-      if(is.null(LimeTrainingData)) {
-        stop("Not creating directory: There is no lime training data.")
-      } else {
-        dir.create(LimeModelPath)        
-      }
+      if(is.null(LimeTrainingData)) return("Not creating directory: There is no lime training data.") else dir.create(LimeModelPath)
     } else if(is.null(LimeTrainingData)) {
-      if(is.null(LimeModelID)) stop("I need your LimeModelID so I know which file to load.")
+      if(is.null(LimeModelID)) return("I need your LimeModelID so I know which file to load.")
       if(!file.exists(file.path(LimeModelPath,LimeModelID))) {
-        stop(paste0("Directory exists but the file named LimeModelID (",LimeModelID,") is not located there."))
+        return(paste0("Directory exists but the file named LimeModelID (",LimeModelID,") is not located there."))
       } else {
         load(file.path(LimeModelPath,LimeModelID))
         LimeModel <- LimeAId
       }
     }
   }
-  if(is.null(LimeModel)) {
-    BuildLimeModel <- TRUE
-  } else  {
-    BuildLimeModel <- FALSE
-  }
+  if(is.null(LimeModel)) BuildLimeModel <- TRUE else BuildLimeModel <- FALSE
   
   # Check ML Model Arguments----
   if(is.null(MLModel)) {
-    if(is.null(MLModelPath)) stop("I need a model supplied (unless the model is by H2O) or a pathfile to go find your model")
-    if(!dir.exists(MLModelPath)) stop(paste0("MLModelPath (",MLModelPath,") directory does not exist"))
-    if(is.null(MLModelID)) stop("I need your ModelID so I know which file to load.")
-    if(!file.exists(file.path(MLModelPath,MLModelID))) stop(paste0("Directory exists but the file named MLModelID (",MLModelID,") is not located there."))
+    if(is.null(MLModelPath)) return("I need a model supplied (unless the model is by H2O) or a pathfile to go find your model")
+    if(!dir.exists(MLModelPath)) return(paste0("MLModelPath (",MLModelPath,") directory does not exist"))
+    if(is.null(MLModelID)) return("I need your ModelID so I know which file to load.")
+    if(!file.exists(file.path(MLModelPath,MLModelID))) return(paste0("Directory exists but the file named MLModelID (",MLModelID,") is not located there."))
   } else {
-    if(tolower(ModelType) == "h2o") stop("You need to save your H2O model and have it pulled in with a MLModelPath and MLModelID")
-    if(file.exists(file.path(MLModelPath,MLModelID,"_ColNames"))) {
-      FeatureColumnNames <- data.table::fread(file.path(MLModelPath,MLModelID,"_ColNames"))
-    }
+    if(tolower(ModelType) == "h2o") return("You need to save your H2O model and have it pulled in with a MLModelPath and MLModelID")
+    if(file.exists(file.path(MLModelPath,MLModelID,"_ColNames"))) FeatureColumnNames <- data.table::fread(file.path(MLModelPath,MLModelID,"_ColNames"))
   }
   if(!is.null(MLMetaDataPath)) {
-    if(!dir.exists(MLMetaDataPath)) stop("The MLMetaDataPath directory does not exist")
-    if(file.exists(file.path(MLMetaDataPath,MLModelID,"_ColNames"))) {
-      FeatureColumnNames <- data.table::fread(file.path(MLMetaDataPath,MLModelID,"_ColNames"))
-    }
+    if(!dir.exists(MLMetaDataPath)) return("The MLMetaDataPath directory does not exist")
+    if(file.exists(file.path(MLMetaDataPath,MLModelID,"_ColNames"))) FeatureColumnNames <- data.table::fread(file.path(MLMetaDataPath,MLModelID,"_ColNames"))
   }
   
   # Check Data Arguments----
   if(is.null(FeatureColumnNames)) {
-    if(is.null(MLModelPath)) stop("MLModelPath cannot be NULL if you are not supply FeatureColumnNames")
+    if(is.null(MLModelPath)) return("MLModelPath cannot be NULL if you are not supply FeatureColumnNames")
     FeatureColumnNames <- data.table::fread(file.path(MLModelPath,paste0(MLModelID,"_ColNames.csv")))
   }
-  if(!is.character(FeatureColumnNames)) {
-    FeatureColumnNames <- as.character(FeatureColumnNames[[1]])
-  }
-  if (!data.table::is.data.table(EvalPredsData)) {
-    EvalPredsData <- data.table::as.data.table(EvalPredsData)
-  }
-  if (!is.logical(MDP_Impute)) {
-    stop("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.logical(MDP_CharToFactor)) {
-    stop("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.logical(MDP_RemoveDates)) {
-    stop("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
-  }
-  if (!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) {
-    stop("MDP_MissFactor should be a character or factor value")
-  }
-  if (!is.numeric(MDP_MissNum)) {
-    stop("MDP_MissNum should be a numeric or integer value")
-  }
+  if(!is.character(FeatureColumnNames)) FeatureColumnNames <- as.character(FeatureColumnNames[[1L]])
+  if(!data.table::is.data.table(EvalPredsData)) EvalPredsData <- data.table::as.data.table(EvalPredsData)
+  if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
+  if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
   
   # LimeNumFeatures == 0 means use all features----
-  if(LimeNumFeatures == 0) {
-    NumFeatures <- length(FeatureColumnNames) 
-  } else {
-    NumFeatures <- LimeNumFeatures
-  }
+  if(LimeNumFeatures == 0) NumFeatures <- length(FeatureColumnNames) else NumFeatures <- LimeNumFeatures
   
   # IDcols conversion----
-  if (is.numeric(IDcols) | is.integer(IDcols)) {
-    IDcols <- names(data)[IDcols]
-  }
+  if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
   
   # Apply Transform Numeric Variables----
-  if (TransformNumeric) {
+  if(TransformNumeric) {
     if(!is.null(TransformationObject)) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
@@ -539,33 +501,23 @@ AutoLimeAid <- function(EvalPredsData = data,
   
   # Binary Identify column numbers for factor variables----
   if(ModelType != "h2o") {
-    CatFeatures <- sort(c(as.numeric(which(sapply(EvalPredsData, is.factor))),
-                          as.numeric(which(sapply(EvalPredsData, is.character)))))
+    CatFeatures <- sort(c(as.numeric(which(sapply(EvalPredsData, is.factor))), as.numeric(which(sapply(EvalPredsData, is.character)))))
     CatFeatures <- names(EvalPredsData)[CatFeatures]  
   }
   
   # Subset Columns Needed----
-  if (is.numeric(FeatureColumnNames) |
-      is.integer(FeatureColumnNames)) {
+  if(is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
     keep1 <- names(EvalPredsData)[c(FeatureColumnNames)]
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, keep1)
-    } else {
-      keep <- c(keep1)
-    }
+    if(!is.null(IDcols)) keep <- c(IDcols, keep1) else keep <- c(keep1)
     EvalPredsData <- EvalPredsData[, ..keep]
     if(!is.null(LimeTrainingData)) LimeTrainingData <- LimeTrainingData[, ..keep]
   } else {
     keep1 <- c(FeatureColumnNames)
-    if (!is.null(IDcols)) {
-      keep <- c(IDcols, FeatureColumnNames)
-    } else {
-      keep <- c(FeatureColumnNames)
-    }
+    if (!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
     EvalPredsData <- EvalPredsData[, ..keep]
     if(!is.null(LimeTrainingData)) LimeTrainingData <- LimeTrainingData[, ..keep]
   }
-  if (!is.null(IDcols)) {
+  if(!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(EvalPredsData)
     keep <- c(keep1)
     EvalPredsData <- EvalPredsData[, ..keep]
@@ -652,36 +604,30 @@ AutoLimeAid <- function(EvalPredsData = data,
   if(tolower(ModelType) == "catboost") {
     loadNamespace(package = "catboost")
     if(tolower(TargetType) == "classification") {
-      model_type.catboost.Model <<- function(x, ...) {
-        return("classification")
-      }
+      model_type.catboost.Model <<- function(x, ...) return("classification")
     } else if(tolower(TargetType) == "regression") {
-      model_type.catboost.Model <<- function(x, ...) {
-        return("regression")
-      }
+      model_type.catboost.Model <<- function(x, ...) return("regression")
     } else if(tolower(TargetType) == "multiclass") {
-      model_type.catboost.Model <<- function(x, ...) {
-        return("multilabel")
-      }
+      model_type.catboost.Model <<- function(x, ...) return("multilabel")
     }
     
     # Score model functions----
     predict <- function(x, ScoringPool, ...) {
-      if (tolower(...) == "regression") {
+      if(tolower(...) == "regression") {
         score <- data.table::as.data.table(
           catboost::catboost.predict(
             model = x,
             pool = ScoringPool,
             prediction_type = "RawFormulaVal",
             thread_count = -1))
-      } else if (tolower(...) == "classification") {
+      } else if(tolower(...) == "classification") {
         score <- data.table::as.data.table(
           catboost::catboost.predict(
             model = x,
             pool = ScoringPool,
             prediction_type = "Probability",
             thread_count = -1))
-      } else if (tolower(...) == "multiclass") {
+      } else if(tolower(...) == "multiclass") {
         score <- data.table::as.data.table(cbind(
           1 + catboost::catboost.predict(
             model = x,
@@ -700,7 +646,7 @@ AutoLimeAid <- function(EvalPredsData = data,
       predict_model.catboost.Model <<- function(x, newdata, CatFeaturesX = CatFeatures, ...) {
         
         # Initialize Catboost Data Conversion----
-        if (!is.null(CatFeaturesX)) {
+        if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
@@ -717,7 +663,7 @@ AutoLimeAid <- function(EvalPredsData = data,
       predict_model.catboost.Model <<- function(x, newdata, TargetType = "regression", CatFeaturesX = CatFeatures, ...) {
         
         # Initialize Catboost Data Conversion----
-        if (!is.null(CatFeaturesX)) {
+        if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
@@ -735,7 +681,7 @@ AutoLimeAid <- function(EvalPredsData = data,
       predict_model.catboost.Model <<- function(x, newdata, TargetType = "regression", CatFeaturesX = CatFeatures, ...) {
         
         # Initialize Catboost Data Conversion----
-        if (!is.null(CatFeaturesX)) {
+        if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
@@ -748,10 +694,10 @@ AutoLimeAid <- function(EvalPredsData = data,
         if(!is.null(MultiClassTargetLevels)) {
           TargetLevels <- MultiClassTargetLevels
         } else {
-          TargetLevels <- data.table::fread(paste0(ModelPath, "/", ModelID, "_TargetLevels.csv"))      
+          TargetLevels <- data.table::fread(file.path(normalizePath(ModelPath), paste0(ModelID, "_TargetLevels.csv")))
         }
         k <- 1
-        for (name in as.character(TargetLevels[[1]])) {
+        for (name in as.character(TargetLevels[[1L]])) {
           k <- k + 1
           data.table::setnames(score, paste0("V", k), name)
         }
@@ -772,7 +718,7 @@ AutoLimeAid <- function(EvalPredsData = data,
   if(is.null(LimeModel)) {
     
     # Check if LimeTrainingData exists
-    if(is.null(LimeTrainingData)) stop("Need to supply LimeTrainingData")
+    if(is.null(LimeTrainingData)) return("Need to supply LimeTrainingData")
     
     # Check if base ML model is supplied or exists in file
     if(is.null(MLModel) | tolower(ModelType) == "h2o") {
@@ -801,12 +747,10 @@ AutoLimeAid <- function(EvalPredsData = data,
         ModelID = MLModelID)
       
       # Shutdown H2O----
-      if(!BuildLimeModel) {
-        if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
-      }
+      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
       
       # Save LimeModel if Path Provided----
-      save(LimeAId, file = file.path(LimeModelPath,LimeModelID))
+      save(LimeAId, file = file.path(normalizePath(LimeModelPath), LimeModelID))
       
       # Explain Predictions----
       if(!is.null(EvalPredsData)) {
@@ -864,12 +808,10 @@ AutoLimeAid <- function(EvalPredsData = data,
         ModelID = MLModelID)
       
       # Shutdown H2O----
-      if(!BuildLimeModel) {
-        if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
-      }
+      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
       
       # Save LimeModel if Path Provided----
-      save(LimeAId, file = file.path(LimeModelPath,LimeModelID))
+      save(LimeAId, file = file.path(normalizePath(LimeModelPath), LimeModelID))
       
       # Explain Predictions----
       if(!is.null(EvalPredsData)) {
