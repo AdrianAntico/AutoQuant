@@ -77,17 +77,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                                AscRowRemove    = TRUE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Argument Checks----
-  
-  # timeAgg
-  if (!is.null(timeAgg)) {
-    if (!is.character(timeAgg)) {
-      warning("timeAgg needs to be a character scalar or vector")
-    }
-  }
-  # timeAgg
+  if(!is.null(timeAgg)) if (!is.character(timeAgg)) return("timeAgg needs to be a character scalar or vector")
   if(is.null(timeAgg)) {
     timeAgg <- "TimeUnitNULL"
   } else if(tolower(timeAgg) == "raw") {
@@ -95,54 +88,24 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   } else {
     timeAggss <- timeAgg
   }
-  if (is.null(lags) & WindowingLag == 1) {
-    lags <- 1
-  }
-  if (!(1 %in% lags) & WindowingLag == 1) {
-    lags <- c(1, lags)
-  }
-  if (any(lags < 0)) {
-    warning("lags need to be positive integers")
-  }
-  if (!is.null(groupingVars)) {
-    if (!is.character(groupingVars)) {
-      warning("groupingVars needs to be a character scalar or vector")
-    }
-  }
-  if (!is.character(targets)) {
-    warning("targets needs to be a character scalar or vector")
-  }
-  if (!is.character(sortDateName)) {
-    warning("sortDateName needs to be a character scalar or vector")
-  }
-  if (!is.null(timeDiffTarget)) {
-    if (!is.character(timeDiffTarget)) {
-      warning("timeDiffTarget needs to be a character scalar or vector")
-    }
-  }
-  if (!(WindowingLag %in% c(0, 1))) {
-    warning("WindowingLag needs to be either 0 or 1")
-  }
-  if (!(tolower(Type) %chin% c("lag", "lead"))) {
-    warning("Type needs to be either Lag or Lead")
-  }
-  if (!is.logical(Timer)) {
-    warning("Timer needs to be TRUE or FALSE")
-  }
-  if (!is.logical(SimpleImpute)) {
-    warning("SimpleImpute needs to be TRUE or FALSE")
-  }
-  if (!is.character(AscRowByGroup)) {
-    warning("AscRowByGroup needs to be a character scalar for the name of your RowID column")
-  }
+  if(is.null(lags) & WindowingLag == 1) lags <- 1
+  if(!(1 %in% lags) & WindowingLag == 1) lags <- c(1, lags)
+  if(any(lags < 0)) return("lags need to be positive integers")
+  if(!is.null(groupingVars)) if(!is.character(groupingVars)) return("groupingVars needs to be a character scalar or vector")
+  if(!is.character(targets)) return("targets needs to be a character scalar or vector")
+  if(!is.character(sortDateName)) return("sortDateName needs to be a character scalar or vector")
+  if(!is.null(timeDiffTarget)) if(!is.character(timeDiffTarget)) return("timeDiffTarget needs to be a character scalar or vector")
+  if(!(WindowingLag %in% c(0, 1))) return("WindowingLag needs to be either 0 or 1")
+  if(!(tolower(Type) %chin% c("lag", "lead"))) return("Type needs to be either Lag or Lead")
+  if(!is.logical(Timer)) return("Timer needs to be TRUE or FALSE")
+  if(!is.logical(SimpleImpute)) return("SimpleImpute needs to be TRUE or FALSE")
+  if(!is.character(AscRowByGroup)) return("AscRowByGroup needs to be a character scalar for the name of your RowID column")
   
   # Base columns from data----
   ColKeep <- names(data)
   
   # Convert to data.table if not already----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Max data to keep----
   MaxCols <- 0
@@ -152,13 +115,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   if(!is.null(Skewperiods)) MaxCols <- max(MaxCols,Skewperiods)
   if(!is.null(Kurtperiods)) MaxCols <- max(MaxCols,Kurtperiods)
   if(!is.null(Quantileperiods)) MaxCols <- max(MaxCols,Quantileperiods)
-  if(WindowingLag == 0) {
-    MaxCols <- MaxCols - 1L
-  }
+  if(WindowingLag == 0) MaxCols <- MaxCols - 1L
   
   # Set up counter for countdown----
   CounterIndicator <- 0
-  if (!is.null(timeDiffTarget)) {
+  if(!is.null(timeDiffTarget)) {
     tarNum <- length(targets) + 1
   } else {
     tarNum <- length(targets)
@@ -188,8 +149,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   }
   
   # Begin feature engineering----
-  if (!is.null(groupingVars)) {
-    for (i in seq_along(groupingVars)) {
+  if(!is.null(groupingVars)) {
+    for(i in seq_along(groupingVars)) {
       TargetS <- targets
       
       ##############################################################################################################################
@@ -201,7 +162,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       data1 <- data[get(groupingVars[i]) %in% data[get(AscRowByGroup) %in% c(RecordsKeep)][[eval(groupingVars[i])]]]
       
       # Sort data----
-      if (tolower(Type) == "lag") {
+      if(tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data1, colVar, order = 1)
       } else {
@@ -222,7 +183,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       data1 <- data1[unique(Rows)]
       
       # Sort data----
-      if (tolower(Type) == "lag") {
+      if(tolower(Type) == "lag") {
         colVar <- c(groupingVars[i], sortDateName[1])
         data.table::setorderv(data1, colVar, order = 1)
       } else {
@@ -235,19 +196,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       LagKeeps <- list()
       LagCols <- c()
       LagColss <- list()
-      for (t in TargetS) {
-        for (l in seq_len(MaxCols)) {
-          
-          # lag columns to create
+      for(t in TargetS) {
+        for(l in seq_len(MaxCols)) {
           LagCols <- c(LagCols, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
-          
-          # lag columns to keep
-          if(l %in% lags) {
-            LagKeep <- c(LagKeep,
-                         paste0(timeAggss, "_", groupingVars[i],
-                                "_LAG_",
-                                l, "_", t))
-          }
+          if(l %in% lags) LagKeep <- c(LagKeep, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
         }
         LagColss[[t]] <- LagCols
         LagKeeps[[t]] <- LagKeep
@@ -264,21 +216,19 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       data1[, paste0(unlist(LagColss)) := data.table::shift(.SD, n = seq_len(MaxCols), type = "lag"), by = c(groupingVars[i]), .SDcols = c(TargetS)]
       
       # Time lags----
-      if (!is.null(timeDiffTarget)) {
+      if(!is.null(timeDiffTarget)) {
         
         # Lag the dates first----
         timeDiffKeep <- c()
-        for (l in seq_len(MaxCols+1)) {
-          timeDiffKeep <- c(timeDiffKeep,paste0(timeAggss, "_", groupingVars[i],"TEMP",l))
-        }
+        for(l in seq_len(MaxCols+1)) timeDiffKeep <- c(timeDiffKeep,paste0(timeAggss, "_", groupingVars[i],"TEMP",l))
         
         # Build features----
         data1[, paste0(timeDiffKeep) := data.table::shift(get(sortDateName),n = 1:MaxCols,type = "lag"), by = c(groupingVars[i])]
         
         # Difference the lag dates----
-        if (WindowingLag != 0) {
-          for (l in seq_len(MaxCols+1)) {
-            if (l == 1) {
+        if(WindowingLag != 0) {
+          for(l in seq_len(MaxCols+1)) {
+            if(l == 1) {
               data1[, paste0(groupingVars[i],timeDiffTarget,l) := as.numeric(difftime(
                 get(sortDateName),
                 get(paste0(timeAggss, "_", groupingVars[i], "TEMP", l)),
@@ -306,8 +256,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             }
           }
         } else {
-          for (l in seq_len(MaxCols+1)) {
-            if (l == 1) {
+          for(l in seq_len(MaxCols+1)) {
+            if(l == 1) {
               data1[, paste0(timeAggss, "_", groupingVars[i],timeDiffTarget,l) := as.numeric(difftime(
                 get(sortDateName),
                 get(paste0(timeAggss, "_", groupingVars[i], "TEMP", l)),
@@ -339,23 +289,21 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         
         # Remove temporary lagged dates----
         dropcols <- c()
-        for (l in seq_len(MaxCols+1)) {
-          dropcols <- c(dropcols,paste0(timeAggss, "_", groupingVars[i], "TEMP", l))
-        }
+        for(l in seq_len(MaxCols+1)) dropcols <- c(dropcols,paste0(timeAggss, "_", groupingVars[i], "TEMP", l))
         
         # Store new target----
         timeTarget <- paste0(timeAggss, "_", groupingVars[i], timeDiffTarget,"_1")
       }
       
       # Define targets----
-      if (WindowingLag != 0) {
-        if (!is.null(timeDiffTarget)) {
+      if(WindowingLag != 0) {
+        if(!is.null(timeDiffTarget)) {
           TargetS <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", TargetS), timeTarget)
         } else {
           TargetS <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", TargetS))
         }
       } else {
-        if (!is.null(timeDiffTarget)) {
+        if(!is.null(timeDiffTarget)) {
           TargetS <- c(TargetS, timeTarget)
         } else {
           TargetS <- TargetS
@@ -374,10 +322,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         # Begin
         periods <- periods[periods > 1L]
         TargetN <- 0L
-        for (t in TargetS) {
+        for(t in TargetS) {
           
           TargetN <- TargetN + 1L
-          for (j in periods) {
+          for(j in periods) {
             
             # Check if target is for time between records or not----
             if(!is.null(timeDiffTarget)) {
@@ -389,11 +337,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                 PeriodKeep <-  c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Mean_",j,"_",t))
               }
             } else {
-              if(!is.numeric(data1[[eval(t)]])) {
-                data.table::set(data1, j = eval(t), value = as.numeric(data[[eval(t)]]))
-              }
-              
-              # Money shot----
+              if(!is.numeric(data1[[eval(t)]])) data.table::set(data1, j = eval(t), value = as.numeric(data[[eval(t)]]))
               data1[, eval(paste0(timeAggss, "_", groupingVars[i], "Mean_", j, "_", t)) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][1:j]]
               PeriodKeep <-  c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Mean_",j,"_",t))
             }
@@ -405,12 +349,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% "sd") & !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         TargetN <- 0L
-        for (t in TargetS) {
+        for(t in TargetS) {
           
           TargetN <- TargetN + 1L
-          for (j in tempperiods) {
-            
-            # Check if target is for time between records or not----
+          for(j in tempperiods) {
             if(!is.null(timeDiffTarget)) {
               if(grepl(pattern = eval(timeDiffTarget),x = t)) {
                 data1[, eval(paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t)) := fBasics::rowSds(.SD), .SDcols = TimeLagCols[1:j]]
@@ -434,9 +376,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for (t in TargetS) {
           
           TargetN <- TargetN + 1L
-          for (j in tempperiods) {
-            
-            # Check if target is for time between records or not----
+          for(j in tempperiods) {
             if(!is.null(timeDiffTarget)) {
               if(grepl(pattern = eval(timeDiffTarget),x = t)) {
                 data1[, eval(paste0(timeAggss, "_", groupingVars[i],"Skew_",j,"_",t)) := fBasics::rowSkewness(.SD), .SDcols = TimeLagCols[1:j]]
@@ -457,12 +397,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% "kurt") & !all(Kurtperiods %in% c(0,1,2,3))) {
         tempperiods <- Kurtperiods[Kurtperiods > 3L]
         TargetN <- 0L
-        for (t in TargetS) {
-          
+        for(t in TargetS) {
           TargetN <- TargetN + 1L
-          for (j in tempperiods) {
-            
-            # Check if target is for time between records or not----
+          for(j in tempperiods) {
             if(!is.null(timeDiffTarget)) {
               if(grepl(pattern = eval(timeDiffTarget),x = t)) {
                 data1[, eval(paste0(timeAggss, "_", groupingVars[i],"Kurt_",j,"_",t)) := fBasics::rowKurtosis(.SD), .SDcols = TimeLagCols[1:j]]
@@ -481,19 +418,13 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       
       # Quantile----
       if(!all(Quantileperiods %in% c(0,1,2,3,4))) {
-        
         tempperiods <- Quantileperiods[Quantileperiods > 4L]
         for(z in c(seq(5,95,5))) {
-          
           if(any(paste0("q",z) %chin% statsFUNs)) {
-            
             TargetN <- 0L
-            for (t in TargetS) {
-              
+            for(t in TargetS) {
               TargetN <- TargetN + 1L
-              for (j in tempperiods) {
-                
-                # Check if target is for time between records or not----
+              for(j in tempperiods) {
                 if(!is.null(timeDiffTarget)) {
                   if(grepl(pattern = eval(timeDiffTarget),x = t)) {
                     PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Q_",z,"_",j,"_",t))
@@ -509,9 +440,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             }
             
             # Drop cols for time between----
-            if(!is.null(timeDiffTarget)) {
-              data1[, paste0(dropcols) := NULL]
-            }
+            if(!is.null(timeDiffTarget)) data1[, paste0(dropcols) := NULL]
           }
         }
       }
@@ -537,21 +466,15 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Replace any inf values with NA----
-    for (col in seq_along(FinalData)) {
-      data.table::set(FinalData, j = col, value = replace(FinalData[[col]], is.infinite(FinalData[[col]]), NA))
-    }
+    for(col in seq_along(FinalData)) data.table::set(FinalData, j = col, value = replace(FinalData[[col]], is.infinite(FinalData[[col]]), NA))
     
     # Turn character columns into factors----
-    for (col in seq_along(FinalData)) {
-      if (is.character(FinalData[[col]])) {
-        data.table::set(FinalData, j = col, value = as.factor(FinalData[[col]]))
-      }
-    }
+    for(col in seq_along(FinalData)) if(is.character(FinalData[[col]])) data.table::set(FinalData, j = col, value = as.factor(FinalData[[col]]))
     
     # Impute missing values----
-    if (SimpleImpute) {
-      for (j in seq_along(FinalData)) {
-        if (is.factor(FinalData[[j]])) {
+    if(SimpleImpute) {
+      for(j in seq_along(FinalData)) {
+        if(is.factor(FinalData[[j]])) {
           data.table::set(FinalData, which(!(FinalData[[j]] %in% levels(FinalData[[j]]))), j, "0")
         } else {
           data.table::set(FinalData, which(is.na(FinalData[[j]])), j,-1)
@@ -560,18 +483,14 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Done----
-    if(AscRowRemove) {
-      return(FinalData[, eval(AscRowByGroup) := NULL])
-    } else {
-      return(FinalData)
-    }
+    if(AscRowRemove) return(FinalData[, eval(AscRowByGroup) := NULL]) else return(FinalData)
     
     # Non-grouping case----
   } else {
     TargetS <- targets
     
     # Sort data----
-    if (tolower(Type) == "lag") {
+    if(tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = 1)
     } else {
@@ -592,7 +511,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     data <- data[unique(Rows)]
     
     # Sort data----
-    if (tolower(Type) == "lag") {
+    if(tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
       data.table::setorderv(data, colVar, order = 1)
     } else {
@@ -605,16 +524,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     LagColss <- list()
     LagKeep <- c()
     LagKeeps <- list()
-    for (t in TargetS) {
-      for (l in seq_len(MaxCols)) {
-        
-        # Store column names to create MA's----
+    for(t in TargetS) {
+      for(l in seq_len(MaxCols)) {
         LagCols <- c(LagCols, paste0(timeAggss, "_", "LAG_", l, "_", t))
-        
-        # Store Column Names to keep in data later----
-        if(l %in% lags) {
-          LagKeep <- c(LagKeep, paste0(timeAggss, "_", "LAG_", l, "_", t))
-        }
+        if(l %in% lags) LagKeep <- c(LagKeep, paste0(timeAggss, "_", "LAG_", l, "_", t))
       }
       LagColss[[t]] <- LagCols
       LagCols <- c()
@@ -626,21 +539,15 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     data[, paste0(unlist(LagColss)) := data.table::shift(.SD, n = seq_len(MaxCols), type = "lag"), .SDcols = c(TargetS)]
     
     # Time lags----
-    if (!is.null(timeDiffTarget)) {
-      
-      # Lag the dates first----
+    if(!is.null(timeDiffTarget)) {
       timeDiffKeep <- c()
-      for (l in seq_len(MaxCols+1)) {
-        timeDiffKeep <- c(timeDiffKeep, paste0(timeAggss, "_", "TEMP",l))
-      }
+      for(l in seq_len(MaxCols+1)) timeDiffKeep <- c(timeDiffKeep, paste0(timeAggss, "_", "TEMP",l))
       
       # Build features----
       data[, paste0(timeDiffKeep) := data.table::shift(get(sortDateName), n = seq_len(MaxCols+1), type = "lag")]
-      
-      # Difference the lag dates----
-      if (WindowingLag != 0) {
-        for (l in seq_len(MaxCols+1)) {
-          if (l == 1) {
+      if(WindowingLag != 0) {
+        for(l in seq_len(MaxCols+1)) {
+          if(l == 1) {
             data[, paste0(timeAggss, "_", timeDiffTarget, "_", l) := as.numeric(difftime(
               get(sortDateName),
               get(paste0(timeAggss, "_", "TEMP", l)),
@@ -661,14 +568,12 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             TimeLagCols <- c(TimeLagCols,paste0(timeAggss, "_", timeDiffTarget, "_", l))
             
             # TimeLagKeep----
-            if(l %in% lags) {
-              TimeLagKeep <- c(TimeLagKeep, paste0(timeAggss, "_", timeDiffTarget, "_", l))
-            }
+            if(l %in% lags) TimeLagKeep <- c(TimeLagKeep, paste0(timeAggss, "_", timeDiffTarget, "_", l))
           }
         }
       } else {
-        for (l in seq_len(MaxCols+1)) {
-          if (l == 1) {
+        for(l in seq_len(MaxCols+1)) {
+          if(l == 1) {
             data[, paste0(timeDiffTarget, "_", l) := as.numeric(difftime(
               get(sortDateName),
               get(paste0(timeAggss, "_", "TEMP", l)),
@@ -701,16 +606,14 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Define targets----
-    if (WindowingLag != 0) {
-      if (!is.null(timeDiffTarget)) {
+    if(WindowingLag != 0) {
+      if(!is.null(timeDiffTarget)) {
         TargetS <- c(paste0(timeAggss, "_", "LAG_", WindowingLag, "_", TargetS), timeTarget)
       } else {
         TargetS <- c(paste0(timeAggss, "_", "LAG_", WindowingLag, "_", TargetS))
       }
     } else {
-      if (!is.null(timeDiffTarget)) {
-        TargetS <- c(TargetS, timeTarget)
-      }
+      if(!is.null(timeDiffTarget)) TargetS <- c(TargetS, timeTarget)
     }
     
     # Subset data----
@@ -726,12 +629,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       periods <- periods[periods > 1L]
       incre <- 0L
       TargetN <- 0L
-      for (t in TargetS) {
-        
+      for(t in TargetS) {
         TargetN <- TargetN + 1L
-        for (j in periods) {
-          
-          # Check if target is for time between records or not----
+        for(j in periods) {
           if(!is.null(timeDiffTarget)) {
             if(grepl(pattern = eval(timeDiffTarget),x = t)) {
               data[, eval(paste0(timeAggss, "_", "Mean_", j, "_", t)) := fBasics::rowAvgs(.SD), .SDcols = TimeLagCols[1:j]]
@@ -751,15 +651,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Standard Deviations----
     if(any(tolower(statsFUNs) %chin% "sd") & !all(SDperiods %in% c(0,1))) {
-      
       tempperiods <- SDperiods[SDperiods > 1L]
       TargetN <- 0L
-      for (t in TargetS) {
-        
+      for(t in TargetS) {
         TargetN <- TargetN + 1L
-        for (j in tempperiods) {
-          
-          # Check if target is for time between records or not----
+        for(j in tempperiods) {
           if(!is.null(timeDiffTarget)) {
             if(grepl(pattern = eval(timeDiffTarget),x = t)) {
               data[, eval(paste0(timeAggss, "_", "SD_", j, "_", t)) := fBasics::rowSds(.SD), .SDcols = TimeLagCols[1:j]]
@@ -783,17 +679,12 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Skewness----
     if(any(tolower(statsFUNs) %chin% "skew") & !all(Skewperiods %in% c(0,1,2))) {
-      
       tempperiods <- Skewperiods[Skewperiods > 2L]
       TargetN <- 0L
-      for (t in TargetS) {
-        
+      for(t in TargetS) {
         TargetN <- TargetN + 1L
-        for (j in tempperiods) {
-          
-          # Check if target is for time between records or not----
+        for(j in tempperiods) {
           if(!is.null(timeDiffTarget)) {
-            
             if(grepl(pattern = eval(timeDiffTarget),x = t)) {
               data[, eval(paste0(timeAggss, "_", "Skew_", j, "_", t)) := fBasics::rowSkewness(.SD), .SDcols = TimeLagCols[1:j]]
               PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Skew_", j, "_", t))
@@ -811,17 +702,12 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Kurtosis----
     if(any(tolower(statsFUNs) %chin% "kurt") & !all(Kurtperiods %in% c(0,1,2,3))) {
-      
       tempperiods <- Kurtperiods[Kurtperiods > 3L]
       TargetN <- 0L
-      for (t in TargetS) {
-        
+      for(t in TargetS) {
         TargetN <- TargetN + 1L
-        for (j in tempperiods) {
-          
-          # Check if target is for time between records or not----
+        for(j in tempperiods) {
           if(!is.null(timeDiffTarget)) {
-            
             if(grepl(pattern = eval(timeDiffTarget),x = t)) {
               data[, eval(paste0(timeAggss, "_", "Kurt_", j, "_", t)) := fBasics::rowKurtosis(.SD), .SDcols = TimeLagCols[1:j]]
               PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Kurt_", j, "_", t))
@@ -839,19 +725,13 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     
     # Quantiles----
     if(!all(Quantileperiods %in% c(0,1,2,3,4))) {
-      
       tempperiods <- Quantileperiods[Quantileperiods > 4L]
       for(z in c(seq(5,95,5))) {
-        
         if(any(paste0("q",z) %chin% tolower(statsFUNs))) {
-          
           TargetN <- 0L
           for (t in TargetS) {
-            
             TargetN <- TargetN + 1L
             for (j in tempperiods) {
-              
-              # Check if target is for time between records or not----
               if(!is.null(timeDiffTarget)) {
                 if(grepl(pattern = eval(timeDiffTarget),x = t)) {
                   data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := fBasics::rowKurtosis(.SD), .SDcols = TimeLagCols[1:j]]
@@ -871,11 +751,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Remove temporary lagged dates----
-    if(!is.null(timeDiffTarget)) {
-      for (l in seq_along(MaxCols+1)) {
-        data[, paste0(timeAggss, "_", "TEMP", l) := NULL]
-      }      
-    }
+    if(!is.null(timeDiffTarget)) for(l in seq_along(MaxCols+1)) data[, paste0(timeAggss, "_", "TEMP", l) := NULL]
     
     # Only keep requested columns----
     if(is.null(timeDiffTarget)) {
@@ -887,14 +763,12 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
     
     # Replace any inf values with NA----
-    for (col in seq_along(data)) {
-      data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
-    }
+    for(col in seq_along(data)) data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
     
     # Impute missing values----
-    if (SimpleImpute) {
-      for (j in seq_along(data)) {
-        if (is.factor(data[[j]])) {
+    if(SimpleImpute) {
+      for(j in seq_along(data)) {
+        if(is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
           data.table::set(data, which(is.na(data[[j]])), j,-1)

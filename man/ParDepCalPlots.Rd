@@ -8,7 +8,7 @@ ParDepCalPlots(data, PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"),
   IndepVar = c("Independent_Variable_Name"),
   GraphType = c("calibration"), PercentileBucket = 0.05,
-  FactLevels = 10, Function = function(x) base::mean(x, na.rm = TRUE))
+  FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
@@ -38,18 +38,17 @@ Correl <- 0.85
 data <- data.table::data.table(Target = runif(100))
 data[, x1 := qnorm(Target)]
 data[, x2 := runif(100)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Predict := (pnorm(Correl * x1 +
-                           sqrt(1-Correl^2) * qnorm(x2)))]
-p1 <- RemixAutoML::ParDepCalPlots(data,
-                                  PredictionColName = "Predict",
-                                  TargetColName = "Target",
-                                  IndepVar = "Independent_Variable1",
-                                  GraphType = "calibration",
-                                  PercentileBucket = 0.20,
-                                  FactLevels = 10,
-                                  Function = function(x) mean(x, na.rm = TRUE))
+data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Predict := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+p1 <- RemixAutoML::ParDepCalPlots(
+   data,
+   PredictionColName = "Predict",
+   TargetColName = "Target",
+   IndepVar = "Independent_Variable1",
+   GraphType = "calibration",
+   PercentileBucket = 0.20,
+   FactLevels = 10,
+   Function = function(x) mean(x, na.rm = TRUE))
 p1
 }
 \seealso{

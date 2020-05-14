@@ -13,14 +13,14 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
                                 GROUPVARIABLES = GroupingVariables) {
   
   # Start----
-  if (!is.null(GROUPVARIABLES)) {
+  if(!is.null(GROUPVARIABLES)) {
     MetricCollection <- DATA[, GroupVar, by = "GroupVar"][, GroupVar := NULL]
   } else {
     MetricCollection <- data.table::data.table(Metric = c("MAE","MSE","MAPE","R2"), MetricValue = rep(0,4))
   }
   
   # MAE----
-  if (!is.null(GROUPVARIABLES)) {
+  if(!is.null(GROUPVARIABLES)) {
     data.table::set(DATA, j = "Metric", value = abs(DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]))
     MetricCollection <- merge(MetricCollection, DATA[, .(MAE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
@@ -31,7 +31,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   }
   
   # MAPE----
-  if (!is.null(GROUPVARIABLES)) {
+  if(!is.null(GROUPVARIABLES)) {
     data.table::set(DATA, j = "Metric", value = abs((DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]) / (DATA[[eval(TARGETCOLUMNNAME)]] + 1)))
     MetricCollection <- merge(MetricCollection, DATA[, .(MAPE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
@@ -42,7 +42,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   }
   
   # MSE----
-  if (!is.null(GROUPVARIABLES)) {
+  if(!is.null(GROUPVARIABLES)) {
     data.table::set(DATA, j = "Metric", value = (DATA[[eval(TARGETCOLUMNNAME)]] - DATA[["Predictions"]]) ^ 2)
     MetricCollection <- merge(MetricCollection, DATA[, .(MSE_Metric = mean(Metric, na.rm = TRUE)), by = list(GroupVar)],
                               by = "GroupVar",
@@ -53,7 +53,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   }
   
   # R2----
-  tryCatch({if (!is.null(GROUPVARIABLES)) {
+  tryCatch({if(!is.null(GROUPVARIABLES)) {
     MetricCollection <- merge(MetricCollection, 
                               DATA[, .(R2_Metric = stats::cor(get(TARGETCOLUMNNAME), Predictions)), by = list(GroupVar)],
                               by = "GroupVar",
@@ -93,26 +93,10 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
   
   # Build columns to get info----
   data.table::set(data, j = "Correct", value = data.table::fifelse(data[[eval(Predicted)]] == data[[eval(Target)]], 1, 0))
-  data.table::set(
-    data, j = "Correct_1", 
-    value = data.table::fifelse(
-      data[[eval(Predicted)]] == data[[(Target)]] & 
-        data[[eval(Target)]] == 1, 1, 0))  
-  data.table::set(
-    data, j = "Correct_0",
-    value = data.table::fifelse(
-      data[[eval(Predicted)]] == data[[eval(Target)]] & 
-        data[[eval(Target)]] == 0, 1, 0))
-  data.table::set(
-    data, j = "Incorrect_1", 
-    value = data.table::fifelse(
-      data[[(Predicted)]] != data[[eval(Target)]] & 
-        data[[eval(Target)]] == 0, 1, 0))
-  data.table::set(
-    data, j = "Incorrect_0", 
-    value = data.table::fifelse(
-      data[[eval(Predicted)]] != data[[eval(Target)]] & 
-        data[[eval(Target)]] == 1, 1, 0))
+  data.table::set(data, j = "Correct_1", value = data.table::fifelse(data[[eval(Predicted)]] == data[[(Target)]] & data[[eval(Target)]] == 1, 1, 0))
+  data.table::set(data, j = "Correct_0", value = data.table::fifelse(data[[eval(Predicted)]] == data[[eval(Target)]] & data[[eval(Target)]] == 0, 1, 0))
+  data.table::set(data, j = "Incorrect_1", value = data.table::fifelse(data[[(Predicted)]] != data[[eval(Target)]] & data[[eval(Target)]] == 0, 1, 0))
+  data.table::set(data, j = "Incorrect_0", value = data.table::fifelse(data[[eval(Predicted)]] != data[[eval(Target)]] & data[[eval(Target)]] == 1, 1, 0))
   
   # Compute confusion matrix by group----
   if(!is.null(GroupVariables)) {
