@@ -131,8 +131,8 @@ AutoXGBoostMultiClass <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # MultiClass Check Arguments----
   if(any(Trees < 1L)) return("Trees must be greater than 1")
@@ -220,7 +220,7 @@ AutoXGBoostMultiClass <- function(data,
   TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(Target)]])))
   data.table::setnames(TargetLevels, "V1", "OriginalLevels")
   TargetLevels[, NewLevels := 0L:(.N - 1L)]
-  if(SaveModelObjects) data.table::fwrite(TargetLevels, file = file.path(model_path, paste0(ModelID, "_TargetLevels.csv")))
+  if(SaveModelObjects) data.table::fwrite(TargetLevels, file = file.path(normalizePath(model_path), paste0(ModelID, "_TargetLevels.csv")))
   
   # Number of levels----
   NumLevels <- TargetLevels[, .N]
@@ -465,7 +465,7 @@ AutoXGBoostMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(model_path, paste0(ModelID, "_ColNames.csv")))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # MultiClass Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -743,7 +743,7 @@ AutoXGBoostMultiClass <- function(data,
     if(getwd() == model_path) {
       xgboost::xgb.save(model = model, fname = ModelID)  
     } else {
-      save(model, file = file.path(model_path, ModelID))
+      save(model, file = file.path(normalizePath(model_path), ModelID))
     }    
   }
   
@@ -813,18 +813,18 @@ AutoXGBoostMultiClass <- function(data,
   VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
   if (SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {
-      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
     }
   }
   
   # MultiClass Save GridCollect and grid_metrics----
   if(SaveModelObjects & GridTune) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "ExperimentalGrid.csv")))
     }
   }
   
@@ -847,11 +847,13 @@ AutoXGBoostMultiClass <- function(data,
   if(!GridTune) GridMetrics <- NULL
   if(ReturnModelObjects) {
     if(Objective != "multi:softprob") {
-      return(list(Model=model, ValidationData=ValidationData, EvaluationMetrics=EvaluationMetrics, VariableImportance=VariableImportance, 
-                  VI_Plot=VI_Plot(VI_Data = VariableImportance), GridMetrics=ExperimentalGrid, ColNames=Names, TargetLevels=TargetLevels, FactorLevels=FactorLevelsList))
+      return(list(
+        Model=model, ValidationData=ValidationData, EvaluationMetrics=EvaluationMetrics, VariableImportance=VariableImportance, 
+        VI_Plot=VI_Plot(VI_Data = VariableImportance), GridMetrics=ExperimentalGrid, ColNames=Names, TargetLevels=TargetLevels, FactorLevels=FactorLevelsList))
     } else {
-      return(list(Model=model, ValidationData=ValidationData, VariableImportance=VariableImportance, VI_Plot=VI_Plot(VI_Data = VariableImportance), 
-                  GridMetrics=ExperimentalGrid, ColNames = Names, TargetLevels = TargetLevels, FactorLevels = FactorLevelsList))
+      return(list(
+        Model=model, ValidationData=ValidationData, VariableImportance=VariableImportance, VI_Plot=VI_Plot(VI_Data = VariableImportance), 
+        GridMetrics=ExperimentalGrid, ColNames = Names, TargetLevels = TargetLevels, FactorLevels = FactorLevelsList))
     }
   }
 }

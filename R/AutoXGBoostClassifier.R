@@ -125,8 +125,8 @@ AutoXGBoostClassifier <- function(data,
   data.table::setDTthreads(percent = 100L)
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
+  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Binary Check Arguments----
   if(any(Trees < 1L)) return("Trees must be greater than 1")
@@ -435,7 +435,7 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Save column names----
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(model_path, paste0(ModelID, "_ColNames.csv")))
+  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # Binary Subset Target Variables----
   TrainTarget <- tryCatch({dataTrain[, get(Target)]}, error = function(x) dataTrain[, eval(Target)])
@@ -681,7 +681,7 @@ AutoXGBoostClassifier <- function(data,
     if(getwd() == model_path) {
       xgboost::xgb.save(model = model, fname = ModelID)  
     } else {
-      save(model, file = file.path(model_path, ModelID))
+      save(model, file = file.path(normalizePath(model_path), ModelID))
     }    
   }
   
@@ -729,9 +729,9 @@ AutoXGBoostClassifier <- function(data,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_ROC_Plot.png")))
+      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
     } else {
-      ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_ROC_Plot.png")))
+      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
     }
   }
   
@@ -750,9 +750,9 @@ AutoXGBoostClassifier <- function(data,
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(metadata_path, paste0(ModelID, "_EvaluationPlot.png")))
+      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(file.path(model_path, paste0(ModelID, "_EvaluationPlot.png")))
+      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
   
@@ -771,9 +771,9 @@ AutoXGBoostClassifier <- function(data,
     VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
+        data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
       } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
+        data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
       }
     }
     
@@ -802,18 +802,18 @@ AutoXGBoostClassifier <- function(data,
   # Binary Save ParDepPlots to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      save(ParDepPlots, file = file.path(metadata_path, paste0(ModelID, "_ParDepPlots.R")))
+      save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
     } else {
-      save(ParDepPlots, file = file.path(model_path, paste0(ModelID, "_ParDepPlots.R")))
+      save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
     }
   }
   
   # Binary Save GridCollect and GridList----
   if(SaveModelObjects & GridTune) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "ExperimentalGrid.csv")))
     } else {
-      data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "ExperimentalGrid.csv")))
+      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "ExperimentalGrid.csv")))
     }
   }
   

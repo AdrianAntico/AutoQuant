@@ -119,28 +119,28 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   data.table::setDTthreads(percent = 100L)
   
   # Check args----
-  if (is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
-  if (!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  if (is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
+  if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if(is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if (!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
-  if (is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
+  if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   
   # Initialize collection and counter----
   ModelInformationList <- list()
-  if(!is.null(Paths)) if (length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  if(!is.null(MetaDataPaths)) if (length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
+  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
+  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
 
   # Data.table check----
-  if (!data.table::is.data.table(data)) data.table::setDT(data)
-  if (!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if (!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # IDcols to Names----
-  if (!is.null(IDcols)) if (is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  if(!is.null(IDcols)) if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
   
   # FeatureColumnNames----
-  if (is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
+  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
   
   # Add target bucket column----
   if(length(Buckets) == 1L) {
@@ -315,7 +315,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   IDcols <- c(IDcols, TargetColumnName)
   
   # Define args----
-  if (length(Buckets) == 1L) {
+  if(length(Buckets) == 1L) {
     TargetType <- "Classification"
     Objective <- NULL
   } else {
@@ -372,8 +372,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Partition data----
-    if (bucket == max(seq_len(length(Buckets) + 1L))) {
-      if (!is.null(TestData)) {
+    if(bucket == max(seq_len(length(Buckets) + 1L))) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -383,8 +383,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- NULL
       }
-    } else if (bucket == 1L) {
-      if (!is.null(TestData)) {
+    } else if(bucket == 1L) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
@@ -395,7 +395,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         testBucket <- NULL
       }
     } else {
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])] 
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -411,10 +411,10 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     IDcolsModified <- unique(c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName))
     
     # Load Winning Grid if it exists----
-    if (file.exists(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(Paths[bucket], "/grid", Buckets[bucket], ".csv"))
-    if (file.exists(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))) gridSaved <- data.table::fread(paste0(MetaDataPaths[bucket], "/grid", Buckets[bucket], ".csv"))
+    if(file.exists(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))) gridSaved <- data.table::fread(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))
+    if(file.exists(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))) gridSaved <- data.table::fread(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))
 
-    # AutoCatBoostRegression()----
+    # AutoXGBoostRegression()----
     if(trainBucket[, .N] != 0L) {
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         
@@ -436,8 +436,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           ReturnFactorLevels = TRUE,
           TransformNumericColumns = TransformNumericColumns,
           NThreads = NThreads,
-          model_path = Paths[1L],
-          metadata_path = MetaDataPaths[1L],
+          model_path = Paths,
+          metadata_path = MetaDataPaths,
           ModelID = ModelIDD,
           NumOfParDepPlots = NumOfParDepPlots,
           Verbose = 1L,
@@ -483,7 +483,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
             FactorLevelsList = FactorLevelsList,
             OneHot = FALSE,
             ModelObject = RegressionModel,
-            ModelPath = Paths[1L],
+            ModelPath = Paths,
             ModelID = ModelIDD,
             ReturnFeatures = TRUE,
             TransformNumeric = TRUE,
@@ -506,7 +506,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
             FactorLevelsList = FactorLevelsList,
             OneHot = FALSE,
             ModelObject = RegressionModel,
-            ModelPath = Paths[1L],
+            ModelPath = Paths,
             ModelID = ModelIDD,
             ReturnFeatures = TRUE,
             TransformNumeric = FALSE,
@@ -526,16 +526,15 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         rm(TestModel, RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
         } else {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
         }
-        
       } else {
         
         # Use single value for predictions in the case of zero variance----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
+        if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
           data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
@@ -585,8 +584,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
   if(counter > 2L) {
-    for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets)+1)) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + counter + Degenerate]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
@@ -594,7 +593,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     }  
   } else if(counter == 2L & length(Buckets) != 1L) {
     for (i in seq_len(length(Buckets)+1)) {
-      if (i == 1L) {
+      if(i == 1L) {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + 1L + counter]])
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
@@ -610,11 +609,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
   
   # Regression Save Validation Data to File----
-  if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      data.table::fwrite(TestData, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ValidationData.csv"))
+  if(SaveModelObjects) {
+    if(!is.null(MetaDataPaths)) {
+      data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ValidationData.csv")))
     } else {
-      data.table::fwrite(TestData, file = paste0(Paths[1L], "/", ModelID, "_ValidationData.csv"))      
+      data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID, "_ValidationData.csv")))
     }
   }
   
@@ -631,11 +630,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
-  if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationPlot.png"))
+  if(SaveModelObjects) {
+    if(!is.null(MetaDataPaths)) {
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
   
@@ -652,49 +651,31 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
   
   # Save plot to file----
-  if (SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
-      ggplot2::ggsave(paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))
+  if(SaveModelObjects) {
+    if(!is.null(MetaDataPaths)) {
+      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     } else {
-      ggplot2::ggsave(paste0(Paths[1L], "/", ModelID, "_EvaluationBoxPlot.png"))      
+      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     }
   }
   
   # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("Poisson", "MAE","MAPE", "MSE", "MSLE","KL", "CS", "R2"), MetricValue = rep(999999, 8L))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
   i <- 0L
   MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for (metric in c("poisson", "mae", "mape", "mse", "msle", "kl", "cs", "r2")) {
-    i <- as.integer(i + 1L)
+  for(metric in c("mae", "mape", "mse", "r2")) {
+    i <- i + 1L
     tryCatch({
-      if (tolower(metric) == "poisson") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := UpdatedPrediction - get(TargetColumnName) * log(UpdatedPrediction + 1L)]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "mae") {
+      if(tolower(metric) == "mae") {
         TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mape") {
+      } else if(tolower(metric) == "mape") {
         TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1L))]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "mse") {
+      } else if(tolower(metric) == "mse") {
         TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
         Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if (tolower(metric) == "msle") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := (log(get(TargetColumnName) + 1) - log(UpdatedPrediction + 1)) ^ 2L]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "kl") {
-        if (MinVal > 0L & min(TestData[["UpdatedPrediction"]], na.rm = TRUE) > 0L) {
-          TestData[, Metric := get(TargetColumnName) * log((get(TargetColumnName) + 1) / (UpdatedPrediction + 1))]
-          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-        }
-      } else if (tolower(metric) == "cs") {
-        TestData[, ':=' (Metric1 = get(TargetColumnName) * UpdatedPrediction, Metric2 = get(TargetColumnName) ^ 2L, Metric3 = UpdatedPrediction ^ 2L)]
-        Metric <- TestData[, sum(Metric1, na.rm = TRUE)] / (sqrt(TestData[, sum(Metric2, na.rm = TRUE)]) * sqrt(TestData[, sum(Metric3, na.rm = TRUE)]))
-      } else if (tolower(metric) == "r2") {
+      } else if(tolower(metric) == "r2") {
         TestData[, ':=' (Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L, Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2L)]
         Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
       }
@@ -708,11 +689,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(EvaluationMetrics, file = paste0(MetaDataPaths[1L], "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(EvaluationMetrics, file = paste0(Paths[1L], "/", ModelID, "_EvaluationMetrics.csv"))      
+      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
   
@@ -721,7 +702,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   j <- 0L
   ParDepBoxPlots <- list()
   k <- 0L
-  for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
@@ -751,11 +732,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   }
   
   # Regression Save ParDepBoxPlots to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      save(ParDepBoxPlots, file = paste0(MetaDataPaths[1L], "/", ModelID, "_ParDepBoxPlots.R"))
+      save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
     } else {
-      save(ParDepBoxPlots, file = paste0(Paths[1L], "/", ModelID, "_ParDepBoxPlots.R"))      
+      save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
 
