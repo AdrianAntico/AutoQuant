@@ -21,6 +21,7 @@ XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but
 # Install Dependencies----
 if(!("remotes" %in% rownames(installed.packages()))) install.packages("remotes"); print("remotes")
 if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
+if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
 if(!("caTools" %in% rownames(installed.packages()))) install.packages("caTools"); print("caTools")
 if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
 if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
