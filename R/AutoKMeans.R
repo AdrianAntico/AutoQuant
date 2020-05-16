@@ -97,7 +97,7 @@ AutoKMeans <- function(data,
   }
   
   # Build glmr model----
-  h2o::h2o.init(nthreads = nthreads, max_mem_size = MaxMem)
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = nthreads, enable_assertions = FALSE, log_dir = if(!is.null(PathFile)) PathFile else normalizePath("./"))
   datax <- h2o::as.h2o(data)
   if(GridTuneGLRM) {
     search_criteria  <- list(

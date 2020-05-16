@@ -197,7 +197,7 @@ AutoH2oMLClassifier <- function(data,
   
   # Binary Start Up H2O----
   if (!GridTune) {
-    h2o::h2o.init(max_mem_size = MaxMem, enable_assertions = FALSE)
+    h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }

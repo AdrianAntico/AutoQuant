@@ -108,7 +108,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
   
   # Initialize H2O----
-  if(tolower(ModelType) == "standard") h2o::h2o.init(enable_assertions = FALSE, nthreads = NThreads)
+  if(tolower(ModelType) == "standard") h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
