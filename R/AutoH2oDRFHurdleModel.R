@@ -98,9 +98,6 @@ AutoH2oDRFHurdleModel <- function(data,
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
-  # Initialize collection and counter----
-  ModelInformationList <- list()
-  
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
@@ -250,8 +247,8 @@ AutoH2oDRFHurdleModel <- function(data,
   
   # Change name for classification----
   if(length(Buckets) == 1L) {
-    data.table::setnames(TestData, "Predictions", "Predictions_C0")
-    data.table::setnames(TestData, "Predictions", "Predictions_C1")
+    data.table::setnames(TestData, "p0", "Predictions_C0")
+    data.table::setnames(TestData, "p1", "Predictions_C1")
   } else {
     data.table::setnames(TestData, names(TestData)[1:length(Buckets)], paste0("P_",gsub('[[:punct:] ]+',' ',names(TestData)[1L:length(Buckets)])))
     data.table::setnames(TestData, names(TestData)[length(Buckets)+1L], paste0("P+_",gsub('[[:punct:] ]+',' ',names(TestData)[length(Buckets)+1L])))
