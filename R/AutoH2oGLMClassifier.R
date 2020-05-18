@@ -141,7 +141,7 @@ AutoH2oGLMClassifier <- function(data,
   
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
@@ -186,7 +186,7 @@ AutoH2oGLMClassifier <- function(data,
   
   # Binary Start Up H2O----
   if(!GridTune) {
-    h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }

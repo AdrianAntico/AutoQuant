@@ -169,19 +169,13 @@ AutoH2oMLCARMA <- function(data,
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) XREGS <- data.table::as.data.table(XREGS)
   
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {
@@ -269,7 +263,7 @@ AutoH2oMLCARMA <- function(data,
   # Feature Engineering: Add Zero Padding for missing dates----
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(!is.null(ZeroPadSeries)) {
-    if (!is.null(GroupVariables)) {
+    if(!is.null(GroupVariables)) {
       if(tolower(ZeroPadSeries) == "all") {
         data <- TimeSeriesFill(
           data,
@@ -871,9 +865,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if (DataTruncate) {
-    data <- data[val:.N]
-  }
+  if(DataTruncate) data <- data[val:.N]
   
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -925,7 +917,7 @@ AutoH2oMLCARMA <- function(data,
   # Variables for CARMA function: Define data sets----
   if(DebugMode) print("Variables for CARMA function: Define data sets----")
   if(!TrainOnFull) {
-    if (NumSets == 2) {
+    if(NumSets == 2) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- NULL
@@ -969,7 +961,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
-  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  h2o::h2o.init(startH2O = FALSE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)

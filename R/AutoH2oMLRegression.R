@@ -226,7 +226,7 @@ AutoH2oMLRegression <- function(data,
   
   # Regression Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
@@ -279,7 +279,7 @@ AutoH2oMLRegression <- function(data,
   
   # Regression Start Up H2O----
   if(!GridTune) {
-    h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
@@ -317,7 +317,7 @@ AutoH2oMLRegression <- function(data,
   
   # Regression Grab Evaluation Metric----
   if(GridTune & !TrainOnFull) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
       if (tolower(eval_metric) == "mse") {
         GridModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = grid_model, newdata = datatest))
@@ -383,8 +383,8 @@ AutoH2oMLRegression <- function(data,
   }
   
   # Regression Pick Winner----
-  if (GridTune & !TrainOnFull) {
-    if (GridModelEval < BaseModelEval) {
+  if(GridTune & !TrainOnFull) {
+    if(GridModelEval < BaseModelEval) {
       FinalModel <- grid_model
     } else {
       FinalModel <- base_model

@@ -96,7 +96,7 @@ AutoH2oDRFHurdleModel <- function(data,
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   
   # Initialize H2O----
-  h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+  h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -266,6 +266,27 @@ AutoH2oDRFHurdleModel <- function(data,
     MDP_RemoveDates = TRUE,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
+  
+  # ScoringData = data
+  # ModelObject = ClassModel
+  # ModelType = "mojo"
+  # H2OShutdown = FALSE
+  # MaxMem = "28G"
+  # JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m'
+  # ModelPath = Paths
+  # ModelID = "ModelTest"
+  # ReturnFeatures = TRUE
+  # TransformNumeric = FALSE
+  # BackTransNumeric = FALSE
+  # TargetColumnName = NULL
+  # TransformationObject = NULL
+  # TransID = NULL
+  # TransPath = NULL
+  # MDP_Impute = TRUE
+  # MDP_CharToFactor = TRUE
+  # MDP_RemoveDates = TRUE
+  # MDP_MissFactor = "0"
+  # MDP_MissNum = -1
   
   # Change name for classification----
   if(length(Buckets) == 1L) {

@@ -970,7 +970,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
-  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  h2o::h2o.init(startH2O = FALSE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
@@ -1030,7 +1030,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Variable for interation counts: max number of rows in train data.table across all group----
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(Difference) {
       N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L
     } else {

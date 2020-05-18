@@ -167,25 +167,17 @@ AutoH2oGLMCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) XREGS <- data.table::as.data.table(XREGS)
   
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {
@@ -204,9 +196,7 @@ AutoH2oGLMCARMA <- function(data,
   }
   
   # Check for any Target Variable hiding in XREGS
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
-    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-  }
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
   
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
@@ -875,9 +865,7 @@ AutoH2oGLMCARMA <- function(data,
   
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if (DataTruncate) {
-    data <- data[val:.N]
-  }
+  if(DataTruncate) data <- data[val:.N]
   
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -921,9 +909,7 @@ AutoH2oGLMCARMA <- function(data,
     }
     
     # Remove ID Column----
-    if ("ID" %chin% names(data)) {
-      data.table::set(data, j = "ID", value = NULL)
-    }
+    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
   
   # Variables for CARMA function: Define data sets----
@@ -973,10 +959,10 @@ AutoH2oGLMCARMA <- function(data,
   
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
-  h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  h2o::h2o.init(startH2O = FALSE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
-  if(DebugMode) options(warn = 0)
+  if(DebugMode) options(warn = 0L)
   
   # Run AutoH2oGBMRegression and return list of ml objects
   TestModel <- AutoH2oGLMRegression(
