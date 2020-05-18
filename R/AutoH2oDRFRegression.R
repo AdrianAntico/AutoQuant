@@ -24,6 +24,7 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown For use in other functions.
+#' @param HurdleModel Leave it set to FALSE
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -51,7 +52,8 @@
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
 #'    IfSaveModel = "mojo",
-#'    H2OShutdown = TRUE)
+#'    H2OShutdown = TRUE,
+#'    HurdleModel = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
@@ -75,7 +77,8 @@ AutoH2oDRFRegression <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
-                                 H2OShutdown = TRUE) {
+                                 H2OShutdown = TRUE,
+                                 HurdleModel = FALSE) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -229,7 +232,7 @@ AutoH2oDRFRegression <- function(data,
   if(GridTune & !TrainOnFull) {
     
     # Regression Start Up H2O----
-    tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+    if(HurdleModel) tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
     
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
@@ -284,7 +287,7 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Start Up H2O----
   if(!GridTune) {
-    tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+    if(HurdleModel) tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
     datatrain    <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }

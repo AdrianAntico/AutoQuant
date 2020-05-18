@@ -24,7 +24,8 @@ AutoH2oDRFClassifier(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  H2OShutdown = FALSE
+  H2OShutdown = FALSE,
+  HurdleModel = FALSE
 )
 }
 \arguments{
@@ -67,6 +68,8 @@ AutoH2oDRFClassifier(
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
+
+\item{HurdleModel}{Leave it set to FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -99,7 +102,8 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = FALSE)
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
 }
 }
 \seealso{
