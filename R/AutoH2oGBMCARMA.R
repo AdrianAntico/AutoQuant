@@ -170,25 +170,17 @@ AutoH2oGBMCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if (!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) XREGS <- data.table::as.data.table(XREGS)
   
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {

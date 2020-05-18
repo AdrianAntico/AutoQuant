@@ -73,8 +73,8 @@ AutoH2oGLMMultiClass <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
+  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # MultiClass Check Arguments----
   if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) return("eval_metric not in AUC, logloss")
@@ -97,7 +97,7 @@ AutoH2oGLMMultiClass <- function(data,
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
   
   # MultiClass Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,

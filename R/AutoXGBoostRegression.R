@@ -131,8 +131,8 @@ AutoXGBoostRegression <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
+  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Regression Check Arguments----
   if(!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) return("eval_metric not in RMSE, MAE, MAPE, R2")

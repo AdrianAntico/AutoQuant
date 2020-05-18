@@ -174,8 +174,8 @@ AutoCatBoostRegression <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
+  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Regression Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
@@ -191,9 +191,9 @@ AutoCatBoostRegression <- function(data,
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   
   # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Transformation ColNames----
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]

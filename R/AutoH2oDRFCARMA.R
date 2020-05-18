@@ -164,25 +164,17 @@ AutoH2oDRFCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) XREGS <- data.table::as.data.table(XREGS)
   
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {
@@ -201,9 +193,7 @@ AutoH2oDRFCARMA <- function(data,
   }
   
   # Check for any Target Variable hiding in XREGS
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
-    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-  }
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
   
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
@@ -245,7 +235,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
@@ -270,7 +260,7 @@ AutoH2oDRFCARMA <- function(data,
   # Feature Engineering: Add Zero Padding for missing dates----
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(!is.null(ZeroPadSeries)) {
-    if (!is.null(GroupVariables)) {
+    if(!is.null(GroupVariables)) {
       if(tolower(ZeroPadSeries) == "all") {
         data <- TimeSeriesFill(
           data,
@@ -309,14 +299,14 @@ AutoH2oDRFCARMA <- function(data,
   
   # Variables for Program: Store unique values of GroupVar in GroupVarVector----
   if(DebugMode) print("Variables for Program: Store unique values of GroupVar in GroupVarVector----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[["GroupVar"]])))
     data.table::setnames(GroupVarVector, "V1", "GroupVar")
   }
   
   # Data Wrangling: Standardize column ordering----
   if(DebugMode) print("Data Wrangling: Standardize column ordering----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data.table::setcolorder(data, c("GroupVar", eval(DateColumnName), eval(TargetColumnName)))
   } else {
     data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
@@ -324,7 +314,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumnName)]])) {
       x <- data[1,get(DateColumnName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
@@ -339,16 +329,12 @@ AutoH2oDRFCARMA <- function(data,
     }
   } else {
     data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    if(!is.null(XREGS)) {
-      XREGS[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
+    if(!is.null(XREGS)) XREGS[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
   }
   
   # Data Wrangling: Ensure TargetColumnName is Numeric----
   if(DebugMode) print("Data Wrangling: Ensure TargetColumnName is Numeric----")
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
-  }
+  if(!is.numeric(data[[eval(TargetColumnName)]])) data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
   
   # Variables for Program: Store number of data partitions in NumSets----
   if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
@@ -360,7 +346,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
@@ -416,7 +402,7 @@ AutoH2oDRFCARMA <- function(data,
     }
     
     # If Fourier is turned off, concatenate grouping cols
-    if (!is.null(HierarchGroups)) {
+    if(!is.null(HierarchGroups)) {
       if(length(HierarchGroups) > 1) {
         if(any(HierarchGroups %chin% names(data))) {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
@@ -437,7 +423,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if (CalendarVariables) {
+  if(CalendarVariables) {
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
@@ -458,7 +444,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+  if(HolidayVariable & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
@@ -467,7 +453,7 @@ AutoH2oDRFCARMA <- function(data,
       GroupingVars = "GroupVar")
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -489,7 +475,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
-  if (TargetTransformation) {
+  if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
@@ -537,7 +523,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
-  if (!is.null(GroupVariables) & Difference == FALSE) {
+  if(!is.null(GroupVariables) & Difference == FALSE) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -838,7 +824,7 @@ AutoH2oDRFCARMA <- function(data,
   }
   
   # Create GroupVar----
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       if(!"GroupVar" %chin% names(data)) {
         data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -852,8 +838,8 @@ AutoH2oDRFCARMA <- function(data,
   
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if (TimeTrendVariable) {
-    if (!is.null(GroupVariables)) {
+  if(TimeTrendVariable) {
+    if(!is.null(GroupVariables)) {
       data[, TimeTrend := 1:.N, by = "GroupVar"]
     } else {
       data[, TimeTrend := 1:.N]
@@ -872,9 +858,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if (DataTruncate) {
-    data <- data[val:.N]
-  }
+  if(DataTruncate) data <- data[val:.N]
   
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -918,19 +902,17 @@ AutoH2oDRFCARMA <- function(data,
     }
     
     # Remove ID Column----
-    if ("ID" %chin% names(data)) {
-      data.table::set(data, j = "ID", value = NULL)
-    }
+    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
   
   # Variables for CARMA function: Define data sets----
   if(DebugMode) print("Variables for CARMA function: Define data sets----")
   if(!TrainOnFull) {
-    if (NumSets == 2) {
+    if(NumSets == 2) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- NULL
-    } else if (NumSets == 3) {
+    } else if(NumSets == 3) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- DataSets$TestData
@@ -1043,11 +1025,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Number of forecast periods----
   if(DebugMode) print("Number of forecast periods----")
-  if(TrainOnFull) {
-    ForecastRuns <- FC_Periods
-  } else {
-    ForecastRuns <- HoldOutPeriods
-  }
+  if(TrainOnFull) ForecastRuns <- FC_Periods else ForecastRuns <- HoldOutPeriods
   
   #----
   
@@ -1063,9 +1041,7 @@ AutoH2oDRFCARMA <- function(data,
     
     # Row counts----
     if(DebugMode) print("Row counts----")
-    if (i != 1) {
-      N <- as.integer(N + 1L)
-    }
+    if (i != 1) N <- N + 1L
     
     ###############
     # ML Scoring
@@ -1101,48 +1077,25 @@ AutoH2oDRFCARMA <- function(data,
       
       # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
-        if(eval(TargetColumnName) %chin% names(Step1SCore)) {
-          if(eval(TargetColumnName) %chin% names(Preds)) {
-            data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
-          }
-        }
-        if(eval(DateColumnName) %chin% names(Step1SCore)) {
-          data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
-        }
-        if(eval(DateColumnName) %chin% names(Preds)) {
-          data.table::set(Preds, j = eval(DateColumnName), value = NULL) 
-        }        
+        if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
+        if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
+        if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         if(!is.null(GroupVariables)) {
-          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])],
-                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
-          if(eval(DateColumnName) %chin% names(Preds)) {
-            data.table::set(Preds, j = "Date", value = NULL)
-          }
-          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)],
-                              Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],
-                              Preds)
-        }        
+          if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = "Date", value = NULL)
+          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
+        }
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
-        if(eval(DateColumnName) %chin% names(Preds)) {
-          data.table::set(Preds, j = "Date", value = NULL)
-        }
+        if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = "Date", value = NULL)
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
       
     } else {
-      if (!is.null(GroupVariables)) {
-        
-        # Correctly indicate the target variables being generated----
-        if(Difference) {
-          IDcols = "ModTarget"
-        } else {
-          IDcols <- eval(TargetColumnName)
-        }
-        
-        # GroupVar or Hierarchical----
+      if(!is.null(GroupVariables)) {
+        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
         if(!is.null(HierarchGroups)) {
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
@@ -1178,11 +1131,7 @@ AutoH2oDRFCARMA <- function(data,
         if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
         Preds <- cbind(UpdateData[ID == N], Preds)
-        if(Difference) {
-          Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
-        } else {
-          Preds[, eval(TargetColumnName) := Preds]
-        }
+        if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
         if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) {
@@ -1936,7 +1885,7 @@ AutoH2oDRFCARMA <- function(data,
   
   # Return data----
   if(DebugMode) print("Return data----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     keep <- c("GroupVar",eval(DateColumnName),eval(TargetColumnName),"Predictions")
     UpdateData <- UpdateData[, ..keep]
     if(length(GroupVariables) > 1) {
@@ -1949,16 +1898,12 @@ AutoH2oDRFCARMA <- function(data,
         list(
           Forecast = UpdateData,
           ModelInformation = TestModel,
-          TransformationDetail = TransformObject
-        )
-      )
+          TransformationDetail = TransformObject))
     } else {
       return(
         list(
           Forecast = UpdateData,
-          ModelInformation = TestModel
-        )
-      )
+          ModelInformation = TestModel))
     }
   } else {
     if(TargetTransformation) {
@@ -1973,9 +1918,7 @@ AutoH2oDRFCARMA <- function(data,
       return(
         list(
           Forecast = UpdateData,
-          ModelInformation = TestModel
-        )
-      )
+          ModelInformation = TestModel))
     }
   }
 }

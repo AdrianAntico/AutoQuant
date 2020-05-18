@@ -150,7 +150,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure Paths and metadata_path exists----
-  if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
+  if(!is.null(Paths)) if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
 
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)

@@ -125,8 +125,8 @@ AutoXGBoostClassifier <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
-  if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
+  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
   
   # Binary Check Arguments----
   if(any(Trees < 1L)) return("Trees must be greater than 1")

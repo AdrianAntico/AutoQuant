@@ -141,9 +141,7 @@ AutoXGBoostCARMA <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
-  Args <- CARMA_Define_Args(
-    TimeUnit = TimeUnit, TimeGroups = TimeGroups, HierarchGroups = HierarchGroups, GroupVariables = GroupVariables, 
-    FC_Periods = FC_Periods, PartitionType = PartitionType, TrainOnFull = TrainOnFull, SplitRatios = SplitRatios)
+  Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
   
   # Store purified args----
   IndepentVariablesPass <- Args$IndepentVariablesPass
@@ -157,35 +155,23 @@ AutoXGBoostCARMA <- function(data,
   HoldOutPeriods        <- Args$HoldOutPeriods
   
   # EvalMetric----
-  if(!tolower(EvalMetric) %chin% c("RMSE","MAE","MAPE","r2")) {
-    EvalMetric <- "RMSE"
-  }
+  if(!tolower(EvalMetric) %chin% c("RMSE","MAE","MAPE","r2")) EvalMetric <- "RMSE"
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
   
   # Convert XREGS to data.table
-  if(!is.null(XREGS)) {
-    if(!data.table::is.data.table(XREGS)) {
-      XREGS <- data.table::as.data.table(XREGS)
-    }
-  }
+  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) XREGS <- data.table::as.data.table(XREGS)
   
   # Check for any Target Variable hiding in XREGS
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
-    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-  }
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
   
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
@@ -227,32 +213,20 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
-      # if(!is.null(XREGS)) {
-      #   XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      #   XREGS[, eval(GroupVariables) := NULL]
-      # }
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      if(GroupVariables != "GroupVar") {
-        data[, eval(GroupVariables) := NULL]
-      }
-      if(!is.null(XREGS)) {
-        # XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        # if(GroupVariables != "GroupVar") {
-        #   XREGS[, eval(GroupVariables) := NULL]  
-        # }
-      }
+      if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
     }
   }
   
   # Feature Engineering: Add Zero Padding for missing dates----
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(!is.null(ZeroPadSeries)) {
-    if (!is.null(GroupVariables)) {
+    if(!is.null(GroupVariables)) {
       if(tolower(ZeroPadSeries) == "all") {
         data <- TimeSeriesFill(
           data,
@@ -291,14 +265,14 @@ AutoXGBoostCARMA <- function(data,
   
   # Variables for Program: Store unique values of GroupVar in GroupVarVector----
   if(DebugMode) print("Variables for Program: Store unique values of GroupVar in GroupVarVector----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[["GroupVar"]])))
     data.table::setnames(GroupVarVector, "V1", "GroupVar")
   }
   
   # Data Wrangling: Standardize column ordering----
   if(DebugMode) print("Data Wrangling: Standardize column ordering----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data.table::setcolorder(data, c("GroupVar", eval(DateColumnName), eval(TargetColumnName)))
   } else {
     data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
@@ -306,7 +280,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumnName)]])) {
       x <- data[1,get(DateColumnName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
@@ -342,7 +316,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
@@ -393,7 +367,7 @@ AutoXGBoostCARMA <- function(data,
     }
     
     # If Fourier is turned off, concatenate grouping cols
-    if (!is.null(HierarchGroups)) {
+    if(!is.null(HierarchGroups)) {
       if(length(HierarchGroups) > 1) {
         if(any(HierarchGroups %chin% names(data))) {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
@@ -414,7 +388,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if (CalendarVariables) {
+  if(CalendarVariables) {
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
@@ -435,7 +409,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+  if(HolidayVariable & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
@@ -444,7 +418,7 @@ AutoXGBoostCARMA <- function(data,
       GroupingVars = "GroupVar")
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -457,7 +431,7 @@ AutoXGBoostCARMA <- function(data,
       Holidays = NULL)
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -466,15 +440,14 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
-  if (TargetTransformation) {
+  if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
       Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
-      SaveOutput = FALSE
-    )
+      SaveOutput = FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   }
@@ -510,7 +483,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
-  if (!is.null(GroupVariables) & Difference == FALSE) {
+  if(!is.null(GroupVariables) & !Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -706,7 +679,7 @@ AutoXGBoostCARMA <- function(data,
   }
   
   # Create GroupVar
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     } else {
@@ -716,7 +689,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if (TimeTrendVariable) {
+  if(TimeTrendVariable) {
     if (!is.null(GroupVariables)) {
       data[, TimeTrend := 1:.N, by = "GroupVar"]
     } else {
@@ -736,9 +709,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if (DataTruncate) {
-    data <- data[val:.N]
-  }
+  if(DataTruncate) data <- data[val:.N]
   
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -782,19 +753,17 @@ AutoXGBoostCARMA <- function(data,
     }
     
     # Remove ID Column----
-    if ("ID" %chin% names(data)) {
-      data.table::set(data, j = "ID", value = NULL)
-    }
+    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
   
   # Variables for CARMA function: Define data sets----
   if(DebugMode) print("Variables for CARMA function: Define data sets----")
   if(!TrainOnFull) {
-    if (NumSets == 2) {
+    if(NumSets == 2L) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- NULL
-    } else if (NumSets == 3) {
+    } else if (NumSets == 3L) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- DataSets$TestData
@@ -926,7 +895,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Variable for interation counts: max number of rows in train data.table across all group----
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(Difference) {
       N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L
     } else {
@@ -960,12 +929,10 @@ AutoXGBoostCARMA <- function(data,
   #----
   
   # Begin loop for generating forecasts----
-  for (i in seq_len(ForecastRuns+1L)) {
+  for(i in seq_len(ForecastRuns+1L)) {
     
     # Row counts----
-    if (i != 1) {
-      N <- as.integer(N + 1L)
-    }
+    if(i != 1) N <- N + 1L
     
     ###############
     # ML Scoring
@@ -973,16 +940,12 @@ AutoXGBoostCARMA <- function(data,
     
     # Machine Learning: Generate predictions----
     if(DebugMode) print("# Machine Learning: Generate predictions----")
-    if (i == 1L) {
+    if(i == 1L) {
       if(!is.null(GroupVariables)) {
         
         # i = 1 Define IDcols----
         if(DebugMode) print("# i = 1 Define IDcols----")
-        if(Difference) {
-          IDcols = "ModTarget"
-        } else {
-          IDcols <- eval(TargetColumnName)
-        }
+        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
         
         # Score model----
         Preds <- AutoXGBoostScoring(
@@ -1013,11 +976,7 @@ AutoXGBoostCARMA <- function(data,
         
         # i = 1 Define IDcols----
         if(DebugMode) print("# i = 1 Define IDcols----")
-        if(Difference) {
-          IDcols = "ModTarget"
-        } else {
-          IDcols <- eval(TargetColumnName)
-        }
+        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = Step1SCore,
@@ -1044,17 +1003,9 @@ AutoXGBoostCARMA <- function(data,
       
       # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
-        if(eval(TargetColumnName) %chin% names(Step1SCore)) {
-          if(eval(TargetColumnName) %chin% names(Preds)) {
-            data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
-          }
-        }
-        if(eval(DateColumnName) %chin% names(Step1SCore)) {
-          data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
-        }
-        if(eval(DateColumnName) %chin% names(Preds)) {
-          data.table::set(Preds, j = eval(DateColumnName), value = NULL) 
-        }        
+        if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
+        if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
+        if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         UpdateData <- cbind(FutureDateData[2L:(N+1L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
@@ -1066,11 +1017,7 @@ AutoXGBoostCARMA <- function(data,
       if (!is.null(GroupVariables)) {
         
         # Correctly indicate the target variables being generated----
-        if(Difference) {
-          IDcols = "ModTarget"
-        } else {
-          IDcols <- eval(TargetColumnName)
-        }
+        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
         
         # GroupVar or Hierarchical----
         if(!is.null(HierarchGroups)) {
@@ -1114,13 +1061,9 @@ AutoXGBoostCARMA <- function(data,
         }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) {
-          UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-        }
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) {
-          
-          # GroupVar or Hierarchical----
           if(!is.null(HierarchGroups)) {
             UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = c(eval(GroupVariables))]
           } else {
@@ -1183,31 +1126,31 @@ AutoXGBoostCARMA <- function(data,
       d <- max(UpdateData[[eval(DateColumnName)]])
       if (tolower(TimeUnit) %chin% c("hour","hours")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
-      } else if (tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
-      } else if (tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(5))
-      } else if (tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(10))
-      } else if (tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(15))
-      } else if (tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(30))
-      } else if (tolower(TimeUnit) %chin% c("day","days")) {
+      } else if(tolower(TimeUnit) %chin% c("day","days")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::days(1))
-      } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
+      } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::weeks(1))
-      } else if (tolower(TimeUnit) %chin% c("month","months")) {
+      } else if(tolower(TimeUnit) %chin% c("month","months")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
-      } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
+      } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
-      } else if (tolower(TimeUnit) %chin% c("years","year")) {
+      } else if(tolower(TimeUnit) %chin% c("years","year")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
       }
       
       # Merge groups vars----
       if(DebugMode) print("Merge groups vars----")
-      if (!is.null(GroupVariables)) {
+      if(!is.null(GroupVariables)) {
         CalendarFeatures <- cbind(unique(GroupVarVector), CalendarFeatures)
         if(!"GroupVar" %chin% GroupVariables) {
           if("GroupVar" %chin% names(CalendarFeatures)) data.table::set(CalendarFeatures, j = "GroupVar", value = NULL)
@@ -1266,7 +1209,7 @@ AutoXGBoostCARMA <- function(data,
       
       # Update calendar variables----
       if(DebugMode) print("Update calendar variables----")
-      if (CalendarVariables) {
+      if(CalendarVariables) {
         CalendarFeatures <- CreateCalendarVariables(
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
@@ -1287,27 +1230,23 @@ AutoXGBoostCARMA <- function(data,
       
       # Update Time Trend feature----
       if(DebugMode) print("Update Time Trend feature----")
-      if (TimeTrendVariable) {
-        CalendarFeatures[, TimeTrend := N + 1L]
-      }
+      if(TimeTrendVariable) CalendarFeatures[, TimeTrend := N + 1L]
       
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
         temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       } else {
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) {
-        UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-      }
+      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
       
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+      if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
         if(IndepentVariablesPass %chin% names(UpdateData)) {
           UpdateData <- CreateHolidayVariables(
             UpdateData,
@@ -1336,9 +1275,7 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(GroupVariables) & Difference == TRUE) {
         
         # Create data for GDL----
-        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         
@@ -1690,15 +1627,11 @@ AutoXGBoostCARMA <- function(data,
   
   # Remove duplicate date names----
   if(DebugMode) print("Remove duplicate date names----")
-  if(sum(names(UpdateData) %chin% eval(DateColumnName)) > 1) {
-    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(DateColumnName))[2], value = NULL)      
-  }
+  if(sum(names(UpdateData) %chin% eval(DateColumnName)) > 1) data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(DateColumnName))[2], value = NULL)      
   
   # Remove duplicate target names----
   if(DebugMode) print("Remove duplicate target names----")
-  if(sum(names(UpdateData) %chin% eval(TargetColumnName)) > 1) {
-    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(TargetColumnName))[2], value = NULL)      
-  }
+  if(sum(names(UpdateData) %chin% eval(TargetColumnName)) > 1) data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(TargetColumnName))[2], value = NULL)      
   
   # Reverse Difference----
   if(DebugMode) print("Reverse Difference----")
@@ -1848,7 +1781,7 @@ AutoXGBoostCARMA <- function(data,
   }
   
   # Return data----
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if("GroupVar" %chin% names(UpdateData)) {
       keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
       tryCatch({data.table::set(UpdateData, j = setdiff(keep,names(UpdateData)), value = NULL)}, error = function(x) NULL)

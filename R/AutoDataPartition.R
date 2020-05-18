@@ -34,7 +34,7 @@ AutoDataPartition <- function(data,
                               TimeColumnName = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Arguments----
   if(NumDataSets < 0) return("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
@@ -56,7 +56,7 @@ AutoDataPartition <- function(data,
   }
   
   # Ensure data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Stratify Numeric Target----
   if(PartitionType == "random") {
