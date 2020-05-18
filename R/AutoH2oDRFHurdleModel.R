@@ -96,7 +96,7 @@ AutoH2oDRFHurdleModel <- function(data,
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   
   # Initialize H2O----
-  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+  h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -192,6 +192,28 @@ AutoH2oDRFHurdleModel <- function(data,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
       H2OShutdown = FALSE)
+    
+    # data = data
+    # ValidationData = ValidationData
+    # TestData = TestData
+    # TargetColumnName = "Target_Buckets"
+    # FeatureColNames = FeatureNames
+    # eval_metric = "auc"
+    # Trees = Trees
+    # GridTune = GridTune
+    # MaxMem = MaxMem
+    # NThreads = NThreads
+    # MaxModelsInGrid = MaxModelsInGrid
+    # model_path = Paths
+    # metadata_path = MetaDataPaths
+    # ModelID = ModelID
+    # NumOfParDepPlots = NumOfParDepPlots
+    # ReturnModelObjects = TRUE
+    # SaveModelObjects = SaveModelObjects
+    # IfSaveModel = IfSaveModel
+    # H2OShutdown = FALSE
+    
+    
   } else {
     ClassifierModel <- AutoH2oDRFMultiClass(
       data = data,
