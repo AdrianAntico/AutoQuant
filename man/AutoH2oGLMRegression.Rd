@@ -26,7 +26,8 @@ AutoH2oGLMRegression(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  H2OShutdown = TRUE
+  H2OShutdown = TRUE,
+  HurdleModel = FALSE
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ AutoH2oGLMRegression(
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{For use in other functions.}
+
+\item{HurdleModel}{Set to FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -108,7 +111,8 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = TRUE)
+   H2OShutdown = TRUE,
+   HurdleModel = FALSE)
 }
 }
 \seealso{

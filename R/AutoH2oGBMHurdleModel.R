@@ -177,7 +177,8 @@ AutoH2oGBMHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE)
+      H2OShutdown = FALSE,
+      HurdleModel = TRUE)
   } else {
     ClassifierModel <- AutoH2oGBMMultiClass(
       data = data,
@@ -197,7 +198,8 @@ AutoH2oGBMHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE)
+      H2OShutdown = FALSE,
+      HurdleModel = TRUE)
   }
   
   # Store metadata----
@@ -321,7 +323,8 @@ AutoH2oGBMHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            H2OShutdown = FALSE)
+            H2OShutdown = FALSE,
+            HurdleModel = TRUE)
         } else {
           TestModel <- AutoH2oGBMRegression(
             data = trainBucket,
@@ -344,7 +347,8 @@ AutoH2oGBMHurdleModel <- function(data,
             ReturnModelObjects = TRUE,
             SaveModelObjects = SaveModelObjects,
             IfSaveModel = IfSaveModel,
-            H2OShutdown = FALSE)
+            H2OShutdown = FALSE,
+            HurdleModel = TRUE)
         }
         
         # Store Model----

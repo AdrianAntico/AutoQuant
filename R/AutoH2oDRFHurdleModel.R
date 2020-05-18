@@ -191,7 +191,8 @@ AutoH2oDRFHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE)
+      H2OShutdown = FALSE,
+      HurdleModel = TRUE)
     
     # data = data
     # ValidationData = ValidationData
@@ -233,7 +234,8 @@ AutoH2oDRFHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE)
+      H2OShutdown = FALSE,
+      HurdleModel = TRUE)
   }
   
   # Store metadata----
@@ -381,7 +383,8 @@ AutoH2oDRFHurdleModel <- function(data,
           ReturnModelObjects = TRUE,
           SaveModelObjects = SaveModelObjects,
           IfSaveModel = IfSaveModel,
-          H2OShutdown = FALSE)
+          H2OShutdown = FALSE,
+          HurdleModel = TRUE)
         
         # Store Model----
         RegressionModel <- RegressionModel$Model

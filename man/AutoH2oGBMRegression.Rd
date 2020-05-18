@@ -28,7 +28,8 @@ AutoH2oGBMRegression(
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  HurdleModel = FALSE
 )
 }
 \arguments{
@@ -79,6 +80,8 @@ AutoH2oGBMRegression(
 \item{H2OShutdown}{Set to FALSE to keep H2O running after you build your model}
 
 \item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
+
+\item{HurdleModel}{Set to FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
@@ -116,7 +119,8 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = TRUE,
-   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+   HurdleModel = FALSE)
 }
 }
 \seealso{

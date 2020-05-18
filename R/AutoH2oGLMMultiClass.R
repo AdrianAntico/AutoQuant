@@ -22,6 +22,7 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to TRUE to have H2O shutdown after running this function
+#' @param HurdleModel Set to FALSE
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -46,7 +47,8 @@
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
 #'    IfSaveModel = "mojo",
-#'    H2OShutdown = FALSE)
+#'    H2OShutdown = FALSE,
+#'    HurdleModel = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -67,7 +69,8 @@ AutoH2oGLMMultiClass <- function(data,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
-                                 H2OShutdown = FALSE) {
+                                 H2OShutdown = FALSE,
+                                 HurdleModel = FALSE) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -136,7 +139,7 @@ AutoH2oGLMMultiClass <- function(data,
   
   # MultiClass Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+    if(HurdleModel) tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
@@ -179,7 +182,7 @@ AutoH2oGLMMultiClass <- function(data,
   
   # MultiClass Start Up H2O----
   if(!GridTune) {
-    tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+    if(HurdleModel) tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
     datatrain    <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }

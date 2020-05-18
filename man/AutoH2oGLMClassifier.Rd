@@ -25,7 +25,8 @@ AutoH2oGLMClassifier(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  H2OShutdown = FALSE
+  H2OShutdown = FALSE,
+  HurdleModel = FALSE
 )
 }
 \arguments{
@@ -71,6 +72,8 @@ AutoH2oGLMClassifier(
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
 
+\item{HurdleModel}{Set to FALSE}
+
 \item{Trees}{The maximum number of trees you want in your models}
 }
 \value{
@@ -106,7 +109,8 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = FALSE)
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
 }
 }
 \seealso{

@@ -23,7 +23,8 @@ AutoH2oGBMMultiClass(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  H2OShutdown = FALSE
+  H2OShutdown = FALSE,
+  HurdleModel = FALSE
 )
 }
 \arguments{
@@ -64,6 +65,8 @@ AutoH2oGBMMultiClass(
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O when done with function}
+
+\item{HurdleModel}{Set to FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -96,7 +99,8 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = FALSE)
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
 }
 }
 \seealso{
