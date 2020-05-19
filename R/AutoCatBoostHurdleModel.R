@@ -360,31 +360,31 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
   
-  TargetType = TargetType
-  RemoveModel = TRUE
-  ScoringData = TestData
-  FeatureColumnNames = FeatureNames
-  IDcols = IDcols
-  ModelObject = ClassModel
-  ModelPath = Paths
-  ModelID = ModelID
-  ReturnFeatures = TRUE
-  MultiClassTargetLevels = TargetLevels
-  TransformNumeric = FALSE
-  BackTransNumeric = FALSE
-  TargetColumnName = NULL
-  TransformationObject = NULL
-  TransID = NULL
-  TransPath = Paths
-  MDP_Impute = FALSE
-  MDP_CharToFactor = TRUE
-  MDP_RemoveDates = FALSE
-  MDP_MissFactor = "0"
-  MDP_MissNum = -1
+  # TargetType = TargetType
+  # RemoveModel = TRUE
+  # ScoringData = TestData
+  # FeatureColumnNames = FeatureNames
+  # IDcols = IDcols
+  # ModelObject = ClassModel
+  # ModelPath = Paths
+  # ModelID = ModelID
+  # ReturnFeatures = TRUE
+  # MultiClassTargetLevels = TargetLevels
+  # TransformNumeric = FALSE
+  # BackTransNumeric = FALSE
+  # TargetColumnName = NULL
+  # TransformationObject = NULL
+  # TransID = NULL
+  # TransPath = Paths
+  # MDP_Impute = FALSE
+  # MDP_CharToFactor = TRUE
+  # MDP_RemoveDates = FALSE
+  # MDP_MissFactor = "0"
+  # MDP_MissNum = -1
   
   # Change name for classification----
   if(TargetType == "Classification") {
-    data.table::setnames(TestData, "Predictions", "Predictions_C1")
+    data.table::setnames(TestData, "p1", "Predictions_C1")
     TestData[, Predictions_C0 := 1 - Predictions_C1]
     data.table::setcolorder(TestData, c(ncol(TestData),1L, 2L:(ncol(TestData)-1L)))
   }
