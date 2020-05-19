@@ -128,7 +128,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Store args----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
-  ArgsList[["FeatureColNames"]] <- Buckets
+  ArgsList[["FeatureColNames"]] <- FeatureColNames
   ArgsList[["PrimaryDateColumn"]] <- PrimaryDateColumn
   ArgsList[["IDcols"]] <- IDcols
   ArgsList[["TransformNumericColumns"]] <- TransformNumericColumns
@@ -327,7 +327,14 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets) > 1L) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
+  if(length(Buckets) > 1L) {
+    TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
+    ArgsList[["TargetLevels"]] <- TargetLevels
+  } else {
+    ArgsList[["TargetLevels"]] <- NULL
+  }
+    
+    
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
   
   # Add Target to IDcols----
