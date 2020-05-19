@@ -296,7 +296,7 @@ AutoH2oDRFRegression <- function(data,
     } else {
       h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     }
-    datatrain    <- h2o::as.h2o(dataTrain)
+    datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
   
@@ -658,9 +658,9 @@ AutoH2oDRFRegression <- function(data,
     }    
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Percentage), y = Percentage, fill = Percentage)) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
       ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +

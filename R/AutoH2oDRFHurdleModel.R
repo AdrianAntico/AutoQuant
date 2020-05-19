@@ -386,6 +386,28 @@ AutoH2oDRFHurdleModel <- function(data,
           H2OShutdown = FALSE,
           HurdleModel = TRUE)
         
+        # data = trainBucket
+        # ValidationData = validBucket
+        # TestData = testBucket
+        # TargetColumnName = TargetColumnName
+        # FeatureColNames = FeatureNames
+        # TransformNumericColumns = TransformNumericColumns
+        # eval_metric = "RMSE"
+        # Trees = Trees
+        # GridTune = GridTune
+        # MaxMem = MaxMem
+        # NThreads = NThreads
+        # MaxModelsInGrid = MaxModelsInGrid
+        # model_path = Paths
+        # metadata_path = MetaDataPaths
+        # ModelID = ModelIDD
+        # NumOfParDepPlots = NumOfParDepPlots
+        # ReturnModelObjects = TRUE
+        # SaveModelObjects = SaveModelObjects
+        # IfSaveModel = IfSaveModel
+        # H2OShutdown = FALSE
+        # HurdleModel = TRUE
+        
         # Store Model----
         RegressionModel <- RegressionModel$Model
         if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults

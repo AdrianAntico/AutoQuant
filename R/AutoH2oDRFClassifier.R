@@ -537,7 +537,7 @@ AutoH2oDRFClassifier <- function(data,
     }
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Percentage), y = Percentage, fill = Percentage)) +
       ggplot2::geom_bar(stat = "identity") +
