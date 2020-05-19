@@ -327,7 +327,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
+  if(length(Buckets) > 1L) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
   
   # Add Target to IDcols----
@@ -338,6 +338,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
    
   # Model Scoring---- 
   TestData <- AutoCatBoostScoring(
+    RemoveModel = TRUE,
     TargetType = TargetType,
     ScoringData = TestData,
     FeatureColumnNames = FeatureNames,
@@ -358,6 +359,28 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     MDP_RemoveDates = FALSE, 
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
+  
+  TargetType = TargetType
+  RemoveModel = TRUE
+  ScoringData = TestData
+  FeatureColumnNames = FeatureNames
+  IDcols = IDcols
+  ModelObject = ClassModel
+  ModelPath = Paths
+  ModelID = ModelID
+  ReturnFeatures = TRUE
+  MultiClassTargetLevels = TargetLevels
+  TransformNumeric = FALSE
+  BackTransNumeric = FALSE
+  TargetColumnName = NULL
+  TransformationObject = NULL
+  TransID = NULL
+  TransPath = Paths
+  MDP_Impute = FALSE
+  MDP_CharToFactor = TRUE
+  MDP_RemoveDates = FALSE
+  MDP_MissFactor = "0"
+  MDP_MissNum = -1
   
   # Change name for classification----
   if(TargetType == "Classification") {

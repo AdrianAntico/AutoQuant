@@ -215,6 +215,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
   
+  # Rename predicted value----
+  if(tolower(TargetType) %chin% c("regression","multiclass")) data.table::setnames(predict, "V1", "Predictions")
+  if(tolower(TargetType) == "classification") data.table::setnames(predict, "V1", "p1")
+  
   # Merge features back on----
   if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
   
