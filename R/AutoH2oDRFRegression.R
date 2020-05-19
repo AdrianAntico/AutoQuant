@@ -232,11 +232,7 @@ AutoH2oDRFRegression <- function(data,
   if(GridTune & !TrainOnFull) {
     
     # Regression Start Up H2O----
-    if(HurdleModel) {
-      tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
-    } else {
-      h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    }
+    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     
     # Regression Define data sets----
     datatrain    <- h2o::as.h2o(dataTrain)
@@ -291,11 +287,7 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Start Up H2O----
   if(!GridTune) {
-    if(HurdleModel) {
-      tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
-    } else {
-      h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    }
+    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }

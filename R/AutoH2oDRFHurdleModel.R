@@ -96,7 +96,7 @@ AutoH2oDRFHurdleModel <- function(data,
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   
   # Initialize H2O----
-  tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)

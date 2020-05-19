@@ -163,9 +163,7 @@ AutoH2oMLCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) {
-    HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
-  }
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")
@@ -194,9 +192,7 @@ AutoH2oMLCARMA <- function(data,
   }
   
   # Check for any Target Variable hiding in XREGS
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) {
-    data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-  }
+  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
   
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
@@ -238,7 +234,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
@@ -302,14 +298,14 @@ AutoH2oMLCARMA <- function(data,
   
   # Variables for Program: Store unique values of GroupVar in GroupVarVector----
   if(DebugMode) print("Variables for Program: Store unique values of GroupVar in GroupVarVector----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[["GroupVar"]])))
     data.table::setnames(GroupVarVector, "V1", "GroupVar")
   }
   
   # Data Wrangling: Standardize column ordering----
   if(DebugMode) print("Data Wrangling: Standardize column ordering----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data.table::setcolorder(data, c("GroupVar", eval(DateColumnName), eval(TargetColumnName)))
   } else {
     data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
@@ -317,7 +313,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumnName)]])) {
       x <- data[1,get(DateColumnName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
@@ -339,9 +335,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Data Wrangling: Ensure TargetColumnName is Numeric----
   if(DebugMode) print("Data Wrangling: Ensure TargetColumnName is Numeric----")
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
-  }
+  if(!is.numeric(data[[eval(TargetColumnName)]])) data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
   
   # Variables for Program: Store number of data partitions in NumSets----
   if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
@@ -353,7 +347,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     data <- data[order(GroupVar, get(DateColumnName))]
   } else {
     data <- data[order(get(DateColumnName))]
@@ -409,7 +403,7 @@ AutoH2oMLCARMA <- function(data,
     }
     
     # If Fourier is turned off, concatenate grouping cols
-    if (!is.null(HierarchGroups)) {
+    if(!is.null(HierarchGroups)) {
       if(length(HierarchGroups) > 1) {
         if(any(HierarchGroups %chin% names(data))) {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
@@ -430,28 +424,17 @@ AutoH2oMLCARMA <- function(data,
   
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if (CalendarVariables) {
+  if(CalendarVariables) {
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = c(
-        "second",
-        "minute",
-        "hour",
-        "wday",
-        "mday",
-        "yday",
-        "week",
-        "isoweek",
-        "month",
-        "quarter",
-        "year"))
+      TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))
   }
   
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+  if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
@@ -460,7 +443,7 @@ AutoH2oMLCARMA <- function(data,
       GroupingVars = "GroupVar")
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -473,7 +456,7 @@ AutoH2oMLCARMA <- function(data,
       Holidays = NULL)
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
     } else {
       data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
@@ -482,24 +465,21 @@ AutoH2oMLCARMA <- function(data,
   
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
-  if (TargetTransformation) {
+  if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
       Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
-      SaveOutput = FALSE
-    )
+      SaveOutput = FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   }
   
   # Copy data for non grouping + difference----
   if(DebugMode) print("Copy data for non grouping + difference----")
-  if(is.null(GroupVariables) & Difference == TRUE) {
-    antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
-  }
+  if(is.null(GroupVariables) & Difference == TRUE) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
   
   # Store Date Info----
   if(DebugMode) print("Store Date Info----")
@@ -530,7 +510,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
-  if (!is.null(GroupVariables) & Difference == FALSE) {
+  if(!is.null(GroupVariables) & Difference == FALSE) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -831,27 +811,17 @@ AutoH2oMLCARMA <- function(data,
   }
   
   # Create GroupVar----
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     } else {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   }
   
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if (TimeTrendVariable) {
-    if (!is.null(GroupVariables)) {
-      data[, TimeTrend := 1:.N, by = "GroupVar"]
-    } else {
-      data[, TimeTrend := 1:.N]
-    }
-  }
+  if(TimeTrendVariable) if(!is.null(GroupVariables)) data[, TimeTrend := 1:.N, by = "GroupVar"] else data[, TimeTrend := 1:.N]
   
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
@@ -909,9 +879,7 @@ AutoH2oMLCARMA <- function(data,
     }
     
     # Remove ID Column----
-    if ("ID" %chin% names(data)) {
-      data.table::set(data, j = "ID", value = NULL)
-    }
+    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
   
   # Variables for CARMA function: Define data sets----
@@ -961,7 +929,7 @@ AutoH2oMLCARMA <- function(data,
   
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
-  tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)

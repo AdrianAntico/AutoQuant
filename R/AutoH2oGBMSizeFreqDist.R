@@ -80,16 +80,10 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
   data.table::setDTthreads(percent = 100)
   
   # Return immediately if no paths are given----
-  if(is.null(ModelPath)) {
-    return("Need to supply a path in ModelPath for saving models")
-  }
+  if(is.null(ModelPath)) return("Need to supply a path in ModelPath for saving models")
   
   # Count Model AutoTransform----
-  if(AutoTransform) {
-    TransFormCols <- CountTargetColumnName
-  } else {
-    TransFormCols <- NULL
-  }
+  if(AutoTransform) TransFormCols <- CountTargetColumnName else TransFormCols <- NULL
   
   # Clear GPU garbage----
   gc()

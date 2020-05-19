@@ -502,9 +502,7 @@ AutoH2oGBMCARMA <- function(data,
   
   # Copy data for non grouping + difference----
   if(DebugMode) print("Copy data for non grouping + difference----")
-  if(is.null(GroupVariables) & Difference == TRUE) {
-    antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
-  }
+  if(is.null(GroupVariables) & Difference == TRUE) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
   
   # Store Date Info----
   if(DebugMode) print("Store Date Info----")
@@ -535,7 +533,7 @@ AutoH2oGBMCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
-  if (!is.null(GroupVariables) & Difference == FALSE) {
+  if(!is.null(GroupVariables) & Difference == FALSE) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -860,19 +858,11 @@ AutoH2oGBMCARMA <- function(data,
   
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
-  data <- ModelDataPrep(
-    data,
-    Impute = TRUE,
-    CharToFactor = TRUE,
-    RemoveDates = FALSE,
-    MissFactor = "0",
-    MissNum    = -1)
+  data <- ModelDataPrep(data, Impute = TRUE, CharToFactor = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1)
   
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if (DataTruncate) {
-    data <- data[val:.N]
-  }
+  if(DataTruncate) data <- data[val:.N]
   
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -916,19 +906,17 @@ AutoH2oGBMCARMA <- function(data,
     }
     
     # Remove ID Column----
-    if ("ID" %chin% names(data)) {
-      data.table::set(data, j = "ID", value = NULL)
-    }
+    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
   
   # Variables for CARMA function: Define data sets----
   if(DebugMode) print("Variables for CARMA function: Define data sets----")
   if(!TrainOnFull) {
-    if (NumSets == 2) {
+    if(NumSets == 2) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- NULL
-    } else if (NumSets == 3) {
+    } else if(NumSets == 3) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
       test  <- DataSets$TestData
@@ -968,7 +956,7 @@ AutoH2oGBMCARMA <- function(data,
   
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
-  tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+  h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
