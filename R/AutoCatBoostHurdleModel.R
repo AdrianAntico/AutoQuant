@@ -328,13 +328,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
   if(length(Buckets) > 1L) {
-    TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
+    TargetLevels <- ClassifierModel$TargetLevels
     ArgsList[["TargetLevels"]] <- TargetLevels
   } else {
+    TargetLevels <- NULL
     ArgsList[["TargetLevels"]] <- NULL
   }
-    
-    
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
   
   # Add Target to IDcols----
