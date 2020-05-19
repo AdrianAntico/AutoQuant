@@ -84,7 +84,7 @@ AutoH2oGBMHurdleModel <- function(data,
   if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
   
   # Initialize H2O----
-  tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(startH2O = TRUE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
+  tryCatch({h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)}, error = function(x) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE))
   
   # Initialize collection and counter----
   ModelInformationList <- list()

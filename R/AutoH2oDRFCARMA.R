@@ -953,7 +953,7 @@ AutoH2oDRFCARMA <- function(data,
   # Initialize H2O
   if(DebugMode) print("Initialize H2O----")
   tryCatch({h2o::h2o.init(startH2O = FALSE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)}, 
-           error = function(x) h2o::h2o.init(startH2O = TRUE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE))
+           error = function(x) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE))
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
