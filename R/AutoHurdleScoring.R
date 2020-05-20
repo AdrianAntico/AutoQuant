@@ -25,13 +25,20 @@ AutoHurdleScoring <- function(TestData = NULL,
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
   
+  # Store IDcols----
+  IDcolsReorder <- ArgList$IDcols
+  IDcols <- ArgList$IDcols
+  
+  # Store colnames----
+  ColumnNames <- names(TestData)
+  
   # Classification Model Scoring---- 
   if(tolower(ModelClass) == "catboost") {
     TestData <- AutoCatBoostScoring(
       TargetType = TargetType,
       ScoringData = TestData,
       FeatureColumnNames = FeatureNames,
-      IDcols = ArgList$IDcols,
+      IDcols = IDcols,
       ModelObject = ClassModel,
       ModelPath = ArgList$Paths,
       ModelID = ArgList$ModelID,
@@ -84,7 +91,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
   
   # Remove Target From IDcols----
-  IDcols <- ArgList$IDcols[!(ArgList$IDcols %chin% ArgList$TargetColumnName)]
+  IDcols <- IDcols[!(IDcols %chin% ArgList$TargetColumnName)]
   
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
@@ -94,123 +101,122 @@ AutoHurdleScoring <- function(TestData = NULL,
   Degenerate <- 0L
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
-    # Check for degenerate bucket----
-    if(!any(bucket %in% c(ArgList$constant))) {
+    # Update IDcols----
+    IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
+    
+    # Check for constant value bucket----
+    if(!any(bucket %in% c(Output$ArgsList$constant))) {
       
-      # Check for constant value bucket----
-      if(!any(bucket %in% c(Output$ArgsList$constant))) {
-        
-        # Increment----
-        counter <- counter - 1L
-        
-        # Score TestData----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ArgList$ModelID,"_",bucket,"+") else ModelIDD <- paste0(ArgList$ModelID, "_", bucket)
-        
-        # Manage TransformationResults
-        if(is.null(ArgList$TransformNumericColumns)) TransformationResults <- NULL else TransformationResults <- ArgList$TransformNumericColumns
-        
-        # Store Transformations----
-        if(!is.null(ArgList$TransformNumericColumns)) {
-          TransformationResults <- ArgList[[paste0("TransformationResults_", ModelIDD)]]
-          Transform <- TRUE
-        } else {
-          TransformationResults <- NULL
-          Transform <- FALSE
-        }
-        
-        # Catboost Model Scroring----
-        if(tolower(ModelClass) == "catboost") {
-          TestData <- AutoCatBoostScoring(
-            TargetType = "regression",
-            ScoringData = TestData,
-            FeatureColumnNames = FeatureNames,
-            IDcols = IDcols,
-            ModelObject = ModelList[[bucket]],
-            ModelPath = Paths,
-            ModelID = ModelIDD,
-            ReturnFeatures = TRUE,
-            TransformationObject = TransformationResults,
-            TargetColumnName = ArgList$TransformNumericColumns,
-            TransformNumeric = Transform,
-            BackTransNumeric = Transform,
-            TransID = NULL,
-            TransPath = NULL,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = FALSE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1)
-        }
-        
-        # H2O DRF Model Scroring----
-        if(tolower(ModelClass) == "h2odrf") {
-          TestData <- AutoH2OMLScoring(
-            ScoringData = TestData,
-            ModelObject = RegressionModels,
-            ModelType = "mojo",
-            H2OShutdown = if(bucket == min(rev(seq_len(length(Buckets) + 1L)))) TRUE else FALSE,
-            MaxMem = "28G",
-            JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-            ModelPath = ModelPath,
-            ModelID = "ModelTest",
-            ReturnFeatures = TRUE,
-            TargetColumnName = if(is.null(TransformationResults)) FALSE else TRUE,
-            TransformNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
-            BackTransNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
-            TransformationObject = TransformationObject,
-            TransID = NULL,
-            TransPath = NULL,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = TRUE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1)
-        }
-        
-        # Change prediction name to prevent duplicates----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
-        data.table::setnames(TestData, "Predictions", Val)
-        
+      # Increment----
+      counter <- counter - 1L
+      
+      # Score TestData----
+      if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ArgList$ModelID,"_",bucket,"+") else ModelIDD <- paste0(ArgList$ModelID, "_", bucket)
+      
+      # Manage TransformationResults
+      if(is.null(ArgList$TransformNumericColumns)) TransformationResults <- NULL else TransformationResults <- ArgList$TransformNumericColumns
+      
+      # Store Transformations----
+      if(!is.null(ArgList$TransformNumericColumns)) {
+        TransformationResults <- ArgList[[paste0("TransformationResults_", ModelIDD)]]
+        Transform <- TRUE
       } else {
-        
-        # Use single value for predictions in the case of zero variance----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) {
-          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
-        } else {
-          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
-        }
+        TransformationResults <- NULL
+        Transform <- FALSE
+      }
+      
+      # Catboost Model Scroring----
+      if(tolower(ModelClass) == "catboost") {
+        TestData <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = TestData,
+          FeatureColumnNames = FeatureNames,
+          IDcols = IDcolsModified,
+          ModelObject = ModelList[[bucket]],
+          ModelPath = Paths,
+          ModelID = ModelIDD,
+          ReturnFeatures = TRUE,
+          TransformationObject = TransformationResults,
+          TargetColumnName = ArgList$TransformNumericColumns,
+          TransformNumeric = Transform,
+          BackTransNumeric = Transform,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = FALSE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+      
+      # H2O DRF Model Scroring----
+      if(tolower(ModelClass) == "h2odrf") {
+        TestData <- AutoH2OMLScoring(
+          ScoringData = TestData,
+          ModelObject = RegressionModels,
+          ModelType = "mojo",
+          H2OShutdown = if(bucket == min(rev(seq_len(length(Buckets) + 1L)))) TRUE else FALSE,
+          MaxMem = "28G",
+          JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+          ModelPath = ModelPath,
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TargetColumnName = ArgList$TransformNumericColumns,
+          TransformNumeric = Transform,
+          BackTransNumeric = Transform,
+          TransformationObject = TransformationObject,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+      
+      # Change prediction name to prevent duplicates----
+      if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
+      data.table::setnames(TestData, "Predictions", Val)
+      
+    } else {
+      
+      # Use single value for predictions in the case of zero variance----
+      if(bucket == max(seq_len(length(Buckets) + 1L))) {
+        data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+        data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+      } else {
+        data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
+        data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
       }
     }
   }
   
   # Rearrange Column order----
   if(counter > 2L) {
-    if(length(IDcols) != 0L) {
+    if(length(IDcolsReorderReorder) != 0L) {
       if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L),(length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter),(length(IDcols) + counter + 2L):(length(IDcols)+counter+1L+counter)))
+        data.table::setcolorder(TestData, c(2L:(1L + length(IDcolsReorderReorder)), 1L, (2L + length(IDcolsReorder)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcolsReorder),(length(IDcolsReorder) + counter + 1L),(length(IDcolsReorder) + counter + 1L + counter +1L):ncol(TestData), (length(IDcolsReorder) + 1L):(length(IDcolsReorder) + counter),(length(IDcolsReorder) + counter + 2L):(length(IDcolsReorder)+counter+1L+counter)))
       } else {
-        data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L + Degenerate),(length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData),(length(IDcols) + 1L):(length(IDcols) + counter + Degenerate),(length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate+2L)))
+        data.table::setcolorder(TestData, c(3L:(2L + length(IDcolsReorder)), 1L:2L, (3L + length(IDcolsReorder)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcolsReorder),(length(IDcolsReorder) + counter + 1L + Degenerate),(length(IDcolsReorder) + counter + 3L + counter + Degenerate):ncol(TestData),(length(IDcolsReorder) + 1L):(length(IDcolsReorder) + counter + Degenerate),(length(IDcolsReorder) + counter + 2L + Degenerate):(length(IDcolsReorder)+counter+counter+Degenerate+2L)))
       }
     } else {
       data.table::setcolorder(TestData, c(1L:(counter+Degenerate),(2L+counter+Degenerate):(1L+2L*(counter+Degenerate)),(1L+counter+Degenerate),(2L+2L*(counter+Degenerate)):ncol(TestData)))
       data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
+    if(length(IDcolsReorder) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (2L + length(IDcolsReorder) + 1L):ncol(TestData), 3L:(2L + length(IDcolsReorder))))
   } else if(counter == 2L & length(Buckets) != 1L) {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(2L:(1L+length(IDcols)),1L,(2+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData,c(1L:length(IDcols),length(IDcols) + 1L + length(IDcols),(length(IDcols)+5L+length(IDcols)):(ncol(TestData)-1L),(4L+length(IDcols)):(6L+length(IDcols)),ncol(TestData),(1L+length(IDcols)):(2L+length(IDcols))))
+    if(length(IDcolsReorder) != 0L) {
+      data.table::setcolorder(TestData, c(2L:(1L+length(IDcolsReorder)),1L,(2+length(IDcolsReorder)):ncol(TestData)))
+      data.table::setcolorder(TestData,c(1L:length(IDcolsReorder),length(IDcolsReorder) + 1L + length(IDcolsReorder),(length(IDcolsReorder)+5L+length(IDcolsReorder)):(ncol(TestData)-1L),(4L+length(IDcolsReorder)):(6L+length(IDcolsReorder)),ncol(TestData),(1L+length(IDcolsReorder)):(2L+length(IDcolsReorder))))
     } else {
       data.table::setcolorder(TestData, c(4L:ncol(TestData), 1L:3L))
     }
   } else {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L),3L:(2L + length(IDcols)),(((3L + length(IDcols)) + 2L):ncol(TestData))))
+    if(length(IDcolsReorder) != 0L) {
+      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcolsReorder)):((3L + length(IDcolsReorder)) + 1L),3L:(2L + length(IDcolsReorder)),(((3L + length(IDcolsReorder)) + 2L):ncol(TestData))))
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     } else {
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))

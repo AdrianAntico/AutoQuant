@@ -452,7 +452,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     }
     
     # Create Modified IDcols----
-    IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)      
+    IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
     
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
