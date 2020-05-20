@@ -28,6 +28,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   # Store IDcols----
   IDcolsReorder <- ArgList$IDcols
   IDcols <- ArgList$IDcols
+  IDcols <- c(IDcols, setdiff(names(TestData), c(IDcols, ArgList$FeatureColNames)))
   
   # Store colnames----
   ColumnNames <- names(TestData)
@@ -91,7 +92,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
   
   # Remove Target From IDcols----
-  IDcols <- IDcols[!(IDcols %chin% ArgList$TargetColumnName)]
+  # IDcols <- IDcols[!(IDcols %chin% ArgList$TargetColumnName)]
   
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
@@ -206,7 +207,7 @@ AutoHurdleScoring <- function(TestData = NULL,
       data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcolsReorder) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (2L + length(IDcolsReorder) + 1L):ncol(TestData), 3L:(2L + length(IDcolsReorder))))
+    if(length(IDcolsReorder) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (3L + length(IDcolsReorder)):ncol(TestData), 3L:(2L + length(IDcolsReorder))))
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcolsReorder) != 0L) {
       data.table::setcolorder(TestData, c(2L:(1L+length(IDcolsReorder)),1L,(2+length(IDcolsReorder)):ncol(TestData)))
