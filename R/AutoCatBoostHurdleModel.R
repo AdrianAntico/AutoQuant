@@ -254,6 +254,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       
       # Model evaluation
       eval_metric = "AUC",
+      MetricPeriods = MetricPeriods,
       NumOfParDepPlots = NumOfParDepPlots,
       
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
@@ -264,7 +265,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxRunMinutes = MaxRunMinutes,
       Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
-      MetricPeriods = MetricPeriods,
       
       # Trees, Depth, and LearningRate used in the bandit grid tuning
       Trees = Trees,
@@ -302,6 +302,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       
       # Model evaluation
       eval_metric = "MultiClass",
+      MetricPeriods = MetricPeriods,
       grid_eval_metric = "accuracy",
       
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
@@ -312,7 +313,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxRunMinutes = MaxRunMinutes,
       Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
-      MetricPeriods = MetricPeriods,
       
       # Trees, Depth, and LearningRate used in the bandit grid tuning
       Trees = Trees,
@@ -492,6 +492,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
             # Model evaluation
             eval_metric = "RMSE",
+            MetricPeriods = MetricPeriods,
             NumOfParDepPlots = NumOfParDepPlots,
 
             # Grid tuning arguments - PassInGrid is the best of GridMetrics
@@ -502,7 +503,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             MaxRunMinutes = MaxRunMinutes,
             Shuffles = Shuffles,
             BaselineComparison = BaselineComparison,
-            MetricPeriods = MetricPeriods,
 
             # Trees, Depth, and LearningRate used in the bandit grid tuning
             Trees = Trees,
