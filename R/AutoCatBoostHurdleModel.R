@@ -708,7 +708,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
   
   # Remove Cols----
-  TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
+  TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL)]
   
   # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
