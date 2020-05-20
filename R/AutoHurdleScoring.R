@@ -232,7 +232,7 @@ AutoHurdleScoring <- function(TestData = NULL,
         TestData[, UpdatedPrediction := TestData[["UpdatedPrediction"]] + TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       }
     }  
-  } else (counter == 2L & length(Buckets) == 1L) {
+  } else {
     TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * (TestData[[4L]])]
   }
   
