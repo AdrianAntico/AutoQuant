@@ -467,7 +467,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
           
         # Build model----
-        RegressionModel <- AutoCatBoostRegression(
+        RegModel <- AutoCatBoostRegression(
 
             # GPU or CPU
             task_type = task_type,
@@ -515,8 +515,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             Methods = Methods)
         
         # Store Model----
-        RegressionModel <- RegressionModel$Model
-        if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults
+        RegressionModel <- RegModel$Model
+        if(!is.null(TransformNumericColumns)) ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- TransformationResults <- RegModel$TransformationResults
         if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         gc()
           
@@ -546,7 +546,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           MDP_MissNum = -1)
         
         # Clear TestModel From Memory----
-        rm(RegressionModel)
+        rm(RegModel)
         
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
