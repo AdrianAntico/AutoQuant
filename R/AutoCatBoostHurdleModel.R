@@ -516,12 +516,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         
         # Store Model----
         RegressionModel <- RegModel$Model
-        if(!is.null(TransformNumericColumns)) ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- TransformationResults <- RegModel$TransformationResults
-        if(SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
-        gc()
-          
-        # Manage TransformationResults
-        if(is.null(TransformNumericColumns)) TransformationResults <- NULL
+        if(ReturnModelObjects | SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
+        if(!is.null(TransformNumericColumns)) {
+          ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- RegModel$TransformationResults
+        } else {
+          ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- NULL
+        }
           
         # Score models----
         TestData <- AutoCatBoostScoring(
@@ -530,13 +530,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
           ModelObject = RegressionModel,
-          ModelPath = Paths[1L],
+          ModelPath = Paths,
           ModelID = ModelIDD,
           ReturnFeatures = TRUE,
-          TransformationObject = TransformationResults,
+          TransformationObject = ArgsList[[paste0("TransformationResults_", ModelIDD)]],
           TargetColumnName = eval(TargetColumnName),
-          TransformNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
-          BackTransNumeric = if(is.null(TransformationResults)) FALSE else TRUE,
+          TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
+          BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
           TransID = NULL,
           TransPath = NULL,
           MDP_Impute = TRUE,
@@ -547,6 +547,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         
         # Clear TestModel From Memory----
         rm(RegModel)
+        gc()
         
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
@@ -561,11 +562,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
         } else {
           Degenerate <- Degenerate + 1L
           data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
         }
       }
     } else {
@@ -580,33 +581,33 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     if(length(IDcols) != 0L) {
       if(Degenerate == 0L) {
         data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L),(length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter),(length(IDcols) + counter + 2L):(length(IDcols)+counter+1L+counter)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L), (length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter), (length(IDcols) + counter + 2L):(length(IDcols)+counter + 1L + counter)))
       } else {
         data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L + Degenerate),(length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData),(length(IDcols) + 1L):(length(IDcols) + counter + Degenerate),(length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate+2L)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L + Degenerate), (length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter + Degenerate), (length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate + 2L)))
       }
     } else {
-      data.table::setcolorder(TestData, c(1L:(counter+Degenerate),(2L+counter+Degenerate):(1L+2L*(counter+Degenerate)),(1L+counter+Degenerate),(2L+2L*(counter+Degenerate)):ncol(TestData)))
-      data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
+      data.table::setcolorder(TestData, c(1L:(counter + Degenerate), (2L + counter + Degenerate):(1L + 2L * (counter + Degenerate)), (1L + counter + Degenerate), (2L + 2L * (counter + Degenerate)):ncol(TestData)))
+      data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(2L:(1L+length(IDcols)),1L,(2L+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData, c(1L:length(IDcols),(5L+length(IDcols)):ncol(TestData),(1L+length(IDcols)):(1L+length(IDcols)+3L)))
+      data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
+      data.table::setcolorder(TestData, c(1L:length(IDcols), (5L + length(IDcols)):ncol(TestData), (1L + length(IDcols)):(1L + length(IDcols) + 3L)))
     } else {
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(2L:(1L+length(IDcols)),1,(2+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData,c(1L:length(IDcols),length(IDcols)+1L+length(IDcols),(length(IDcols)+5L+length(IDcols)):(ncol(TestData)-1L),(4L+length(IDcols)):(6L+length(IDcols)),ncol(TestData),(1L+length(IDcols)):(2L+length(IDcols))))
+      data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
+      data.table::setcolorder(TestData, c(1L:length(IDcols),length(IDcols) + 1L + length(IDcols), (length(IDcols) + 5L + length(IDcols)):(ncol(TestData) - 1L), (4L + length(IDcols)):(6L + length(IDcols)), ncol(TestData), (1L + length(IDcols)):(2L + length(IDcols))))
     } else {
       data.table::setcolorder(TestData, c(4L:ncol(TestData), 1L:3L))
     }
   } else {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L+length(IDcols)):((3L+length(IDcols))+1L),3L:(2L+length(IDcols)),(((3L+length(IDcols))+2L):ncol(TestData))))
-      data.table::setcolorder(TestData, c(5L:ncol(TestData),1L:4L))
+      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
+      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     } else {
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
@@ -628,9 +629,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }  
   } else if(counter == 2L & length(Buckets) == 1L) {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[ncol(TestData)-1L]] * (TestData[[(ncol(TestData)-3L)]])]
+    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData) - 2L)]] + TestData[[ncol(TestData) - 1L]] * (TestData[[(ncol(TestData) - 3L)]])]
   } else {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[(ncol(TestData)-1L)]] * TestData[[(ncol(TestData)-3L)]]]
+    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData) - 2L)]] + TestData[[(ncol(TestData) - 1L)]] * TestData[[(ncol(TestData) - 3L)]]]
   }
   
   # Regression r2 via sqrt of correlation----
@@ -639,9 +640,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(TestData,file = paste0(MetaDataPaths,"/",ModelID,"_ValidationData.csv"))
+      data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_ValidationData.csv")))
     } else {
-      data.table::fwrite(TestData,file = paste0(Paths,"/",ModelID,"_ValidationData.csv"))      
+      data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID,"_ValidationData.csv")))
     }
   }
   
