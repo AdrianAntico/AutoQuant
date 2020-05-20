@@ -200,23 +200,18 @@ AutoHurdleScoring <- function(TestData = NULL,
       data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(2L:(1L+length(IDcols)),1L,(2L+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData, c(1L:length(IDcols),(5L+length(IDcols)):ncol(TestData),(1L+length(IDcols)):(1L+length(IDcols)+3L)))
-    } else {
-      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
-    }
+    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(2L:(1L+length(IDcols)),1L,(2+length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData,c(1L:length(IDcols),length(IDcols)+1L+length(IDcols),(length(IDcols)+5L+length(IDcols)):(ncol(TestData)-1L),(4L+length(IDcols)):(6L+length(IDcols)),ncol(TestData),(1L+length(IDcols)):(2L+length(IDcols))))
+      data.table::setcolorder(TestData,c(1L:length(IDcols),length(IDcols) + 1L + length(IDcols),(length(IDcols)+5L+length(IDcols)):(ncol(TestData)-1L),(4L+length(IDcols)):(6L+length(IDcols)),ncol(TestData),(1L+length(IDcols)):(2L+length(IDcols))))
     } else {
       data.table::setcolorder(TestData, c(4L:ncol(TestData), 1L:3L))
     }
   } else {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L+length(IDcols)):((3L+length(IDcols))+1L),3L:(2L+length(IDcols)),(((3L+length(IDcols))+2L):ncol(TestData))))
-      data.table::setcolorder(TestData, c(5L:ncol(TestData),1L:4L))
+      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L),3L:(2L + length(IDcols)),(((3L + length(IDcols)) + 2L):ncol(TestData))))
+      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     } else {
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
@@ -237,10 +232,8 @@ AutoHurdleScoring <- function(TestData = NULL,
         TestData[, UpdatedPrediction := TestData[["UpdatedPrediction"]] + TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       }
     }  
-  } else if(counter == 2L & length(Buckets) == 1L) {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[ncol(TestData)-1L]] * (TestData[[(ncol(TestData)-3L)]])]
-  } else {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData)-2L)]] + TestData[[(ncol(TestData)-1L)]] * TestData[[(ncol(TestData)-3L)]]]
+  } else (counter == 2L & length(Buckets) == 1L) {
+    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * (TestData[[4L]])]
   }
   
   # Return preds----

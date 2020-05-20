@@ -591,9 +591,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
-    }
+    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
