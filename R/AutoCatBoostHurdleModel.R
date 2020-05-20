@@ -592,10 +592,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
-      data.table::setcolorder(TestData, c(1L:length(IDcols), (5L + length(IDcols)):ncol(TestData), (1L + length(IDcols)):(1L + length(IDcols) + 3L)))
-    } else {
-      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
+      data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
     }
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
@@ -621,17 +618,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   #                  for i > 1, need to take the final column and add the product of the next preds
   Cols <- ncol(TestData)
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
-    for(i in seq_len(length(Buckets)+1)) {
+    for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
         TestData[, UpdatedPrediction := TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       } else {
         TestData[, UpdatedPrediction := TestData[["UpdatedPrediction"]] + TestData[[(Cols - ((length(Buckets) + 1L) * 2L - i))]] * TestData[[(Cols - ((length(Buckets) + 1L) - i))]]]
       }
     }  
-  } else if(counter == 2L & length(Buckets) == 1L) {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData) - 2L)]] + TestData[[ncol(TestData) - 1L]] * (TestData[[(ncol(TestData) - 3L)]])]
-  } else {
-    TestData[, UpdatedPrediction := TestData[[ncol(TestData)]] * TestData[[(ncol(TestData) - 2L)]] + TestData[[(ncol(TestData) - 1L)]] * TestData[[(ncol(TestData) - 3L)]]]
+  } else (counter == 2L & length(Buckets) == 1L) {
+    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * (TestData[[4L]])]
   }
   
   # Regression r2 via sqrt of correlation----
