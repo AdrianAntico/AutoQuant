@@ -624,7 +624,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }
   } else {
-    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * (TestData[[4L]])]
+    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
   
   # Regression r2 via sqrt of correlation----

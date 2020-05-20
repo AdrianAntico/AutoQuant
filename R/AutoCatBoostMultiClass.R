@@ -157,7 +157,7 @@ AutoCatBoostMultiClass <- function(data,
   loadNamespace(package = "catboost")
   
   # Turn on full speed ahead----
-  ddata.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
