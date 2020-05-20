@@ -128,6 +128,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Store args----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
+  ArgsList[["TargetColumnName"]] <- TargetColumnName
   ArgsList[["FeatureColNames"]] <- FeatureColNames
   ArgsList[["PrimaryDateColumn"]] <- PrimaryDateColumn
   ArgsList[["IDcols"]] <- IDcols
@@ -150,7 +151,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Ensure Paths and metadata_path exists----
-  if(!is.null(Paths)) if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
+  if(!is.null(Paths)) if(!dir.exists(normalizePath(Paths))) dir.create(normalizePath(Paths))
+  if(is.null(MetaDataPaths)) MetaDataPaths <- Paths else if(!dir.exists(normalizePath(MetaDataPaths))) dir.create(normalizePath(MetaDataPaths))
 
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -235,7 +237,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       # Metadata arguments
       ModelID = ModelID,
       model_path = Paths,
-      metadata_path = Paths,
+      metadata_path = MetaDataPaths,
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
       
@@ -283,7 +285,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       # Metadata arguments
       ModelID = ModelID,
       model_path = Paths,
-      metadata_path = Paths,
+      metadata_path = MetaDataPaths,
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
       
