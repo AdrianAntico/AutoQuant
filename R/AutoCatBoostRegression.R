@@ -595,7 +595,7 @@ AutoCatBoostRegression <- function(data,
     if (tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
-        metric_period        = 1L,
+        metric_period        = MetricPeriods,
         loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
@@ -612,7 +612,7 @@ AutoCatBoostRegression <- function(data,
     } else {
       base_params <- list(
         has_time             = HasTime,
-        metric_period        = 1L,
+        metric_period        = MetricPeriods,
         loss_function        = LossFunction,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
@@ -694,7 +694,7 @@ AutoCatBoostRegression <- function(data,
     base_params <- list(
       use_best_model       = TRUE,
       best_model_min_trees = 10L,
-      metric_period        = 10L,
+      metric_period        = MetricPeriods,
       iterations           = Trees,
       loss_function        = LossFunction,
       eval_metric          = eval_metric,
