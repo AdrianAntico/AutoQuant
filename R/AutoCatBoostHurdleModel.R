@@ -409,10 +409,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-  
-  # Begin regression model building----
   counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
+  
+  # Begin regression model building----
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Define data sets----
@@ -603,8 +603,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   } else {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
-      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
-    } else {
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   }

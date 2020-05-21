@@ -237,8 +237,6 @@ AutoHurdleScoring <- function(TestData = NULL,
     if(length(IDcolsReorder) != 0L) {
       data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcolsReorder)):((3L + length(IDcolsReorder)) + 1L),3L:(2L + length(IDcolsReorder)),(((3L + length(IDcolsReorder)) + 2L):ncol(TestData))))
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
-    } else {
-      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   }
   
