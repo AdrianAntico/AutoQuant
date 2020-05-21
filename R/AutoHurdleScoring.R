@@ -9,7 +9,7 @@
 #' @param ModelClass Name of model type. "catboost" is currently the only available option
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
-#' @return 
+#' @return A data.table with the final predicted value, the intermediate model predictions, and your source data
 #' @examples 
 #' \donttest{
 #' 
@@ -275,5 +275,5 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
   
   # Return preds----
-  return(data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+  return(data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L))))
 }

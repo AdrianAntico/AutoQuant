@@ -27,7 +27,7 @@ AutoHurdleScoring(
 \item{ModelList}{Output from the hurdle model}
 }
 \value{
-
+A data.table with the final predicted value, the intermediate model predictions, and your source data
 }
 \description{
 AutoHurdleScoring()
