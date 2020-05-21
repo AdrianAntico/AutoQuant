@@ -243,13 +243,13 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
-        TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+        TestData[, FinalPredictedValue := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       } else {
-        TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+        TestData[, FinalPredictedValue := FinalPredictedValue + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       }
     }
   } else {
-    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
+    TestData[, FinalPredictedValue := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
   
   # Return preds----
