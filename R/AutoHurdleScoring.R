@@ -21,8 +21,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
   
   # Load ArgList and ModelList if not supplied----
-  if(is.null(ArgList)) load(file.path(normalizePath(Path), paste0(ModelID, "_HurdleArgList.Rdata")))
-  ArgList <- ArgsList; rm(ArgsList)
+  if(is.null(ArgList)) load(file.path(normalizePath(Path), paste0(ModelID, "_HurdleArgList.Rdata"))); ArgList <- ArgsList; rm(ArgsList)
   
   # Define Buckets----
   Buckets <- ArgList$Buckets
