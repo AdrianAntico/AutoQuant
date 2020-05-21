@@ -390,7 +390,6 @@ First step is to build either a binary classification model (in the case of a si
 ##### **AutoH2oGBMHurdleModel()**
 <code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
 
-
 </p>
 </details>
 
@@ -453,6 +452,9 @@ ________________________________________________________________________________
 
 ##### **AutoH2OMLScoring()**
 <code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle transformations and back-transformations if you utilized that feature in the regression training case and didn't do it yourself before hand.
+
+##### **AutoHurdleScoring()**
+<code>AutoHurdleScoring()</code> will score the AutoCatBoostHurdleModel() function currently. Functionality for XGBoost hurdle models will be next, followed by the H2O version.
 
 ##### **AutoH2OScoring()**
 <code>AutoH2OScoring()</code> is for scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores mojo models or binary files by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well for classification and multinomial models. 
