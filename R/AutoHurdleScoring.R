@@ -52,7 +52,17 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
   
   # Store classifier model----
-  if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ArgList$ModelID)) else return("Need to supply a ModelList")
+  if(tolower(ModelClass) == "catboost") if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ArgList$ModelID)) else return("Need to supply a ModelList")
+  if(tolower(ModelClass) == "xgboost") {
+    if(!is.null(ModelList)) {
+      ClassModel <- ModelList[[1L]]
+    } else if(!is.null(ArgList$ModelID)) {
+      load(file.path(normalizePath(ArgList$Paths), ArgList$ModelID))
+      ClassModel <- model; rm(model)
+    } else {
+      return("Need to supply a ModelList")
+    }
+  } 
   
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
