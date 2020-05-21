@@ -465,7 +465,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         
         # Modify filepath and file name----
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
-          
+
         # Build model----
         RegModel <- AutoCatBoostRegression(
 
@@ -742,7 +742,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     }, error = function(x) "skip")
     tryCatch({
       Out1 <- ParDepCalPlots(
-        data = ValidationData,
+        data = TestData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[i, Variable],
