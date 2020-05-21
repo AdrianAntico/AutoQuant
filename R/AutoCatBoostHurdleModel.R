@@ -177,9 +177,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       if(i == 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       } else if(i == length(Buckets) + 1L) {
-        data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1], "+")))
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1], "+")))
       } else {
-        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1]), j = "Target_Buckets", value = as.factor(Buckets[i]))
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }      
     }
   }
@@ -193,7 +193,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       } else if(i == length(Buckets) + 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1], "+")))
       } else {
-        data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i -1]), j = "Target_Buckets",value = as.factor(Buckets[i]))
+        data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets",value = as.factor(Buckets[i]))
       }
     }
   }
@@ -367,28 +367,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     MDP_RemoveDates = FALSE, 
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
-  
-  # TargetType = TargetType
-  # RemoveModel = TRUE
-  # ScoringData = TestData
-  # FeatureColumnNames = FeatureNames
-  # IDcols = IDcols
-  # ModelObject = ClassModel
-  # ModelPath = Paths
-  # ModelID = ModelID
-  # ReturnFeatures = TRUE
-  # MultiClassTargetLevels = TargetLevels
-  # TransformNumeric = FALSE
-  # BackTransNumeric = FALSE
-  # TargetColumnName = NULL
-  # TransformationObject = NULL
-  # TransID = NULL
-  # TransPath = Paths
-  # MDP_Impute = FALSE
-  # MDP_CharToFactor = TRUE
-  # MDP_RemoveDates = FALSE
-  # MDP_MissFactor = "0"
-  # MDP_MissNum = -1
   
   # Change name for classification----
   if(TargetType == "Classification") {

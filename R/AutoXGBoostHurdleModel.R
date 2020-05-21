@@ -28,6 +28,7 @@
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
 #' @param MetaDataPaths A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
+#' @param ReturnModelObjects Set to TRUE to return all model objects
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param Trees Default 1000
 #' @param GridTune Set to TRUE if you want to grid tune the models
@@ -62,6 +63,7 @@
 #'    # options
 #'    TransformNumericColumns = NULL,
 #'    SplitRatios = c(0.70, 0.20, 0.10),
+#'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
 #'    NumOfParDepPlots = 10L,
 #' 
@@ -101,6 +103,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    TransformNumericColumns = NULL,
                                    SplitRatios = c(0.70, 0.20, 0.10),
                                    SaveModelObjects = FALSE,
+                                   ReturnModelObjects = TRUE,
                                    NumOfParDepPlots = 10L,
                                    GridTune = FALSE,
                                    grid_eval_metric = "accuracy",
@@ -115,22 +118,33 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    subsample = seq(0.55, 1.0, 0.05),
                                    colsample_bytree = seq(0.55, 1.0, 0.05)) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # Store args----
+  ArgsList <- list()
+  ArgsList[["Buckets"]] <- Buckets
+  ArgsList[["TargetColumnName"]] <- TargetColumnName
+  ArgsList[["FeatureColNames"]] <- FeatureColNames
+  ArgsList[["IDcols"]] <- IDcols
+  ArgsList[["TransformNumericColumns"]] <- TransformNumericColumns
+  ArgsList[["SplitRatios"]] <- SplitRatios
+  ArgsList[["TreeMethod"]] <- TreeMethod
+  ArgsList[["ModelID"]] <- ModelID
+  ArgsList[["Paths"]] <- Paths
+  ArgsList[["MetaDataPaths"]] <- MetaDataPaths
+  ArgsList[["SaveModelObjects"]] <- SaveModelObjects
   
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  if(is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
-  if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
+  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   
-  # Initialize collection and counter----
-  ModelInformationList <- list()
-  if(!is.null(Paths)) if(length(Paths) == 1L) Paths <- rep(Paths, length(Buckets) + 1L)
-  if(!is.null(MetaDataPaths)) if(length(MetaDataPaths) == 1L) MetaDataPaths <- rep(MetaDataPaths, length(Buckets) + 1L)
-
+  # Turn on full speed ahead----
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  
+  # Ensure Paths and metadata_path exists----
+  if(!is.null(Paths)) if(!dir.exists(normalizePath(Paths))) dir.create(normalizePath(Paths))
+  if(is.null(MetaDataPaths)) MetaDataPaths <- Paths else if(!dir.exists(normalizePath(MetaDataPaths))) dir.create(normalizePath(MetaDataPaths))
+  
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
@@ -147,24 +161,24 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[1L]), j = "Target_Buckets", value = 1L)
   } else {
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
-        data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
+      } else if(i == length(Buckets) + 1L) {
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
-        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
+        data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }      
     }
   }
   
   # Add target bucket column----
-  if (!is.null(ValidationData)) {
+  if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
+      } else if(i == length(Buckets) + 1L) {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(ValidationData, i = which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
@@ -175,11 +189,11 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Add target bucket column----
   if (!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1L])]
-    for (i in seq_len(length(Buckets) + 1L)) {
-      if (i == 1L) {
+    for(i in seq_len(length(Buckets) + 1L)) {
+      if(i == 1L) {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      } else if (i == length(Buckets) + 1L) {
-        data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
+      } else if(i == length(Buckets) + 1L) {
+        data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1L], "+")))
       } else {
         data.table::set(TestData, i = which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
       }
@@ -187,7 +201,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   }
   
   # AutoDataPartition if Validation and TestData are NULL----
-  if (is.null(ValidationData) & is.null(TestData)) {
+  if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -202,7 +216,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   }
   
   # Begin classification model building----
-  if (length(Buckets) == 1L) {
+  if(length(Buckets) == 1L) {
     ClassifierModel <- AutoXGBoostClassifier(
       
       # general args----
@@ -211,8 +225,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       TreeMethod = TreeMethod,
       PassInGrid = PassInGrid,
       NThreads = NThreads,
-      model_path = Paths[1L],
-      metadata_path = MetaDataPaths[1L],
+      model_path = Paths,
+      metadata_path = MetaDataPaths,
       ModelID = ModelID,
       
       # options----
@@ -256,14 +270,13 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       eval_metric = "merror",
       Objective = 'multi:softprob',
 
-            
       # general args----
       TrainOnFull = TrainOnFull,
       TreeMethod = TreeMethod,
       PassInGrid = PassInGrid,
       NThreads = NThreads,
-      model_path = Paths[1L],
-      metadata_path = MetaDataPaths[1L],
+      model_path = Paths,
+      metadata_path = MetaDataPaths,
       ModelID = ModelID,
       
       # options----
@@ -351,24 +364,27 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   
   # Change name for classification----
   if(TargetType == "Classification") {
-    data.table::setnames(TestData, "Predictions","Predictions_C1")
+    data.table::setnames(TestData, "Predictions", "Predictions_C1")
     TestData[, Predictions_C0 := 1 - Predictions_C1]
-    data.table::setcolorder(TestData, c(ncol(TestData),1L, 2L:(ncol(TestData)-1L)))
+    data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
   }
 
   # Remove Model Object----
   rm(ClassModel)
   
   # Remove Target_Buckets----
-  data[, Target_Buckets := NULL]
-  ValidationData[, Target_Buckets := NULL]
+  data.table::set(data, j = "Target_Buckets", value = NULL)
+  data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
   
   # Remove Target From IDcols----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   
-  # Begin regression model building----
-  counter <- 0L
+  # Change Name of Predicted MultiClass Column----
+  if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
+  counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
+  
+  # Begin regression model building----
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
     
     # Partition data----
@@ -424,34 +440,46 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         
         # Build model----
         RegModel <- RemixAutoML::AutoXGBoostRegression(
-          TrainOnFull = TrainOnFull,
+          
+          # GPU or CPU
+          TreeMethod = TreeMethod,
+          NThreads = NThreads,
+          
+          # Metadata arguments
+          model_path = Paths,
+          metadata_path = MetaDataPaths,
+          ModelID = ModelIDD,
+          ReturnFactorLevels = TRUE,
+          ReturnModelObjects = ReturnModelObjects,
+          SaveModelObjects = SaveModelObjects,
+          Verbose = 1L,
+          
+          # Data arguments
           data = trainBucket,
+          TrainOnFull = TrainOnFull,
           ValidationData = validBucket,
           TestData = testBucket,
           TargetColumnName = TargetColumnName,
           FeatureColNames = FeatureNames,
           IDcols = IDcols,
-          ReturnFactorLevels = TRUE,
           TransformNumericColumns = TransformNumericColumns,
-          NThreads = NThreads,
-          model_path = Paths,
-          metadata_path = MetaDataPaths,
-          ModelID = ModelIDD,
+          
+          # Model evaluation
+          eval_metric = "rmse",
+          grid_eval_metric = "mse",
           NumOfParDepPlots = NumOfParDepPlots,
-          Verbose = 1L,
-          ReturnModelObjects = TRUE,
-          SaveModelObjects = SaveModelObjects,
+          
+          # Grid tuning arguments - PassInGrid is the best of GridMetrics
           PassInGrid = PassInGrid,
           GridTune = GridTune,
-          grid_eval_metric = "mse",
-          eval_metric = "rmse",
-          Trees = Trees,
-          TreeMethod = TreeMethod,
           MaxModelsInGrid = MaxModelsInGrid,
           BaselineComparison = "default",
           MaxRunsWithoutNewWinner = 20L,
           MaxRunMinutes = 60*60, 
           Shuffles = 2L, 
+          
+          # Trees, Depth, and LearningRate used in the bandit grid tuning
+          Trees = Trees,
           eta = eta, 
           max_depth = max_depth, 
           min_child_weight = min_child_weight, 
@@ -474,54 +502,29 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         if(!is.null(TransformNumericColumns)) Trans <- TransformationResults  else TransformationResults <- NULL
           
         # Score model----
-        if(!is.null(TransformNumericColumns)) {
-          TestData <- AutoXGBoostScoring(
-            TargetType = "regression",
-            ScoringData = TestData,
-            FeatureColumnNames = FeatureNames,
-            IDcols = IDcolsModified,
-            FactorLevelsList = FactorLevelsList,
-            OneHot = FALSE,
-            ModelObject = RegressionModel,
-            ModelPath = Paths,
-            ModelID = ModelIDD,
-            ReturnFeatures = TRUE,
-            TransformNumeric = TRUE,
-            BackTransNumeric = TRUE,
-            TargetColumnName = eval(TargetColumnName),
-            TransformationObject = TransformationResults,
-            TransID = NULL,
-            TransPath = NULL,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = FALSE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1)
-        } else {
-          TestData <- AutoXGBoostScoring(
-            TargetType = "regression",
-            ScoringData = TestData,
-            FeatureColumnNames = FeatureNames,
-            IDcols = IDcolsModified,
-            FactorLevelsList = FactorLevelsList,
-            OneHot = FALSE,
-            ModelObject = RegressionModel,
-            ModelPath = Paths,
-            ModelID = ModelIDD,
-            ReturnFeatures = TRUE,
-            TransformNumeric = FALSE,
-            BackTransNumeric = FALSE,
-            TargetColumnName = NULL,
-            TransformationObject = NULL,
-            TransID = NULL,
-            TransPath = NULL,
-            MDP_Impute = TRUE,
-            MDP_CharToFactor = TRUE,
-            MDP_RemoveDates = FALSE,
-            MDP_MissFactor = "0",
-            MDP_MissNum = -1)
-        }
-          
+        TestData <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = TestData,
+          FeatureColumnNames = FeatureNames,
+          IDcols = IDcolsModified,
+          FactorLevelsList = FactorLevelsList,
+          OneHot = FALSE,
+          ModelObject = RegressionModel,
+          ModelPath = Paths,
+          ModelID = ModelIDD,
+          ReturnFeatures = TRUE,
+          TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
+          BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
+          TargetColumnName = eval(TargetColumnName),
+          TransformationObject = TransformationResults,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = FALSE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+
         # Clear TestModel From Memory----
         rm(RegModel,RegressionModel)
         
@@ -553,61 +556,47 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   }
   
   # Rearrange Column order----
+  counter <- length(Buckets)
   if(counter > 2L) {
     if(length(IDcols) != 0L) {
       if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(1L, (2L + length(IDcols)):(2L + length(IDcols) + 2L*counter-1L), 2L:(1L + length(IDcols)), (3L + length(IDcols) + 2L * counter - 1L):ncol(TestData)))
+        data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L), (length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter), (length(IDcols) + counter + 2L):(length(IDcols)+counter + 1L + counter)))
       } else {
-        data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):(3L + length(IDcols) + 2L*counter-1L), 3L:(2L + length(IDcols)), (4L + length(IDcols) + 2L * counter - 1L):ncol(TestData)))
-      }
-    }
-  } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L, (2L+length(IDcols)):(4+length(IDcols)), 2L:(1L+length(IDcols)), (5L+length(IDcols)):ncol(TestData)))
-    } 
-  } else if(counter == 2L & length(Buckets) != 1L) {
-    if(length(IDcols) != 0L) {
-      if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(ncol(TestData), 1L, (2L + length(IDcols)):(3L + length(IDcols) + 2L*counter-2L), 2L:(1L + length(IDcols)), (3L + length(IDcols) + 2L * counter - 1L):(ncol(TestData)-1L)))
-      } else {
-        data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):(4L + length(IDcols) + 2L*counter-2L), 3L:(2L + length(IDcols)), (4L + length(IDcols) + 2L * counter - 1L):(ncol(TestData)-1L)))
+        data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L + Degenerate), (length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter + Degenerate), (length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate + 2L)))
       }
     } else {
-      data.table::setcolorder(TestData, c(ncol(TestData),1L:(ncol(TestData)-1L)))
+      data.table::setcolorder(TestData, c(1L:(counter + Degenerate), (2L + counter + Degenerate):(1L + 2L * (counter + Degenerate)), (1L + counter + Degenerate), (2L + 2L * (counter + Degenerate)):ncol(TestData)))
+      data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
+    }
+  } else if(counter == 2L & length(Buckets) == 1L) {
+    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
+  } else if(counter == 2L & length(Buckets) != 1L) {
+    if(length(IDcols) != 0L) {
+      data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
+      data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter), which(names(TestData) %in% setdiff(names(TestData), names(TestData)[c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter))]))))
+    } else {
+      data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
     }
   } else {
     if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L+length(IDcols)):(4L+length(IDcols)), 3L:(2L+length(IDcols)), (5L+length(IDcols)):ncol(TestData)))
-    } 
+      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
+      data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
+    }
   }
-
+  
   # Final Combination of Predictions----
-  # Logic: 1 Buckets --> 4 columns of preds
-  #        2 Buckets --> 6 columns of preds
-  #        3 Buckets --> 8 columns of preds
-  # Secondary logic: for i == 1, need to create the final column first
-  #                  for i > 1, need to take the final column and add the product of the next preds
-  Cols <- ncol(TestData)
-  if(counter > 2L) {
-    for(i in seq_len(length(Buckets)+1)) {
+  if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
+    for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
-        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + counter + Degenerate]])
+        TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       } else {
-        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
+        TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       }
-    }  
-  } else if(counter == 2L & length(Buckets) != 1L) {
-    for (i in seq_len(length(Buckets)+1)) {
-      if(i == 1L) {
-        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[i]] * TestData[[i + 1L + counter]])
-      } else {
-        data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
-      }
-    }  
-  } else if(counter == 2L & length(Buckets) == 1L) {
-    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1]] * TestData[[3]] + TestData[[2L]] * TestData[[4L]])
+    }
   } else {
-    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]])
+    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
   
   # R-Sq----
@@ -745,15 +734,18 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     }
   }
 
+  # Save args list to file----
+  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, "_HurdleArgList.Rdata")))
+  
   # Return Output----
-  return(
-    list(
-      ModelList = ModelList,
-      ClassificationMetrics = ClassEvaluationMetrics,
-      FinalTestData = TestData,
-      EvaluationPlot = EvaluationPlot,
-      EvaluationBoxPlot = EvaluationBoxPlot,
-      EvaluationMetrics = EvaluationMetrics,
-      PartialDependencePlots = ParDepPlots,
-      PartialDependenceBoxPlots = ParDepBoxPlots))
+  return(list(
+    ArgsList = ArgsList,
+    ModelList = ModelList,
+    ClassificationMetrics = ClassEvaluationMetrics,
+    FinalTestData = TestData,
+    EvaluationPlot = EvaluationPlot,
+    EvaluationBoxPlot = EvaluationBoxPlot,
+    EvaluationMetrics = EvaluationMetrics,
+    PartialDependencePlots = ParDepPlots,
+    PartialDependenceBoxPlots = ParDepBoxPlots))
 }
