@@ -608,11 +608,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # Final Combination of Predictions----
-  # Logic: 1 Buckets --> 4 columns of preds
-  #        2 Buckets --> 6 columns of preds
-  #        3 Buckets --> 8 columns of preds
-  # Secondary logic: for i == 1, need to create the final column first
-  #                  for i > 1, need to take the final column and add the product of the next preds
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
