@@ -305,10 +305,10 @@ ContinuousTimeDataGenerator <- function(data,
   if(PrintSteps) print("Running Time Trend Calculation")
   TimeTrendStart <- Sys.time()
   if(!is.null(GroupingVariables)) {
-    data.table::setorderv(data, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L,-1L))
+    data.table::setorderv(data, cols = c(eval(GroupingVariables), eval(DateVariableName)), order = c(1L, 1L))
     data[, TimeTrend := 1L:.N, by = list(GroupVar)]
   } else {
-    data.table::setorderv(data, cols = c(eval(DateVariableName)), order = c(-1L))
+    data.table::setorderv(data, cols = c(eval(DateVariableName)), order = c(1L))
     data[, TimeTrend := 1L:.N]
   }
   TimeTrendEnd <- Sys.time()

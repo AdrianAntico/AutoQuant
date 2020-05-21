@@ -408,24 +408,22 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     }
     
     # Create Modified IDcols----
-    IDcolsModified <- unique(c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName))
+    IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
     
-    # Load Winning Grid if it exists----
-    if(file.exists(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))) gridSaved <- data.table::fread(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))
-    if(file.exists(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))) gridSaved <- data.table::fread(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))
-
-    # AutoXGBoostRegression()----
+    # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
+      
+      # If there is some variance then build model
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
         
         # Increment----
-        counter <- counter + 1L
+        counter <- counter - 1L
         
-        # Define ModelIDD----
-        if (bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket-1L,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
+        # Modify filepath and file name----
+        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
         
         # Build model----
-        TestModel <- RemixAutoML::AutoXGBoostRegression(
+        RegModel <- RemixAutoML::AutoXGBoostRegression(
           TrainOnFull = TrainOnFull,
           data = trainBucket,
           ValidationData = validBucket,
@@ -461,11 +459,13 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           colsample_bytree = colsample_bytree)
 
         # Store Model----
-        RegressionModel <- TestModel$Model
-        ModelList[[paste0("RegressionModel_",bucket)]] <- RegressionModel
-        FactorLevelsListOutput <- TestModel$FactorLevelsList
-        if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel[["TransformationResults"]]
-        if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
+        RegressionModel <- RegModel$Model
+        if(ReturnModelObjects | SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
+        if(!is.null(TransformNumericColumns)) {
+          ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- RegModel$TransformationResults
+        } else {
+          ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- NULL
+        }
         
         # Garbage Collection----
         gc()
@@ -523,27 +523,32 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         }
           
         # Clear TestModel From Memory----
-        rm(TestModel, RegressionModel)
+        rm(RegModel,RegressionModel)
         
         # Change prediction name to prevent duplicates----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) {
-          data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
-        } else {
-          data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
-        }
+        if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
+        data.table::setnames(TestData, "Predictions", Val)
+        
       } else {
+        
+        # Account for degenerate distributions----
+        ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
         
         # Use single value for predictions in the case of zero variance----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
-          data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
         } else {
           Degenerate <- Degenerate + 1L
-          data.table::set(TestData, j = paste0("Predictions_", Buckets[bucket]), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
+          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
         }
       }
+    } else {
+      
+      # Account for degenerate distributions----
+      ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
     }
   }
   
