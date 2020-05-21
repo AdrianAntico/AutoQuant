@@ -319,9 +319,16 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   ModelList[["ClassificationModel"]] <- ClassModel
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
+  if(length(Buckets) > 1L) {
+    TargetLevels <- ClassifierModel$TargetLevels
+    ArgsList[["TargetLevels"]] <- TargetLevels
+  } else {
+    TargetLevels <- NULL
+    ArgsList[["TargetLevels"]] <- NULL
+  }
   FactorLevelsListOutput <- ClassifierModel$FactorLevels
   if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
+  ArgsList[["FactorLevelsList"]] <- FactorLevelsList
   rm(ClassifierModel)
   
   # Add Target to IDcols----

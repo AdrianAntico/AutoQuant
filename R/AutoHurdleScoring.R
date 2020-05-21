@@ -57,6 +57,9 @@ AutoHurdleScoring <- function(TestData = NULL,
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
   
+  # Factor levels list----
+  if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgsList$FactorLevelsList else FactorLevelsList <- NULL
+  
   # Store IDcols----
   IDcolsReorder <- ArgList$IDcols
   IDcols <- ArgList$IDcols
@@ -87,6 +90,31 @@ AutoHurdleScoring <- function(TestData = NULL,
       MDP_Impute = FALSE,
       MDP_CharToFactor = TRUE,
       MDP_RemoveDates = FALSE,
+      MDP_MissFactor = "0",
+      MDP_MissNum = -1)
+  } else if(tolower(ModelClass) == "xgboost") {
+    TestData <- AutoXGBoostScoring(
+      TargetType = TargetType,
+      ScoringData = TestData,
+      FeatureColumnNames = FeatureNames,
+      IDcols = IDcols,
+      FactorLevelsList = FactorLevelsList,
+      TargetLevels = ArgList$TargetLevels,
+      Objective = Objective,
+      OneHot = FALSE,
+      ModelObject = ClassModel,
+      ModelPath = ArgList$Paths,
+      ModelID = ArgList$ModelID,
+      ReturnFeatures = TRUE,
+      TransformNumeric = FALSE,
+      BackTransNumeric = FALSE,
+      TargetColumnName = NULL,
+      TransformationObject = NULL,
+      TransID = NULL,
+      TransPath = NULL,
+      MDP_Impute = TRUE,
+      MDP_CharToFactor = TRUE,
+      MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
   } else if(tolower(ModelClass) == "h2odrf") {
@@ -185,6 +213,30 @@ AutoHurdleScoring <- function(TestData = NULL,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
       }
+      
+      # XGBoost Model Scoring----
+      TestData <- AutoXGBoostScoring(
+        TargetType = "regression",
+        ScoringData = TestData,
+        FeatureColumnNames = FeatureNames,
+        IDcols = IDcolsModified,
+        FactorLevelsList = FactorLevelsList,
+        OneHot = FALSE,
+        ModelObject = RegressionModel,
+        ModelPath = Paths,
+        ModelID = ModelIDD,
+        ReturnFeatures = TRUE,
+        TargetColumnName = ArgList$TransformNumericColumns,
+        TransformNumeric = Transform,
+        BackTransNumeric = Transform,
+        TransformationObject = TransformationObject,
+        TransID = NULL,
+        TransPath = NULL,
+        MDP_Impute = TRUE,
+        MDP_CharToFactor = TRUE,
+        MDP_RemoveDates = FALSE,
+        MDP_MissFactor = "0",
+        MDP_MissNum = -1)
       
       # H2O DRF Model Scroring----
       if(tolower(ModelClass) == "h2odrf") {

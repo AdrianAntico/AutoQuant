@@ -344,7 +344,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Score Classification Model----
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
    
-  # Model Scoring---- 
+  # Model Scoring----
   TestData <- AutoCatBoostScoring(
     RemoveModel = TRUE,
     TargetType = TargetType,
