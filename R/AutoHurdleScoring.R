@@ -14,8 +14,8 @@ AutoHurdleScoring <- function(TestData = NULL,
                               Path = NULL,
                               ModelID = NULL,
                               ModelClass = "catboost",
-                              ArgList = Output$ArgsList,
-                              ModelList = Output$ModelList) {
+                              ArgList = NULL,
+                              ModelList = NULL) {
   
   # Load ArgList and ModelList if NULL----
   if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
@@ -31,7 +31,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
   
   # Store classifier model----
-  if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths),ArgList$ModelID)) else return("Need to supply a ModelList")
+  if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ArgList$ModelID)) else return("Need to supply a ModelList")
   
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
@@ -244,13 +244,13 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
-        TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i+(length(Buckets)+1L)]]]
+        TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       } else {
-        TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i+(length(Buckets)+1L)]]]
+        TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
       }
     }
   } else {
-    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * (TestData[[4L]])]
+    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
   
   # Return preds----

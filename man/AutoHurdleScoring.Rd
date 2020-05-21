@@ -6,13 +6,19 @@
 \usage{
 AutoHurdleScoring(
   TestData = NULL,
+  Path = NULL,
+  ModelID = NULL,
   ModelClass = "catboost",
-  ArgList = Output$ArgsList,
-  ModelList = Output$ModelList
+  ArgList = NULL,
+  ModelList = NULL
 )
 }
 \arguments{
 \item{TestData}{scoring data.table}
+
+\item{Path}{Supply if ArgList is NULL or ModelList is null.}
+
+\item{ModelID}{Supply if ArgList is NULL or ModelList is null. Same as used in model training.}
 
 \item{ModelClass}{Name of model type. "catboost" is currently the only available option}
 
