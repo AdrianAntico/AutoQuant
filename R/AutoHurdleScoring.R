@@ -4,14 +4,25 @@
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param TestData scoring data.table
+#' @param Path Supply if ArgList is NULL or ModelList is null.
+#' @param ModelID Supply if ArgList is NULL or ModelList is null. Same as used in model training.
 #' @param ModelClass Name of model type. "catboost" is currently the only available option
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
 #' @export
 AutoHurdleScoring <- function(TestData = NULL,
+                              Path = NULL,
+                              ModelID = NULL,
                               ModelClass = "catboost",
                               ArgList = Output$ArgsList,
                               ModelList = Output$ModelList) {
+  
+  # Load ArgList and ModelList if NULL----
+  if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
+  
+  # Load ArgList and ModelList if not supplied----
+  if(is.null(ArgList)) load(file.path(normalizePath(Path), paste0(ModelID, "_HurdleArgList.Rdata")))
+  ArgList <- ArgsList; rm(ArgsList)
   
   # Define Buckets----
   Buckets <- ArgList$Buckets
@@ -20,7 +31,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
   
   # Store classifier model----
-  if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths),ArgList$ModelID)) else return("Need to supply a ModelList or ModelID")
+  if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths),ArgList$ModelID)) else return("Need to supply a ModelList")
   
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
@@ -91,9 +102,6 @@ AutoHurdleScoring <- function(TestData = NULL,
     data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
   }
   
-  # Remove Target From IDcols----
-  # IDcols <- IDcols[!(IDcols %chin% ArgList$TargetColumnName)]
-  
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   
@@ -106,7 +114,7 @@ AutoHurdleScoring <- function(TestData = NULL,
     IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
     
     # Check for constant value bucket----
-    if(!any(bucket %in% c(Output$ArgsList$constant))) {
+    if(!any(bucket %in% c(ArgList$constant))) {
       
       # Increment----
       counter <- counter - 1L
@@ -126,6 +134,13 @@ AutoHurdleScoring <- function(TestData = NULL,
         Transform <- FALSE
       }
       
+      # Model----
+      if(!is.null(ModelList)) {
+        RegressionModel <- ModelList[[ModelIDD]]
+      } else {
+        RegressionModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ModelIDD))
+      }
+      
       # Catboost Model Scroring----
       if(tolower(ModelClass) == "catboost") {
         TestData <- AutoCatBoostScoring(
@@ -133,7 +148,7 @@ AutoHurdleScoring <- function(TestData = NULL,
           ScoringData = TestData,
           FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
-          ModelObject = ModelList[[ModelIDD]],
+          ModelObject = RegressionModel,
           ModelPath = Paths,
           ModelID = ModelIDD,
           ReturnFeatures = TRUE,
@@ -174,6 +189,9 @@ AutoHurdleScoring <- function(TestData = NULL,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
       }
+      
+      # Remove Model----
+      rm(RegressionModel)
       
       # Change prediction name to prevent duplicates----
       if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
