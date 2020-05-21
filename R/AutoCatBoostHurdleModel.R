@@ -649,11 +649,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     aggrfun = function(x) mean(x, na.rm = TRUE))
   
   # Add Number of Trees to Title----
-  EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3)))
+  EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
   
   # Save plot to file----
   if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths[1L])) {
+    if(!is.null(MetaDataPaths)) {
       ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
     } else {
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
