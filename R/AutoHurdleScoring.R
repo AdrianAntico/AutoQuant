@@ -212,9 +212,9 @@ AutoHurdleScoring <- function(TestData = NULL,
   
   # Rearrange Column order----
   if(counter > 2L) {
-    if(length(IDcolsReorderReorder) != 0L) {
+    if(length(IDcolsReorder) != 0L) {
       if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(2L:(1L + length(IDcolsReorderReorder)), 1L, (2L + length(IDcolsReorder)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(2L:(1L + length(IDcolsReorder)), 1L, (2L + length(IDcolsReorder)):ncol(TestData)))
         data.table::setcolorder(TestData, c(1L:length(IDcolsReorder),(length(IDcolsReorder) + counter + 1L),(length(IDcolsReorder) + counter + 1L + counter +1L):ncol(TestData), (length(IDcolsReorder) + 1L):(length(IDcolsReorder) + counter),(length(IDcolsReorder) + counter + 2L):(length(IDcolsReorder)+counter+1L+counter)))
       } else {
         data.table::setcolorder(TestData, c(3L:(2L + length(IDcolsReorder)), 1L:2L, (3L + length(IDcolsReorder)):ncol(TestData)))
