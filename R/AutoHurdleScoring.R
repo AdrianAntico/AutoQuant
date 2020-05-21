@@ -275,6 +275,5 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
   
   # Return preds----
-  data.table::setcolorder(TestData), c(ncol(TestData), 1L:(ncol(TestData) - 1L))
-  return(TestData)
+  return(data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
 }
