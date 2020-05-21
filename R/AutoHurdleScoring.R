@@ -212,20 +212,20 @@ AutoHurdleScoring <- function(TestData = NULL,
   
   # Rearrange Column order----
   if(counter > 2L) {
-    if(length(IDcolsReorder) != 0L) {
+    if(length(IDcols) != 0L) {
       if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(2L:(1L + length(IDcolsReorder)), 1L, (2L + length(IDcolsReorder)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcolsReorder),(length(IDcolsReorder) + counter + 1L),(length(IDcolsReorder) + counter + 1L + counter +1L):ncol(TestData), (length(IDcolsReorder) + 1L):(length(IDcolsReorder) + counter),(length(IDcolsReorder) + counter + 2L):(length(IDcolsReorder)+counter+1L+counter)))
+        data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L),(length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter),(length(IDcols) + counter + 2L):(length(IDcols)+counter+1L+counter)))
       } else {
-        data.table::setcolorder(TestData, c(3L:(2L + length(IDcolsReorder)), 1L:2L, (3L + length(IDcolsReorder)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcolsReorder),(length(IDcolsReorder) + counter + 1L + Degenerate),(length(IDcolsReorder) + counter + 3L + counter + Degenerate):ncol(TestData),(length(IDcolsReorder) + 1L):(length(IDcolsReorder) + counter + Degenerate),(length(IDcolsReorder) + counter + 2L + Degenerate):(length(IDcolsReorder)+counter+counter+Degenerate+2L)))
+        data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
+        data.table::setcolorder(TestData, c(1L:length(IDcols),(length(IDcols) + counter + 1L + Degenerate),(length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData),(length(IDcols) + 1L):(length(IDcols) + counter + Degenerate),(length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate+2L)))
       }
     } else {
       data.table::setcolorder(TestData, c(1L:(counter+Degenerate),(2L+counter+Degenerate):(1L+2L*(counter+Degenerate)),(1L+counter+Degenerate),(2L+2L*(counter+Degenerate)):ncol(TestData)))
       data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
     }
   } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcolsReorder) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (3L + length(IDcolsReorder)):ncol(TestData), 3L:(2L + length(IDcolsReorder))))
+    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (3L + length(IDcols)):ncol(TestData), 3L:(2L + length(IDcols))))
   } else if(counter == 2L & length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
@@ -234,8 +234,8 @@ AutoHurdleScoring <- function(TestData = NULL,
       data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
     }
   } else {
-    if(length(IDcolsReorder) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcolsReorder)):((3L + length(IDcolsReorder)) + 1L),3L:(2L + length(IDcolsReorder)),(((3L + length(IDcolsReorder)) + 2L):ncol(TestData))))
+    if(length(IDcols) != 0L) {
+      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L),3L:(2L + length(IDcols)),(((3L + length(IDcols)) + 2L):ncol(TestData))))
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   }
