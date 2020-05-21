@@ -26,8 +26,33 @@ AutoHurdleScoring(
 
 \item{ModelList}{Output from the hurdle model}
 }
+\value{
+
+}
 \description{
 AutoHurdleScoring()
+}
+\examples{
+\donttest{
+
+# Score models by calling them from file
+HurdleScores <- RemixAutoML::AutoHurdleScoring(
+   TestData = data,
+   Path = Path,
+   ModelID = "ModelTest",
+   ModelClass = "catboost",
+   ModelList = NULL,
+   ArgList = NULL)
+
+# Score models by using output object from training
+HurdleScores <- RemixAutoML::AutoHurdleScoring(
+   TestData = data,
+   Path = Path,
+   ModelID = "ModelTest",
+   ModelClass = "catboost",
+   ModelList = Output$ModelList,
+   ArgList = Output$ArgsList)
+}
 }
 \seealso{
 Other Automated Model Scoring: 

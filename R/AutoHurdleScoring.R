@@ -9,6 +9,28 @@
 #' @param ModelClass Name of model type. "catboost" is currently the only available option
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
+#' @return 
+#' @examples 
+#' \donttest{
+#' 
+#' # Score models by calling them from file
+#' HurdleScores <- RemixAutoML::AutoHurdleScoring(
+#'    TestData = data,
+#'    Path = Path,
+#'    ModelID = "ModelTest",
+#'    ModelClass = "catboost",
+#'    ModelList = NULL,
+#'    ArgList = NULL)
+#'
+#' # Score models by using output object from training
+#' HurdleScores <- RemixAutoML::AutoHurdleScoring(
+#'    TestData = data,
+#'    Path = Path,
+#'    ModelID = "ModelTest",
+#'    ModelClass = "catboost",
+#'    ModelList = Output$ModelList,
+#'    ArgList = Output$ArgsList)
+#' }
 #' @export
 AutoHurdleScoring <- function(TestData = NULL,
                               Path = NULL,
