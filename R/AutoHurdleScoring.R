@@ -133,7 +133,7 @@ AutoHurdleScoring <- function(TestData = NULL,
           ScoringData = TestData,
           FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
-          ModelObject = ModelList[[bucket]],
+          ModelObject = ModelList[[ModelIDD]],
           ModelPath = Paths,
           ModelID = ModelIDD,
           ReturnFeatures = TRUE,
@@ -230,7 +230,6 @@ AutoHurdleScoring <- function(TestData = NULL,
   #        3 Buckets --> 8 columns of preds
   # Secondary logic: for i == 1, need to create the final column first
   #                  for i > 1, need to take the final column and add the product of the next preds
-  Cols <- ncol(TestData)
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
