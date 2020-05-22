@@ -229,28 +229,30 @@ AutoHurdleScoring <- function(TestData = NULL,
       }
       
       # XGBoost Model Scoring----
-      TestData <- AutoXGBoostScoring(
-        TargetType = "regression",
-        ScoringData = TestData,
-        FeatureColumnNames = FeatureNames,
-        IDcols = IDcolsModified,
-        FactorLevelsList = FactorLevelsList,
-        OneHot = FALSE,
-        ModelObject = RegressionModel,
-        ModelPath = Paths,
-        ModelID = ModelIDD,
-        ReturnFeatures = TRUE,
-        TargetColumnName = ArgList$TransformNumericColumns,
-        TransformNumeric = Transform,
-        BackTransNumeric = Transform,
-        TransformationObject = TransformationObject,
-        TransID = NULL,
-        TransPath = NULL,
-        MDP_Impute = TRUE,
-        MDP_CharToFactor = TRUE,
-        MDP_RemoveDates = FALSE,
-        MDP_MissFactor = "0",
-        MDP_MissNum = -1)
+      if(tolower(ModelClass) == "xgboost") {
+        TestData <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = TestData,
+          FeatureColumnNames = FeatureNames,
+          IDcols = IDcolsModified,
+          FactorLevelsList = FactorLevelsList,
+          OneHot = FALSE,
+          ModelObject = RegressionModel,
+          ModelPath = Paths,
+          ModelID = ModelIDD,
+          ReturnFeatures = TRUE,
+          TargetColumnName = ArgList$TransformNumericColumns,
+          TransformNumeric = Transform,
+          BackTransNumeric = Transform,
+          TransformationObject = TransformationObject,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = FALSE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
       
       # H2O DRF Model Scroring----
       if(tolower(ModelClass) == "h2odrf") {
