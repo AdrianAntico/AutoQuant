@@ -68,7 +68,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   FeatureNames <- ArgList$FeatureColNames
   
   # Factor levels list----
-  if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgsList$FactorLevelsList else FactorLevelsList <- NULL
+  if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgList$FactorLevelsList else FactorLevelsList <- NULL
   
   # Store IDcols----
   IDcolsReorder <- ArgList$IDcols
