@@ -155,8 +155,12 @@ AutoHurdleScoring <- function(TestData = NULL,
   rm(ClassModel)
   
   # Change name for classification----
-  if(TargetType == "Classification") {
+  if(tolower(TargetType) == "classification" & tolower(ModelClass) == "catboost") {
     data.table::setnames(TestData, "p1", "Predictions_C1")
+    TestData[, Predictions_C0 := 1 - Predictions_C1]
+    data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
+  } else if(tolower(TargetType) == "classification" & tolower(ModelClass) == "xgboost") {
+    data.table::setnames(TestData, "Predictions", "Predictions_C1")
     TestData[, Predictions_C0 := 1 - Predictions_C1]
     data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
   }
