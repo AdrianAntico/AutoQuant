@@ -5,11 +5,12 @@
 \title{FakeDataGenerator}
 \usage{
 FakeDataGenerator(
-  Correlation = 0.85,
-  N = 1000,
-  ID = 1,
-  ZIP = 1,
-  AddDate = FALSE,
+  Correlation = 0.7,
+  N = 25000L,
+  ID = 5L,
+  ZIP = 5L,
+  FactorCount = 2L,
+  AddDate = TRUE,
   Classification = FALSE,
   MultiClass = FALSE
 )
@@ -21,7 +22,9 @@ FakeDataGenerator(
 
 \item{ID}{Number of IDcols to include}
 
-\item{ZIP}{Parameter for zero inflated data generation}
+\item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
+
+\item{FactorCount}{Number of factor type columns to create}
 
 \item{AddDate}{Set to TRUE to include a date column}
 
@@ -34,7 +37,15 @@ FakeDataGenerator
 }
 \examples{
 \donttest{
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 0, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+   Correlation = 0.70,
+   N = 25000L,
+   ID = 2L,
+   ZIP = 2L,
+   FactorCount = 2L,
+   AddDate = TRUE,
+   Classification = FALSE,
+   MultiClass = FALSE)
 }
 }
 \seealso{

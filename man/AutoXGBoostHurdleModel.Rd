@@ -22,6 +22,7 @@ AutoXGBoostHurdleModel(
   TransformNumericColumns = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
   NumOfParDepPlots = 10L,
   GridTune = FALSE,
   grid_eval_metric = "accuracy",
@@ -71,6 +72,8 @@ AutoXGBoostHurdleModel(
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
+
+\item{ReturnModelObjects}{Set to TRUE to return all model objects}
 
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
@@ -131,6 +134,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
    # options
    TransformNumericColumns = NULL,
    SplitRatios = c(0.70, 0.20, 0.10),
+   ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    NumOfParDepPlots = 10L,
 
