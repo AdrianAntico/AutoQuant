@@ -32,7 +32,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
                               Classification = FALSE,
                               MultiClass = FALSE) {
   
-  # 
+  # Modify----
   if(MultiClass & FactorCount == 0L) {
     FactorCount <- 1L
     temp <- 1L
@@ -100,8 +100,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
     data[, Adrian := NULL]
     data.table::setnames(data, "Factor_1", "Adrian")
   }
-  
-  if(MultiClass & FactorCount == 0L) FactorCount <- 1L
   
   # Return data----
   return(data)
