@@ -453,7 +453,7 @@ AutoXGBoostMultiClass <- function(data,
     }  
   }
   
-  # MultiClass Save Names of data----
+  # MultiClass Update Colnames----
   if(is.numeric(FeatureColNames)) {
     Names <- data.table::as.data.table(names(data)[FeatureColNames])
     data.table::setnames(Names, "V1", "ColNames")
@@ -465,6 +465,8 @@ AutoXGBoostMultiClass <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
+  
+  # Save column names----
   if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
   
   # MultiClass Subset Target Variables----
@@ -801,9 +803,9 @@ AutoXGBoostMultiClass <- function(data,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if (SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        data.table::fwrite(EvaluationMetrics, file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))        
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
   }
