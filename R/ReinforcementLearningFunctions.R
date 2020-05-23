@@ -979,7 +979,7 @@ XGBoostRegressionParams <- function(counter = NULL,
     if(counter == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:linear',
+        objective             = 'reg:squarederror',
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -990,7 +990,7 @@ XGBoostRegressionParams <- function(counter = NULL,
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:linear',
+        objective             = 'reg:squarederror',
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -1005,7 +1005,7 @@ XGBoostRegressionParams <- function(counter = NULL,
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:linear',
+      objective             = 'reg:squarederror',
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
@@ -1030,7 +1030,7 @@ XGBoostRegressionParams <- function(counter = NULL,
 XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
                                      calibEval) {
-  if (tolower(grid_eval_metric) == "poisson") {
+  if(tolower(grid_eval_metric) == "poisson") {
     if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := p1 - Target * log(p1 + 1)]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]

@@ -727,7 +727,7 @@ AutoXGBoostRegression <- function(data,
     if(BestGrid$RunNumber == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:linear',
+        objective             = 'reg:squarederror',
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -741,7 +741,7 @@ AutoXGBoostRegression <- function(data,
     } else {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:linear',
+        objective             = 'reg:squarederror',
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -761,7 +761,7 @@ AutoXGBoostRegression <- function(data,
   if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:linear',
+      objective             = 'reg:squarederror',
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
