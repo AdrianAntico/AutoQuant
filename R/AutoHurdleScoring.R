@@ -252,7 +252,7 @@ AutoHurdleScoring <- function(TestData = NULL,
         Transform <- FALSE
       }
       
-      # Model----
+      # Load Model----
       if(!is.null(ModelList)) {
         RegressionModel <- ModelList[[ModelIDD]]
       } else {
