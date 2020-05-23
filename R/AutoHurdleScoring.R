@@ -408,8 +408,12 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
   
   # Final column rearrange----
-  while(which(names(TestData) == ArgList$TargetColumnName) != 1L) data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
-  
+  if(ArgList$TargetColumnName %chin% names(TestData)) {
+    while(which(names(TestData) == ArgList$TargetColumnName) > 1L) data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+  } else {
+    data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+  }
+
   # Return preds----
-  return(data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L))))
+  return(TestData)
 }
