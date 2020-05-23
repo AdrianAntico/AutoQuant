@@ -311,6 +311,53 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       min_child_weight = min_child_weight,
       subsample = subsample,
       colsample_bytree = colsample_bytree)
+    
+    # grid_eval_metric = grid_eval_metric
+    # eval_metric = "merror"
+    # Objective = 'multi:softprob'
+    # 
+    # # general args----
+    # TrainOnFull = TrainOnFull
+    # TreeMethod = TreeMethod
+    # PassInGrid = PassInGrid
+    # NThreads = NThreads
+    # model_path = Paths
+    # metadata_path = MetaDataPaths
+    # ModelID = ModelID
+    # 
+    # # options----
+    # ReturnModelObjects = TRUE
+    # ReturnFactorLevels = TRUE
+    # NumOfParDepPlots = NumOfParDepPlots
+    # SaveModelObjects = SaveModelObjects
+    # Verbose = 1L
+    # 
+    # # data args----
+    # data = data
+    # ValidationData = ValidationData
+    # TestData = TestData
+    # TargetColumnName = "Target_Buckets"
+    # FeatureColNames = FeatureNames
+    # IDcols = IDcols
+    # 
+    # # Grid tuning args----
+    # GridTune = GridTune
+    # BaselineComparison = BaselineComparison
+    # MaxModelsInGrid = MaxModelsInGrid
+    # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+    # MaxRunMinutes = MaxRunMinutes
+    # Shuffles = 2L
+    # 
+    # # bandit args----
+    # Trees = Trees
+    # eta = eta
+    # max_depth = max_depth
+    # 
+    # # random args----
+    # min_child_weight = min_child_weight
+    # subsample = subsample
+    # colsample_bytree = colsample_bytree
+    
   }
   
   # Store metadata----

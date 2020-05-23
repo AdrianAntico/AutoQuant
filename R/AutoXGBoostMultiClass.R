@@ -842,6 +842,7 @@ AutoXGBoostMultiClass <- function(data,
   
   # MultiClass Return Model Objects----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
+  if(!exists("ExperimentalGrid")) ExperimentalGrid <- NULL
   
   # MultiClass Return Model Objects----
   if(!GridTune) GridMetrics <- NULL
