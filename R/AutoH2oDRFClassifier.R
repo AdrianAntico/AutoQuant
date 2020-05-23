@@ -487,7 +487,7 @@ AutoH2oDRFClassifier <- function(data,
   ParDepPlots <- list()
   j <- 0L
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = ValidationData,
@@ -503,7 +503,7 @@ AutoH2oDRFClassifier <- function(data,
       }, error = function(x) "skip")
     }
   } else {
-    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = ValidationData,

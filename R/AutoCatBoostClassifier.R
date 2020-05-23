@@ -762,7 +762,7 @@ AutoCatBoostClassifier <- function(data,
   ParDepBoxPlots <- list()
   j <- 0L
   if(!is.null(VariableImportance)) {
-    for (i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = ValidationData,

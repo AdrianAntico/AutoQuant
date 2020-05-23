@@ -592,7 +592,7 @@ AutoH2oDRFRegression <- function(data,
     if(NumOfParDepPlots == 0) {
       j <- 0L
       k <- 0L
-      for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+      for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
         tryCatch({
           Out <- ParDepCalPlots(
             data = ValidationData,

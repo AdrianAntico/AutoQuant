@@ -609,7 +609,7 @@ AutoH2oDRFHurdleModel <- function(data,
   j <- 0L
   ParDepBoxPlots <- list()
   k <- 0L
-  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,

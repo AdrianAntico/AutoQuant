@@ -935,7 +935,7 @@ AutoXGBoostRegression <- function(data,
     # Variable Importance Formatting----
     if(VariableImportance[, .N] != 0L) {
       VariableImportance[, ':=' (Gain = round(Gain, 4), Cover = round(Cover, 4), Frequency = round(Frequency, 4L))]
-      if (SaveModelObjects) {
+      if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
           data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
         } else {
@@ -949,7 +949,7 @@ AutoXGBoostRegression <- function(data,
       if(NumOfParDepPlots == 0L) {
         j <- 0L
         k <- 0L
-        for(i in seq_len(min(length(VariableImportance[, Feature]), NumOfParDepPlots))) {
+        for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
           tryCatch({
             Out <- ParDepCalPlots(
               data = ValidationData,
@@ -962,18 +962,17 @@ AutoXGBoostRegression <- function(data,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
             ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
-            }, error = function(x) "skip")
-          
-          # Calibration Box Plots----
-          tryCatch({Out1 <- ParDepCalPlots(
-            data = ValidationData,
-            PredictionColName = "Predict",
-            TargetColName = eval(TargetColumnName),
-            IndepVar = VariableImportance[i, Feature],
-            GraphType = "boxplot",
-            PercentileBucket = 0.05,
-            FactLevels = 10L,
-            Function = function(x) mean(x, na.rm = TRUE))
+          }, error = function(x) "skip")
+          tryCatch({
+            Out1 <- ParDepCalPlots(
+              data = ValidationData,
+              PredictionColName = "Predict",
+              TargetColName = eval(TargetColumnName),
+              IndepVar = VariableImportance[i, Feature],
+              GraphType = "boxplot",
+              PercentileBucket = 0.05,
+              FactLevels = 10L,
+              Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
             ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
           }, error = function(x) "skip")
@@ -1011,7 +1010,7 @@ AutoXGBoostRegression <- function(data,
       }
     }
     
-    # Regression Remove Extraneous Variables----
+    # Regression Remove Extraneous Columns----
     ValidationData[, ':=' (Metric = NULL)]
     
     # Regression Formal Evaluation Table
@@ -1027,7 +1026,7 @@ AutoXGBoostRegression <- function(data,
     }    
   }
   
-  # VI_Plot_Function
+  # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
       ggplot2::geom_bar(stat = "identity") +

@@ -749,7 +749,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   j <- 0L
   ParDepBoxPlots <- list()
   k <- 0L
-  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
@@ -781,8 +781,10 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
+      save(ParDepPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepPlots.R")))
       save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
     } else {
+      save(ParDepPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepPlots.R")))
       save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }

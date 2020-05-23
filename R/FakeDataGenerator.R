@@ -77,7 +77,11 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # Zero Inflation Setup----
   if(!Classification & !MultiClass) {
     if(ZIP == 1L) {
-      data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, log(Adrian*10))]
+      # hist(data$Adrian)
+      # hist(data$Independent_Variable8)
+      # hist(log(MASS::rnegbin(n = N, mu = 50, theta = 0.25)) + 1L)
+      # hist(rnbinom(n = N, size = 50, prob = 0.5))
+      data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, Independent_Variable8)]
     } else if(ZIP == 2L) {
       data[, Adrian := data.table::fifelse(Adrian < 0.33, 0, data.table::fifelse(Adrian < 0.66, log(Adrian * 10), log(Adrian*20)))]
     } else if(ZIP == 3L) {

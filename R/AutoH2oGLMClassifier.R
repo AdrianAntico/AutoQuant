@@ -145,11 +145,11 @@ AutoH2oGLMClassifier <- function(data,
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain    <- h2o::as.h2o(dataTrain)
+    datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
     # Binary Grid Tune Search Criteria----
-    search_criteria  <- list(
+    search_criteria <- list(
       strategy             = "RandomDiscrete",
       max_runtime_secs     = 3600 * 24 * 7,
       max_models           = MaxModelsInGrid,
@@ -476,7 +476,7 @@ AutoH2oGLMClassifier <- function(data,
   ParDepPlots <- list()
   j <- 0L
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = ValidationData,
@@ -492,7 +492,7 @@ AutoH2oGLMClassifier <- function(data,
       }, error = function(x) "skip")
     }
   } else {
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = ValidationData,
