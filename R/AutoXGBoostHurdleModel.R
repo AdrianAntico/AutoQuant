@@ -755,26 +755,26 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         data = TestData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Variable],
+        IndepVar = VariableImportance[i, Feature],
         GraphType = "calibration",
         PercentileBucket = 0.05,
         FactLevels = 10L,
         Function = function(x) mean(x, na.rm = TRUE))
       j <- j + 1L
-      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+      ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
     }, error = function(x) "skip")
     tryCatch({
       Out1 <- ParDepCalPlots(
         data = ValidationData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Variable],
+        IndepVar = VariableImportance[i, Feature],
         GraphType = "boxplot",
         PercentileBucket = 0.05,
         FactLevels = 10L,
         Function = function(x) mean(x, na.rm = TRUE))
       k <- k + 1L
-      ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+      ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
     }, error = function(x) "skip")
   }
   
