@@ -746,35 +746,31 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   
   # Regression Partial Dependence----
   ParDepPlots <- list()
-  j <- 0L
   ParDepBoxPlots <- list()
-  k <- 0L
-  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
+  for(RowNum in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
     tryCatch({
       Out <- ParDepCalPlots(
         data = TestData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Feature],
+        IndepVar = VariableImportance[RowNum, Feature],
         GraphType = "calibration",
         PercentileBucket = 0.05,
         FactLevels = 10L,
         Function = function(x) mean(x, na.rm = TRUE))
-      j <- j + 1L
-      ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+      ParDepPlots[[paste0(VariableImportance[RowNum, Feature])]] <- Out
     }, error = function(x) "skip")
     tryCatch({
       Out1 <- ParDepCalPlots(
         data = ValidationData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Feature],
+        IndepVar = VariableImportance[RowNum, Feature],
         GraphType = "boxplot",
         PercentileBucket = 0.05,
         FactLevels = 10L,
         Function = function(x) mean(x, na.rm = TRUE))
-      k <- k + 1L
-      ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
+      ParDepBoxPlots[[paste0(VariableImportance[RowNum, Feature])]] <- Out1
     }, error = function(x) "skip")
   }
   
