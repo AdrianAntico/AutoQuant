@@ -256,7 +256,12 @@ AutoHurdleScoring <- function(TestData = NULL,
       if(!is.null(ModelList)) {
         RegressionModel <- ModelList[[ModelIDD]]
       } else {
-        RegressionModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ModelIDD))
+        if(tolower(ModelClass) == "catboost") {
+          RegressionModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ModelIDD))
+        } else if(tolower(ModelClass) == "xgboost") {
+          load(file.path(normalizePath(ArgList$Paths), ModelIDD))
+          RegressionModel <- model
+        }
       }
       
       # Catboost Model Scroring----
