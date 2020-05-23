@@ -762,7 +762,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
     }, error = function(x) "skip")
     tryCatch({
       Out1 <- ParDepCalPlots(
-        data = ValidationData,
+        data = TestData,
         PredictionColName = "UpdatedPrediction",
         TargetColName = eval(TargetColumnName),
         IndepVar = VariableImportance[RowNum, Feature],
