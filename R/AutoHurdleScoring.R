@@ -1,6 +1,7 @@
 #' AutoHurdleScoring() 
 #' 
-#' 
+#' AutoHurdleScoring() can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
+#'  
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param TestData scoring data.table
@@ -13,74 +14,81 @@
 #' @examples 
 #' \donttest{
 #' 
-#' # Pull in some data:
-#' #   N - Change the number of records pulled in
-#' # data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 25000, ID = 0, ZIP = 1, AddDate = FALSE)
-#' # Path <- "C:/Users/aantico/Documents/Package/GUI_Package"
+#' # XGBoost----
 #' 
+#' # Define file path
+#' Path <- "C:/Users/aantico/Documents/Package/GUI_Package"
+#'
+#' # Create hurdle data with correlated features
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 25000,
+#'   ID = 3,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   ZIP = 1,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Define features
+#' Features <- names(data)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","DateTime")]
+#'
+#' # Build hurdle model
 #' Output <- RemixAutoML::AutoXGBoostHurdleModel(
-#' 
-#'    # Operationalization args
-#'    TreeMethod = "hist",
-#'    TrainOnFull = FALSE,
-#'    PassInGrid = NULL,
 #'
-#'    # Metadata args
-#'    NThreads = max(1L, parallel::detectCores()-2L),
-#'    ModelID = "ModelTest",
-#'    Paths = normalizePath(Path),
-#'    MetaDataPaths = NULL,
+#'   # Operationalization args
+#'   TreeMethod = "hist",
+#'   TrainOnFull = FALSE,
+#'   PassInGrid = NULL,
 #'
-#'    # data args
-#'    data,
-#'    ValidationData = NULL,
-#'    TestData = NULL,
-#'    Buckets = 0L,
-#'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[2:ncol(data)],
-#'    IDcols = NULL,
+#'   # Metadata args
+#'   NThreads = max(1L, parallel::detectCores()-2L),
+#'   ModelID = "ModelTest",
+#'   Paths = normalizePath(Path),
+#'   MetaDataPaths = NULL,
+#'   ReturnModelObjects = TRUE,
 #'
-# options
-#'    TransformNumericColumns = NULL,
-#'    SplitRatios = c(0.70, 0.20, 0.10),
-#'    SaveModelObjects = TRUE,
-#'    NumOfParDepPlots = 10L,
+#'   # data args
+#'   data,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   Buckets = c(0),
+#'   TargetColumnName = "Adrian",
+#'   FeatureColNames = Features,
+#'   IDcols = c("IDcol_1","IDcol_2","IDcol_3"),
 #'
-# grid tuning args
-#'    GridTune = FALSE,
-#'    grid_eval_metric = "accuracy",
-#'    MaxModelsInGrid = 1L,
-#'    BaselineComparison = "default",
-#'    MaxRunsWithoutNewWinner = 10L,
-#'    MaxRunMinutes = 60L,
+#'   # options
+#'   TransformNumericColumns = NULL,
+#'   SplitRatios = c(0.70, 0.20, 0.10),
+#'   SaveModelObjects = TRUE,
+#'   NumOfParDepPlots = 10L,
 #'
-#'    # bandit hyperparameters
-#'    Trees = 100L,
-#'    eta = seq(0.05,0.40,0.05),
-#'    max_depth = seq(4L, 16L, 2L),
+#'   # grid tuning args
+#'   GridTune = FALSE,
+#'   grid_eval_metric = "accuracy",
+#'   MaxModelsInGrid = 1L,
+#'   BaselineComparison = "default",
+#'   MaxRunsWithoutNewWinner = 10L,
+#'   MaxRunMinutes = 60L,
 #'
-#'    # random hyperparameters
-#'    min_child_weight = seq(1.0, 10.0, 1.0),
-#'    subsample = seq(0.55, 1.0, 0.05),
-#'    colsample_bytree = seq(0.55, 1.0, 0.05))
-#' 
-#' # Score models by calling them from file
+#'   # bandit hyperparameters
+#'   Trees = 100L,
+#'   eta = seq(0.05,0.40,0.05),
+#'   max_depth = seq(4L, 16L, 2L),
+#'
+#'   # random hyperparameters
+#'   min_child_weight = seq(1.0, 10.0, 1.0),
+#'   subsample = seq(0.55, 1.0, 0.05),
+#'   colsample_bytree = seq(0.55, 1.0, 0.05))
+#'
+#' # Score XGBoost Hurdle Model
 #' HurdleScores <- RemixAutoML::AutoHurdleScoring(
-#'    TestData = data,
-#'    Path = Path,
-#'    ModelID = "ModelTest",
-#'    ModelClass = "catboost",
-#'    ModelList = NULL,
-#'    ArgList = NULL)
-#'
-#' # Score models by using output object from training
-#' HurdleScores <- RemixAutoML::AutoHurdleScoring(
-#'    TestData = data,
-#'    Path = Path,
-#'    ModelID = "ModelTest",
-#'    ModelClass = "catboost",
-#'    ModelList = Output$ModelList,
-#'    ArgList = Output$ArgsList)
+#'   TestData = data,
+#'   Path = Path,
+#'   ModelID = "ModelTest",
+#'   ModelClass = "xgboost",
+#'   ModelList = NULL,
+#'   ArgList = NULL)
 #' }
 #' @export
 AutoHurdleScoring <- function(TestData = NULL,

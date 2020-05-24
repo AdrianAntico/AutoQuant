@@ -146,10 +146,8 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
     HolidayMovingAverages = c(TRUE,FALSE),
     TimeTrend = c(TRUE,FALSE))
   
-  # Remove impossible settings (total settings: 128)----
-  if(FeatureGridTune) {
-    AutoCARMA_ArgList <- AutoCARMA_ArgList[TrainOnFull_Arg == FALSE]
-  }
+  # Remove impossible settings----
+  if(FeatureGridTune) AutoCARMA_ArgList <- AutoCARMA_ArgList[TrainOnFull_Arg == FALSE]
   AutoCARMA_ArgList[, HolidayLags := ifelse(!HolidaysVars, FALSE, HolidayLags)]
   AutoCARMA_ArgList[, HolidayMovingAverages := ifelse(HolidaysVars, HolidayMovingAverages, FALSE)]
   AutoCARMA_ArgList <- unique(AutoCARMA_ArgList)
@@ -190,9 +188,7 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
     
     # Print Row Numbers of Test data.table----
     print("Test case: ")
-    for(zzz in 1:20) {
-      print(run)
-    }
+    for(zzz in 1:20) print(run)
     
     # Pull in data so it is a fresh set everytime----
     print("pull in dataX now")

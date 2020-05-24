@@ -336,6 +336,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TargetLevels <- NULL
     ArgsList[["TargetLevels"]] <- NULL
   }
+  
+  # Store model----
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
   
   # Add Target to IDcols----
