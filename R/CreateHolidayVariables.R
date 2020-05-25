@@ -9,6 +9,7 @@
 #' @param HolidayGroups Pick groups
 #' @param Holidays Pick holidays
 #' @param GroupingVars Grouping variable names
+#' @param Print Set to TRUE to print iteration number to console
 #' @import timeDate
 #' @examples
 #' \donttest{
@@ -24,7 +25,8 @@
 #'    DateCols = "Date",
 #'    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'    Holidays = NULL,
-#'    GroupingVars = "GroupVar")
+#'    GroupingVars = "GroupVar",
+#'    Print = FALSE)
 #' }
 #' @return Returns your data.table with the added holiday indicator variable
 #' @export
@@ -32,7 +34,8 @@ CreateHolidayVariables <- function(data,
                                    DateCols = NULL,
                                    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                                    Holidays = NULL,
-                                   GroupingVars = NULL) {
+                                   GroupingVars = NULL,
+                                   Print = FALSE) {
   
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -48,10 +51,7 @@ CreateHolidayVariables <- function(data,
   requireNamespace("timeDate", quietly = TRUE)
   
   # Function for expanding dates, vectorize----
-  HolidayCountsInRange <- function(Start, End, Values) {
-    DateRange <- seq(as.Date(Start), as.Date(End), by = "days")
-    return(as.integer(length(which(x = Values %in% DateRange))))
-  }
+  HolidayCountsInRange <- function(Start, End, Values) return(as.integer(length(which(x = Values %in% seq(as.Date(Start), as.Date(End), by = "days")))))
   
   # Convert to data.table----
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
@@ -86,10 +86,6 @@ CreateHolidayVariables <- function(data,
     }
   }
   
-  # Run holiday function to get unique dates----
-  library(timeDate)
-  Holidays <- unique(as.Date(timeDate::holiday(year = unique(lubridate::year(data[[eval(DateCols)]])), Holiday = Holidays)))
-  
   # Turn DateCols into character names if not already----
   for(i in DateCols) if(!is.character(DateCols[i])) DateCols[i] <- names(data)[DateCols[i]]
   
@@ -114,13 +110,18 @@ CreateHolidayVariables <- function(data,
   x <- data[, quantile(x = (data[[eval(DateCols[1])]] - data[[(paste0("Lag1_",eval(DateCols[1])))]]), probs = 0.99)]
   data[, eval(paste0("Lag1_",DateCols[i])) := get(DateCols[i]) - x]
   
+  # Run holiday function to get unique dates----
+  library(timeDate)
+
   # Compute----
   for(i in seq_len(length(DateCols))) {
+    HolidayVals <- unique(as.Date(timeDate::holiday(year = unique(lubridate::year(data[[eval(DateCols)]])), Holiday = Holidays)))
     data.table::setkeyv(x = data, cols = c(eval(GroupingVars), DateCols[i], paste0("Lag1_", eval(DateCols[i]))))
     data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
     temp <- unique(data[, .SD, .SDcols = c(DateCols[i], paste0("Lag1_", eval(DateCols[i])))])
     temp[, HolidayCounts := 0L]
-    for(i in seq_len(temp[,.N])) data.table::set(x = temp, i = i, j = "HolidayCounts", value = HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[i]], End = temp[i, get(DateCols)], Values = Holidays))
+    NumRows <- as.integer(seq_len(temp[,.N]))
+    for(Rows in NumRows) data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
     data[temp, on = c(eval(DateCols[1L]), paste0("Lag1_", DateCols[1L])), HolidayCounts := i.HolidayCounts]
   }
 

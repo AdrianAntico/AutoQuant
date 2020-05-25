@@ -10,7 +10,8 @@ CreateHolidayVariables(
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   Holidays = NULL,
-  GroupingVars = NULL
+  GroupingVars = NULL,
+  Print = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ CreateHolidayVariables(
 \item{Holidays}{Pick holidays}
 
 \item{GroupingVars}{Grouping variable names}
+
+\item{Print}{Set to TRUE to print iteration number to console}
 }
 \value{
 Returns your data.table with the added holiday indicator variable
@@ -44,7 +47,8 @@ data <- CreateHolidayVariables(
    DateCols = "Date",
    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
    Holidays = NULL,
-   GroupingVars = "GroupVar")
+   GroupingVars = "GroupVar",
+   Print = FALSE)
 }
 }
 \seealso{
