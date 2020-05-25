@@ -12,13 +12,19 @@
 #' @import timeDate
 #' @examples
 #' \donttest{
-#' data <- data.table::data.table(Date = '2018-01-01 00:00:00')
+#' data <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00',100)))
+#' data1 <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00',100)))
+#' data[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
+#' data1[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
+#' data[, GroupVar := "A"]
+#' data1[, GroupVar := "B"]
+#' data <- data.table::rbindlist(list(data,data1))
 #' data <- CreateHolidayVariables(
 #'    data,
-#'    DateCols = "DateTime",
+#'    DateCols = "Date",
 #'    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'    Holidays = NULL,
-#'    GroupingVars = NULL)
+#'    GroupingVars = "GroupVar")
 #' }
 #' @return Returns your data.table with the added holiday indicator variable
 #' @export
@@ -57,61 +63,25 @@ CreateHolidayVariables <- function(data,
   }
   
   # Store individual holidays if HolidayGroups is specified----
+  Holidays <- NULL
   if(!is.null(HolidayGroups)) {
     for(counter in seq_len(length(HolidayGroups))) {
       if(tolower(HolidayGroups[counter]) == "eastergroup") {
-        if(counter == 1L) {
-          Holidays <- c("Septuagesima", "Quinquagesima","AshWednesday", 
-                        "PalmSunday","GoodFriday","EasterSunday",
-                        "Easter","EasterMonday","RogationSunday",
-                        "Ascension","Pentecost","PentecostMonday",
-                        "TrinitySunday","CorpusChristi")          
-        } else {
-          Holidays <- c(Holidays,"Septuagesima", "Quinquagesima", 
-                        "PalmSunday","GoodFriday","EasterSunday",
-                        "Easter","EasterMonday","RogationSunday",
-                        "Ascension","Pentecost","PentecostMonday",
-                        "TrinitySunday","CorpusChristi","AshWednesday")
-        }
+        Holidays <- c(Holidays,"Septuagesima","Quinquagesima","PalmSunday","GoodFriday","EasterSunday","Easter","EasterMonday","RogationSunday",
+                      "Ascension","Pentecost","PentecostMonday","TrinitySunday","CorpusChristi","AshWednesday")
       }
       if(tolower(HolidayGroups[counter]) == "christmasgroup") {
-        if(counter == 1L) {
-          Holidays <- c("ChristTheKing","Advent1st","Advent1st",
-                        "Advent3rd","Advent4th","ChristmasEve",
-                        "ChristmasDay","BoxingDay","NewYearsDay")
-        } else {
-          Holidays <- c(Holidays,"ChristTheKing","Advent1st","Advent1st",
-                        "Advent3rd","Advent4th","ChristmasEve",
-                        "ChristmasDay","BoxingDay","NewYearsDay")
-        }
+        Holidays <- c(Holidays,"ChristTheKing","Advent1st","Advent1st","Advent3rd","Advent4th","ChristmasEve","ChristmasDay","BoxingDay","NewYearsDay")
       }
       if(tolower(HolidayGroups[counter]) == "otherecclesticalfeasts") {
-        if(counter == 1L) {
-          Holidays <- c("SolemnityOfMary","Epiphany","PresentationOfLord",
-                        "Annunciation","TransfigurationOfLord","AssumptionOfMary",
-                        "AssumptionOfMary","BirthOfVirginMary","CelebrationOfHolyCross",
-                        "MassOfArchangels","AllSaints","AllSouls")
-        } else {
-          Holidays <- c(Holidays,"SolemnityOfMary","Epiphany","PresentationOfLord",
-                        "Annunciation","TransfigurationOfLord","AssumptionOfMary",
-                        "AssumptionOfMary","BirthOfVirginMary","CelebrationOfHolyCross",
-                        "MassOfArchangels","AllSaints","AllSouls")
-        }
+        Holidays <- c(Holidays,"SolemnityOfMary","Epiphany","PresentationOfLord",
+                      "Annunciation","TransfigurationOfLord","AssumptionOfMary",
+                      "AssumptionOfMary","BirthOfVirginMary","CelebrationOfHolyCross",
+                      "MassOfArchangels","AllSaints","AllSouls")
       }
       if(tolower(HolidayGroups[counter]) == "uspublicholidays") {
-        if(counter == 1L) {
-          Holidays <- c("USNewYearsDay","USInaugurationDay","USGoodFriday",
-                        "USMLKingsBirthday","USLincolnsBirthday","USWashingtonsBirthday",
-                        "USMemorialDay","USIndependenceDay","USLaborDay",
-                        "USColumbusDay","USElectionDay","USVeteransDay",
-                        "USThanksgivingDay","USChristmasDay","USCPulaskisBirthday")
-        } else {
-          Holidays <- c(Holidays,"USNewYearsDay","USInaugurationDay",
-                        "USMLKingsBirthday","USLincolnsBirthday","USWashingtonsBirthday",
-                        "USMemorialDay","USIndependenceDay","USLaborDay",
-                        "USColumbusDay","USElectionDay","USVeteransDay",
-                        "USThanksgivingDay","USChristmasDay","USCPulaskisBirthday","USGoodFriday")
-        }
+        Holidays <- c(Holidays,"USNewYearsDay","USInaugurationDay","USMLKingsBirthday","USLincolnsBirthday","USWashingtonsBirthday","USCPulaskisBirthday","USGoodFriday",
+                      "USMemorialDay","USIndependenceDay","USLaborDay","USColumbusDay","USElectionDay","USVeteransDay","USThanksgivingDay","USChristmasDay")
       }
     }
   }
@@ -127,19 +97,16 @@ CreateHolidayVariables <- function(data,
   data.table::alloc.col(DT = data, ncol(data) + 1L)
   
   # Create Temp Date Columns----
-  MinDate <- data[, min(get(DateCols[1]))]
+  MinDate <- data[, min(get(DateCols[1L]))]
   if(!is.null(GroupingVars)) {
     for(i in seq_len(length(DateCols))) {
       data.table::setorderv(x = data, cols = c(eval(GroupingVars), eval(DateCols[i])), order = 1L, na.last = TRUE)
-      data[, paste0("Lag1_", eval(DateCols[i])) := data.table::shift(
-        x = get(DateCols[i]), n = 1L, fill = MinDate, type = "lag"), 
-        by = c(eval(GroupingVars))]
+      data[, paste0("Lag1_", eval(DateCols[i])) := data.table::shift(x = get(DateCols[i]), n = 1L, fill = MinDate, type = "lag"),  by = c(eval(GroupingVars))]
     }  
   } else {
     for(i in seq_len(length(DateCols))) {
       data.table::setorderv(x = data, cols = eval(DateCols[i]), order = 1L, na.last = TRUE)
-      data.table::set(data, j = paste0("Lag1_", eval(DateCols[i])),
-                      value = data.table::shift(x = data[[eval(DateCols[i])]], n = 1L, fill = MinDate, type = "lag"))
+      data.table::set(data, j = paste0("Lag1_", eval(DateCols[i])), value = data.table::shift(x = data[[eval(DateCols[i])]], n = 1L, fill = MinDate, type = "lag"))
     }
   }
   
@@ -147,18 +114,16 @@ CreateHolidayVariables <- function(data,
   x <- data[, quantile(x = (data[[eval(DateCols[1])]] - data[[(paste0("Lag1_",eval(DateCols[1])))]]), probs = 0.99)]
   data[, eval(paste0("Lag1_",DateCols[i])) := get(DateCols[i]) - x]
   
-  # Sort by group and date----
-  if(!is.null(GroupingVars)) data <- data[order(get(GroupingVars),get(DateCols))]
-  
-  # Build Features----
+  # Compute----
   for(i in seq_len(length(DateCols))) {
-    EndDateVector <- data[[eval(DateCols[i])]]
-    StartDateVector <- data[[paste0("Lag1_", eval(DateCols[i]))]]
+    data.table::setkeyv(x = data, cols = c(eval(GroupingVars), DateCols[i], paste0("Lag1_", eval(DateCols[i]))))
     data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
-    for(j in as.integer(seq_len(data[,.N]))) data.table::set(x = data, i = j, j = "HolidayCounts", value = HolidayCountsInRange(Start = StartDateVector[j],End = EndDateVector[j],Values = Holidays))
-    data.table::set(data, j = eval(paste0("Lag1_",DateCols[i])), value = NULL)
+    temp <- unique(data[, .SD, .SDcols = c(DateCols[i], paste0("Lag1_", eval(DateCols[i])))])
+    temp[, HolidayCounts := 0L]
+    for(i in seq_len(temp[,.N])) data.table::set(x = temp, i = i, j = "HolidayCounts", value = HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[i]], End = temp[i, get(DateCols)], Values = Holidays))
+    data[temp, on = c(eval(DateCols[1L]), paste0("Lag1_", DateCols[1L])), HolidayCounts := i.HolidayCounts]
   }
-  
+
   # Return data----
   return(data)
 }
