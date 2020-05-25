@@ -12,8 +12,8 @@
 #' @import timeDate
 #' @examples
 #' \donttest{
-#' data <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00',100)))
-#' data1 <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00',100)))
+#' data <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
+#' data1 <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
 #' data[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
 #' data1[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
 #' data[, GroupVar := "A"]

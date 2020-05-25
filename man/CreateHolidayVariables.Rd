@@ -32,13 +32,19 @@ CreateHolidayVariables Rapidly creates holiday count variables based on the date
 }
 \examples{
 \donttest{
-data <- data.table::data.table(Date = '2018-01-01 00:00:00')
+data <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
+data1 <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
+data[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
+data1[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
+data[, GroupVar := "A"]
+data1[, GroupVar := "B"]
+data <- data.table::rbindlist(list(data,data1))
 data <- CreateHolidayVariables(
    data,
-   DateCols = "DateTime",
+   DateCols = "Date",
    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
    Holidays = NULL,
-   GroupingVars = NULL)
+   GroupingVars = "GroupVar")
 }
 }
 \seealso{
