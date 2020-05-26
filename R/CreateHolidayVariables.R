@@ -107,14 +107,15 @@ CreateHolidayVariables <- function(data,
   }
   
   # Enforce the missing lagged date to equal the regular date minus a constant----
-  x <- data[, quantile(x = (data[[eval(DateCols[1])]] - data[[(paste0("Lag1_",eval(DateCols[1])))]]), probs = 0.99)]
-  data[, eval(paste0("Lag1_",DateCols[i])) := get(DateCols[i]) - x]
+  
   
   # Run holiday function to get unique dates----
   library(timeDate)
 
   # Compute----
   for(i in seq_len(length(DateCols))) {
+    x <- data[, quantile(x = (data[[eval(DateCols[i])]] - data[[(paste0("Lag1_",eval(DateCols[i])))]]), probs = 0.99)]
+    data[, eval(paste0("Lag1_", DateCols[i])) := get(DateCols[i]) - x]
     HolidayVals <- unique(as.Date(timeDate::holiday(year = unique(lubridate::year(data[[eval(DateCols)]])), Holiday = Holidays)))
     data.table::setkeyv(x = data, cols = c(eval(GroupingVars), DateCols[i], paste0("Lag1_", eval(DateCols[i]))))
     data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
@@ -125,7 +126,9 @@ CreateHolidayVariables <- function(data,
       print(Rows)
       data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
     }
-    data[temp, on = c(eval(DateCols[1L]), paste0("Lag1_", DateCols[1L])), HolidayCounts := i.HolidayCounts]
+    data[temp, on = c(eval(DateCols[i]), paste0("Lag1_", DateCols[i])), HolidayCounts := i.HolidayCounts]
+    if(length(DateCols) > 1L) data.table::setnames(data, "HolidayCounts", paste0(DateCols[i], "_HolidayCounts"))
+    data.table::set(data, j = eval(paste0("Lag1_", DateCols[i])), value = NULL)
   }
 
   # Return data----
