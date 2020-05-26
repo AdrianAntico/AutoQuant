@@ -556,7 +556,7 @@ View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
 ### **AutoBanditNNet()**
 Same as AutoBanditArima except it uses the nnetar model behind the scenes.
 
-$$$ **AutoTBATS()**
+### **AutoTBATS()**
 Same as AutoBanditArima except for the bandit testing and it uses TBATS behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
 
 ### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
