@@ -127,7 +127,7 @@ CreateHolidayVariables <- function(data,
       data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
     }
     data[temp, on = c(eval(DateCols[i]), paste0("Lag1_", DateCols[i])), HolidayCounts := i.HolidayCounts]
-    if(length(DateCols) > 1L) data.table::setnames(data, "HolidayCounts", paste0(DateCols[i], "_HolidayCounts"))
+    data.table::setnames(data, "HolidayCounts", paste0(DateCols[i], "_HolidayCounts"))
     data.table::set(data, j = eval(paste0("Lag1_", DateCols[i])), value = NULL)
   }
 
