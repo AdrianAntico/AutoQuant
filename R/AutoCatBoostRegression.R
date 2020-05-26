@@ -846,7 +846,7 @@ AutoCatBoostRegression <- function(data,
       }
     }
   }
-
+  
   # Regression Evaluation Metrics----
   if(!TrainOnFull) {
     EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
@@ -953,7 +953,7 @@ AutoCatBoostRegression <- function(data,
     if(!is.null(VariableImportance)) {
       ParDepBoxPlots <- list()
       ParDepPlots <- list()
-      if(NumOfParDepPlots == 0L) {
+      if(!is.null(VariableImportance) & NumOfParDepPlots > 0L) {
         j <- 0L
         k <- 0L
         for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
