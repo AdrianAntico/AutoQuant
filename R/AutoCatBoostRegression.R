@@ -422,9 +422,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Regression eval_metric checks
-  if(TrainOnFull != TRUE) {
-    if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) warning("eval_metric Poisson requires positive values for Target")
-  }
+  if(TrainOnFull != TRUE) if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) return("eval_metric Poisson requires positive values for Target")
   
   # Regression Initialize Catboost Data Conversion----
   if(!is.null(CatFeatures)) {
@@ -480,7 +478,7 @@ AutoCatBoostRegression <- function(data,
     rm(RL_Start)
     
     # Add bandit probs columns to ExperimentalGrid----
-    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
+    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_", names(GridClusters)), value = -10)
     
     # Binary Grid Tuning Main Loop----
     counter <- 0L
@@ -490,13 +488,13 @@ AutoCatBoostRegression <- function(data,
       counter <- counter + 1L
       
       # Check if there are any grid elements left in the specific grid----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["BootStrapType"]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L, counter - 1L))]][["BootStrapType"]][1L])) {
         
         # Define prameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostRegressionParams(NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostRegressionParams(NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
         # Build model----
