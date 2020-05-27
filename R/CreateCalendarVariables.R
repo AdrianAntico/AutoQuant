@@ -23,7 +23,7 @@ CreateCalendarVariables <- function(data,
                                     TimeUnits = "wday") {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Check args----
@@ -132,7 +132,7 @@ CreateCalendarVariables <- function(data,
           data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::quarter(data[[eval(paste0("DATE_", DateCols[i]))]])))
         }
       } else if(tolower(j) == "year") {
-        if (AsFactor) {
+        if(AsFactor) {
           data.table::set(data, j = paste0(DateCols[i], "_", TimeList[[i]][j]), value = as.factor(data.table::year(data[[eval(paste0("DATE_", DateCols[i]))]])))
         } else {
           data.table::set(data, j = paste0(DateCols[i], "_", j), value = as.integer(data.table::year(data[[eval(paste0("DATE_", DateCols[i]))]])))

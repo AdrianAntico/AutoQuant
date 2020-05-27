@@ -63,7 +63,7 @@
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[4L:ncol(data)],
-#'     IDcols = c("x1","x2"),
+#'     IDcols = c("IDcols_1","IDcols_2"),
 #'   
 #'     # Model evaluation
 #'     eval_metric = "auc",

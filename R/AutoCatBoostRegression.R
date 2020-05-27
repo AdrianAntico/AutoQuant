@@ -82,8 +82,8 @@
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     PrimaryDateColumn = NULL,
-#'     IDcols = c("x1","x2"),
-#'     TransformNumericColumns = NULL,
+#'     IDcols = c("IDcol_1","IDcol_2"),
+#'     TransformNumericColumns = "Adrian",
 #'     
 #'     # Model evaluation: 
 #'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
