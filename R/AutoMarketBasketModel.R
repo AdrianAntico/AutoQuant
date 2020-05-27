@@ -41,48 +41,31 @@ AutoMarketBasketModel <- function(data,
                                   MaxTime = 5) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Convert to data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Total number of unique OrderIDColumns----
-  n <- length(unique(data[, get(OrderIDColumnName)]))
+  n <- length(unique(data[[eval(OrderIDColumnName)]]))
   
   # Check args----
-  if (!is.character(OrderIDColumnName)) {
-    warning("OrderIDColumnName needs to be a character value")
-  }
-  if (!is.character(ItemIDColumnName)) {
-    warning("ItemIDColumnName needs to be a character value")
-  }
-  if (!(Confidence > 0 & Confidence < 1)) {
-    warning("Confidence needs to be between zero and one")
-  }
-  if (!(Support > 0 & Support < 1)) {
-    warning("Support needs to be between zero and one")
-  }
-  if (MaxLength <= 0) {
-    warning("MaxLength needs to be a positive number")
-  }
-  if (MinLength > MaxLength | MinLength < 0) {
-    warning("MinLength needs to be less than MaxLength and greater than zero")
-  }
+  if(!is.character(OrderIDColumnName)) return("OrderIDColumnName needs to be a character value")
+  if(!is.character(ItemIDColumnName)) return("ItemIDColumnName needs to be a character value")
+  if(!(Confidence > 0 & Confidence < 1)) return("Confidence needs to be between zero and one")
+  if(!(Support > 0 & Support < 1)) return("Support needs to be between zero and one")
+  if(MaxLength <= 0) return("MaxLength needs to be a positive number")
+  if(MinLength > MaxLength | MinLength < 0) return("MinLength needs to be less than MaxLength and greater than zero")
   
   # Subset data----
   data <- data[, .(get(OrderIDColumnName), get(ItemIDColumnName))]
   data.table::setnames(data, c("V1", "V2"), c(eval(OrderIDColumnName),eval(ItemIDColumnName)))
-  
-  
+
   # Look into data.table split----
-  TransactionData <- methods::as(split(data[[eval(ItemIDColumnName)]],
-                                       data[[eval(OrderIDColumnName)]]),
-                                 "transactions")
+  TransactionData <- methods::as(split(data[[eval(ItemIDColumnName)]], data[[eval(OrderIDColumnName)]]), "transactions")
   
   # Association rules----
-  options(warn = -1)
+  options(warn = -1L)
   rules <- arules::apriori(
     data = TransactionData,
     parameter = list(
@@ -91,78 +74,34 @@ AutoMarketBasketModel <- function(data,
       target = "rules",
       minlen = MinLength,
       maxlen = MaxLength,
-      maxtime = MaxTime
-    )
-  )
-  options(warn = 0)
+      maxtime = MaxTime))
+  options(warn = 0L)
   
   # Convet back to data.table---
-  rules_data <- data.table::data.table(
-    ProductA = arules::labels(arules::lhs(rules)),
-    ProductB = arules::labels(arules::rhs(rules)),
-    rules@quality
-  )
-  data.table::setnames(
-    rules_data,
-    c("support",
-      "confidence",
-      "lift",
-      "count"),
-    c("Support",
-      "Confidence",
-      "Lift",
-      "Count")
-  )
+  rules_data <- data.table::data.table(ProductA = arules::labels(arules::lhs(rules)), ProductB = arules::labels(arules::rhs(rules)), rules@quality)
+  data.table::setnames(rules_data, c("support","confidence","lift","count"), c("Support","Confidence", "Lift","Count"))
   
   # Delimeter time----
-  if (LHS_Delimeter != ",") {
-    rules_data[, ProductA := gsub(",", LHS_Delimeter, ProductA)]
-  }
+  if(LHS_Delimeter != ",") rules_data[, ProductA := gsub(",", LHS_Delimeter, ProductA)]
   
   # Remove left Brackets from ProductA, ProductB Columns----
-  rules_data[, ':=' (
-    ProductA = gsub("\\}.*",
-                    "",
-                    ProductA,
-                    ignore.case = TRUE),
-    ProductB = gsub("\\}.*",
-                    "",
-                    ProductB,
-                    ignore.case = TRUE)
-  )]
+  rules_data[, ':=' (ProductA = gsub("\\}.*", "", ProductA, ignore.case = TRUE), ProductB = gsub("\\}.*", "", ProductB, ignore.case = TRUE))]
   
   # Remove right Brackets from ProductA, ProductB Columns----
-  rules_data[, ':=' (
-    ProductA = gsub("\\{",
-                    "",
-                    ProductA,
-                    ignore.case = TRUE),
-    ProductB = gsub("\\{",
-                    "",
-                    ProductB,
-                    ignore.case = TRUE)
-  )]
+  rules_data[, ':=' (ProductA = gsub("\\{", "", ProductA, ignore.case = TRUE), ProductB = gsub("\\{", "", ProductB, ignore.case = TRUE))]
   
   # Compute Chi-Sq. and P-Value----
-  rules_data[, Chi_SQ := n * (Lift - 1) ^ 2 *
-               Support * Confidence /
-               ((Confidence - Support) * (Lift - Confidence))]
-  
-  rules_data[, P_Value := round(1 - pchisq(Chi_SQ, 1), 10)]
+  rules_data[, Chi_SQ := n * (Lift - 1) ^ 2 * Support * Confidence / ((Confidence - Support) * (Lift - Confidence))]
+  rules_data[, P_Value := round(1 - pchisq(Chi_SQ, 1L), 10L)]
   
   # Sort data properly----
-  rules_data <- rules_data[order(ProductA,-Lift)]
+  rules_data <- rules_data[order(ProductA, -Lift)]
   
   # Add Rule Rank by ProductA----
-  rules_data[, RuleRank := 1:.N, by = "ProductA"]
+  rules_data[, RuleRank := 1L:.N, by = "ProductA"]
   
   # Change Column Names----
-  data.table::setnames(rules_data,
-                       c("ProductA", "ProductB"),
-                       c(
-                         paste0(ItemIDColumnName, "_LHS"),
-                         paste0(ItemIDColumnName, "_RHS")
-                       ))
+  data.table::setnames(rules_data, c("ProductA", "ProductB"), c(paste0(ItemIDColumnName, "_LHS"), paste0(ItemIDColumnName, "_RHS")))
   
   # Done----
   return(rules_data)
