@@ -23,7 +23,8 @@ Test_YeoJohnson <- function(x,
     Name = "YeoJohnson",
     Data = trans_data,
     Lambda = lambda,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -37,30 +38,33 @@ Test_YeoJohnson <- function(x,
 #' @param upper the upper bound for search
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
-Estimate_YeoJohnson_Lambda <- function(x,
-                                       lower = -5,
-                                       upper = 5,
-                                       eps = 0.001) {
+Estimate_YeoJohnson_Lambda <-
+  function(x,
+           lower = -5,
+           upper = 5,
+           eps = 0.001) {
+    n <- length(x)
+    ccID <- !is.na(x)
+    x <- x[ccID]
     
-  n <- length(x)
-  ccID <- !is.na(x)
-  x <- x[ccID]
-  
-  # See references, Yeo & Johnson Biometrika (2000)
-  yj_loglik <- function(lambda) {
-    x_t <- Apply_YeoJohnson(x, lambda, eps)
-    x_t_bar <- mean(x_t)
-    x_t_var <- var(x_t) * (n - 1) / n
-    constant <- sum(sign(x) * log(abs(x) + 1))
-    - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
-  }
-  
-  results <- optimize(
-    yj_loglik,
-    lower = lower,
-    upper = upper,
-    maximum = TRUE,
-    tol = .0001)
+    
+    # See references, Yeo & Johnson Biometrika (2000)
+    yj_loglik <- function(lambda) {
+      x_t <- Apply_YeoJohnson(x, lambda, eps)
+      x_t_bar <- mean(x_t)
+      x_t_var <- var(x_t) * (n - 1) / n
+      constant <- sum(sign(x) * log(abs(x) + 1))
+      - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
+    }
+    
+    results <- optimize(
+      yj_loglik,
+      lower = lower,
+      upper = upper,
+      maximum = TRUE,
+      tol = .0001
+    )
+    
     results$maximum
   }
 
@@ -80,8 +84,8 @@ Apply_YeoJohnson <- function(x,
   neg_idx <- x < 0
   
   # Transform negative values
-  if(any(pos_idx)) {
-    if(abs(lambda) < eps) {
+  if (any(pos_idx)) {
+    if (abs(lambda) < eps) {
       x[pos_idx] <- log(x[pos_idx] + 1)
     } else {
       x[pos_idx] <- ((x[pos_idx] + 1) ^ lambda - 1) / lambda
@@ -89,11 +93,12 @@ Apply_YeoJohnson <- function(x,
   }
   
   # Transform nonnegative values
-  if(any(neg_idx)) {
-    if(abs(lambda - 2) < eps) {
+  if (any(neg_idx)) {
+    if (abs(lambda - 2) < eps) {
       x[neg_idx] <- -log(-x[neg_idx] + 1)
     } else {
-      x[neg_idx] <- -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
+      x[neg_idx] <-
+        -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
     }
   }
   x
@@ -114,18 +119,19 @@ InvApply_YeoJohnson <- function(x,
   val <- x
   neg_idx <- x < 0
   
-  if(any(!neg_idx)) {
-    if(abs(lambda) < eps) {
+  if (any(!neg_idx)) {
+    if (abs(lambda) < eps) {
       val[!neg_idx] <- exp(x[!neg_idx]) - 1
     } else {
       val[!neg_idx] <- (x[!neg_idx] * lambda + 1) ^ (1 / lambda) - 1
     }
   }
-  if(any(neg_idx)) {
-    if(abs(lambda - 2) < eps) {
+  if (any(neg_idx)) {
+    if (abs(lambda - 2) < eps) {
       val[neg_idx] <- -expm1(-x[neg_idx])
     } else {
-      val[neg_idx] <- 1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
+      val[neg_idx] <-
+        1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
     }
   }
   val
@@ -151,7 +157,8 @@ Test_BoxCox <- function(x, ...) {
     Name = "BoxCox",
     Data = trans_data,
     Lambda = lambda,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -165,39 +172,44 @@ Test_BoxCox <- function(x, ...) {
 #' @param upper the upper bound for search
 #' @param eps erorr tolerance
 #' @return BoxCox results
-Estimate_BoxCox_Lambda <- function(x,
-                                   lower = -1,
-                                   upper = 2,
-                                   eps = 0.001) {
-  
-  # Kick off
-  n <- length(x)
-  ccID <- !is.na(x)
-  x <- x[ccID]
-  if(any(x <= 0)) return("x must be positive")
-  log_x <- log(x)
-  xbar <- exp(mean(log_x))
-  fit <- lm(x ~ 1, data = data.frame(x = x))
-  xqr <- fit$qr
+Estimate_BoxCox_Lambda <-
+  function(x,
+           lower = -1,
+           upper = 2,
+           eps = 0.001) {
+    n <- length(x)
+    ccID <- !is.na(x)
+    x <- x[ccID]
     
-  # Define function
-  boxcox_loglik <- function(lambda) {
-    if(abs(lambda) > eps) {
-      xt <- (x ^ lambda - 1) / lambda 
-    } else {
-      xt <- log_x * (1 + (lambda * log_x) / 2 * (1 + (lambda * log_x) / 3 * (1 + (lambda * log_x) / 4))) - n / 2 * log(sum(qr.resid(xqr, xt / xbar ^ (lambda - 1)) ^ 2))
+    if (any(x <= 0))
+      stop("x must be positive")
+    
+    log_x <- log(x)
+    xbar <- exp(mean(log_x))
+    
+    fit <- lm(x ~ 1, data = data.frame(x = x))
+    xqr <- fit$qr
+    
+    boxcox_loglik <- function(lambda) {
+      if (abs(lambda) > eps)
+        xt <- (x ^ lambda - 1) / lambda
+      else
+        xt <- log_x * (1 + (lambda * log_x) / 2 *
+                         (1 + (lambda * log_x) / 3 *
+                            (1 + (lambda * log_x) / 4)))
+      - n / 2 * log(sum(qr.resid(xqr, xt / xbar ^ (lambda - 1)) ^ 2))
     }
+    
+    results <- optimize(
+      boxcox_loglik,
+      lower = lower,
+      upper = upper,
+      maximum = TRUE,
+      tol = .0001
+    )
+    
+    results$maximum
   }
-  
-  # Optimize
-  results <- optimize(
-    boxcox_loglik,
-    lower = lower,
-    upper = upper,
-    maximum = TRUE,
-    tol = .0001)
-  results$maximum
-}
 
 #' Apply BoxCox Transformation
 #'
@@ -211,8 +223,12 @@ Estimate_BoxCox_Lambda <- function(x,
 Apply_BoxCox <- function(x, 
                          lambda, 
                          eps = 0.001) {
-  if(lambda < 0) x[x < 0] <- NA
-  if(abs(lambda) < eps) val <- log(x) else val <- (sign(x) * abs(x) ^ lambda - 1) / lambda
+  if (lambda < 0)
+    x[x < 0] <- NA
+  if (abs(lambda) < eps)
+    val <- log(x)
+  else
+    val <- (sign(x) * abs(x) ^ lambda - 1) / lambda
   val
 }
 
@@ -228,10 +244,11 @@ Apply_BoxCox <- function(x,
 InvApply_BoxCox <- function(x, 
                             lambda, 
                             eps = 0.001) {
-  if(lambda < 0) x[x > -1 / lambda] <- NA
-  if(abs(lambda) < eps) {
+  if (lambda < 0)
+    x[x > -1 / lambda] <- NA
+  if (abs(lambda) < eps)
     val <- exp(x)
-  } else {
+  else {
     x <- x * lambda + 1
     val <- sign(x) * abs(x) ^ (1 / lambda)
   }
@@ -256,7 +273,8 @@ Test_Asinh <- function(x) {
     Name = "Asinh",
     Data = trans_data,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -267,7 +285,9 @@ Test_Asinh <- function(x) {
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Asinh results
-Apply_Asinh <- function(x) return(asinh(x))
+Apply_Asinh <- function(x) {
+  return(asinh(x))
+}
 
 #' Inverse Asinh Transformation
 #'
@@ -276,7 +296,9 @@ Apply_Asinh <- function(x) return(asinh(x))
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Asinh results
-InvApply_Asinh <- function(x) return(sinh(x))
+InvApply_Asinh <- function(x) {
+  return(sinh(x))
+}
 
 #' Test Asin Transformation
 #'
@@ -296,7 +318,8 @@ Test_Asin <- function(x) {
     Name = "Asin",
     Data = trans_data,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -307,7 +330,9 @@ Test_Asin <- function(x) {
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Asin results
-Apply_Asin <- function(x) return(asin(sqrt(x)))
+Apply_Asin <- function(x) {
+  return(asin(sqrt(x)))
+}
 
 #' Inverse Asin Transformation
 #'
@@ -316,7 +341,9 @@ Apply_Asin <- function(x) return(asin(sqrt(x)))
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Asin results
-InvApply_Asin <- function(x) return(sin(x) ^ 2)
+InvApply_Asin <- function(x) {
+  return(sin(x) ^ 2)
+}
 
 #' Test Logit Transformation
 #'
@@ -336,7 +363,8 @@ Test_Logit <- function(x) {
     Name = "Logit",
     Data = trans_data,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -347,7 +375,9 @@ Test_Logit <- function(x) {
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Logit results
-Apply_Logit <- function(x) return(log(x / (1 - x)))
+Apply_Logit <- function(x) {
+  return(log(x / (1 - x)))
+}
 
 #' Inverse Logit Transformation
 #'
@@ -356,7 +386,9 @@ Apply_Logit <- function(x) return(log(x / (1 - x)))
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Logit results
-InvApply_Logit <- function(x) return(1 / (1 + exp(-x)))
+InvApply_Logit <- function(x) {
+  return(1 / (1 + exp(-x)))
+}
 
 #' Test Identity Transformation
 #'
@@ -376,7 +408,8 @@ Test_Identity <- function(x) {
     Name = "Identity",
     Data = x,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   val
 }
 
@@ -398,7 +431,8 @@ Test_Log <- function(x) {
     Name = "Log",
     Data = trans_data,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -409,7 +443,9 @@ Test_Log <- function(x) {
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Log results
-Apply_Log <- function(x) return(log(x))
+Apply_Log <- function(x) {
+  return(log(x))
+}
 
 #' Inverse Log Transformation
 #'
@@ -418,7 +454,9 @@ Apply_Log <- function(x) return(log(x))
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Log results
-InvApply_Log <- function(x) return(exp(x))
+InvApply_Log <- function(x) {
+  return(exp(x))
+}
 
 #' Test LogPlus1 Transformation
 #'
@@ -438,7 +476,8 @@ Test_LogPlus1 <- function(x) {
     Name = "LogPlus1",
     Data = trans_data,
     Lambda = NA,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df))
+    Normalized_Statistic = unname(ptest$statistic / ptest$df)
+  )
   return(val)
 }
 
@@ -449,7 +488,9 @@ Test_LogPlus1 <- function(x) {
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Log results
-Apply_LogPlus1 <- function(x) return(log(x+1))
+Apply_LogPlus1 <- function(x) {
+  return(log(x+1))
+}
 
 #' Inverse LogPlus1 Transformation
 #'
@@ -458,7 +499,9 @@ Apply_LogPlus1 <- function(x) return(log(x+1))
 #' @noRd
 #' @param x The data in numerical vector form
 #' @return Log results
-InvApply_LogPlus1 <- function(x) return(exp(x)-1)
+InvApply_LogPlus1 <- function(x) {
+  return(exp(x)-1)
+}
 
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.
 #'
@@ -509,17 +552,27 @@ AutoTransformationCreate <- function(data,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
   
-  # Check arguments----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
   
   # Check arguments----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "log", "logplus1", "asin", "logit"))) return("Methods not supported")
-  if(is.numeric(ColumnNames) | is.integer(ColumnNames)) ColumnNames <- names(data)[ColumnNames]
-  for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) return("ColumnNames must be for numeric or integer columns")
+  if (!data.table::is.data.table(data)) {
+    data <- data.table::as.data.table(data)
+  }
+  if (!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "log", "logplus1", "asin", "logit"))) {
+    warning("Methods not supported")
+  }
+  if (is.numeric(ColumnNames) | is.integer(ColumnNames)) {
+    ColumnNames <- names(data)[ColumnNames]
+  }
+  for (i in ColumnNames) {
+    if (!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) {
+      return("ColumnNames must be for numeric or integer columns")
+    }
+  }
   
   # Loop through ColumnNames----
-  for(colNames in as.integer(seq_along(ColumnNames))) {
+  for (colNames in as.integer(seq_along(ColumnNames))) {
     
     # Collection Object----
     if(length(Methods) < 5) {
@@ -527,13 +580,17 @@ AutoTransformationCreate <- function(data,
         ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods)+1)),
         MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods)+1)),
         Lambda = rep(1.0, length(ColumnNames) * (length(Methods)+1)),
-        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods)+1)))
+        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods)+1))
+      )
     } else {
       EvaluationTable <- data.table::data.table(
         ColumnName = rep("BLABLA", length(ColumnNames) * (length(Methods) + 1)),
-        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods) + 1)),
+        MethodName = rep("BLABLA", length(ColumnNames) * (length(Methods) +
+                                                            1)),
         Lambda = rep(1.0, length(ColumnNames) * (length(Methods) + 1)),
-        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods) + 1)))
+        NormalizedStatistics = rep(1.0, length(ColumnNames) * (length(Methods) +
+                                                                 1))
+      )
     }
     DataCollection <- list()
     Counter <- 0L
@@ -546,107 +603,275 @@ AutoTransformationCreate <- function(data,
     FinalMethods <- Methods
     
     # Update Methods----
-    if(MinVal <= 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log"))]
-    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asinh","logplus1"))]
-    if(MaxVal - MinVal > 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin", "logit"))]
+    if (MinVal <= 0) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log"))]
+    }
+    if (MinVal < 0) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("asinh","logplus1"))]
+    }
+    if (MaxVal - MinVal > 1) {
+      FinalMethods <-
+        FinalMethods[!(tolower(FinalMethods) %chin% c("asin", "logit"))]
+    }
     
     # Store column data as vector----
     x <- data[[eval(ColumnNames[colNames])]]
     
     # YeoJohnson----
-    if(any(tolower(FinalMethods) %chin% "yeojohnson")) {
+    if (any(tolower(FinalMethods) %chin% "yeojohnson")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_YeoJohnson(x)
       DataCollection[["yeojohnson"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Log----
     if (any(tolower(FinalMethods) %chin% "log")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Log(x)
       DataCollection[["log"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = NA)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = NA
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # LogPlus1----
-    if(any(tolower(FinalMethods) %chin% "logplus1")) {
+    if (any(tolower(FinalMethods) %chin% "logplus1")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_LogPlus1(x)
       DataCollection[["logplus1"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = NA)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = NA
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # BoxCox----
     if (any(tolower(FinalMethods) %chin% "boxcox")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_BoxCox(x)
       DataCollection[["boxcox"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Asinh----
-    if(any(tolower(FinalMethods) %chin% "asinh")) {
+    if (any(tolower(FinalMethods) %chin% "asinh")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Asinh(x)
       DataCollection[["asinh"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Asin----
-    if(any(tolower(FinalMethods) %chin% "asin")) {
+    if (any(tolower(FinalMethods) %chin% "asin")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Asin(x)
       DataCollection[["asin"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Logit----
-    if(any(tolower(FinalMethods) %chin% "logit")) {
+    if (any(tolower(FinalMethods) %chin% "logit")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Logit(x)
       DataCollection[["logit"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "MethodName",
+        value = output$Name
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )
     }
     
     # Identity----
-    if(any(tolower(FinalMethods) %chin% "identity")) {
+    if (any(tolower(FinalMethods) %chin% "identity")) {
       Counter <- Counter + 1L
-      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "ColumnName",
+        value = eval(ColumnNames[colNames])
+      )
       output <- Test_Identity(x)
       DataCollection[["identity"]] <- output$Data
-      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
-      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = output$Lambda)
-      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+      data.table::set(EvaluationTable,
+                      i = Counter,
+                      j = "MethodName",
+                      value = output$Name)
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "Lambda",
+        value = output$Lambda
+      )
+      data.table::set(
+        EvaluationTable,
+        i = Counter,
+        j = "NormalizedStatistics",
+        value = output$Normalized_Statistic
+      )  
     }
     
     # Pick winner----
     EvaluationTable <- EvaluationTable[MethodName != "BLABLA"]
-    if(colNames == 1) {
-      Results <- EvaluationTable[order(NormalizedStatistics)][1L, ]
+    if (colNames == 1) {
+      Results <- EvaluationTable[order(NormalizedStatistics)][1, ]
     } else {
-      Results <- data.table::rbindlist(list(Results, EvaluationTable[order(NormalizedStatistics)][1L, ]))
+      Results <- data.table::rbindlist(list(Results,
+                                            EvaluationTable[order(NormalizedStatistics)][1, ]))
     }
     
     # Apply to data----
@@ -654,10 +879,17 @@ AutoTransformationCreate <- function(data,
   }
   
   # Save output----
-  if(SaveOutput & !is.null(Path)) data.table::fwrite(Results, file = file.path(normalizePath(Path), paste0(TransID, "_transformation.csv")))
+  if (SaveOutput == TRUE & !is.null(Path)) {
+    data.table::fwrite(Results, file = paste0(Path,
+                                              "/",
+                                              TransID,
+                                              "_transformation.csv"))
+    
+  }
   
   # Return data----
-  return(list(Data = data, FinalResults = Results))
+  return(list(Data = data,
+              FinalResults = Results))
 }
 
 #' AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()
@@ -693,79 +925,135 @@ AutoTransformationScore <- function(ScoringData,
                                     TransID = "TestModel",
                                     Path = NULL) {
   
+  # Turn on full speed ahead----
+  data.table::setDTthreads(percent = 100)
+  
   # Check arguments----
-  if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
+  if (!data.table::is.data.table(ScoringData)) {
+    ScoringData <- data.table::as.data.table(ScoringData)
+  }
   
   # Pull in Results File----
-  if(!is.null(FinalResults)) {
+  if (!is.null(FinalResults)) {
     Results <- FinalResults
   } else {
-    Results <- data.table::fread(file = file.path(normalizePath(Path), paste0(TransID, "_transformation.csv")))
+    Results <- data.table::fread(file = paste0(Path,
+                                               "/",
+                                               TransID,
+                                               "_transformation.csv"))
   }
   
   # Loop through ColumnNames----
-  for(colNames in Results[["ColumnName"]]) {
+  for (colNames in Results[["ColumnName"]]) {
     
     # YeoJohnson----
-    if(Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_YeoJohnson(ScoringData[[eval(colNames)]], Results[ColumnName == eval(colNames), Lambda]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "YeoJohnson") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_YeoJohnson(ScoringData[[eval(colNames)]],
+                                   Results[ColumnName == eval(colNames), Lambda])
+        )
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_YeoJohnson(x = ScoringData[[eval(colNames)]], lambda = Results[ColumnName == eval(colNames), Lambda]))
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_YeoJohnson(x = ScoringData[[eval(colNames)]],
+                                      lambda = Results[ColumnName == eval(colNames), Lambda])
+        )
       }
     }
     
     # Log----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Log") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_Log(ScoringData[[eval(colNames)]]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "Log") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_Log(ScoringData[[eval(colNames)]])
+        )
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_Log(x = ScoringData[[eval(colNames)]]))
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_Log(x = ScoringData[[eval(colNames)]])
+        )
       }
     }
     
     # LogPlus1----
-    if(Results[ColumnName == eval(colNames), MethodName] == "LogPlus1") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_LogPlus1(ScoringData[[eval(colNames)]]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "LogPlus1") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_LogPlus1(ScoringData[[eval(colNames)]])
+        )
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_LogPlus1(x = ScoringData[[eval(colNames)]]))
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_LogPlus1(x = ScoringData[[eval(colNames)]])
+        )
       }
     }
     
     # BoxCox----
-    if(Results[ColumnName == eval(colNames), MethodName] == "BoxCox") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_BoxCox(ScoringData[[eval(colNames)]], Results[ColumnName == eval(colNames), Lambda]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "BoxCox") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = Apply_BoxCox(ScoringData[[eval(colNames)]],
+                               Results[ColumnName == eval(colNames), Lambda])
+        )
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_BoxCox(ScoringData[[eval(colNames)]], Results[ColumnName == eval(colNames), Lambda]))
+        data.table::set(
+          ScoringData,
+          j = eval(colNames),
+          value = InvApply_BoxCox(ScoringData[[eval(colNames)]],
+                                  Results[ColumnName == eval(colNames), Lambda])
+        )
       }
     }
     
     # Asinh----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Asinh") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_Asinh(ScoringData[[eval(colNames)]]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "Asinh") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = Apply_Asinh(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_Asinh(ScoringData[[eval(colNames)]]))
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = InvApply_Asinh(ScoringData[[eval(colNames)]]))
       }
     }
     
     # Asin----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Asin") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_Asin(ScoringData[[eval(colNames)]]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "Asin") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = Apply_Asin(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_Asin(ScoringData[[eval(colNames)]]))
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = InvApply_Asin(ScoringData[[eval(colNames)]]))
       }
     }
     
     # Logit----
-    if(Results[ColumnName == eval(colNames), MethodName] == "Logit") {
-      if(tolower(Type) != "inverse") {
-        data.table::set(ScoringData, j = eval(colNames), value = Apply_Logit(ScoringData[[eval(colNames)]]))
+    if (Results[ColumnName == eval(colNames), MethodName] == "Logit") {
+      if (tolower(Type) != "inverse") {
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = Apply_Logit(ScoringData[[eval(colNames)]]))
       } else {
-        data.table::set(ScoringData, j = eval(colNames), value = InvApply_Logit(ScoringData[[eval(colNames)]]))
+        data.table::set(ScoringData,
+                        j = eval(colNames),
+                        value = InvApply_Logit(ScoringData[[eval(colNames)]]))
       }
     }
   }
