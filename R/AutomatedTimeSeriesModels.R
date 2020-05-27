@@ -158,9 +158,7 @@ AutoBanditSarima <- function(data,
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
-  if(x != xx) {
-    return(print("Non unique values detected in data"))
-  }
+  if(x != xx) return(print("Non unique values detected in data"))
   
   # Lags----
   if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
@@ -242,19 +240,6 @@ AutoBanditSarima <- function(data,
     ModelFreq = TRUE, 
     FinalBuild = FALSE)
   
-  # TargetName = TargetVariableName
-  # DateName = DateColumnName
-  # Lags = ARIMA_Lags
-  # SeasonalLags = ARIMA_SeasonalLags
-  # MovingAverages = ARIMA_MovingAverages
-  # SeasonalMovingAverages = ARIMA_SeasonalMovingAverages
-  # TimeUnit = TimeAggLevel
-  # FCPeriods = NumFCPeriods
-  # HoldOutPeriods = NumHoldOutPeriods
-  # TSClean = TRUE
-  # ModelFreq = TRUE
-  # FinalBuild = FALSE
-  
   # 2. Find Best ARIMA Models----
   Arima_ExperimentGrid <- tryCatch({ParallelAutoARIMA(
     MetricSelection = EvaluationMetric,
@@ -265,16 +250,6 @@ AutoBanditSarima <- function(data,
     MaxRunMinutes = ARIMA_MaxRunTime,
     MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner)},
     error = function(x) NULL)
-  
-  #
-  # MetricSelection = EvaluationMetric
-  # Output = Arima_Artifacts_Build
-  # MaxFourierTerms = ARIMA_MaxFourierTerms
-  # TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate)
-  # MaxNumberModels = ARIMA_MaxNumberModels
-  # MaxRunMinutes = ARIMA_MaxRunTime
-  # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
-  #
   
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
@@ -373,9 +348,7 @@ AutoBanditNNet <- function(data,
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
-  if(x != xx) {
-    return(print("Non unique values detected in data"))
-  }
+  if(x != xx) return(print("Non unique values detected in data"))
 
   # Lags----
   if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
@@ -495,12 +468,12 @@ AutoBanditNNet <- function(data,
         FC_MaxValue <- max(Forecast[["Forecast"]], na.rm = TRUE)
         
         # Build model
-        if(nrow(Forecast) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
+        if(nrow(Forecast) != 0L & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           return(list(Forecast = Forecast, PerformanceGrid = NNET_ExperimentGrid))
         } else {
           NNET_ExperimentGrid <- NNET_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 10) {
+          if(counter > 10L) {
             return(print("Unable to build a model"))
           }
         }

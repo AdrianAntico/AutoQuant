@@ -750,18 +750,14 @@ AutoLagRollStatsScoring <- function(data,
     Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchyGroups, BottomsUp = TRUE)
     
     # Check if there already----
-    for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
-      if(!any(names(data) %chin% Categoricals[cat])) {
-        data[, eval(Categoricals[cat]) := do.call(paste, c(.SD, sep = " ")), .SDcols = c(unlist(data.table::tstrsplit(Categoricals[cat], "_")))]
-      }
-    }
+    for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) if(!any(names(data) %chin% Categoricals[cat])) data[, eval(Categoricals[cat]) := do.call(paste, c(.SD, sep = " ")), .SDcols = c(unlist(data.table::tstrsplit(Categoricals[cat], "_")))]
     
     # Loop through each feature interaction----
     Counter <- 0L
     for(Fact in Categoricals) {
       
       # Loop through the time aggs----
-      for (timeaggs in TimeGroups) {
+      for(timeaggs in TimeGroups) {
         
         # Increment----
         Counter <- Counter + 1L
@@ -773,21 +769,11 @@ AutoLagRollStatsScoring <- function(data,
         # Check if timeaggs is same of TimeUnitAgg----
         if(Counter > 1L) {
           
-          # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-          # TIME AND DIM AGGREGATION----
-          # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-          
           # Floor Date column to timeagg level----
-          if(tolower(timeaggs) != "raw") {
-            data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))  
-          }
+          if(tolower(timeaggs) != "raw") data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))
           
           # Ensure Targets is numeric - someimes comes in as list----
-          for(tar in Targets) {
-            if(!is.numeric(tempData[[eval(tar)]])) {
-              data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))  
-            }
-          }
+          for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))
           
           # Dim and Time Aggregation----
           if(tolower(timeaggs) != "raw") {

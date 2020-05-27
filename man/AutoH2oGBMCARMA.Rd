@@ -132,7 +132,7 @@ AutoH2oGBMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts,
 \donttest{
 data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-Forecast1 <- AutoH2oGBMCARMA(
+Forecast1 <- RemixAutoML::AutoH2oGBMCARMA(
   
   # Data Artifacts
   data = data,
@@ -156,6 +156,7 @@ Forecast1 <- AutoH2oGBMCARMA(
   GridTune = FALSE,
   GridEvalMetric = "mae",
   ModelCount = 5,
+  NTrees = 1000L,
   Timer = TRUE,
   DebugMode = FALSE,
   
@@ -180,10 +181,8 @@ Forecast1 <- AutoH2oGBMCARMA(
   
   # Bonus Features
   XREGS = xreg,
-  FourierTerms = 4,
-  TimeTrendVariable = TRUE,
-  NTrees = 300,
-  DebugMode = FALSE)
+  FourierTerms = 4L,
+  TimeTrendVariable = TRUE)
   
 Forecast1$TimeSeriesPlot
 Forecast1$Forecast
