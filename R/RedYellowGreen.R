@@ -54,42 +54,30 @@ RedYellowGreen <- function(data,
   requireNamespace('parallel', quietly = FALSE)
   
   # Check data.table
-  if (!data.table::is.data.table(data))
-    data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Ensure arguments are valid
-  if (is.character(TruePositiveCost))
-    stop("TruePositiveCost must be numeric")
-  if (is.character(TrueNegativeCost))
-    stop("TruePositiveCost must be numeric")
-  if (is.character(FalsePositiveCost))
-    stop("TruePositiveCost must be numeric")
-  if (is.character(FalseNegativeCost))
-    stop("TruePositiveCost must be numeric")
-  if (is.character(MidTierCost))
-    stop("TruePositiveCost must be numeric")
-  if (Precision < 0 | Precision > 0.5)
-    stop("Precision should be a decimal value greater than 0 and less than 0.5")
-  if (min(Boundaries) < 0 | max(Boundaries) > 0.99999999999999999999)
-    stop("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
-  if (Boundaries[1] > Boundaries[2])
-    stop("The first Boundaries element should be less than the second element")
+  if(is.character(TruePositiveCost)) return("TruePositiveCost must be numeric")
+  if(is.character(TrueNegativeCost)) return("TruePositiveCost must be numeric")
+  if(is.character(FalsePositiveCost)) return("TruePositiveCost must be numeric")
+  if(is.character(FalseNegativeCost)) return("TruePositiveCost must be numeric")
+  if(is.character(MidTierCost)) return("TruePositiveCost must be numeric")
+  if(Precision < 0 | Precision > 0.5) return("Precision should be a decimal value greater than 0 and less than 0.5")
+  if(min(Boundaries) < 0 | max(Boundaries) > 0.99999999999999999999) return("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
+  if(Boundaries[1L] > Boundaries[2L]) return("The first Boundaries element should be less than the second element")
   
   # Set up evaluation table
   analysisTable <- data.table::data.table(
-    TPP = base::rep(TruePositiveCost, 1),
-    TNP = base::rep(TrueNegativeCost, 1),
-    FPP = base::rep(FalsePositiveCost, 1),
-    FNP = base::rep(FalseNegativeCost, 1),
-    MTDN = base::rep(TRUE, 1),
-    MTC = base::rep(MidTierCost, 1),
-    Threshold = runif(1))
+    TPP = base::rep(TruePositiveCost, 1L),
+    TNP = base::rep(TrueNegativeCost, 1L),
+    FPP = base::rep(FalsePositiveCost, 1L),
+    FNP = base::rep(FalseNegativeCost, 1L),
+    MTDN = base::rep(TRUE, 1L),
+    MTC = base::rep(MidTierCost, 1L),
+    Threshold = runif(1L))
   
   # Do nothing possibilities
-  temp <- data.table::CJ(
-      MTLT = seq(Boundaries[1], Boundaries[2], Precision),
-      MTHT = seq(Boundaries[1], Boundaries[2], Precision)
-    )[MTHT > MTLT]
+  temp <- data.table::CJ(MTLT = seq(Boundaries[1L], Boundaries[2L], Precision), MTHT = seq(Boundaries[1L], Boundaries[2L], Precision))[MTHT > MTLT]
   new <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
   
@@ -119,7 +107,7 @@ RedYellowGreen <- function(data,
                                          MidTierCost       = -5,
                                          new = i) {
         # Loop through all combos
-        for (k in base::as.integer(seq_len(nrow(new)))) {
+        for(k in base::as.integer(seq_len(nrow(new)))) {
           x <- threshOptim(
             data = data,
             actTar = base::names(data)[ActualColNumber],
@@ -130,21 +118,13 @@ RedYellowGreen <- function(data,
             fnProfit = FalseNegativeCost,
             MidTierDoNothing = TRUE,
             MidTierCost = MidTierCost,
-            MidTierLowThresh = new[k, 8][[1]],
-            MidTierHighThresh = new[k, 9][[1]]
-          )
-          data.table::set(new,
-                          i = k,
-                          j = 7L,
-                          value = x[[1]])
-          temp <- x[[2]]
-          data.table::set(new,
-                          i = k,
-                          j = 10L,
-                          value = temp[Thresholds == eval(x[[1]]),
-                                       "Utilities"][[1]])
+            MidTierLowThresh = new[k, 8L][[1L]],
+            MidTierHighThresh = new[k, 9L][[1L]])
+          data.table::set(new, i = k, j = 7L, value = x[[1L]])
+          temp <- x[[2L]]
+          data.table::set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1L]]), "Utilities"][[1L]])
         }
-        base::return(new)
+        return(new)
       }
       
       # Inner function for threshold optimizataion
@@ -165,67 +145,45 @@ RedYellowGreen <- function(data,
         # Optimize each column's classification threshold ::
         popTrue <- mean(data[[(actTar)]])
         store   <- list()
-        j <- 0
-        options(warn = -1)
-        for (i in c(MidTierHighThresh)) {
-          j <- j + 1
-          if (tpProfit != 0) {
-            tp <- sum(data.table::fifelse(
-              !(data[[predTar]] < MidTierHighThresh &
-                  data[[predTar]] > MidTierLowThresh) &
-                data[[actTar]] == 1 & data[[predTar]] >= i,1,0))
+        j <- 0L
+        options(warn = -1L)
+        for(i in c(MidTierHighThresh)) {
+          j <- j + 1L
+          if(tpProfit != 0) {
+            tp <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
           } else {
             tp <- 0
           }
-          if (tnProfit != 0) {
-            tn <-
-              sum(data.table::fifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] <  i,1,0))
+          if(tnProfit != 0) {
+            tn <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] <  i,1,0))
           } else {
             tn <- 0
           }
-          if (fpProfit != 0) {
-            fp <-
-              sum(data.table::fifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 0 & data[[predTar]] >= i,1,0))
+          if(fpProfit != 0) {
+            fp <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] >= i,1,0))
           } else {
             fp <- 0
           }
-          if (fnProfit != 0) {
-            fn <-
-              sum(data.table::fifelse(
-                !(data[[predTar]] < MidTierHighThresh &
-                    data[[predTar]] > MidTierLowThresh) &
-                  data[[actTar]] == 1 & data[[predTar]] <  i,1,0))
+          if(fnProfit != 0) {
+            fn <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] <  i,1,0))
           } else {
             fp <- 0
           }
-          none <-
-            sum(data.table::fifelse(
-              data[[predTar]] <= MidTierHighThresh &
-                data[[predTar]] >= MidTierLowThresh,1,0))
+          none <- sum(data.table::fifelse(data[[predTar]] <= MidTierHighThresh & data[[predTar]] >= MidTierLowThresh,1,0))
           tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
           fpr <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
           noneRate <- none / nrow(data)
-          utility <- (1 - noneRate) * (
-              popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) +
-                (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
-            ) + noneRate * MidTierCost
+          utility <- (1 - noneRate) * (popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))) + noneRate * MidTierCost
           store[[j]] <- c(i, utility)
         }
         all <- data.table::rbindlist(list(store))
-        utilities <- data.table::melt(all[2,])
+        utilities <- data.table::melt(all[2L,])
         data.table::setnames(utilities, "value", "Utilities")
-        thresholds <- data.table::melt(all[1,])
+        thresholds <- data.table::melt(all[1L,])
         data.table::setnames(thresholds, "value", "Thresholds")
-        results <- cbind(utilities, thresholds)[, c(-1,-3)]
-        thresh <- results[Thresholds <= eval(MidTierLowThresh) |
-                            Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1,2][[1]]
-        options(warn = 1)
+        results <- cbind(utilities, thresholds)[, c(-1L,-3L)]
+        thresh <- results[Thresholds <= eval(MidTierLowThresh) | Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1L, 2L][[1L]]
+        options(warn = 1L)
         return(list(thresh, results))
       }
       
@@ -239,7 +197,7 @@ RedYellowGreen <- function(data,
         FalsePositiveCost = FalsePositiveCost,
         FalseNegativeCost = FalseNegativeCost,
         MidTierCost       = MidTierCost,
-        new = i)
+        new               = i)
       
       # Return data table
       data
@@ -255,32 +213,26 @@ RedYellowGreen <- function(data,
     z = results[["Utility"]],
     type = "p",
     color = "#401a50",
-    angle = 45,
-    pch = 16,
-    main = paste0("Utility Maximizer - Main Threshold at ",
-                  results[order(-Utility)][1, "MTHT"][[1]]),
-    sub = paste0("Lower Thresh = ",
-                 results[order(-Utility)][1,"MTLT"][[1]],
-                 " and Upper Thresh = ",results[order(-Utility)][1, "MTHT"][[1]]),
-    xlab = "Mid Tier Lower Threshold",
-    ylab = "Mid Tier Higher Threshold",
-    zlab = "Utility")
+    angle = 45L,
+    pch = 16L,
+    main = paste0("Utility Maximizer - Main Threshold at ", results[order(-Utility)][1, "MTHT"][[1L]]),
+    sub = paste0("Lower Thresh = ", results[order(-Utility)][1L, "MTLT"][[1L]], " and Upper Thresh = ", results[order(-Utility)][1L, "MTHT"][[1L]]), xlab = "Mid Tier Lower Threshold", ylab = "Mid Tier Higher Threshold", zlab = "Utility")
   model <- stats::lm(results[["Utility"]] ~ results[["MTLT"]] + results[["MTHT"]])
   s3d$plane3d(model)
   N <- nrow(results)
   s3d$points3d(
-    x = results[order(-Utility)][1:(N / 100), "MTLT"][[1]],
-    y = results[order(-Utility)][1:(N / 100), "MTHT"][[1]],
-    z = results[order(-Utility)][1:(N / 100), "Utility"][[1]],
+    x = results[order(-Utility)][1L:(N / 100), "MTLT"][[1L]],
+    y = results[order(-Utility)][1L:(N / 100), "MTHT"][[1L]],
+    z = results[order(-Utility)][1L:(N / 100), "Utility"][[1L]],
     col = "#00aa9d",
     type = "h",
-    pch = 1)
+    pch = 1L)
   s3d$points3d(
-    x = results[order(-Utility)][1, "MTLT"][[1]],
-    y = results[order(-Utility)][1, "MTHT"][[1]],
-    z = results[order(-Utility)][1, "Utility"][[1]],
+    x = results[order(-Utility)][1L, "MTLT"][[1L]],
+    y = results[order(-Utility)][1L, "MTHT"][[1L]],
+    z = results[order(-Utility)][1L, "Utility"][[1L]],
     col = "black",
     type = "h",
-    pch = 10)
+    pch = 10L)
   return(results)
 }

@@ -48,7 +48,7 @@ AutoDataPartition <- function(data,
   if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) return("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
   if(!is.null(StratifyColumnNames)) {
     if(!is.character(StratifyColumnNames)) return("StratifyColumnNames needs to be a character vector of column names")
-    if (!all(StratifyColumnNames %chin% names(data))) return("StratifyColumnNames not in vector of data names")
+    if(!all(StratifyColumnNames %chin% names(data))) return("StratifyColumnNames not in vector of data names")
   }
   if(!is.null(TimeColumnName)) {
     if(!(TimeColumnName %chin% names(data))) return("TimeColumnName not in vector of data names")
@@ -67,7 +67,7 @@ AutoDataPartition <- function(data,
   }
   
   # Partition Steps----
-  if(is.null(TimeColumnName)) {
+  if(tolower(PartitionType) == "time") {
     
     # Data prep----
     copy_data <- data.table::copy(data)
@@ -77,7 +77,7 @@ AutoDataPartition <- function(data,
     # Modify ratios to account for data decrements----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
-    for(i in (NumDataSets - 1L):1L) {
+    for(i in rev(seq_len(NumDataSets - 1L))) {
       tempRatio <- 0
       for(j in (i + 1L):NumDataSets) tempRatio <- Ratios[j] + tempRatio
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
@@ -169,18 +169,17 @@ AutoDataPartition <- function(data,
     
     # Initialize DataCollect
     DataCollect <- list()
-    data <- data[order(get(TimeColumnName))]
+    data.table::setorderv(x = data, cols = eval(TimeColumnName), order = 1L, na.last = TRUE)
     Rows <- data[, .N]
     
     # Figure out which rows go to which data set
-    for(i in NumDataSets:1L) {
+    for(i in rev(seq_len(NumDataSets))) {
       if(i == 1L) {
         DataCollect[["TrainData"]] <- data
       } else if(i == 2L) {
         RowEnd <- data[, .N]
         NumRows <- floor(Ratios[i] * Rows)
-        DataCollect[["ValidationData"]] <-
-          data[(RowEnd - NumRows + 1L):RowEnd]
+        DataCollect[["ValidationData"]] <- data[(RowEnd - NumRows + 1L):RowEnd]
         data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
       } else if(i == 3L) {
         RowEnd <- data[, .N]
