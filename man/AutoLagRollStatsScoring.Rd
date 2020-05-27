@@ -81,7 +81,7 @@ data.table of original data plus created lags, rolling stats, and time between e
 AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
 }
 \examples{
-data <- AutoLagRollStatsScoring(
+data <- RemixAutoML::AutoLagRollStatsScoring(
   
   # Data
   data                 = data,
@@ -94,18 +94,18 @@ data <- AutoLagRollStatsScoring(
 
   # Services
   TimeBetween          = NULL,
-  TimeUnit             = "week",
+  TimeUnit             = c("days", "weeks", "months"),
   RollOnLag1           = TRUE,
   Type                 = "Lag",
-  SimpleImpute         = TRUE,   
+  SimpleImpute         = TRUE,
      
   # Calculated Columns
-  Lags                 = c(3,5,10,15,20,25),
-  MA_RollWindows       = c(3,5,10,15,20,25),
-  SD_RollWindows       = c(3,5,10,15,20,25),
-  Skew_RollWindows     = c(3,5,10,15,20,25),
-  Kurt_RollWindows     = c(3,5,10,15,20,25),
-  Quantile_RollWindows = c(3,5,10,15,20,25),
+  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   Quantiles_Selected   = c("q5","q10","q95"),
   Debug                = FALSE)
 }

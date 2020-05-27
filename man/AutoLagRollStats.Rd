@@ -91,7 +91,7 @@ data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
 data <- data[order(DateTime)]
 
 # Run Function
-data <- AutoLagRollStats(
+data <- RemixAutoML::AutoLagRollStats(
   
   # Data
   data                 = data,
@@ -99,7 +99,7 @@ data <- AutoLagRollStats(
   Targets              = c("Target"),
   HierarchyGroups      = c("LETTERSS","LETTERS","letters"),
   IndependentGroups    = NULL,
-  TimeGroups           = c("day","weeks","months"),
+  TimeUnit             = c("days", "weeks", "months"),
   TimeUnitAgg          = "day",
 
   # Services
@@ -110,12 +110,12 @@ data <- AutoLagRollStats(
   SimpleImpute         = TRUE,
      
   # Calculated Columns
-  Lags                  = c(seq(1,5,1)),
-  MA_RollWindows        = c(3,5,10,15,20,25),
-  SD_RollWindows        = c(seq(5, 95, 5)),
-  Skew_RollWindows      = c(seq(5, 95, 5)),
-  Kurt_RollWindows      = c(seq(5, 95, 5)),
-  Quantile_RollWindows  = c(seq(5, 95, 5)),
+  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   Quantiles_Selected    = c("q5","q10","q95"),
   Debug                 = FALSE)
 }
