@@ -249,23 +249,6 @@ AutoLagRollStats <- function(data,
           WindowingLag    = RollOnLag1,
           Type            = Type,
           SimpleImpute    = SimpleImpute)
-        
-        # lags            = Lags
-        # periods         = MA_RollWindows
-        # SDperiods       = SD_RollWindows
-        # Skewperiods     = Skew_RollWindows
-        # Kurtperiods     = Kurt_RollWindows
-        # Quantileperiods = Quantile_RollWindows
-        # statsFUNs       = RollFunctions
-        # targets         = Targets
-        # groupingVars    = NULL
-        # sortDateName    = DateColumn
-        # timeDiffTarget  = TimeBetween
-        # timeAgg         = timeaggs
-        # WindowingLag    = RollOnLag1
-        # Type            = Type
-        # SimpleImpute    = SimpleImpute
-        
       }
       
       # Check if timeaggs is same of TimeUnit----
@@ -275,29 +258,6 @@ AutoLagRollStats <- function(data,
         data.table::set(data, j = "TEMPDATE", value = NULL)
       }
     }
-    
-    # 
-    # QA: For some reason, "Store" specific rolling stats are returning a 
-    #     constant value when every other created feature have variance as
-    #     as they should.
-    #
-    # lags = Lags
-    # periods = MA_RollWindows
-    # SDperiods = SD_RollWindows
-    # Skewperiods = Skew_RollWindows
-    # Kurtperiods = Kurt_RollWindows
-    # Quantileperiods = Quantile_RollWindows
-    # statsFUNs = RollFunctions
-    # targets = Targets
-    # groupingVars = NULL
-    # sortDateName = DateColumn
-    # timeDiffTarget = TimeBetween
-    # timeAgg = TimeUnit
-    # WindowingLag = RollOnLag1
-    # Type = Type
-    # SimpleImpute = SimpleImpute
-    #
-    
   }
   
   # Debugging----
@@ -387,28 +347,6 @@ AutoLagRollStats <- function(data,
             Type            = Type,
             SimpleImpute    = SimpleImpute)
         }
-        
-        # 
-        # QA: For some reason, "Store" specific rolling stats are returning a 
-        #     constant value when every other created feature have variance as
-        #     as they should.
-        #
-        # lags = Lags
-        # periods = MA_RollWindows
-        # SDperiods = SD_RollWindows
-        # Skewperiods = Skew_RollWindows
-        # Kurtperiods = Kurt_RollWindows
-        # Quantileperiods = Quantile_RollWindows
-        # statsFUNs = RollFunctions
-        # targets = Targets
-        # groupingVars = NULL
-        # sortDateName = DateColumn
-        # timeDiffTarget = TimeBetween
-        # timeAgg = TimeUnit
-        # WindowingLag = RollOnLag1
-        # Type = Type
-        # SimpleImpute = SimpleImpute
-        #
         
         # Check if timeaggs is same of TimeUnit----
         if(Counter > 1L) {
@@ -775,27 +713,6 @@ AutoLagRollStatsScoring <- function(data,
           AscRowByGroup = RowNumsID,
           RecordsKeep = RowNumsKeep,
           AscRowRemove = TRUE)
-        
-        # lags = Lags
-        # periods = MA_RollWindows
-        # SDperiods = SD_RollWindows
-        # Skewperiods = Skew_RollWindows
-        # Kurtperiods = Kurt_RollWindows
-        # Quantileperiods = Quantile_RollWindows
-        # statsFUNs = RollFunctions
-        # targets = Targets
-        # groupingVars = NULL
-        # sortDateName = eval(DateColumn)
-        # timeDiffTarget = TimeBetween
-        # timeAgg = timeaggs
-        # WindowingLag = RollOnLag1
-        # Type = Type
-        # Timer = FALSE
-        # SimpleImpute = SimpleImpute
-        # AscRowByGroup = RowNumsID
-        # RecordsKeep = RowNumsKeep
-        # AscRowRemove = TRUE
-        
       }
       
       # When Fact changes, dates are different - find out where the date changes
@@ -928,60 +845,12 @@ AutoLagRollStatsScoring <- function(data,
             AscRowByGroup = RowNumsID,
             RecordsKeep = RowNumsKeep,
             AscRowRemove = TRUE)
-          
-          # data <- tempData
-          # lags = Lags
-          # periods = MA_RollWindows
-          # SDperiods = SD_RollWindows
-          # Skewperiods = Skew_RollWindows
-          # Kurtperiods = Kurt_RollWindows
-          # Quantileperiods = Quantile_RollWindows
-          # statsFUNs = RollFunctions
-          # targets = Targets
-          # groupingVars = Fact
-          # sortDateName = "TEMPDATE"
-          # timeDiffTarget = TimeBetween
-          # timeAgg = timeaggs
-          # WindowingLag = RollOnLag1
-          # Type = Type
-          # Timer = FALSE
-          # SimpleImpute = SimpleImpute
-          # AscRowByGroup = RowNumsID
-          # RecordsKeep = RowNumsKeep
-          # AscRowRemove = TRUE
-          
+
           # Update vals----
           data.table::set(KeepData, j = eval(DateColumn), value = KeepData[["TEMPDATE"]])
           data.table::setcolorder(KeepData, c(which(names(KeepData) == eval(DateColumn)), setdiff(seq_len(ncol(KeepData)), which(names(KeepData) == eval(DateColumn)))))
         }
-        
-        # 
-        # QA: For some reason, "Store" specific rolling stats are returning a 
-        #     constant value when every other created feature have variance as
-        #     as they should.
-        #
-        # lags = Lags
-        # periods = MA_RollWindows
-        # SDperiods = SD_RollWindows
-        # Skewperiods = Skew_RollWindows
-        # Kurtperiods = Kurt_RollWindows
-        # Quantileperiods = Quantile_RollWindows
-        # statsFUNs = RollFunctions
-        # targets = Targets
-        # groupingVars = Fact
-        # sortDateName = "TEMPDATE"
-        # timeDiffTarget = TimeBetween
-        # timeAgg = TimeUnit
-        # WindowingLag = RollOnLag1
-        # Type = Type
-        # SimpleImpute = SimpleImpute
-        # AscRowByGroup = RowNumsID
-        # RecordsKeep     = 138
-        # AscRowRemove = TRUE
-        # Timer = TRUE
-        # i = 1
-        #
-        
+
         # Merge data----
         
         # When Fact changes, dates are different - find out where the date changes
