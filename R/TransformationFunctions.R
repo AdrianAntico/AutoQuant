@@ -23,8 +23,7 @@ Test_YeoJohnson <- function(x,
     Name = "YeoJohnson",
     Data = trans_data,
     Lambda = lambda,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df)
-  )
+    Normalized_Statistic = unname(ptest$statistic / ptest$df))
   return(val)
 }
 
@@ -52,8 +51,7 @@ Estimate_YeoJohnson_Lambda <- function(x,
     x_t <- Apply_YeoJohnson(x, lambda, eps)
     x_t_bar <- mean(x_t)
     x_t_var <- var(x_t) * (n - 1) / n
-    constant <- sum(sign(x) * log(abs(x) + 1))
-    - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
+    constant <- sum(sign(x) * log(abs(x) + 1)) - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
   }
   
   results <- optimize(
@@ -94,8 +92,7 @@ Apply_YeoJohnson <- function(x,
     if(abs(lambda - 2) < eps) {
       x[neg_idx] <- -log(-x[neg_idx] + 1)
     } else {
-      x[neg_idx] <-
-        -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
+      x[neg_idx] <- -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
     }
   }
   x
@@ -127,8 +124,7 @@ InvApply_YeoJohnson <- function(x,
     if(abs(lambda - 2) < eps) {
       val[neg_idx] <- -expm1(-x[neg_idx])
     } else {
-      val[neg_idx] <-
-        1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
+      val[neg_idx] <- 1 - (-(2 - lambda) * x[neg_idx] + 1) ^ (1 / (2 - lambda))
     }
   }
   val
@@ -154,8 +150,7 @@ Test_BoxCox <- function(x, ...) {
     Name = "BoxCox",
     Data = trans_data,
     Lambda = lambda,
-    Normalized_Statistic = unname(ptest$statistic / ptest$df)
-  )
+    Normalized_Statistic = unname(ptest$statistic / ptest$df))
   return(val)
 }
 
