@@ -50,10 +50,10 @@ ModelDataPrep <- function(data,
                           IgnoreCols   = NULL) {
   
   # Full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Check data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Prepare columns for action----
   x <- as.integer(seq_along(data))

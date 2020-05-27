@@ -141,9 +141,9 @@ AutoXGBoostClassifier <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Binary Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
   # Binary Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -838,30 +838,32 @@ AutoXGBoostClassifier <- function(data,
   # Return objects----
   if(GridTune) {
     if (ReturnModelObjects) {
-      return(list(Model = model,
-                  ValidationData = ValidationData,
-                  ROC_Plot = ROC_Plot,
-                  EvaluationPlot = EvaluationPlot,
-                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
-                  VariableImportance = VariableImportance,
-                  VI_Plot = VI_Plot_Object,
-                  PartialDependencePlots = ParDepPlots,
-                  GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
-                  ColNames = Names,
-                  FactorLevels = FactorLevelsList))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        ROC_Plot = ROC_Plot,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot_Object,
+        PartialDependencePlots = ParDepPlots,
+        GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
+        ColNames = Names,
+        FactorLevels = FactorLevelsList))
     }
   } else {
     if (ReturnModelObjects) {
-      return(list(Model = model,
-                  ValidationData = ValidationData,
-                  ROC_Plot = ROC_Plot,
-                  EvaluationPlot = EvaluationPlot,
-                  EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
-                  VariableImportance = VariableImportance,
-                  VI_Plot = VI_Plot_Object,
-                  PartialDependencePlots = ParDepPlots,
-                  ColNames = Names,
-                  FactorLevels = FactorLevelsList))
+      return(list(
+        Model = model,
+        ValidationData = ValidationData,
+        ROC_Plot = ROC_Plot,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot_Object,
+        PartialDependencePlots = ParDepPlots,
+        ColNames = Names,
+        FactorLevels = FactorLevelsList))
     }
   }
 }

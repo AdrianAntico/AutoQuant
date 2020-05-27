@@ -103,9 +103,9 @@ AutoH2oMLRegression <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Convert TransformNumericColumns to Names if not character----
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]
@@ -132,7 +132,7 @@ AutoH2oMLRegression <- function(data,
       Path = NULL)
     
     # Transform TestData----
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       TestData <- AutoTransformationScore(
         ScoringData = TestData,
         Type = "Apply",
@@ -179,7 +179,7 @@ AutoH2oMLRegression <- function(data,
         Path = NULL)
       
       # Transform TestData----
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         TestData <- AutoTransformationScore(
           ScoringData = TestData,
           Type = "Apply",
@@ -274,7 +274,7 @@ AutoH2oMLRegression <- function(data,
       seed                 = 1234)
     
     # Regression Get Best Model----
-    Grid_Out   <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = FALSE)
+    Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = FALSE)
     
     # Regression Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
@@ -322,7 +322,7 @@ AutoH2oMLRegression <- function(data,
   if(GridTune & !TrainOnFull) {
     if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
-      if (tolower(eval_metric) == "mse") {
+      if(tolower(eval_metric) == "mse") {
         GridModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = grid_model, newdata = datatest))
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if(tolower(eval_metric) == "rmse") {
@@ -373,7 +373,7 @@ AutoH2oMLRegression <- function(data,
         BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       }
     } else {
-      if (tolower(eval_metric) == "mse") {
+      if(tolower(eval_metric) == "mse") {
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatrain))
       } else if(tolower(eval_metric) == "rmse") {
         BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datatrain))
@@ -564,13 +564,13 @@ AutoH2oMLRegression <- function(data,
         if (tolower(metric) == "mae") {
           ValidationData[, Metric := abs(get(TargetColumnName) - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "mape") {
+        } else if(tolower(metric) == "mape") {
           ValidationData[, Metric := abs((get(TargetColumnName) - Predict) / (get(TargetColumnName) + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "mse") {
+        } else if(tolower(metric) == "mse") {
           ValidationData[, Metric := (get(TargetColumnName) - Predict) ^ 2]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "r2") {
+        } else if(tolower(metric) == "r2") {
           Metric <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1L]]) ^ 2L
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
@@ -669,19 +669,18 @@ AutoH2oMLRegression <- function(data,
   # Regression Return Objects----
   if(ReturnModelObjects) {
     if(!TrainOnFull) {
-      return(
-        list(
-          Model = FinalModel,
-          ValidationData = ValidationData,
-          EvaluationPlot = EvaluationPlot,
-          EvaluationBoxPlot = EvaluationBoxPlot,
-          EvaluationMetrics = EvaluationMetrics,
-          VariableImportance = VariableImportance,
-          VI_Plot = VI_Plot(VI_Data = VariableImportance),
-          PartialDependencePlots = ParDepPlots,
-          PartialDependenceBoxPlots = ParDepBoxPlots,
-          TransformationInformation = if(!is.null(TransformNumericColumns)) TransformationResults else NULL,
-          ColNames = Names))
+      return(list(
+        Model = FinalModel,
+        ValidationData = ValidationData,
+        EvaluationPlot = EvaluationPlot,
+        EvaluationBoxPlot = EvaluationBoxPlot,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VI_Data = VariableImportance),
+        PartialDependencePlots = ParDepPlots,
+        PartialDependenceBoxPlots = ParDepBoxPlots,
+        TransformationInformation = if(!is.null(TransformNumericColumns)) TransformationResults else NULL,
+        ColNames = Names))
     } else {
       return(list(
         Model = FinalModel,

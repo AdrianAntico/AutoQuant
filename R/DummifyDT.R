@@ -52,6 +52,9 @@ DummifyDT <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
+  # Check data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  
   # Check arguments----
   if(!is.character(cols)) return("cols needs to be a character vector of names")
   if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
@@ -62,9 +65,6 @@ DummifyDT <- function(data,
   if(!is.logical(ClustScore)) return("ClustScore needs to be either TRUE or FALSE")
   if(!is.null(SavePath)) if(!is.character(SavePath)) return("SavePath needs to be a character value of a folder location")
   
-  # Check data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  
   # Ensure correct argument settings----
   if(OneHot & ClustScore) {
     OneHot <- FALSE
@@ -73,7 +73,7 @@ DummifyDT <- function(data,
   
   # Build dummies start----
   FactorsLevelsList <- list()
-  if(length(cols) > 1 & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
+  if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
   for(col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)

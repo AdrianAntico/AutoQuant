@@ -82,7 +82,7 @@ AutoH2oGLMClassifier <- function(data,
                                  HurdleModel = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
@@ -105,12 +105,12 @@ AutoH2oGLMClassifier <- function(data,
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # Binary Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Binary Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -228,7 +228,7 @@ AutoH2oGLMClassifier <- function(data,
       BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
   } else if(!TrainOnFull) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
       BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {

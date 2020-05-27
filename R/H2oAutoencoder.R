@@ -115,7 +115,11 @@ H2oAutoencoder <- function(AnomalyDetection = TRUE,
                            ElasticAveragingRegularization = 0.001) {
   
   # Full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   
   # Return because of mispecified arguments----
   if(!AnomalyDetection & !DimensionReduction) return("Why are you running this function if you do not want anomaly detection nor dimension reduction?")

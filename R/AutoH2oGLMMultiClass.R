@@ -95,9 +95,9 @@ AutoH2oGLMMultiClass <- function(data,
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # MultiClass Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # MultiClass Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -243,7 +243,7 @@ AutoH2oGLMMultiClass <- function(data,
     } else if(tolower(eval_metric) == "r2") {
       BaseMetric <- BaseMetrics@metrics$r2
       GridMetric <- GridMetrics@metrics$r2
-      if (GridMetric > BaseMetric) {
+      if(GridMetric > BaseMetric) {
         FinalModel <- grid_model
         EvalMetric <- GridMetric
         ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)

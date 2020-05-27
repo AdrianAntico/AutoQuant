@@ -146,9 +146,9 @@ AutoXGBoostMultiClass <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # MultiClass Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if (!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if (!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
   # MultiClass Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -304,7 +304,6 @@ AutoXGBoostMultiClass <- function(data,
         data.table::set(TestData, j = "ID_Factorizer", value = NULL)
       } else {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        
         if(!TrainOnFull) {
           data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
           temp <- data.table::rbindlist(list(dataTrain, dataTest))        
@@ -549,7 +548,7 @@ AutoXGBoostMultiClass <- function(data,
         }
         
         # Binary Grid Score Model----
-        if (!is.null(TestData)) {
+        if(!is.null(TestData)) {
           predict <- stats::predict(model, datatest)
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
         } else {
@@ -774,7 +773,7 @@ AutoXGBoostMultiClass <- function(data,
 
   # MultiClass Validation Data----
   if(Objective == "multi:softprob") {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Final))
     } else if(!TrainOnFull) {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Final))
@@ -801,7 +800,7 @@ AutoXGBoostMultiClass <- function(data,
   # Save EvaluationMetrics to File
   if(Objective != "multi:softprob") {
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-    if (SaveModelObjects) {
+    if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       } else {
@@ -813,7 +812,7 @@ AutoXGBoostMultiClass <- function(data,
   # MultiClass Variable Importance----
   VariableImportance <- xgboost::xgb.importance(model = model)
   VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {

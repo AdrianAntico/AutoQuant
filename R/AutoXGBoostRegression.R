@@ -148,9 +148,9 @@ AutoXGBoostRegression <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
   # Regression Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -410,7 +410,7 @@ AutoXGBoostRegression <- function(data,
         }
       }
     } else {
-      if (!is.null(dataTest)) {
+      if(!is.null(dataTest)) {
         data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
         if(!TrainOnFull) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
@@ -607,7 +607,7 @@ AutoXGBoostRegression <- function(data,
         }
         
         # Binary Grid Score Model----
-        if (!is.null(TestData)) {
+        if(!is.null(TestData)) {
           predict <- stats::predict(model, datatest)
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
           NewPerformance <- XGBoostRegressionMetrics(grid_eval_metric,MinVal,calibEval)
@@ -699,7 +699,7 @@ AutoXGBoostRegression <- function(data,
   }
   
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
-  if (!is.null(PassInGrid)) {
+  if(!is.null(PassInGrid)) {
     base_params <- list(
       booster               = "gbtree",
       objective             = 'reg:linear',
@@ -910,7 +910,7 @@ AutoXGBoostRegression <- function(data,
         } else if(tolower(metric) == "mse") {
           ValidationData[, Metric := (get(Target) - Predict) ^ 2L]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if (tolower(metric) == "r2") {
+        } else if(tolower(metric) == "r2") {
           Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1L]]) ^ 2L
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = Metric)

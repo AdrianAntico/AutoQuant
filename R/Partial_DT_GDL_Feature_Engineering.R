@@ -77,10 +77,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                                AscRowRemove    = TRUE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Argument Checks----
-  if(!is.null(timeAgg)) if (!is.character(timeAgg)) return("timeAgg needs to be a character scalar or vector")
+  if(!is.null(timeAgg)) if(!is.character(timeAgg)) return("timeAgg needs to be a character scalar or vector")
   if(is.null(timeAgg)) {
     timeAgg <- "TimeUnitNULL"
   } else if(tolower(timeAgg) == "raw") {
@@ -105,7 +105,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   ColKeep <- names(data)
   
   # Convert to data.table if not already----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Max data to keep----
   MaxCols <- 0
@@ -350,7 +350,6 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         tempperiods <- SDperiods[SDperiods > 1L]
         TargetN <- 0L
         for(t in TargetS) {
-          
           TargetN <- TargetN + 1L
           for(j in tempperiods) {
             if(!is.null(timeDiffTarget)) {
@@ -374,7 +373,6 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         tempperiods <- Skewperiods[Skewperiods > 2L]
         TargetN <- 0L
         for (t in TargetS) {
-          
           TargetN <- TargetN + 1L
           for(j in tempperiods) {
             if(!is.null(timeDiffTarget)) {
@@ -492,10 +490,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     # Sort data----
     if(tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
-      data.table::setorderv(data, colVar, order = 1)
+      data.table::setorderv(data, colVar, order = 1L)
     } else {
       colVar <- c(sortDateName[1])
-      data.table::setorderv(data, colVar, order = -1)
+      data.table::setorderv(data, colVar, order = -1L)
     }
     
     # Subset data for the rows needed to compute MaxCols----
@@ -503,9 +501,9 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     Rows <- c()
     for(x in seq_along(rows)) {
       if(x == 1) {
-        Rows <- rows[x]:(max(rows[x]-MaxCols,0))
+        Rows <- rows[x]:(max(rows[x]-MaxCols, 0L))
       } else {
-        Rows <- c(Rows, rows[x]:(max(rows[x]-MaxCols,0)))
+        Rows <- c(Rows, rows[x]:(max(rows[x]-MaxCols, 0L)))
       }
     }
     data <- data[unique(Rows)]
@@ -513,10 +511,10 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     # Sort data----
     if(tolower(Type) == "lag") {
       colVar <- c(sortDateName[1])
-      data.table::setorderv(data, colVar, order = 1)
+      data.table::setorderv(data, colVar, order = 1L)
     } else {
       colVar <- c(sortDateName[1])
-      data.table::setorderv(data, colVar, order = -1)
+      data.table::setorderv(data, colVar, order = -1L)
     }
     
     # Lags----
@@ -594,9 +592,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             TimeLagCols <- c(TimeLagCols, paste0(timeAggss, "_", timeDiffTarget, "_", l))
             
             # TimeLagKeep----
-            if(l %in% lags) {
-              TimeLagKeep <- c(TimeLagKeep, paste0(timeAggss, "_", timeDiffTarget, "_", l))              
-            }
+            if(l %in% lags) TimeLagKeep <- c(TimeLagKeep, paste0(timeAggss, "_", timeDiffTarget, "_", l))
           }
         }
       }
@@ -624,8 +620,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     PeriodKeep <- c()
     
     # Moving Averages----
-    if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0,1))) {
-      
+    if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0L, 1L))) {
       periods <- periods[periods > 1L]
       incre <- 0L
       TargetN <- 0L
@@ -771,7 +766,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         if(is.factor(data[[j]])) {
           data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
         } else {
-          data.table::set(data, which(is.na(data[[j]])), j,-1)
+          data.table::set(data, which(is.na(data[[j]])), j, -1L)
         }
       }
     }

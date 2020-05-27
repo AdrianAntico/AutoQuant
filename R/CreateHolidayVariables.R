@@ -40,6 +40,9 @@ CreateHolidayVariables <- function(data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
+  # Convert to data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  
   # If GroupVars are numeric, convert them to character
   for(zz in seq_along(GroupingVars)) {
     if(is.numeric(data[[eval(GroupingVars[zz])]]) | is.integer(data[[eval(GroupingVars[zz])]])) {
@@ -52,9 +55,6 @@ CreateHolidayVariables <- function(data,
   
   # Function for expanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) return(as.integer(length(which(x = Values %in% seq(as.Date(Start), as.Date(End), by = "days")))))
-  
-  # Convert to data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
   
   # Sort by group and date----
   if(!is.null(GroupingVars)) {

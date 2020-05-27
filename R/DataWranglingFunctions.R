@@ -44,9 +44,7 @@ ColumnSubsetDataTable <- function(data,
 DataDisplayMeta <- function(data) {
   
   # Check to see if data is actual data----
-  if(!(any(class(data) %in% c("data.table","data.frame","tibble")))) {
-    return(NULL)
-  }
+  if(!(any(class(data) %in% c("data.table","data.frame","tibble")))) return(NULL)
   
   # Begin process----
   Counter <- 0L
@@ -54,14 +52,8 @@ DataDisplayMeta <- function(data) {
   x <- data.table::data.table(Variable = rep("donotuse", N), Type = rep("donotuse", N))
   for(name in names(data)) {
     Counter <- Counter + 1L
-    data.table::set(x, 
-        i = Counter, 
-        j = "Variable", 
-        value = eval(name))
-    data.table::set(x, 
-        i = Counter, 
-        j = "DataType", 
-        value = class(data[[eval(name)]]))
+    data.table::set(x, i = Counter, j = "Variable", value = eval(name))
+    data.table::set(x, i = Counter, j = "DataType", value = class(data[[eval(name)]]))
   }
   
   # Return table
@@ -127,7 +119,10 @@ DifferenceData <- function(data,
                            GroupingVariable = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Keep First Row of Data
   if(!is.null(GroupingVariable)) {
@@ -152,21 +147,15 @@ DifferenceData <- function(data,
   
   # Return data
   if(!CARMA) {
-    return(list(DiffData = DiffData,
-                FirstRow = FirstRow,
-                LastRow = data[nrow(data),])) 
+    return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = data[nrow(data),])) 
   } else {
     if(!is.null(GroupingVariable)) {
       FirstRow <- FirstRow[, get(TargetVariable), by = eval(GroupingVariable)]
-      return(list(DiffData = DiffData,
-                  FirstRow = FirstRow,
-                  LastRow = LastRow))
+      return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = LastRow))
     } else {
       
       #FirstRow <- FirstRow[, get(TargetVariable)]
-      return(list(DiffData = DiffData,
-                  FirstRow = FirstRow,
-                  LastRow = LastRow))      
+      return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = LastRow))      
     }
   }
 }
@@ -193,7 +182,10 @@ DifferenceDataReverse <- function(data,
                                   GroupingVariables = NULL) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   ModifiedData <- data.table::copy(data)
   if(!CARMA) {
@@ -232,9 +224,7 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
     
     # Case 1: N choose 1 - Store each individual column name separately (main effects)
     if(i == 1) {
-      for(j in 1:N) {
-        Categoricals <- c(Categoricals,GroupVars[j])
-      }
+      for(j in 1:N) Categoricals <- c(Categoricals,GroupVars[j])
       
     # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
     } else if(i < N) {

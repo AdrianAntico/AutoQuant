@@ -101,9 +101,9 @@ AutoH2oGBMClassifier <- function(data,
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # Binary Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Binary Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -141,7 +141,7 @@ AutoH2oGBMClassifier <- function(data,
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain    <- h2o::as.h2o(dataTrain)
+    datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -185,7 +185,7 @@ AutoH2oGBMClassifier <- function(data,
       seed                 = 1234)
     
     # Binary Get Best Model----
-    Grid_Out   <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = Decreasing)
+    Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = Decreasing)
     
     # Binary Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])

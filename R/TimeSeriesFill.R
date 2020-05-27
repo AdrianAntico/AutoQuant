@@ -25,12 +25,10 @@ TimeSeriesFill <- function(data = data,
                            FillType = "all") {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Ensure data.table----
-  if(!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Check Args----
   if(!is.character(DateColumnName)) {
@@ -139,16 +137,14 @@ TimeSeriesFill <- function(data = data,
     
     # Reverse group variables concatenation----
     if(!is.null(GroupVariables)) {
-      if(length(GroupVariables) > 1) {
-        if(Rows == TRUE & length(KeepGroups) != 0) {
+      if(length(GroupVariables) > 1L) {
+        if(Rows == TRUE & length(KeepGroups) != 0L) {
           ReturnData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
           NoModData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
         }
         
         # Return data----
-        return(
-          data.table::rbindlist(
-            list(NoModData,ReturnData)))
+        return(data.table::rbindlist(list(NoModData,ReturnData)))
       } else {
         if(Rows == TRUE & length(KeepGroups) != 0) {
           data.table::setnames(ReturnData, "GroupVar", eval(GroupVariables))
@@ -168,17 +164,14 @@ TimeSeriesFill <- function(data = data,
     }
     
     # Return data----
-    if(Rows == TRUE & length(KeepGroups) != 0) {
+    if(Rows == TRUE & length(KeepGroups) != 0L) {
       return(data.table::rbindlist(list(ReturnData, NoModData)))
     } else if(Rows) {
       return(ReturnData)
     } else {
       return(ReturnData)      
     }
-    
-    # Inner with Group
   } else if(!is.null(GroupVariables) & tolower(FillType) == "inner") {
-    # Define date range----
     MinRange <- data[, min(get(DateColumnName)), by = "GroupVar"]
     data.table::setnames(MinRange, "V1", "MinDate")
     MaxRange <- data[, max(get(DateColumnName)), by = "GroupVar"]
@@ -187,20 +180,17 @@ TimeSeriesFill <- function(data = data,
     NGroup <- data[, .N, by = "GroupVar"]
     
     # Store logical----
-    data.table::set(
-      MinMax,
-      j = "Length",
-      value = as.numeric(1 + difftime(MinMax[["MaxDate"]], MinMax[["MinDate"]], units = eval(TimeUnit))))
+    data.table::set(MinMax, j = "Length", value = as.numeric(1 + difftime(MinMax[["MaxDate"]], MinMax[["MinDate"]], units = eval(TimeUnit))))
     MinMax <- merge(MinMax, NGroup, by = "GroupVar", all = FALSE)
     Rows <- MinMax[Length > N, GroupVar]
     Len <- unique(MinMax[["GroupVar"]])
     counter <- 0L
     
     # Some or all levels----
-    if(length(Rows) != 0) {
+    if(length(Rows) != 0L) {
       NoModData <- data[GroupVar %chin% MinMax[Length == N, GroupVar]]
       for(i in Rows) {
-        counter <- counter + 1
+        counter <- counter + 1L
         tempData <- data.table::CJ(
           i,
           seq(from = MinRange[GroupVar == eval(i), MinDate],
@@ -226,11 +216,10 @@ TimeSeriesFill <- function(data = data,
           FinalData, 
           old = c("i","V2"), 
           new = c("GroupVar",eval(DateColumnName)))
-        if(counter == 1) {
+        if(counter == 1L) {
           ReturnData <- FinalData
         } else {
-          ReturnData <- data.table::rbindlist(
-            list(ReturnData, FinalData))
+          ReturnData <- data.table::rbindlist(list(ReturnData, FinalData))
         }
       }
       
@@ -263,7 +252,6 @@ TimeSeriesFill <- function(data = data,
     
     # Fill----
     if(Rows) {
-      # Build data----
       tempData <- data.table::as.data.table(
         seq(from = data[, min(get(DateColumnName))],
             to = data[, max(get(DateColumnName))], 
@@ -287,12 +275,8 @@ TimeSeriesFill <- function(data = data,
         IgnoreCols = NULL)
       
       # Return data----
-      return(data.table::setnames(
-        FinalData, 
-        old = c("V1"), 
-        new = c(eval(DateColumnName))))
+      return(data.table::setnames(FinalData, old = c("V1"), new = c(eval(DateColumnName))))
     } else {
-      # Return otherwise
       return(data)
     }
   }

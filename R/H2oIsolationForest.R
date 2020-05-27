@@ -71,16 +71,16 @@ H2oIsolationForest <- function(data,
                                SampleRate = (sqrt(5)-1)/2) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Ensure H2O is installed----
   if(!requireNamespace("h2o")) return("Install H2O to run this function")
   
   # Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Ensure data is a data.table----
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)

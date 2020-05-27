@@ -77,7 +77,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
-  if(!data.table::is.data.table(ScoringData)) ScoringData <- data.table::as.data.table(ScoringData)
+  if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
   if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
   if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
   if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")

@@ -100,13 +100,13 @@ AutoH2oDRFRegression <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Regression Ensure data is a data.table----
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   
   # Regression Ensure data is a data.table----
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Convert TransformNumericColumns to Names if not character----
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]
@@ -180,7 +180,7 @@ AutoH2oDRFRegression <- function(data,
         Path = NULL)
       
       # Transform TestData----
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         TestData <- AutoTransformationScore(
           ScoringData = TestData,
           Type = "Apply",
@@ -312,9 +312,9 @@ AutoH2oDRFRegression <- function(data,
   
   # Regression Grab Evaluation Metric----
   if(GridTune & !TrainOnFull) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
-      if (tolower(eval_metric) == "mse") {
+      if(tolower(eval_metric) == "mse") {
         GridModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = grid_model, newdata = datatest))
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatest))
       } else if(tolower(eval_metric) == "rmse") {
@@ -343,7 +343,7 @@ AutoH2oDRFRegression <- function(data,
       }
     }
   } else if(!TrainOnFull) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
       if (tolower(eval_metric) == "mse") {
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatest))
@@ -355,7 +355,7 @@ AutoH2oDRFRegression <- function(data,
         BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datatest))
       }
     } else if(!is.null(ValidationData)) {
-      if (tolower(eval_metric) == "mse") {
+      if(tolower(eval_metric) == "mse") {
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       } else if(tolower(eval_metric) == "rmse") {
         BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datavalidate))
@@ -365,7 +365,7 @@ AutoH2oDRFRegression <- function(data,
         BaseModelEval <- h2o::h2o.rmsle(h2o::h2o.performance(model = base_model, newdata = datavalidate))
       }
     } else {
-      if (tolower(eval_metric) == "mse") {
+      if(tolower(eval_metric) == "mse") {
         BaseModelEval <- h2o::h2o.mse(h2o::h2o.performance(model = base_model, newdata = datatrain))
       } else if(tolower(eval_metric) == "rmse") {
         BaseModelEval <- h2o::h2o.rmse(h2o::h2o.performance(model = base_model, newdata = datatrain))
@@ -438,7 +438,7 @@ AutoH2oDRFRegression <- function(data,
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
   
   # Regression Create Validation Data----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
   } else if(!is.null(ValidationData) & !TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
@@ -663,7 +663,7 @@ AutoH2oDRFRegression <- function(data,
   }
   
   # Regression Return Objects----
-  if (ReturnModelObjects) {
+  if(ReturnModelObjects) {
     if(!TrainOnFull) {
       if(!is.null(TransformNumericColumns)) {
         return(list(

@@ -375,7 +375,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   Grids <- list()
   
   # Create grid sets----
-  for (i in seq_len(Runs)) {
+  for(i in seq_len(Runs)) {
     if(i == 1L) {
       Grids[[paste0("Grid_",i)]] <- 
         Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
@@ -402,7 +402,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     GrowPolicy = rep("aa", 10000L))
   
   # Shuffle grid sets----
-  for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
+  for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_", i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
   
   # Return grid----
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
@@ -497,7 +497,7 @@ CatBoostRegressionParams <- function(counter = NULL,
     }
   } else {
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if (tolower(task_type) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
@@ -630,7 +630,7 @@ CatBoostClassifierParams <- function(counter = NULL,
     }
   } else {
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if (tolower(task_type) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
@@ -757,7 +757,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
     }
   } else {
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if (tolower(task_type) == "gpu") {
+    if(tolower(task_type) == "gpu") {
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
@@ -840,7 +840,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
   Grids <- list()
   
   # Create grid sets----
-  for (i in seq_len(Runs)) {
+  for(i in seq_len(Runs)) {
     if(i == 1L) {
       Grids[[paste0("Grid_",i)]] <- Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
     } else {
@@ -1031,33 +1031,33 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
                                      calibEval) {
   if(tolower(grid_eval_metric) == "poisson") {
-    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+    if(MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := p1 - Target * log(p1 + 1)]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
-  } else if (tolower(grid_eval_metric) == "mae") {
+  } else if(tolower(grid_eval_metric) == "mae") {
     calibEval[, Metric := abs(Target - p1)]
     Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-  } else if (tolower(grid_eval_metric) == "mape") {
+  } else if(tolower(grid_eval_metric) == "mape") {
     calibEval[, Metric := abs((Target - p1) / (Target + 1))]
     Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-  } else if (tolower(grid_eval_metric) == "mse") {
+  } else if(tolower(grid_eval_metric) == "mse") {
     calibEval[, Metric := (Target - p1) ^ 2L]
     Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
-  } else if (tolower(grid_eval_metric) == "msle") {
+  } else if(tolower(grid_eval_metric) == "msle") {
     if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := (log(Target + 1) - log(p1 + 1)) ^ 2L]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
-  } else if (tolower(grid_eval_metric) == "kl") {
+  } else if(tolower(grid_eval_metric) == "kl") {
     if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := Target * log((Target + 1) / (p1 + 1))]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
-  } else if (tolower(grid_eval_metric) == "cs") {
+  } else if(tolower(grid_eval_metric) == "cs") {
     calibEval[, ':=' (Metric1 = Target * p1, Metric2 = Target ^ 2L, Metric3 = p1 ^ 2L)]
     Metric <- calibEval[, sum(Metric1, na.rm = TRUE)] / (sqrt(calibEval[, sum(Metric2, na.rm = TRUE)]) * sqrt(calibEval[, sum(Metric3, na.rm = TRUE)]))
-  } else if (tolower(grid_eval_metric) == "r2") {
+  } else if(tolower(grid_eval_metric) == "r2") {
     Metric <- (calibEval[, stats::cor(eval(Target), p1)][[1L]]) ^ 2L
   }
   return(Metric)

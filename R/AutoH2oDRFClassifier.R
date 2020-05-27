@@ -101,12 +101,12 @@ AutoH2oDRFClassifier <- function(data,
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
   
   # Binary Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
   # Binary Data Partition----
-  if (is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
+  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -149,7 +149,7 @@ AutoH2oDRFClassifier <- function(data,
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     
     # Binary Define data sets----
-    datatrain    <- h2o::as.h2o(dataTrain)
+    datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
     
     # Binary Grid Tune Search Criteria----
@@ -194,7 +194,7 @@ AutoH2oDRFClassifier <- function(data,
       seed                 = 1234)
     
     # Binary Get Best Model----
-    Grid_Out   <- h2o::h2o.getGrid(
+    Grid_Out <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing)
@@ -239,7 +239,7 @@ AutoH2oDRFClassifier <- function(data,
       BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
     }
   } else if(!TrainOnFull) {
-    if (!is.null(TestData)) {
+    if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
       BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
     } else {
@@ -313,8 +313,8 @@ AutoH2oDRFClassifier <- function(data,
   }
   
   # Binary Save Final Model----
-  if (SaveModelObjects) {
-    if (tolower(IfSaveModel) == "mojo") {
+  if(SaveModelObjects) {
+    if(tolower(IfSaveModel) == "mojo") {
       SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path,force = TRUE)
       h2o::h2o.download_mojo(
         model = FinalModel,
@@ -363,7 +363,7 @@ AutoH2oDRFClassifier <- function(data,
     Percentage = round(Percentage, 4))]
   
   # Binary Save Variable Importance----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
     } else {
@@ -375,7 +375,7 @@ AutoH2oDRFClassifier <- function(data,
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)    
   
   # Binary Create Validation Data----
-  if (!is.null(TestData)) {
+  if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
   } else if(!TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
@@ -521,7 +521,7 @@ AutoH2oDRFClassifier <- function(data,
   }
   
   # Binary Save ParDepPlots to file----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
     } else {

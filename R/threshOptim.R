@@ -46,10 +46,10 @@ threshOptim <- function(data,
                         ThresholdPrecision = 0.001) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Check data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Convert factor target to numeric
   data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
@@ -57,10 +57,10 @@ threshOptim <- function(data,
   # Optimize each column's classification threshold ::
   popTrue <- mean(data[[(actTar)]])
   store <- list()
-  j <- 0
-  options(warn = -1)
+  j <- 0L
+  options(warn = -1L)
   for(i in seq(from = MinThresh, to = MaxThresh, by = ThresholdPrecision)) {
-    j <- j + 1
+    j <- j + 1L
     tp <- sum(data.table::fifelse(data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
     tn <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
     fp <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))

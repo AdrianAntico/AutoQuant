@@ -57,7 +57,7 @@ AutoWord2VecModeler <- function(data,
   data.table::setDTthreads(threads = max(1L,parallel::detectCores()-2L))
   
   # Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Two processes----
   if(tolower(BuildType) == "combined") {

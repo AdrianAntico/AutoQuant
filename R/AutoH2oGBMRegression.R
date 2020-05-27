@@ -90,7 +90,7 @@ AutoH2oGBMRegression <- function(data,
                                  HurdleModel = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
@@ -109,13 +109,13 @@ AutoH2oGBMRegression <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   
   # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Regression Ensure data is a data.table----
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) ValidationData <- data.table::as.data.table(ValidationData)
+  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   
   # Regression Ensure data is a data.table----
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) TestData <- data.table::as.data.table(TestData)
+  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
   
   # Convert TransformNumericColumns to Names if not character----
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]
@@ -215,7 +215,7 @@ AutoH2oGBMRegression <- function(data,
   # Regression ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
-  if (!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
+  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
   
   # Regression Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
@@ -537,7 +537,7 @@ AutoH2oGBMRegression <- function(data,
   
   # Inverse Transform----
   if(!is.null(TransformNumericColumns)) {
-    if (GridTune) TransformationResults <- TransformationResults[ColumnName != "Predict"]
+    if(GridTune) TransformationResults <- TransformationResults[ColumnName != "Predict"]
     TransformationResults <- data.table::rbindlist(list(
       TransformationResults,
       data.table::data.table(
@@ -567,7 +567,7 @@ AutoH2oGBMRegression <- function(data,
   if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2L
   
   # Regression Save Validation Data to File----
-  if (SaveModelObjects) {
+  if(SaveModelObjects) {
     if(!TrainOnFull) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
@@ -787,7 +787,7 @@ AutoH2oGBMRegression <- function(data,
   }
 
   # Regression Return Objects----
-  if (ReturnModelObjects) {
+  if(ReturnModelObjects) {
     if(!TrainOnFull) {
       return(list(
         Model = FinalModel,

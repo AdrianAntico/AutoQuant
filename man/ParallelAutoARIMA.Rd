@@ -7,10 +7,10 @@
 ParallelAutoARIMA(
   Output,
   MetricSelection = "MAE",
-  MaxFourierTerms = 1,
+  MaxFourierTerms = 1L,
   TrainValidateShare = c(0.5, 0.5),
   MaxNumberModels = 20,
-  MaxRunMinutes = 5,
+  MaxRunMinutes = 5L,
   MaxRunsWithoutNewWinner = 12
 )
 }
