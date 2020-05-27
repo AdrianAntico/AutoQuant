@@ -51,7 +51,8 @@ Estimate_YeoJohnson_Lambda <- function(x,
     x_t <- Apply_YeoJohnson(x, lambda, eps)
     x_t_bar <- mean(x_t)
     x_t_var <- var(x_t) * (n - 1) / n
-    constant <- sum(sign(x) * log(abs(x) + 1)) - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
+    constant <- sum(sign(x) * log(abs(x) + 1))
+    - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
   }
   
   results <- optimize(
