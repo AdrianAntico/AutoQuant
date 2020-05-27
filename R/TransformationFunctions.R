@@ -97,8 +97,7 @@ Apply_YeoJohnson <- function(x,
     if (abs(lambda - 2) < eps) {
       x[neg_idx] <- -log(-x[neg_idx] + 1)
     } else {
-      x[neg_idx] <-
-        -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
+      x[neg_idx] <- -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
     }
   }
   x

@@ -505,7 +505,7 @@ AutoLagRollStats <- function(data,
 #'   Skew_RollWindows     = c(3,5,10,15,20,25),
 #'   Kurt_RollWindows     = c(3,5,10,15,20,25),
 #'   Quantile_RollWindows = c(3,5,10,15,20,25),
-#'   Quantiles_Selected   = c("q5","q10","q95")
+#'   Quantiles_Selected   = c("q5","q10","q95"),
 #'   Debug                = FALSE)
 #' @export
 AutoLagRollStatsScoring <- function(data,
