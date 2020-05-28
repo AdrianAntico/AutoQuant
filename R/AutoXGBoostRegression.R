@@ -49,15 +49,34 @@
 #'     TreeMethod = "hist",
 #'     NThreads = 8L,
 #'   
-#'     # Metadata arguments
+#'     # Metadata arguments: 
+#'     #   'ModelID' is used to create part of the file names generated when saving to file'
+#'     #   'model_path' is where the minimal model objects for scoring will be stored
+#'     #      'ModelID' will be the name of the saved model object
+#'     #   'metadata_path' is where model evaluation and model interpretation files are saved
+#'     #      objects saved to model_path if metadata_path is null
+#'     #      Saved objects include: 
+#'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+#'     #         'ModelID_VariableImportance.csv' is the variable importance. 
+#'     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+#'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+#'     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
 #'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+#'     metadata_path = NULL,
 #'     ModelID = "Test_Model_1",
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,   
 #'   
-#'     # Data arguments
+#'     # Data arguments:
+#'     #   'TrainOnFull' is to train a model with 100 percent of your data. 
+#'     #     That means no holdout data will be used for evaluation
+#'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+#'     #     CatBoost categorical treatment is enhanced when supplied
+#'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+#'     #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,

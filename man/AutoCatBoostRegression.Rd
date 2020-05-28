@@ -142,7 +142,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = NULL,
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
     
