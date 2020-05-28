@@ -80,7 +80,7 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[4L:ncol(data)],
+#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = "Adrian",

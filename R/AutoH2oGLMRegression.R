@@ -39,7 +39,7 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Target",
-#'    FeatureColNames = 2:ncol(data),
+#'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'    Distribution = "binomial",
 #'    link = NULL, 
 #'    TransformNumericColumns = NULL,

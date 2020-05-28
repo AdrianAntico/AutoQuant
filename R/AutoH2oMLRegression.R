@@ -38,7 +38,7 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Target",
-#'    FeatureColNames = 2:ncol(data),
+#'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'    ExcludeAlgos = NULL,
 #'    TransformNumericColumns = NULL,
 #'    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
