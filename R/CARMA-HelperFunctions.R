@@ -350,10 +350,8 @@ CarmaXGBoostKeepVarsGDL <- function(data,
                                     TargetColumnName,
                                     DateColumnName) {
   
-  if(any(is.na(UpdateData[["Predictions"]]))) {
-    data.table::set(UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
-  }
-  if(Difference == TRUE & !is.null(GroupVariables)) {
+  if(any(is.na(UpdateData[["Predictions"]]))) data.table::set(UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
+  if(Difference & !is.null(GroupVariables)) {
     if(any(is.na(UpdateData[["ModTarget"]]))) {
       data.table::set(x = UpdateData, i = which(is.na(UpdateData[["ModTarget"]])), j = "ModTarget", value = 1.0)
     }
@@ -523,7 +521,6 @@ CarmaXGBoostKeepVarsGDL <- function(data,
     }
     
   } else {
-    
     UpdateData <- UpdateData[order(get(DateColumnName))]
     UpdateData[, ID := .N:1]
     if(CalendarVariables == TRUE & HolidayVariable == TRUE) {

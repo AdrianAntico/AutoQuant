@@ -1567,9 +1567,20 @@ AutoXGBoostCARMA <- function(data,
         if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
           
           # Create copy of data----
-          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          temp <- CarmaXGBoostKeepVarsGDL(
+            IndepVarPassTRUE = NULL,
+            data,
+            UpdateData,
+            CalendarFeatures,
+            XREGS,
+            Difference,
+            HierarchGroups,
+            GroupVariables,
+            NULL,
+            CalendarVariables,
+            HolidayVariable,
+            TargetColumnName,
+            DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
           
