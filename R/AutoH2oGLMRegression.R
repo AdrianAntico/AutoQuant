@@ -12,6 +12,7 @@
 #' @param Distribution "binomial", "quasibinomial"
 #' @param link identity, logit, log, inverse, tweedie
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
@@ -42,6 +43,7 @@
 #'    Distribution = "binomial",
 #'    link = NULL, 
 #'    TransformNumericColumns = NULL,
+#'    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'    eval_metric = "RMSE",
 #'    GridTune = FALSE,
 #'    MaxMem = "32G",
@@ -68,6 +70,7 @@ AutoH2oGLMRegression <- function(data,
                                  Distribution = "binomial",
                                  link = NULL, 
                                  TransformNumericColumns = NULL,
+                                 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                  eval_metric = "RMSE",
                                  GridTune = FALSE,
                                  MaxMem = "32G",

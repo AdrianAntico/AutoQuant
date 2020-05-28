@@ -14,6 +14,7 @@ AutoCatBoostRegression(
   PrimaryDateColumn = NULL,
   IDcols = NULL,
   TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   task_type = "GPU",
   NumGPUs = 1,
   eval_metric = "RMSE",
@@ -38,8 +39,7 @@ AutoCatBoostRegression(
   L2_Leaf_Reg = NULL,
   RSM = NULL,
   BootStrapType = NULL,
-  GrowPolicy = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")
+  GrowPolicy = NULL
 )
 }
 \arguments{
@@ -60,6 +60,8 @@ AutoCatBoostRegression(
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
@@ -106,8 +108,6 @@ AutoCatBoostRegression(
 \item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
-
-\item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -163,6 +163,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     PrimaryDateColumn = NULL,
     IDcols = c("IDcol_1","IDcol_2"),
     TransformNumericColumns = "Adrian",
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
     
     # Model evaluation: 
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -203,8 +204,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 }
 }
 \seealso{

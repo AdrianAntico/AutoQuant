@@ -10,6 +10,7 @@
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param Alpha This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.
 #' @param Distribution Choose from gaussian",  "poisson",  "gamma",  "tweedie",  "laplace",  "quantile", "huber"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
@@ -26,7 +27,6 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to FALSE to keep H2O running after you build your model
-#' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @param HurdleModel Set to FALSE
 #' @examples
 #' \donttest{
@@ -42,6 +42,7 @@
 #'    TargetColumnName = "Target",
 #'    FeatureColNames = 2:ncol(data),
 #'    TransformNumericColumns = NULL,
+#'    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'    Alpha = NULL,
 #'    Distribution = "poisson",
 #'    eval_metric = "RMSE",
@@ -58,7 +59,6 @@
 #'    SaveModelObjects = FALSE,
 #'    IfSaveModel = "mojo",
 #'    H2OShutdown = TRUE,
-#'    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'    HurdleModel = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
@@ -70,6 +70,7 @@ AutoH2oGBMRegression <- function(data,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
                                  TransformNumericColumns = NULL,
+                                 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                  Alpha = NULL,
                                  Distribution = "poisson",
                                  eval_metric = "RMSE",
@@ -86,7 +87,6 @@ AutoH2oGBMRegression <- function(data,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = TRUE,
-                                 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                  HurdleModel = FALSE) {
   
   # Turn on full speed ahead----

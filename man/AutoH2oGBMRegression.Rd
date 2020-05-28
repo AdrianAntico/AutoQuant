@@ -12,6 +12,7 @@ AutoH2oGBMRegression(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Alpha = NULL,
   Distribution = "poisson",
   eval_metric = "RMSE",
@@ -28,7 +29,6 @@ AutoH2oGBMRegression(
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   HurdleModel = FALSE
 )
 }
@@ -46,6 +46,8 @@ AutoH2oGBMRegression(
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
 
 \item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
@@ -79,8 +81,6 @@ AutoH2oGBMRegression(
 
 \item{H2OShutdown}{Set to FALSE to keep H2O running after you build your model}
 
-\item{Methods}{Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.}
-
 \item{HurdleModel}{Set to FALSE}
 }
 \value{
@@ -103,6 +103,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
    TargetColumnName = "Target",
    FeatureColNames = 2:ncol(data),
    TransformNumericColumns = NULL,
+   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
    Alpha = NULL,
    Distribution = "poisson",
    eval_metric = "RMSE",
@@ -119,7 +120,6 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = TRUE,
-   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
    HurdleModel = FALSE)
 }
 }

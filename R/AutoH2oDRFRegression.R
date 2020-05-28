@@ -10,6 +10,7 @@
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
 #' @param Trees The maximum number of trees you want in your models
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
@@ -39,6 +40,7 @@
 #'    TargetColumnName = "Adrian",
 #'    FeatureColNames = 4:ncol(data),
 #'    TransformNumericColumns = NULL,
+#'    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'    eval_metric = "RMSE",
 #'    Trees = 50,
 #'    GridTune = FALSE,
@@ -64,6 +66,7 @@ AutoH2oDRFRegression <- function(data,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
                                  TransformNumericColumns = NULL,
+                                 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                  eval_metric = "RMSE",
                                  Trees = 50,
                                  GridTune = FALSE,
@@ -81,7 +84,7 @@ AutoH2oDRFRegression <- function(data,
                                  HurdleModel = FALSE) {
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
@@ -117,7 +120,7 @@ AutoH2oDRFRegression <- function(data,
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
-      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+      Methods = Methods,
       Path = model_path,
       TransID = ModelID,
       SaveOutput = SaveModelObjects)
@@ -164,7 +167,7 @@ AutoH2oDRFRegression <- function(data,
       Output <- AutoTransformationCreate(
         data,
         ColumnNames = TransformNumericColumns,
-        Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+        Methods = Methods,
         Path = model_path,
         TransID = ModelID,
         SaveOutput = SaveModelObjects)

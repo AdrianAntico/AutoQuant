@@ -19,6 +19,7 @@ AutoXGBoostRegression(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Verbose = 0L,
   NumOfParDepPlots = 3L,
   NThreads = 8L,
@@ -68,6 +69,8 @@ AutoXGBoostRegression(
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
 
 \item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
 
@@ -142,6 +145,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     FeatureColNames = names(data)[4L:ncol(data)],
     IDcols = c("IDcols_1","IDcols_2"),
     TransformNumericColumns = NULL,
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   
     # Model evaluation
     eval_metric = "rmse",

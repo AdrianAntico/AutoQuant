@@ -12,6 +12,7 @@ AutoH2oDRFRegression(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   eval_metric = "RMSE",
   Trees = 50,
   GridTune = FALSE,
@@ -43,6 +44,8 @@ AutoH2oDRFRegression(
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
@@ -94,6 +97,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
    TargetColumnName = "Adrian",
    FeatureColNames = 4:ncol(data),
    TransformNumericColumns = NULL,
+   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
    eval_metric = "RMSE",
    Trees = 50,
    GridTune = FALSE,

@@ -12,6 +12,7 @@
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
@@ -23,7 +24,6 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
-#' @param Methods Default is all transformation methods. You can select a subset of them. Choices are in the default model in the help file.
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MaxModelsInGrid Number of models to test from grid options
@@ -84,6 +84,7 @@
 #'     PrimaryDateColumn = NULL,
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = "Adrian",
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'     
 #'     # Model evaluation: 
 #'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -124,8 +125,7 @@
 #'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
+#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
@@ -138,6 +138,7 @@ AutoCatBoostRegression <- function(data,
                                    PrimaryDateColumn = NULL,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
+                                   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                    task_type = "GPU",
                                    NumGPUs = 1,
                                    eval_metric = "RMSE",
@@ -162,8 +163,7 @@ AutoCatBoostRegression <- function(data,
                                    L2_Leaf_Reg = NULL, 
                                    RSM = NULL, 
                                    BootStrapType = NULL,
-                                   GrowPolicy = NULL,
-                                   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson")) {
+                                   GrowPolicy = NULL) {
   # Load catboost----
   loadNamespace(package = "catboost")
   

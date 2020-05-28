@@ -12,6 +12,7 @@
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param ReturnFactorLevels Set to TRUE to have the factor levels returned with the other model objects
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param grid_eval_metric Choose from "poisson","mae","mape","mse","msle","kl","cs","r2"
@@ -65,6 +66,7 @@
 #'     FeatureColNames = names(data)[4L:ncol(data)],
 #'     IDcols = c("IDcols_1","IDcols_2"),
 #'     TransformNumericColumns = NULL,
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'   
 #'     # Model evaluation
 #'     eval_metric = "rmse",
@@ -107,6 +109,7 @@ AutoXGBoostRegression <- function(data,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   TransformNumericColumns = NULL,
+                                  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
                                   NThreads = 8L,
