@@ -1628,8 +1628,12 @@ AutoXGBoostCARMA <- function(data,
         if("ID" %chin% names(UpdateData)) {
           UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         } else {
-          UpdateData[, ID := .N:1L]
-          UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
+          if(!is.null(GroupVariables)) {
+            UpdateData <- data.table::rbindlist(list(UpdateData, Temporary), fill = TRUE, use.names = TRUE)
+          } else {
+            UpdateData[, ID := .N:1L]
+            UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
+          }
         }
       }
       gc()
