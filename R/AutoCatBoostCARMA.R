@@ -513,7 +513,7 @@ AutoCatBoostCARMA <- function(data,
   
   # Feature Engineering: Add Difference Data----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
-  if(!is.null(GroupVariables) & Difference == TRUE) {
+  if(!is.null(GroupVariables) & Difference) {
     data[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName), n = 1, fill = NA, type = "lag"), by = c("GroupVar")][, ModTarget := get(TargetColumnName) - TargetDiffMidStep]
     dataStart <- data[is.na(TargetDiffMidStep)]
     data <- data[!is.na(TargetDiffMidStep)]

@@ -464,12 +464,12 @@ AutoXGBoostCARMA <- function(data,
   
   # Feature Engineering: Add Difference Data----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
-  if(!is.null(GroupVariables) & Difference == TRUE) {
+  if(!is.null(GroupVariables) & Difference) {
     data[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName), n = 1, fill = NA, type = "lag"), by = c("GroupVar")][, ModTarget := get(TargetColumnName) - TargetDiffMidStep]
     dataStart <- data[is.na(TargetDiffMidStep)]
     data <- data[!is.na(TargetDiffMidStep)]
     FC_Periods <- FC_Periods + 1L
-  } else if(Difference == TRUE) {
+  } else if(Difference) {
     DiffTrainOutput <- DifferenceData(
       data = data,
       ColumnsToDiff = eval(TargetColumnName),
@@ -791,7 +791,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Machine Learning: Build Model----")
   
   # Define CARMA feature names
-  if(Difference == FALSE | is.null(GroupVariables)) {
+  if(!Difference | is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       if(!"GroupVar" %chin% GroupVariables & length(GroupVariables) > 1 & "GroupVar" %chin% setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))) {
         ModelFeatures <- setdiff(setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName))),"GroupVar")
