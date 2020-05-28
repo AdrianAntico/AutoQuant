@@ -678,6 +678,8 @@ AutoXGBoostRegression <- function(data,
         # Binary Remove Model and Collect Garbage----
         rm(model)
         gc()
+      } else {
+        counter <- counter -1L
       }
       
       # Update bandit probabilities and whatnot----

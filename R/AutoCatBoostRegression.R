@@ -385,7 +385,7 @@ AutoCatBoostRegression <- function(data,
         MissNum = -1)
     }    
   }
-
+  
   # Regression Test ModelDataPrep----
   if(!is.null(TestData)) {
     TestData <- ModelDataPrep(
@@ -420,7 +420,7 @@ AutoCatBoostRegression <- function(data,
     TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1L]]
     if(!is.null(TestData)) FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
   }
-
+  
   # Regression eval_metric checks
   if(TrainOnFull != TRUE) if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) return("eval_metric Poisson requires positive values for Target")
   
@@ -488,7 +488,7 @@ AutoCatBoostRegression <- function(data,
       counter <- counter + 1L
       
       # Check if there are any grid elements left in the specific grid----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L, counter - 1L))]][["BootStrapType"]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_", max(1L, counter - 1L))]][["BootStrapType"]][1L])) {
         
         # Define prameters----
         if(!exists("NewGrid")) {
@@ -544,6 +544,8 @@ AutoCatBoostRegression <- function(data,
         # Regression Remove Model and Collect Garbage----
         rm(model)
         gc()
+      } else {
+        counter <- counter -1L
       }
       
       # Update bandit probabilities and whatnot----
@@ -579,9 +581,7 @@ AutoCatBoostRegression <- function(data,
       if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
       data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
       if(tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
-      for(bandit in seq_len(length(BanditProbs))) {
-        data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
-      }
+      for(bandit in seq_len(length(BanditProbs))) data.table::set(ExperimentalGrid, i = counter + 1L, j = paste0("BanditProbs_Grid_", bandit), value = BanditProbs[bandit])
     }
     
     # Remove unneeded rows----

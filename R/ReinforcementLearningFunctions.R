@@ -149,7 +149,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
   } else {
     BestPerformance <- min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
   }
-
+  
   
   # New performance----
   if(is.na(ExperimentGrid[ModelRun, get(paste0("Blended_",MetricSelection))])) {
@@ -299,6 +299,18 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   }
   
   # Loop Break Conditions (No new winners; Max models built; Max time reached)----
+  # print("RunsWithoutNewWinner")
+  # print(RunsWithoutNewWinner)
+  # print("MaxRunsWithoutNewWinner")
+  # print(MaxRunsWithoutNewWinner)
+  # print("ModelRun")
+  # print(ModelRun)
+  # print("MaxNumberModels")
+  # print(MaxNumberModels)
+  # print("TotalRunTime")
+  # print(TotalRunTime)
+  # print("MaxRunMinutes")
+  # print(MaxRunMinutes)
   if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
     Break <- "exit"      
   } else {
