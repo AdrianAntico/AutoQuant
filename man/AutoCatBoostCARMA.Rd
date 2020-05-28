@@ -15,6 +15,7 @@ AutoCatBoostCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -64,6 +65,8 @@ AutoCatBoostCARMA(
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
+
+\item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
@@ -159,6 +162,7 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   
   # Target Transformations
   TargetTransformation = TRUE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
   
   # Date Features

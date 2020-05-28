@@ -14,6 +14,7 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features. 
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
@@ -72,6 +73,7 @@
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = TRUE,
 #'
 #'   # Features
@@ -479,7 +481,7 @@ AutoH2oDRFCARMA <- function(data,
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
-      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+      Methods = Methods,
       Path = NULL,
       TransID = "Trans",
       SaveOutput = FALSE

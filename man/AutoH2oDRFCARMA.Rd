@@ -119,6 +119,8 @@ AutoH2oDRFCARMA(
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
+
 \item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 }
 \value{
@@ -157,6 +159,7 @@ Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
 
   # Target Transformations
   TargetTransformation = TRUE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
 
   # Features
