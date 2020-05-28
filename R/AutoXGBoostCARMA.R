@@ -1272,7 +1272,7 @@ AutoXGBoostCARMA <- function(data,
       
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
-      if(!is.null(GroupVariables) & Difference == TRUE) {
+      if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
         temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
@@ -1564,7 +1564,7 @@ AutoXGBoostCARMA <- function(data,
         
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
           
           # Create copy of data----
           temp <- CarmaXGBoostKeepVarsGDL(
@@ -1628,7 +1628,8 @@ AutoXGBoostCARMA <- function(data,
         if("ID" %chin% names(UpdateData)) {
           UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         } else {
-          UpdateData <- data.table::rbindlist(list(UpdateData, Temporary), fill = TRUE, use.names = TRUE)
+          UpdateData[, ID := .N:1L]
+          UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
         }
       }
       gc()
