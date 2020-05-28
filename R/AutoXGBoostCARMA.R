@@ -976,7 +976,7 @@ AutoXGBoostCARMA <- function(data,
         
         # i = 1 Define IDcols----
         if(DebugMode) print("# i = 1 Define IDcols----")
-        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
+        IDcols <- eval(TargetVariable)
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = Step1SCore,
