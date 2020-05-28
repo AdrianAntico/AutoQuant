@@ -312,47 +312,19 @@ TimeSeriesPlotter <- function(data = data,
   options(scipen = FALSE)
   
   # Ensure data is data.table----
-  if(!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
-  
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
   # Ensure arguments are correct----
-  if(data[, .N] <= 1) {
-    return("You're data contains <= 1 row")
-  }
-  if(!is.null(TargetVariable)) {
-    if(!is.character(TargetVariable)) {
-      return("TargetVariable did not pass through as string")
-    }    
-  }
-  if(!is.null(DateVariable)) {
-    if(!is.character(DateVariable)) {
-      return("DateVariable did not pass through as string")
-    }    
-  }
+  if(data[, .N] <= 1) return("You're data contains <= 1 row")
+  if(!is.null(TargetVariable)) if(!is.character(TargetVariable)) return("TargetVariable did not pass through as string")
+  if(!is.null(DateVariable)) if(!is.character(DateVariable)) return("DateVariable did not pass through as string")
   if(!is.null(GroupVariables)) {
-    if(!is.character(GroupVariables)) {
-      return("GroupVariables did not pass through as string")
-    }
-    if(length(GroupVariables) > 1) {
-      Forecast <- FALSE
-    }
+    if(!is.character(GroupVariables)) return("GroupVariables did not pass through as string")
+    if(length(GroupVariables) > 1) Forecast <- FALSE
   }
-  if(!is.null(Aggregate)) {
-    if(!is.character(Aggregate)) {
-      return("Aggregate did not pass through as string")
-    }
-  }
-  if(!is.null(NumberGroupsDisplay)) {
-    if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) {
-      return("NumberGroupsDisplay needs to be a number")
-    }    
-  }
-  if(!is.null(OtherGroupLabel)) {
-    if(!is.character(OtherGroupLabel)) {
-      return("OtherGroupLabel did not pass through as string")
-    }    
-  }
+  if(!is.null(Aggregate)) if(!is.character(Aggregate)) return("Aggregate did not pass through as string")
+  if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) return("NumberGroupsDisplay needs to be a number")
+  if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) return("OtherGroupLabel did not pass through as string")
   
   # Forecast----
   if(Forecast) {
@@ -388,11 +360,9 @@ TimeSeriesPlotter <- function(data = data,
         BackGroundColor = BackGroundColor, 
         LegendPosition = LegendPosition)
     if(!is.null(XTickMarks)) {
-      Plot <- Plot + 
-        ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
     } else {
-      Plot <- Plot + 
-        ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
     }
     
     # Add labels----
