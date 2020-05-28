@@ -482,13 +482,14 @@ AutoCatBoostRegression <- function(data,
     
     # Binary Grid Tuning Main Loop----
     counter <- 0L
+    NewGrid <- 1L
     repeat {
       
       # Increment counter----
       counter <- counter + 1L
       
       # Check if there are any grid elements left in the specific grid----
-      if(!is.null(GridClusters[[paste0("Grid_", max(1L, counter - 1L))]][["BootStrapType"]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_", max(1L, NewGrid))]][["BootStrapType"]][1L])) {
         
         # Define prameters----
         if(!exists("NewGrid")) {
@@ -566,6 +567,25 @@ AutoCatBoostRegression <- function(data,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = ExperimentalGrid[RunTime != -1L][, sum(RunTime, na.rm = TRUE)],
         BanditProbabilities = BanditProbs)
+      
+      # ExperimentGrid = ExperimentalGrid
+      # ModelRun = counter
+      # ModelType = "regression"
+      # NEWGrid = NewGrid
+      # NewPerformance = NewPerformance
+      # BestPerformance = BestPerformance
+      # TrialVector = Trials
+      # SuccessVector = Successes
+      # GridIDS = GridIDs
+      # BanditArmsCount = BanditArmsN
+      # RunsWithoutNewWinner = RunsWithoutNewWinner
+      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+      # MaxNumberModels = MaxModelsInGrid
+      # MaxRunMinutes = MaxRunMinutes
+      # TotalRunTime = ExperimentalGrid[RunTime != -1L][, sum(RunTime, na.rm = TRUE)]
+      # BanditProbabilities = BanditProbs
+      
+      
       BanditProbs <- RL_Update_Output[["BanditProbs"]]
       Trials <- RL_Update_Output[["Trials"]]
       Successes <- RL_Update_Output[["Successes"]]

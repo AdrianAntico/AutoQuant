@@ -285,7 +285,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
     }
     
     # Update Bandit Probabilities----
-    if(any(TrialVector < SuccessVector )) TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
+    if(any(TrialVector < SuccessVector)) TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
     
     # Create Bandit Probabilities----
     BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)

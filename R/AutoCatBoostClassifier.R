@@ -353,13 +353,14 @@ AutoCatBoostClassifier <- function(data,
     
     # Binary Grid Tuning Main Loop----
     counter <- 0L
+    NewGrid <- 1L
     repeat {
     
       # Increment counter----
       counter <- counter + 1L
       
       # Check if grid still has elements in it----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["L2_Leaf_Reg"]][1L])) {
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L, NewGrid-1L))]][["L2_Leaf_Reg"]][1L])) {
         
         # Define parameters----
         if(!exists("NewGrid")) {
