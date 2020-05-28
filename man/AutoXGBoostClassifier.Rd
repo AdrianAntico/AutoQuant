@@ -134,7 +134,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[4L:ncol(data)],
-    IDcols = c("x1","x2"),
+    IDcols = c("IDcols_1","IDcols_2"),
   
     # Model evaluation
     eval_metric = "auc",
@@ -162,7 +162,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 }
 }
 \seealso{
-Other Automated Binary Classification: 
+Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoCatBoostClassifier}()},
 \code{\link{AutoH2oDRFClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
@@ -172,4 +172,4 @@ Other Automated Binary Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated Binary Classification}
+\concept{Automated Supervised Learning - Binary Classification}

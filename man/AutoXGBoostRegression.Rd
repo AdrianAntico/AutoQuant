@@ -140,7 +140,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[4L:ncol(data)],
-    IDcols = c("x1","x2"),
+    IDcols = c("IDcols_1","IDcols_2"),
     TransformNumericColumns = NULL,
   
     # Model evaluation
@@ -170,19 +170,14 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 }
 }
 \seealso{
-Other Automated Regression: 
-\code{\link{AutoCatBoostHurdleModel}()},
+Other Automated Supervised Learning - Regression: 
 \code{\link{AutoCatBoostRegression}()},
-\code{\link{AutoH2oDRFHurdleModel}()},
 \code{\link{AutoH2oDRFRegression}()},
-\code{\link{AutoH2oGBMHurdleModel}()},
 \code{\link{AutoH2oGBMRegression}()},
 \code{\link{AutoH2oGLMRegression}()},
-\code{\link{AutoH2oMLRegression}()},
-\code{\link{AutoNLS}()},
-\code{\link{AutoXGBoostHurdleModel}()}
+\code{\link{AutoH2oMLRegression}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Regression}
+\concept{Automated Supervised Learning - Regression}

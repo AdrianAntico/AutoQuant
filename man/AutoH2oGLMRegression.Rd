@@ -116,19 +116,14 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 }
 }
 \seealso{
-Other Automated Regression: 
-\code{\link{AutoCatBoostHurdleModel}()},
+Other Automated Supervised Learning - Regression: 
 \code{\link{AutoCatBoostRegression}()},
-\code{\link{AutoH2oDRFHurdleModel}()},
 \code{\link{AutoH2oDRFRegression}()},
-\code{\link{AutoH2oGBMHurdleModel}()},
 \code{\link{AutoH2oGBMRegression}()},
 \code{\link{AutoH2oMLRegression}()},
-\code{\link{AutoNLS}()},
-\code{\link{AutoXGBoostHurdleModel}()},
 \code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Regression}
+\concept{Automated Supervised Learning - Regression}

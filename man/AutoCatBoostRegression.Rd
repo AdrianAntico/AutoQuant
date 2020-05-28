@@ -161,8 +161,8 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[4L:ncol(data)],
     PrimaryDateColumn = NULL,
-    IDcols = c("x1","x2"),
-    TransformNumericColumns = NULL,
+    IDcols = c("IDcol_1","IDcol_2"),
+    TransformNumericColumns = "Adrian",
     
     # Model evaluation: 
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -208,19 +208,14 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 }
 }
 \seealso{
-Other Automated Regression: 
-\code{\link{AutoCatBoostHurdleModel}()},
-\code{\link{AutoH2oDRFHurdleModel}()},
+Other Automated Supervised Learning - Regression: 
 \code{\link{AutoH2oDRFRegression}()},
-\code{\link{AutoH2oGBMHurdleModel}()},
 \code{\link{AutoH2oGBMRegression}()},
 \code{\link{AutoH2oGLMRegression}()},
 \code{\link{AutoH2oMLRegression}()},
-\code{\link{AutoNLS}()},
-\code{\link{AutoXGBoostHurdleModel}()},
 \code{\link{AutoXGBoostRegression}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Regression}
+\concept{Automated Supervised Learning - Regression}

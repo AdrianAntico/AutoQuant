@@ -13,7 +13,8 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features. 
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. See the Methods argument for a listing of methods.
+#' @param Methods Target transformation methods to testTests YeoJohnson, BoxCox, Log, Log plus one, and Asigh (also Asin and Logit for proportion target variables).
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
@@ -76,6 +77,7 @@
 #'   
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = TRUE,
 #'   
 #'   # Date Features
@@ -114,6 +116,7 @@ AutoH2oGBMCARMA <- function(data,
                             TimeUnit = "week",
                             TimeGroups = c("weeks","months"),
                             TargetTransformation = FALSE,
+                            Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                             XREGS = NULL,
                             Lags = c(1:5),
                             MA_Periods = c(1:5),
@@ -939,14 +942,14 @@ AutoH2oGBMCARMA <- function(data,
   if(DebugMode) print("Machine Learning: Build Model----")
   
   # Define CARMA feature names
-  if(Difference == FALSE | is.null(GroupVariables)) {
+  if(!Difference | is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
-      ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
+      ModelFeatures <- setdiff(names(data), c(eval(TargetColumnName), eval(DateColumnName)))
     } else {
-      ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
+      ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
     }
     TargetVariable <- eval(TargetColumnName)
-  } else if(Difference == TRUE & !is.null(GroupVariables)) {
+  } else if(Difference & !is.null(GroupVariables)) {
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
     TargetVariable <- "ModTarget"
   } else {
@@ -982,6 +985,7 @@ AutoH2oGBMCARMA <- function(data,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     IfSaveModel = "standard",
+    Methods = Methods,
     H2OShutdown = FALSE)
   
   # data = train

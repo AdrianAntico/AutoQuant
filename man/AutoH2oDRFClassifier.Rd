@@ -107,7 +107,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 }
 }
 \seealso{
-Other Automated Binary Classification: 
+Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoCatBoostClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
@@ -117,4 +117,4 @@ Other Automated Binary Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated Binary Classification}
+\concept{Automated Supervised Learning - Binary Classification}

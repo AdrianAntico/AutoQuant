@@ -163,7 +163,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     FeatureColNames = names(data)[4L:ncol(data)],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L),
-    IDcols = c("x1","x2"),
+    IDcols = c("IDcols_1","IDcols_2"),
     
     # Model evaluation: 
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -208,7 +208,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 }
 }
 \seealso{
-Other Automated Binary Classification: 
+Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoH2oDRFClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
@@ -218,4 +218,4 @@ Other Automated Binary Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated Binary Classification}
+\concept{Automated Supervised Learning - Binary Classification}

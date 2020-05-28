@@ -140,7 +140,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[4L:ncol(data)],
-    IDcols = c("x1","x2"),
+    IDcols = c("IDcols_1","IDcols_2"),
   
     # Model evaluation
     eval_metric = "auc",
@@ -170,7 +170,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 }
 }
 \seealso{
-Other Automated MultiClass Classification: 
+Other Automated Supervised Learning - Multiclass Classification: 
 \code{\link{AutoCatBoostMultiClass}()},
 \code{\link{AutoH2oDRFMultiClass}()},
 \code{\link{AutoH2oGBMMultiClass}()},
@@ -180,4 +180,4 @@ Other Automated MultiClass Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated MultiClass Classification}
+\concept{Automated Supervised Learning - Multiclass Classification}

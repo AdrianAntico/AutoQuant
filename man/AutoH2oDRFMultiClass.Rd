@@ -104,7 +104,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 }
 }
 \seealso{
-Other Automated MultiClass Classification: 
+Other Automated Supervised Learning - Multiclass Classification: 
 \code{\link{AutoCatBoostMultiClass}()},
 \code{\link{AutoH2oGBMMultiClass}()},
 \code{\link{AutoH2oGLMMultiClass}()},
@@ -114,4 +114,4 @@ Other Automated MultiClass Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated MultiClass Classification}
+\concept{Automated Supervised Learning - Multiclass Classification}

@@ -155,7 +155,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     FeatureColNames = names(data)[4L:ncol(data)],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c("x1","x2"),
+    IDcols = c("IDcols_1","IDcols_2"),
     
     # Model evaluation: 
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -195,7 +195,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 }
 }
 \seealso{
-Other Automated MultiClass Classification: 
+Other Automated Supervised Learning - Multiclass Classification: 
 \code{\link{AutoH2oDRFMultiClass}()},
 \code{\link{AutoH2oGBMMultiClass}()},
 \code{\link{AutoH2oGLMMultiClass}()},
@@ -205,4 +205,4 @@ Other Automated MultiClass Classification:
 \author{
 Adrian Antico
 }
-\concept{Automated MultiClass Classification}
+\concept{Automated Supervised Learning - Multiclass Classification}
