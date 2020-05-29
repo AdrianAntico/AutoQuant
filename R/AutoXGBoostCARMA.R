@@ -53,8 +53,8 @@
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Store","Dept"), 
-#'   TimeUnit = "week",
-#'   TimeGroups = c("weeks","months","quarter"),
+#'   TimeUnit = "days",
+#'   TimeGroups = c("days","weeks"),
 #'   
 #'   # Data Wrangling Features
 #'   ZeroPadSeries = NULL,
@@ -77,13 +77,13 @@
 #'   Difference = TRUE,
 #'   
 #'   # Features
-#'   Lags = c(1:5),
+#'   Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
+#'   MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+#'   SD_Periods = NULL,
+#'   Skew_Periods = NULL,
+#'   Kurt_Periods = NULL,
+#'   Quantile_Periods = NULL,
 #'   HolidayLags = 1, 
-#'   MA_Periods = c(1:5),
-#'   SD_Periods = c(2:5),
-#'   Skew_Periods = c(3:5),
-#'   Kurt_Periods = c(4:5),
-#'   Quantile_Periods = c(3:5),
 #'   HolidayMovingAverages = 1:2,
 #'   Quantiles_Selected = c("q5","q95"),
 #'   XREGS = xreg,
@@ -514,13 +514,13 @@ AutoXGBoostCARMA <- function(data,
       SimpleImpute         = TRUE,
       
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected)
     
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
@@ -559,13 +559,13 @@ AutoXGBoostCARMA <- function(data,
       SimpleImpute         = TRUE,
       
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected)
     
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
@@ -598,13 +598,13 @@ AutoXGBoostCARMA <- function(data,
       SimpleImpute         = TRUE,
       
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected)
     
   } else {
     
@@ -628,13 +628,13 @@ AutoXGBoostCARMA <- function(data,
       SimpleImpute         = TRUE,
       
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected)
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -1307,40 +1307,14 @@ AutoXGBoostCARMA <- function(data,
           SimpleImpute         = TRUE,
           
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = TRUE)
-        
-        # Data
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = c(eval(TargetColumnName),"ModTarget")
-        # HierarchyGroups      = HierarchSupplyValue
-        # IndependentGroups    = IndependentSupplyValue
-        # 
-        # # Services
-        # TimeBetween          = NULL
-        # TimeUnitAgg = TimeUnit = TimeUnit
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        # 
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug                = TRUE
         
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
@@ -1432,40 +1406,14 @@ AutoXGBoostCARMA <- function(data,
           SimpleImpute         = TRUE,
           
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
-        
-        # Args for rolling stats scoring
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = eval(TargetColumnName)
-        # HierarchyGroups      = HierarchSupplyValue
-        # IndependentGroups    = IndependentSupplyValue
-        # 
-        # # Services
-        # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        # 
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug = TRUE
         
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
@@ -1557,13 +1505,13 @@ AutoXGBoostCARMA <- function(data,
           SimpleImpute         = TRUE,
           
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected))
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected)
         
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")

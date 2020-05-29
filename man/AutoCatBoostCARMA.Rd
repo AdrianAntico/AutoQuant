@@ -17,19 +17,19 @@ AutoCatBoostCARMA(
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   XREGS = NULL,
-  Lags = c(1:5),
-  MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
+  Lags = c(1L:5L),
+  MA_Periods = c(2L:5L),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
   Quantiles_Selected = c("q5", "q95"),
   Difference = TRUE,
-  FourierTerms = 6,
-  CalendarVariables = FALSE,
+  FourierTerms = 6L,
+  CalendarVariables = TRUE,
   HolidayVariable = TRUE,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
+  HolidayLags = 1L,
+  HolidayMovingAverages = 1L:2L,
   TimeTrendVariable = FALSE,
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
@@ -140,8 +140,8 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   DateColumnName = "Date",
   HierarchGroups = NULL,
   GroupVariables = c("Store","Dept"), 
-  TimeUnit = "week",
-  TimeGroups = c("weeks","months","quarter"),
+  TimeUnit = "days",
+  TimeGroups = c("days","weeks"),
   
   # Data Wrangling Features
   ZeroPadSeries = NULL,
@@ -172,20 +172,19 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   HolidayMovingAverages = 1:2,
   
   # Time Series Features
-  Lags = c(1:5),
-  MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
+  Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
+  MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
   Quantiles_Selected = c("q5","q95"), 
   
   # Bonus Features
   XREGS = xreg,
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
-  NTrees = 300,
-  DebugMode = FALSE)
+  NTrees = 300)
   
 Forecast1$TimeSeriesPlot
 Forecast1$Forecast

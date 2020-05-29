@@ -141,8 +141,8 @@ Forecast <- AutoXGBoostCARMA(
   DateColumnName = "Date",
   HierarchGroups = NULL,
   GroupVariables = c("Store","Dept"), 
-  TimeUnit = "week",
-  TimeGroups = c("weeks","months","quarter"),
+  TimeUnit = "days",
+  TimeGroups = c("days","weeks"),
   
   # Data Wrangling Features
   ZeroPadSeries = NULL,
@@ -165,13 +165,13 @@ Forecast <- AutoXGBoostCARMA(
   Difference = TRUE,
   
   # Features
-  Lags = c(1:5),
+  Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
+  MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
   HolidayLags = 1, 
-  MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
   HolidayMovingAverages = 1:2,
   Quantiles_Selected = c("q5","q95"),
   XREGS = xreg,
