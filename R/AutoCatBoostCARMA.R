@@ -632,31 +632,6 @@ AutoCatBoostCARMA <- function(data,
       Quantiles_Selected    = Quantiles_Selected, 
       Debug                 = TRUE)
     
-    data                 = data
-    DateColumn           = eval(DateColumnName)
-    Targets              = eval(TargetColumnName)
-    HierarchyGroups      = NULL
-    IndependentGroups    = NULL
-    
-    # Services
-    TimeBetween          = NULL
-    TimeUnit             = TimeUnit
-    TimeUnitAgg          = TimeUnit
-    TimeGroups           = TimeGroups
-    RollOnLag1           = TRUE
-    Type                 = "Lag"
-    SimpleImpute         = TRUE
-    
-    # Calculated Columns
-    Lags                  = Lags
-    MA_RollWindows        = MA_Periods
-    SD_RollWindows        = SD_Periods
-    Skew_RollWindows      = Skew_Periods
-    Kurt_RollWindows      = Kurt_Periods
-    Quantile_RollWindows  = Quantile_Periods
-    Quantiles_Selected    = Quantiles_Selected
-    Debug                 = TRUE
-    
   } else {
     
     # Generate features----
