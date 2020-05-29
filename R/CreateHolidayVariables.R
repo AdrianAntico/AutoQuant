@@ -123,7 +123,7 @@ CreateHolidayVariables <- function(data,
     temp[, HolidayCounts := 0L]
     NumRows <- as.integer(seq_len(temp[,.N]))
     for(Rows in NumRows) {
-      print(Rows)
+      if(Print) print(Rows)
       data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
     }
     data[temp, on = c(eval(DateCols[i]), paste0("Lag1_", DateCols[i])), HolidayCounts := i.HolidayCounts]
