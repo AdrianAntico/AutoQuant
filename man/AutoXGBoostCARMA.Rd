@@ -152,6 +152,7 @@ Forecast <- AutoXGBoostCARMA(
   
   # Productionize
   TrainOnFull = FALSE,
+  TreeMethod = "hist",
   EvalMetric = "RMSE",
   GridTune = FALSE,
   ModelCount = 5,

@@ -1000,7 +1000,7 @@ AutoXGBoostCARMA <- function(data,
         }
         
         # Score model----
-        temp <- temp[ID == N][, ID := NULL]
+        temp <- temp[ID == max(ID)][, ID := NULL]
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
           ScoringData = temp,
@@ -1237,7 +1237,6 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
-        if(!"GroupVar" %chin% names(data)) IndepVarPassTRUE
         temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
@@ -1275,6 +1274,34 @@ AutoXGBoostCARMA <- function(data,
           Quantile_RollWindows = Quantile_Periods,
           Quantiles_Selected   = Quantiles_Selected,
           Debug                = TRUE)
+        
+        # Data
+        data                 = Temporary
+        RowNumsID            = "ID"
+        RowNumsKeep          = 1
+        DateColumn           = eval(DateColumnName)
+        Targets              = c(eval(TargetColumnName),"ModTarget")
+        HierarchyGroups      = HierarchSupplyValue
+        IndependentGroups    = IndependentSupplyValue
+        
+        # Services
+        TimeBetween          = NULL
+        TimeUnit             = TimeUnit
+        TimeUnitAgg          = TimeUnit
+        TimeGroups           = TimeGroups
+        RollOnLag1           = TRUE
+        Type                 = "Lag"
+        SimpleImpute         = TRUE
+        
+        # Calculated Columns
+        Lags                 = Lags
+        MA_RollWindows       = MA_Periods
+        SD_RollWindows       = SD_Periods
+        Skew_RollWindows     = Skew_Periods
+        Kurt_RollWindows     = Kurt_Periods
+        Quantile_RollWindows = Quantile_Periods
+        Quantiles_Selected   = Quantiles_Selected
+        Debug                = TRUE
         
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")

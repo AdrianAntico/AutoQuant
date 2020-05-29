@@ -209,11 +209,11 @@ AutoLagRollStats <- function(data,
         # Build features----
         tempData <- DT_GDL_Feature_Engineering(
           tempData,
-          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+          periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
           Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs       = RollFunctions,
           targets         = Targets,
@@ -230,11 +230,11 @@ AutoLagRollStats <- function(data,
         # Build features----
         data <- DT_GDL_Feature_Engineering(
           data,
-          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+          periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
           Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs       = RollFunctions,
           targets         = Targets,
@@ -267,9 +267,7 @@ AutoLagRollStats <- function(data,
     
     # Categorical Names Fully Interacted (Check if there already)----
     for(cat in seq_len(length(Categoricals)-length(HierarchyGroups))) {
-      if(!any(names(data) %chin% Categoricals[cat])) {
-        data[, eval(Categoricals[cat]) := do.call(paste, c(.SD, sep = " ")), .SDcols = c(unlist(data.table::tstrsplit(Categoricals[cat], "_")))]
-      }
+      if(!any(names(data) %chin% Categoricals[cat])) data[, eval(Categoricals[cat]) := do.call(paste, c(.SD, sep = " ")), .SDcols = c(unlist(data.table::tstrsplit(Categoricals[cat], "_")))]
     }
     
     # Loop through each feature interaction
@@ -303,11 +301,11 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           tempData <- DT_GDL_Feature_Engineering(
             tempData,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
@@ -327,11 +325,11 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           data <- DT_GDL_Feature_Engineering(
             data,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
@@ -374,7 +372,7 @@ AutoLagRollStats <- function(data,
         tempData <- data.table::copy(data)
         
         # Check if timeaggs is same of TimeUnit----
-        if(timeaggs != TimeGroups[1] & data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N]) {
+        if(timeaggs != TimeGroups[1] | data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N]) {
           
           # Floor Date column to timeagg level----
           data.table::set(tempData, j = eval(DateColumn), value = lubridate::floor_date(x = tempData[[eval(DateColumn)]], unit = timeaggs))
@@ -391,11 +389,11 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           tempData <- DT_GDL_Feature_Engineering(
             tempData,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
@@ -415,11 +413,11 @@ AutoLagRollStats <- function(data,
           # Build GDL Features----
           data <- DT_GDL_Feature_Engineering(
             data,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
@@ -435,7 +433,11 @@ AutoLagRollStats <- function(data,
         # Check if timeaggs is same of TimeUnit----
         if(Counter > 1L) {
           data.table::set(data, j = "TEMPDATE", value = lubridate::floor_date(data[[eval(DateColumn)]], unit = eval(timeaggs)))
-          data <- merge(data, tempData[, .SD, .SDcols = c(eval(Fact),eval(DateColumn),setdiff(names(tempData),names(data)))], by.x = c(eval(Fact),"TEMPDATE"), by.y = c(eval(Fact),eval(DateColumn)), all.x = TRUE)
+          data <- merge(
+            data, tempData[, .SD, .SDcols = c(eval(Fact),eval(DateColumn),setdiff(names(tempData),names(data)))], 
+            by.x = c(eval(Fact),"TEMPDATE"), 
+            by.y = c(eval(Fact),eval(DateColumn)), 
+            all.x = TRUE)
           data.table::set(data, j = "TEMPDATE", value = NULL)
         }
       }
@@ -540,9 +542,7 @@ AutoLagRollStatsScoring <- function(data,
   if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
   if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
-  if("raw" %chin% tolower(TimeGroups)) {
-    TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
-  }
+  if("raw" %chin% tolower(TimeGroups)) TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
   if(any(c("hours","hour","hr","hrs","hourly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "hour")
     if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
@@ -598,14 +598,12 @@ AutoLagRollStatsScoring <- function(data,
     if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
   }
   TimeGroups <- TimeGroupPlaceHolder
-  if(is.null(TimeUnitAgg)) {
-    TimeUnitAgg <- TimeGroups[1L]
-  }
+  if(is.null(TimeUnitAgg)) TimeUnitAgg <- TimeGroups[1L]
   #The correct TimeGroups are: c("hour", "day", "weeks", "months", "quarter", "year", "1min", "5min", "10min", "15min", "30min", "45min")
   
   # Ensure date column is proper----
   if(Debug) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumn)]])) {
       x <- data[1,get(DateColumn)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
@@ -637,21 +635,11 @@ AutoLagRollStatsScoring <- function(data,
         tempData <- data.table::copy(data)
         data.table::setnames(tempData, eval(DateColumn), "TEMPDATE")
         
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        # TIME AND DIM AGGREGATION----
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        
         # Floor Date column to timeagg level----
-        if(tolower(timeaggs) != "raw") {
-          data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))  
-        }
+        if(tolower(timeaggs) != "raw") data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))
         
         # Ensure Targets is numeric - someimes comes in as list----
-        for(tar in Targets) {
-          if(!is.numeric(tempData[[eval(tar)]])) {
-            data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))  
-          }
-        }
+        for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))
         
         # Dim and Time Aggregation----
         if(tolower(timeaggs) != "raw") {
@@ -665,11 +653,11 @@ AutoLagRollStatsScoring <- function(data,
         # Build GDL Features----
         tempData <- Partial_DT_GDL_Feature_Engineering(
           tempData,
-          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+          periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
           Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs = RollFunctions,
           targets = Targets,
@@ -690,11 +678,11 @@ AutoLagRollStatsScoring <- function(data,
         # Build GDL Features----
         KeepData <- Partial_DT_GDL_Feature_Engineering(
           data,
-          lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-          periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-          SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-          Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-          Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+          lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+          periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+          SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+          Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+          Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
           Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
           statsFUNs = RollFunctions,
           targets = Targets,
@@ -783,11 +771,11 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           tempData <- Partial_DT_GDL_Feature_Engineering(
             data = tempData,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
@@ -808,11 +796,11 @@ AutoLagRollStatsScoring <- function(data,
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
             tempData,
-            lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
-            periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
-            SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
-            Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
-            Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
+            lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
+            periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
+            SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
+            Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
+            Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs = RollFunctions,
             targets = Targets,
@@ -880,7 +868,7 @@ AutoLagRollStatsScoring <- function(data,
     for(Fact in IndependentGroups) {
       
       # Loop through the time aggs----
-      for (timeaggs in TimeGroups) {
+      for(timeaggs in TimeGroups) {
         
         # Increment----
         Counter <- Counter + 1L
@@ -890,23 +878,13 @@ AutoLagRollStatsScoring <- function(data,
         data.table::setnames(tempData, eval(DateColumn), "TEMPDATE")
         
         # Check if timeaggs is same of TimeUnit----
-        if(timeaggs != TimeGroups[1] & data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N]) {
-          
-          # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-          # TIME AND DIM AGGREGATION----
-          # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if(timeaggs != TimeGroups[1] | data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N]) {
           
           # Floor Date column to timeagg level----
-          if(timeaggs != TimeGroups[1]) {
-            data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))  
-          }
+          if(timeaggs != TimeGroups[1]) data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))
           
           # Ensure Targets is numeric - someimes comes in as list----
-          for(tar in Targets) {
-            if(!is.numeric(tempData[[eval(tar)]])) {
-              data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))  
-            }
-          }
+          for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))  
           
           # Dim and Time Aggregation----
           tempData <- tempData[, c(min(get(RowNumsID)), lapply(.SD, mean, na.rm = TRUE)), .SDcols = c(eval(Targets)), by = c("TEMPDATE",eval(Fact))]
