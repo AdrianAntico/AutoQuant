@@ -980,7 +980,7 @@ AutoXGBoostCARMA <- function(data,
         if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-        UpdateData <- cbind(FutureDateData[2L:(N+1L)],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+        UpdateData <- cbind(FutureDateData[2L:(N+3L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
