@@ -1208,7 +1208,7 @@ AutoXGBoostCARMA <- function(data,
       
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
+      if(HolidayVariable & !is.null(GroupVariables)) {
         if(IndepentVariablesPass %chin% names(UpdateData)) {
           UpdateData <- CreateHolidayVariables(
             UpdateData,
