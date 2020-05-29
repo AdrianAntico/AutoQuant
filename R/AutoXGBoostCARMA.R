@@ -64,6 +64,7 @@
 #'   
 #'   # Productionize
 #'   TrainOnFull = FALSE,
+#'   TreeMethod = "hist",
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
 #'   ModelCount = 5,
@@ -855,32 +856,6 @@ AutoXGBoostCARMA <- function(data,
     SaveModelObjects = FALSE,
     PassInGrid = NULL)
   
-  # QA: Troubleshoot reason for why only 'Store' is being returned as a factor in the factor level list
-  # data = train
-  # TrainOnFull = TRUE
-  # ValidationData = valid
-  # TestData = test
-  # TargetColumnName = TargetVariable
-  # FeatureColNames = ModelFeatures
-  # IDcols = IDcols
-  # ReturnFactorLevels = TRUE
-  # TransformNumericColumns = NULL
-  # eval_metric = EvalMetric
-  # Trees = NTrees
-  # GridTune = GridTune
-  # grid_eval_metric = GridEvalMetric
-  # TreeMethod = TreeMethod
-  # MaxModelsInGrid = ModelCount
-  # NThreads = NThreads
-  # model_path = getwd()
-  # metadata_path = getwd()
-  # ModelID = "ModelTest"
-  # NumOfParDepPlots = 0
-  # Verbose = 1
-  # ReturnModelObjects = TRUE
-  # SaveModelObjects = FALSE
-  # PassInGrid = NULL
-  
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
   
@@ -899,11 +874,7 @@ AutoXGBoostCARMA <- function(data,
   # Variable for interation counts: max number of rows in train data.table across all group----
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
   if(!is.null(GroupVariables)) {
-    if(Difference) {
-      N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L
-    } else {
-      N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
-    }
+    if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = c("GroupVar")][, max(N)]) - 2L
   } else {
     N <- as.integer(train[, .N])
   }
