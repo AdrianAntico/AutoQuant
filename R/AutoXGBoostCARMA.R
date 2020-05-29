@@ -874,7 +874,7 @@ AutoXGBoostCARMA <- function(data,
   # Variable for interation counts: max number of rows in train data.table across all group----
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
   if(!is.null(GroupVariables)) {
-    if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = c("GroupVar")][, max(N)]) - 2L
+    if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(train[, .N, by = c("GroupVar")][, max(N)])
   } else {
     N <- as.integer(train[, .N])
   }
@@ -903,7 +903,7 @@ AutoXGBoostCARMA <- function(data,
   #----
   
   # Begin loop for generating forecasts----
-  for(i in seq_len(ForecastRuns+1L)) {
+  for(i in seq_len(ForecastRuns + 1L)) {
     
     # Row counts----
     if(i != 1) N <- N + 1L
@@ -980,14 +980,14 @@ AutoXGBoostCARMA <- function(data,
         if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL) 
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-        UpdateData <- cbind(FutureDateData[2L:(N+3L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
+        UpdateData <- cbind(FutureDateData[2L:(N+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
-        UpdateData <- cbind(FutureDateData[1L:N],Preds)
+        UpdateData <- cbind(FutureDateData[1L:N], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
     } else {
-      if (!is.null(GroupVariables)) {
+      if(!is.null(GroupVariables)) {
         
         # Correctly indicate the target variables being generated----
         if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
@@ -1078,7 +1078,7 @@ AutoXGBoostCARMA <- function(data,
     ###############
     
     # Update features for next run----
-    if (i != ForecastRuns+1L) {
+    if(i != ForecastRuns + 1L) {
       
       # Timer----
       if(DebugMode) print("Timer----")
