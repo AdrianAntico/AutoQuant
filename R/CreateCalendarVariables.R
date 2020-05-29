@@ -144,8 +144,12 @@ CreateCalendarVariables <- function(data,
   }
   
   # Remove constant columns----
-  if(ncol(data) - NumCols > 0L & nrow(data) > 1L) for(col in (NumCols + 1L):ncol(data)) if(var(data[[names(data)[col]]], na.rm = TRUE) == 0L) data.table::set(data, j = eval(col), value = NULL)
-
+  if(ncol(data) - NumCols > 0L & nrow(data) > 1L) {
+    colss <- c()
+    for(col in (NumCols + 1L):ncol(data)) if(var(data[[names(data)[col]]], na.rm = TRUE) == 0L) colss <- c(colss, col)
+    data.table::set(data, j = names(data)[c(col)], value = NULL)
+  }
+  
   # Return data----
   return(data)
 }
