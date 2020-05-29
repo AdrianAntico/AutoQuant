@@ -569,11 +569,11 @@ AutoXGBoostCARMA <- function(data,
     
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
     
   } else if(is.null(GroupVariables) & Difference == FALSE) {
@@ -1363,11 +1363,13 @@ AutoXGBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
           
           # Join Holiday Lags and Moving Averages back to UpdateData----
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary, 
-                             Temporary1[, .SD, .SDcols = c(keep)], 
-                             by = c(eval(GroupVariables),eval(DateColumnName)), 
-                             all = FALSE)
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
         
         # Update data for scoring next iteration----
@@ -1462,11 +1464,14 @@ AutoXGBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
           
           # Join Holiday Lags and Moving Averages back to UpdateData----
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary, 
-                             Temporary1[, .SD, .SDcols = c(keep)], 
-                             by = c(eval(GroupVariables),eval(DateColumnName)), 
-                             all = FALSE)
+          # Join Holiday Lags and Moving Averages back to UpdateData----
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
         
         # Update data for scoring next iteration----
