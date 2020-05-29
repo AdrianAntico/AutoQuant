@@ -1237,6 +1237,7 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
+        if(!"GroupVar" %chin% names(data)) IndepVarPassTRUE
         temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep

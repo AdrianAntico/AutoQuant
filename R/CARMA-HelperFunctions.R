@@ -376,7 +376,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
             data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           }
         }
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepentVariablesPass,"ID",names(CalendarFeatures),"HolidayCounts"))
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures),"HolidayCounts"))
       }
     } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
       if(!is.null(HierarchGroups)) {
@@ -392,7 +392,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
             data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           }
         }
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepentVariablesPass,"ID",names(CalendarFeatures)))
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures)))
       }
     } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
       if(!is.null(HierarchGroups)) {
@@ -408,7 +408,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
             data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           }
         }
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepentVariablesPass,"ID","HolidayCounts"))
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepVarPassTRUE,"ID","HolidayCounts"))
       }
     } else {
       if(!is.null(HierarchGroups)) {
@@ -457,7 +457,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepentVariablesPass,"ID",names(CalendarFeatures),"HolidayCounts"))
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures),"HolidayCounts"))
         } else {
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
         }
@@ -473,7 +473,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepentVariablesPass,"ID",names(CalendarFeatures)))
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures)))
         } else {
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))  
         }
@@ -489,7 +489,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepentVariablesPass,"ID","HolidayCounts"))
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID","HolidayCounts"))
         } else {
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID","HolidayCounts"))  
         }
@@ -505,7 +505,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepentVariablesPass,"ID"))
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID"))
         } else {
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))  
         }
