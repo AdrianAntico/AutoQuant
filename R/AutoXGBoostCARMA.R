@@ -315,7 +315,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
-  val <- max(Lags, MA_Periods)
+  if(is.list(Lags) & is.list(MA_Periods)) val <- max(unlist(Lags), unlist(MA_Periods)) else val <- max(Lags, MA_Periods)
   
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")

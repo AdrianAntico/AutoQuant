@@ -355,7 +355,7 @@ AutoCatBoostCARMA <- function(data,
   
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
-  val <- max(Lags, MA_Periods)
+  if(is.list(Lags) & is.list(MA_Periods)) val <- max(unlist(Lags), unlist(MA_Periods)) else val <- max(Lags, MA_Periods)
   
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
@@ -631,6 +631,31 @@ AutoCatBoostCARMA <- function(data,
       Quantile_RollWindows  = Quantile_Periods,
       Quantiles_Selected    = Quantiles_Selected, 
       Debug                 = TRUE)
+    
+    data                 = data
+    DateColumn           = eval(DateColumnName)
+    Targets              = eval(TargetColumnName)
+    HierarchyGroups      = NULL
+    IndependentGroups    = NULL
+    
+    # Services
+    TimeBetween          = NULL
+    TimeUnit             = TimeUnit
+    TimeUnitAgg          = TimeUnit
+    TimeGroups           = TimeGroups
+    RollOnLag1           = TRUE
+    Type                 = "Lag"
+    SimpleImpute         = TRUE
+    
+    # Calculated Columns
+    Lags                  = Lags
+    MA_RollWindows        = MA_Periods
+    SD_RollWindows        = SD_Periods
+    Skew_RollWindows      = Skew_Periods
+    Kurt_RollWindows      = Kurt_Periods
+    Quantile_RollWindows  = Quantile_Periods
+    Quantiles_Selected    = Quantiles_Selected
+    Debug                 = TRUE
     
   } else {
     

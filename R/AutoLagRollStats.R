@@ -103,9 +103,7 @@ AutoLagRollStats <- function(data,
   if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
   if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
-  if("raw" %chin% tolower(TimeGroups)) {
-    TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
-  }
+  if("raw" %chin% tolower(TimeGroups)) TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
   if(any(c("hours","hour","hr","hrs","hourly") %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "hour")
     if(is.list(Lags)) names(Lags)[which(names(Lags) %chin% c("hours","hour","hr","hrs","hourly"))] <- "hour"
@@ -161,14 +159,12 @@ AutoLagRollStats <- function(data,
     if(is.list(Quantile_RollWindows)) names(Quantile_RollWindows)[which(names(Quantile_RollWindows) %chin% c("year","annual","yearly","annually","ann","yr","yrly"))] <- "year"
   }
   TimeGroups <- TimeGroupPlaceHolder
-  if(is.null(TimeUnitAgg)) {
-    TimeUnitAgg <- TimeGroups[1L]
-  }
+  if(is.null(TimeUnitAgg)) TimeUnitAgg <- TimeGroups[1L]
   #The correct TimeGroups are: c("hour", "day", "weeks", "months", "quarter", "year", "1min", "5min", "10min", "15min", "30min", "45min")
   
   # Ensure date column is proper----
   if(Debug) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateColumn)]])) {
       x <- data[1,get(DateColumn)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
