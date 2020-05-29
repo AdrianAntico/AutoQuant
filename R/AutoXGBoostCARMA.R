@@ -986,7 +986,6 @@ AutoXGBoostCARMA <- function(data,
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
-      
     } else {
       if (!is.null(GroupVariables)) {
         
