@@ -1187,18 +1187,7 @@ AutoXGBoostCARMA <- function(data,
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
           AsFactor = FALSE,
-          TimeUnits = c(
-            "second",
-            "minute",
-            "hour",
-            "wday",
-            "mday",
-            "yday",
-            "week",
-            "isoweek",
-            "month",
-            "quarter",
-            "year"))
+          TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))
       }
       
       # Update Time Trend feature----
@@ -1577,7 +1566,7 @@ AutoXGBoostCARMA <- function(data,
   
   # Reverse Difference----
   if(DebugMode) print("Reverse Difference----")
-  if(is.null(GroupVariables) & Difference == TRUE) {
+  if(is.null(GroupVariables) & Difference) {
     UpdateData <- DifferenceDataReverse(
       data = UpdateData, 
       ScoreData = NULL, 
@@ -1585,12 +1574,12 @@ AutoXGBoostCARMA <- function(data,
       TargetCol = eval(TargetColumnName),
       FirstRow = DiffTrainOutput$FirstRow[[eval(TargetColumnName)]],
       LastRow = NULL)
-  } else if(!is.null(GroupVariables) & Difference == TRUE) {
+  } else if(!is.null(GroupVariables) & Difference) {
     if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == "Date")) {
       UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
     }
     UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
-    UpdateData[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(!"GroupVar" %chin% names(UpdateData)) UpdateData[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     UpdateData <- UpdateData[, .SD, .SDcols = c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar")]
     data.table::set(UpdateData, j = "Predictions", value = UpdateData[[eval(TargetColumnName)]])
   }
