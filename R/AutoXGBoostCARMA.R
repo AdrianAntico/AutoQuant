@@ -1126,7 +1126,7 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(GroupVariables)) {
         CalendarFeatures <- cbind(unique(GroupVarVector), CalendarFeatures)
         if(!"GroupVar" %chin% GroupVariables) {
-          if("GroupVar" %chin% names(CalendarFeatures)) data.table::set(CalendarFeatures, j = "GroupVar", value = NULL)
+          if("GroupVar" %chin% names(CalendarFeatures)) 1# data.table::set(CalendarFeatures, j = "GroupVar", value = NULL)
         }
       }
       
