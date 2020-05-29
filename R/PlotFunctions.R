@@ -222,6 +222,7 @@ TimeSeriesPlotter <- function(data = data,
   
   # No scientific notation----
   options(scipen = FALSE)
+  options(warn = -1)
   
   # Ensure data is data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
