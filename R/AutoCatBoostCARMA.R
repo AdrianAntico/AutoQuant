@@ -1272,8 +1272,13 @@ AutoCatBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
           
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables),eval(DateColumnName)), all = FALSE)
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
         
         # Update data for scoring next iteration----
@@ -1369,8 +1374,13 @@ AutoCatBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
           
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables),eval(DateColumnName)), all = FALSE)
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
         
         # Update data for scoring next iteration----
