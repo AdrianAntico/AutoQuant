@@ -571,8 +571,7 @@ AutoH2oDRFRegression <- function(data,
     # Regression Evaluation Plot Update Title----
     if(GridTune) {
       val <- max(GridModelEval, BaseModelEval)
-      EvaluationBoxPlot <- EvaluationBoxPlot +
-        ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(val, 3L)))
+      EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(val, 3L)))
     } else {
       EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(BaseModelEval, 3L)))
     }
