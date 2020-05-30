@@ -788,7 +788,7 @@ AutoCatBoostRegression <- function(data,
       if(!TrainOnFull) {
         TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
       } else {
-        TransformationResults <- TransformationResults[ID != max(ID)]
+        TransformationResults <- TransformationResults[, ID := 1L:.N][ID != max(ID)]
       }
     }
     
