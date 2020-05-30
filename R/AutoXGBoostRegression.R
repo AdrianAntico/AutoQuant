@@ -920,7 +920,7 @@ AutoXGBoostRegression <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Add Number of Trees to Title
-    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", Metricvalue], 3L)))
+    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
     
     # Save plot to file
     if(SaveModelObjects) {
@@ -941,7 +941,7 @@ AutoXGBoostRegression <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
     
     # Add Number of Trees to Title
-    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", Metricvalue], 3L)))
+    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
     
     # Save plot to file
     if(SaveModelObjects) {

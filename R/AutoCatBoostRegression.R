@@ -866,7 +866,7 @@ AutoCatBoostRegression <- function(data,
     }
     
     # Add Number of Trees to Title
-    if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", Metricvalue], 3L)))
+    if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
     
     # Save plot to file
     if(!TrainOnFull) {
@@ -891,7 +891,7 @@ AutoCatBoostRegression <- function(data,
     }
     
     # Add Number of Trees to Title
-    if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", Metricvalue], 3L)))
+    if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
     
     # Save plot to file
     if(!TrainOnFull) {
