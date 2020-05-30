@@ -199,7 +199,7 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]
   
   # Transform data, ValidationData, and TestData----
-  if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
+  if(!is.null(TransformNumericColumns)) {
     MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
     Output <- AutoTransformationCreate(
       data,
@@ -212,12 +212,14 @@ AutoCatBoostRegression <- function(data,
     TransformationResults <- Output$FinalResults
     
     # Transform ValidationData----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
-      Type = "Apply",
-      FinalResults = TransformationResults,
-      TransID = NULL,
-      Path = NULL)
+    if(!is.null(ValidationData)) {
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Apply",
+        FinalResults = TransformationResults,
+        TransID = NULL,
+        Path = NULL)
+    }
     
     # Transform TestData----
     if(!is.null(TestData)) {
@@ -768,15 +770,26 @@ AutoCatBoostRegression <- function(data,
         NormalizedStatistics = rep(0L, 2L))))
     
     # If Actual target columnname == "Target" remove the duplicate version----
-    if (length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
+    if(length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
       temp <- TransformationResults[, .N, by = "ColumnName"][N != 1L][[1L]]
-      temp1 <- which(names(ValidationData) == temp)[1L]
+      if(!is.null(ValidationData)) temp1 <- which(names(ValidationData) == temp)[1L]
       if(!TrainOnFull) {
         ValidationData[, eval(names(data)[temp1]) := NULL]
       } else {
-        data[, eval(names(data)[temp1]) := NULL]
+        if(TrainOnFull) {
+          if(length(which(names(data) %chin% eval(TargetColumnName))) > 1L) {
+            temp1 <- which(names(data) %chin% eval(TargetColumnName))[1L]
+            data[, which(names(data) %chin% eval(TargetColumnName))[2L] := NULL]
+          }
+        } else {
+          data[, eval(names(data)[temp]) := NULL]
+        }
       }
-      TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
+      if(!TrainOnFull) {
+        TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
+      } else {
+        TransformationResults <- TransformationResults[ID != max(ID)]
+      }
     }
     
     # Transform Target and Predicted Value----
