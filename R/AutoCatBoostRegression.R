@@ -795,7 +795,7 @@ AutoCatBoostRegression <- function(data,
         Type = "Inverse",
         FinalResults = TransformationResults,
         TransID = NULL,
-        Path = NULL)      
+        Path = NULL)
     } else {
       data <- AutoTransformationScore(
         ScoringData = data,
