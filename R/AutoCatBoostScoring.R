@@ -136,10 +136,12 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(TransformNumeric | BackTransNumeric) if(!is.null(TargetColumnName)) if(TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
   
   # Subset Columns Needed----
+  keep1 <- c(FeatureColumnNames)
   if(!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
   ScoringData <- ScoringData[, ..keep]
   if(!is.null(IDcols)) {
     ScoringMerge <- data.table::copy(ScoringData)
+    keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
