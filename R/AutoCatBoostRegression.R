@@ -239,7 +239,7 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
   
   # Regression Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     if(!is.null(TransformNumericColumns)) {
       dataSets <- AutoDataPartition(
         data,

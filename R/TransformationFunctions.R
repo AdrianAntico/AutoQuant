@@ -497,7 +497,7 @@ AutoTransformationCreate <- function(data,
   for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) return("ColumnNames must be for numeric or integer columns")
   
   # Loop through ColumnNames----
-  for(colNames in as.integer(seq_along(ColumnNames))) {
+  for(colNames in seq_along(ColumnNames)) {
     
     # Collection Object----
     if(length(Methods) < 5) {
@@ -526,7 +526,6 @@ AutoTransformationCreate <- function(data,
     # Update Methods----
     if(MinVal <= 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log"))]
     if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asinh","logplus1"))]
-    if(MaxVal - MinVal > 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin", "logit"))]
     
     # Store column data as vector----
     x <- data[[eval(ColumnNames[colNames])]]
