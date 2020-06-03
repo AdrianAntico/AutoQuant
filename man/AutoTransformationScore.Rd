@@ -36,12 +36,12 @@ N <- 1000
 data <- data.table::data.table(Adrian = runif(N))
 data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
-data[, Adrian1 := log(pnorm(Correl * x1 +
-                            sqrt(1-Correl^2) * qnorm(x2)))]
-data <- AutoTransformationScore(data,
-                                FinalResults,
-                                Path = NULL,
-                                TransID = "Trans")
+data[, Adrian1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data <- RemixAutoML::AutoTransformationScore(
+   data,
+   FinalResults,
+   Path = NULL,
+   TransID = "Trans")
 }
 }
 \seealso{

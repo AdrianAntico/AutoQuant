@@ -9,12 +9,36 @@
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
 #' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @examples
-#' data <- data.table::data.table(Date = rep("2018-01-01 00:00:00", 1000))
-#' data <- CreateCalendarVariables(
-#'    data,
-#'    DateCols = "Date",
-#'    AsFactor = FALSE,
-#'    TimeUnits = c("wday", "month", "year"))
+#' # Create fake data with a Date column----
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.75, 
+#'   N = 25000L, 
+#'   ID = 2L, 
+#'   ZIP = 0L, 
+#'   FactorCount = 4L, 
+#'   AddDate = TRUE, 
+#'   Classification = FALSE, 
+#'   MultiClass = FALSE)
+#' for(i in seq_len(20L)) {
+#'   print(i)
+#'   data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+#'     Correlation = 0.75, 
+#'     N = 250000L, 
+#'     ID = 2L, 
+#'     ZIP = 0L, 
+#'     FactorCount = 4L, 
+#'     AddDate = TRUE, 
+#'     Classification = FALSE, 
+#'     MultiClass = FALSE)))
+#' }
+#' 
+#' # Create calendar variables - auto excludes the second, minute, and hour selections since
+#' #   it is not timestamp data
+#' RemixAutoML::CreateCalendarVariables(
+#'   data = data,
+#'   DateCols = "DateTime",
+#'   AsFactor = FALSE,
+#'   TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"))
 #' @return Returns your data.table with the added calendar variables at the end
 #' @export
 CreateCalendarVariables <- function(data,

@@ -39,21 +39,21 @@ N <- 1000
 data <- data.table::data.table(Adrian = runif(N))
 data[, x1 := qnorm(Adrian)]
 data[, x2 := runif(N)]
-data[, Adrian1 := log(pnorm(Correl * x1 +
-                            sqrt(1-Correl^2) * qnorm(x2)))]
-data <- AutoTransformationCreate(data,
-                                 ColumnNames = "Sample",
-                                 Methods = c("BoxCox",
-                                             "YeoJohnson",
-                                             "Asinh",
-                                             "Log",
-                                             "LogPlus1",
-                                             "Asin",
-                                             "Logit",
-                                             "Identity"),
-                                 Path = NULL,
-                                 TransID = "Trans",
-                                 SaveOutput = FALSE)
+data[, Adrian1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data <- RemixAutoML::AutoTransformationCreate(
+   data,
+   ColumnNames = "Sample",
+   Methods = c("BoxCox",
+               "YeoJohnson",
+               "Asinh",
+               "Log",
+               "LogPlus1",
+               "Asin",
+               "Logit",
+               "Identity"),
+   Path = NULL,
+   TransID = "Trans",
+   SaveOutput = FALSE)
 }
 \seealso{
 Other Feature Engineering: 
