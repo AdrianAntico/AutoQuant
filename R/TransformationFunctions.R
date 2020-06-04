@@ -525,7 +525,8 @@ AutoTransformationCreate <- function(data,
     
     # Update Methods----
     if(MinVal <= 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log"))]
-    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asinh","logplus1"))]
+    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logplus1"))]
+    if(MaxVal > 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin"))]
     
     # Store column data as vector----
     x <- data[[eval(ColumnNames[colNames])]]
