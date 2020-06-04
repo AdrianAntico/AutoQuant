@@ -239,7 +239,7 @@ InvApply_BoxCox <- function(x,
 #' @return Asinh results
 Test_Asinh <- function(x) {
   stopifnot(is.numeric(x))
-  trans_data <- asinh(x)
+  trans_data <- asinh(sqrt(x))
   mu <- mean(trans_data, na.rm = TRUE)
   sigma <- sd(trans_data, na.rm = TRUE)
   trans_data_standardized <- (trans_data - mu) / sigma
@@ -256,7 +256,7 @@ Test_Asinh <- function(x) {
 #' @param x The data in numerical vector form
 #' @return Asinh results
 Apply_Asinh <- function(x) {
-  return(asinh(x))
+  return(asinh(sqrt(x)))
 }
 
 #' Inverse Asinh Transformation
@@ -267,7 +267,7 @@ Apply_Asinh <- function(x) {
 #' @param x The data in numerical vector form
 #' @return Asinh results
 InvApply_Asinh <- function(x) {
-  return(sinh(x))
+  return(sinh(x)^2)
 }
 
 #' Test Asin Transformation
