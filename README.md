@@ -175,6 +175,60 @@ Supply a data.table to run the functions below:
 
 <code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 25000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
+data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
+data[1L:(.N - 100L), ScoreRecords := 2L]
+data[(.N - 99L):.N, ScoreRecords := 1L]
+
+# Add scoring records
+data <- RemixAutoML::AutoLagRollStatsScoring(
+
+  # Data
+  data                 = data,
+  RowNumsID            = "ScoreRecords",
+  RowNumsKeep          = 1,
+  DateColumn           = "DateTime",
+  Targets              = "Adrian",
+  HierarchyGroups      = c("Factor1","Factor2"),
+  IndependentGroups    = NULL,
+  TimeUnitAgg          = "days",
+  TimeGroups           = c("days", "weeks"),
+  TimeBetween          = NULL,
+  TimeUnit             = "days",
+  
+  # Services
+  RollOnLag1           = TRUE,
+  Type                 = "Lag",
+  SimpleImpute         = TRUE,
+
+  # Calculated Columns
+  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Quantiles_Selected   = c("q5","q10","q95"),
+  Debug                = FALSE)
+```
+
+</p>
+</details>
+
 ##### **AutoWord2VecModeler()**
 <code>AutoWord2VecModeler()</code> generates a specified number of vectors (word2vec) for each column of text data in your data set that you specify and it will save the models if you specify for re-creating them later in a model scoring process. You can choose to build individual models for each column or one model for all your columns. If you need to run several models for groups of text variables you can run the function several times. 
 
