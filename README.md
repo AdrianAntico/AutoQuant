@@ -1027,56 +1027,56 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 <p>
  
 ```
-#' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
-#' 
-#' # Run function
-#' TestModel <- RemixAutoML::AutoXGBoostClassifier(
-#' 
-#'     # GPU or CPU
-#'     TreeMethod = "hist",
-#'     NThreads = 8L,
-#'   
-#'     # Metadata arguments
-#'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
-#'     ModelID = "Test_Model_1",
-#'     ReturnFactorLevels = TRUE,
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,   
-#'   
-#'     # Data arguments
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[4L:ncol(data)],
-#'     IDcols = c("IDcols_1","IDcols_2"),
-#'   
-#'     # Model evaluation
-#'     eval_metric = "auc",
-#'     NumOfParDepPlots = 3L,
-#'   
-#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
-#'     PassInGrid = NULL,
-#'     GridTune = TRUE,
-#'     BaselineComparison = "default",
-#'     MaxModelsInGrid = 10L,
-#'     MaxRunsWithoutNewWinner = 20L,
-#'     MaxRunMinutes = 24L*60L,
-#'     Verbose = 1L,
-#'   
-#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
-#'     # Must set Trees to a single value if you are not grid tuning
-#'     # The ones below can be set to NULL and the values in the example will be used 
-#'     Shuffles = 1L,
-#'     Trees = seq(50L, 500L, 50L),
-#'     eta = seq(0.05,0.40,0.05),
-#'     max_depth = seq(4L, 16L, 2L),
-#'     min_child_weight = seq(1.0, 10.0, 1.0),
-#'     subsample = seq(0.55, 1.0, 0.05),
-#'     colsample_bytree = seq(0.55, 1.0, 0.05))
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostClassifier(
+
+    # GPU or CPU
+    TreeMethod = "hist",
+    NThreads = 8L,
+
+    # Metadata arguments
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    ModelID = "Test_Model_1",
+    ReturnFactorLevels = TRUE,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+
+    # Data arguments
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    IDcols = c("IDcols_1","IDcols_2"),
+
+    # Model evaluation
+    eval_metric = "auc",
+    NumOfParDepPlots = 3L,
+
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    PassInGrid = NULL,
+    GridTune = TRUE,
+    BaselineComparison = "default",
+    MaxModelsInGrid = 10L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    Verbose = 1L,
+
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    Shuffles = 1L,
+    Trees = seq(50L, 500L, 50L),
+    eta = seq(0.05,0.40,0.05),
+    max_depth = seq(4L, 16L, 2L),
+    min_child_weight = seq(1.0, 10.0, 1.0),
+    subsample = seq(0.55, 1.0, 0.05),
+    colsample_bytree = seq(0.55, 1.0, 0.05))
 ```
  
 </p>
