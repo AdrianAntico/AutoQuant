@@ -180,6 +180,46 @@ Supply a data.table to run the functions below:
 ##### **CreateCalendarVariables()**
 <code>ModelDataPrep()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
 
+<details><summary>Code Example</summary>
+<p>
+```
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75, 
+  N = 25000L, 
+  ID = 2L, 
+  ZIP = 0L, 
+  FactorCount = 4L, 
+  AddDate = TRUE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+for(i in seq_len(20L)) {
+  print(i)
+  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75, 
+    N = 25000L, 
+    ID = 2L, 
+    ZIP = 0L, 
+    FactorCount = 4L, 
+    AddDate = TRUE, 
+    Classification = FALSE, 
+    MultiClass = FALSE)))
+}
+
+# Run function and time it
+runtime <- system.time(
+  data <- RemixAutoML::CreateCalendarVariables(
+    data = data,
+    DateCols = "DateTime",
+    AsFactor = FALSE,
+    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
+print(data)
+print(runtime)
+```
+
+</p>
+</details>
+
 ##### **CreateHolidayVariable()**
 <code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
 
