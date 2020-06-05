@@ -182,6 +182,7 @@ Supply a data.table to run the functions below:
 
 <details><summary>Code Example</summary>
 <p>
+ 
 ```
 # Create fake data with a Date----
 data <- RemixAutoML::FakeDataGenerator(
