@@ -173,6 +173,56 @@ Supply a data.table to run the functions below:
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 <code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 25000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
+data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
+
+# Add scoring records
+data <- RemixAutoML::AutoLagRollStats(
+
+  # Data
+  data                 = data,
+  DateColumn           = "DateTime",
+  Targets              = "Adrian",
+  HierarchyGroups      = c("Factor1","Factor2"),
+  IndependentGroups    = NULL,
+  TimeUnitAgg          = "days",
+  TimeGroups           = c("days", "weeks"),
+  TimeBetween          = NULL,
+  TimeUnit             = "days",
+  
+  # Services
+  RollOnLag1           = TRUE,
+  Type                 = "Lag",
+  SimpleImpute         = TRUE,
+
+  # Calculated Columns
+  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  SD_RollWindows        = NULL,
+  Skew_RollWindows      = NULL,
+  Kurt_RollWindows      = NULL,
+  Quantile_RollWindows  = NULL,
+  Quantiles_Selected   = c("q5","q10","q95"),
+  Debug                = FALSE)
+```
+
+</p>
+</details>
+
 <code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
 
 <details><summary>Code Example</summary>
