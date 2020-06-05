@@ -1222,7 +1222,35 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 <details><summary>Code Example</summary>
 <p>
  
- 
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGLMClassifier(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   Distribution = "binomial",
+   link = NULL,
+   eval_metric = "auc",
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = NULL,
+   metadata_path = NULL,
+   ModelID = "FirstModel",
+   NumOfParDepPlots = 3,
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
  
 </p>
 </details> 
@@ -1233,7 +1261,33 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 <details><summary>Code Example</summary>
 <p>
  
- 
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+
+TestModel <- RemixAutoML::AutoH2oMLClassifier(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   ExcludeAlgos = NULL,
+   eval_metric = "auc",
+   Trees = 50,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   NumOfParDepPlots = 3,
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
  
 </p>
 </details> 
@@ -1270,20 +1324,305 @@ ________________________________________________________________________________
 ##### **AutoCatBoostMultiClass()** GPU Capable
 <code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+
+    # GPU or CPU and the number of available GPUs
+    task_type = "GPU",
+
+    # Metadata arguments:
+    #   'ModelID' is used to create part of the file names generated when saving to file'
+    #   'model_path' is where the minimal model objects for scoring will be stored
+    #      'ModelID' will be the name of the saved model object
+    #   'metadata_path' is where model evaluation and model interpretation files are saved
+    #      objects saved to model_path if metadata_path is null
+    #      Saved objects include:
+    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+    #         'ModelID_VariableImportance.csv' is the variable importance.
+    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+    #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
+    ModelID = "Test_Model_1",
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+
+    # Data arguments:
+    #   'TrainOnFull' is to train a model with 100 percent of your data.
+    #     That means no holdout data will be used for evaluation
+    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+    #     CatBoost categorical treatment is enhanced when supplied
+    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    PrimaryDateColumn = NULL,
+    ClassWeights = c(1L,1L,1L,1L,1L),
+    IDcols = c("IDcols_1","IDcols_2"),
+
+    # Model evaluation:
+    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+    #   'loss_function' the loss function used in training optimization
+    eval_metric = "MultiClass",
+    grid_eval_metric = "Accuracy",
+    MetricPeriods = 10L,
+
+    # Grid tuning arguments:
+    #   'PassInGrid' is for retraining using a previous grid winning args
+    #   'MaxModelsInGrid' is a cap on the number of models that will run
+    #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
+    #   'MaxRunMinutes' is a cap on the number of minutes that will run
+    #   'Shuffles' is the number of times you want the random grid arguments shuffled
+    #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
+    #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+    PassInGrid = NULL,
+    GridTune = FALSE,
+    MaxModelsInGrid = 100L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    Shuffles = 4L,
+    BaselineComparison = "default",
+
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    # GrowPolicy is turned off for CPU runs
+    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    Trees = seq(100L, 500L, 50L),
+    Depth = seq(4L, 8L, 1L),
+    LearningRate = seq(0.01,0.10,0.01),
+    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+```
+
+</p>
+</details>
+
 ##### **AutoXGBoostMultiClass()** GPU Capable
 <code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostMultiClass(
+
+    # GPU or CPU
+    TreeMethod = "hist",
+    NThreads = 8L,
+
+    # Metadata arguments
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    ModelID = "Test_Model_1",
+    ReturnFactorLevels = TRUE,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+
+    # Data arguments
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    IDcols = c("IDcols_1","IDcols_2"),
+
+    # Model evaluation
+    eval_metric = "auc",
+    Objective = 'multi:softmax',
+    grid_eval_metric = "accuracy",
+    NumOfParDepPlots = 3L,
+
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    PassInGrid = NULL,
+    GridTune = TRUE,
+    BaselineComparison = "default",
+    MaxModelsInGrid = 10L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    Verbose = 1L,
+
+    # Trees, Depth, and LearningRate used in the bandit grid tuning
+    # Must set Trees to a single value if you are not grid tuning
+    # The ones below can be set to NULL and the values in the example will be used
+    Shuffles = 1L,
+    Trees = seq(50L, 500L, 50L),
+    eta = seq(0.05,0.40,0.05),
+    max_depth = seq(4L, 16L, 2L),
+    min_child_weight = seq(1.0, 10.0, 1.0),
+    subsample = seq(0.55, 1.0, 0.05),
+    colsample_bytree = seq(0.55, 1.0, 0.05))
+```
+
+</p>
+</details>
 
 ##### **AutoH2oGBMMultiClass()**
 <code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Target",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   eval_metric = "logloss",
+   Trees = 50,
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
+
+</p>
+</details>
+
 ##### **AutoH2oDRFMultiClass()**
 <code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   eval_metric = "logloss",
+   Trees = 50,
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
+
+</p>
+</details>
 
 ##### **AutoH2oGLMMultiClass()**
 <code>AutoH2oGLMMultiClass()</code> utilizes the H2O generalized linear model algorithm in the below steps
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   eval_metric = "logloss",
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
+
+</p>
+</details>
+
 ##### **AutoH2oMLMultiClass()**
 <code>AutoH2oMLMultiClass()</code> utilizes the H2o AutoML algorithm in the below steps
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oMLMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   ExcludeAlgos = NULL,
+   eval_metric = "logloss",
+   Trees = 50,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
+
+</p>
+</details>
   
 #### The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
