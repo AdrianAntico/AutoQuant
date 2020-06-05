@@ -214,7 +214,7 @@ runtime <- system.time(
     DateCols = "DateTime",
     AsFactor = FALSE,
     TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
-print(data)
+head(data)
 print(runtime)
 ```
 
@@ -223,6 +223,49 @@ print(runtime)
 
 ##### **CreateHolidayVariable()**
 <code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75, 
+  N = 25000L, 
+  ID = 2L, 
+  ZIP = 0L, 
+  FactorCount = 4L, 
+  AddDate = TRUE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+for(i in seq_len(20L)) {
+  print(i)
+  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75, 
+    N = 25000L, 
+    ID = 2L, 
+    ZIP = 0L, 
+    FactorCount = 4L, 
+    AddDate = TRUE, 
+    Classification = FALSE, 
+    MultiClass = FALSE)))
+}
+
+# Run function and time it
+runtime <- system.time(
+  data <- CreateHolidayVariables(
+    data,
+    DateCols = "DateTime",
+    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    Holidays = NULL,
+    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
+    Print = FALSE))
+head(data)
+print(runtime)
+```
+
+</p>
+</details>
 
 ##### **AutoHierarchicalFourier()**
 <code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
