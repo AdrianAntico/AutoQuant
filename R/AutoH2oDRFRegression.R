@@ -62,7 +62,7 @@
 #'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
 #'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
 #'     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-#'     model_path = NULL,
+#'     model_path = normalizePath("./),
 #'     metadata_path = NULL,
 #'     ModelID = "FirstModel",
 #'     ReturnModelObjects = TRUE,

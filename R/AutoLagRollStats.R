@@ -25,49 +25,47 @@
 #' @param Debug Set to TRUE to get a print of which steps are running
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
+#' # Create fake data with a Date----
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.75,
+#'   N = 25000L,
+#'   ID = 2L,
+#'   ZIP = 0L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#' data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
+#' data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
 #' 
-#' # Create fake daily data
-#' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'                                Target = stats::filter(rnorm(N,
-#'                                                             mean = 50,
-#'                                                             sd = 20),
-#'                                                       filter=rep(1,10),
-#'                                                       circular=TRUE))
-#' data[, LETTERSS := sample(x = LETTERS, size = N, replace = TRUE)]
-#' data[, LETTERS := sample(x = LETTERS, size = N, replace = TRUE)]
-#' data[, letters := sample(x = letters, size = N, replace = TRUE)]
-#' data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
-#' data <- data[order(DateTime)]
-#' 
-#' # Run Function
+#' # Add scoring records
 #' data <- RemixAutoML::AutoLagRollStats(
 #'   
 #'   # Data
 #'   data                 = data,
 #'   DateColumn           = "DateTime",
-#'   Targets              = c("Target"),
-#'   HierarchyGroups      = c("LETTERSS","LETTERS","letters"),
+#'   Targets              = "Adrian",
+#'   HierarchyGroups      = c("Factor1","Factor2"),
 #'   IndependentGroups    = NULL,
-#'   TimeUnit             = c("days", "weeks", "months"),
-#'   TimeUnitAgg          = "day",
-#'
-#'   # Services
+#'   TimeUnitAgg          = "days",
+#'   TimeGroups           = c("days", "weeks"),
 #'   TimeBetween          = NULL,
-#'   TimeUnit             = NULL,
+#'   TimeUnit             = "days",
+#'   
+#'   # Services
 #'   RollOnLag1           = TRUE,
 #'   Type                 = "Lag",
 #'   SimpleImpute         = TRUE,
-#'      
+#'   
 #'   # Calculated Columns
 #'   Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
 #'   MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Quantiles_Selected    = c("q5","q10","q95"),
-#'   Debug                 = FALSE)
+#'   SD_RollWindows        = NULL,
+#'   Skew_RollWindows      = NULL,
+#'   Kurt_RollWindows      = NULL,
+#'   Quantile_RollWindows  = NULL,
+#'   Quantiles_Selected   = c("q5","q10","q95"),
+#'   Debug                = FALSE)
 #' @export
 AutoLagRollStats <- function(data,
                              Targets              = NULL,
@@ -815,6 +813,26 @@ AutoLagRollStatsScoring <- function(data,
             AscRowByGroup = RowNumsID,
             RecordsKeep = RowNumsKeep,
             AscRowRemove = TRUE)
+          
+          # lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags
+          # periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows
+          # SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows
+          # Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows
+          # Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows
+          # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
+          # statsFUNs = RollFunctions
+          # targets = Targets
+          # groupingVars = Fact
+          # sortDateName = "TEMPDATE"
+          # timeDiffTarget = TimeBetween
+          # timeAgg = timeaggs
+          # WindowingLag = RollOnLag1
+          # Type = Type
+          # Timer = FALSE
+          # SimpleImpute = SimpleImpute
+          # AscRowByGroup = RowNumsID
+          # RecordsKeep = RowNumsKeep
+          # AscRowRemove = TRUE
 
           # Update vals----
           data.table::set(KeepData, j = eval(DateColumn), value = KeepData[["TEMPDATE"]])

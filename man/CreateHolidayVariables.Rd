@@ -35,20 +35,39 @@ CreateHolidayVariables Rapidly creates holiday count variables based on the date
 }
 \examples{
 \donttest{
-data <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
-data1 <- data.table::data.table(Date = as.Date(rep('2018-01-01 00:00:00', 100L)))
-data[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
-data1[, ID := 1L:.N][, Date := Date + lubridate::days(ID)][, ID := NULL]
-data[, GroupVar := "A"]
-data1[, GroupVar := "B"]
-data <- data.table::rbindlist(list(data,data1))
-data <- CreateHolidayVariables(
-   data,
-   DateCols = "Date",
-   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-   Holidays = NULL,
-   GroupingVars = "GroupVar",
-   Print = FALSE)
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75, 
+  N = 25000L, 
+  ID = 2L, 
+  ZIP = 0L, 
+  FactorCount = 4L, 
+  AddDate = TRUE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+for(i in seq_len(20L)) {
+  print(i)
+  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75, 
+    N = 25000L, 
+    ID = 2L, 
+    ZIP = 0L, 
+    FactorCount = 4L, 
+    AddDate = TRUE, 
+    Classification = FALSE, 
+    MultiClass = FALSE)))
+}
+# Run function and time it
+runtime <- system.time(
+  data <- CreateHolidayVariables(
+    data,
+    DateCols = "DateTime",
+    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    Holidays = NULL,
+    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
+    Print = FALSE))
+head(data)
+print(runtime)
 }
 }
 \seealso{

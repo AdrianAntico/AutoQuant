@@ -86,7 +86,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Target",
-   FeatureColNames = 2:ncol(data),
+   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
    eval_metric = "logloss",
    Trees = 50,
    GridTune = FALSE,

@@ -35,7 +35,7 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Adrian",
-#'    FeatureColNames = 4:ncol(data),
+#'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'    ExcludeAlgos = NULL,
 #'    eval_metric = "logloss",
 #'    Trees = 50,

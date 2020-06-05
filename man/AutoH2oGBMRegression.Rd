@@ -123,9 +123,6 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
     #      Saved objects include: 
     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
     #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
     model_path = NULL,
     metadata_path = NULL,

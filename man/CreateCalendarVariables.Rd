@@ -27,7 +27,7 @@ Returns your data.table with the added calendar variables at the end
 CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
 }
 \examples{
-# Create fake data with a Date column----
+# Create fake data with a Date column---- 
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.75, 
   N = 25000L, 
@@ -41,7 +41,7 @@ for(i in seq_len(20L)) {
   print(i)
   data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
     Correlation = 0.75, 
-    N = 250000L, 
+    N = 25000L, 
     ID = 2L, 
     ZIP = 0L, 
     FactorCount = 4L, 
@@ -50,13 +50,16 @@ for(i in seq_len(20L)) {
     MultiClass = FALSE)))
 }
 
-# Create calendar variables - auto excludes the second, minute, and hour selections since
+# Create calendar variables - automatically excludes the second, minute, and hour selections since
 #   it is not timestamp data
-RemixAutoML::CreateCalendarVariables(
-  data = data,
-  DateCols = "DateTime",
-  AsFactor = FALSE,
-  TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"))
+runtime <- system.time(
+  data <- RemixAutoML::CreateCalendarVariables(
+    data = data,
+    DateCols = "DateTime",
+    AsFactor = FALSE,
+    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
+head(data)
+print(runtime)
 }
 \seealso{
 Other Feature Engineering: 

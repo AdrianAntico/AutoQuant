@@ -85,7 +85,7 @@ AutoH2oGLMClassifier is an automated H2O modeling framework with grid-tuning and
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMClassifier(
@@ -94,7 +94,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = 4:ncol(data),
+   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
    Distribution = "binomial",
    link = NULL, 
    eval_metric = "auc",

@@ -75,49 +75,47 @@ data.table of original data plus created lags, rolling stats, and time between e
 AutoLagRollStats Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
 }
 \examples{
+# Create fake data with a Date----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 25000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
+data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
 
-# Create fake daily data
-N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                               Target = stats::filter(rnorm(N,
-                                                            mean = 50,
-                                                            sd = 20),
-                                                      filter=rep(1,10),
-                                                      circular=TRUE))
-data[, LETTERSS := sample(x = LETTERS, size = N, replace = TRUE)]
-data[, LETTERS := sample(x = LETTERS, size = N, replace = TRUE)]
-data[, letters := sample(x = letters, size = N, replace = TRUE)]
-data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
-data <- data[order(DateTime)]
-
-# Run Function
+# Add scoring records
 data <- RemixAutoML::AutoLagRollStats(
   
   # Data
   data                 = data,
   DateColumn           = "DateTime",
-  Targets              = c("Target"),
-  HierarchyGroups      = c("LETTERSS","LETTERS","letters"),
+  Targets              = "Adrian",
+  HierarchyGroups      = c("Factor1","Factor2"),
   IndependentGroups    = NULL,
-  TimeUnit             = c("days", "weeks", "months"),
-  TimeUnitAgg          = "day",
-
-  # Services
+  TimeUnitAgg          = "days",
+  TimeGroups           = c("days", "weeks"),
   TimeBetween          = NULL,
-  TimeUnit             = NULL,
+  TimeUnit             = "days",
+  
+  # Services
   RollOnLag1           = TRUE,
   Type                 = "Lag",
   SimpleImpute         = TRUE,
-     
+  
   # Calculated Columns
   Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  Quantiles_Selected    = c("q5","q10","q95"),
-  Debug                 = FALSE)
+  SD_RollWindows        = NULL,
+  Skew_RollWindows      = NULL,
+  Kurt_RollWindows      = NULL,
+  Quantile_RollWindows  = NULL,
+  Quantiles_Selected   = c("q5","q10","q95"),
+  Debug                = FALSE)
 }
 \seealso{
 Other Feature Engineering: 
