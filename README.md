@@ -327,7 +327,8 @@ print(runtime)
 </p>
 </details>
 
-<code>ModelDataPrep()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+<code>CreateCalendarVariables()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+
 
 ##### **CreateHolidayVariable()**
 
@@ -373,7 +374,6 @@ print(runtime)
 </details>
 
 <code>CreateHolidayVariable()</code> 
-
 This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
 
 ##### **AutoHierarchicalFourier()**
