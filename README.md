@@ -172,7 +172,7 @@ Supply a data.table to run the functions below:
 
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
-<details><summary>Code Example</summary>
+<details><summary>Code Example: AutoLagRollStats()</summary>
 <p>
 
 ```
@@ -222,7 +222,7 @@ data <- RemixAutoML::AutoLagRollStats(
 </p>
 </details>
 
-<details><summary>Code Example</summary>
+<details><summary>Code Example: AutoLagRollStatsScoring()</summary>
 <p>
 
 ```
