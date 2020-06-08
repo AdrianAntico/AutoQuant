@@ -437,6 +437,41 @@ str(data)
 <code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
 
 ##### **AutoDataPartition()**
+
+<details><summary>Code Example: AutoDataPartition()</summary>
+<p>
+
+```
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 1000, 
+  ID = 2, 
+  ZIP = 0, 
+  AddDate = FALSE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Run data partitioning function
+dataSets <- RemixAutoML::AutoDataPartition(
+  data,
+  NumDataSets = 3L,
+  Ratios = c(0.70,0.20,0.10),
+  PartitionType = "random",
+  StratifyColumnNames = NULL,
+  StratifyNumericTarget = NULL,
+  StratTargetPrecision = 1L,
+  TimeColumnName = NULL)
+
+# Collect data
+TrainData <- dataSets$TrainData
+ValidationData <- dataSets$ValidationData
+TestData <- dataSets$TestData
+```
+
+</p>
+</details>
+
 <code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
 
 ##### **AutoDataDictionary()**
