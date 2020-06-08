@@ -15,27 +15,37 @@
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
 #' @examples
-#' test <- data.table::data.table(Value = runif(100000),
-#'                    FactorCol = sample(x = c(letters,
-#'                                             LETTERS,
-#'                                             paste0(letters,letters),
-#'                                             paste0(LETTERS,LETTERS),
-#'                                             paste0(letters,LETTERS),
-#'                                             paste0(LETTERS,letters)),
-#'                                       size = 100000,
-#'                                       replace = TRUE))
-#' test <- DummifyDT(data = test,
-#'                   cols = "FactorCol",
-#'                   KeepFactorCols = FALSE,
-#'                   OneHot = FALSE,
-#'                   SaveFactorLevels = FALSE,
-#'                   SavePath = normalizePath("./"),
-#'                   ImportFactorLevels = FALSE,
-#'                   FactorLevelsList = NULL,
-#'                   ClustScore = FALSE,
-#'                   ReturnFactorLevels = FALSE)
-#' ncol(test)
-#' test[, sum(FactorCol_gg)]
+#' # Create fake data with 10 categorical columns
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85, 
+#'   N = 25000, 
+#'   ID = 2L, 
+#'   ZIP = 0, 
+#'   FactorCount = 10L,
+#'   AddDate = FALSE, 
+#'   Classification = FALSE, 
+#'   MultiClass = FALSE)
+#' 
+#' # Create dummy variables
+#' data <- RemixAutoML::DummifyDT(
+#'   data = data,
+#'   cols = c("Factor_1",
+#'            "Factor_2",
+#'            "Factor_3",
+#'            "Factor_4",
+#'            "Factor_5",
+#'            "Factor_6",
+#'            "Factor_8",
+#'            "Factor_9",
+#'            "Factor_10"),
+#'   KeepFactorCols = FALSE,
+#'   OneHot = FALSE,
+#'   SaveFactorLevels = FALSE,
+#'   SavePath = normalizePath("./"),
+#'   ImportFactorLevels = FALSE,
+#'   FactorLevelsList = NULL,
+#'   ClustScore = FALSE,
+#'   ReturnFactorLevels = FALSE)
 #' @return Either a data table with new dummy variables columns and optionally removes base columns (if ReturnFactorLevels is FALSE), otherwise a list with the data.table and a list of the factor levels.
 #' @export
 DummifyDT <- function(data,

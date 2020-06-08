@@ -45,27 +45,37 @@ Either a data table with new dummy variables columns and optionally removes base
 DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
 }
 \examples{
-test <- data.table::data.table(Value = runif(100000),
-                   FactorCol = sample(x = c(letters,
-                                            LETTERS,
-                                            paste0(letters,letters),
-                                            paste0(LETTERS,LETTERS),
-                                            paste0(letters,LETTERS),
-                                            paste0(LETTERS,letters)),
-                                      size = 100000,
-                                      replace = TRUE))
-test <- DummifyDT(data = test,
-                  cols = "FactorCol",
-                  KeepFactorCols = FALSE,
-                  OneHot = FALSE,
-                  SaveFactorLevels = FALSE,
-                  SavePath = normalizePath("./"),
-                  ImportFactorLevels = FALSE,
-                  FactorLevelsList = NULL,
-                  ClustScore = FALSE,
-                  ReturnFactorLevels = FALSE)
-ncol(test)
-test[, sum(FactorCol_gg)]
+# Create fake data with 10 categorical columns
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 25000, 
+  ID = 2L, 
+  ZIP = 0, 
+  FactorCount = 10L,
+  AddDate = FALSE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Create dummy variables
+data <- RemixAutoML::DummifyDT(
+  data = data,
+  cols = c("Factor_1",
+           "Factor_2",
+           "Factor_3",
+           "Factor_4",
+           "Factor_5",
+           "Factor_6",
+           "Factor_8",
+           "Factor_9",
+           "Factor_10"),
+  KeepFactorCols = FALSE,
+  OneHot = FALSE,
+  SaveFactorLevels = FALSE,
+  SavePath = normalizePath("./"),
+  ImportFactorLevels = FALSE,
+  FactorLevelsList = NULL,
+  ClustScore = FALSE,
+  ReturnFactorLevels = FALSE)
 }
 \seealso{
 Other Feature Engineering: 
