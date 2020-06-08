@@ -385,6 +385,45 @@ This function counts up the number of specified holidays between the current rec
 <code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling, which is done automatically for you if you specify.
 
 ##### **ModelDataPrep()**
+
+<details><summary>Code Example: ModelDataPrep()</summary>
+<p>
+ 
+```
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 250000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 6L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Check column types
+str(data)
+
+# Convert some factors to character
+data <- RemixAutoML::ModelDataPrep(
+  data,
+  Impute       = TRUE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE,
+  IntToNumeric = TRUE,
+  DateToChar   = FALSE,
+  RemoveDates  = TRUE,
+  MissFactor   = "0",
+  MissNum      = -1,
+  IgnoreCols   = c("Factor_1"))
+
+# Check column types
+str(data)
+```
+
+</p>
+</details>
+
 <code>ModelDataPrep()</code> This function will loop through every column in your data and apply a variety of functions based on argument settings. For all columns not ignored, these tasks include:
 * Character type to Factor type converstion
 * Factor type to Character type conversion
