@@ -434,6 +434,47 @@ str(data)
 * Ignore specified columns
 
 ##### **DummifyDT()** 
+
+<details><summary>Code Example: DummifyDT()</summary>
+<p>
+
+```
+# Create fake data with 10 categorical columns
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 25000, 
+  ID = 2L, 
+  ZIP = 0, 
+  FactorCount = 10L,
+  AddDate = FALSE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Create dummy variables
+data <- RemixAutoML::DummifyDT(
+  data = data,
+  cols = c("Factor_1",
+           "Factor_2",
+           "Factor_3",
+           "Factor_4",
+           "Factor_5",
+           "Factor_6",
+           "Factor_8",
+           "Factor_9",
+           "Factor_10"),
+  KeepFactorCols = FALSE,
+  OneHot = FALSE,
+  SaveFactorLevels = FALSE,
+  SavePath = normalizePath("./"),
+  ImportFactorLevels = FALSE,
+  FactorLevelsList = NULL,
+  ClustScore = FALSE,
+  ReturnFactorLevels = FALSE)
+```
+
+</p>
+</details>
+
 <code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
 
 ##### **AutoDataPartition()**
