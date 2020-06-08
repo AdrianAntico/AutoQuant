@@ -171,9 +171,8 @@ Supply a data.table to run the functions below:
 <p>
 
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
-<code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
 
-<details><summary>Code Example</summary>
+<details><summary>Code Example: AutoLagRollStats()</summary>
 <p>
 
 ```
@@ -223,9 +222,7 @@ data <- RemixAutoML::AutoLagRollStats(
 </p>
 </details>
 
-<code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
-
-<details><summary>Code Example</summary>
+<details><summary>Code Example: AutoLagRollStatsScoring()</summary>
 <p>
 
 ```
@@ -279,13 +276,63 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 </p>
 </details>
 
+<code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
+
+<code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
+
 ##### **AutoWord2VecModeler()**
 <code>AutoWord2VecModeler()</code> generates a specified number of vectors (word2vec) for each column of text data in your data set that you specify and it will save the models if you specify for re-creating them later in a model scoring process. You can choose to build individual models for each column or one model for all your columns. If you need to run several models for groups of text variables you can run the function several times. 
 
 ##### **CreateCalendarVariables()**
-<code>ModelDataPrep()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
 
-<details><summary>Code Example</summary>
+<details><summary>Code Example: CreateCalendarVariables()</summary>
+<p>
+
+```
+# Create fake data with a Date column----
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 25000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 4L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+for(i in seq_len(20L)) {
+  print(i)
+  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 2L,
+    ZIP = 0L,
+    FactorCount = 4L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)))
+}
+
+# Create calendar variables - automatically excludes the second, minute, and hour selections since
+#   it is not timestamp data
+runtime <- system.time(
+  data <- RemixAutoML::CreateCalendarVariables(
+    data = data,
+    DateCols = "DateTime",
+    AsFactor = FALSE,
+    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
+head(data)
+print(runtime)
+```
+
+</p>
+</details>
+
+<code>CreateCalendarVariables()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+
+
+##### **CreateHolidayVariable()**
+
+<details><summary>Code Example: CreateHolidayVariable()</summary>
 <p>
  
 ```
@@ -326,51 +373,8 @@ print(runtime)
 </p>
 </details>
 
-##### **CreateHolidayVariable()**
-<code>CreateHolidayVariable()</code> This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
-
-<details><summary>Code Example</summary>
-<p>
-
-```
-# Create fake data with a Date----
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.75, 
-  N = 25000L, 
-  ID = 2L, 
-  ZIP = 0L, 
-  FactorCount = 4L, 
-  AddDate = TRUE, 
-  Classification = FALSE, 
-  MultiClass = FALSE)
-for(i in seq_len(20L)) {
-  print(i)
-  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
-    Correlation = 0.75, 
-    N = 25000L, 
-    ID = 2L, 
-    ZIP = 0L, 
-    FactorCount = 4L, 
-    AddDate = TRUE, 
-    Classification = FALSE, 
-    MultiClass = FALSE)))
-}
-
-# Run function and time it
-runtime <- system.time(
-  data <- CreateHolidayVariables(
-    data,
-    DateCols = "DateTime",
-    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-    Holidays = NULL,
-    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
-    Print = FALSE))
-head(data)
-print(runtime)
-```
-
-</p>
-</details>
+<code>CreateHolidayVariable()</code> 
+This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
 
 ##### **AutoHierarchicalFourier()**
 <code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
