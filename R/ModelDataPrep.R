@@ -57,7 +57,7 @@ ModelDataPrep <- function(data,
   
   # Prepare columns for action----
   x <- as.integer(seq_along(data))
-  if(!is.null(IgnoreCols)) x <- setdiff(x, IgnoreCols)
+  if(!is.null(IgnoreCols)) if(class(IgnoreCols) == "character") x <- setdiff(x, which(names(data) %chin% IgnoreCols)) else x <- setdiff(x, IgnoreCols)
   
   # Replace any inf values with NA----
   for(col in x) data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
