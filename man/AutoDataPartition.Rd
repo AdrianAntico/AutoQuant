@@ -40,14 +40,31 @@ This function will take your ratings matrix and model and score your data in par
 }
 \examples{
 \donttest{
-dataSets <- AutoDataPartition(data,
-                              NumDataSets = 3L,
-                              Ratios = c(0.70,0.20,0.10),
-                              PartitionType = "random",
-                              StratifyColumnNames = NULL,
-                              StratifyNumericTarget = NULL,
-                              StratTargetPrecision = 1L,
-                              TimeColumnName = NULL)
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 1000, 
+  ID = 2, 
+  ZIP = 0, 
+  AddDate = FALSE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Run data partitioning function
+dataSets <- RemixAutoML::AutoDataPartition(
+  data,
+  NumDataSets = 3L,
+  Ratios = c(0.70,0.20,0.10),
+  PartitionType = "random",
+  StratifyColumnNames = NULL,
+  StratifyNumericTarget = NULL,
+  StratTargetPrecision = 1L,
+  TimeColumnName = NULL)
+
+# Collect data
+TrainData <- dataSets$TrainData
+ValidationData <- dataSets$ValidationData
+TestData <- dataSets$TestData
 }
 }
 \seealso{
