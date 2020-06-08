@@ -45,27 +45,35 @@ Returns the original data table with corrected values
 This function replaces inf values with NA, converts characters to factors, and imputes with constants
 }
 \examples{
-data <- data.table::data.table(
-   Value = runif(100000),
-   FactorCol = as.character(sample(x = c(letters,
-                                         LETTERS,
-                                         paste0(letters,letters),
-                                         paste0(LETTERS,LETTERS),
-                                         paste0(letters,LETTERS),
-                                         paste0(LETTERS,letters)),
-                                   size = 100000,
-                                   replace = TRUE)))
-data <- ModelDataPrep(
-   data,
-   Impute       = TRUE,
-   CharToFactor = TRUE,
-   FactorToChar = FALSE,
-   IntToNumeric = TRUE,
-   DateToChar   = FALSE,
-   RemoveDates  = FALSE,
-   MissFactor   = "0",
-   MissNum      = -1,
-   IgnoreCols   = NULL)
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75, 
+  N = 250000L, 
+  ID = 2L, 
+  ZIP = 0L, 
+  FactorCount = 6L, 
+  AddDate = TRUE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Check column types
+str(data)
+
+# Convert some factors to character
+data <- RemixAutoML::ModelDataPrep(
+  data,
+  Impute       = TRUE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE,
+  IntToNumeric = TRUE,
+  DateToChar   = FALSE,
+  RemoveDates  = TRUE,
+  MissFactor   = "0",
+  MissNum      = -1,
+  IgnoreCols   = c("Factor_1"))
+
+# Check column types
+str(data)
 }
 \seealso{
 Other Feature Engineering: 

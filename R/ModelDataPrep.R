@@ -15,27 +15,35 @@
 #' @param MissNum Supply  the value to impute missing numeric values
 #' @param IgnoreCols Supply column numbers for columns you want the function to ignore
 #' @examples
-#' data <- data.table::data.table(
-#'    Value = runif(100000),
-#'    FactorCol = as.character(sample(x = c(letters,
-#'                                          LETTERS,
-#'                                          paste0(letters,letters),
-#'                                          paste0(LETTERS,LETTERS),
-#'                                          paste0(letters,LETTERS),
-#'                                          paste0(LETTERS,letters)),
-#'                                    size = 100000,
-#'                                    replace = TRUE)))
-#' data <- ModelDataPrep(
-#'    data,
-#'    Impute       = TRUE,
-#'    CharToFactor = TRUE,
-#'    FactorToChar = FALSE,
-#'    IntToNumeric = TRUE,
-#'    DateToChar   = FALSE,
-#'    RemoveDates  = FALSE,
-#'    MissFactor   = "0",
-#'    MissNum      = -1,
-#'    IgnoreCols   = NULL)
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.75, 
+#'   N = 250000L, 
+#'   ID = 2L, 
+#'   ZIP = 0L, 
+#'   FactorCount = 6L, 
+#'   AddDate = TRUE, 
+#'   Classification = FALSE, 
+#'   MultiClass = FALSE)
+#' 
+#' # Check column types
+#' str(data)
+#' 
+#' # Convert some factors to character
+#' data <- RemixAutoML::ModelDataPrep(
+#'   data,
+#'   Impute       = TRUE,
+#'   CharToFactor = FALSE,
+#'   FactorToChar = TRUE,
+#'   IntToNumeric = TRUE,
+#'   DateToChar   = FALSE,
+#'   RemoveDates  = TRUE,
+#'   MissFactor   = "0",
+#'   MissNum      = -1,
+#'   IgnoreCols   = c("Factor_1"))
+#' 
+#' # Check column types
+#' str(data)
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
