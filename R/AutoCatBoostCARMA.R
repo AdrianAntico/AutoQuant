@@ -150,7 +150,7 @@ AutoCatBoostCARMA <- function(data,
   loadNamespace(package = "catboost")
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")
@@ -175,7 +175,7 @@ AutoCatBoostCARMA <- function(data,
   Quantile_Periods      <- Args$Quantile_Periods
   
   # Variables for Program: Redefine HoldOutPerids----
-  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L]*length(unique(data[[eval(DateColumnName)]])), 0L)
+  if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
   
   # Convert data to data.table----
   if(DebugMode) print("Convert data to data.table----")

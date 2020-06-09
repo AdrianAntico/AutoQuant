@@ -880,9 +880,9 @@ AutoXGBoostRegression <- function(data,
   if(!TrainOnFull) {
     
     # Regression Evaluation Metrics----
-    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
-    for(metric in c("mae", "mape", "mse", "r2")) {
+    for(metric in c("mae", "mape", "rmse", "r2")) {
       i <- i + 1L
       tryCatch({
         if(tolower(metric) == "mae") {
@@ -891,9 +891,9 @@ AutoXGBoostRegression <- function(data,
         } else if(tolower(metric) == "mape") {
           ValidationData[, Metric := abs((get(Target) - Predict) / (get(Target) + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if(tolower(metric) == "mse") {
+        } else if(tolower(metric) == "rmse") {
           ValidationData[, Metric := (get(Target) - Predict) ^ 2L]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          Metric <- sqrt(ValidationData[, mean(Metric, na.rm = TRUE)])
         } else if(tolower(metric) == "r2") {
           Metric <- (ValidationData[, stats::cor(eval(Target), Predict)][[1L]]) ^ 2L
         }

@@ -828,9 +828,9 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Evaluation Metrics----
   if(!TrainOnFull) {
-    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 8L))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
-    for(metric in c("mae", "mape", "mse", "r2")) {
+    for(metric in c("mae", "mape", "rmse", "r2")) {
       i <- i + 1L
       tryCatch({
         if (tolower(metric) == "mae") {
@@ -839,9 +839,9 @@ AutoCatBoostRegression <- function(data,
         } else if(tolower(metric) == "mape") {
           ValidationData[, Metric := abs((ValidationData[[eval(TargetColumnName)]] - Predict) / (ValidationData[[eval(TargetColumnName)]] + 1))]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
-        } else if(tolower(metric) == "mse") {
+        } else if(tolower(metric) == "rmse") {
           ValidationData[, Metric := (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2]
-          Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          Metric <- sqrt(ValidationData[, mean(Metric, na.rm = TRUE)])
         } else if(tolower(metric) == "r2") {
           ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] / ValidationData[, sum(Metric1, na.rm = TRUE)]
