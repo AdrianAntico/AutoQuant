@@ -338,34 +338,35 @@ print(runtime)
 ```
 # Create fake data with a Date----
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.75, 
-  N = 25000L, 
-  ID = 2L, 
-  ZIP = 0L, 
-  FactorCount = 4L, 
-  AddDate = TRUE, 
-  Classification = FALSE, 
+  Correlation = 0.75,
+  N = 25000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 4L,
+  AddDate = TRUE,
+  Classification = FALSE,
   MultiClass = FALSE)
 for(i in seq_len(20L)) {
   print(i)
   data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
-    Correlation = 0.75, 
-    N = 25000L, 
-    ID = 2L, 
-    ZIP = 0L, 
-    FactorCount = 4L, 
-    AddDate = TRUE, 
-    Classification = FALSE, 
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 2L,
+    ZIP = 0L,
+    FactorCount = 4L,
+    AddDate = TRUE,
+    Classification = FALSE,
     MultiClass = FALSE)))
 }
-
 # Run function and time it
 runtime <- system.time(
-  data <- RemixAutoML::CreateCalendarVariables(
-    data = data,
+  data <- CreateHolidayVariables(
+    data,
     DateCols = "DateTime",
-    AsFactor = FALSE,
-    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
+    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    Holidays = NULL,
+    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
+    Print = FALSE))
 head(data)
 print(runtime)
 ```
