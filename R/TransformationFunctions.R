@@ -493,6 +493,7 @@ AutoTransformationCreate <- function(data,
   # Check arguments----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "log", "logplus1", "asin", "logit"))) return("Methods not supported")
+  if(!"Identity" %chin% Methods) Methods <- c(Methods, "Identity")
   if(is.numeric(ColumnNames) | is.integer(ColumnNames)) ColumnNames <- names(data)[ColumnNames]
   for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) return("ColumnNames must be for numeric or integer columns")
   
