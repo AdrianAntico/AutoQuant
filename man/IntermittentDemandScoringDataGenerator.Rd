@@ -85,6 +85,7 @@ IntermittentDemandScoringDataGenerator creates the scoring data for forecasting.
 \seealso{
 Other Automated Time Series: 
 \code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostChainLadder}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFCARMA}()},

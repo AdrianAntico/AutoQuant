@@ -193,6 +193,7 @@ Forecast1$ModelInformation$...
 }
 \seealso{
 Other Automated Time Series: 
+\code{\link{AutoCatBoostChainLadder}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFCARMA}()},
