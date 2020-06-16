@@ -317,7 +317,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # FE: CreateHolidayVariables() CalendarDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), HolidayGroups = HolidayGroups, Holidays = NULL, GroupingVars = NULL, Print = FALSE))
-    data.table::setnames(data, old = "HolidayCounts", new = paste0(CalendarDate,"HolidayCounts"))
+    data.table::setnames(data, old = "HolidayCounts", new = paste0(BaseFunnelMeasure,"HolidayCounts"))
     if(proc %chin% c("evaluate","eval")) {
       data.table::set(TimerDataEval, i = 3L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 3L, j = "Process", value = "# Add CalendarDate holiday variables----")
@@ -331,7 +331,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # FE: CreateHolidayVariables() CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), HolidayGroups = eval(HolidayGroups), Holidays = NULL, GroupingVars = NULL, Print = FALSE))
-    data.table::setnames(data, old = "HolidayCounts", new = paste0(CohortDate, "HolidayCounts"))
+    data.table::setnames(data, old = "HolidayCounts", new = paste0(ConversionMeasure, "HolidayCounts"))
     if(proc %chin% c("evaluate","eval")) {
       data.table::set(TimerDataEval, i = 4L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
