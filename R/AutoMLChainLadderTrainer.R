@@ -551,7 +551,7 @@ AutoCatBoostChainLadder <- function(data,
     # FE: AutoLagRollStats() CalendarHolidayCounts Over Calendar Time----
     if(proc %chin% c("evaluate","eval","training","train") & !is.null(CalendarHolidayLags)) {
       temp <- data[, max(get(paste0(BaseFunnelMeasure, "HolidayCounts"))), by = eval(CalendarDate)]
-      data.table::setnames(temp, "V1", eval(ConversionMeasure))
+      data.table::setnames(temp, "V1", paste0(BaseFunnelMeasure, "HolidayCounts"))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
         
         # Data
