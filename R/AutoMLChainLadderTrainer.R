@@ -715,7 +715,7 @@ AutoCatBoostChainLadder <- function(data,
         ModelID = paste0(ModelID,"_", proc, "_"),
         model_path = ModelPath,
         metadata_path = MetaDataPath,
-        SaveModelObjects = SaveModelObjects,
+        SaveModelObjects = FALSE,
         ReturnModelObjects = TRUE,
         
         # Data arguments----
