@@ -194,10 +194,10 @@ AutoCatBoostChainLadder <- function(data,
   ArgsList <- list()
   if(!is.null(PartitionRatios)) ArgsList[["PartitionRatios"]] <- PartitionRatios else ArgsList[["PartitionRatios"]] <- c(0.70,0.20,0.10)
   ArgsList[["Algorithm"]] <- "catboost"
-  ArgsList[[eval(BaseFunnelMeasure)]] <- BaseFunnelMeasure
-  ArgsList[[eval(ConversionMeasure)]] <- ConversionMeasure
-  ArgsList[[eval(CalendarDate)]] <- CalendarDate
-  ArgsList[[eval(CohortDate)]] <- CohortDate
+  ArgsList[["BaseFunnelMeasure"]] <- BaseFunnelMeasure
+  ArgsList[["ConversionMeasure"]] <- ConversionMeasure
+  ArgsList[["CalendarDate"]] <- CalendarDate
+  ArgsList[["CohortDate"]] <- CohortDate
   if(tolower(TimeUnit) %chin% c("day","days")) {
     TimeUnit <- "days"
   } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
@@ -209,52 +209,52 @@ AutoCatBoostChainLadder <- function(data,
   } else if(tolower(TimeUnit) %chin% c("year","years")) {
     TimeUnit <- "years"
   }
-  ArgsList[[TimeUnit]] <- TimeUnit
-  ArgsList[[CalendarTimeGroups]] <- CalendarTimeGroups
-  ArgsList[[CohortTimeGroups]] <- CohortTimeGroups
-  ArgsList[[Jobs]] <- Jobs
-  ArgsList[[ModelID]] <- ModelID
-  ArgsList[[ModelPath]] <- ModelPath
+  ArgsList[["TimeUnit"]] <- TimeUnit
+  ArgsList[["CalendarTimeGroups"]] <- CalendarTimeGroups
+  ArgsList[["CohortTimeGroups"]] <- CohortTimeGroups
+  ArgsList[["Jobs"]] <- Jobs
+  ArgsList[["ModelID"]] <- ModelID
+  ArgsList[["ModelPath"]] <- ModelPath
   if(is.null(MetaDataPath)) if(!is.null(ModelPath)) MetaDataPath <- ModelPath
-  ArgsList[[MetaDataPath]] <- MetaDataPath
-  ArgsList[[TaskType]] <- TaskType
-  ArgsList[[NumGPUs]] <- NumGPUs
-  ArgsList[[DT_Threads]] <- DT_Threads
-  ArgsList[[EvaluationMetric]] <- EvaluationMetric
-  ArgsList[[LossFunction]] <- LossFunction
-  ArgsList[[CalendarVariables]] <- CalendarVariables
-  ArgsList[[HolidayGroups]] <- HolidayGroups
-  ArgsList[[ImputeRollStats]] <- ImputeRollStats
-  ArgsList[[CohortHolidayLags]] <- CohortHolidayLags
-  ArgsList[[CohortHolidayMovingAverages]] <- CohortHolidayMovingAverages
-  ArgsList[[CalendarHolidayLags]] <- CalendarHolidayLags
-  ArgsList[[CalendarHolidayMovingAverages]] <- CalendarHolidayMovingAverages
-  ArgsList[[CalendarLags]] <- CalendarLags
-  ArgsList[[CalendarMovingAverages]] <- CalendarMovingAverages
-  ArgsList[[CalendarStandardDeviations]] <- CalendarStandardDeviations
-  ArgsList[[CalendarSkews]] <- CalendarSkews
-  ArgsList[[CalendarKurts]] <- CalendarKurts
-  ArgsList[[CalendarQuantiles]] <- CalendarQuantiles
-  ArgsList[[CalendarQuantilesSelected]] <- CalendarQuantilesSelected
-  ArgsList[[CohortLags]] <- CohortLags
-  ArgsList[[CohortMovingAverages]] <- CohortMovingAverages
-  ArgsList[[CohortStandardDeviations]] <- CohortStandardDeviations
-  ArgsList[[CohortSkews]] <- CohortSkews
-  ArgsList[[CohortKurts]] <- CohortKurts
-  ArgsList[[CohortQuantiles]] <- CohortQuantiles
-  ArgsList[[CohortQuantilesSelected]] <- CohortQuantilesSelected
-  ArgsList[[GridTune]] <- GridTune
-  ArgsList[[BaselineComparison]] <- BaselineComparison
-  ArgsList[[MaxModelsInGrid]] <- MaxModelsInGrid
-  ArgsList[[MaxRunMinutes]] <- MaxRunMinutes
-  ArgsList[[MaxRunsWithoutNewWinner]] <- MaxRunsWithoutNewWinner
-  ArgsList[[Trees]] <- Trees
-  ArgsList[[Depth]] <- Depth
-  ArgsList[[LearningRate]] <- LearningRate
-  ArgsList[[L2_Leaf_Reg]] <- L2_Leaf_Reg
-  ArgsList[[RSM]] <- RSM
-  ArgsList[[BootStrapType]] <- BootStrapType
-  ArgsList[[GrowPolicy]] <- GrowPolicy
+  ArgsList[["MetaDataPath"]] <- MetaDataPath
+  ArgsList[["TaskType"]] <- TaskType
+  ArgsList[["NumGPUs"]] <- NumGPUs
+  ArgsList[["DT_Threads"]] <- DT_Threads
+  ArgsList[["EvaluationMetric"]] <- EvaluationMetric
+  ArgsList[["LossFunction"]] <- LossFunction
+  ArgsList[["CalendarVariables"]] <- CalendarVariables
+  ArgsList[["HolidayGroups"]] <- HolidayGroups
+  ArgsList[["ImputeRollStats"]] <- ImputeRollStats
+  ArgsList[["CohortHolidayLags"]] <- CohortHolidayLags
+  ArgsList[["CohortHolidayMovingAverages"]] <- CohortHolidayMovingAverages
+  ArgsList[["CalendarHolidayLags"]] <- CalendarHolidayLags
+  ArgsList[["CalendarHolidayMovingAverages"]] <- CalendarHolidayMovingAverages
+  ArgsList[["CalendarLags"]] <- CalendarLags
+  ArgsList[["CalendarMovingAverages"]] <- CalendarMovingAverages
+  ArgsList[["CalendarStandardDeviations"]] <- CalendarStandardDeviations
+  ArgsList[["CalendarSkews"]] <- CalendarSkews
+  ArgsList[["CalendarKurts"]] <- CalendarKurts
+  ArgsList[["CalendarQuantiles"]] <- CalendarQuantiles
+  ArgsList[["CalendarQuantilesSelected"]] <- CalendarQuantilesSelected
+  ArgsList[["CohortLags"]] <- CohortLags
+  ArgsList[["CohortMovingAverages"]] <- CohortMovingAverages
+  ArgsList[["CohortStandardDeviations"]] <- CohortStandardDeviations
+  ArgsList[["CohortSkews"]] <- CohortSkews
+  ArgsList[["CohortKurts"]] <- CohortKurts
+  ArgsList[["CohortQuantiles"]] <- CohortQuantiles
+  ArgsList[["CohortQuantilesSelected"]] <- CohortQuantilesSelected
+  ArgsList[["GridTune"]] <- GridTune
+  ArgsList[["BaselineComparison"]] <- BaselineComparison
+  ArgsList[["MaxModelsInGrid"]] <- MaxModelsInGrid
+  ArgsList[["MaxRunMinutes"]] <- MaxRunMinutes
+  ArgsList[["MaxRunsWithoutNewWinner"]] <- MaxRunsWithoutNewWinner
+  ArgsList[["Trees"]] <- Trees
+  ArgsList[["Depth"]] <- Depth
+  ArgsList[["LearningRate"]] <- LearningRate
+  ArgsList[["L2_Leaf_Reg"]] <- L2_Leaf_Reg
+  ArgsList[["RSM"]] <- RSM
+  ArgsList[["BootStrapType"]] <- BootStrapType
+  ArgsList[["GrowPolicy"]] <- GrowPolicy
   
   # Init: Define SaveTimers() function----
   SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {
