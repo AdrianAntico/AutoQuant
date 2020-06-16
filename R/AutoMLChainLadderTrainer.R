@@ -76,6 +76,7 @@
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
+#'    SaveModelObjects = TRUE,
 #'    ModelID = MarsSegment,
 #'    ModelPath = Modeling,
 #'    MetaDataPath = ModelData,
@@ -137,6 +138,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CalendarTimeGroups = c("day","week","month"),
                                     CohortTimeGroups = c("day","week","month"),
                                     Jobs = c("Evaluate","Train"),
+                                    SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
                                     ModelPath = NULL,
                                     MetaDataPath = NULL,
@@ -798,14 +800,8 @@ AutoCatBoostChainLadder <- function(data,
         }
       }
       
-      # Save timer file----
-      if(SaveModelObjects) {
-        if(proc %chin% c("evaluate","eval")) {
-          data.table::fwrite(TimerDataEval[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Eval_Timer.csv")))
-        } else if(proc %chin% c("training","train")) {
-          data.table::fwrite(TimerDataTrain[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Train_Timer.csv")))
-        }
-      }
+      # Save Timers to file
+      SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
       
       # Save model objects----
       if(SaveModelObjects) {
@@ -837,6 +833,6 @@ AutoCatBoostChainLadder <- function(data,
   }
   
   # Return and Save----
-  save(ArgsList, file = file.path(normalizePath(ModelPath), paste(ModelID, "_ArgsList.Rdata")))
+  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(ModelPath), paste(ModelID, "_ArgsList.Rdata")))
   return(ArgsList)
 }

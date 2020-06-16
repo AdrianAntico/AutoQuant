@@ -15,6 +15,7 @@ AutoCatBoostChainLadder(
   CalendarTimeGroups = c("day", "week", "month"),
   CohortTimeGroups = c("day", "week", "month"),
   Jobs = c("Evaluate", "Train"),
+  SaveModelObjects = TRUE,
   ModelID = "Segment_ID",
   ModelPath = NULL,
   MetaDataPath = NULL,
@@ -83,6 +84,8 @@ AutoCatBoostChainLadder(
 \item{CalendarTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
 
 \item{CohortTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
+
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -174,8 +177,6 @@ AutoCatBoostChainLadder(
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
-\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
-
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 }
 \value{
@@ -199,6 +200,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    
    # MetaData Arguments----
    Jobs = c("eval","train"),
+   SaveModelObjects = TRUE,
    ModelID = MarsSegment,
    ModelPath = Modeling,
    MetaDataPath = ModelData,
