@@ -434,11 +434,11 @@ AutoCatBoostChainLadder <- function(data,
         # Calculated Columns
         Lags                 = CohortHolidayLags,
         MA_RollWindows       = CohortHolidayMovingAverages,
-        SD_RollWindows       = CohortHolidayStandardDeviations,
-        Skew_RollWindows     = CohortHolidaySkews,
-        Kurt_RollWindows     = CohortHolidayKurts,
-        Quantile_RollWindows = CohortHolidayQuantiles,
-        Quantiles_Selected   = CohortHolidayQuantilesSelected,
+        SD_RollWindows       = NULL,
+        Skew_RollWindows     = NULL,
+        Kurt_RollWindows     = NULL,
+        Quantile_RollWindows = NULL,
+        Quantiles_Selected   = NULL,
         Debug                = TRUE))
       if(proc %chin% c("evaluate","eval")) {
         data.table::set(TimerDataEval, i = 7L, j = "Time", value = x[[3L]])
@@ -573,11 +573,11 @@ AutoCatBoostChainLadder <- function(data,
         # Calculated Columns
         Lags                 = CalendarHolidayLags,
         MA_RollWindows       = CalendarHolidayMovingAverages,
-        SD_RollWindows       = CalendarHolidayStandardDeviations,
-        Skew_RollWindows     = CalendarHolidaySkews,
-        Kurt_RollWindows     = CalendarHolidayKurts,
-        Quantile_RollWindows = CalendarHolidayQuantiles,
-        Quantiles_Selected   = CalendarHolidayQuantilesSelected,
+        SD_RollWindows       = NULL,
+        Skew_RollWindows     = NULL,
+        Kurt_RollWindows     = NULL,
+        Quantile_RollWindows = NULL,
+        Quantiles_Selected   = NULL,
         Debug                = TRUE))
       if(proc %chin% c("evaluate","eval")) {
         data.table::set(TimerDataEval, i = 9L, j = "Time", value = x[[3L]])
