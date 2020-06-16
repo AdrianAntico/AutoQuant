@@ -507,7 +507,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","eval","training","train")) {
-      temp <- data[get(CohortDate) == eval(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
+      temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
         
