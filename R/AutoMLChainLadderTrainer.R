@@ -804,7 +804,7 @@ AutoCatBoostChainLadder <- function(data,
       # Save model objects----
       if(SaveModelObjects) {
         if(proc %chin% c("evaluate","eval")) {
-          save(TestModel, file = file.path(normalizePath(Modelpath), paste0(ModelID, "_Evaluation.Rdata")))
+          save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_Evaluation.Rdata")))
         } else if(proc %chin% c("training","train")) {
           save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_FinalTrain.Rdata")))
         }
