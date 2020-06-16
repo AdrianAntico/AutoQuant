@@ -13,6 +13,8 @@
 #' @param CohortDate The name of your date column that represents the cohort date
 #' @param MaxCohortPeriods The maximum number of CohortPeriods out to include in modeling
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
+#' @param TransformTargetVariable TRUE or FALSe
+#' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
 #' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
 #' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
 #' @param ModelPath Path to where you want your models saved
@@ -26,6 +28,7 @@
 #' @param EvaluationMetric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE' 
 #' @param NumOfParDepPlots Number of partial dependence plots to return
+#' @param MetricPeriods Number of trees to build before the internal catboost eval step happens
 #' @param DT_Threads Number of threads to use for data.table. Default is Total - 2
 #' @param ImputeRollStats Constant value to fill NA after running AutoLagRollStats()
 #' @param CohortHolidayLags c(1L, 2L, 7L),
@@ -73,6 +76,8 @@
 #'    CalendarDate = "LeadDate",
 #'    CohortDate = "ConversionDate",
 #'    TimeUnit = "days",
+#'    TransformTargetVariable = TRUE,
+#'    TransformMethods = c("Identity","BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -86,6 +91,7 @@
 #'    EvaluationMetric = "RMSE",
 #'    LossFunction = "RMSE",
 #'    NumOfParDepPlots = 1L,
+#'    MetricPeriods = 50L,
 #'    
 #'    # Feature Engineering Arguments----
 #'    ImputeRollStats = -0.001,
@@ -137,6 +143,8 @@ AutoCatBoostChainLadder <- function(data,
                                     TimeUnit = c("day"),
                                     CalendarTimeGroups = c("day","week","month"),
                                     CohortTimeGroups = c("day","week","month"),
+                                    TransformTargetVariable = TRUE,
+                                    TransformMethods = c("Identity","YeoJohnson"),
                                     Jobs = c("Evaluate","Train"),
                                     SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
@@ -148,6 +156,7 @@ AutoCatBoostChainLadder <- function(data,
                                     EvaluationMetric = "RMSE",
                                     LossFunction = "RMSE",
                                     NumOfParDepPlots = 1L,
+                                    MetricPeriods = 50L,
                                     CalendarVariables = c("wday","mday","yday","week","isoweek","month","quarter","year"),
                                     HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                                     ImputeRollStats = -0.001,
@@ -704,7 +713,7 @@ AutoCatBoostChainLadder <- function(data,
         ModelID = paste0(ModelID,"_", proc, "_"),
         model_path = ModelPath,
         metadata_path = MetaDataPath,
-        SaveModelObjects = FALSE,
+        SaveModelObjects = SaveModelObjects,
         ReturnModelObjects = TRUE,
         
         # Data arguments----
@@ -715,16 +724,16 @@ AutoCatBoostChainLadder <- function(data,
         #     CatBoost categorical treatment is enhanced when supplied
         #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
         #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
-        data = if(proc == "Evaluate") TrainData else data,
-        TrainOnFull = if(proc == "Evaluate") FALSE else TRUE,
-        ValidationData = if(proc == "Evaluate") ValidationData else NULL,
-        TestData = if(proc == "Evaluate") TestData else NULL,
+        data = if(proc %chin% c("eval", "evaluate")) TrainData else data,
+        TrainOnFull = if(proc %chin% c("eval", "evaluate")) FALSE else TRUE,
+        ValidationData = if(proc %chin% c("eval", "evaluate")) ValidationData else NULL,
+        TestData = if(proc %chin% c("eval", "evaluate")) TestData else NULL,
         TargetColumnName = "Rate",
         FeatureColNames = Features,
         PrimaryDateColumn = CohortDate,
         IDcols = names(TrainData)[!names(TrainData) %in% Features],
-        TransformNumericColumns = "Rate",
-        Methods = c("LogPlus1","YeoJohnson"),
+        TransformNumericColumns = if(TransformTargetVariable) "Rate" else NULL,
+        Methods = TransformMethods,
         
         # Model evaluation----
         #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -735,8 +744,8 @@ AutoCatBoostChainLadder <- function(data,
         #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
         eval_metric = EvaluationMetric,
         loss_function = LossFunction,
-        MetricPeriods = 50L,
-        NumOfParDepPlots = 12L,
+        MetricPeriods = MetricPeriods,
+        NumOfParDepPlots = NumOfParDepPlots,
         
         # Grid tuning arguments----
         #   'PassInGrid' is for retraining using a previous grid winning args
@@ -746,13 +755,13 @@ AutoCatBoostChainLadder <- function(data,
         #   'Shuffles' is the number of times you want the random grid arguments shuffled
         #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
         #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
-        PassInGrid = NULL,
-        GridTune = FALSE,
-        MaxModelsInGrid = 100L,
-        MaxRunsWithoutNewWinner = 100L,
-        MaxRunMinutes = 60L * 60L,
+        PassInGrid = PassInGrid,
+        GridTune = GridTune,
+        MaxModelsInGrid = MaxModelsInGrid,
+        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+        MaxRunMinutes = MaxRunMinutes,
         Shuffles = 4L,
-        BaselineComparison = "default",
+        BaselineComparison = BaselineComparison,
         
         # Tuning parameters----
         # Trees, Depth, and LearningRate used in the bandit grid tuning
@@ -761,12 +770,12 @@ AutoCatBoostChainLadder <- function(data,
         # GrowPolicy is turned off for CPU runs
         # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
         Trees = NTrees, #seq(100L, 2000L, 100L),
-        Depth = seq(4L, 8L, 1L),
-        LearningRate = seq(0.01,0.10,0.01),
-        L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-        RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-        BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-        GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")))
+        Depth = Depth,
+        LearningRate = LearningRate,
+        L2_Leaf_Reg = L2_Leaf_Reg,
+        RSM = RSM,
+        BootStrapType = BootStrapType,
+        GrowPolicy = GrowPolicy))
       
       # Define number of trees----
       if(proc %chin% c("eval","evaluate")) {

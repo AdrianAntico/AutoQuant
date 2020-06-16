@@ -14,6 +14,8 @@ AutoCatBoostChainLadder(
   TimeUnit = c("day"),
   CalendarTimeGroups = c("day", "week", "month"),
   CohortTimeGroups = c("day", "week", "month"),
+  TransformTargetVariable = TRUE,
+  TransformMethods = c("Identity", "YeoJohnson"),
   Jobs = c("Evaluate", "Train"),
   SaveModelObjects = TRUE,
   ModelID = "Segment_ID",
@@ -25,6 +27,7 @@ AutoCatBoostChainLadder(
   EvaluationMetric = "RMSE",
   LossFunction = "RMSE",
   NumOfParDepPlots = 1L,
+  MetricPeriods = 50L,
   CalendarVariables = c("wday", "mday", "yday", "week", "isoweek", "month", "quarter",
     "year"),
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
@@ -85,6 +88,10 @@ AutoCatBoostChainLadder(
 
 \item{CohortTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
 
+\item{TransformTargetVariable}{TRUE or FALSe}
+
+\item{TransformMethods}{Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{ModelID}{A character string to name your model and output}
@@ -104,6 +111,8 @@ AutoCatBoostChainLadder(
 \item{LossFunction}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
 
 \item{NumOfParDepPlots}{Number of partial dependence plots to return}
+
+\item{MetricPeriods}{Number of trees to build before the internal catboost eval step happens}
 
 \item{CalendarVariables}{"wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
@@ -197,6 +206,8 @@ RemixAutoML::AutoCatBoostChainLadder(
    CalendarDate = "LeadDate",
    CohortDate = "ConversionDate",
    TimeUnit = "days",
+   TransformTargetVariable = TRUE,
+   TransformMethods = c("Identity","BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
    
    # MetaData Arguments----
    Jobs = c("eval","train"),
@@ -210,6 +221,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    EvaluationMetric = "RMSE",
    LossFunction = "RMSE",
    NumOfParDepPlots = 1L,
+   MetricPeriods = 50L,
    
    # Feature Engineering Arguments----
    ImputeRollStats = -0.001,
