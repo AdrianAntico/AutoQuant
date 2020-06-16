@@ -22,9 +22,10 @@
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param TaskType "GPU" or "CPU" for catboost training
+#' @param NumGPUs Number of GPU's you would like to utilize
 #' @param EvaluationMetric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE' 
-#' @param NumGPUs Number of GPU's you would like to utilize
+#' @param NumOfParDepPlots Number of partial dependence plots to return
 #' @param DT_Threads Number of threads to use for data.table. Default is Total - 2
 #' @param ImputeRollStats Constant value to fill NA after running AutoLagRollStats()
 #' @param CohortHolidayLags c(1L, 2L, 7L),
@@ -62,7 +63,67 @@
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @examples 
 #' \donttest{
-#' data <- data
+#' RemixAutoML::AutoCatBoostChainLadder(
+#' 
+#'    # Data Arguments----
+#'    data = data,
+#'    PartitionRatios = c(0.70,0.20,0.10),
+#'    BaseFunnelMeasure = "Leads",
+#'    ConversionMeasure = "Conversion",
+#'    CalendarDate = "LeadDate",
+#'    CohortDate = "ConversionDate",
+#'    TimeUnit = "days",
+#'    
+#'    # MetaData Arguments----
+#'    Jobs = c("eval","train"),
+#'    ModelID = MarsSegment,
+#'    ModelPath = Modeling,
+#'    MetaDataPath = ModelData,
+#'    TaskType = "CPU",
+#'    NumGPUs = 1,
+#'    DT_Threads = max(1L, parallel::detectCores() - 2L),
+#'    EvaluationMetric = "RMSE",
+#'    LossFunction = "RMSE",
+#'    NumOfParDepPlots = 1L,
+#'    
+#'    # Feature Engineering Arguments----
+#'    ImputeRollStats = -0.001,
+#'    CalendarTimeGroups = c("days","weeks","months"),
+#'    CohortTimeGroups = c("days", "weeks"),
+#'    CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+#'    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'    CohortHolidayLags = c(1L,2L,7L),
+#'    CohortHolidayMovingAverages = c(3L,7L),
+#'    CalendarHolidayLags = c(1L,2L,7L),
+#'    CalendarHolidayMovingAverages = c(3L,7L),
+#'    CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+#'    CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+#'    CalendarStandardDeviations = NULL,
+#'    CalendarSkews = NULL,
+#'    CalendarKurts = NULL,
+#'    CalendarQuantiles = NULL,
+#'    CalendarQuantilesSelected = "q50",
+#'    CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+#'    CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+#'    CohortStandardDeviations = NULL,
+#'    CohortSkews = NULL,
+#'    CohortKurts = NULL,
+#'    CohortQuantiles = NULL,
+#'    CohortQuantilesSelected = "q50",
+#'    
+#'    # Grid Tuning
+#'    GridTune = FALSE,
+#'    BaselineComparison = "default",
+#'    MaxModelsInGrid = 25L,
+#'    MaxRunMinutes = 180L,
+#'    MaxRunsWithoutNewWinner = 10L,
+#'    Trees = 4000L,
+#'    Depth = seq(4L,8L,1L),
+#'    LearningRate = seq(0.01,0.10,0.01),
+#'    L2_Leaf_Reg = seq(1.0,10.0,1.0),
+#'    RSM = c(0.80,0.85,0.90,0.95,1.0),
+#'    BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
+#'    GrowPolicy = c("SymmetricTree","Depthwise","Lossguide"))
 #' }
 #' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
 #' @export
@@ -84,6 +145,7 @@ AutoCatBoostChainLadder <- function(data,
                                     DT_Threads = max(1L, parallel::detectCores() - 2L),
                                     EvaluationMetric = "RMSE",
                                     LossFunction = "RMSE",
+                                    NumOfParDepPlots = 1L,
                                     CalendarVariables = c("wday","mday","yday","week","isoweek","month","quarter","year"),
                                     HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                                     ImputeRollStats = -0.001,
