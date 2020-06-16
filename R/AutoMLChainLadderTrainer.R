@@ -370,14 +370,14 @@ AutoCatBoostChainLadder <- function(data,
     
     #----
     
-    # FE: AutoLagRollStats() ConversionsMeasure with CalendarDate as a Grouping Variable----
+    # FE: AutoLagRollStats() ConversionMeasure with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","eval","train","training")) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
         
         # Data
         data                 = data,
         DateColumn           = eval(CohortDate),
-        Targets              = c(eval(ConversionsMeasure), "Rate"),
+        Targets              = c(eval(ConversionMeasure), "Rate"),
         HierarchyGroups      = NULL,
         IndependentGroups    = eval(CalendarDate),
         TimeUnit             = TimeUnit,
@@ -415,7 +415,7 @@ AutoCatBoostChainLadder <- function(data,
       }
     }
     
-    # FE: AutoLagRollStats() ConversionsMeasure HolidayCounts with CalendarDate as a Grouping Variable----
+    # FE: AutoLagRollStats() ConversionMeasure HolidayCounts with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","eval","train","training") & !is.null(CohortHolidayLags)) {
       temp <- data[, list(), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
@@ -424,7 +424,7 @@ AutoCatBoostChainLadder <- function(data,
         # Data
         data                 = data,
         DateColumn           = eval(CohortDate),
-        Targets              = paste0(ConversionsMeasure, "HolidayCounts"),
+        Targets              = paste0(ConversionMeasure, "HolidayCounts"),
         HierarchyGroups      = NULL,
         IndependentGroups    = eval(CalendarDate),
         TimeUnit             = TimeUnit,
