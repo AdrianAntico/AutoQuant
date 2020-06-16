@@ -407,18 +407,12 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
       }
       
-      # Save Timers to file----
-      if(proc %chin% c("evaluate","eval")) {
-        data.table::fwrite(TimerDataEval[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Eval_Timer.csv")))
-      } else if(proc %chin% c("training","train")) {
-        data.table::fwrite(TimerDataTrain[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Train_Timer.csv")))
-      }
+      # Save Timers to file
+      SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
     
     # FE: AutoLagRollStats() ConversionMeasure HolidayCounts with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","eval","train","training") & !is.null(CohortHolidayLags)) {
-      temp <- data[, list(), by = eval(CalendarDate)]
-      data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
         
         # Data
@@ -452,13 +446,6 @@ AutoCatBoostChainLadder <- function(data,
       } else if(proc %chin% c("training","train")) {
         data.table::set(TimerDataTrain, i = 7L, j = "Time", value = x[[3L]])
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
-      }
-      
-      # Save Timers to file----
-      if(proc %chin% c("evaluate","eval")) {
-        data.table::fwrite(TimerDataEval[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Eval_Timer.csv")))
-      } else if(proc %chin% c("training","train")) {
-        data.table::fwrite(TimerDataTrain[Process != "a"], file = file.path(normalizePath(MetaDataPath), paste0(ModelID, "_Train_Timer.csv")))
       }
       
       # DM: Type Casting CalendarDate back to Date----
