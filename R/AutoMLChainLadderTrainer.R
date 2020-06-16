@@ -119,6 +119,7 @@
 #'    CohortQuantilesSelected = "q50",
 #'    
 #'    # Grid Tuning
+#'    PassInGrid = NULL,
 #'    GridTune = FALSE,
 #'    BaselineComparison = "default",
 #'    MaxModelsInGrid = 25L,
@@ -178,6 +179,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CohortKurts = NULL,
                                     CohortQuantiles = NULL,
                                     CohortQuantilesSelected = "q50",
+                                    PassInGrid = NULL,
                                     GridTune = FALSE,
                                     BaselineComparison = "default",
                                     MaxModelsInGrid = 25L,

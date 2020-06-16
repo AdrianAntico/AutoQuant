@@ -55,6 +55,7 @@ AutoCatBoostChainLadder(
   CohortKurts = NULL,
   CohortQuantiles = NULL,
   CohortQuantilesSelected = "q50",
+  PassInGrid = NULL,
   GridTune = FALSE,
   BaselineComparison = "default",
   MaxModelsInGrid = 25L,
@@ -156,6 +157,8 @@ AutoCatBoostChainLadder(
 
 \item{CohortQuantilesSelected}{Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"}
 
+\item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
+
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
@@ -185,8 +188,6 @@ AutoCatBoostChainLadder(
 \item{MaxCohortPeriods}{The maximum number of CohortPeriods out to include in modeling}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
-
-\item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 }
 \value{
 Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
@@ -249,6 +250,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    CohortQuantilesSelected = "q50",
    
    # Grid Tuning
+   PassInGrid = NULL,
    GridTune = FALSE,
    BaselineComparison = "default",
    MaxModelsInGrid = 25L,
