@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data data object
+#' @param PartitionRatios Requires three values for train, validation, and test data sets
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
 #' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
 #' @param TargetVariable Target Variable Name
@@ -12,7 +13,8 @@
 #' @param CohortDate The name of your date column that represents the cohort date
 #' @param MaxCohortPeriods The maximum number of CohortPeriods out to include in modeling
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
-#' @param TimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
+#' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
+#' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
 #' @param ModelPath Path to where you want your models saved
 #' @param MetaDataPath Path to where you want your metadata saved. If NULL, function will try ModelPath if it is not NULL.
 #' @param ModelID A character string to name your model and output
@@ -65,12 +67,14 @@
 #' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
 #' @export
 AutoCatBoostChainLadder <- function(data,
+                                    PartitionRatios = c(0.70,0.20,0.10),
                                     BaseFunnelMeasure = NULL,
                                     ConversionMeasure = NULL,
                                     CalendarDate = NULL,
                                     CohortDate = NULL,
                                     TimeUnit = c("day"),
-                                    TimeGroups = c("day","week","month"),
+                                    CalendarTimeGroups = c("day","week","month"),
+                                    CohortTimeGroups = c("day","week","month"),
                                     Jobs = c("Evaluate","Train"),
                                     ModelID = "Segment_ID",
                                     ModelPath = NULL,
@@ -126,6 +130,7 @@ AutoCatBoostChainLadder <- function(data,
   
   # Args List----
   ArgsList <- list()
+  if(!is.null(PartitionRatios)) ArgsList[["PartitionRatios"]] <- PartitionRatios else ArgsList[["PartitionRatios"]] <- c(0.70,0.20,0.10)
   ArgsList[["Algorithm"]] <- "catboost"
   ArgsList[[eval(BaseFunnelMeasure)]] <- BaseFunnelMeasure
   ArgsList[[eval(ConversionMeasure)]] <- ConversionMeasure
@@ -143,7 +148,8 @@ AutoCatBoostChainLadder <- function(data,
     TimeUnit <- "years"
   }
   ArgsList[[TimeUnit]] <- TimeUnit
-  ArgsList[[TimeGroups]] <- TimeGroups
+  ArgsList[[CalendarTimeGroups]] <- CalendarTimeGroups
+  ArgsList[[CohortTimeGroups]] <- CohortTimeGroups
   ArgsList[[Jobs]] <- Jobs
   ArgsList[[ModelID]] <- ModelID
   ArgsList[[ModelPath]] <- ModelPath
@@ -311,7 +317,7 @@ AutoCatBoostChainLadder <- function(data,
         HierarchyGroups      = NULL,
         IndependentGroups    = eval(CalendarDate),
         TimeUnit             = TimeUnit,
-        TimeGroups           = TimeGroups,
+        TimeGroups           = CohortTimeGroups,
         TimeUnitAgg          = TimeUnit,
         
         # Services
@@ -321,13 +327,13 @@ AutoCatBoostChainLadder <- function(data,
         SimpleImpute         = TRUE,
         
         # Calculated Columns
-        Lags                 = CalendarLags,
-        MA_RollWindows       = CalendarMovingAverages,
-        SD_RollWindows       = CalendarStandardDeviations,
-        Skew_RollWindows     = CalendarSkews,
-        Kurt_RollWindows     = CalendarKurts,
-        Quantile_RollWindows = CalendarQuantiles,
-        Quantiles_Selected   = CalendarQuantilesSelected,
+        Lags                 = CohortLags,
+        MA_RollWindows       = CohortMovingAverages,
+        SD_RollWindows       = CohortStandardDeviations,
+        Skew_RollWindows     = CohortSkews,
+        Kurt_RollWindows     = CohortKurts,
+        Quantile_RollWindows = CohortQuantiles,
+        Quantiles_Selected   = CohortQuantilesSelected,
         Debug                = TRUE))
       if(proc %chin% c("evaluate","eval")) {
         data.table::set(TimerDataEval, i = 7L, j = "Time", value = x[[3L]])
@@ -358,7 +364,7 @@ AutoCatBoostChainLadder <- function(data,
         HierarchyGroups      = NULL,
         IndependentGroups    = eval(CalendarDate),
         TimeUnit             = TimeUnit,
-        TimeGroups           = TimeGroups,
+        TimeGroups           = TimeUnit,
         TimeUnitAgg          = TimeUnit,
         
         # Services
@@ -417,7 +423,7 @@ AutoCatBoostChainLadder <- function(data,
         Targets              = eval(BaseFunnelMeasure),
         HierarchyGroups      = NULL,
         IndependentGroups    = NULL,
-        TimeGroups           = TimeGroups,
+        TimeGroups           = CalendarTimeGroups,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
         
@@ -460,7 +466,7 @@ AutoCatBoostChainLadder <- function(data,
         Targets              = eval(ConversionMeasure),
         HierarchyGroups      = NULL,
         IndependentGroups    = NULL,
-        TimeGroups           = TimeGroups,
+        TimeGroups           = CalendarTimeGroups,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
         
@@ -503,7 +509,7 @@ AutoCatBoostChainLadder <- function(data,
         Targets              = paste0(BaseFunnelMeasure, "HolidayCounts"),
         HierarchyGroups      = NULL,
         IndependentGroups    = NULL,
-        TimeGroups           = TimeGroups,
+        TimeGroups           = TimeUnit,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
         
@@ -561,9 +567,6 @@ AutoCatBoostChainLadder <- function(data,
     
     #----
     
-    # Save Timers to file
-    SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
     # DM: Save data as csv----
     x <- system.time(gcFirst = FALSE, if(SaveModelObjects) data.table::fwrite(data, file = file.path(MetaDataPath, paste0(ModelID, "_ModelDataReady.csv"))))
     if(proc %chin% c("evaluate","eval")) {
@@ -600,8 +603,8 @@ AutoCatBoostChainLadder <- function(data,
       x <- system.time(gcFirst = FALSE, DataSets <- RemixAutoML::AutoDataPartition(
         data = data,
         NumDataSets = 3L,
-        Ratios = c(0.70,0.20,0.10),
-        PartitionType = "time",
+        Ratios = PartitionRatios,
+        PartitionType = "random",
         StratifyColumnNames = NULL,
         StratifyNumericTarget = NULL,
         StratTargetPrecision = 1L,
@@ -630,11 +633,11 @@ AutoCatBoostChainLadder <- function(data,
       # Build model----
       x <- system.time(gcFirst = FALSE, TestModel <- RemixAutoML::AutoCatBoostRegression(
         
-        # GPU or CPU and the number of available GPUs
+        # GPU or CPU and the number of available GPUs----
         task_type = TaskType,
         NumGPUs = NumGPUs,
         
-        # Metadata arguments:
+        # Metadata arguments----
         #   'ModelID' is used to create part of the file names generated when saving to file'
         #   'model_path' is where the minimal model objects for scoring will be stored
         #      'ModelID' will be the name of the saved model object
@@ -653,7 +656,7 @@ AutoCatBoostChainLadder <- function(data,
         SaveModelObjects = FALSE,
         ReturnModelObjects = TRUE,
         
-        # Data arguments:
+        # Data arguments----
         #   'TrainOnFull' is to train a model with 100 percent of your data.
         #     That means no holdout data will be used for evaluation
         #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
@@ -672,7 +675,7 @@ AutoCatBoostChainLadder <- function(data,
         TransformNumericColumns = "Rate",
         Methods = c("LogPlus1","YeoJohnson"),
         
-        # Model evaluation:
+        # Model evaluation----
         #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
         #   'loss_function' the loss function used in training optimization
         #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
@@ -684,7 +687,7 @@ AutoCatBoostChainLadder <- function(data,
         MetricPeriods = 50L,
         NumOfParDepPlots = 12L,
         
-        # Grid tuning arguments:
+        # Grid tuning arguments----
         #   'PassInGrid' is for retraining using a previous grid winning args
         #   'MaxModelsInGrid' is a cap on the number of models that will run
         #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
@@ -700,6 +703,7 @@ AutoCatBoostChainLadder <- function(data,
         Shuffles = 4L,
         BaselineComparison = "default",
         
+        # Tuning parameters----
         # Trees, Depth, and LearningRate used in the bandit grid tuning
         # Must set Trees to a single value if you are not grid tuning
         # The ones below can be set to NULL and the values in the example will be used
@@ -761,7 +765,7 @@ AutoCatBoostChainLadder <- function(data,
       gc()
     }
     
-    # Save timers to file
+    # Save timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
     #----

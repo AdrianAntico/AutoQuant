@@ -6,12 +6,14 @@
 \usage{
 AutoCatBoostChainLadder(
   data,
+  PartitionRatios = c(0.7, 0.2, 0.1),
   BaseFunnelMeasure = NULL,
   ConversionMeasure = NULL,
   CalendarDate = NULL,
   CohortDate = NULL,
   TimeUnit = c("day"),
-  TimeGroups = c("day", "week", "month"),
+  CalendarTimeGroups = c("day", "week", "month"),
+  CohortTimeGroups = c("day", "week", "month"),
   Jobs = c("Evaluate", "Train"),
   ModelID = "Segment_ID",
   ModelPath = NULL,
@@ -65,6 +67,8 @@ AutoCatBoostChainLadder(
 \arguments{
 \item{data}{data object}
 
+\item{PartitionRatios}{Requires three values for train, validation, and test data sets}
+
 \item{BaseFunnelMeasure}{E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure}
 
 \item{ConversionMeasure}{E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out}
@@ -75,7 +79,9 @@ AutoCatBoostChainLadder(
 
 \item{TimeUnit}{Base time unit of data. "days", "weeks", "months", "quarters", "years"}
 
-\item{TimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
+\item{CalendarTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
+
+\item{CohortTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
 
 \item{ModelID}{A character string to name your model and output}
 
