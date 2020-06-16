@@ -466,7 +466,7 @@ AutoCatBoostChainLadder <- function(data,
     if(proc %chin% c("evaluate","eval","training","train")) {
       temp <- data[, data.table::first(get(BaseFunnelMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
-      x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
+      x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
         
         # Data
         data                 = temp,
@@ -509,7 +509,7 @@ AutoCatBoostChainLadder <- function(data,
     if(proc %chin% c("evaluate","eval","training","train")) {
       temp <- data[get(CohortDate) == eval(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
-      x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
+      x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
         
         # Data
         data                 = temp,
