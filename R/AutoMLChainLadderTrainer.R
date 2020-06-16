@@ -831,6 +831,6 @@ AutoCatBoostChainLadder <- function(data,
   }
   
   # Return and Save----
-  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(ModelPath), paste(ModelID, "_ArgsList.Rdata")))
+  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_ArgsList.Rdata")))
   return(ArgsList)
 }
