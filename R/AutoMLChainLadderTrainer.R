@@ -309,7 +309,7 @@ AutoCatBoostChainLadder <- function(data,
   
   # FE: Create CohortPeriodsVariable----
   if(is.null(CohortPeriodsVariable)) {
-    data[, eval(CohortPeriodsVariable) := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
+    data[, CohortPeriods := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
     CohortPeriodsVariable <- "CohortPeriods"
   }
   ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
