@@ -9,6 +9,7 @@ AutoCatBoostChainLadder(
   PartitionRatios = c(0.7, 0.2, 0.1),
   BaseFunnelMeasure = NULL,
   ConversionMeasure = NULL,
+  CohortPeriodsVariable = NULL,
   CalendarDate = NULL,
   CohortDate = NULL,
   TimeUnit = c("day"),
@@ -78,6 +79,8 @@ AutoCatBoostChainLadder(
 \item{BaseFunnelMeasure}{E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure}
 
 \item{ConversionMeasure}{E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out}
+
+\item{CohortPeriodsVariable}{Numeric. Numerical value of the the number of periods since cohort base date.}
 
 \item{CalendarDate}{The name of your date column that represents the calendar date}
 
@@ -185,7 +188,7 @@ AutoCatBoostChainLadder(
 
 \item{TargetVariable}{Target Variable Name}
 
-\item{MaxCohortPeriods}{The maximum number of CohortPeriods out to include in modeling}
+\item{MaxCohortPeriods}{The maximum number of CohortPeriodsVariable out to include in modeling}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 }
@@ -204,6 +207,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    PartitionRatios = c(0.70,0.20,0.10),
    BaseFunnelMeasure = "Leads",
    ConversionMeasure = "Conversion",
+   CohortPeriodsVariable = NULL,
    CalendarDate = "LeadDate",
    CohortDate = "ConversionDate",
    TimeUnit = "days",

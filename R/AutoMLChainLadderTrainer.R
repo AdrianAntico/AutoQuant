@@ -8,10 +8,11 @@
 #' @param PartitionRatios Requires three values for train, validation, and test data sets
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
 #' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
+#' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date. 
 #' @param TargetVariable Target Variable Name
 #' @param CalendarDate The name of your date column that represents the calendar date
 #' @param CohortDate The name of your date column that represents the cohort date
-#' @param MaxCohortPeriods The maximum number of CohortPeriods out to include in modeling
+#' @param MaxCohortPeriods The maximum number of CohortPeriodsVariable out to include in modeling
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
 #' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
@@ -73,6 +74,7 @@
 #'    PartitionRatios = c(0.70,0.20,0.10),
 #'    BaseFunnelMeasure = "Leads",
 #'    ConversionMeasure = "Conversion",
+#'    CohortPeriodsVariable = NULL,
 #'    CalendarDate = "LeadDate",
 #'    CohortDate = "ConversionDate",
 #'    TimeUnit = "days",
@@ -139,6 +141,7 @@ AutoCatBoostChainLadder <- function(data,
                                     PartitionRatios = c(0.70,0.20,0.10),
                                     BaseFunnelMeasure = NULL,
                                     ConversionMeasure = NULL,
+                                    CohortPeriodsVariable = NULL,
                                     CalendarDate = NULL,
                                     CohortDate = NULL,
                                     TimeUnit = c("day"),
@@ -304,8 +307,12 @@ AutoCatBoostChainLadder <- function(data,
     data[, eval(CohortDate) := as.POSIXct(get(CohortDate))]
   }
   
-  # FE: Create CohortPeriods----
-  data[, CohortPeriods := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
+  # FE: Create CohortPeriodsVariable----
+  if(is.null(CohortPeriodsVariable)) {
+    data[, eval(CohortPeriodsVariable) := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
+    CohortPeriodsVariable <- "CohortPeriods"
+  }
+  ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   
   # ML Process: Train and Evaluate Models----
   for(proc in Jobs) {
@@ -351,14 +358,14 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
     }
     
-    # DM: Sort data by CalendarDate and then by CohortPeriods----
-    x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),"CohortPeriods"), c(1L, 1L)))
+    # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
+    x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),eval(CohortPeriodsVariable)), c(1L, 1L)))
     if(proc %chin% c("evaluate","eval")) {
       data.table::set(TimerDataEval, i = 5L, j = "Time", value = x[[3L]])
-      data.table::set(TimerDataEval, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriods----")
+      data.table::set(TimerDataEval, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     } else if(proc %chin% c("training","train")) {
       data.table::set(TimerDataTrain, i = 5L, j = "Time", value = x[[3L]])
-      data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriods----")
+      data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     }
     
     # Save Timers to file
@@ -655,8 +662,8 @@ AutoCatBoostChainLadder <- function(data,
     # Save timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
-    # DM: Type Casting for CohortPeriods, CalendarDate, and CohortDate----
-    if(!all(class(data[["CohortPeriods"]]) %chin% "numeric")) data[, CohortPeriods := as.numeric(as.character(CohortPeriods))]
+    # DM: Type Casting for CohortPeriodsVariable, CalendarDate, and CohortDate----
+    if(!all(class(data[[eval(CohortPeriodsVariable)]]) %chin% "numeric")) data[, eval(CohortPeriodsVariable) := as.numeric(as.character(get(CohortPeriodsVariable)))]
     if(!all(class(data[[eval(CalendarDate)]]) %chin% "Date")) data[, eval(CalendarDate) := as.Date(CalendarDate)]
     if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(CohortDate)]
     
