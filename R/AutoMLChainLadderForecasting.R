@@ -178,7 +178,7 @@ AutoChainLadderForecast <- function(data,
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
     temp <- temp[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, "V1", eval(ArgsList$BaseFunnelMeasure))
+    data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$BaseFunnelMeasure)))
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
@@ -221,7 +221,7 @@ AutoChainLadderForecast <- function(data,
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
     temp <- temp[get(ArgsList$CohortDate) == get(ArgsList$CalendarDate), list(sum(ArgsList$ConversionMeasure)), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, "V1", eval(ArgsList$ConversionMeasure))
+    data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$ConversionMeasure)))
     temp[, ScoreRecords := data.table::fifelse(CalendarDate == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
