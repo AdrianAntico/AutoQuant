@@ -177,8 +177,8 @@ AutoChainLadderForecast <- function(data,
     # FE: Inquiry AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
-    temp <- temp[, list(data.table::first(get(ArgsList$BaselineFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, "V1", eval(ArgsList$BaselineFunnelMeasure))
+    temp <- temp[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
+    data.table::setnames(temp, "V1", eval(ArgsList$BaseFunnelMeasure))
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
