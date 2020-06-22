@@ -15,6 +15,9 @@
 #' AutoChainLadderForecast(
 #'    data,
 #'    FC_BaseFunnelMeasure,
+#'    SegmentName = NULL,
+#'    MaxDateForecasted = NULL,
+#'    MaxCalendarDate = NULL,
 #'    ArgsList = NULL,
 #'    MaxCohortPeriods = NULL)
 #' }
@@ -22,6 +25,7 @@
 #' @export
 AutoChainLadderForecast <- function(data,
                                     FC_BaseFunnelMeasure,
+                                    SegmentName = NULL,
                                     MaxDateForecasted = NULL,
                                     MaxCalendarDate = NULL,
                                     ArgsList = NULL,
@@ -50,6 +54,7 @@ AutoChainLadderForecast <- function(data,
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
     maxct[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
     maxct[, Segment := eval(ArgsList$ModelID)]
+    data.table::setnames(maxct, "Segment", SegmentName)
     
     # DE: Subset data and update data----
     print("# Subset data and update data----")

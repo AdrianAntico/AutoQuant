@@ -7,6 +7,7 @@
 AutoChainLadderForecast(
   data,
   FC_BaseFunnelMeasure,
+  SegmentName = NULL,
   MaxDateForecasted = NULL,
   MaxCalendarDate = NULL,
   ArgsList = NULL,
@@ -35,6 +36,9 @@ AutoChainLadderForecast() for generating forecasts
 AutoChainLadderForecast(
    data,
    FC_BaseFunnelMeasure,
+   SegmentName = NULL,
+   MaxDateForecasted = NULL,
+   MaxCalendarDate = NULL,
    ArgsList = NULL,
    MaxCohortPeriods = NULL)
 }
