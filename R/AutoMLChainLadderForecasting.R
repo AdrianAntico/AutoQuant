@@ -66,7 +66,6 @@ AutoChainLadderForecast <- function(data,
     data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure))
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     maxct <- merge(maxct, temp, by = ArgsList$CalendarDate, all.x = TRUE)
-    data.table::setnames(maxct, "V1", eval(ArgsList$BaseFunnelMeasure))
     maxct[, eval(ArgsList$ConversionMeasure) := 0]
     maxct[, Rate := 0]
     maxct[, ScoreRecords := 1]
