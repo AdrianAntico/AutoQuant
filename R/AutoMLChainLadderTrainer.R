@@ -358,19 +358,6 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
     }
     
-    # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
-    x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),eval(CohortPeriodsVariable)), c(1L, 1L)))
-    if(proc %chin% c("evaluate","eval")) {
-      data.table::set(TimerDataEval, i = 5L, j = "Time", value = x[[3L]])
-      data.table::set(TimerDataEval, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
-    } else if(proc %chin% c("training","train")) {
-      data.table::set(TimerDataTrain, i = 5L, j = "Time", value = x[[3L]])
-      data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
-    }
-    
-    # Save Timers to file
-    SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----
     x <- system.time(gcFirst = FALSE, data.table::set(data, j = eval(CalendarDate), value = as.character(data[[eval(CalendarDate)]])))
     if(proc %chin% c("evaluate","eval")) {
@@ -379,6 +366,19 @@ AutoCatBoostChainLadder <- function(data,
     } else if(proc %chin% c("training","train")) {
       data.table::set(TimerDataTrain, i = 6L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 6L, j = "Process", value = "# Convert CalendarDate to Character to treat as Cohort Group----")
+    }
+    
+    # Save Timers to file
+    SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
+    
+    # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
+    x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),eval(CohortPeriodsVariable)), c(1L, 1L)))
+    if(proc %chin% c("evaluate","eval")) {
+      data.table::set(TimerDataEval, i = 5L, j = "Time", value = x[[3L]])
+      data.table::set(TimerDataEval, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
+    } else if(proc %chin% c("training","train")) {
+      data.table::set(TimerDataTrain, i = 5L, j = "Time", value = x[[3L]])
+      data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     }
     
     # Save Timers to file
@@ -406,7 +406,7 @@ AutoCatBoostChainLadder <- function(data,
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
-        SimpleImpute         = TRUE,
+        SimpleImpute         = FALSE,
         
         # Calculated Columns
         Lags                 = CohortLags,
@@ -447,7 +447,7 @@ AutoCatBoostChainLadder <- function(data,
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
-        SimpleImpute         = TRUE,
+        SimpleImpute         = FALSE,
         
         # Calculated Columns
         Lags                 = CohortHolidayLags,
@@ -500,7 +500,7 @@ AutoCatBoostChainLadder <- function(data,
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
-        SimpleImpute         = TRUE,
+        SimpleImpute         = FALSE,
         
         # Calculated Columns
         Lags                 = CalendarLags,
@@ -543,7 +543,7 @@ AutoCatBoostChainLadder <- function(data,
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
-        SimpleImpute         = TRUE,
+        SimpleImpute         = FALSE,
         
         # Calculated Columns
         Lags                 = CalendarLags,
@@ -586,7 +586,7 @@ AutoCatBoostChainLadder <- function(data,
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
-        SimpleImpute         = TRUE,
+        SimpleImpute         = FALSE,
         
         # Calculated Columns
         Lags                 = CalendarHolidayLags,
