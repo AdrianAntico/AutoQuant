@@ -53,7 +53,7 @@ AutoChainLadderForecast <- function(data,
     
     # DE: Subset data and update data----
     print("# Subset data and update data----")
-    FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[get(ArgsList$CalendarDate) > max(maxct$CalendarDate)]
+    FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[get(ArgsList$CalendarDate) > max(maxct[[eval(ArgsList$CalendarDate)]])]
     NextFCPeriod <- FC_BaseFunnelMeasure[1L]
     NextFCPeriod[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     NextFCPeriod[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
