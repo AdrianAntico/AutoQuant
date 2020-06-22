@@ -143,7 +143,7 @@ AutoChainLadderForecast <- function(data,
       # Data
       data                 = temp,
       DateColumn           = ArgsList$CohortDate,
-      Targets              = paste0(ArgsList$ConversionMeasure,"HolidayCounts"),
+      Targets              = paste0(ArgsList$CohortDate,"HolidayCounts"),
       RowNumsID            = "ScoreRecords",
       RowNumsKeep          = 1,
       HierarchyGroups      = NULL,
