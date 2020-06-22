@@ -46,6 +46,7 @@ AutoChainLadderForecast <- function(data,
     data[, ScoreRecords := 2]
     if(class(data[[eval(ArgsList$CohortPeriodsVariable)]]) == "factor") data[, eval(ArgsList$CohortPeriodsVariable) := as.numeric(as.character(get(ArgsList$CohortPeriodsVariable)))]
     maxct <- data[, list(max(get(ArgsList$CohortPeriodsVariable)), data.table::first(ScoreRecords)), by = list(get(ArgsList$CalendarDate))]
+    data.table::setnames(maxct, c("V1","V2"), c(ArgsList$CohortPeriodsVariable, "ScoreRecords"))
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
     maxct[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
     maxct[, Segment := eval(ArgsList$ModelID)]
