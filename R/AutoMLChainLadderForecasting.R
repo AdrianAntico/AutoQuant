@@ -6,6 +6,8 @@
 #' @family Automated Model Scoring
 #' @param data
 #' @param FC_BaseFunnelMeasure Dataset containing the forward looking FC_BaseFunnelMeasure
+#' @param MaxDateForecasted Supply a value if you want to backtest
+#' @param MaxCalendarDate Supply a value if you want to backtest
 #' @param ArgsList Argument list returned from AutoCatBoostChainLadder
 #' @param MaxCohortPeriods The maximum amount of ArgsList$CohortPeriodsVariable to utilize for forecasting
 #' @examples
@@ -23,13 +25,12 @@ AutoChainLadderForecast <- function(data,
                                     ArgsList = NULL,
                                     MaxCohortPeriods = NULL) {
   
-  # Forecasting data generator----
-  data <- data.table::fread(file.path(normalizePath(ArgsList$ModelPath), paste0(ArgsList$ModelID, "_BaseData.csv")))
-  MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
-  MaxCalendarDate <- FC_BaseFunnelMeasure[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
-  FC_Period <- 0L
+  # Forecasting start and end periods----
+  if(is.null(MaxDateForecasted)) MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
+  if(is.null(MaxCalendarDate)) MaxCalendarDate <- FC_BaseFunnelMeasure[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   
   # Loop through all periods to forecast----
+  FC_Period <- 0L
   while(MaxDateForecasted < MaxCalendarDate) {
     
     # Increment FC_Period----
