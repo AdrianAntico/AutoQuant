@@ -213,7 +213,7 @@ AutoChainLadderForecast <- function(data,
     
     # Join datasets
     print("# Combine datasets----")
-    temp[, eval(ArgsList$CalendarDate) := get(as.Date(ArgsList$CalendarDate))]
+    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp), names(data)))], by = eval(ArgsList$CalendarDate), all.x = TRUE)
     rm(temp)
     
@@ -256,7 +256,7 @@ AutoChainLadderForecast <- function(data,
     
     # Join datasets
     print("# Combine datasets----")
-    temp[, eval(ArgsList$CalendarDate) := as.Date(ArgsList$CalendarDate)]
+    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp),names(data)))], by = eval(ArgsList$CalendarDate), all.x = TRUE)
     rm(temp)
     
@@ -264,7 +264,7 @@ AutoChainLadderForecast <- function(data,
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
     temp <- temp[, list(max(get(paste0(ArgsList$CalendarDate,"HolidayCounts")))), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, "V1", paste0(ArgsList$CalendarDate,"HolidayCounts"))
+    data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), paste0(ArgsList$CalendarDate,"HolidayCounts")))
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
