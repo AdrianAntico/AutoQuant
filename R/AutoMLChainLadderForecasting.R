@@ -87,7 +87,7 @@ AutoChainLadderForecast <- function(data,
     
     # FE: Calendar & Holiday Variables----
     print("# Feature Engineering----")
-    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$TimeUnit)
+    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CalendarDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = ArgsList$ModelID, Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CalendarDate,"DateHolidayCounts"))
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = ArgsList$ModelID, Print = FALSE)
