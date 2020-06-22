@@ -519,7 +519,7 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
       }
     }
-    
+
     # Join back to data
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     
