@@ -170,7 +170,7 @@ AutoChainLadderForecast <- function(data,
     
     # Join datasets
     print("# Combine datasets----")
-    temp[, eval(ArgsList$CalendarDate) := get(as.Date(ArgsList$CalendarDate))]
+    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), eval(ArgsList$CohortDate), setdiff(names(temp), names(data)))], by = c(eval(ArgsList$CalendarDate), eval(ArgsList$CohortDate)), all.x = TRUE)
     rm(temp)
     
