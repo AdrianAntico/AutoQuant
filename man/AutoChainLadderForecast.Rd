@@ -7,12 +7,18 @@
 AutoChainLadderForecast(
   data,
   FC_BaseFunnelMeasure,
+  MaxDateForecasted = NULL,
+  MaxCalendarDate = NULL,
   ArgsList = NULL,
   MaxCohortPeriods = NULL
 )
 }
 \arguments{
 \item{FC_BaseFunnelMeasure}{Dataset containing the forward looking FC_BaseFunnelMeasure}
+
+\item{MaxDateForecasted}{Supply a value if you want to backtest}
+
+\item{MaxCalendarDate}{Supply a value if you want to backtest}
 
 \item{ArgsList}{Argument list returned from AutoCatBoostChainLadder}
 

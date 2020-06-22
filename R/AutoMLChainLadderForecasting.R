@@ -22,6 +22,8 @@
 #' @export
 AutoChainLadderForecast <- function(data,
                                     FC_BaseFunnelMeasure,
+                                    MaxDateForecasted = NULL,
+                                    MaxCalendarDate = NULL,
                                     ArgsList = NULL,
                                     MaxCohortPeriods = NULL) {
   
