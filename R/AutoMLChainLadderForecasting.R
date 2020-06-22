@@ -358,9 +358,9 @@ AutoChainLadderForecast <- function(data,
     # DE: Update forecast data----
     print("# Update forecast data----")
     temp1[ScoreRecords == 1, Rate := temp[which(Predictions < 0), Predictions := 0][[1L]]]
-    temp1[ScoreRecords == 1, eval(ArgsList$ConversionMeasure) := Rate * (get(ArgsList$BaselineFunnelMeasure) + 1)]
-    temp1 <- temp1[ScoreRecords == 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$ModelID),eval(ArgsList$BaselineFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")]
-    data <- data.table::rbindlist(list(data[ScoreRecords != 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$ModelID),eval(ArgsList$BaselineFunnelMeasure),eval(ConversionMeasure),"Rate")], temp1), fill = TRUE, use.names = TRUE)
+    temp1[ScoreRecords == 1, eval(ArgsList$ConversionMeasure) := Rate * (get(ArgsList$BaseFunnelMeasure) + 1)]
+    temp1 <- temp1[ScoreRecords == 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$ModelID),eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")]
+    data <- data.table::rbindlist(list(data[ScoreRecords != 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$ModelID),eval(ArgsList$BaseFunnelMeasure),eval(ConversionMeasure),"Rate")], temp1), fill = TRUE, use.names = TRUE)
     
     # DE: Save forecasts to file----
     data.table::fwrite(data, file = file.path(normalizePath(ForecastOutput), paste0(ArgsList$ModelID, "_Forecasts.csv")))
