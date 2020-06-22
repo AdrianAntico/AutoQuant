@@ -54,7 +54,7 @@ AutoChainLadderForecast <- function(data,
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
     maxct[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
     maxct[, Segment := eval(ArgsList$ModelID)]
-    data.table::setnames(maxct, "Segment", SegmentName)
+    data.table::setnames(maxct, "Segment", eval(SegmentName))
     
     # DE: Subset data and update data----
     print("# Subset data and update data----")
