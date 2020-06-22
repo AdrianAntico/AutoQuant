@@ -47,12 +47,12 @@ AutoChainLadderForecast <- function(data,
     if(class(data[[eval(ArgsList$CohortPeriodsVariable)]]) == "factor") data[, eval(ArgsList$CohortPeriodsVariable) := as.numeric(as.character(get(ArgsList$CohortPeriodsVariable)))]
     maxct <- data[, list(max(get(ArgsList$CohortPeriodsVariable)), data.table::first(ScoreRecords)), by = list(get(ArgsList$CalendarDate))]
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
-    maxct[, CohortDate := as.Date(get(CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
-    maxct[, Segment := eval(ModelID)]
+    maxct[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
+    maxct[, Segment := eval(ArgsList$ModelID)]
     
     # DE: Subset data and update data----
     print("# Subset data and update data----")
-    FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[CalendarDate > max(maxct$CalendarDate)]
+    FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[get(ArgsList$CalendarDate) > max(maxct$CalendarDate)]
     NextFCPeriod <- FC_BaseFunnelMeasure[1L]
     NextFCPeriod[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     NextFCPeriod[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
