@@ -397,6 +397,7 @@ AutoH2OModeler(Construct,
 \seealso{
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},
+\code{\link{AutoChainLadderForecast}()},
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoHurdleScoring}()},
 \code{\link{AutoXGBoostScoring}()}
