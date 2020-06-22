@@ -62,7 +62,10 @@ AutoChainLadderForecast <- function(data,
     
     # DE: Merge on next date of Inquiries----
     print("# Merge on next date of Inquiries----")
-    maxct <- merge(maxct, data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))][, eval(ArgsList$BaseFunnelMeasure) := as.Date(get(ArgsList$CalendarDate))], by = ArgsList$CalendarDate, all.x = TRUE)
+    temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
+    data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure))
+    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
+    maxct <- merge(maxct, temp, by = ArgsList$CalendarDate, all.x = TRUE)
     data.table::setnames(maxct, "V1", eval(ArgsList$BaseFunnelMeasure))
     maxct[, eval(ArgsList$ConversionMeasure) := 0]
     maxct[, Rate := 0]
