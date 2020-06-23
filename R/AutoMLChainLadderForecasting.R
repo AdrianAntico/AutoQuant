@@ -160,7 +160,7 @@ AutoChainLadderForecast <- function(data,
       
       # Calculated Columns
       Lags                 = ArgsList$CohortHolidayLags,
-      MA_RollWindows       = ArgsList$CohortMovingAverages,
+      MA_RollWindows       = ArgsList$CohortHolidayMovingAverages,
       SD_RollWindows       = NULL,
       Skew_RollWindows     = NULL,
       Kurt_RollWindows     = NULL,
