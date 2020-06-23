@@ -575,7 +575,7 @@ AutoCatBoostChainLadder <- function(data,
         # Data
         data                 = temp,
         DateColumn           = eval(CalendarDate),
-        Targets              = paste0(CalendarDate, "HolidayCounts"),14
+        Targets              = paste0(CalendarDate, "HolidayCounts"),
         HierarchyGroups      = NULL,
         IndependentGroups    = NULL,
         TimeGroups           = TimeUnit,
