@@ -8,6 +8,7 @@
 #' @param PartitionRatios Requires three values for train, validation, and test data sets
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
 #' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
+#' @param ConversionRateMeasure Conversions over Leads for every cohort
 #' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date. 
 #' @param TargetVariable Target Variable Name
 #' @param CalendarDate The name of your date column that represents the calendar date
@@ -74,6 +75,7 @@
 #'    PartitionRatios = c(0.70,0.20,0.10),
 #'    BaseFunnelMeasure = "Leads",
 #'    ConversionMeasure = "Conversion",
+#'    ConversionRateMeasure = "Rate",
 #'    CohortPeriodsVariable = NULL,
 #'    CalendarDate = "LeadDate",
 #'    CohortDate = "ConversionDate",
@@ -141,6 +143,7 @@ AutoCatBoostChainLadder <- function(data,
                                     PartitionRatios = c(0.70,0.20,0.10),
                                     BaseFunnelMeasure = NULL,
                                     ConversionMeasure = NULL,
+                                    ConversionRateMeasure = NULL,
                                     CohortPeriodsVariable = NULL,
                                     CalendarDate = NULL,
                                     CohortDate = NULL,
@@ -313,6 +316,14 @@ AutoCatBoostChainLadder <- function(data,
     CohortPeriodsVariable <- "CohortPeriods"
   }
   ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
+  
+  # Add in ConversionRateMeasure if NULL----
+  if(is.null(ConversionRateMeasure)) {
+    data[, Rate := get(ConversionMeasure) / (get(BaseFunnelMeasure) + 1)]
+    ConversionRateMeasure <- "Rate"
+  } else {
+    if(ConversionRateMeasure != "Rate") data.table::setnames(data, eval(ConversionRateMeasure), "Rate")
+  }
   
   # ML Process: Train and Evaluate Models----
   for(proc in Jobs) {
