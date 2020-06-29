@@ -15,7 +15,7 @@
 #' \donttest{
 #' data <- RemixAutoML::FakeDataGenerator(
 #'    Correlation = 0.70,
-#'    N = 25000L,
+#'    N = 1000L,
 #'    ID = 2L,
 #'    ZIP = 2L,
 #'    ChainLadderData = FALSE,
@@ -26,7 +26,7 @@
 #' }
 #' @export
 FakeDataGenerator <- function(Correlation = 0.70,
-                              N = 25000L,
+                              N = 1000L,
                               ID = 5L,
                               ZIP = 5L,
                               ChainLadderData = FALSE,
@@ -39,7 +39,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
   if(ChainLadderData) {
     
     # Define constants
-    N <- 1000L
     MaxCohortDays <- 15L
     
     # Start date
@@ -100,9 +99,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
       
       # Fill ChainLadderData
       data.table::set(ChainLadderData, i = (LoopSeq[cal]+1L):LoopSeq[cal + 1L], j = "Rates", value = DecayCurveData[seq_len(min(15L, cal))])
-      
-      # Print to watch speed
-      print(cal)
     }
     
     # Fill in Leads and Conversions----

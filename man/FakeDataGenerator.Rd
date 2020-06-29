@@ -6,7 +6,7 @@
 \usage{
 FakeDataGenerator(
   Correlation = 0.7,
-  N = 25000L,
+  N = 1000L,
   ID = 5L,
   ZIP = 5L,
   ChainLadderData = FALSE,
@@ -42,7 +42,7 @@ FakeDataGenerator
 \donttest{
 data <- RemixAutoML::FakeDataGenerator(
    Correlation = 0.70,
-   N = 25000L,
+   N = 1000L,
    ID = 2L,
    ZIP = 2L,
    ChainLadderData = FALSE,
