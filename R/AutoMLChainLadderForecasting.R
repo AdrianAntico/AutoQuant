@@ -4,7 +4,7 @@
 #' 
 #' @author Adrian Antico
 #' @family Automated Model Scoring
-#' @param data
+#' @param data Name of your data.table
 #' @param FC_BaseFunnelMeasure Dataset containing the forward looking FC_BaseFunnelMeasure
 #' @param MaxDateForecasted Supply a value if you want to backtest
 #' @param MaxCalendarDate Supply a value if you want to backtest

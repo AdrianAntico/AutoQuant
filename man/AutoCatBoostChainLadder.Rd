@@ -9,6 +9,7 @@ AutoCatBoostChainLadder(
   PartitionRatios = c(0.7, 0.2, 0.1),
   BaseFunnelMeasure = NULL,
   ConversionMeasure = NULL,
+  ConversionRateMeasure = NULL,
   CohortPeriodsVariable = NULL,
   CalendarDate = NULL,
   CohortDate = NULL,
@@ -79,6 +80,8 @@ AutoCatBoostChainLadder(
 \item{BaseFunnelMeasure}{E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure}
 
 \item{ConversionMeasure}{E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out}
+
+\item{ConversionRateMeasure}{Conversions over Leads for every cohort}
 
 \item{CohortPeriodsVariable}{Numeric. Numerical value of the the number of periods since cohort base date.}
 
@@ -207,6 +210,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    PartitionRatios = c(0.70,0.20,0.10),
    BaseFunnelMeasure = "Leads",
    ConversionMeasure = "Conversion",
+   ConversionRateMeasure = "Rate",
    CohortPeriodsVariable = NULL,
    CalendarDate = "LeadDate",
    CohortDate = "ConversionDate",

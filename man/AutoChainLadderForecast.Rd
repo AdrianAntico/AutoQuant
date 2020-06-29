@@ -15,6 +15,8 @@ AutoChainLadderForecast(
 )
 }
 \arguments{
+\item{data}{Name of your data.table}
+
 \item{FC_BaseFunnelMeasure}{Dataset containing the forward looking FC_BaseFunnelMeasure}
 
 \item{MaxDateForecasted}{Supply a value if you want to backtest}
