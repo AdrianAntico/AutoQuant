@@ -37,6 +37,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
   
   # Create ChainLadderData----
   if(ChainLadderData) {
+    
     # Define constants
     N <- 1000L
     MaxCohortDays <- 15L
@@ -103,6 +104,14 @@ FakeDataGenerator <- function(Correlation = 0.70,
       # Print to watch speed
       print(cal)
     }
+    
+    # Fill in Leads and Conversions----
+    x <- unique(ChainLadderData[, .SD, .SDcols = c("CalendarDateColumn","Leads")])
+    x[, Leads := runif(n = x[, .N], min = 100, max = 500)]
+    ChainLadderData <- merge(ChainLadderData[, .SD, .SDcols = c("CalendarDateColumn","CohortDateColumn","CohortDays","Appointments","Rates")], x, by = "CalendarDateColumn", all = FALSE)
+    ChainLadderData[, Appointments := Leads * Rates]
+    ChainLadderData[, Rates := NULL]
+    data.table::setcolorder(ChainLadderData, c(1,2,3,5,4))
     return(ChainLadderData)
   }
   
