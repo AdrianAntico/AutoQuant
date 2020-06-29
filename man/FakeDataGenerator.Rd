@@ -9,6 +9,7 @@ FakeDataGenerator(
   N = 25000L,
   ID = 5L,
   ZIP = 5L,
+  ChainLadderData = FALSE,
   FactorCount = 2L,
   AddDate = TRUE,
   Classification = FALSE,
@@ -23,6 +24,8 @@ FakeDataGenerator(
 \item{ID}{Number of IDcols to include}
 
 \item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
+
+\item{ChainLadderData}{Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer}
 
 \item{FactorCount}{Number of factor type columns to create}
 
@@ -42,6 +45,7 @@ data <- RemixAutoML::FakeDataGenerator(
    N = 25000L,
    ID = 2L,
    ZIP = 2L,
+   ChainLadderData = FALSE,
    FactorCount = 2L,
    AddDate = TRUE,
    Classification = FALSE,

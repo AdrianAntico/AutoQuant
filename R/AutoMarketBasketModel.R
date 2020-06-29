@@ -40,8 +40,8 @@ AutoMarketBasketModel <- function(data,
                                   MinLength = 2,
                                   MaxTime = 5) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Convert to data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)

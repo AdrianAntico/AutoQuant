@@ -36,27 +36,20 @@ AutoRecommender <- function(data,
                             SkipModels  = "AssociationRules",
                             ModelMetric = "TPR") {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure data is proper----
-  if (class(data)[1] != "binaryRatingMatrix") {
-    warning("data must be of class binaryRatingMatrix")
-  }
+  if(class(data)[1] != "binaryRatingMatrix") return("data must be of class binaryRatingMatrix")
   
   # Ensure KFolds is correct----
-  if (tolower(Partition) == "split") {
-    KFolds <- 1
-  }
+  if(tolower(Partition) == "split") KFolds <- 1
   
   # Ensure Ratio is proper----
-  if (abs(Ratio) > 1 | Ratio == 0) {
-    warning("Ratio must be a decimal between 0 and 1.
-         Default is 0.75")
-  }
+  if(abs(Ratio) > 1 | Ratio == 0) return("Ratio must be a decimal between 0 and 1. is 0.75")
   
   # Ensure RatingType is real----
-  if (tolower(RatingType) == "topn") {
+  if(tolower(RatingType) == "topn") {
     RatingType <- "topNList"
   } else if (tolower(RatingType) == "ratings") {
     RatingType <- "ratings"
@@ -65,7 +58,7 @@ AutoRecommender <- function(data,
   }
   
   # Pick winning model based max TPR for 10th recommendation----
-  if (tolower(ModelMetric) == "precision") {
+  if(tolower(ModelMetric) == "precision") {
     ModelMetric <- "precision"
   } else if (tolower(ModelMetric) == "recall") {
     ModelMetric <- "recall"
@@ -84,8 +77,7 @@ AutoRecommender <- function(data,
     k          = KFolds,
     train      = Ratio,
     given      = Given,
-    goodRating = 1
-  )
+    goodRating = 1)
   
   # Store algorithms in nested list----
   algorithms <- list(
@@ -100,38 +92,25 @@ AutoRecommender <- function(data,
   )
   
   # Remove all algos in SkipModels----
-  if (any(tolower(SkipModels) == "associationrules")) {
-    algorithms[["AssociationRules"]] <- NULL
-  }
-  if (any(tolower(SkipModels) == "itembasedcf")) {
-    algorithms[["ItemBasedCF"]] <- NULL
-  }
-  if (any(tolower(SkipModels) == "userbasedcf")) {
-    algorithms[["UserBasedCF"]] <- NULL
-  }
-  if (any(tolower(SkipModels) == "popularitems")) {
-    algorithms[["PopularItems"]] <- NULL
-  }
-  if (any(tolower(SkipModels) == "randomitems")) {
-    algorithms[["RandomItems"]] <- NULL
-  }
-  if (length(algorithms) == 0) {
-    warning("You must have at least one algorithm to run")
-  }
+  if(any(tolower(SkipModels) == "associationrules")) algorithms[["AssociationRules"]] <- NULL
+  if(any(tolower(SkipModels) == "itembasedcf")) algorithms[["ItemBasedCF"]] <- NULL
+  if(any(tolower(SkipModels) == "userbasedcf")) algorithms[["UserBasedCF"]] <- NULL
+  if(any(tolower(SkipModels) == "popularitems")) algorithms[["PopularItems"]] <- NULL
+  if(any(tolower(SkipModels) == "randomitems")) algorithms[["RandomItems"]] <- NULL
+  if(length(algorithms) == 0) return("You must have at least one algorithm to run")
   
   # evauluate predicted ratings from each algorithm----
   results <- recommenderlab::evaluate(
     x      = scheme,
     method = algorithms,
     type   = RatingType,
-    n      = 1:RatingsKeep
-  )
+    n      = 1:RatingsKeep)
   
   # determine winning model - highest TPR for next best 10 products----
   # start by averaging Confusion Matrix for all k-fold runs
   n <- length(results)
   store <- list()
-  for (i in 1:n) {
+  for(i in 1:n) {
     temp <- data.table(recommenderlab::avg(results)[[i]])
     temp[, model := results[[i]]@method]
     temp[, n_products := seq(1:RatingsKeep)]
@@ -140,7 +119,6 @@ AutoRecommender <- function(data,
   
   # Collect results in one data.table----
   x <- data.table::rbindlist(store)
-  WinningModel <-
-    x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
+  WinningModel <- x[n_products == 10][order(-get(ModelMetric))][1, "model"][[1]]
   return(WinningModel)
 }

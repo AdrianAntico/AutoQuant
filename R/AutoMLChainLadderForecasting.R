@@ -32,8 +32,10 @@ AutoChainLadderForecast <- function(data,
                                     MaxCohortPeriods = NULL) {
   
   # Forecasting start and end periods----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   if(is.null(MaxDateForecasted)) MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   if(is.null(MaxCalendarDate)) MaxCalendarDate <- FC_BaseFunnelMeasure[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
+  if(is.null(SegmentName)) SegmentName <- ArgsList$ModelID
   
   # Loop through all periods to forecast----
   FC_Period <- 0L

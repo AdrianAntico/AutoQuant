@@ -127,8 +127,8 @@ AutoXGBoostMultiClass <- function(data,
                                   subsample = NULL,
                                   colsample_bytree = NULL) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))

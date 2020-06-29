@@ -89,7 +89,7 @@ AutoLagRollStats <- function(data,
                              Debug                = FALSE) {
   
   # Turn on full speed----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Define args----
   RollFunctions <- c()
@@ -528,7 +528,7 @@ AutoLagRollStatsScoring <- function(data,
                                     Debug                = FALSE) {
   
   # Turn on full speed----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Define args----
   RollFunctions <- c()

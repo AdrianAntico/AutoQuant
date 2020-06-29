@@ -66,8 +66,8 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
                                                                          "year"),
                                                    HolidayGroups = "USPublicHolidays") {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Copy data----
   datax <- data.table::copy(data)

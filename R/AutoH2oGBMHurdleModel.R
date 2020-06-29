@@ -70,8 +70,8 @@ AutoH2oGBMHurdleModel <- function(data,
                                   NumOfParDepPlots = 10L,
                                   PassInGrid = NULL) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure Paths and metadata_path exists----
   if(!is.null(Paths)) if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))

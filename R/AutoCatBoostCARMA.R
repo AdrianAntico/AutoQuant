@@ -149,8 +149,8 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("loadNamespace(package = 'catboost')")
   loadNamespace(package = "catboost")
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")

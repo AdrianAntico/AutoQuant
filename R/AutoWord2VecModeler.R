@@ -53,8 +53,8 @@ AutoWord2VecModeler <- function(data,
                                 MaxMemory     = "28G",
                                 SaveOutput    = FALSE) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L,parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)

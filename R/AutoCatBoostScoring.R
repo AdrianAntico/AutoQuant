@@ -75,6 +75,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Load catboost----
   loadNamespace(package = "catboost")
   
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)

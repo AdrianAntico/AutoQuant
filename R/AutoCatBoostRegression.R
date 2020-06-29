@@ -171,7 +171,7 @@ AutoCatBoostRegression <- function(data,
   if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
   
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))

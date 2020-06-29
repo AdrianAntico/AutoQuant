@@ -41,24 +41,17 @@ AutoRecommenderScoring <- function(data,
                                    ProductColName = "StockCode",
                                    NumItemsReturn = 1) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
-  
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   requireNamespace('parallel', quietly = FALSE)
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace("data.table", quietly = FALSE)
   
   # Setup winning model and arguments----
-  if (WinningModel == "AR") {
-    recommender <- recommenderlab::Recommender(
-      data = data,
-      method = "AR",
-      parameter = list(support = 0.001,
-                       confidence = 0.05)
-    )
+  if(WinningModel == "AR") {
+    recommender <- recommenderlab::Recommender(data = data, method = "AR", parameter = list(support = 0.001, confidence = 0.05))
   } else {
-    recommender <- recommenderlab::Recommender(data = data,
-                                               method = WinningModel)
+    recommender <- recommenderlab::Recommender(data = data, method = WinningModel)
   }
   
   # Setup the parallel environment----
@@ -86,9 +79,7 @@ AutoRecommenderScoring <- function(data,
     # Data transformations----
     temp <- data.table::data.table(data.table::melt(data))
     data.table::setcolorder(temp, c(2, 1))
-    data.table::setnames(temp,
-                         c("L1", "value"),
-                         c(EntityColName, ProductColName))
+    data.table::setnames(temp, c("L1", "value"), c(EntityColName, ProductColName))
     temp
   }
   

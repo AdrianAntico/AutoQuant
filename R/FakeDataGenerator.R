@@ -6,6 +6,7 @@
 #' @param N Number of records
 #' @param ID Number of IDcols to include
 #' @param ZIP Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large
+#' @param ChainLadderData Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer
 #' @param FactorCount Number of factor type columns to create
 #' @param AddDate Set to TRUE to include a date column
 #' @param Classification Set to TRUE to build classification data
@@ -17,6 +18,7 @@
 #'    N = 25000L,
 #'    ID = 2L,
 #'    ZIP = 2L,
+#'    ChainLadderData = FALSE,
 #'    FactorCount = 2L,
 #'    AddDate = TRUE,
 #'    Classification = FALSE,
@@ -27,10 +29,82 @@ FakeDataGenerator <- function(Correlation = 0.70,
                               N = 25000L,
                               ID = 5L,
                               ZIP = 5L,
+                              ChainLadderData = FALSE,
                               FactorCount = 2L,
                               AddDate = TRUE,
                               Classification = FALSE,
                               MultiClass = FALSE) {
+  
+  # Create ChainLadderData----
+  if(ChainLadderData) {
+    # Define constants
+    N <- 1000L
+    MaxCohortDays <- 15L
+    
+    # Start date
+    CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2017-01-01"), N))
+    
+    # Increment date column so it is sequential
+    CalendarDateData[, temp := seq_len(N)]
+    CalendarDateData[, CalendarDateColumn := CalendarDateColumn + lubridate::days(temp) - 1L]
+    CohortDate_temp <- data.table::copy(CalendarDateData)
+    data.table::setnames(x = CohortDate_temp, old = c("CalendarDateColumn"), new = c("CohortDate_temp"))
+    
+    # Cross join the two data sets
+    ChainLadderData <- data.table::CJ(
+      CalendarDateColumn = CalendarDateData$CalendarDateColumn, 
+      CohortDateColumn = CohortDate_temp$CohortDate_temp, 
+      sorted = TRUE)
+    
+    # Remove starter data sets and N
+    rm(CalendarDateData, CohortDate_temp, N)
+    
+    # View ChainLadderData
+    print(ChainLadderData)
+    
+    # Remove impossible dates
+    ChainLadderData <- ChainLadderData[CohortDateColumn >= CalendarDateColumn]
+    
+    # Add CohortPeriods
+    ChainLadderData[, CohortDays := as.numeric(difftime(CohortDateColumn, CalendarDateColumn, tz = "MST", units = "day"))]
+    
+    # Limit the number of CohortTime
+    ChainLadderData <- ChainLadderData[CohortDays < MaxCohortDays]
+    
+    # Add measure columns placeholder values
+    ChainLadderData[, ":=" (Leads = 0, Appointments = 0, Rates = 0)]
+    
+    # Sort decending both date columns
+    data.table::setorderv(x = ChainLadderData, cols = c("CalendarDateColumn","CohortDateColumn"), order = c(-1L, 1L))
+    
+    # Add columns for BaselineMeasure and ConversionMeasure
+    UniqueCalendarDates <- unique(ChainLadderData$CalendarDateColumn)
+    NN <- length(UniqueCalendarDates)
+    LoopSeq <- c(1:15)
+    LoopSeq <- cumsum(LoopSeq)
+    LoopSeq <- c(1, LoopSeq)
+    LoopSeq <- c(LoopSeq, seq(135, 15*993, 15))
+    for(cal in seq(NN)) {
+      
+      # Generate first element of decay data
+      DecayCurveData <- dgeom(x = 0, prob = runif(n = 1L, min = 0.45, max = 0.55), log = FALSE)
+      
+      # Fill in remain elements in vector
+      if(cal > 1L) {
+        zz <- seq_len(min(15L, cal))
+        for(i in zz[1:min(cal-1L,15)]) {
+          DecayCurveData <- c(DecayCurveData, c(dgeom(x = i, prob = runif(n = 1L, min = 0.45, max = 0.55), log = FALSE)))
+        }
+      }
+      
+      # Fill ChainLadderData
+      data.table::set(ChainLadderData, i = (LoopSeq[cal]+1L):LoopSeq[cal + 1L], j = "Rates", value = DecayCurveData[seq_len(min(15L, cal))])
+      
+      # Print to watch speed
+      print(cal)
+    }
+    return(ChainLadderData)
+  }
   
   # Modify----
   if(MultiClass & FactorCount == 0L) {

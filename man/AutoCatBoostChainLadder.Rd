@@ -24,7 +24,7 @@ AutoCatBoostChainLadder(
   MetaDataPath = NULL,
   TaskType = "CPU",
   NumGPUs = 1,
-  DT_Threads = max(1L, parallel::detectCores() - 2L),
+  DT_Threads = max(1L, parallel::detectCores()),
   EvaluationMetric = "RMSE",
   LossFunction = "RMSE",
   NumOfParDepPlots = 1L,

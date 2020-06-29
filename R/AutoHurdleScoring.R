@@ -98,6 +98,9 @@ AutoHurdleScoring <- function(TestData = NULL,
                               ArgList = NULL,
                               ModelList = NULL) {
   
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  
   # Load ArgList and ModelList if NULL----
   if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
   

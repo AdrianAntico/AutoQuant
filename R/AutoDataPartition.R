@@ -50,8 +50,8 @@ AutoDataPartition <- function(data,
                               StratTargetPrecision = 3L,
                               TimeColumnName = NULL) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Arguments----
   if(NumDataSets < 0) return("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")

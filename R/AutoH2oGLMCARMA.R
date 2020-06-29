@@ -141,8 +141,8 @@ AutoH2oGLMCARMA <- function(data,
                             Timer = TRUE,
                             DebugMode = FALSE) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Purified args: see CARMA HELPER FUNCTIONS----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")
@@ -386,17 +386,6 @@ AutoH2oGLMCARMA <- function(data,
       IndependentGroups = IndependentSupplyValue)}, 
       error = function(x) NULL)
     
-    # ARGS TO TROUBLESHOOT
-    # datax = data
-    # xRegs = names(XREGS)
-    # FourierTermS = FourierTerms
-    # TimeUniT = TimeUnit
-    # FC_PeriodS = FC_Periods
-    # TargetColumN = TargetColumnName
-    # DateColumN = DateColumnName
-    # HierarchGroups = HierarchSupplyValue
-    # IndependentGroups = IndependentSupplyValue
-    
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
       data <- Output$data
@@ -564,33 +553,6 @@ AutoH2oGLMCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected),
       Debug                 = FALSE)
     
-    # Args to jump into AutLagRollStats----
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = HierarchSupplyValue
-    # IndependentGroups    = IndependentSupplyValue
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    # Fact                  = Categoricals[1]
-    # timeaggs              = TimeGroups[1]
-    
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -637,31 +599,6 @@ AutoH2oGLMCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected),
       Debug                 = DebugMode)
     
-    # data                 = data
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = c(eval(TargetColumnName),"ModTarget")
-    # HierarchyGroups      = HierarchSupplyValue
-    # IndependentGroups    = IndependentSupplyValue
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
@@ -701,30 +638,6 @@ AutoH2oGLMCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected), 
       Debug                 = TRUE)
     
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    
   } else {
     
     # Generate features----
@@ -754,31 +667,6 @@ AutoH2oGLMCARMA <- function(data,
       Kurt_RollWindows      = c(Kurt_Periods),
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected))
-    
-    # data                 = data
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = TargetColumnName
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----

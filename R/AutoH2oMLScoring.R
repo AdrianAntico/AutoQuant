@@ -73,8 +73,8 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_MissFactor = "0",
                              MDP_MissNum = -1) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")

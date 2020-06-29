@@ -148,7 +148,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
 
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure Paths and metadata_path exists----
   if(!is.null(Paths)) if(!dir.exists(normalizePath(Paths))) dir.create(normalizePath(Paths))

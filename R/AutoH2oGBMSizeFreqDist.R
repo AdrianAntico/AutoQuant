@@ -76,8 +76,8 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    MetaDataPath = NULL,
                                    NumOfParDepPlots = 0) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Return immediately if no paths are given----
   if(is.null(ModelPath)) return("Need to supply a path in ModelPath for saving models")

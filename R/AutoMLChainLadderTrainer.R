@@ -156,7 +156,7 @@ AutoCatBoostChainLadder <- function(data,
                                     MetaDataPath = NULL,
                                     TaskType = "CPU",
                                     NumGPUs = 1,
-                                    DT_Threads = max(1L, parallel::detectCores() - 2L),
+                                    DT_Threads = max(1L, parallel::detectCores()),
                                     EvaluationMetric = "RMSE",
                                     LossFunction = "RMSE",
                                     NumOfParDepPlots = 1L,
@@ -200,7 +200,7 @@ AutoCatBoostChainLadder <- function(data,
   loadNamespace(package = "catboost")
   
   # Init: DT_Threads----
-  if(is.null(DT_Threads)) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = eval(DT_Threads))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Ensure ModelPath and MetaDataPath exists----
   if(!is.null(ModelPath)) if(!dir.exists(file.path(normalizePath(ModelPath)))) dir.create(normalizePath(ModelPath))
@@ -811,7 +811,7 @@ AutoCatBoostChainLadder <- function(data,
       # Save model objects----
       if(SaveModelObjects) {
         if(proc %chin% c("evaluate","eval")) {
-          save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_Evaluation.Rdata")))
+          save(TestModel, file =  file.path(normalizePath(ModelPath), paste0(ModelID, "_Evaluation.Rdata")))
         } else if(proc %chin% c("training","train")) {
           save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_FinalTrain.Rdata")))
         }

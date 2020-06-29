@@ -89,32 +89,18 @@ AutoTS <- function(data,
                    ModelFreq        = TRUE,
                    PrintUpdates     = FALSE,
                    PlotPredictionIntervals = TRUE) {
+  
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  
   # Check arguments----
-  if (!is.character(TargetName)) {
-    warning("TargetName needs to be a character value")
-  }
-  if (!is.character(DateName)) {
-    warning("DateName needs to be a character value")
-  }
-  if (FCPeriods < 0) {
-    warning("FCPeriods needs to be greater than 0")
-  }
-  if (HoldOutPeriods < 0) {
-    warning("HoldOutPeriods needs to be greater than 0")
-  }
-  if (!is.character(TimeUnit)) {
-    warning("TimeUnit needs to be a character value")
-  }
-  if (Lags < 0) {
-    warning("Lags needs to be greater than 0")
-  }
-  if (!is.null(SkipModels)) {
-    if (!any(
-      toupper(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM")
-    )) {
-      warning("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
-    }
-  }
+  if(!is.character(TargetName)) return("TargetName needs to be a character value")
+  if (!is.character(DateName)) return("DateName needs to be a character value")
+  if(FCPeriods < 0) return("FCPeriods needs to be greater than 0")
+  if(HoldOutPeriods < 0) return("HoldOutPeriods needs to be greater than 0")
+  if(!is.character(TimeUnit)) return("TimeUnit needs to be a character value")
+  if(Lags < 0) return("Lags needs to be greater than 0")
+  if(!is.null(SkipModels)) if(!any(toupper(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM"))) return("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
   
   # Turn off warnings
   options(warn = -1)
@@ -124,9 +110,7 @@ AutoTS <- function(data,
   EvalList <- list()
   
   # Convert to data.table if not already
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Ensure correct ordering and subsetting of data
   keep <- c(DateName, TargetName)
@@ -136,7 +120,7 @@ AutoTS <- function(data,
   MinVal <- data[, min(get(TargetName))]
   
   # Convert to Date as.Date() or POSIXct----
-  if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(DateName)]])) {
       x <- data[1,get(DateName)]
       x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))

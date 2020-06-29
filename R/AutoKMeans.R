@@ -71,8 +71,8 @@ AutoKMeans <- function(data,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
+  # data.table optimize----
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
   # Check Arguments----
   if(nthreads < 0) return("nthreads needs to be a positive integer")
