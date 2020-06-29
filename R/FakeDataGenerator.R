@@ -59,9 +59,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
     # Remove starter data sets and N
     rm(CalendarDateData, CohortDate_temp, N)
     
-    # View ChainLadderData
-    print(ChainLadderData)
-    
     # Remove impossible dates
     ChainLadderData <- ChainLadderData[CohortDateColumn >= CalendarDateColumn]
     
