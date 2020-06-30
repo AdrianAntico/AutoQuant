@@ -333,7 +333,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # FE: CreateCalendarVariables() CalendarDate and CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate), eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
     } else if(proc %chin% c("train")) {
@@ -347,7 +347,7 @@ AutoCatBoostChainLadder <- function(data,
     # FE: CreateHolidayVariables() CalendarDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), HolidayGroups = HolidayGroups, Holidays = NULL, GroupingVars = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CalendarDate,"HolidayCounts"))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 3L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 3L, j = "Process", value = "# Add CalendarDate holiday variables----")
     } else if(proc %chin% c("training","train")) {
@@ -361,7 +361,7 @@ AutoCatBoostChainLadder <- function(data,
     # FE: CreateHolidayVariables() CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), HolidayGroups = eval(HolidayGroups), Holidays = NULL, GroupingVars = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CohortDate, "HolidayCounts"))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 4L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
     } else if(proc %chin% c("training","train")) {
@@ -371,7 +371,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----
     x <- system.time(gcFirst = FALSE, data.table::set(data, j = eval(CalendarDate), value = as.character(data[[eval(CalendarDate)]])))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 6L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 6L, j = "Process", value = "# Convert CalendarDate to Character to treat as Cohort Group----")
     } else if(proc %chin% c("training","train")) {
@@ -384,7 +384,7 @@ AutoCatBoostChainLadder <- function(data,
     
     # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
     x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),eval(CohortPeriodsVariable)), c(1L, 1L)))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 5L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     } else if(proc %chin% c("training","train")) {
@@ -400,7 +400,7 @@ AutoCatBoostChainLadder <- function(data,
     #----
     
     # FE: AutoLagRollStats() ConversionMeasure with CalendarDate as a Grouping Variable----
-    if(proc %in% c("evaluate","eval","train","training")) {
+    if(proc %in% c("evaluate","evaluation","eval","train","training")) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
         
         # Data
@@ -441,7 +441,7 @@ AutoCatBoostChainLadder <- function(data,
     }
     
     # FE: AutoLagRollStats() ConversionMeasure HolidayCounts with CalendarDate as a Grouping Variable----
-    if(proc %in% c("evaluate","eval","train","training") & !is.null(CohortHolidayLags)) {
+    if(proc %in% c("evaluate","evaluation","eval","train","training") & !is.null(CohortHolidayLags)) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
         
         # Data
@@ -492,7 +492,7 @@ AutoCatBoostChainLadder <- function(data,
     }
     
     # FE: AutoLagRollStats() BaseFunnelMeasure Over Calendar Time----
-    if(proc %chin% c("evaluate","eval","training","train")) {
+    if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
       temp <- data[, data.table::first(get(BaseFunnelMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
@@ -535,7 +535,7 @@ AutoCatBoostChainLadder <- function(data,
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
-    if(proc %chin% c("evaluate","eval","training","train")) {
+    if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
       temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
@@ -578,7 +578,7 @@ AutoCatBoostChainLadder <- function(data,
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     
     # FE: AutoLagRollStats() CalendarDateHolidayCounts Over Calendar Time----
-    if(proc %chin% c("evaluate","eval","training","train") & !is.null(CalendarHolidayLags)) {
+    if(proc %chin% c("evaluate","evaluation","eval","training","train") & !is.null(CalendarHolidayLags)) {
       temp <- data[, max(get(paste0(CalendarDate, "HolidayCounts"))), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", paste0(CalendarDate, "HolidayCounts"))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
@@ -632,7 +632,7 @@ AutoCatBoostChainLadder <- function(data,
       MissFactor   = "0",
       MissNum      = ImputeRollStats,
       IgnoreCols   = NULL))
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 10L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 10L, j = "Process", value = "# Model data prep----")
     } else if(proc %chin% c("training","train")) {
@@ -679,7 +679,7 @@ AutoCatBoostChainLadder <- function(data,
     if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(CohortDate)]
     
     # DM: Partition Data----
-    if(proc %chin% c("evaluate","eval")) {
+    if(proc %chin% c("evaluate","eval","evaluation")) {
       x <- system.time(gcFirst = FALSE, DataSets <- RemixAutoML::AutoDataPartition(
         data = data,
         NumDataSets = 3L,
@@ -709,7 +709,7 @@ AutoCatBoostChainLadder <- function(data,
       if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       
       # Define number of trees----
-      if(proc %chin% c("eval","evaluation")) NTrees <- Trees
+      if(proc %chin% c("eval","evaluation","evaluate")) NTrees <- Trees
       
       # Build model----
       x <- system.time(gcFirst = FALSE, TestModel <- RemixAutoML::AutoCatBoostRegression(
@@ -808,7 +808,7 @@ AutoCatBoostChainLadder <- function(data,
       
       # Store results----
       if(SaveModelObjects) {
-        if(proc %chin% c("evaluate","eval")) {
+        if(proc %chin% c("evaluate","eval","evaluation")) {
           data.table::set(TimerDataEval, i = 16L, j = "Time", value = x[[3L]])
           data.table::set(TimerDataEval, i = 16L, j = "Process", value = "# Build model using CatBoostRegression()----")
         } else if(proc %chin% c("training","train")) {
@@ -822,7 +822,7 @@ AutoCatBoostChainLadder <- function(data,
       
       # Save model objects----
       if(SaveModelObjects) {
-        if(proc %chin% c("evaluate","eval")) {
+        if(proc %chin% c("evaluate","eval","evaluation")) {
           save(TestModel, file =  file.path(normalizePath(ModelPath), paste0(ModelID, "_Evaluation.Rdata")))
         } else if(proc %chin% c("training","train")) {
           save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_FinalTrain.Rdata")))
@@ -830,7 +830,7 @@ AutoCatBoostChainLadder <- function(data,
       }
       
       # Remove objects before next run----
-      if(proc %chin% c("evaluate","eval")) {
+      if(proc %chin% c("evaluate","eval","evaluation")) {
         rm(TestModel)
       } else {
         rm(TestModel, data)
