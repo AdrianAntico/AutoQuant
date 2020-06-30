@@ -203,28 +203,31 @@ AutoCatBoostChainLadder is a forecasting model for chain ladder style forecastin
 }
 \examples{
 \donttest{
+# Create simulated data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
 RemixAutoML::AutoCatBoostChainLadder(
 
    # Data Arguments----
    data = data,
    PartitionRatios = c(0.70,0.20,0.10),
    BaseFunnelMeasure = "Leads",
-   ConversionMeasure = "Conversion",
-   ConversionRateMeasure = "Rate",
-   CohortPeriodsVariable = NULL,
-   CalendarDate = "LeadDate",
-   CohortDate = "ConversionDate",
+   ConversionMeasure = "Appointments",
+   ConversionRateMeasure = NULL,
+   CohortPeriodsVariable = "CohortDays",
+   CalendarDate = "CalendarDateColumn",
+   CohortDate = "CohortDateColumn",
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
-   TransformMethods = c("Identity","BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+   TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
    
    # MetaData Arguments----
    Jobs = c("eval","train"),
    SaveModelObjects = TRUE,
-   ModelID = MarsSegment,
-   ModelPath = Modeling,
-   MetaDataPath = ModelData,
-   TaskType = "CPU",
+   ModelID = "ModelTest",
+   ModelPath = getwd(),
+   MetaDataPath = NULL,
+   TaskType = "GPU",
    NumGPUs = 1,
    DT_Threads = max(1L, parallel::detectCores() - 2L),
    EvaluationMetric = "RMSE",
@@ -264,7 +267,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    MaxModelsInGrid = 25L,
    MaxRunMinutes = 180L,
    MaxRunsWithoutNewWinner = 10L,
-   Trees = 4000L,
+   Trees = 1000L,
    Depth = seq(4L,8L,1L),
    LearningRate = seq(0.01,0.10,0.01),
    L2_Leaf_Reg = seq(1.0,10.0,1.0),
