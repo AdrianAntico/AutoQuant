@@ -317,7 +317,7 @@ AutoCatBoostChainLadder <- function(data,
   }
   ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   
-  # Add in ConversionRateMeasure if NULL----
+  # DM: ConversionRateMeasure if NULL----
   if(is.null(ConversionRateMeasure)) {
     data[, Rate := get(ConversionMeasure) / (get(BaseFunnelMeasure) + 1)]
     ConversionRateMeasure <- "Rate"
@@ -705,7 +705,8 @@ AutoCatBoostChainLadder <- function(data,
     if(proc %chin% c("evaluate","eval","training","train")) {
       
       # Define features----
-      Features <- names(TrainData)[c(4L, 5L, 8L:ncol(TrainData))]
+      Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+      if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       
       # Define number of trees----
       if(proc %chin% c("eval","evaluation")) NTrees <- Trees
