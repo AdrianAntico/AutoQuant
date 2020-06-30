@@ -1986,8 +1986,6 @@ RemixAutoML::AutoCatBoostChainLadder(
 
 <code>AutoCatBoostChainLadder()** and **AutoChainLadderForecast()</code> are functions for forecasting chain ladder time series models. This is a pretty sophisticated system so read the docs to understand all the various types of feature engineering that goes into this procedure so you can best take advantage of them.
   
-<img src="Images/AutoTSPlot.png" align="center" width="300" />
-
 ### **AutoBanditSarima()**
 <code>AutoBanditSarima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
 
