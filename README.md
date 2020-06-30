@@ -1900,12 +1900,98 @@ ________________________________________________________________________________
 ## Automated Time Series Modeling Functions: <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-  
-<img src="Images/AutoTSPlot.png" align="center" width="300" />
+ 
+### **AutoCatBoostChainLadder()** and **AutoChainLadderForecast()**
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create simulated data----
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
+# Build model----
+RemixAutoML::AutoCatBoostChainLadder(
+
+   # Data Arguments
+   data = data,
+   PartitionRatios = c(0.70,0.20,0.10),
+   BaseFunnelMeasure = "Leads",
+   ConversionMeasure = "Appointments",
+   ConversionRateMeasure = NULL,
+   CohortPeriodsVariable = "CohortDays",
+   CalendarDate = "CalendarDateColumn",
+   CohortDate = "CohortDateColumn",
+   TimeUnit = "days",
+   TransformTargetVariable = TRUE,
+   TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
+
+   # MetaData Arguments
+   Jobs = c("eval","train"),
+   SaveModelObjects = TRUE,
+   ModelID = "TestModel",
+   ModelPath = getwd(),
+   MetaDataPath = NULL,
+   TaskType = "GPU",
+   NumGPUs = 1,
+   DT_Threads = max(1L, parallel::detectCores() - 2L),
+   EvaluationMetric = "RMSE",
+   LossFunction = "RMSE",
+   NumOfParDepPlots = 1L,
+   MetricPeriods = 50L,
+
+   # Feature Engineering Arguments
+   ImputeRollStats = -0.001,
+   CalendarTimeGroups = c("days","weeks","months"),
+   CohortTimeGroups = c("days", "weeks"),
+   CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+   CohortHolidayLags = c(1L,2L,7L),
+   CohortHolidayMovingAverages = c(3L,7L),
+   CalendarHolidayLags = c(1L,2L,7L),
+   CalendarHolidayMovingAverages = c(3L,7L),
+   CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+   CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+   CalendarStandardDeviations = NULL,
+   CalendarSkews = NULL,
+   CalendarKurts = NULL,
+   CalendarQuantiles = NULL,
+   CalendarQuantilesSelected = "q50",
+   CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+   CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+   CohortStandardDeviations = NULL,
+   CohortSkews = NULL,
+   CohortKurts = NULL,
+   CohortQuantiles = NULL,
+   CohortQuantilesSelected = "q50",
+
+   # Grid Tuning
+   PassInGrid = NULL,
+   GridTune = FALSE,
+   BaselineComparison = "default",
+   MaxModelsInGrid = 25L,
+   MaxRunMinutes = 180L,
+   MaxRunsWithoutNewWinner = 10L,
+   Trees = 4000L,
+   Depth = seq(4L,8L,1L),
+   LearningRate = seq(0.01,0.10,0.01),
+   L2_Leaf_Reg = seq(1.0,10.0,1.0),
+   RSM = c(0.80,0.85,0.90,0.95,1.0),
+   BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
+   GrowPolicy = c("SymmetricTree","Depthwise","Lossguide"))
+```
+
+</p>
+</details>
+
+<code>AutoCatBoostChainLadder()** and **AutoChainLadderForecast()</code> are functions for forecasting chain ladder time series models. This is a pretty sophisticated system so read the docs to understand all the various types of feature engineering that goes into this procedure so you can best take advantage of them.
+  
 ### **AutoBanditSarima()**
 <code>AutoBanditSarima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
 
+<details><summary>Code Example</summary>
+<p>
+ 
 ```
 # Pull in data
 data <- data.table::as.data.table(fpp::cafe)
@@ -1955,6 +2041,9 @@ Output <- RemixAutoML::AutoBanditSarima(
 Output$Forecast[ModelRank == min(ModelRank)]
 View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
 ```
+
+</p>
+</details>
 
 ### **AutoBanditNNet()**
 Same as AutoBanditArima except it uses the nnetar model behind the scenes.
@@ -2016,10 +2105,6 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **AutoH2oMLCARMA()**
 <code>AutoH2oMLCARMA()</code> utilizes the H2O AutoML alorithm
-
-
-<img src="Images/Catboost30.png" align="center" width="300" />
-
 
 ##### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
