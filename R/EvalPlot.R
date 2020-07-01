@@ -33,7 +33,7 @@ EvalPlot <- function(data,
                      PercentileBucket = 0.05,
                      aggrfun     = function(x) mean(x, na.rm = TRUE)) {
   
-  # Turn data into data.table if not already
+  # Turn data into data.table if not already----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Structure data
@@ -42,16 +42,16 @@ EvalPlot <- function(data,
   data.table::setcolorder(data, c(PredictionColName, TargetColName))
   data.table::setnames(data, c(PredictionColName, TargetColName), c("preds", "acts"))
   
-  # If actual is in factor form, convert to numeric
+  # If actual is in factor form, convert to numeric----
   if(!is.numeric(data[["acts"]])) {
     data.table::set(data, j = "acts", value = as.numeric(as.character(data[["acts"]])))
     GraphType <- "calibration"
   }
   
-  # Add a column that ranks predicted values
-  data.table::set(data, j = "rank", value = 100 * (round(percRank(data[[1]]) / PercentileBucket) * PercentileBucket))
+  # Add a column that ranks predicted values----
+  data[, rank := 100 * (round(percRank(get(PredictionColName)) / PercentileBucket) * PercentileBucket)]
   
-  # Plot
+  # Plot----
   if(GraphType == "boxplot") {
     data.table::set(data, j = "rank", value = as.factor(data[["rank"]]))
     cols <- c("rank", "preds")
@@ -72,7 +72,7 @@ EvalPlot <- function(data,
       ggplot2::scale_fill_manual(values = c("blue", "red"))
     
   } else {
-    data <- data[, lapply(.SD, noquote(aggrfun)), by = rank]
+    data <- data[, lapply(.SD, noquote(aggrfun)), by = list(rank)]
     plot  <- ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
       ggplot2::geom_line(ggplot2::aes(y = data[[3L]], color = "Actual")) +
       ggplot2::geom_line(ggplot2::aes(y = data[[2L]], color = "Predicted")) +
