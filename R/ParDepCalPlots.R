@@ -42,25 +42,24 @@ ParDepCalPlots <- function(data,
   # Turn off ggplot2 warnings----
   options(warn = -1L)
   
-  # Build buckets by independent variable of choice----
-  preds2 <- data.table::as.data.table(data)
+  # Convert to data.table
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Subset columns----
-  cols <- c(PredictionColName, TargetColName, IndepVar)
-  preds2 <- preds2[, ..cols]
+  data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName), eval(IndepVar))]
+  preds2 <- data.table::copy(data)
   
   # Structure data----
-  data <- data[, ..cols]
-  data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
+  data.table::setcolorder(data, c(eval(PredictionColName), eval(TargetColName), eval(IndepVar)))
   
   # If actual is in factor form, convert to numeric----
-  if(!is.numeric(preds2[[TargetColName]])) {
+  if(!is.numeric(preds2[[eval(TargetColName)]])) {
     preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
     GraphType <- "calibration"
   }
   
   # Prepare for both calibration and boxplot----
-  if(is.numeric(preds2[[IndepVar]]) || is.integer(preds2[[IndepVar]])) {
+  if(is.numeric(preds2[[IndepVar]]) | is.integer(preds2[[IndepVar]])) {
     preds2[, rank := 100 * (round(percRank(preds2[[IndepVar]]) / PercentileBucket) * PercentileBucket)]
   } else {
     GraphType <- "FactorVar"
@@ -85,7 +84,7 @@ ParDepCalPlots <- function(data,
   }
   
   # Build plots----
-  if (GraphType == "calibration") {
+  if(GraphType == "calibration") {
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
     
