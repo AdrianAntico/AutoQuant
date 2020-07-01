@@ -85,3 +85,38 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
   # Return List to Use in Other Modules----
   return(ProjectList)
 }
+
+DownloadCSVFromStorageExplorer <- function(DataObject = 'TransfersRawData.csv',
+                                           SaveFilePath = file.path(Root), 
+                                           SaveFileName = "RawData.csv",
+                                           UploadLocation = 'Analytics Sandbox/Machine Learning',
+                                           DataStoreName = "johnstestdatastore") {
+  
+  # Options----
+  options(warn = -1)
+  
+  # Azure stuff----
+  ws <- azuremlsdk::load_workspace_from_config()
+  ds <- azuremlsdk::get_datastore(ws, DataStoreName)
+  
+  # transfer files----
+  dset <- azuremlsdk::create_tabular_dataset_from_delimited_files(
+    path = ds$path(file.path(UploadLocation, DataObject)), 
+    validate = TRUE,
+    include_path = FALSE, 
+    infer_column_types = TRUE,
+    set_column_types = NULL, 
+    separator = ",", 
+    header = TRUE,
+    partition_format = NULL)
+  
+  # Pull in data, convert it to data.table----
+  data <- dset$to_pandas_dataframe()
+  data <- data.table::as.data.table(data)
+  
+  # Write data to file----
+  data.table::fwrite(data, file = file.path(Root, SaveFileName))
+  
+  # Turn warnings back on----
+  options(warn = 0)
+}
