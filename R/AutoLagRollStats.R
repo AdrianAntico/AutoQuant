@@ -896,7 +896,7 @@ AutoLagRollStatsScoring <- function(data,
         data.table::setnames(tempData, eval(DateColumn), "TEMPDATE")
         
         # Check if timeaggs is same of TimeUnit----
-        if(timeaggs != TimeGroups[1] | data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N]) {
+        if(all(timeaggs != TimeGroups[1] | data[, .N] != data[, mean(get(Targets[1])), by = c(eval(Fact),eval(DateColumn))][,.N])) {
           
           # Floor Date column to timeagg level----
           if(timeaggs != TimeGroups[1]) data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))
