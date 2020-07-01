@@ -1,4 +1,4 @@
-#' CreateCalendarVariables Create Caledar Variables
+#' CreateCalendarVariables Create Calendar Variables
 #'
 #' CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
 #'
