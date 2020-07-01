@@ -86,11 +86,26 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
   return(ProjectList)
 }
 
-DownloadCSVFromStorageExplorer <- function(DataObject = 'TransfersRawData.csv',
-                                           SaveFilePath = file.path(Root), 
-                                           SaveFileName = "RawData.csv",
+#' DownloadCSVFromStorageExplorer
+#' 
+#' DownloadCSVFromStorageExplorer
+#' 
+#' @author Adrian Antico
+#' @family Azure
+#' @param UploadCSVObjectName Name of the file you uploaded to the Microsoft Azure Storage Explorer
+#' @param SaveCSVFilePath Path file to where you want to save your csv in Azure
+#' @param SaveCSVName The name you want to give the csv that will be saved
+#' @param UploadLocation The location to where the data is saved in the Azure Storage Explorer
+#' @param DataStoreName The name of the store in data factory where you uploaded your data
+#' @export
+DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'TransfersRawData.csv',
+                                           SaveCSVFilePath = file.path(Root), 
+                                           SaveCSVName = "RawData.csv",
                                            UploadLocation = 'Analytics Sandbox/Machine Learning',
                                            DataStoreName = "johnstestdatastore") {
+  
+  # Check if azuremlsdk is installed----
+  if(!"azuremlsdk" %chin% installed.packages()) return("You need to run install.packages('azuremlsdk')")
   
   # Options----
   options(warn = -1)
@@ -101,7 +116,7 @@ DownloadCSVFromStorageExplorer <- function(DataObject = 'TransfersRawData.csv',
   
   # transfer files----
   dset <- azuremlsdk::create_tabular_dataset_from_delimited_files(
-    path = ds$path(file.path(UploadLocation, DataObject)), 
+    path = ds$path(file.path(UploadLocation, UploadCSVObjectName)), 
     validate = TRUE,
     include_path = FALSE, 
     infer_column_types = TRUE,
@@ -115,7 +130,7 @@ DownloadCSVFromStorageExplorer <- function(DataObject = 'TransfersRawData.csv',
   data <- data.table::as.data.table(data)
   
   # Write data to file----
-  data.table::fwrite(data, file = file.path(Root, SaveFileName))
+  data.table::fwrite(data, file = file.path(SaveCSVFilePath, SaveCSVName))
   
   # Turn warnings back on----
   options(warn = 0)
