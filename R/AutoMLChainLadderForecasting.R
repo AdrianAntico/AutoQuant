@@ -82,8 +82,8 @@ AutoChainLadderForecast <- function(data,
     maxct <- maxct[get(ArgsList$CohortPeriodsVariable) <= MaxCohortPeriods]
     ScoreDate <- maxct[, max(get(ArgsList$CohortDate))]
     
-    # DE: Stack onto modeling data for seg----
-    print("# Stack onto modeling data for seg----")
+    # DE: Stack onto modeling data for ArgsList$ModelID----
+    print("# Stack onto modeling data for ArgsList$ModelID----")
     data <- data.table::rbindlist(list(data, maxct), fill = TRUE, use.names = TRUE)
     rm(maxct)
     
@@ -327,7 +327,7 @@ AutoChainLadderForecast <- function(data,
     
     # DE: Load model artifacts----
     print("# Load model artifacts----")
-    if(FC_Period == 1L) load(file = file.path(normalizePath(eval(ArgsList$ModelPath)), paste0(seg, "_FinalTrain.Rdata")))
+    if(FC_Period == 1L) load(file = file.path(normalizePath(eval(ArgsList$ModelPath)), paste0(ArgsList$ModelID, "_FinalTrain.Rdata")))
     
     # ML: Score Model----
     print("# Score Model----")
