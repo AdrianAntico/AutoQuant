@@ -365,7 +365,7 @@ AutoChainLadderForecast <- function(data,
     data <- data.table::rbindlist(list(data[ScoreRecords != 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),SegmentName,eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")], temp1), fill = TRUE, use.names = TRUE)
     
     # DE: Save forecasts to file----
-    data.table::fwrite(data, file = file.path(normalizePath(ForecastOutput), paste0(ArgsList$ModelID, "_Forecasts.csv")))
+    data.table::fwrite(data, file = file.path(normalizePath(eval(ArgsList$ModelPath)), paste0(ArgsList$ModelID, "_Forecasts.csv")))
     
     # DE: Update MaxDateForecasted to know when to stop----
     MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate))]
