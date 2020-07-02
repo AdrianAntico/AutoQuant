@@ -21,6 +21,7 @@
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
+#' @param EvalPlots Defaults to TRUE. Set to FALSE to not generate and return these objects.
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
@@ -97,6 +98,7 @@
 #'     loss_function = "RMSE",
 #'     MetricPeriods = 10L,
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
+#'     EvalPlots = TRUE,
 #'
 #'     # Grid tuning arguments:
 #'     #   'PassInGrid' is for retraining using a previous grid winning args
@@ -147,6 +149,7 @@ AutoCatBoostRegression <- function(data,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 0L,
+                                   EvalPlots = TRUE,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL,
@@ -864,53 +867,58 @@ AutoCatBoostRegression <- function(data,
     }
     
     # Regression Evaluation Calibration Plot----
-    if(!TrainOnFull) {
-      EvaluationPlot <- EvalPlot(
-        data = ValidationData,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName),
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        aggrfun = function(x) mean(x, na.rm = TRUE))    
-    }
-    
-    # Add Number of Trees to Title
-    if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
-    
-    # Save plot to file
-    if(!TrainOnFull) {
-      if(SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
-        } else {
-          ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
-        }
-      }    
-    }
-    
-    # Regression Evaluation Calibration Plot----
-    if(!TrainOnFull) {
-      EvaluationBoxPlot <- EvalPlot(
-        data = ValidationData,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName),
-        GraphType = "boxplot",
-        PercentileBucket = 0.05,
-        aggrfun = function(x) mean(x, na.rm = TRUE))    
-    }
-    
-    # Add Number of Trees to Title
-    if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
-    
-    # Save plot to file
-    if(!TrainOnFull) {
-      if(SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
-        } else {
-          ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+    if(EvalPlots) {
+      if(!TrainOnFull) {
+        EvaluationPlot <- EvalPlot(
+          data = ValidationData,
+          PredictionColName = "Predict",
+          TargetColName = eval(TargetColumnName),
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))    
+      }
+      
+      # Add Number of Trees to Title
+      if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      
+      # Save plot to file
+      if(!TrainOnFull) {
+        if(SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
+          } else {
+            ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
+          }
+        }    
+      }
+      
+      # Regression Evaluation Calibration BoxPlot----
+      if(!TrainOnFull) {
+        EvaluationBoxPlot <- EvalPlot(
+          data = ValidationData,
+          PredictionColName = "Predict",
+          TargetColName = eval(TargetColumnName),
+          GraphType = "boxplot",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))    
+      }
+      
+      # Add Number of Trees to Title
+      if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      
+      # Save plot to file
+      if(!TrainOnFull) {
+        if(SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+          } else {
+            ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+          }
         }
       }
+    } else {
+      EvaluationPlot <- NULL
+      EvaluationBoxPlot <- NULL
     }
     
     # Regression Variable Importance----

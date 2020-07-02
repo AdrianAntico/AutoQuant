@@ -42,18 +42,19 @@ ParDepCalPlots <- function(data,
   # Turn off ggplot2 warnings----
   options(warn = -1L)
   
-  # Convert to data.table
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  # Build buckets by independent variable of choice----
+  preds2 <- data.table::as.data.table(data)
   
   # Subset columns----
-  data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName), eval(IndepVar))]
-  preds2 <- data.table::copy(data)
+  cols <- c(PredictionColName, TargetColName, IndepVar)
+  preds2 <- preds2[, ..cols]
   
   # Structure data----
-  data.table::setcolorder(data, c(eval(PredictionColName), eval(TargetColName), eval(IndepVar)))
+  data <- data[, ..cols]
+  data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
   
   # If actual is in factor form, convert to numeric----
-  if(!is.numeric(preds2[[eval(TargetColName)]])) {
+  if(!is.numeric(preds2[[TargetColName]])) {
     preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
     GraphType <- "calibration"
   }
