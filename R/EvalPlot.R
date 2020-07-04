@@ -37,8 +37,7 @@ EvalPlot <- function(data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   
   # Structure data
-  cols <- c(eval(PredictionColName), eval(TargetColName))
-  data <- data[, ..cols]
+  data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName))]
   data.table::setcolorder(data, c(PredictionColName, TargetColName))
   data.table::setnames(data, c(PredictionColName, TargetColName), c("preds", "acts"))
   
@@ -48,8 +47,11 @@ EvalPlot <- function(data,
     GraphType <- "calibration"
   }
   
+  # Subset data if too big----
+  if(data[,.N] > 1000000) data <- data[order(runif(data[,.N]))][1:100000]
+  
   # Add a column that ranks predicted values----
-  data[, rank := 100 * (round(percRank(get(PredictionColName)) / PercentileBucket) * PercentileBucket)]
+  data[, rank := 100 * (round(percRank(preds) / PercentileBucket) * PercentileBucket)]
   
   # Plot----
   if(GraphType == "boxplot") {
