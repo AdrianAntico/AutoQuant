@@ -42,6 +42,9 @@ ParDepCalPlots <- function(data,
   # Turn off ggplot2 warnings----
   options(warn = -1L)
   
+  # Subset data if too big----
+  if(data[,.N] > 1000000) data <- data[order(runif(data[,.N]))][1:100000]
+  
   # Build buckets by independent variable of choice----
   preds2 <- data.table::as.data.table(data)
   
