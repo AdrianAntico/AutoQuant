@@ -11,7 +11,7 @@ Authors@R:
       person("Jan","Gorecki", role="ctb"),
       person("Solomon","Daner", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
-Description: Automated Machine Learning
+Description: R package for the automation of machine learning, forecasting, feature engineering, model evaluation, model interpretation, data generation, and recommenders. Build using data.table for all tabular data-related tasks.
 License: MPL-2.0 | file LICENSE
 URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
@@ -34,3 +34,4 @@ Packaged: 2020-06-29 14:00:00 UTC
 RoxygenNote: 7.1.0
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre]
+ByteCompile: TRUE
