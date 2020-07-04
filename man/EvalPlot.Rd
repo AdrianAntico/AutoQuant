@@ -33,20 +33,17 @@ Calibration plot or boxplot
 This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-Correl <- 0.85
-data <- data.table::data.table(Target = runif(100))
-data[, x1 := qnorm(Target)]
-data[, x2 := runif(100)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Predict := (pnorm(Correl * x1 +
-                           sqrt(1-Correl^2) * qnorm(x2)))]
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = TRUE)
+data.table::setnames(data, "IDcol_1", "Predict")
+
+# Run function
 EvalPlot(data,
          PredictionColName = "Predict",
-         TargetColName = "Target",
+         TargetColName = "Adrian",
          GraphType = "calibration",
          PercentileBucket = 0.05,
-         aggrfun = function(x) quantile(x, probs = 0.50, na.rm = TRUE))
+         aggrfun = function(x) mean(x, na.rm = TRUE))
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
