@@ -12,7 +12,7 @@ Authors@R:
       person("Solomon","Daner", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Description: Automated Machine Learning
-License: MPL-2.0
+License: MPL-2.0 | file LICENSE
 URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Depends: R (>= 3.5.0)
