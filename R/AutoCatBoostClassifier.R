@@ -639,13 +639,15 @@ AutoCatBoostClassifier <- function(data,
   # Binary AUC Object Create----
   if(EvalPlots) {
     if(!TrainOnFull) {
+      temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
       AUC_Metrics <- pROC::roc(
-        response = ValidationData[[eval(TargetColumnName)]],
-        predictor = ValidationData[["p1"]],
+        response = temp[[eval(TargetColumnName)]],
+        predictor = temp[["p1"]],
         na.rm = TRUE,
         algorithm = 3L,
         auc = TRUE,
-        ci = TRUE)  
+        ci = TRUE)
+      rm(temp)
     }
     
     # Binary AUC Conversion to data.table----

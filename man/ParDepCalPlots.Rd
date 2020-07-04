@@ -6,6 +6,7 @@
 \usage{
 ParDepCalPlots(
   data,
+  MaxRows = 100000L,
   PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"),
   IndepVar = c("Independent_Variable_Name"),
@@ -17,6 +18,8 @@ ParDepCalPlots(
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
+
+\item{MaxRows}{Defaults to 100000 rows}
 
 \item{PredictionColName}{Predicted values column names}
 
@@ -39,22 +42,22 @@ Partial dependence calibration plot or boxplot
 This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-Correl <- 0.85
-data <- data.table::data.table(Target = runif(100))
-data[, x1 := qnorm(Target)]
-data[, x2 := runif(100)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Predict := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-p1 <- RemixAutoML::ParDepCalPlots(
-   data,
-   PredictionColName = "Predict",
-   TargetColName = "Target",
-   IndepVar = "Independent_Variable1",
-   GraphType = "calibration",
-   PercentileBucket = 0.20,
-   FactLevels = 10,
-   Function = function(x) mean(x, na.rm = TRUE))
-p1
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = FALSE)
+data.table::setnames(data, "Independent_Variable2", "Predict")
+
+# Build plot
+Plot <- RemixAutoML::ParDepCalPlots(
+  data,
+  MaxRows = 100000L,
+  PredictionColName = "Predict",
+  TargetColName = "Adrian",
+  IndepVar = "Independent_Variable1",
+  GraphType = "calibration",
+  PercentileBucket = 0.20,
+  FactLevels = 10,
+  Function = function(x) mean(x, na.rm = TRUE))
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
