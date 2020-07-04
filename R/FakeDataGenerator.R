@@ -42,7 +42,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
     MaxCohortDays <- 15L
     
     # Start date
-    CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2017-01-01"), N))
+    CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2017-01-01"), N), key = "CalendarDateColumn")
     
     # Increment date column so it is sequential
     CalendarDateData[, temp := seq_len(N)]
@@ -51,10 +51,12 @@ FakeDataGenerator <- function(Correlation = 0.70,
     data.table::setnames(x = CohortDate_temp, old = c("CalendarDateColumn"), new = c("CohortDate_temp"))
     
     # Cross join the two data sets
-    ChainLadderData <- data.table::CJ(
-      CalendarDateColumn = CalendarDateData$CalendarDateColumn, 
-      CohortDateColumn = CohortDate_temp$CohortDate_temp, 
-      sorted = TRUE)
+    ChainLadderData <- data.table::setkeyv(data.table::CJ(
+      CalendarDateColumn = CalendarDateData$CalendarDateColumn,
+      CohortDateColumn = CohortDate_temp$CohortDate_temp,
+      sorted = TRUE,
+      unique = TRUE),
+    cols = c("CalendarDateColumn", "CohortDateColumn"))
     
     # Remove starter data sets and N
     rm(CalendarDateData, CohortDate_temp, N)
