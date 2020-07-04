@@ -466,21 +466,23 @@ AutoH2oDRFClassifier <- function(data,
   }
   
   # Binary AUC Object Create----
+  temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
-                             predictor = ValidationData[["p1"]],
+    AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
+                             predictor = temp[["p1"]],
                              na.rm = TRUE,
                              algorithm = 3L,
                              auc = TRUE,
                              ci = TRUE)  
   } else {
-    AUC_Metrics <- pROC::roc(response = ValidationData[[eval(Target)]],
-                             predictor = ValidationData[["Predict"]],
+    AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
+                             predictor = temp[["Predict"]],
                              na.rm = TRUE,
                              algorithm = 3L,
                              auc = TRUE,
                              ci = TRUE)
   }
+  rm(temp)
   
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
