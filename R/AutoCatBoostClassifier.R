@@ -20,7 +20,6 @@
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
-#' @param EvalPlots Defaults to TRUE. Set to FALSE to not generate and return these objects.
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
@@ -98,7 +97,6 @@
 #'     loss_function = "Logloss",
 #'     MetricPeriods = 10L,
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
-#'     EvalPlots = TRUE,
 #'
 #'     # Grid tuning arguments:
 #'     #   'PassInGrid' is for retraining using a previous grid winning args
@@ -148,7 +146,6 @@ AutoCatBoostClassifier <- function(data,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 0L,
-                                   EvalPlots = TRUE,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL,
@@ -637,87 +634,82 @@ AutoCatBoostClassifier <- function(data,
   }
   
   # Binary AUC Object Create----
-  if(EvalPlots) {
-    if(!TrainOnFull) {
-      temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
-      AUC_Metrics <- pROC::roc(
-        response = temp[[eval(TargetColumnName)]],
-        predictor = temp[["p1"]],
-        na.rm = TRUE,
-        algorithm = 3L,
-        auc = TRUE,
-        ci = TRUE)
-      rm(temp)
-    }
-    
-    # Binary AUC Conversion to data.table----
-    if(!TrainOnFull) {
-      AUC_Data <- data.table::data.table(
-        ModelNumber = 0L,
-        Sensitivity = AUC_Metrics$sensitivities,
-        Specificity = AUC_Metrics$specificities)  
-    }
-    
-    # Binary Plot ROC Curve----
-    if(!TrainOnFull) {
-      if(GridTune == TRUE & MaxModelsInGrid <= 15L) {
-        temp <- data.table::rbindlist(AUC_List)
-        AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
-        AUC_Data[, ModelNumber := as.factor(ModelNumber)]
-        ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity,group = ModelNumber,color = ModelNumber)) +
-          ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
-          ggplot2::geom_abline(slope = 1, color = "black") +
-          ggplot2::ggtitle(paste0("Catboost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
-          ChartTheme() + ggplot2::xlab("Specificity") +
-          ggplot2::ylab("Sensitivity")
+  if(!TrainOnFull) {
+    temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
+    AUC_Metrics <- pROC::roc(
+      response = temp[[eval(TargetColumnName)]],
+      predictor = temp[["p1"]],
+      na.rm = TRUE,
+      algorithm = 3L,
+      auc = TRUE,
+      ci = TRUE)
+    rm(temp)
+  }
+  
+  # Binary AUC Conversion to data.table----
+  if(!TrainOnFull) {
+    AUC_Data <- data.table::data.table(
+      ModelNumber = 0L,
+      Sensitivity = AUC_Metrics$sensitivities,
+      Specificity = AUC_Metrics$specificities)  
+  }
+  
+  # Binary Plot ROC Curve----
+  if(!TrainOnFull) {
+    if(GridTune == TRUE & MaxModelsInGrid <= 15L) {
+      temp <- data.table::rbindlist(AUC_List)
+      AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
+      AUC_Data[, ModelNumber := as.factor(ModelNumber)]
+      ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity,group = ModelNumber,color = ModelNumber)) +
+        ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]])) +
+        ggplot2::geom_abline(slope = 1, color = "black") +
+        ggplot2::ggtitle(paste0("Catboost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
+        ChartTheme() + ggplot2::xlab("Specificity") +
+        ggplot2::ylab("Sensitivity")
+    } else {
+      ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
+        ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
+        ggplot2::geom_abline(slope = 1, color = "black") +
+        ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) + 
+        ChartTheme() + ggplot2::xlab("Specificity") +
+        ggplot2::ylab("Sensitivity")
+    }  
+  }
+  
+  # Save plot to file----
+  if(!TrainOnFull) {
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
       } else {
-        ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
-          ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
-          ggplot2::geom_abline(slope = 1, color = "black") +
-          ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) + 
-          ChartTheme() + ggplot2::xlab("Specificity") +
-          ggplot2::ylab("Sensitivity")
-      }  
-    }
-    
-    # Save plot to file----
-    if(!TrainOnFull) {
-      if(SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
-        } else {
-          ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
-        }
-      }  
-    }
-    
-    # Binary Evaluation Calibration Plot----
-    if(!TrainOnFull) {
-      EvaluationPlot <- EvalPlot(
-        data = ValidationData,
-        PredictionColName = "p1",
-        TargetColName = eval(TargetColumnName),
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        aggrfun = function(x) mean(x, na.rm = TRUE))  
-    }
-    
-    # Add Number of Trees to Title----
-    if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ",round(AUC_Metrics$auc, 3L)))
-    
-    # Save plot to file----
-    if(!TrainOnFull) {
-      if(SaveModelObjects) {
-        if(!is.null(metadata_path)) {
-          ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
-        } else {
-          ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
-        }
-      }  
-    }
-  } else {
-    EvaluationPlot <- NULL
-    ROC_Plot <- NULL
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
+      }
+    }  
+  }
+  
+  # Binary Evaluation Calibration Plot----
+  if(!TrainOnFull) {
+    EvaluationPlot <- EvalPlot(
+      data = ValidationData,
+      PredictionColName = "p1",
+      TargetColName = eval(TargetColumnName),
+      GraphType = "calibration",
+      PercentileBucket = 0.05,
+      aggrfun = function(x) mean(x, na.rm = TRUE))  
+  }
+  
+  # Add Number of Trees to Title----
+  if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ",round(AUC_Metrics$auc, 3L)))
+  
+  # Save plot to file----
+  if(!TrainOnFull) {
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
+      } else {
+        ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
+      }
+    }  
   }
 
   # Binary Variable Importance----
