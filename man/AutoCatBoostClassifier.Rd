@@ -22,7 +22,6 @@ AutoCatBoostClassifier(
   metadata_path = NULL,
   ModelID = "FirstModel",
   NumOfParDepPlots = 0L,
-  EvalPlots = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   PassInGrid = NULL,
@@ -76,8 +75,6 @@ AutoCatBoostClassifier(
 \item{ModelID}{A character string to name your model and output}
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
-
-\item{EvalPlots}{Defaults to TRUE. Set to FALSE to not generate and return these objects.}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
 
@@ -179,7 +176,6 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     loss_function = "Logloss",
     MetricPeriods = 10L,
     NumOfParDepPlots = ncol(data)-1L-2L,
-    EvalPlots = TRUE,
 
     # Grid tuning arguments:
     #   'PassInGrid' is for retraining using a previous grid winning args
