@@ -635,7 +635,7 @@ AutoCatBoostClassifier <- function(data,
   
   # Binary AUC Object Create----
   if(!TrainOnFull) {
-    temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
+    temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
     AUC_Metrics <- pROC::roc(
       response = temp[[eval(TargetColumnName)]],
       predictor = temp[["p1"]],

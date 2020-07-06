@@ -443,7 +443,7 @@ AutoH2oMLClassifier <- function(data,
   }
   
   # Binary AUC Object Create----
-  temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:max(100000L, ValidationData[,.N])]
+  temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
                              predictor = temp[["p1"]],
