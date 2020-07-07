@@ -710,14 +710,18 @@ AutoCatBoostChainLadder <- function(data,
       # Define features----
       if(proc %chin% c("evaluate","eval")) {
         Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+        idcols <- names(TrainData)[!names(TrainData) %in% Features]
       } else {
         Features <- names(data)[!names(data) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+        idcols <- names(data)[!names(data) %in% Features]
       }
       
       if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       
       # Define number of trees----
-      if(proc %chin% c("eval","evaluation","evaluate")) NTrees <- Trees
+      if(proc %chin% c("eval","evaluation","evaluate")) {
+        NTrees <- Trees
+      }
       
       # Build model----
       x <- system.time(gcFirst = FALSE, TestModel <- RemixAutoML::AutoCatBoostRegression(
@@ -760,7 +764,7 @@ AutoCatBoostChainLadder <- function(data,
         TargetColumnName = "Rate",
         FeatureColNames = Features,
         PrimaryDateColumn = CohortDate,
-        IDcols = names(TrainData)[!names(TrainData) %in% Features],
+        IDcols = idcols,
         TransformNumericColumns = if(TransformTargetVariable) "Rate" else NULL,
         Methods = TransformMethods,
         
