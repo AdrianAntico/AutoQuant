@@ -678,8 +678,8 @@ AutoCatBoostChainLadder <- function(data,
     
     # DM: Type Casting for CohortPeriodsVariable, CalendarDate, and CohortDate----
     if(!all(class(data[[eval(CohortPeriodsVariable)]]) %chin% "numeric")) data[, eval(CohortPeriodsVariable) := as.numeric(as.character(get(CohortPeriodsVariable)))]
-    if(!all(class(data[[eval(CalendarDate)]]) %chin% "Date")) data[, eval(CalendarDate) := as.Date(CalendarDate)]
-    if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(CohortDate)]
+    if(!all(class(data[[eval(CalendarDate)]]) %chin% "Date")) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
+    if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(get(CohortDate))]
     
     # DM: Partition Data----
     if(proc %chin% c("evaluate","eval","evaluation")) {
