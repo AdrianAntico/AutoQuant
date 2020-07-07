@@ -820,6 +820,7 @@ AutoCatBoostChainLadder <- function(data,
       if(proc %chin% c("eval","evaluate")) {
         TreeCount <- TestModel$Model$tree_count
         if(!is.null(Trees)) NTrees <- TreeCount else NTrees <- Trees
+        ArgsList[["Trees"]] <- NTrees
       } else {
         NTrees <- Trees
       }
