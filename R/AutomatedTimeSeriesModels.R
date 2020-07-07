@@ -251,6 +251,14 @@ AutoBanditSarima <- function(data,
     MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner)},
     error = function(x) NULL)
   
+  # MetricSelection = EvaluationMetric
+  # Output = Arima_Artifacts_Build
+  # MaxFourierTerms = ARIMA_MaxFourierTerms
+  # TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate)
+  # MaxNumberModels = ARIMA_MaxNumberModels
+  # MaxRunMinutes = ARIMA_MaxRunTime
+  # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
+  
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
     Arima_Artifacts_Score <- TimeSeriesDataPrepare(
@@ -279,6 +287,13 @@ AutoBanditSarima <- function(data,
         MetricSelection = EvaluationMetric,
         ByDataType = TRUE)},
         error = function(x) NULL)
+      
+      # ModelOutputGrid = Arima_ExperimentGrid
+      # TimeSeriesPrepareOutput = Arima_Artifacts_Score
+      # FCPeriods = NumFCPeriods
+      # NumberModelsScore = 1
+      # MetricSelection = EvaluationMetric
+      # ByDataType = TRUE
       
       # Move on if model build failure----
       if(!is.null(Forecast)) {

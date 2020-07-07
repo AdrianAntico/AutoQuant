@@ -1433,19 +1433,21 @@ OptimizeArima <- function(Output,
         Train_Score[, Forecast := as.numeric(Results$fitted)]
         
         # Forecast----
-        if(TSGridList[["MaxFourierTerms"]][run] != 0) {
-          FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]
-          FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[1:FCPeriods]]
-          FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]
-          FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[1:FCPeriods]]
-          FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]
-        } else {
+        tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
+        })
+        tryCatch({FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
           FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1:FCPeriods]]
+        })
+        tryCatch({FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
           FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
+        })
+        tryCatch({FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
           FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1:FCPeriods]]
-          FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]      
-        }
+        })
+        tryCatch({FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+          FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
+        })
         
         # If model fails to rebuild----  
       } else {
@@ -2757,6 +2759,7 @@ ParallelAutoARIMA <- function(
   cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
+  library(doParallel)
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3434,6 +3437,29 @@ FinalBuildArima <- function(
           MaxNumberModels = NumberModelsScore,
           MaxRunMinutes = 100,
           FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
+        
+        # Output = TimeSeriesPrepareOutput
+        # MetricSelection = MetricSelection
+        # DataSetName = TrainArtifacts[[i]][["Name"]]
+        # train = TrainArtifacts[[i]][["Data"]]
+        # test = ModelOutputGrid$TestData
+        # Lags = TimeSeriesPrepareOutput$Lags
+        # SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags
+        # MovingAverages = TimeSeriesPrepareOutput$MovingAverages
+        # SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages
+        # Differences = TrainArtifacts[[i]][["Diff"]]
+        # SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]]
+        # FullData = TimeSeriesPrepareOutput$FullData
+        # HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods
+        # MinVal = TimeSeriesPrepareOutput$MinVal
+        # TargetName = TimeSeriesPrepareOutput$TargetName
+        # DateName = TimeSeriesPrepareOutput$DateName
+        # MaxFourierTerms = 0
+        # TrainValidateShare = c(1.0,0.0)
+        # MaxNumberModels = NumberModelsScore
+        # MaxRunMinutes = 100
+        # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
+        
       } else {
         Forecasts <- OptimizeArima(
           Output = TimeSeriesPrepareOutput,
