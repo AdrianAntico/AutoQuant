@@ -631,7 +631,8 @@ AutoCatBoostRegression <- function(data,
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
         bootstrap_type       = PassInGrid[["BootStrapType"]],
-        grow_policy          = PassInGrid[["GrowPolicy"]])
+        grow_policy          = PassInGrid[["GrowPolicy"]],
+        allow_writing_files  = FALSE)
     } else {
       base_params <- list(
         has_time             = HasTime,
@@ -648,7 +649,8 @@ AutoCatBoostRegression <- function(data,
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
         rsm                  = PassInGrid[["RSM"]],
-        bootstrap_type       = PassInGrid[["BootStrapType"]])
+        bootstrap_type       = PassInGrid[["BootStrapType"]],
+        allow_writing_files  = FALSE)
     }
   }
   
