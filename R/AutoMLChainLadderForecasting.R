@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param data Name of your data.table
+#' @param OutputFilePath Pathfile for where you want to store you forecast data
 #' @param FC_BaseFunnelMeasure Dataset containing the forward looking FC_BaseFunnelMeasure
 #' @param MaxDateForecasted Supply a value if you want to backtest
 #' @param MaxCalendarDate Supply a value if you want to backtest
@@ -14,6 +15,7 @@
 #' \donttest{
 #' AutoChainLadderForecast(
 #'    data,
+#'    OutputFilePath = getwd(),
 #'    FC_BaseFunnelMeasure,
 #'    SegmentName = NULL,
 #'    MaxDateForecasted = NULL,
@@ -24,6 +26,7 @@
 #' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
 #' @export
 AutoChainLadderForecast <- function(data,
+                                    OutputFilePath = NULL,
                                     FC_BaseFunnelMeasure,
                                     SegmentName = NULL,
                                     MaxDateForecasted = NULL,
@@ -365,7 +368,7 @@ AutoChainLadderForecast <- function(data,
     data <- data.table::rbindlist(list(data[ScoreRecords != 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),SegmentName,eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")], temp1), fill = TRUE, use.names = TRUE)
     
     # DE: Save forecasts to file----
-    data.table::fwrite(data, file = file.path(normalizePath(eval(ArgsList$ModelPath)), paste0(ArgsList$ModelID, "_Forecasts.csv")))
+    data.table::fwrite(data, file = file.path(normalizePath(eval(OutputFilePath)), paste0(ArgsList$ModelID, "_Forecasts.csv")))
     
     # DE: Update MaxDateForecasted to know when to stop----
     MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate))]

@@ -6,6 +6,7 @@
 \usage{
 AutoChainLadderForecast(
   data,
+  OutputFilePath = NULL,
   FC_BaseFunnelMeasure,
   SegmentName = NULL,
   MaxDateForecasted = NULL,
@@ -16,6 +17,8 @@ AutoChainLadderForecast(
 }
 \arguments{
 \item{data}{Name of your data.table}
+
+\item{OutputFilePath}{Pathfile for where you want to store you forecast data}
 
 \item{FC_BaseFunnelMeasure}{Dataset containing the forward looking FC_BaseFunnelMeasure}
 
@@ -37,6 +40,7 @@ AutoChainLadderForecast() for generating forecasts
 \donttest{
 AutoChainLadderForecast(
    data,
+   OutputFilePath = getwd(),
    FC_BaseFunnelMeasure,
    SegmentName = NULL,
    MaxDateForecasted = NULL,
