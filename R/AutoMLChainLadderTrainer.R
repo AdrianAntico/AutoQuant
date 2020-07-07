@@ -697,7 +697,7 @@ AutoCatBoostChainLadder <- function(data,
       TrainData <- DataSets$TrainData
       ValidationData <- DataSets$ValidationData
       TestData <- DataSets$TestData
-      rm(DataSets, data)
+      rm(DataSets)
     }
     
     #----
