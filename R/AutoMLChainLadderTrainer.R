@@ -334,6 +334,14 @@ AutoCatBoostChainLadder <- function(data,
     # Init: Function Similify----
     proc <- tolower(proc)
     
+    # Copy data----
+    if(proc %chin% c("evaluate","eval","evaluation")) {
+      data1 <- data.table::copy(data)
+    } else {
+      data <- data1
+      rm(data1)
+    }
+    
     # FE: CreateCalendarVariables() CalendarDate and CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate), eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
     if(proc %chin% c("evaluate","eval","evaluation")) {
