@@ -339,7 +339,7 @@ AutoCatBoostChainLadder <- function(data,
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
-    } else if(proc %chin% c("train")) {
+    } else if(proc %chin% c("training","train")) {
       data.table::set(TimerDataTrain, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
     }
@@ -708,7 +708,12 @@ AutoCatBoostChainLadder <- function(data,
     if(proc %chin% c("evaluate","eval","training","train")) {
       
       # Define features----
-      Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+      if(proc %chin% c("evaluate","eval")) {
+        Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+      } else {
+        Features <- names(data)[!names(data) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+      }
+      
       if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       
       # Define number of trees----
