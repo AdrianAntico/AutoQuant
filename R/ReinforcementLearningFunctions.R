@@ -468,7 +468,8 @@ CatBoostRegressionParams <- function(counter = NULL,
         task_type            = task_type,
         devices              = NumGPUs,
         train_dir            = model_path,
-        iterations           = max(Grid$NTrees))
+        iterations           = max(Grid$NTrees),
+        allow_writing_files  = FALSE)
     } else {
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       if(tolower(task_type) == "gpu") {
@@ -487,7 +488,8 @@ CatBoostRegressionParams <- function(counter = NULL,
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
           l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
           bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-          grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
+          grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L],
+          allow_writing_files  = FALSE)
       } else {
         base_params <- list(
           has_time             = HasTime,
@@ -499,6 +501,7 @@ CatBoostRegressionParams <- function(counter = NULL,
           task_type            = task_type,
           devices              = NumGPUs,
           train_dir            = model_path,
+          allow_writing_files  = FALSE,
           iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
           depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
@@ -520,6 +523,7 @@ CatBoostRegressionParams <- function(counter = NULL,
         task_type            = task_type,
         devices              = NumGPUs,
         train_dir            = model_path,
+        allow_writing_files  = FALSE,
         iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
         depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
@@ -537,6 +541,7 @@ CatBoostRegressionParams <- function(counter = NULL,
         task_type            = task_type,
         devices              = NumGPUs,
         train_dir            = model_path,
+        allow_writing_files  = FALSE,
         iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
         depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],

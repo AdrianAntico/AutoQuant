@@ -672,7 +672,8 @@ AutoCatBoostRegression <- function(data,
         eval_metric          = eval_metric,
         has_time             = HasTime,
         task_type            = task_type,
-        devices              = NumGPUs)
+        devices              = NumGPUs,
+        allow_writing_files  = FALSE)
     } else {
       if (tolower(task_type) == "gpu") {
         base_params <- list(
@@ -690,7 +691,8 @@ AutoCatBoostRegression <- function(data,
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
           bootstrap_type       = BestGrid[["BootStrapType"]],
-          grow_policy          = BestGrid[["GrowPolicy"]])
+          grow_policy          = BestGrid[["GrowPolicy"]],
+          allow_writing_files  = FALSE)
       } else {
         base_params <- list(
           has_time             = HasTime,
@@ -707,7 +709,8 @@ AutoCatBoostRegression <- function(data,
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
           rsm                  = BestGrid[["RSM"]],
-          bootstrap_type       = BestGrid[["BootStrapType"]])
+          bootstrap_type       = BestGrid[["BootStrapType"]],
+          allow_writing_files  = FALSE)
       }
     }
   }
@@ -723,7 +726,8 @@ AutoCatBoostRegression <- function(data,
       eval_metric          = eval_metric,
       has_time             = HasTime,
       task_type            = task_type,
-      devices              = NumGPUs)
+      devices              = NumGPUs,
+      allow_writing_files  = FALSE)
   }
   
   # Regression Train Final Model----
