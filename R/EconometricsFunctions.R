@@ -1229,11 +1229,11 @@ OptimizeArima <- function(Output,
       
       # Define lambda----
       if(run != 1L) {
-        if(NextGrid$BoxCox[1L] == "skip") {
+        tryCatch({if(NextGrid$BoxCox[1L] == "skip") {
           lambda <- NULL
         } else {
           lambda <- "auto"
-        }        
+        }}, error = function(x) lambda <- NULL)
       }
       
       # Define Fourier Terms----
@@ -2878,7 +2878,7 @@ ParallelAutoETS <- function(
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
   
-  # Idenity the number of non-null data sets to run through OptimizeArima----
+  # Idenity the number of non-null data sets to run through OptimizeETS----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) {
     if(!is.null(TrainArtifacts[[i]][["Data"]])) {
