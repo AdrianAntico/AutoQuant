@@ -751,4 +751,3 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     PartialDependencePlots = ParDepPlots,
     PartialDependenceBoxPlots = ParDepBoxPlots))
 }
-

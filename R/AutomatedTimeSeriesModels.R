@@ -640,4 +640,3 @@ AutoTBATS <- function(data,
     return(print("Unable to build model"))
   }
 }
-  
