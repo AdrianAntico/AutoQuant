@@ -369,38 +369,6 @@ AutoCatBoostClassifier <- function(data,
           base_params <- CatBoostClassifierParams(NumGPUs=NumGPUs,LossFunction=LossFunction,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
-        
-        
-        CatBoostClassifierParams(
-          NumGPUs=NumGPUs,
-          LossFunction=LossFunction,
-          counter=counter,
-          BanditArmsN=BanditArmsN,
-          HasTime=HasTime,
-          MetricPeriods=MetricPeriods,
-          ClassWeights=ClassWeights,
-          eval_metric=eval_metric,
-          task_type=task_type,
-          model_path=model_path,
-          Grid=Grid,
-          ExperimentalGrid=ExperimentalGrid,
-          GridClusters=GridClusters)
-        
-        NumGPUs=NumGPUs
-        LossFunction=LossFunction
-        counter=counter
-        BanditArmsN=BanditArmsN
-        HasTime=HasTime
-        MetricPeriods=MetricPeriods
-        ClassWeights=ClassWeights
-        eval_metric=eval_metric
-        task_type=task_type
-        model_path=model_path
-        Grid=Grid
-        ExperimentalGrid=ExperimentalGrid
-        GridClusters=GridClusters
-        
-        
         # Build model----
         print(base_params)
         RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
