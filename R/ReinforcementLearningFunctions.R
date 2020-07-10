@@ -677,12 +677,12 @@ CatBoostClassifierParams <- function(counter = NULL,
         devices              = NumGPUs,
         train_dir            = model_path,
         class_weights        = ClassWeights,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
+        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
+        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
+        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
+        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
     }
   }
   return(base_params)

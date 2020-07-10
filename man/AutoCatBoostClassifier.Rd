@@ -163,7 +163,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L),
-    IDcols = c("IDcols_1","IDcols_2"),
+    IDcols = c("IDcol_1","IDcol_2"),
     
     # Model evaluation: 
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process

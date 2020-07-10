@@ -84,7 +84,7 @@
 #'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L),
-#'     IDcols = c("IDcols_1","IDcols_2"),
+#'     IDcols = c("IDcol_1","IDcol_2"),
 #'     
 #'     # Model evaluation: 
 #'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
@@ -369,12 +369,44 @@ AutoCatBoostClassifier <- function(data,
           base_params <- CatBoostClassifierParams(NumGPUs=NumGPUs,LossFunction=LossFunction,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
         
+        
+        
+        CatBoostClassifierParams(
+          NumGPUs=NumGPUs,
+          LossFunction=LossFunction,
+          counter=counter,
+          BanditArmsN=BanditArmsN,
+          HasTime=HasTime,
+          MetricPeriods=MetricPeriods,
+          ClassWeights=ClassWeights,
+          eval_metric=eval_metric,
+          task_type=task_type,
+          model_path=model_path,
+          Grid=Grid,
+          ExperimentalGrid=ExperimentalGrid,
+          GridClusters=GridClusters)
+        
+        NumGPUs=NumGPUs
+        LossFunction=LossFunction
+        counter=counter
+        BanditArmsN=BanditArmsN
+        HasTime=HasTime
+        MetricPeriods=MetricPeriods
+        ClassWeights=ClassWeights
+        eval_metric=eval_metric
+        task_type=task_type
+        model_path=model_path
+        Grid=Grid
+        ExperimentalGrid=ExperimentalGrid
+        GridClusters=GridClusters
+        
+        
         # Build model----
         print(base_params)
         RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
         
         # Score model----
-        if (!is.null(TestData)) {
+        if(!is.null(TestData)) {
           predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
           AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
