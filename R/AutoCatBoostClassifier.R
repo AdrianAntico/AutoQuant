@@ -355,9 +355,12 @@ AutoCatBoostClassifier <- function(data,
     counter <- 0L
     NewGrid <- 1L
     repeat {
-    
+      
       # Increment counter----
       counter <- counter + 1L
+      
+      # Print iteration so people can see it on their screen----
+      for(i in 1:20) print(paste0("You are on iteration number: ",counter))
       
       # Check if grid still has elements in it----
       if(!is.null(GridClusters[[paste0("Grid_",max(1L, NewGrid-1L))]][["L2_Leaf_Reg"]][1L])) {
