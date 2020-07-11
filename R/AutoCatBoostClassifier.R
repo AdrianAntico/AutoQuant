@@ -508,6 +508,7 @@ AutoCatBoostClassifier <- function(data,
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
     if(tolower(task_type) == "gpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
     if(tolower(task_type) == "gpu") grid_params <- grid_params[!names(grid_params) %chin% "RSM"]
+    if(tolower(task_type) == "cpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
     
     # Set parameters from winning grid----
@@ -559,7 +560,6 @@ AutoCatBoostClassifier <- function(data,
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
           bootstrap_type       = BestGrid[["BootStrapType"]],
-          grow_policy          = BestGrid[["GrowPolicy"]],
           rsm                  = BestGrid[["RSM"]])
       }
     }
