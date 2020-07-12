@@ -48,7 +48,19 @@
 #' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
 #' Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
 #'   
-#'   # Data Artifacts
+#'   # Data Args:
+#'   #  data - this is your data.table with a date column,
+#'   #   a target variable, and possibly some grouping
+#'   #   variables (panel data)
+#'   #  HierarchGroups - create interaction terms for the group
+#'   #   variables. Lags and rolling stats will be generated
+#'   #   for all combinations of interactions and base group
+#'   #   vars. If multiple time aggregations are selected in
+#'   #   the TimeGroups argument, then lags and rolling stats
+#'   #   will be also be computed for those time groups.
+#'   #  TimeGroups must have at least one selected. Order the 
+#'   #   time groups from lower to higher in granularity. E.g.
+#'   #   c("day", "week"). Cannot go lower than your data warrants.
 #'   data = data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
@@ -57,14 +69,9 @@
 #'   TimeUnit = "days",
 #'   TimeGroups = c("days","weeks"),
 #'   
-#'   # Data Wrangling Features
-#'   ZeroPadSeries = NULL,
-#'   DataTruncate = FALSE,
-#'   SplitRatios = c(1 - 10 / 143, 10 / 143),
-#'   PartitionType = "timeseries",
-#'   
 #'   # Productionize
 #'   TrainOnFull = FALSE,
+#'   SplitRatios = c(1 - 10 / 143, 10 / 143),
 #'   FC_Periods = 4,
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
@@ -813,7 +820,7 @@ AutoCatBoostCARMA <- function(data,
   # Machine Learning: Build Model----
   if(DebugMode) print("Machine Learning: Build Model----")
 
-  # Define CARMA feature names
+  # Define CARMA feature names----
   if(!Difference | is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
@@ -828,32 +835,95 @@ AutoCatBoostCARMA <- function(data,
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
   }
 
-  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
+  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)----
   if(DebugMode) options(warn = 0)
 
-  # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- AutoCatBoostRegression(
-    data = train,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    PrimaryDateColumn = eval(DateColumnName),
-    IDcols = IDcols,
-    TransformNumericColumns = NULL,
-    MaxModelsInGrid = ModelCount,
-    task_type = TaskType,
-    eval_metric = EvalMetric,
-    Trees = NTrees,
-    GridTune = GridTune,
-    model_path = getwd(),
-    metadata_path = getwd(),
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 0,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    PassInGrid = NULL)
+  # Run AutoCatBoostRegression and return list of ml objects----
+  TestModel <- RemixAutoML::AutoCatBoostRegression(
+
+      # GPU or CPU and the number of available GPUs
+      task_type = TaskType,
+      NumGPUs = NumGPU,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      ModelID = "ModelTest",
+      model_path = getwd(),
+      metadata_path = getwd(),
+      SaveModelObjects = FALSE,
+      ReturnModelObjects = TRUE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      PrimaryDateColumn = eval(DateColumnName),
+      IDcols = IDcols,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'loss_function' the loss function used in training optimization
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      loss_function = EvalMetric,
+      MetricPeriods = 10L,
+      NumOfParDepPlots = 0L,
+      EvalPlots = TRUE,
+
+      # Grid tuning arguments:
+      #   'PassInGrid' is for retraining using a previous grid winning args
+      #   'MaxModelsInGrid' is a cap on the number of models that will run
+      #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
+      #   'MaxRunMinutes' is a cap on the number of minutes that will run
+      #   'Shuffles' is the number of times you want the random grid arguments shuffled
+      #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
+      #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+      PassInGrid = NULL,
+      GridTune = GridTune,
+      MaxModelsInGrid = 100L,
+      MaxRunsWithoutNewWinner = 100L,
+      MaxRunMinutes = 60*60,
+      Shuffles = 4L,
+      BaselineComparison = "default",
+
+      # Trees, Depth, and LearningRate used in the bandit grid tuning
+      # Must set Trees to a single value if you are not grid tuning
+      # The ones below can be set to NULL and the values in the example will be used
+      # GrowPolicy is turned off for CPU runs
+      # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+      Trees = NTrees, # seq(100L, 500L, 50L),
+      Depth = seq(4L, 8L, 1L),
+      LearningRate = seq(0.01,0.10,0.01),
+      L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+      RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+      BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+      GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
