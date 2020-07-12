@@ -954,7 +954,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
   if(!is.null(GroupVariables)) {
     if(Difference) {
-      N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L
+      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)]) - 2L
     } else {
       N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
     }
