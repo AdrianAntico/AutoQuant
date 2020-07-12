@@ -134,7 +134,19 @@ data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
 Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   
-  # Data Artifacts
+  # Data Args:
+  #  data - this is your data.table with a date column,
+  #   a target variable, and possibly some grouping
+  #   variables (panel data)
+  #  HierarchGroups - create interaction terms for the group
+  #   variables. Lags and rolling stats will be generated
+  #   for all combinations of interactions and base group
+  #   vars. If multiple time aggregations are selected in
+  #   the TimeGroups argument, then lags and rolling stats
+  #   will be also be computed for those time groups.
+  #  TimeGroups must have at least one selected. Order the 
+  #   time groups from lower to higher in granularity. E.g.
+  #   c("day", "week"). Cannot go lower than your data warrants.
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
@@ -143,14 +155,9 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   TimeUnit = "days",
   TimeGroups = c("days","weeks"),
   
-  # Data Wrangling Features
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-  SplitRatios = c(1 - 10 / 143, 10 / 143),
-  PartitionType = "timeseries",
-  
   # Productionize
   TrainOnFull = FALSE,
+  SplitRatios = c(1 - 10 / 143, 10 / 143),
   FC_Periods = 4,
   EvalMetric = "RMSE",
   GridTune = FALSE,
