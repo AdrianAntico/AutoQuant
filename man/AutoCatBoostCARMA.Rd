@@ -35,6 +35,7 @@ AutoCatBoostCARMA(
   DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1),
   TaskType = "GPU",
+  NumGPU = 1,
   EvalMetric = "RMSE",
   GridTune = FALSE,
   GridEvalMetric = "mae",
@@ -106,6 +107,8 @@ AutoCatBoostCARMA(
 
 \item{TaskType}{Default is "GPU" but you can also set it to "CPU"}
 
+\item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
+
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
@@ -121,8 +124,6 @@ AutoCatBoostCARMA(
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
-
-\item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -166,6 +167,7 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   GridEvalMetric = "mae",
   ModelCount = 5,
   TaskType = "GPU", 
+  NumGPU = 1,
   Timer = TRUE,
   DebugMode = FALSE,
   
