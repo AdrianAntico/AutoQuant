@@ -36,6 +36,7 @@
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
+#' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
@@ -518,6 +519,8 @@ AutoCatBoostCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
+  
+  # Group and No Differencing
   if(!is.null(GroupVariables) & !Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
@@ -563,7 +566,10 @@ AutoCatBoostCARMA <- function(data,
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
     
-  } else if(!is.null(GroupVariables) & Difference) {
+  } 
+  
+  # Group and No Differencing
+  if(!is.null(GroupVariables) & Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -573,11 +579,11 @@ AutoCatBoostCARMA <- function(data,
     
     # Generate features----
     data <- AutoLagRollStats(
-      
+    
       # Data
       data                 = data,
       DateColumn           = eval(DateColumnName),
-      Targets              = c(eval(TargetColumnName),"ModTarget"),
+      Targets              = c("ModTarget"),
       HierarchyGroups      = HierarchSupplyValue,
       IndependentGroups    = IndependentSupplyValue,
       
@@ -602,13 +608,20 @@ AutoCatBoostCARMA <- function(data,
     
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1L) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+        Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+        GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
+      }
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
     }
-  } else if(is.null(GroupVariables) & Difference == FALSE) {
+  } 
+  
+  # No Group and No Differencing
+  if(is.null(GroupVariables) & Difference == FALSE) {
     
     # Generate features----
     data <- AutoLagRollStats(
@@ -639,7 +652,10 @@ AutoCatBoostCARMA <- function(data,
       Quantiles_Selected    = Quantiles_Selected, 
       Debug                 = TRUE)
     
-  } else {
+  }
+  
+  # No Group and Differencing
+  if(is.null(GroupVariables) & Difference == TRUE) {
     
     # Generate features----
     data <- AutoLagRollStats(
