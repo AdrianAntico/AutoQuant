@@ -622,8 +622,8 @@ AutoCatBoostCARMA <- function(data,
     }
   } 
   
-  # No Group and No Differencing
-  if(is.null(GroupVariables) & Difference == FALSE) {
+  # No Group with or without Diff
+  if(is.null(GroupVariables)) {
     
     # Generate features----
     data <- AutoLagRollStats(
@@ -654,38 +654,6 @@ AutoCatBoostCARMA <- function(data,
       Quantiles_Selected    = Quantiles_Selected, 
       Debug                 = TRUE)
     
-  }
-  
-  # No Group and Differencing
-  if(is.null(GroupVariables) & Difference == TRUE) {
-    
-    # Generate features----
-    data <- AutoLagRollStats(
-      
-      # Data
-      data                 = data,
-      DateColumn           = eval(DateColumnName),
-      Targets              = eval(TargetColumnName),
-      HierarchyGroups      = NULL,
-      IndependentGroups    = NULL,
-      
-      # Services
-      TimeBetween          = NULL,
-      TimeUnit             = TimeUnit,
-      TimeUnitAgg          = TimeUnit,
-      TimeGroups           = TimeGroups,
-      RollOnLag1           = TRUE,
-      Type                 = "Lag",
-      SimpleImpute         = TRUE,
-      
-      # Calculated Columns
-      Lags                  = Lags,
-      MA_RollWindows        = MA_Periods,
-      SD_RollWindows        = SD_Periods,
-      Skew_RollWindows      = Skew_Periods,
-      Kurt_RollWindows      = Kurt_Periods,
-      Quantile_RollWindows  = Quantile_Periods,
-      Quantiles_Selected    = Quantiles_Selected)
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -1270,6 +1238,8 @@ AutoCatBoostCARMA <- function(data,
 
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
+      
+      # Group with or No Diff
       if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
@@ -1290,7 +1260,7 @@ AutoCatBoostCARMA <- function(data,
           RowNumsID            = "ID",
           RowNumsKeep          = 1,
           DateColumn           = eval(DateColumnName),
-          Targets              = c(eval(TargetColumnName),"ModTarget"),
+          Targets              = "ModTarget",
           HierarchyGroups      = HierarchSupplyValue,
           IndependentGroups    = IndependentSupplyValue,
 
@@ -1373,7 +1343,10 @@ AutoCatBoostCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         
-      } else if(!is.null(GroupVariables)) {
+      } 
+      
+      # Group and Diff
+      if(!is.null(GroupVariables)) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1385,7 +1358,7 @@ AutoCatBoostCARMA <- function(data,
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")
         
-        # Build Features----
+        # Build Features
         Temporary <- AutoLagRollStatsScoring(
 
           # Data
@@ -1475,7 +1448,10 @@ AutoCatBoostCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
 
-      } else {
+      } 
+      
+      # No Group with or without Diff
+      if(is.null(GroupVariables)) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1567,7 +1543,6 @@ AutoCatBoostCARMA <- function(data,
         if(!"ID" %chin% c(names(UpdateData))) data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
-      gc()
     }
     gc()
   }

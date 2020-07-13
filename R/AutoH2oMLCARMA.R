@@ -81,11 +81,11 @@
 #'   # Time Series Features
 #'   Lags = c(1:5),
 #'   MA_Periods = c(1:5),
-#'   SD_Periods = c(2:5),
-#'   Skew_Periods = c(3:5),
-#'   Kurt_Periods = c(4:5),
-#'   Quantile_Periods = c(3:5),
-#'   Quantiles_Selected = c("q5","q95"), 
+#'   SD_Periods = NULL,
+#'   Skew_Periods = NULL,
+#'   Kurt_Periods = NULL,
+#'   Quantile_Periods = NULL,
+#'   Quantiles_Selected = NULL, 
 #'   
 #'   # Bonus Features
 #'   XREGS = xreg,
@@ -112,11 +112,11 @@ AutoH2oMLCARMA <- function(data,
                            XREGS = NULL,
                            Lags = c(1:5),
                            MA_Periods = c(1:5),
-                           SD_Periods = c(2:5),
-                           Skew_Periods = c(3:5),
-                           Kurt_Periods = c(4:5),
-                           Quantile_Periods = c(3:5),
-                           Quantiles_Selected = c("q5","q95"),
+                           SD_Periods = NULL,
+                           Skew_Periods = NULL,
+                           Kurt_Periods = NULL,
+                           Quantile_Periods = NULL,
+                           Quantiles_Selected = NULL,
                            Difference = TRUE,
                            FourierTerms = 6,
                            CalendarVariables = FALSE,
@@ -510,7 +510,9 @@ AutoH2oMLCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
-  if(!is.null(GroupVariables) & Difference == FALSE) {
+  
+  # Grouping and No Diff
+  if(!is.null(GroupVariables) & !Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -583,7 +585,10 @@ AutoH2oMLCARMA <- function(data,
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
     
-  } else if(!is.null(GroupVariables) & Difference == TRUE) {
+  } 
+  
+  # Grouping and Diff
+  if(!is.null(GroupVariables) & Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
@@ -597,7 +602,7 @@ AutoH2oMLCARMA <- function(data,
       # Data
       data                 = data,
       DateColumn           = eval(DateColumnName),
-      Targets              = c(eval(TargetColumnName),"ModTarget"),
+      Targets              = "ModTarget",
       HierarchyGroups      = HierarchSupplyValue,
       IndependentGroups    = IndependentSupplyValue,
       
@@ -620,6 +625,7 @@ AutoH2oMLCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected),
       Debug                 = DebugMode)
     
+    # Args to jump into AutLagRollStats----
     # data                 = data
     # DateColumn           = eval(DateColumnName)
     # Targets              = c(eval(TargetColumnName),"ModTarget")
@@ -653,7 +659,10 @@ AutoH2oMLCARMA <- function(data,
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-  } else if(is.null(GroupVariables) & Difference == FALSE) {
+  } 
+  
+  # No Grouping with or without Diff
+  if(is.null(GroupVariables)) {
     
     # Generate features----
     data <- AutoLagRollStats(
@@ -684,6 +693,7 @@ AutoH2oMLCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected), 
       Debug                 = TRUE)
     
+    # Args to jump into AutLagRollStats----
     # DateColumn           = eval(DateColumnName)
     # Targets              = eval(TargetColumnName)
     # HierarchyGroups      = NULL
@@ -708,60 +718,6 @@ AutoH2oMLCARMA <- function(data,
     # Quantiles_Selected    = c(Quantiles_Selected)
     # Debug                 = TRUE
     
-  } else {
-    
-    # Generate features----
-    data <- AutoLagRollStats(
-      
-      # Data
-      data                 = data,
-      DateColumn           = eval(DateColumnName),
-      Targets              = eval(TargetColumnName),
-      HierarchyGroups      = NULL,
-      IndependentGroups    = NULL,
-      
-      # Services
-      TimeBetween          = NULL,
-      TimeUnit             = TimeUnit,
-      TimeUnitAgg          = TimeUnit,
-      TimeGroups           = TimeGroups,
-      RollOnLag1           = TRUE,
-      Type                 = "Lag",
-      SimpleImpute         = TRUE,
-      
-      # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
-    
-    # data                 = data
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = TargetColumnName
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -1331,7 +1287,9 @@ AutoH2oMLCARMA <- function(data,
       
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
-      if(!is.null(GroupVariables) & Difference == TRUE) {
+      
+      # Grouping and Diff
+      if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1351,7 +1309,7 @@ AutoH2oMLCARMA <- function(data,
           RowNumsID            = "ID",
           RowNumsKeep          = 1,
           DateColumn           = eval(DateColumnName),
-          Targets              = c(eval(TargetColumnName),"ModTarget"),
+          Targets              = "ModTarget",
           HierarchyGroups      = HierarchSupplyValue,
           IndependentGroups    = IndependentSupplyValue,
           
@@ -1374,6 +1332,7 @@ AutoH2oMLCARMA <- function(data,
           Quantiles_Selected   = c(Quantiles_Selected),
           Debug                = TRUE)
         
+        # Args to jump into AutLagRollStats----
         # Data
         # data                 = Temporary
         # RowNumsID            = "ID"
@@ -1460,7 +1419,10 @@ AutoH2oMLCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         
-      } else if(!is.null(GroupVariables)) {
+      } 
+      
+      # Grouping and No Diff
+      if(!is.null(GroupVariables) & !Difference) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1602,7 +1564,10 @@ AutoH2oMLCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         
-      } else {
+      } 
+      
+      # No Grouping with or without Diff
+      if(is.null(GroupVariables)) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1726,7 +1691,6 @@ AutoH2oMLCARMA <- function(data,
         }
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
-      gc()
     }
     gc()
   }

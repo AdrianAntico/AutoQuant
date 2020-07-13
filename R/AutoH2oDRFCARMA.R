@@ -652,8 +652,8 @@ AutoH2oDRFCARMA <- function(data,
     }
   } 
   
-  # No Group and No Difference
-  if(is.null(GroupVariables) & !Difference) {
+  # No Group with or without Difference
+  if(is.null(GroupVariables)) {
     
     # Generate features----
     data <- AutoLagRollStats(
@@ -683,88 +683,6 @@ AutoH2oDRFCARMA <- function(data,
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected), 
       Debug                 = TRUE)
-    
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    
-  } 
-  
-  # No Group and Difference
-  if(is.null(GroupVariables) & Difference) {
-    
-    # Generate features----
-    data <- AutoLagRollStats(
-      
-      # Data
-      data                 = data,
-      DateColumn           = eval(DateColumnName),
-      Targets              = eval(TargetColumnName),
-      HierarchyGroups      = NULL,
-      IndependentGroups    = NULL,
-      
-      # Services
-      TimeBetween          = NULL,
-      TimeUnit             = TimeUnit,
-      TimeUnitAgg          = TimeUnit,
-      TimeGroups           = TimeGroups,
-      RollOnLag1           = TRUE,
-      Type                 = "Lag",
-      SimpleImpute         = TRUE,
-      
-      # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected))
-    
-    # data                 = data
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = TargetColumnName
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -1037,7 +955,7 @@ AutoH2oDRFCARMA <- function(data,
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
-  for (i in seq_len(ForecastRuns+1L)) {
+  for(i in seq_len(ForecastRuns + 1L)) {
     
     # Row counts----
     if(DebugMode) print("Row counts----")
@@ -1320,6 +1238,8 @@ AutoH2oDRFCARMA <- function(data,
       
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
+      
+      # Group and Diff
       if(!is.null(GroupVariables) & Difference) {
         
         # Create data for GDL----
@@ -1421,7 +1341,10 @@ AutoH2oDRFCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         
-      } else if(!is.null(GroupVariables)) {
+      } 
+      
+      # Group and No Diff
+      if(!is.null(GroupVariables) & !Difference) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1563,7 +1486,10 @@ AutoH2oDRFCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
         
-      } else {
+      } 
+      
+      # No Group with or without Diff
+      if(is.null(GroupVariables)) {
         
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
@@ -1687,7 +1613,6 @@ AutoH2oDRFCARMA <- function(data,
         }
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
-      gc()
     }
     gc()
   }
