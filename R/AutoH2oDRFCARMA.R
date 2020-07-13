@@ -45,7 +45,7 @@
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
+#' Forecast <- RemixAutoML::AutoH2oDRFCARMA(
 #'
 #'   # Data Artifacts
 #'   data = data,

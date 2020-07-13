@@ -18,11 +18,11 @@ AutoH2oDRFCARMA(
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5", "q95"),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
   Difference = TRUE,
   FourierTerms = 6,
   CalendarVariables = FALSE,
@@ -131,7 +131,7 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
+Forecast <- RemixAutoML::AutoH2oDRFCARMA(
 
   # Data Artifacts
   data = data,
@@ -166,14 +166,13 @@ Forecast <- RemixAutoAI::AutoH2oDRFCARMA(
   Lags = c(1:5),
   HolidayLags = 1,
   MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5","q95"),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
   HolidayMovingAverages = 1:2,
-  Quantiles_Selected = c("q5","q95"), 
-  XREGS = xreg,
+  XREGS = NULL,
   FC_Periods = 4,
   FourierTerms = 4,
   CalendarVariables = TRUE,
