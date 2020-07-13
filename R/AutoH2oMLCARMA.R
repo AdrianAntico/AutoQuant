@@ -36,6 +36,7 @@
 #' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
 #' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
 #' @param NThreads Set to the number of threads you want to dedicate to this function.
+#' @param Trees For tree models
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param GridTune Keep set to FALSE. I need to investigate how to do this more efficiently with this function
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
@@ -62,6 +63,7 @@
 #'   
 #'   # Productionize
 #'   TrainOnFull = FALSE,
+#'   Trees = 500,
 #'   FC_Periods = 4,
 #'   EvalMetric = "RMSE",
 #'   Timer = TRUE,
@@ -117,9 +119,9 @@ AutoH2oMLCARMA <- function(data,
                            Kurt_Periods = NULL,
                            Quantile_Periods = NULL,
                            Quantiles_Selected = NULL,
-                           Difference = TRUE,
+                           Difference = FALSE,
                            FourierTerms = 6,
-                           CalendarVariables = FALSE,
+                           CalendarVariables = TRUE,
                            HolidayVariable = TRUE,
                            HolidayLags = 1,
                            HolidayMovingAverages = 1:2,
@@ -127,6 +129,7 @@ AutoH2oMLCARMA <- function(data,
                            ZeroPadSeries = NULL,
                            DataTruncate = FALSE,
                            SplitRatios = c(0.7, 0.2, 0.1),
+                           Trees = 500,
                            MaxMem = "28G",
                            NThreads = max(1L, parallel::detectCores()-2L),
                            EvalMetric = "RMSE",
@@ -577,14 +580,13 @@ AutoH2oMLCARMA <- function(data,
     # timeaggs              = TimeGroups[1]
     
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-      GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-    
   } 
   
   # Grouping and Diff
@@ -652,12 +654,12 @@ AutoH2oMLCARMA <- function(data,
     # Debug                 = TRUE
     
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   } 
   
@@ -889,54 +891,63 @@ AutoH2oMLCARMA <- function(data,
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
-  
-  # Run AutoH2oGBMRegression and return list of ml objects
-  TestModel <- AutoH2oMLRegression(
-    data,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    ExcludeAlgos = NULL,
-    TransformNumericColumns = NULL,
-    eval_metric = EvalMetric,
-    Trees = 50,
-    MaxMem = MaxMem,
-    NThreads = max(1, parallel::detectCores()-2),
-    MaxModelsInGrid = ModelCount,
-    model_path = getwd(),
-    metadata_path = NULL,
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 1,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    IfSaveModel = "standard",
-    H2OShutdown = FALSE)
-  
-  # data = train
-  # TrainOnFull = TRUE
-  # ValidationData = valid
-  # TestData = test
-  # TargetColumnName = TargetVariable
-  # FeatureColNames = ModelFeatures
-  # PrimaryDateColumn = eval(DateColumnName)
-  # IDcols = IDcols
-  # TransformNumericColumns = NULL
-  # MaxModelsInGrid = ModelCount
-  # task_type = TaskType
-  # eval_metric = EvalMetric
-  # Distribution = "gaussian",
-  # link = "identity",
-  # grid_eval_metric = GridEvalMetric
-  # GridTune = GridTune
-  # model_path = getwd()
-  # metadata_path = getwd()
-  # ModelID = "ModelTest"
-  # NumOfParDepPlots = 0
-  # ReturnModelObjects = TRUE
-  # SaveModelObjects = FALSE
-  # PassInGrid = NULL
+  TestModel <- RemixAutoML::AutoH2oMLRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+      
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "FirstModel",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = data,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      ExcludeAlgos = NULL,
+      Trees = Trees,
+      MaxModelsInGrid = ModelCount)
   
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)

@@ -395,17 +395,6 @@ AutoH2oGBMCARMA <- function(data,
       IndependentGroups = IndependentSupplyValue)}, 
       error = function(x) NULL)
     
-    # ARGS TO TROUBLESHOOT
-    # datax = data
-    # xRegs = names(XREGS)
-    # FourierTermS = FourierTerms
-    # TimeUniT = TimeUnit
-    # FC_PeriodS = FC_Periods
-    # TargetColumN = TargetColumnName
-    # DateColumN = DateColumnName
-    # HierarchGroups = HierarchSupplyValue
-    # IndependentGroups = IndependentSupplyValue
-    
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
       data <- Output$data
@@ -437,28 +426,17 @@ AutoH2oGBMCARMA <- function(data,
   
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if (CalendarVariables) {
+  if(CalendarVariables) {
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = c(
-        "second",
-        "minute",
-        "hour",
-        "wday",
-        "mday",
-        "yday",
-        "week",
-        "isoweek",
-        "month",
-        "quarter",
-        "year"))
+      TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))
   }
   
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+  if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
@@ -467,7 +445,7 @@ AutoH2oGBMCARMA <- function(data,
       GroupingVars = "GroupVar")
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -480,7 +458,7 @@ AutoH2oGBMCARMA <- function(data,
       Holidays = NULL)
     
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
     } else {
       data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
@@ -489,15 +467,14 @@ AutoH2oGBMCARMA <- function(data,
   
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
-  if (TargetTransformation) {
+  if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(
       data,
       ColumnNames = TargetColumnName,
       Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
       Path = NULL,
       TransID = "Trans",
-      SaveOutput = FALSE
-    )
+      SaveOutput = FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   }
@@ -535,6 +512,8 @@ AutoH2oGBMCARMA <- function(data,
   
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
+  
+  # Grouping and No Diff
   if(!is.null(GroupVariables) & !Difference) {
     
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
@@ -572,42 +551,14 @@ AutoH2oGBMCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected),
       Debug                 = FALSE)
     
-    # Args to jump into AutLagRollStats----
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = HierarchSupplyValue
-    # IndependentGroups    = IndependentSupplyValue
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    # Fact                  = Categoricals[1]
-    # timeaggs              = TimeGroups[1]
-    
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-      GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-    
   } 
   
   # Grouping and Diff
@@ -648,38 +599,13 @@ AutoH2oGBMCARMA <- function(data,
       Quantiles_Selected    = c(Quantiles_Selected),
       Debug                 = DebugMode)
     
-    # data                 = data
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = c(eval(TargetColumnName),"ModTarget")
-    # HierarchyGroups      = HierarchSupplyValue
-    # IndependentGroups    = IndependentSupplyValue
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   } 
   
@@ -714,39 +640,12 @@ AutoH2oGBMCARMA <- function(data,
       Quantile_RollWindows  = c(Quantile_Periods),
       Quantiles_Selected    = c(Quantiles_Selected), 
       Debug                 = TRUE)
-    
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = NULL
-    # IndependentGroups    = NULL
-    # 
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    # 
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+  if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
     if(!is.null(GroupVariables)) {
-      
-      # Build Features----
       data <- DT_GDL_Feature_Engineering(
         data,
         lags            = HolidayLags,
@@ -764,9 +663,7 @@ AutoH2oGBMCARMA <- function(data,
         WindowingLag    = 1,
         Type            = "Lag",
         SimpleImpute    = TRUE)
-      
     } else {
-      
       data <- DT_GDL_Feature_Engineering(
         data,
         lags            = HolidayLags,
@@ -802,8 +699,8 @@ AutoH2oGBMCARMA <- function(data,
   
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if (TimeTrendVariable) {
-    if (!is.null(GroupVariables)) {
+  if(TimeTrendVariable) {
+    if(!is.null(GroupVariables)) {
       data[, TimeTrend := 1:.N, by = "GroupVar"]
     } else {
       data[, TimeTrend := 1:.N]
@@ -914,54 +811,62 @@ AutoH2oGBMCARMA <- function(data,
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
-  
-  # Run AutoH2oGBMRegression and return list of ml objects
-  TestModel <- AutoH2oGBMRegression(
-    data = train,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    TransformNumericColumns = NULL,
-    eval_metric = EvalMetric,
-    Distribution = "gaussian",
-    Trees = NTrees,
-    GridTune = GridTune,
-    MaxMem = MaxMem,
-    NThreads = NThreads,
-    MaxModelsInGrid = ModelCount,
-    model_path = getwd(),
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 1,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    IfSaveModel = "standard",
-    Methods = Methods,
-    H2OShutdown = FALSE)
-  
-  # data = train
-  # TrainOnFull = TRUE
-  # ValidationData = valid
-  # TestData = test
-  # TargetColumnName = TargetVariable
-  # FeatureColNames = ModelFeatures
-  # PrimaryDateColumn = eval(DateColumnName)
-  # IDcols = IDcols
-  # TransformNumericColumns = NULL
-  # MaxModelsInGrid = ModelCount
-  # task_type = TaskType
-  # eval_metric = EvalMetric
-  # grid_eval_metric = GridEvalMetric
-  # Trees = NTrees
-  # GridTune = GridTune
-  # model_path = getwd()
-  # metadata_path = getwd()
-  # ModelID = "ModelTest"
-  # NumOfParDepPlots = 0
-  # ReturnModelObjects = TRUE
-  # SaveModelObjects = FALSE
-  # PassInGrid = NULL
+  TestModel <- RemixAutoML::AutoH2oGBMRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+      Alpha = NULL,
+      Distribution = "gaussian",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "ModelTest",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      Trees = NTrees,
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount)
   
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)

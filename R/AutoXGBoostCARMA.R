@@ -94,7 +94,6 @@
 #'   HolidayVariable = TRUE,
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 300)
-#'   
 #' Forecast$TimeSeriesPlot
 #' Forecast$Forecast
 #' Forecast$ModelInformation$...
@@ -115,11 +114,11 @@ AutoXGBoostCARMA <- function(data,
                              XREGS = NULL,
                              Lags = c(1:5),
                              MA_Periods = c(1:5),
-                             SD_Periods = c(2:5),
-                             Skew_Periods = c(3:5),
-                             Kurt_Periods = c(4:5),
-                             Quantile_Periods = c(3:5),
-                             Quantiles_Selected = c("q5","q95"),
+                             SD_Periods = NULL,
+                             Skew_Periods = NULL,
+                             Kurt_Periods = NULL,
+                             Quantile_Periods = NULL,
+                             Quantiles_Selected = NULL,
                              Difference = TRUE,
                              FourierTerms = 6,
                              CalendarVariables = FALSE,
@@ -807,34 +806,75 @@ AutoXGBoostCARMA <- function(data,
   
   # Return warnings to default since warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
-  
-  # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- AutoXGBoostRegression(
-    data = train,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    IDcols = IDcols,
-    ReturnFactorLevels = TRUE,
-    TransformNumericColumns = NULL,
-    eval_metric = EvalMetric,
-    Trees = NTrees,
-    GridTune = GridTune,
-    grid_eval_metric = GridEvalMetric,
-    TreeMethod = TreeMethod,
-    MaxModelsInGrid = ModelCount,
-    NThreads = NThreads,
-    model_path = getwd(),
-    metadata_path = getwd(),
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 0,
-    Verbose = 1,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    PassInGrid = NULL)
-  
+  TestModel <- RemixAutoML::AutoXGBoostRegression(
+
+      # GPU or CPU
+      TreeMethod = TreeMethod,
+      NThreads = NThreads,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "TestModel",
+      ReturnFactorLevels = TRUE,
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      IDcols = IDcols,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model evaluation
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Grid tuning arguments - PassInGrid is the best of GridMetrics
+      PassInGrid = NULL,
+      GridTune = GridTune,
+      grid_eval_metric = GridEvalMetric,
+      BaselineComparison = "default",
+      MaxModelsInGrid = ModelCount,
+      MaxRunsWithoutNewWinner = 20L,
+      MaxRunMinutes = 24L*60L,
+      Verbose = 1L,
+
+      # Trees, Depth, and LearningRate used in the bandit grid tuning
+      # Must set Trees to a single value if you are not grid tuning
+      # The ones below can be set to NULL and the values in the example will be used
+      Shuffles = 1L,
+      Trees = NTrees,
+      eta = seq(0.05,0.40,0.05),
+      max_depth = seq(4L, 16L, 2L),
+      min_child_weight = seq(1.0, 10.0, 1.0),
+      subsample = seq(0.55, 1.0, 0.05),
+      colsample_bytree = seq(0.55, 1.0, 0.05))
+
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
   

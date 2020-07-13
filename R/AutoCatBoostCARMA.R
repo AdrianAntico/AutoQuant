@@ -567,7 +567,6 @@ AutoCatBoostCARMA <- function(data,
     } else {
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-    
   } 
   
   # Group and No Differencing
@@ -610,15 +609,11 @@ AutoCatBoostCARMA <- function(data,
     
     # Keep interaction group as GroupVar----
     if(length(GroupVariables) > 1L) {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-        GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   } 
   
@@ -653,7 +648,6 @@ AutoCatBoostCARMA <- function(data,
       Quantile_RollWindows  = Quantile_Periods,
       Quantiles_Selected    = Quantiles_Selected, 
       Debug                 = TRUE)
-    
   }
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
@@ -806,7 +800,7 @@ AutoCatBoostCARMA <- function(data,
   # Machine Learning: Build Model----
   if(DebugMode) print("Machine Learning: Build Model----")
 
-  # Define CARMA feature names----
+  # Define CARMA feature names
   if(!Difference | is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
@@ -821,10 +815,10 @@ AutoCatBoostCARMA <- function(data,
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
   }
 
-  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)----
+  # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
 
-  # Run AutoCatBoostRegression and return list of ml objects----
+  # Run AutoCatBoostRegression and return list of ml objects
   TestModel <- RemixAutoML::AutoCatBoostRegression(
 
       # GPU or CPU and the number of available GPUs

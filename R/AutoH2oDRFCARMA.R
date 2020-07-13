@@ -591,12 +591,10 @@ AutoH2oDRFCARMA <- function(data,
     # timeaggs              = TimeGroups[1]
     
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-        GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
-      }
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }

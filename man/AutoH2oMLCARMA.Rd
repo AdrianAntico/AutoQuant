@@ -23,9 +23,9 @@ AutoH2oMLCARMA(
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
-  Difference = TRUE,
+  Difference = FALSE,
   FourierTerms = 6,
-  CalendarVariables = FALSE,
+  CalendarVariables = TRUE,
   HolidayVariable = TRUE,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
@@ -33,6 +33,7 @@ AutoH2oMLCARMA(
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1),
+  Trees = 500,
   MaxMem = "28G",
   NThreads = max(1L, parallel::detectCores() - 2L),
   EvalMetric = "RMSE",
@@ -101,6 +102,8 @@ AutoH2oMLCARMA(
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
+\item{Trees}{For tree models}
+
 \item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
 
 \item{NThreads}{Set to the number of threads you want to dedicate to this function.}
@@ -144,6 +147,7 @@ Forecast1 <- AutoH2oMLCARMA(
   
   # Productionize
   TrainOnFull = FALSE,
+  Trees = 500,
   FC_Periods = 4,
   EvalMetric = "RMSE",
   Timer = TRUE,

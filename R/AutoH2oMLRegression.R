@@ -85,7 +85,6 @@
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'
 #'     # Model args
-#'     GridTune = FALSE,
 #'     ExcludeAlgos = NULL,
 #'     Trees = 50,
 #'     MaxModelsInGrid = 10)

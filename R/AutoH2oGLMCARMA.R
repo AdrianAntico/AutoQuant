@@ -556,15 +556,14 @@ AutoH2oGLMCARMA <- function(data,
       Debug                 = FALSE)
     
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-      GroupVarVector <- cbind(GroupVarVector, unique(data.table::setorderv(data[, .SD, .SDcols = Categoricals], cols = eval(GroupVariables))))
+      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
-    
-  } 
+  }
   
   # Group and Diff
   if(!is.null(GroupVariables) & Difference) {
@@ -605,12 +604,12 @@ AutoH2oGLMCARMA <- function(data,
       Debug                 = DebugMode)
     
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
       GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
     } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   } 
   
@@ -649,7 +648,7 @@ AutoH2oGLMCARMA <- function(data,
   
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+  if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
     if(!is.null(GroupVariables)) {
       
       # Build Features----
@@ -806,14 +805,14 @@ AutoH2oGLMCARMA <- function(data,
   if(DebugMode) print("Machine Learning: Build Model----")
   
   # Define CARMA feature names
-  if(Difference == FALSE | is.null(GroupVariables)) {
+  if(!Difference | is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
     } else {
       ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
     }
     TargetVariable <- eval(TargetColumnName)
-  } else if(Difference == TRUE & !is.null(GroupVariables)) {
+  } else if(Difference & !is.null(GroupVariables)) {
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
     TargetVariable <- "ModTarget"
   } else {
@@ -826,54 +825,64 @@ AutoH2oGLMCARMA <- function(data,
   
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0L)
-  
-  # Run AutoH2oGBMRegression and return list of ml objects
-  TestModel <- AutoH2oGLMRegression(
-    data = train,
-    TrainOnFull = TRUE,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    TransformNumericColumns = NULL,
-    eval_metric = EvalMetric,
-    Distribution = "gaussian",
-    link = "identity",
-    GridTune = GridTune,
-    MaxMem = MaxMem,
-    NThreads = NThreads,
-    MaxModelsInGrid = ModelCount,
-    model_path = getwd(),
-    ModelID = "ModelTest",
-    NumOfParDepPlots = 1,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    IfSaveModel = "standard",
-    H2OShutdown = FALSE)
-  
-  # data = train
-  # TrainOnFull = TRUE
-  # ValidationData = valid
-  # TestData = test
-  # TargetColumnName = TargetVariable
-  # FeatureColNames = ModelFeatures
-  # PrimaryDateColumn = eval(DateColumnName)
-  # IDcols = IDcols
-  # TransformNumericColumns = NULL
-  # MaxModelsInGrid = ModelCount
-  # task_type = TaskType
-  # eval_metric = EvalMetric
-  # Distribution = "gaussian",
-  # link = "identity",
-  # grid_eval_metric = GridEvalMetric
-  # GridTune = GridTune
-  # model_path = getwd()
-  # metadata_path = getwd()
-  # ModelID = "ModelTest"
-  # NumOfParDepPlots = 0
-  # ReturnModelObjects = TRUE
-  # SaveModelObjects = FALSE
-  # PassInGrid = NULL
+  TestModel <- RemixAutoML::AutoH2oGLMRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = TRUE,
+      IfSaveModel = "mojo",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "ModelTest",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+      
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount,
+      Distribution = "gaussian",
+      link = "identity")
   
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
