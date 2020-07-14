@@ -602,6 +602,13 @@ AutoXGBoostClassifier <- function(data,
   }
   
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
+  # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
+  if(!is.null(PassInGrid)) {
+    if(PassInGrid[,.N] > 1L) PassInGrid <- PassInGrid[order(EvalMetric)][1]
+    if(PassInGrid[, BanditProbs_Grid_1] == -10) {
+      PassInGrid <- NULL
+    }
+  }
   if(!is.null(PassInGrid)) {
     base_params <- list(
       booster               = "gbtree",
