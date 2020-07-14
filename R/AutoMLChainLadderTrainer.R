@@ -352,7 +352,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
     }
     
-    # Save Timers to file
+    # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
     # FE: CreateHolidayVariables() CalendarDate----
@@ -366,7 +366,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 3L, j = "Process", value = "# Add CalendarDate holiday variables----")
     }
     
-    # Save Timers to file
+    # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
     # FE: CreateHolidayVariables() CohortDate----
@@ -390,7 +390,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 6L, j = "Process", value = "# Convert CalendarDate to Character to treat as Cohort Group----")
     }
     
-    # Save Timers to file
+    # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
     # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
@@ -403,7 +403,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     }
     
-    # Save Timers to file
+    # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     
     #----
@@ -447,7 +447,7 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
       }
       
-      # Save Timers to file
+      # Save Timers to file----
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
     
@@ -498,7 +498,7 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 8L, j = "Process", value = "# Convert CalendarDate back to Date----")
       }
       
-      # Save Timers to file
+      # Save Timers to file----
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
     
@@ -542,7 +542,7 @@ AutoCatBoostChainLadder <- function(data,
       }
     }
 
-    # Join back to data
+    # Join back to data----
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
@@ -585,7 +585,7 @@ AutoCatBoostChainLadder <- function(data,
       }
     }
     
-    # Join back to data
+    # Join back to data----
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     
     # FE: AutoLagRollStats() CalendarDateHolidayCounts Over Calendar Time----
