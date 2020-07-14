@@ -90,6 +90,11 @@ AutoChainLadderForecast <- function(data,
     data <- data.table::rbindlist(list(data, maxct), fill = TRUE, use.names = TRUE)
     rm(maxct)
     
+    # Add anomaly detection zeros----
+    if(ArgsList[["Anomalies"]]) {
+      data[, ":=" (AnomHigh = 0, AnomLow = 0)]
+    }
+    
     # FE: Calendar & Holiday Variables----
     print("# Feature Engineering----")
     data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)

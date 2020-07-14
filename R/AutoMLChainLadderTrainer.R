@@ -17,6 +17,8 @@
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
 #' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
+#' @param AnomalyDetection Set to TRUE to create three new variables. AnomHigh is for anomalies that are really large values. AnomLow is for really small values. type is for the anomaly type returned by ResidualOutliers.
+#' @param Jobs Default is "eval" and "train"
 #' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
 #' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
 #' @param ModelPath Path to where you want your models saved
@@ -71,6 +73,7 @@
 #' # Create simulated data
 #' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 #'
+#' # Build model
 #' RemixAutoML::AutoCatBoostChainLadder(
 #' 
 #'    # Data Arguments----
@@ -85,6 +88,7 @@
 #'    TimeUnit = "days",
 #'    TransformTargetVariable = TRUE,
 #'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
+#'    AnomalyDetection = TRUE,
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -155,6 +159,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CohortTimeGroups = c("day","week","month"),
                                     TransformTargetVariable = TRUE,
                                     TransformMethods = c("Identity","YeoJohnson"),
+                                    AnomalyDetection = TRUE,
                                     Jobs = c("Evaluate","Train"),
                                     SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
@@ -314,9 +319,21 @@ AutoCatBoostChainLadder <- function(data,
   }
   
   # Check for anomalies and create indicators for them for all CohortDates----
-  #temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
-  #x <- RemixAutoML::ResidualOutliers(data = data, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)
-  
+  if(AnomalyDetection) {
+    temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
+    x <- RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)
+    Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
+    if(Dates[, .N] > 0) {
+      data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
+      data[is.na(type), type := "NONE"]
+      data[is.na(AnomHigh), AnomHigh := 0]
+      data[is.na(AnomLow), AnomLow := 0]
+      ArgsList[["Anomalies"]] <- TRUE
+    } else {
+      ArgsList[["Anomalies"]] <- FALSE
+    }
+    rm(temp)
+  }
   
   # FE: Create CohortPeriodsVariable----
   if(is.null(CohortPeriodsVariable)) {

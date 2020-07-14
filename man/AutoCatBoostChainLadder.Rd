@@ -18,6 +18,7 @@ AutoCatBoostChainLadder(
   CohortTimeGroups = c("day", "week", "month"),
   TransformTargetVariable = TRUE,
   TransformMethods = c("Identity", "YeoJohnson"),
+  AnomalyDetection = TRUE,
   Jobs = c("Evaluate", "Train"),
   SaveModelObjects = TRUE,
   ModelID = "Segment_ID",
@@ -98,6 +99,10 @@ AutoCatBoostChainLadder(
 \item{TransformTargetVariable}{TRUE or FALSe}
 
 \item{TransformMethods}{Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+
+\item{AnomalyDetection}{Set to TRUE to create three new variables. AnomHigh is for anomalies that are really large values. AnomLow is for really small values. type is for the anomaly type returned by ResidualOutliers.}
+
+\item{Jobs}{Default is "eval" and "train"}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
@@ -206,6 +211,7 @@ AutoCatBoostChainLadder is a forecasting model for chain ladder style forecastin
 # Create simulated data
 data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
+# Build model
 RemixAutoML::AutoCatBoostChainLadder(
 
    # Data Arguments----
@@ -220,6 +226,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
+   AnomalyDetection = TRUE,
    
    # MetaData Arguments----
    Jobs = c("eval","train"),
