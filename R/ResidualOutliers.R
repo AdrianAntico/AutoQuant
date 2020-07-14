@@ -45,9 +45,6 @@ ResidualOutliers <- function(data,
                              maxN = 5,
                              tstat = 2) {
   
-  # Turn on full speed ahead----
-  data.table::setDTthreads(percent = 100)
-  
   # Define TS Frequency
   if (tolower(TimeUnit) == "hour") {
     freq <- 24
@@ -62,27 +59,22 @@ ResidualOutliers <- function(data,
   } else if (tolower(TimeUnit) == "year") {
     freq <- 1
   } else {
-    warning("TimeUnit is not in hour, day, week, month,
-    quarter, or year")
+    warning("TimeUnit is not in hour, day, week, month, quarter, or year")
   }
   
   # Ensure data is a data.table----
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
-  
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
   # convert DateColName to POSIXct----
   if(is.character(data[[eval(DateColName)]]) | is.factor(data[[eval(DateColName)]])) {
     data[, eval(DateColName) := as.POSIXct(get(DateColName))]
   }
   
   # Ensure data is sorted----
-  data.table::setorderv(x = data,
-                        cols = eval(DateColName),
-                        order = 1)
+  data.table::setorderv(x = data, cols = eval(DateColName), order = 1L)
   
   # Keep columns----
-  if (!is.null(PredictedColName)) {
+  if(!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
   } else {
     data[, Residuals := get(TargetColName)]
@@ -91,74 +83,58 @@ ResidualOutliers <- function(data,
   temp <- data[, ..keep]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
   
-  
   # Convert to time series object----
-  tsData <- stats::ts(temp,
-                      start = temp[, min(get(DateColName))][[1]],
-                      frequency = freq)
+  tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1]], frequency = freq)
   
   # Build the auto arima----
-  if (MinVal > 0) {
-    fit <-
-      tryCatch({
-        forecast::auto.arima(
-          y = tsData[, "Residuals"],
-          max.p = maxN,
-          max.q = maxN,
-          max.P = maxN,
-          max.Q = maxN,
-          max.d = 1,
-          max.D = 1,
-          ic = "bic",
-          lambda = TRUE,
-          biasadj = TRUE,
-          stepwise = TRUE
-        )
-      },
-      error = function(x)
-        "empty")
+  if(MinVal > 0) {
+    fit <- tryCatch({
+      forecast::auto.arima(
+        y = tsData[, "Residuals"],
+        max.p = maxN,
+        max.q = maxN,
+        max.P = maxN,
+        max.Q = maxN,
+        max.d = 1,
+        max.D = 1,
+        ic = "bic",
+        lambda = TRUE,
+        biasadj = TRUE,
+        stepwise = TRUE) }, error = function(x) "empty")
   } else {
-    fit <-
-      tryCatch({
-        forecast::auto.arima(
-          y = tsData[, "Residuals"],
-          max.p = maxN,
-          max.q = maxN,
-          max.P = maxN,
-          max.Q = maxN,
-          max.d = 1,
-          max.D = 1,
-          ic = "bic",
-          lambda = FALSE,
-          biasadj = FALSE,
-          stepwise = TRUE
-        )
-      },
-      error = function(x)
-        "empty")
+    fit <- tryCatch({
+      forecast::auto.arima(
+        y = tsData[, "Residuals"],
+        max.p = maxN,
+        max.q = maxN,
+        max.P = maxN,
+        max.Q = maxN,
+        max.d = 1,
+        max.D = 1,
+        ic = "bic",
+        lambda = FALSE,
+        biasadj = FALSE,
+        stepwise = TRUE)}, error = function(x) "empty")
   }
   
   # Store the arima parameters----
-  pars  <- tsoutliers::coefs2poly(fit)
+  pars <- tsoutliers::coefs2poly(fit)
   
   # Store the arima residuals----
   resid <- cbind(tsData, stats::residuals(fit))
   
   # Find the outliers
   x <- data.table::as.data.table(tsoutliers::locate.outliers(
-    resid = resid[, 3],
+    resid = resid[, 3L],
     pars = pars,
     cval = tstat,
-    types = c("AO", "TC", "LS", "IO", "SLS")
-  ))
+    types = c("AO", "TC", "LS", "IO", "SLS")))
   
   # Merge back to source data----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
   z[, ind := 1:.N]
-  data.table::setnames(z,
-                       names(z)[c((ncol(z) - 3):(ncol(z) - 1))],
-                       c("ObsNum", "Preds", "ARIMA_Residuals"))
+  data.table::setnames(z, names(z)[c((ncol(z) - 3):(ncol(z) - 1))], c("ObsNum", "Preds", "ARIMA_Residuals"))
   z[, ObsNum := NULL]
   data <- merge(z, x, by = "ind", all.x = TRUE)
   data[, ':=' (ind = NULL, coefhat = NULL)]
