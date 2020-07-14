@@ -313,6 +313,11 @@ AutoCatBoostChainLadder <- function(data,
     data[, eval(CohortDate) := as.POSIXct(get(CohortDate))]
   }
   
+  # Check for anomalies and create indicators for them for all CohortDates----
+  #temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
+  #x <- RemixAutoML::ResidualOutliers(data = data, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)
+  
+  
   # FE: Create CohortPeriodsVariable----
   if(is.null(CohortPeriodsVariable)) {
     data[, CohortPeriods := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]

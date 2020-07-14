@@ -46,17 +46,17 @@ ResidualOutliers <- function(data,
                              tstat = 2) {
   
   # Define TS Frequency
-  if (tolower(TimeUnit) == "hour") {
+  if(tolower(TimeUnit) %chin% c("hour","hours")) {
     freq <- 24
-  } else if (tolower(TimeUnit) == "day") {
+  } else if (tolower(TimeUnit) %chin% c("day","days")) {
     freq <- 365
-  } else if (tolower(TimeUnit) == "week") {
+  } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
     freq <- 52
-  } else if (tolower(TimeUnit) == "month") {
+  } else if (tolower(TimeUnit) %chin% c("month","months")) {
     freq <- 12
-  } else if (tolower(TimeUnit) == "quarter") {
+  } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
     freq <- 4
-  } else if (tolower(TimeUnit) == "year") {
+  } else if (tolower(TimeUnit) %chin% c("year","years")) {
     freq <- 1
   } else {
     warning("TimeUnit is not in hour, day, week, month, quarter, or year")
