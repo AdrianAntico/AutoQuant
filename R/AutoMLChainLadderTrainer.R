@@ -237,6 +237,7 @@ AutoCatBoostChainLadder <- function(data,
   } else if(tolower(TimeUnit) %chin% c("year","years")) {
     TimeUnit <- "years"
   }
+  ArgsList[["AnomalyDetection"]] <- AnomalyDetection
   ArgsList[["TimeUnit"]] <- TimeUnit
   ArgsList[["CalendarTimeGroups"]] <- CalendarTimeGroups
   ArgsList[["CohortTimeGroups"]] <- CohortTimeGroups
