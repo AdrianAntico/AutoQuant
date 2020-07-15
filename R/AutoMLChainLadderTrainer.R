@@ -393,22 +393,19 @@ AutoCatBoostChainLadder <- function(data,
     
     # AnomalyDetection for all CohortDates----
     if(AnomalyDetection) {
-      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
-      # x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, Lags = AnomalyDetection$Lags, MA = AnomalyDetection$MA, SLags = AnomalyDetection$SLags, SMA = AnomalyDetection$SMA, tstat = 3)}, error = function(x) NULL)
-      x <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionCheck", GroupVars = NULL, DateVar = eval(CalendarDate), HighThreshold = 3, LowThreshold = -2, KeepAllCols = TRUE, IsDataScaled = FALSE)
+      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure))), by = eval(CalendarDate)]
+      temp <- temp[, ConversionRate := ConversionCheck / (Leads + 1)][, .SD, .SDcols = c(eval(CalendarDate), "ConversionRate")]
+      temp <- RemixAutoML::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
+      x <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = 3, LowThreshold = -2, KeepAllCols = TRUE, IsDataScaled = FALSE)
       x <- x[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
       if(!is.null(x)) {
         data <- merge(data, x, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
-        data[is.na(type), type := "NONE"]
         data[is.na(AnomHigh), AnomHigh := 0]
         data[is.na(AnomLow), AnomLow := 0]
-        ArgsList[["AnomalyDetection"]] <- AnomalyDetection
       } else {
         ArgsList[["AnomalyDetection"]] <- NULL
       }
       rm(temp)
-    } else {
-      ArgsList[["AnomalyDetection"]] <- NULL
     }
     
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----
