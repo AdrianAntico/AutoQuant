@@ -305,21 +305,21 @@ AutoCatBoostRegression <- function(data,
   
   # Regression Sort data if PrimaryDateColumn----
   if(!is.null(PrimaryDateColumn)) {
-    data <- data[order(get(PrimaryDateColumn))]
+    data.table::setorderv(x = data, cols = eval(PrimaryDateColumn), order = 1L)
     if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(data, j = eval(PrimaryDateColumn), value = NULL)
   }
   
   # Regression Sort ValidationData if PrimaryDateColumn----
   if(!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
-    ValidationData <- ValidationData[order(get(PrimaryDateColumn))]
+    data.table::setorderv(x = ValidationData, cols = eval(PrimaryDateColumn), order = 1L)
     if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(ValidationData, j = eval(PrimaryDateColumn), value = NULL)
   }
   
   # Regression Sort TestData if PrimaryDateColumn----
   if(!is.null(TestData) & TrainOnFull != TRUE) {
     if(!is.null(PrimaryDateColumn)) {
-      TestData <- TestData[order(get(PrimaryDateColumn))]
-      if (!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
+      data.table::setorderv(x = TestData, cols = eval(PrimaryDateColumn), order = -1L)
+      if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
   
