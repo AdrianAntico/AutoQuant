@@ -321,14 +321,18 @@ AutoCatBoostChainLadder <- function(data,
   # Check for anomalies and create indicators for them for all CohortDates----
   if(AnomalyDetection) {
     temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
-    x <- RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)
-    Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
-    if(Dates[, .N] > 0) {
-      data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
-      data[is.na(type), type := "NONE"]
-      data[is.na(AnomHigh), AnomHigh := 0]
-      data[is.na(AnomLow), AnomLow := 0]
-      ArgsList[["Anomalies"]] <- TRUE
+    x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)}, error = function(x) NULL)
+    if(!is.null(x)) {
+      Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
+      if(Dates[, .N] > 0) {
+        data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
+        data[is.na(type), type := "NONE"]
+        data[is.na(AnomHigh), AnomHigh := 0]
+        data[is.na(AnomLow), AnomLow := 0]
+        ArgsList[["Anomalies"]] <- TRUE
+      } else {
+        ArgsList[["Anomalies"]] <- FALSE
+      }
     } else {
       ArgsList[["Anomalies"]] <- FALSE
     }
