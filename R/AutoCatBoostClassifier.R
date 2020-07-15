@@ -746,7 +746,7 @@ AutoCatBoostClassifier <- function(data,
       data.table::setnames(VariableImportance, "V2", "Importance")
       VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
       VariableImportance <- VariableImportance[order(-Importance)]
-      if (SaveModelObjects) {
+      if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
           data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
         } else {

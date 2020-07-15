@@ -9,7 +9,10 @@
 #' @param TargetColName The name of your target variable column
 #' @param PredictedColName The name of your predicted value column. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
 #' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
-#' @param maxN the largest lag or moving average (seasonal too) values for the arima fit
+#' @param Lags the largest lag or moving average (seasonal too) values for the arima fit
+#' @param MA Max moving average
+#' @param SLags Max seasonal lags
+#' @param SMA Max seasonal moving averages
 #' @param tstat the t-stat value for tsoutliers
 #' @examples
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -30,7 +33,10 @@
 #'                           TargetColName = "Target",
 #'                           PredictedColName = NULL,
 #'                           TimeUnit = "day",
-#'                           maxN = 5,
+#'                           Lags = 5,
+#'                           MA = 5,
+#'                           SLags = 0,
+#'                           SMA = 0,
 #'                           tstat = 4)
 #' data     <- stuff[[1]]
 #' model    <- stuff[[2]]
@@ -42,7 +48,10 @@ ResidualOutliers <- function(data,
                              TargetColName = "Target",
                              PredictedColName = NULL,
                              TimeUnit = "day",
-                             maxN = 5,
+                             Lags = 5,
+                             MA = 5,
+                             SLags = 0,
+                             SMA = 0,
                              tstat = 2) {
   
   # Define TS Frequency
@@ -91,10 +100,10 @@ ResidualOutliers <- function(data,
     fit <- tryCatch({
       forecast::auto.arima(
         y = tsData[, "Residuals"],
-        max.p = maxN,
-        max.q = maxN,
-        max.P = maxN,
-        max.Q = maxN,
+        max.p = Lags,
+        max.q = MA,
+        max.P = SLags,
+        max.Q = SMA,
         max.d = 1,
         max.D = 1,
         ic = "bic",
@@ -105,10 +114,10 @@ ResidualOutliers <- function(data,
     fit <- tryCatch({
       forecast::auto.arima(
         y = tsData[, "Residuals"],
-        max.p = maxN,
-        max.q = maxN,
-        max.P = maxN,
-        max.Q = maxN,
+        max.p = Lags,
+        max.q = MA,
+        max.P = SLags,
+        max.Q = SMA,
         max.d = 1,
         max.D = 1,
         ic = "bic",
@@ -118,6 +127,7 @@ ResidualOutliers <- function(data,
   }
   
   # Store the arima parameters----
+  if("empty" %chin% fit) print("No model could be fit"); return(NULL)
   pars <- tsoutliers::coefs2poly(fit)
   
   # Store the arima residuals----

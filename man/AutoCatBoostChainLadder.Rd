@@ -18,7 +18,7 @@ AutoCatBoostChainLadder(
   CohortTimeGroups = c("day", "week", "month"),
   TransformTargetVariable = TRUE,
   TransformMethods = c("Identity", "YeoJohnson"),
-  AnomalyDetection = TRUE,
+  AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
   Jobs = c("Evaluate", "Train"),
   SaveModelObjects = TRUE,
   ModelID = "Segment_ID",

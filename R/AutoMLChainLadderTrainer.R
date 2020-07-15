@@ -159,7 +159,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CohortTimeGroups = c("day","week","month"),
                                     TransformTargetVariable = TRUE,
                                     TransformMethods = c("Identity","YeoJohnson"),
-                                    AnomalyDetection = TRUE,
+                                    AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
                                     Jobs = c("Evaluate","Train"),
                                     SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
@@ -209,6 +209,9 @@ AutoCatBoostChainLadder <- function(data,
   
   # Init: Get catboost loaded----
   loadNamespace(package = "catboost")
+  
+  # Anomaly detection settings
+  if(length(AnomalyDetection) > 1) AnomalyDetection <- AnomalyDetection[1L]
   
   # Init: DT_Threads----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -283,6 +286,26 @@ AutoCatBoostChainLadder <- function(data,
   ArgsList[["BootStrapType"]] <- BootStrapType
   ArgsList[["GrowPolicy"]] <- GrowPolicy
   
+  
+  
+  
+  
+  
+  
+  
+  
+  # Special Args----
+  ArgsList[[paste0("Min","-",eval(CalendarDate))]] <- data[, min(get(CalendarDate))][[1L]]
+  ArgsList[[paste0("Max","-",eval(CalendarDate))]] <- data[, max(get(CalendarDate))][[1L]]
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # Init: Define SaveTimers() function----
   SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {
     if(SaveModelObjectss) {
@@ -316,27 +339,6 @@ AutoCatBoostChainLadder <- function(data,
   } else {
     data[, eval(CalendarDate) := as.POSIXct(get(CalendarDate))]
     data[, eval(CohortDate) := as.POSIXct(get(CohortDate))]
-  }
-  
-  # Check for anomalies and create indicators for them for all CohortDates----
-  if(AnomalyDetection) {
-    temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
-    x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, maxN = 10, tstat = 3)}, error = function(x) NULL)
-    if(!is.null(x)) {
-      Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
-      if(Dates[, .N] > 0) {
-        data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
-        data[is.na(type), type := "NONE"]
-        data[is.na(AnomHigh), AnomHigh := 0]
-        data[is.na(AnomLow), AnomLow := 0]
-        ArgsList[["Anomalies"]] <- TRUE
-      } else {
-        ArgsList[["Anomalies"]] <- FALSE
-      }
-    } else {
-      ArgsList[["Anomalies"]] <- FALSE
-    }
-    rm(temp)
   }
   
   # FE: Create CohortPeriodsVariable----
@@ -404,6 +406,27 @@ AutoCatBoostChainLadder <- function(data,
     } else if(proc %chin% c("training","train")) {
       data.table::set(TimerDataTrain, i = 4L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
+    }
+    
+    # AnomalyDetection for all CohortDates----
+    if(!is.null(AnomalyDetection)) {
+      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
+      x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, Lags = AnomalyDetection$Lags, MA = AnomalyDetection$MA, SLags = AnomalyDetection$SLags, SMA = AnomalyDetection$SMA, tstat = 3)}, error = function(x) NULL)
+      if(!is.null(x)) {
+        Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
+        if(Dates[, .N] > 0) {
+          data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
+          data[is.na(type), type := "NONE"]
+          data[is.na(AnomHigh), AnomHigh := 0]
+          data[is.na(AnomLow), AnomLow := 0]
+          ArgsList[["AnomalyDetection"]] <- AnomalyDetection
+        } else {
+          ArgsList[["AnomalyDetection"]] <- NULL
+        }
+      } else {
+        ArgsList[["AnomalyDetection"]] <- NULL
+      }
+      rm(temp)
     }
     
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----

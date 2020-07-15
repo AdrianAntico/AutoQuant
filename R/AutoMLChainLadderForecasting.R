@@ -90,11 +90,6 @@ AutoChainLadderForecast <- function(data,
     data <- data.table::rbindlist(list(data, maxct), fill = TRUE, use.names = TRUE)
     rm(maxct)
     
-    # Add anomaly detection zeros----
-    if(ArgsList[["Anomalies"]]) {
-      data[, ":=" (AnomHigh = 0, AnomLow = 0)]
-    }
-    
     # FE: Calendar & Holiday Variables----
     print("# Feature Engineering----")
     data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
@@ -103,6 +98,9 @@ AutoChainLadderForecast <- function(data,
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CohortDate,"HolidayCounts"))
     data.table::setorderv(data, cols = c(ArgsList$CalendarDate,eval(ArgsList$CohortPeriodsVariable)), c(1L, 1L))
+    
+    # Add anomaly detection zeros----
+    if(!is.null(ArgsList[["AnomalyDetection"]])) data[, ":=" (type = "NONE", AnomHigh = 0, AnomLow = 0)]
     
     # FE: Transfers and Rate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")

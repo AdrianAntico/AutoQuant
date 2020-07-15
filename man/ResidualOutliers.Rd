@@ -10,7 +10,10 @@ ResidualOutliers(
   TargetColName = "Target",
   PredictedColName = NULL,
   TimeUnit = "day",
-  maxN = 5,
+  Lags = 5,
+  MA = 5,
+  SLags = 0,
+  SMA = 0,
   tstat = 2
 )
 }
@@ -25,7 +28,13 @@ ResidualOutliers(
 
 \item{TimeUnit}{The time unit of your date column: hour, day, week, month, quarter, year}
 
-\item{maxN}{the largest lag or moving average (seasonal too) values for the arima fit}
+\item{Lags}{the largest lag or moving average (seasonal too) values for the arima fit}
+
+\item{MA}{Max moving average}
+
+\item{SLags}{Max seasonal lags}
+
+\item{SMA}{Max seasonal moving averages}
 
 \item{tstat}{the t-stat value for tsoutliers}
 }
@@ -54,7 +63,10 @@ stuff <- ResidualOutliers(data = data,
                           TargetColName = "Target",
                           PredictedColName = NULL,
                           TimeUnit = "day",
-                          maxN = 5,
+                          Lags = 5,
+                          MA = 5,
+                          SLags = 0,
+                          SMA = 0,
                           tstat = 4)
 data     <- stuff[[1]]
 model    <- stuff[[2]]
