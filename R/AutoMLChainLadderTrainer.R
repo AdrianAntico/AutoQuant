@@ -17,7 +17,7 @@
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
 #' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
-#' @param AnomalyDetection Set to TRUE to create three new variables. AnomHigh is for anomalies that are really large values. AnomLow is for really small values. type is for the anomaly type returned by ResidualOutliers.
+#' @param AnomalyDetection Set to TRUE to run GenTSAnoms() and return outlier indicators for large and small valued anomaly indicators 
 #' @param Jobs Default is "eval" and "train"
 #' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
 #' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
@@ -88,7 +88,7 @@
 #'    TimeUnit = "days",
 #'    TransformTargetVariable = TRUE,
 #'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-#'    AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
+#'    AnomalyDetection = TRUE,
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -159,7 +159,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CohortTimeGroups = c("day","week","month"),
                                     TransformTargetVariable = TRUE,
                                     TransformMethods = c("Identity","YeoJohnson"),
-                                    AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
+                                    AnomalyDetection = TRUE,
                                     Jobs = c("Evaluate","Train"),
                                     SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
@@ -392,24 +392,23 @@ AutoCatBoostChainLadder <- function(data,
     }
     
     # AnomalyDetection for all CohortDates----
-    if(!is.null(AnomalyDetection)) {
+    if(AnomalyDetection) {
       temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CalendarDate)]
-      x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, Lags = AnomalyDetection$Lags, MA = AnomalyDetection$MA, SLags = AnomalyDetection$SLags, SMA = AnomalyDetection$SMA, tstat = 3)}, error = function(x) NULL)
+      # x <- tryCatch({RemixAutoML::ResidualOutliers(data = temp, DateColName = eval(CalendarDate), TargetColName = "ConversionCheck", PredictedColName = NULL, TimeUnit = TimeUnit, Lags = AnomalyDetection$Lags, MA = AnomalyDetection$MA, SLags = AnomalyDetection$SLags, SMA = AnomalyDetection$SMA, tstat = 3)}, error = function(x) NULL)
+      x <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionCheck", GroupVars = NULL, DateVar = eval(CalendarDate), HighThreshold = 3, LowThreshold = -2, KeepAllCols = TRUE, IsDataScaled = FALSE)
+      x <- x[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
       if(!is.null(x)) {
-        Dates <- x$FullData[!is.na(type)][, .SD, .SDcols = c(eval(CalendarDate),"type","ARIMA_Residuals")][, AnomHigh := data.table::fifelse(ARIMA_Residuals < 0, 1, 0)][, AnomLow := data.table::fifelse(ARIMA_Residuals > 0, 1, 0)][, .SD, .SDcols = c(eval(CalendarDate), "type","AnomHigh","AnomLow")]
-        if(Dates[, .N] > 0) {
-          data <- merge(data, Dates, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
-          data[is.na(type), type := "NONE"]
-          data[is.na(AnomHigh), AnomHigh := 0]
-          data[is.na(AnomLow), AnomLow := 0]
-          ArgsList[["AnomalyDetection"]] <- AnomalyDetection
-        } else {
-          ArgsList[["AnomalyDetection"]] <- NULL
-        }
+        data <- merge(data, x, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
+        data[is.na(type), type := "NONE"]
+        data[is.na(AnomHigh), AnomHigh := 0]
+        data[is.na(AnomLow), AnomLow := 0]
+        ArgsList[["AnomalyDetection"]] <- AnomalyDetection
       } else {
         ArgsList[["AnomalyDetection"]] <- NULL
       }
       rm(temp)
+    } else {
+      ArgsList[["AnomalyDetection"]] <- NULL
     }
     
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----
