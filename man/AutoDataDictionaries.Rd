@@ -9,6 +9,7 @@ AutoDataDictionaries(
   DBConnection,
   DDType = 1L,
   Query = NULL,
+  ASIS = FALSE,
   CloseChannel = TRUE
 )
 }
@@ -20,6 +21,8 @@ AutoDataDictionaries(
 \item{DDType}{Select from 1 - 6 based on this article}
 
 \item{Query}{Supply a query}
+
+\item{ASIS}{Set to TRUE to pull in values without coercing types}
 
 \item{CloseChannel}{Set to TRUE to disconnect}
 }

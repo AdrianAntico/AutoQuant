@@ -17,7 +17,7 @@
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
 #' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
-#' @param AnomalyDetection Set to TRUE to run GenTSAnoms() and return outlier indicators for large and small valued anomaly indicators 
+#' @param AnomalyDetection Provide a named list. See examples
 #' @param Jobs Default is "eval" and "train"
 #' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
 #' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
@@ -88,7 +88,7 @@
 #'    TimeUnit = "days",
 #'    TransformTargetVariable = TRUE,
 #'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-#'    AnomalyDetection = TRUE,
+#'    AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -159,7 +159,7 @@ AutoCatBoostChainLadder <- function(data,
                                     CohortTimeGroups = c("day","week","month"),
                                     TransformTargetVariable = TRUE,
                                     TransformMethods = c("Identity","YeoJohnson"),
-                                    AnomalyDetection = TRUE,
+                                    AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
                                     Jobs = c("Evaluate","Train"),
                                     SaveModelObjects = TRUE,
                                     ModelID = "Segment_ID",
@@ -393,14 +393,14 @@ AutoCatBoostChainLadder <- function(data,
     }
     
     # AnomalyDetection for all CohortDates----
-    if(AnomalyDetection) {
+    if(!is.null(AnomalyDetection)) {
       temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure))), by = eval(CalendarDate)]
       temp <- temp[, ConversionRate := ConversionCheck / (Leads + 1)][, .SD, .SDcols = c(eval(CalendarDate), "ConversionRate")]
       temp <- RemixAutoML::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
-      x <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = 3, LowThreshold = -2, KeepAllCols = TRUE, IsDataScaled = FALSE)
-      x <- x[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
+      temp <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low, KeepAllCols = TRUE, IsDataScaled = FALSE)
+      temp <- temp[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
       if(!is.null(x)) {
-        data <- merge(data, x, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
+        data <- merge(data, temp, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
         data[is.na(AnomHigh), AnomHigh := 0]
         data[is.na(AnomLow), AnomLow := 0]
       } else {

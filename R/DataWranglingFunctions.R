@@ -288,12 +288,14 @@ SQL_Server_DBConnection <- function(DataBaseName = "", Server = "") {
 #' @param DBConnection This is a RODBC connection object for sql server
 #' @param DDType Select from 1 - 6 based on this article
 #' @param Query Supply a query
+#' @param ASIS Set to TRUE to pull in values without coercing types
 #' @param CloseChannel Set to TRUE to disconnect
 #' @export
 AutoDataDictionaries <- function(Type = "sqlserver", 
                                  DBConnection, 
                                  DDType = 1L, 
                                  Query = NULL,
+                                 ASIS = FALSE,
                                  CloseChannel = TRUE) {
   
   # Ensure DBConnection is proper----
@@ -303,7 +305,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   
   # Queries----
   if(!is.null(Query)) {
-    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, Query, as.is = TRUE))
+    x <- data.table::as.data.table(RODBC::sqlQuery(DBConnection, Query, as.is = ASIS))
     if(CloseChannel) close(DBConnection)
     return(x)
   }

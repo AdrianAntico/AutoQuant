@@ -18,7 +18,7 @@ AutoCatBoostChainLadder(
   CohortTimeGroups = c("day", "week", "month"),
   TransformTargetVariable = TRUE,
   TransformMethods = c("Identity", "YeoJohnson"),
-  AnomalyDetection = TRUE,
+  AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
   Jobs = c("Evaluate", "Train"),
   SaveModelObjects = TRUE,
   ModelID = "Segment_ID",
@@ -100,7 +100,7 @@ AutoCatBoostChainLadder(
 
 \item{TransformMethods}{Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
 
-\item{AnomalyDetection}{Set to TRUE to run GenTSAnoms() and return outlier indicators for large and small valued anomaly indicators}
+\item{AnomalyDetection}{Provide a named list. See examples}
 
 \item{Jobs}{Default is "eval" and "train"}
 
@@ -226,7 +226,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-   AnomalyDetection = TRUE,
+   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
    
    # MetaData Arguments----
    Jobs = c("eval","train"),
