@@ -210,9 +210,6 @@ AutoCatBoostChainLadder <- function(data,
   # Init: Get catboost loaded----
   loadNamespace(package = "catboost")
   
-  # Anomaly detection settings
-  if(length(AnomalyDetection) > 1) AnomalyDetection <- AnomalyDetection[1L]
-  
   # Init: DT_Threads----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   
