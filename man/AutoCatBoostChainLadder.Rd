@@ -226,7 +226,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-   AnomalyDetection = TRUE,
+   AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
    
    # MetaData Arguments----
    Jobs = c("eval","train"),

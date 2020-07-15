@@ -88,7 +88,7 @@
 #'    TimeUnit = "days",
 #'    TransformTargetVariable = TRUE,
 #'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-#'    AnomalyDetection = TRUE,
+#'    AnomalyDetection = list(tstat = 5, Lags = 5, MA = 5, SLags = 0, SMA = 0),
 #'    
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -226,6 +226,7 @@ AutoCatBoostChainLadder <- function(data,
   ArgsList[["Algorithm"]] <- "catboost"
   ArgsList[["BaseFunnelMeasure"]] <- BaseFunnelMeasure
   ArgsList[["ConversionMeasure"]] <- ConversionMeasure
+  ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   ArgsList[["CalendarDate"]] <- CalendarDate
   ArgsList[["CohortDate"]] <- CohortDate
   if(tolower(TimeUnit) %chin% c("day","days")) {
@@ -285,26 +286,11 @@ AutoCatBoostChainLadder <- function(data,
   ArgsList[["RSM"]] <- RSM
   ArgsList[["BootStrapType"]] <- BootStrapType
   ArgsList[["GrowPolicy"]] <- GrowPolicy
-  
-  
-  
-  
-  
-  
-  
-  
+  ArgsList[["PassInGrid"]] <- PassInGrid
   
   # Special Args----
   ArgsList[[paste0("Min","-",eval(CalendarDate))]] <- data[, min(get(CalendarDate))][[1L]]
   ArgsList[[paste0("Max","-",eval(CalendarDate))]] <- data[, max(get(CalendarDate))][[1L]]
-  
-  
-  
-  
-  
-  
-  
-  
   
   # Init: Define SaveTimers() function----
   SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {
@@ -345,8 +331,8 @@ AutoCatBoostChainLadder <- function(data,
   if(is.null(CohortPeriodsVariable)) {
     data[, CohortPeriods := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
     CohortPeriodsVariable <- "CohortPeriods"
+    ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   }
-  ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   
   # DM: ConversionRateMeasure if NULL----
   if(is.null(ConversionRateMeasure)) {
