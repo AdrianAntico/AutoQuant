@@ -100,7 +100,7 @@ AutoChainLadderForecast <- function(data,
     data.table::setorderv(data, cols = c(ArgsList$CalendarDate,eval(ArgsList$CohortPeriodsVariable)), c(1L, 1L))
     
     # Add anomaly detection zeros----
-    if(ArgsList[["AnomalyDetection"]]) data[, ":=" (AnomHigh = 0, AnomLow = 0)]
+    if(!is.null(ArgsList[["AnomalyDetection"]])) data[, ":=" (AnomHigh = 0, AnomLow = 0)]
     
     # FE: Transfers and Rate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
