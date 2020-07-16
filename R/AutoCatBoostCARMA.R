@@ -1528,8 +1528,8 @@ AutoCatBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
 
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(DateColumnName)), all = FALSE)
+          keep <- unique(c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary))))
+          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar",eval(DateColumnName)), all = FALSE)
         }
 
         # Update data for scoring next iteration----
