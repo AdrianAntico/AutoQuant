@@ -1,7 +1,7 @@
 #' @title AutoCatBoostChainLadder
-#' 
+#'
 #' @description AutoCatBoostChainLadder is a forecasting model for chain ladder style forecasting
-#' 
+#'
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data data object
@@ -9,7 +9,7 @@
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
 #' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
 #' @param ConversionRateMeasure Conversions over Leads for every cohort
-#' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date. 
+#' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date.
 #' @param TargetVariable Target Variable Name
 #' @param CalendarDate The name of your date column that represents the calendar date
 #' @param CohortDate The name of your date column that represents the cohort date
@@ -20,7 +20,7 @@
 #' @param AnomalyDetection Provide a named list. See examples
 #' @param Jobs Default is "eval" and "train"
 #' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
-#' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years". 
+#' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
 #' @param ModelPath Path to where you want your models saved
 #' @param MetaDataPath Path to where you want your metadata saved. If NULL, function will try ModelPath if it is not NULL.
 #' @param ModelID A character string to name your model and output
@@ -30,7 +30,7 @@
 #' @param TaskType "GPU" or "CPU" for catboost training
 #' @param NumGPUs Number of GPU's you would like to utilize
 #' @param EvaluationMetric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE' 
+#' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
 #' @param NumOfParDepPlots Number of partial dependence plots to return
 #' @param MetricPeriods Number of trees to build before the internal catboost eval step happens
 #' @param DT_Threads Number of threads to use for data.table. Default is Total - 2
@@ -41,14 +41,14 @@
 #' @param CalendarHolidayMovingAverages = c(3L, 7L),
 #' @param CalendarLags List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CalendarMovingAverages List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)) 
+#' @param CalendarStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CalendarSkews List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CalendarKurts List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CalendarQuantiles List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CalendarQuantilesSelected Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"
 #' @param CohortLags List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CohortMovingAverages List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)) 
+#' @param CohortStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CohortSkews List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CohortKurts List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
 #' @param CohortQuantiles List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
@@ -68,14 +68,14 @@
 #' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
-#' @examples 
+#' @examples
 #' \donttest{
 #' # Create simulated data
 #' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 #'
 #' # Build model
 #' RemixAutoML::AutoCatBoostChainLadder(
-#' 
+#'
 #'    # Data Arguments----
 #'    data = data,
 #'    PartitionRatios = c(0.70,0.20,0.10),
@@ -89,7 +89,7 @@
 #'    TransformTargetVariable = TRUE,
 #'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
 #'    AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
-#'    
+#'
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
 #'    SaveModelObjects = TRUE,
@@ -103,7 +103,7 @@
 #'    LossFunction = "RMSE",
 #'    NumOfParDepPlots = 1L,
 #'    MetricPeriods = 50L,
-#'    
+#'
 #'    # Feature Engineering Arguments----
 #'    ImputeRollStats = -0.001,
 #'    CalendarTimeGroups = c("days","weeks","months"),
@@ -128,7 +128,7 @@
 #'    CohortKurts = NULL,
 #'    CohortQuantiles = NULL,
 #'    CohortQuantilesSelected = "q50",
-#'    
+#'
 #'    # Grid Tuning
 #'    PassInGrid = NULL,
 #'    GridTune = FALSE,
@@ -206,17 +206,17 @@ AutoCatBoostChainLadder <- function(data,
                                     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
-  
+
   # Init: Get catboost loaded----
   loadNamespace(package = "catboost")
-  
+
   # Init: DT_Threads----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure ModelPath and MetaDataPath exists----
   if(!is.null(ModelPath)) if(!dir.exists(file.path(normalizePath(ModelPath)))) dir.create(normalizePath(ModelPath))
   if(!is.null(MetaDataPath)) if(!is.null(MetaDataPath)) if(!dir.exists(file.path(normalizePath(MetaDataPath)))) dir.create(normalizePath(MetaDataPath))
-  
+
   # Args List----
   ArgsList <- list()
   if(!is.null(PartitionRatios)) ArgsList[["PartitionRatios"]] <- PartitionRatios else ArgsList[["PartitionRatios"]] <- c(0.70,0.20,0.10)
@@ -285,11 +285,11 @@ AutoCatBoostChainLadder <- function(data,
   ArgsList[["BootStrapType"]] <- BootStrapType
   ArgsList[["GrowPolicy"]] <- GrowPolicy
   ArgsList[["PassInGrid"]] <- PassInGrid
-  
+
   # Special Args----
   ArgsList[[paste0("Min","-",eval(CalendarDate))]] <- data[, min(get(CalendarDate))][[1L]]
   ArgsList[[paste0("Max","-",eval(CalendarDate))]] <- data[, max(get(CalendarDate))][[1L]]
-  
+
   # Init: Define SaveTimers() function----
   SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {
     if(SaveModelObjectss) {
@@ -300,14 +300,14 @@ AutoCatBoostChainLadder <- function(data,
       }
     }
   }
-  
+
   # Init: Create timers----
   TimerDataEval <- data.table::data.table(Process = rep("a", 25L), Time = rep(999, 25L))
   TimerDataTrain <- data.table::data.table(Process = rep("a", 25L), Time = rep(999, 25L))
-  
+
   # DM: Convert data to data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # DM: Type Casting CalendarDate and CohortDate to Date or POSIXct----
   if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
     if(is.character(data[[eval(CalendarDate)]])) {
@@ -324,14 +324,14 @@ AutoCatBoostChainLadder <- function(data,
     data[, eval(CalendarDate) := as.POSIXct(get(CalendarDate))]
     data[, eval(CohortDate) := as.POSIXct(get(CohortDate))]
   }
-  
+
   # FE: Create CohortPeriodsVariable----
   if(is.null(CohortPeriodsVariable)) {
     data[, CohortPeriods := as.numeric(difftime(time1 = get(CohortDate), time2 = get(CalendarDate), units = eval(TimeUnit)))]
     CohortPeriodsVariable <- "CohortPeriods"
     ArgsList[["CohortPeriodsVariable"]] <- CohortPeriodsVariable
   }
-  
+
   # DM: ConversionRateMeasure if NULL----
   if(is.null(ConversionRateMeasure)) {
     data[, Rate := get(ConversionMeasure) / (get(BaseFunnelMeasure) + 1)]
@@ -339,13 +339,13 @@ AutoCatBoostChainLadder <- function(data,
   } else {
     if(ConversionRateMeasure != "Rate") data.table::setnames(data, eval(ConversionRateMeasure), "Rate")
   }
-  
+
   # ML Process: Train and Evaluate Models----
   for(proc in Jobs) {
-    
+
     # Init: Function Similify----
     proc <- tolower(proc)
-    
+
     # Copy data----
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data1 <- data.table::copy(data)
@@ -353,7 +353,7 @@ AutoCatBoostChainLadder <- function(data,
       data <- data1
       rm(data1)
     }
-    
+
     # FE: CreateCalendarVariables() CalendarDate and CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate), eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
     if(proc %chin% c("evaluate","eval","evaluation")) {
@@ -363,10 +363,10 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
     }
-    
+
     # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     # FE: CreateHolidayVariables() CalendarDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), HolidayGroups = HolidayGroups, Holidays = NULL, GroupingVars = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CalendarDate,"HolidayCounts"))
@@ -377,10 +377,10 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 3L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 3L, j = "Process", value = "# Add CalendarDate holiday variables----")
     }
-    
+
     # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     # FE: CreateHolidayVariables() CohortDate----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), HolidayGroups = eval(HolidayGroups), Holidays = NULL, GroupingVars = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CohortDate, "HolidayCounts"))
@@ -391,7 +391,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 4L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 4L, j = "Process", value = "# Add CohortDate holiday variables----")
     }
-    
+
     # AnomalyDetection for all CohortDates----
     if(!is.null(AnomalyDetection)) {
       temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure))), by = eval(CalendarDate)]
@@ -408,7 +408,7 @@ AutoCatBoostChainLadder <- function(data,
       }
       rm(temp)
     }
-    
+
     # DM: Type Casting CalendarDate to Character to be used as a Grouping Variable----
     x <- system.time(gcFirst = FALSE, data.table::set(data, j = eval(CalendarDate), value = as.character(data[[eval(CalendarDate)]])))
     if(proc %chin% c("evaluate","eval","evaluation")) {
@@ -418,10 +418,10 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 6L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 6L, j = "Process", value = "# Convert CalendarDate to Character to treat as Cohort Group----")
     }
-    
+
     # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
     x <- system.time(gcFirst = FALSE, data.table::setorderv(data, cols = c(eval(CalendarDate),eval(CohortPeriodsVariable)), c(1L, 1L)))
     if(proc %chin% c("evaluate","eval","evaluation")) {
@@ -431,18 +431,18 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 5L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     }
-    
+
     # Save Timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     #----
-    
+
     #----
-    
+
     # FE: AutoLagRollStats() ConversionMeasure with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","evaluation","eval","train","training")) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
-        
+
         # Data
         data                 = data,
         DateColumn           = eval(CohortDate),
@@ -452,13 +452,13 @@ AutoCatBoostChainLadder <- function(data,
         TimeUnit             = TimeUnit,
         TimeGroups           = CohortTimeGroups,
         TimeUnitAgg          = TimeUnit,
-        
+
         # Services
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
-        
+
         # Calculated Columns
         Lags                 = CohortLags,
         MA_RollWindows       = CohortMovingAverages,
@@ -475,15 +475,15 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 7L, j = "Time", value = x[[3L]])
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
       }
-      
+
       # Save Timers to file----
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
-    
+
     # FE: AutoLagRollStats() ConversionMeasure HolidayCounts with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","evaluation","eval","train","training") & !is.null(CohortHolidayLags)) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
-        
+
         # Data
         data                 = data,
         DateColumn           = eval(CohortDate),
@@ -493,13 +493,13 @@ AutoCatBoostChainLadder <- function(data,
         TimeUnit             = TimeUnit,
         TimeGroups           = TimeUnit,
         TimeUnitAgg          = TimeUnit,
-        
+
         # Services
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
-        
+
         # Calculated Columns
         Lags                 = CohortHolidayLags,
         MA_RollWindows       = CohortHolidayMovingAverages,
@@ -516,7 +516,7 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 7L, j = "Time", value = x[[3L]])
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
       }
-      
+
       # DM: Type Casting CalendarDate back to Date----
       x <- system.time(gcFirst = FALSE, data.table::set(data, j = eval(CalendarDate), value = as.Date(data[[eval(CalendarDate)]])))
       if(proc %chin% c("evaluate","eval")) {
@@ -526,17 +526,17 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 8L, j = "Time", value = x[[3L]])
         data.table::set(TimerDataTrain, i = 8L, j = "Process", value = "# Convert CalendarDate back to Date----")
       }
-      
+
       # Save Timers to file----
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
-    
+
     # FE: AutoLagRollStats() BaseFunnelMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
       temp <- data[, data.table::first(get(BaseFunnelMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
-        
+
         # Data
         data                 = temp,
         DateColumn           = eval(CalendarDate),
@@ -546,13 +546,13 @@ AutoCatBoostChainLadder <- function(data,
         TimeGroups           = CalendarTimeGroups,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
-        
+
         # Services
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
-        
+
         # Calculated Columns
         Lags                 = CalendarLags,
         MA_RollWindows       = CalendarMovingAverages,
@@ -573,13 +573,13 @@ AutoCatBoostChainLadder <- function(data,
 
     # Join back to data----
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
-    
+
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
       temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
-        
+
         # Data
         data                 = temp,
         DateColumn           = eval(CalendarDate),
@@ -589,13 +589,13 @@ AutoCatBoostChainLadder <- function(data,
         TimeGroups           = CalendarTimeGroups,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
-        
+
         # Services
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
-        
+
         # Calculated Columns
         Lags                 = CalendarLags,
         MA_RollWindows       = CalendarMovingAverages,
@@ -613,16 +613,16 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
       }
     }
-    
+
     # Join back to data----
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
-    
+
     # FE: AutoLagRollStats() CalendarDateHolidayCounts Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train") & !is.null(CalendarHolidayLags)) {
       temp <- data[, max(get(paste0(CalendarDate, "HolidayCounts"))), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", paste0(CalendarDate, "HolidayCounts"))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
-        
+
         # Data
         data                 = temp,
         DateColumn           = eval(CalendarDate),
@@ -632,13 +632,13 @@ AutoCatBoostChainLadder <- function(data,
         TimeGroups           = TimeUnit,
         TimeUnitAgg          = TimeUnit,
         TimeUnit             = TimeUnit,
-        
+
         # Services
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
-        
+
         # Calculated Columns
         Lags                 = CalendarHolidayLags,
         MA_RollWindows       = CalendarHolidayMovingAverages,
@@ -656,10 +656,10 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for CalendarHolidayCounts----")
       }
     }
-    
+
     # Join back to data
     data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
-    
+
     # FE: ModelDataPrep() Impute Numeric Columns from AutoLagRollStats()----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::ModelDataPrep(
       data         = data,
@@ -679,14 +679,14 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 10L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 10L, j = "Process", value = "# Model data prep----")
     }
-    
+
     # Save Timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     #----
-    
+
     #----
-    
+
     # DM: Save data as csv----
     x <- system.time(gcFirst = FALSE, if(SaveModelObjects) data.table::fwrite(data, file = file.path(MetaDataPath, paste0(ModelID, "_ModelDataReady.csv"))))
     if(proc %chin% c("evaluate","eval")) {
@@ -696,10 +696,10 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 12L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 12L, j = "Process", value = "# Save data to file----")
     }
-    
+
     # Save timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     # DM: Load data if updating models without new data----
     if(!exists("data")) data <- data.table::fread(file = file.path(MetaDataPath, paste0(ModelID, "_ModelDataReady.csv")))
     if(proc %chin% c("evaluate","eval")) {
@@ -709,15 +709,15 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 13L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataTrain, i = 13L, j = "Process", value = "# Load data if updating models without new data----")
     }
-    
+
     # Save timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     # DM: Type Casting for CohortPeriodsVariable, CalendarDate, and CohortDate----
     if(!all(class(data[[eval(CohortPeriodsVariable)]]) %chin% "numeric")) data[, eval(CohortPeriodsVariable) := as.numeric(as.character(get(CohortPeriodsVariable)))]
     if(!all(class(data[[eval(CalendarDate)]]) %chin% "Date")) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
     if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(get(CohortDate))]
-    
+
     # DM: Partition Data----
     if(proc %chin% c("evaluate","eval","evaluation")) {
       x <- system.time(gcFirst = FALSE, DataSets <- RemixAutoML::AutoDataPartition(
@@ -736,14 +736,14 @@ AutoCatBoostChainLadder <- function(data,
       TestData <- DataSets$TestData
       rm(DataSets)
     }
-    
+
     #----
-    
+
     #----
-    
+
     # ML: CatBoostRegression()----
     if(proc %chin% c("evaluate","eval","training","train")) {
-      
+
       # Define features----
       if(proc %chin% c("evaluate","eval")) {
         Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
@@ -754,17 +754,17 @@ AutoCatBoostChainLadder <- function(data,
         idcols <- names(data)[!names(data) %in% Features]
         if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       }
-      
+
       # Define number of trees----
       if(proc %chin% c("eval","evaluation","evaluate")) NTrees <- Trees
-      
+
       # Build model----
       x <- system.time(gcFirst = FALSE, TestModel <- RemixAutoML::AutoCatBoostRegression(
-        
+
         # GPU or CPU and the number of available GPUs----
         task_type = TaskType,
         NumGPUs = NumGPUs,
-        
+
         # Metadata arguments----
         #   'ModelID' is used to create part of the file names generated when saving to file'
         #   'model_path' is where the minimal model objects for scoring will be stored
@@ -783,7 +783,7 @@ AutoCatBoostChainLadder <- function(data,
         metadata_path = MetaDataPath,
         SaveModelObjects = FALSE,
         ReturnModelObjects = TRUE,
-        
+
         # Data arguments----
         #   'TrainOnFull' is to train a model with 100 percent of your data.
         #     That means no holdout data will be used for evaluation
@@ -802,7 +802,7 @@ AutoCatBoostChainLadder <- function(data,
         IDcols = idcols,
         TransformNumericColumns = if(TransformTargetVariable) "Rate" else NULL,
         Methods = TransformMethods,
-        
+
         # Model evaluation----
         #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
         #   'loss_function' the loss function used in training optimization
@@ -814,7 +814,7 @@ AutoCatBoostChainLadder <- function(data,
         loss_function = LossFunction,
         MetricPeriods = MetricPeriods,
         NumOfParDepPlots = NumOfParDepPlots,
-        
+
         # Grid tuning arguments----
         #   'PassInGrid' is for retraining using a previous grid winning args
         #   'MaxModelsInGrid' is a cap on the number of models that will run
@@ -830,7 +830,7 @@ AutoCatBoostChainLadder <- function(data,
         MaxRunMinutes = MaxRunMinutes,
         Shuffles = 4L,
         BaselineComparison = BaselineComparison,
-        
+
         # Tuning parameters----
         # Trees, Depth, and LearningRate used in the bandit grid tuning
         # Must set Trees to a single value if you are not grid tuning
@@ -844,7 +844,7 @@ AutoCatBoostChainLadder <- function(data,
         RSM = RSM,
         BootStrapType = BootStrapType,
         GrowPolicy = GrowPolicy))
-      
+
       # Define number of trees----
       if(proc %chin% c("eval","evaluate")) {
         TreeCount <- TestModel$Model$tree_count
@@ -853,7 +853,7 @@ AutoCatBoostChainLadder <- function(data,
       } else {
         NTrees <- Trees
       }
-      
+
       # Store results----
       if(SaveModelObjects) {
         if(proc %chin% c("evaluate","eval","evaluation")) {
@@ -864,10 +864,10 @@ AutoCatBoostChainLadder <- function(data,
           data.table::set(TimerDataTrain, i = 16L, j = "Process", value = "# Build model using CatBoostRegression()----")
         }
       }
-      
+
       # Save Timers to file
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-      
+
       # Save model objects----
       if(SaveModelObjects) {
         if(proc %chin% c("evaluate","eval","evaluation")) {
@@ -876,27 +876,27 @@ AutoCatBoostChainLadder <- function(data,
           save(TestModel, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_FinalTrain.Rdata")))
         }
       }
-      
+
       # Remove objects before next run----
       if(proc %chin% c("evaluate","eval","evaluation")) {
         rm(TestModel)
       } else {
         rm(TestModel, data)
       }
-      
+
       # Garbage collection----
       gc()
     }
-    
+
     # Save timers to file----
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
-    
+
     #----
-    
+
     #----
-    
+
   }
-  
+
   # Return and Save----
   if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(ModelPath), paste0(ModelID, "_ArgsList.Rdata")))
   return(ArgsList)
