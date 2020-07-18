@@ -61,7 +61,7 @@ AutoBanditSarima(
 
 2. BoxCox - "skip" means I didn't use it
 
-3. IncludeDrift - TRUE or FALSE in forecast::Arima() 
+3. IncludeDrift - TRUE or FALSE in forecast::Arima()
 
 4. SeasonalDifferences - 0, 1, 2, ... Set to 0 by default as values > 0 can cause model runs to take significantly longer depending on the size of the data
 
@@ -101,21 +101,21 @@ AutoBanditSarima(
 
 # Non overlapping set of Arima arguments in order of increasing sophistication
 
-22. BanditProbs_StratifyParsimonousGrid_3 
+22. BanditProbs_StratifyParsimonousGrid_3
 
-23. BanditProbs_StratifyParsimonousGrid_4 
+23. BanditProbs_StratifyParsimonousGrid_4
 
-24. BanditProbs_StratifyParsimonousGrid_5 
+24. BanditProbs_StratifyParsimonousGrid_5
 
-25. BanditProbs_StratifyParsimonousGrid_6 
+25. BanditProbs_StratifyParsimonousGrid_6
 
-26. BanditProbs_StratifyParsimonousGrid_7 
+26. BanditProbs_StratifyParsimonousGrid_7
 
-27. BanditProbs_StratifyParsimonousGrid_8 
+27. BanditProbs_StratifyParsimonousGrid_8
 
-28. BanditProbs_StratifyParsimonousGrid_9 
+28. BanditProbs_StratifyParsimonousGrid_9
 
-29. BanditProbs_StratifyParsimonousGrid_10 
+29. BanditProbs_StratifyParsimonousGrid_10
 
 30. RunTime - Time taken to build the model using the set of arguments
 
@@ -166,7 +166,7 @@ Output <- RemixAutoML::AutoBanditSarima(
   NumFCPeriods = 5L,
   MaxLags = 5L,
   MaxSeasonalLags = 0L,
-  MaxMovingAverages = 5L, 
+  MaxMovingAverages = 5L,
   MaxSeasonalMovingAverages = 0L,
   MaxFourierPairs = 2L,
   TrainWeighting = 0.50,

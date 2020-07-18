@@ -136,7 +136,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
 xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
 Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
-  
+
   # Data Args:
   #  data - this is your data.table with a date column,
   #   a target variable, and possibly some grouping
@@ -147,17 +147,17 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   #   vars. If multiple time aggregations are selected in
   #   the TimeGroups argument, then lags and rolling stats
   #   will be also be computed for those time groups.
-  #  TimeGroups must have at least one selected. Order the 
+  #  TimeGroups must have at least one selected. Order the
   #   time groups from lower to higher in granularity. E.g.
   #   c("day", "week"). Cannot go lower than your data warrants.
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"), 
+  GroupVariables = c("Store","Dept"),
   TimeUnit = "days",
   TimeGroups = c("days","weeks"),
-  
+
   # Productionize
   TrainOnFull = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
@@ -166,22 +166,22 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   GridTune = FALSE,
   GridEvalMetric = "mae",
   ModelCount = 5,
-  TaskType = "GPU", 
+  TaskType = "GPU",
   NumGPU = 1,
   Timer = TRUE,
   DebugMode = FALSE,
-  
+
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
-  
+
   # Date Features
   CalendarVariables = TRUE,
   HolidayVariable = TRUE,
-  HolidayLags = 1, 
+  HolidayLags = 1,
   HolidayMovingAverages = 1:2,
-  
+
   # Time Series Features
   Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
   MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
@@ -189,14 +189,14 @@ Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  Quantiles_Selected = c("q5","q95"), 
-  
+  Quantiles_Selected = c("q5","q95"),
+
   # Bonus Features
   XREGS = xreg,
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
   NTrees = 300)
-  
+
 Forecast1$TimeSeriesPlot
 Forecast1$Forecast
 Forecast1$ModelInformation$...

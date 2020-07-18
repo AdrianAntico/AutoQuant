@@ -25,9 +25,9 @@ RL_Initialize sets up the components necessary for RL
 }
 \examples{
 RL_Start <- RL_Initialize(
-  ParameterGridSet = GridClusters, 
-  Alpha = Alpha, 
-  Beta = Beta, 
+  ParameterGridSet = GridClusters,
+  Alpha = Alpha,
+  Beta = Beta,
   SubDivisions = 1000L)
 BanditArmsN <- RL_Start[["BanditArmsN"]]
 Successes <- RL_Start[["Successes"]]

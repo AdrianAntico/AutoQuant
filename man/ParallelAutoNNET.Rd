@@ -38,7 +38,7 @@ ParallelAutoNNET to run the 4 data sets at once
 \examples{
 ParallelAutoNNET(
   MetricSelection = "MAE",
-  Output = NULL, 
+  Output = NULL,
   MaxRunsWithoutNewWinner = 20,
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,

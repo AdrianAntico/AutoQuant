@@ -34,7 +34,7 @@ FinalBuildArima to generate forecasts and ensemble data
 }
 \examples{
 FinalBuildArima(
-  Output = NULL, 
+  Output = NULL,
   TimeSeriesPrepareOutput = NULL,
   MaxFourierTerms = 0,
   TrainValidateShare = c(0.50,0.50),

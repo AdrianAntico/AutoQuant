@@ -56,17 +56,17 @@ TimeSeriesDataPrepare is a function that takes raw data and returns the necessar
 \examples{
 data <- data.table::fread(file.path(PathNormalizer("C:\\\\Users\\\\aantico\\\\Documents\\\\Package\\\\data"),"tsdata.csv"))
 TimeSeriesDataPrepare(
-  data = data, 
+  data = data,
   TargetName = "Weekly_Sales",
-  DateName = "Date", 
-  Lags = 5, 
+  DateName = "Date",
+  Lags = 5,
   MovingAverages,
   SeasonalMovingAverages,
   SeasonalLags = 1,
   TimeUnit = "week",
-  FCPeriods = 10, 
+  FCPeriods = 10,
   HoldOutPeriods = 10,
-  TSClean = TRUE, 
+  TSClean = TRUE,
   ModelFreq = TRUE,
   FinalBuild = FALSE)
 }

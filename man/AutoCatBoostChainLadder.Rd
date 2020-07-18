@@ -227,7 +227,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    TransformTargetVariable = TRUE,
    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
    AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
-   
+
    # MetaData Arguments----
    Jobs = c("eval","train"),
    SaveModelObjects = TRUE,
@@ -241,7 +241,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    LossFunction = "RMSE",
    NumOfParDepPlots = 1L,
    MetricPeriods = 50L,
-   
+
    # Feature Engineering Arguments----
    ImputeRollStats = -0.001,
    CalendarTimeGroups = c("days","weeks","months"),
@@ -266,7 +266,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    CohortKurts = NULL,
    CohortQuantiles = NULL,
    CohortQuantilesSelected = "q50",
-   
+
    # Grid Tuning
    PassInGrid = NULL,
    GridTune = FALSE,
