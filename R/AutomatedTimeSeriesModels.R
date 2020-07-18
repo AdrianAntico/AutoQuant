@@ -259,6 +259,9 @@ AutoBanditSarima <- function(data,
   # MaxRunMinutes = ARIMA_MaxRunTime
   # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
 
+  # Reutrn if no suitable models were fit----
+  if(Arima_ExperimentGrid[1]$Train_MSE == -7) return(paste0("Unable to fit an arima to this data"))
+
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
     Arima_Artifacts_Score <- TimeSeriesDataPrepare(
@@ -320,7 +323,7 @@ AutoBanditSarima <- function(data,
       }
     }
   } else {
-    return(print("Model was not able to be built"))
+    return(print("Unable to build arima on given data"))
   }
 }
 
