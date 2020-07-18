@@ -1244,7 +1244,7 @@ OptimizeArima <- function(Output,
         if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
           XREG <- FALSE
           XREGFC <- FALSE
-        } else {
+        } else if(!is.na(NextGrid[["MaxFourierTerms"]][1L])) {
           XREG <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L])}, error = function(x) FALSE)
           XREGFC <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L], h = HoldOutPeriods)}, error = function(x) FALSE)
         }
@@ -1362,6 +1362,7 @@ OptimizeArima <- function(Output,
     }
 
     # Remove Invalid Columns----
+    if(is.null(ExperimentGrid)) return(NULL)
     ResultsGrid <- ExperimentGrid[!is.na(Blended_MAE) & SeasonalLags != -10]
 
     # Add Rank Values----
