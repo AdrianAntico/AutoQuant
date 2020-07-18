@@ -10,7 +10,7 @@
 #' @param Beta Prior parameter for trials
 #' @param SubDivisions Default is 100L in the stats package. Changed it to 1000 for this function.
 #' @return Probability of each arm being the best arm compared to all other arms.
-#' @export 
+#' @export
 RPM_Binomial_Bandit <- function(Success,
                                 Trials,
                                 Alpha = 1L,
@@ -33,7 +33,7 @@ RPM_Binomial_Bandit <- function(Success,
 }
 
 #' RL_Initialize
-#' 
+#'
 #' RL_Initialize sets up the components necessary for RL
 #'
 #' @author Adrian Antico
@@ -42,35 +42,35 @@ RPM_Binomial_Bandit <- function(Success,
 #' @param Alpha Prior successes
 #' @param Beta Prior trials
 #' @param SubDivisions Tolerance for integration
-#' @examples 
+#' @examples
 #' RL_Start <- RL_Initialize(
-#'   ParameterGridSet = GridClusters, 
-#'   Alpha = Alpha, 
-#'   Beta = Beta, 
+#'   ParameterGridSet = GridClusters,
+#'   Alpha = Alpha,
+#'   Beta = Beta,
 #'   SubDivisions = 1000L)
 #' BanditArmsN <- RL_Start[["BanditArmsN"]]
 #' Successes <- RL_Start[["Successes"]]
 #' Trials <- RL_Start[["Trials"]]
 #' GridIDs <- RL_Start[["GridIDs"]]
 #' BanditProbs <- RL_Start[["BanditProbs"]]
-#' @export 
-RL_Initialize <- function(ParameterGridSet = NULL, 
-                          Alpha = 1L, 
+#' @export
+RL_Initialize <- function(ParameterGridSet = NULL,
+                          Alpha = 1L,
                           Beta = 1L,
                           SubDivisions = 1000L) {
-  
+
   # Initialization----
   BanditArmsN <- length(ParameterGridSet)
   Successes <- c(rep(0,BanditArmsN))
   Trials <- c(rep(0,BanditArmsN))
   GridIDs <- c(seq_len(BanditArmsN))
   BanditProbs <- RPM_Binomial_Bandit(
-    Success = Successes, 
-    Trials = Trials, 
-    Alpha = Alpha, 
-    Beta = Beta, 
+    Success = Successes,
+    Trials = Trials,
+    Alpha = Alpha,
+    Beta = Beta,
     SubDivisions = SubDivisions)
-  
+
   # Return----
   return(
     list(
@@ -81,8 +81,8 @@ RL_Initialize <- function(ParameterGridSet = NULL,
       BanditArmsN = BanditArmsN))
 }
 
-#' RL_Update 
-#' 
+#' RL_Update
+#'
 #' RL_Update updates the bandit probabilities for selecting different grids
 #'
 #' @author Adrian Antico
@@ -101,7 +101,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 #' @param MaxRunMinutes Run time constraint
 #' @param TotalRunTime Cumulative run time in minutes
 #' @param BanditProbabilities Inital probabilities from RL_Initialize()
-#' @examples 
+#' @examples
 #' RL_Update_Output <- RL_Update(
 #'   ExperimentGrid = ExperimentGrid,
 #'   MetricSelection = MetricSelection,
@@ -121,7 +121,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 #' Trials <- RL_Update_Output[["Trials"]]
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
-#' @export 
+#' @export
 RL_Update <- function(ExperimentGrid = ExperimentGrid,
                       MetricSelection = MetricSelection,
                       ModelRun = run,
@@ -136,37 +136,36 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
                       MaxRunMinutes = MaxRunMinutes,
                       TotalRunTime = TotalRunTime,
                       BanditProbabilities = BanditProbs) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Compute Baseline performance----
   if(ModelRun == 1L) Baseline <- min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
-  
+
   # Compute best performance----
   if(is.na(min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE))) {
     BestPerformance <- -10L
   } else {
     BestPerformance <- min(ExperimentGrid[Blended_MSE > 0L & Blended_MAE > 0L & Blended_MAPE > 0L][[paste0("Blended_",MetricSelection)]], na.rm = TRUE)
   }
-  
-  
+
   # New performance----
   if(is.na(ExperimentGrid[ModelRun, get(paste0("Blended_",MetricSelection))])) {
     NewPerformance <- -10L
   } else {
     NewPerformance <- ExperimentGrid[ModelRun, get(paste0("Blended_",MetricSelection))]
   }
-  
+
   # Comparison----
   if(NewPerformance <= BestPerformance & ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun
-  
+
   # Update trial counts----
   if(ModelRun != 1L) TrialVector[NEWGrid] <- TrialVector[NEWGrid] + 1L
-  
+
   # Best Metric----
   if(ModelRun != 1L) {
-    
+
     # Compute Runs of Consecutive Failures----
     if(NewPerformance < BestPerformance) {
       RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
@@ -178,30 +177,30 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
         SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
       }
     }
-    
+
     # Update Bandit Probabilities----
     if(any(TrialVector < SuccessVector )) {
       TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
     }
-    
+
     # Create Bandit Probabilities----
     BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   } else {
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   }
-  
+
   # Loop Break Conditions (No new winners; Max models built; Max time reached)----
   if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
-    Break <- "exit"      
+    Break <- "exit"
   } else {
     Break <- "stay"
   }
-  
+
   # Return----
   return(list(
     NewGrid = NewGrid,
@@ -211,8 +210,8 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
     BreakLoop = Break))
 }
 
-#' RL_ML_Update 
-#' 
+#' RL_ML_Update
+#'
 #' RL_ML_Update updates the bandit probabilities for selecting different grids
 #'
 #' @author Adrian Antico
@@ -231,7 +230,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param MaxRunMinutes Run time constraint
 #' @param TotalRunTime Cumulative run time in minutes
 #' @param BanditProbabilities Inital probabilities from RL_Initialize()
-#' @examples 
+#' @examples
 #' RL_Update_Output <- RL_ML_Update(
 #'   ExperimentGrid = ExperimentGrid,
 #'   ModelRun = run,
@@ -251,7 +250,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' Trials <- RL_Update_Output[["Trials"]]
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
-#' @export 
+#' @export
 RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
                          ModelType = "classification",
                          ModelRun = counter,
@@ -268,36 +267,36 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
                          MaxRunMinutes = MaxRunMinutes,
                          TotalRunTime = TotalRunTime,
                          BanditProbabilities = BanditProbs) {
-  
+
   # Comparison----
   if(ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun - 1L else BestGrid <- NEWGrid
-  
+
   # Update trial counts----
   if(ModelRun > 1L) TrialVector[BestGrid] <- TrialVector[BestGrid] + 1L
-  
+
   # Best Metric----
   if(ModelRun != 1L) {
-    
+
     # Consecutive failures and updating success vectors----
     if(ModelRun > 1L) {
       if(tolower(ModelType) == "classification") if(NewPerformance > BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
       if(tolower(ModelType) %chin% c("regression","multiclass")) if(NewPerformance < BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
     }
-    
+
     # Update Bandit Probabilities----
     if(any(TrialVector < SuccessVector)) TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
-    
+
     # Create Bandit Probabilities----
     BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   } else {
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   }
-  
+
   # Loop Break Conditions (No new winners; Max models built; Max time reached)----
   # print("RunsWithoutNewWinner")
   # print(RunsWithoutNewWinner)
@@ -312,11 +311,11 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   # print("MaxRunMinutes")
   # print(MaxRunMinutes)
   if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
-    Break <- "exit"      
+    Break <- "exit"
   } else {
     Break <- "stay"
   }
-  
+
   # Return----
   return(list(
     NewGrid = NewGrid,
@@ -326,12 +325,12 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
     BreakLoop = Break))
 }
 
-#' CatBoostParameterGrids 
-#' 
+#' CatBoostParameterGrids
+#'
 #' CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.html
-#' 
+#'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param TaskType "GPU" or "CPU"
 #' @param Shuffles The number of shuffles you want to apply to each grid
 #' @param BootStrapType c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
@@ -340,7 +339,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param LearningRate seq(0.01,.10,0.01)
 #' @param L2_Leaf_Reg c(1.0:10.0)
 #' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
-#' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0) 
+#' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
 #' @export
 CatBoostParameterGrids <- function(TaskType = "CPU",
@@ -352,22 +351,22 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
                                    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
-  
+
   # Create grid sets----
   Grid <- data.table::CJ(
-    
+
     # Basis for creating parsimonous buckets----
     NTrees = if(!is.null(NTrees)) sort(NTrees, decreasing = FALSE) else seq(1000L, 10000L, 1000L),
     Depth = if(!is.null(Depth)) sort(Depth, decreasing = FALSE) else seq(4L, 16L, 2L),
     LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
-    
+
     # Random hyperparameters----
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
     RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = if(!is.null(BootStrapType)) BootStrapType else c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = if(!is.null(GrowPolicy)) GrowPolicy else c("SymmetricTree", "Depthwise", "Lossguide"))
-  
-  # Filter out invalid grids----  
+
+  # Filter out invalid grids----
   if(tolower(TaskType) == "gpu") {
     data.table::set(Grid, j = "RSM", value = NULL)
     Grid <- Grid[!BootStrapType %chin% c("MVS")]
@@ -376,7 +375,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     Grid <- Grid[!tolower(BootStrapType) %chin% c("poisson")]
     Grid <- unique(Grid[, GrowPolicy := NULL])
   }
-  
+
 
   # Total loops----
   N_NTrees <- length(unique(Grid[["NTrees"]]))
@@ -385,11 +384,11 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   N_L2_Leaf_Reg <- length(unique(Grid[["L2_Leaf_Reg"]]))
   Runs <- max(N_NTrees, N_Depth, N_LearningRate)
   Grids <- list()
-  
+
   # Create grid sets----
   for(i in seq_len(Runs)) {
     if(i == 1L) {
-      Grids[[paste0("Grid_",i)]] <- 
+      Grids[[paste0("Grid_",i)]] <-
         Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
     } else {
       Grids[[paste0("Grid_",i)]] <- data.table::fsetdiff(
@@ -397,7 +396,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
         Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)]])
     }
   }
-  
+
   # Define experimental grid----
   eGrid <- data.table::data.table(
     GridNumber = rep(-1, 10000L),
@@ -412,10 +411,10 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     RSM = rep(-1,10000L),
     BootStrapType = rep("aa", 10000L),
     GrowPolicy = rep("aa", 10000L))
-  
+
   # Shuffle grid sets----
   for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_", i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
-  
+
   # Return grid----
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
@@ -423,7 +422,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' CatBoostRegressionParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -451,10 +450,10 @@ CatBoostRegressionParams <- function(counter = NULL,
                                      Grid = NULL,
                                      ExperimentalGrid = NULL,
                                      GridClusters = NULL) {
-  
+
   # Select Grid----
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {
@@ -556,7 +555,7 @@ CatBoostRegressionParams <- function(counter = NULL,
 #' CatBoostClassifierParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -586,10 +585,10 @@ CatBoostClassifierParams <- function(counter = NULL,
                                      Grid = NULL,
                                      ExperimentalGrid = NULL,
                                      GridClusters = NULL) {
-  
+
   # Select Grid
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(is.null(LossFunction)) LossFunction <- "Logloss"
@@ -691,7 +690,7 @@ CatBoostClassifierParams <- function(counter = NULL,
 #' CatBoostMultiClassParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -717,10 +716,10 @@ CatBoostMultiClassParams <- function(counter = NULL,
                                      Grid = NULL,
                                      ExperimentalGrid = NULL,
                                      GridClusters = NULL) {
-  
+
   # Select Grid
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {
@@ -813,10 +812,10 @@ CatBoostMultiClassParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' XGBoostParameterGrids 
-#'  
+#' XGBoostParameterGrids
+#'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param TaskType "GPU" or "CPU"
 #' @param Shuffles The number of shuffles you want to apply to each grid
 #' @param NTrees seq(500L, 5000L, 500L)
@@ -835,27 +834,27 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
                                   MinChildWeight = seq(1.0, 10.0, 1.0),
                                   SubSample = seq(0.55, 1.0, 0.05),
                                   ColSampleByTree = seq(0.55, 1.0, 0.05)) {
-  
+
   # Create grid sets----
   Grid <- data.table::CJ(
-    
+
     # Basis for creating parsimonous buckets----
     NTrees = if(!is.null(NTrees)) sort(NTrees, decreasing = FALSE) else seq(500L, 5000L, 500L),
     Depth = if(!is.null(Depth)) sort(Depth, decreasing = FALSE) else seq(4L, 16L, 2L),
     LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
-    
+
     # Random hyperparameters----
     MinChildWeight = if(!is.null(MinChildWeight)) MinChildWeight else seq(1.0, 10.0, 1.0),
     SubSample = if(!is.null(SubSample)) SubSample else seq(0.55, 1.0, 0.05),
     ColSampleByTree = if(!is.null(ColSampleByTree)) ColSampleByTree else seq(0.55, 1.0, 0.05))
-  
+
   # Total loops----
   N_NTrees <- length(unique(Grid[["NTrees"]]))
   N_Depth <- length(unique(Grid[["Depth"]]))
   N_LearningRate <- length(unique(Grid[["LearningRate"]]))
   Runs <- max(N_NTrees, N_Depth, N_LearningRate)
   Grids <- list()
-  
+
   # Create grid sets----
   for(i in seq_len(Runs)) {
     if(i == 1L) {
@@ -866,7 +865,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
         Grid[NTrees <= unique(Grid[["NTrees"]])[min(i-1L,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i-1L,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i-1L,N_LearningRate)]])
     }
   }
-  
+
   # Define experimental grid----
   eGrid <- data.table::data.table(
     GridNumber = rep(-1, 10000L),
@@ -880,10 +879,10 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
     MinChildWeight = rep(-1,10000L),
     SubSample = rep(-1,10000L),
     ColSampleByTree = rep("aa", 10000L))
-  
+
   # Shuffle grid sets----
   for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_",i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
-  
+
   # Return grid----
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
@@ -891,7 +890,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' XGBoostClassifierParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
@@ -913,10 +912,10 @@ XGBoostClassifierParams <- function(counter = NULL,
                                     Grid = NULL,
                                     ExperimentalGrid = NULL,
                                     GridClusters = NULL) {
-  
+
   # Select Grid
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {
@@ -965,7 +964,7 @@ XGBoostClassifierParams <- function(counter = NULL,
 #' XGBoostRegressionParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
@@ -987,10 +986,10 @@ XGBoostRegressionParams <- function(counter = NULL,
                                     Grid = NULL,
                                     ExperimentalGrid = NULL,
                                     GridClusters = NULL) {
-  
+
   # Select Grid
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {
@@ -1039,7 +1038,7 @@ XGBoostRegressionParams <- function(counter = NULL,
 #' XGBoostRegressionMetrics
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param grid_eval_metric Passthrough
 #' @param MinVal = -1L,
 #' @param calibEval Passthrough
@@ -1083,7 +1082,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' XGBoostMultiClassParams
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning 
+#' @family Supervised Learning
 #' @param counter Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
@@ -1106,10 +1105,10 @@ XGBoostMultiClassParams <- function(counter = NULL,
                                     Grid = NULL,
                                     ExperimentalGrid = NULL,
                                     GridClusters = NULL) {
-  
+
   # Select Grid
   if(counter <= BanditArmsN + 1L) {
-    
+
     # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
     # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
     if(counter == 1L) {

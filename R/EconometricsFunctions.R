@@ -1256,13 +1256,13 @@ OptimizeArima <- function(Output,
       # Build Models----
       if(run == 1L) {
         if(MinVal > 0) {
-          Results <- forecast::auto.arima(
+          Results <- tryCatch({forecast::auto.arima(
             y=train,max.p=Lags,max.q=MovingAverages,max.P=SeasonalLags,max.Q=SeasonalMovingAverages,max.d=Differences,max.D=SeasonalDifferences,
-            ic="aicc",lambda=TRUE,biasadj=TRUE,stepwise=TRUE,parallel=FALSE,1L)
+            ic="aicc",lambda=TRUE,biasadj=TRUE,stepwise=TRUE,parallel=FALSE,1L)}, error = function(x) NULL)
         } else {
-          Results <- forecast::auto.arima(
+          Results <- tryCatch({forecast::auto.arima(
             y=train,max.p=Lags,max.q=MovingAverages,max.P=SeasonalLags,max.Q=SeasonalMovingAverages,max.d=Differences,max.D=SeasonalDifferences,
-            ic="aicc",lambda=FALSE,biasadj=FALSE,stepwise=TRUE,parallel=FALSE,num.cores=1L)
+            ic="aicc",lambda=FALSE,biasadj=FALSE,stepwise=TRUE,parallel=FALSE,num.cores=1L)}, error = function(x) NULL)
         }
       } else {
         if(!is.numeric(XREG) & !is.numeric(XREGFC)) {
@@ -1287,11 +1287,16 @@ OptimizeArima <- function(Output,
         }
       }
 
+      # Return if auto.arima fails----
+      if(run == 1L & is.null(Results)) {
+        return(print("Returned because auto.arima failed: Error in forecast::auto.arima(y = train, max.p = Lags, max.q = MovingAverages,  : No suitable ARIMA model found")))
+      }
+
       # End time---
       End <- Sys.time()
 
       # Performance Metrics----
-      temp <- tryCatch({RL_Performance(
+      ExperimentGrid <- RL_Performance(
         Results = Results,
         NextGrid = NextGrid,
         TrainValidateShare = TrainValidateShare,
@@ -1302,20 +1307,13 @@ OptimizeArima <- function(Output,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)}, error = function(x) NULL)
-      if(!is.null(temp)) {
-        ExperimentGrid <- temp
-        rm(temp)
-      } else {
-        run1 <- run1 + 1L
-        if(run1 >= 10) break
-      }
 
       # Add run time to ExperimentGrid----
       if(!is.null(ExperimentGrid)) data.table::set(ExperimentGrid, i = run, j = "RunTime", value = End - Start)
       TotalRunTime <- TotalRunTime + as.numeric((End - Start))
 
       # RL Update----
-      RL_Update_Output <- tryCatch({RL_Update(
+      RL_Update_Output <- RL_Update(
         ExperimentGrid = ExperimentGrid,
         MetricSelection = MetricSelection,
         ModelRun = run,
@@ -1329,7 +1327,7 @@ OptimizeArima <- function(Output,
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = TotalRunTime,
-        BanditProbabilities = BanditProbs)}, error = function(x) NULL)
+        BanditProbabilities = BanditProbs)
 
       #
       # ExperimentGrid = ExperimentGrid
@@ -1349,13 +1347,11 @@ OptimizeArima <- function(Output,
       #
 
       # Collect updated bandit metadata----
-      if(!is.null(RL_Update_Output)) {
-        BanditProbs <- RL_Update_Output[["BanditProbs"]]
-        Trials <- RL_Update_Output[["Trials"]]
-        Successes <- RL_Update_Output[["Successes"]]
-        NewGrid <- RL_Update_Output[["NewGrid"]]
-        Break <- RL_Update_Output[["BreakLoop"]]
-      }
+      BanditProbs <- RL_Update_Output[["BanditProbs"]]
+      Trials <- RL_Update_Output[["Trials"]]
+      Successes <- RL_Update_Output[["Successes"]]
+      NewGrid <- RL_Update_Output[["NewGrid"]]
+      Break <- RL_Update_Output[["BreakLoop"]]
 
       # Exit repeat loop upon conditions----
       if(Break == "exit") break
