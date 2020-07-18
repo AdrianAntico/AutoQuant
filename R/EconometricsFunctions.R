@@ -1289,7 +1289,8 @@ OptimizeArima <- function(Output,
 
       # Return if auto.arima fails----
       if(run == 1L & is.null(Results)) {
-        return(print("Returned because auto.arima failed: Error in forecast::auto.arima(y = train, max.p = Lags, max.q = MovingAverages,  : No suitable ARIMA model found"))
+        print("Returned because auto.arima failed: Error in forecast::auto.arima(y = train, max.p = Lags, max.q = MovingAverages,  : No suitable ARIMA model found")
+        return(ExperimentGrid)
       }
 
       # End time---
@@ -2766,7 +2767,7 @@ ParallelAutoARIMA <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- parallel::detectCores()
+  cores    <- min(4L, parallel::detectCores())
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   library(doParallel)
