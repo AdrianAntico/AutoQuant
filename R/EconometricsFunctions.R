@@ -1306,7 +1306,7 @@ OptimizeArima <- function(Output,
         run = run,
         train = train,
         ValidationData = ValidationData,
-        HoldOutPeriods = HoldOutPeriods)}, error = function(x) NULL)
+        HoldOutPeriods = HoldOutPeriods)
 
       # Add run time to ExperimentGrid----
       if(!is.null(ExperimentGrid)) data.table::set(ExperimentGrid, i = run, j = "RunTime", value = End - Start)
