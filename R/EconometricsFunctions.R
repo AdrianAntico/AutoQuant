@@ -1,5 +1,5 @@
 #' Regular_Performance creates and stores model results in Experiment Grid
-#' 
+#'
 #' Regular_Performance creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
@@ -12,37 +12,37 @@
 #' @param train Data set
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
-#' @export 
+#' @export
 Regular_Performance <- function(Model = NULL,
-                                Results = Results, 
+                                Results = Results,
                                 GridList = GridList,
-                                TrainValidateShare = c(0.5,0.5), 
+                                TrainValidateShare = c(0.5,0.5),
                                 ExperimentGrid = ExperimentGrid,
-                                run = run, 
+                                run = run,
                                 train = train,
                                 ValidationData = ValidationData,
                                 HoldOutPeriods = HoldOutPeriods) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Train Performance----
   if(!is.null(Results)) {
     if(run == 1L) {
-      
+
       # AutoETS----
       TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
-      
+
       # Compute residuals----
       data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(TrainMetrics, 
+      data.table::set(TrainMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(TrainMetrics[["Residuals"]]^2,
                                    abs(TrainMetrics[["Residuals"]]),
                                    abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
       data.table::set(ExperimentGrid,
                       i = run,
@@ -51,20 +51,20 @@ Regular_Performance <- function(Model = NULL,
                                    mean(TrainMetrics[["AbsoluteError"]], na.rm = TRUE),
                                    mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     } else {
-      
+
       # Back cast----
       TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
-      
+
       # Compute residuals----
       data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(TrainMetrics, 
+      data.table::set(TrainMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(TrainMetrics[["Residuals"]] ^ 2L,
                                    abs(TrainMetrics[["Residuals"]]),
                                    abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
       data.table::set(ExperimentGrid,
                       i = run,
@@ -74,78 +74,78 @@ Regular_Performance <- function(Model = NULL,
                                    mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     }
   } else {
-    
+
     # Fill ExperimentGrid Table----
-    data.table::set(ExperimentGrid, 
+    data.table::set(ExperimentGrid,
                     i = run,
                     j = c("Train_MSE","Train_MAE","Train_MAPE"),
                     value = list(NA, NA, NA))
   }
-  
+
   # Validation Performance----
   if(!is.null(Results)) {
     if(run == 1L) {
-      
+
       # ets----
       ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, h = HoldOutPeriods)$mean))
-      
+
       # Compute residuals----
       data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(ValidationMetrics, 
+      data.table::set(ValidationMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(ValidationMetrics[["Residuals"]] ^ 2L,
                                    abs(ValidationMetrics[["Residuals"]]),
                                    abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
-      data.table::set(ExperimentGrid, 
+      data.table::set(ExperimentGrid,
                       i = run,
                       j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                       value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
                                    mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
                                    mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     } else {
-      
+
       # Forecast----
       ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, h = HoldOutPeriods)$mean))
-      
+
       # Compute residuals----
       data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(ValidationMetrics, 
+      data.table::set(ValidationMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(ValidationMetrics[["Residuals"]] ^ 2L,
                                    abs(ValidationMetrics[["Residuals"]]),
                                    abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
-      data.table::set(ExperimentGrid, 
+      data.table::set(ExperimentGrid,
                       i = run,
                       j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                       value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
                                    mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
-                                   mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))          
+                                   mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     }
   } else {
-    
+
     # Fill ExperimentGrid Table----
     data.table::set(ExperimentGrid,
                     i = run,
                     j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                     value = list(NA, NA, NA))
   }
-  
+
   # Blended Performance----
-  data.table::set(ExperimentGrid, 
+  data.table::set(ExperimentGrid,
                   i = run,
                   j = c("Blended_MSE","Blended_MAE","Blended_MAPE"),
                   value = list(TrainValidateShare[1] * ExperimentGrid[run, Train_MSE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MSE],
                                TrainValidateShare[1] * ExperimentGrid[run, Train_MAE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAE],
                                TrainValidateShare[1] * ExperimentGrid[run, Train_MAPE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAPE]))
-  
+
   # Fill in Result Values----
   if(tolower(Model) == "ets") {
     if(run != 1L) {
@@ -154,7 +154,7 @@ Regular_Performance <- function(Model = NULL,
                         i = run,
                         j = params,
                         value = GridList[[params]][[run]])
-      }    
+      }
     }
   } else if(tolower(Model) == "tbats") {
     if(run != 1L) {
@@ -175,13 +175,13 @@ Regular_Performance <- function(Model = NULL,
       }
     }
   }
-  
+
   # Return----
   return(ExperimentGrid)
 }
 
 #' ARIMA_Performance creates and stores model results in Experiment Grid
-#' 
+#'
 #' ARIMA_Performance creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
@@ -196,38 +196,38 @@ Regular_Performance <- function(Model = NULL,
 #' @param train Data set
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
-#' @export 
-RL_Performance <- function(Results = Results, 
+#' @export
+RL_Performance <- function(Results = Results,
                            NextGrid = NextGrid,
-                           TrainValidateShare = c(0.5,0.5), 
+                           TrainValidateShare = c(0.5,0.5),
                            MaxFourierTerms = NULL,
                            XREGFC = XREGFC,
                            ExperimentGrid = ExperimentGrid,
-                           run = run, 
+                           run = run,
                            train = train,
                            ValidationData = ValidationData,
                            HoldOutPeriods = HoldOutPeriods) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Train Performance----
   if(!is.null(Results)) {
     if(run == 1L) {
-      
+
       # Train Metrics----
       TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
-      
+
       # Compute residuals----
       data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(TrainMetrics, 
+      data.table::set(TrainMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(TrainMetrics[["Residuals"]] ^ 2L,
                                    abs(TrainMetrics[["Residuals"]]),
                                    abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
       data.table::set(ExperimentGrid,
                       i = run,
@@ -241,17 +241,17 @@ RL_Performance <- function(Results = Results,
       } else {
         TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
       }
-      
+
       # Compute residuals----
       data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(TrainMetrics, 
+      data.table::set(TrainMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(TrainMetrics[["Residuals"]] ^ 2L,
                                    abs(TrainMetrics[["Residuals"]]),
                                    abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
       data.table::set(ExperimentGrid,
                       i = run,
@@ -261,33 +261,33 @@ RL_Performance <- function(Results = Results,
                                    mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     }
   } else {
-    
+
     # Fill ExperimentGrid Table----
-    data.table::set(ExperimentGrid, 
+    data.table::set(ExperimentGrid,
                     i = run,
                     j = c("Train_MSE","Train_MAE","Train_MAPE"),
                     value = list(NA,NA,NA))
   }
-  
+
   # Validation Performance----
   if(!is.null(Results)) {
     if(run == 1L) {
-      
+
       # Validation Metrics----
       ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, h = HoldOutPeriods)$mean))
-      
+
       # Compute residuals----
       data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(ValidationMetrics, 
+      data.table::set(ValidationMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(ValidationMetrics[["Residuals"]] ^ 2L,
                                    abs(ValidationMetrics[["Residuals"]]),
                                    abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
-      data.table::set(ExperimentGrid, 
+      data.table::set(ExperimentGrid,
                       i = run,
                       j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                       value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
@@ -299,48 +299,48 @@ RL_Performance <- function(Results = Results,
       } else {
         ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, xreg = XREGFC, h = HoldOutPeriods)$mean))
       }
-      
+
       # Compute residuals----
       data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
-      
+
       # Compute intermediary metrics----
-      data.table::set(ValidationMetrics, 
+      data.table::set(ValidationMetrics,
                       j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
                       value = list(ValidationMetrics[["Residuals"]] ^ 2L,
                                    abs(ValidationMetrics[["Residuals"]]),
                                    abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
-      
+
       # Fill ExperimentGrid Table----
-      data.table::set(ExperimentGrid, 
+      data.table::set(ExperimentGrid,
                       i = run,
                       j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                       value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
                                    mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
-                                   mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))          
+                                   mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     }
   } else {
-    
+
     # Fill ExperimentGrid Table----
     data.table::set(ExperimentGrid,
                     i = run,
                     j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
                     value = list(NA, NA, NA))
   }
-  
+
   # Blended Performance----
-  data.table::set(ExperimentGrid, 
+  data.table::set(ExperimentGrid,
                   i = run,
                   j = c("Blended_MSE","Blended_MAE","Blended_MAPE"),
                   value = list(TrainValidateShare[1] * ExperimentGrid[run, Train_MSE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MSE],
                                TrainValidateShare[1] * ExperimentGrid[run, Train_MAE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAE],
                                TrainValidateShare[1] * ExperimentGrid[run, Train_MAPE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAPE]))
-  
+
   # Return Grid----
   return(ExperimentGrid)
 }
 
 #' GenerateParameterGrids creates and stores model results in Experiment Grid
-#' 
+#'
 #' GenerateParameterGrids creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
@@ -356,10 +356,10 @@ RL_Performance <- function(Results = Results,
 #' @param Differences Passthrough
 #' @param MovingAverages Passthrough
 #' @param Lags Passthrough
-#' @export 
-GenerateParameterGrids <- function(Model = NULL, 
+#' @export
+GenerateParameterGrids <- function(Model = NULL,
                                    test = NULL,
-                                   MinVal = NULL, 
+                                   MinVal = NULL,
                                    DataSetName = NULL,
                                    SeasonalDifferences = NULL,
                                    SeasonalMovingAverages = NULL,
@@ -368,13 +368,13 @@ GenerateParameterGrids <- function(Model = NULL,
                                    Differences = NULL,
                                    MovingAverages = NULL,
                                    Lags = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Select Model----
   if(tolower(Model) == "arima") {
-    
+
     # Arima Grid----
     if(MinVal < 0) {
       Grid <- data.table::CJ(
@@ -401,47 +401,47 @@ GenerateParameterGrids <- function(Model = NULL,
         MovingAverages = c(0L, seq_len(MovingAverages)),
         Lags = c(0L, seq_len(Lags)))
     }
-    
+
     # Grid info for Statification Parsimonous----
     l <- as.list(Grid[.N][, 4L:ncol(Grid)][1L,])
     TotalStratGrids <- max(Grid[, 4L:ncol(Grid)])
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["BoxCox"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "XXX")
     data.table::set(Grid, j = "ModelRunNumber", value = -10)
-    
+
     # Create GridClusters List----
     GridClusters <- list()
-    
+
     # Create ParsimonousGrid----
     GridClusters[["ParsimonousGrid"]] <- data.table::copy(Grid)
-    
+
     # Create RandomGrid----
     data.table::set(Grid, j = "Random", value = runif(Grid[,.N]))
     data.table::setorderv(Grid, cols = "Random", order = 1L)
     data.table::set(Grid, j = "Random", value = NULL)
     GridClusters[["RandomGrid"]] <- data.table::copy(Grid)
-    
+
     # Create Mutually Exclusive StratifyParsimonous Grids----
     for (i in seq_len(TotalStratGrids)) {
       if(i == 1) {
-        GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <- 
-          Grid[MovingAverages <= min(i,l[["MovingAverages"]]) & Lags <= min(i,l[["Lags"]]) & 
-                 SeasonalDifferences <= min(i,l[["SeasonalDifferences"]]) & 
-                 SeasonalMovingAverages <= min(i,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) & 
+        GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <-
+          Grid[MovingAverages <= min(i,l[["MovingAverages"]]) & Lags <= min(i,l[["Lags"]]) &
+                 SeasonalDifferences <= min(i,l[["SeasonalDifferences"]]) &
+                 SeasonalMovingAverages <= min(i,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) &
                  MaxFourierTerms <= min(i,l[["MaxFourierTerms"]]) & Differences <= min(i,l[["Differences"]])][, temp := runif(.N)][order(temp)][, temp := NULL]
       } else {
         GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <- data.table::fsetdiff(
-          Grid[MovingAverages <= min(i,l[["MovingAverages"]]) & Lags <= min(i,l[["Lags"]]) & SeasonalDifferences <= min(i,l[["SeasonalDifferences"]]) & 
-                 SeasonalMovingAverages <= min(i,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) & 
+          Grid[MovingAverages <= min(i,l[["MovingAverages"]]) & Lags <= min(i,l[["Lags"]]) & SeasonalDifferences <= min(i,l[["SeasonalDifferences"]]) &
+                 SeasonalMovingAverages <= min(i,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) &
                  MaxFourierTerms <= min(i,l[["MaxFourierTerms"]]) & Differences <= min(i,l[["Differences"]])][, temp := runif(.N)][order(temp)][, temp := NULL],
-          Grid[MovingAverages <= min(i-1L,l[["MovingAverages"]]) & Lags <= min(i-1L,l[["Lags"]]) & SeasonalDifferences <= min(i-1L,l[["SeasonalDifferences"]]) & 
-                 SeasonalMovingAverages <= min(i-1,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i-1,l[["SeasonalLags"]]) & 
+          Grid[MovingAverages <= min(i-1L,l[["MovingAverages"]]) & Lags <= min(i-1L,l[["Lags"]]) & SeasonalDifferences <= min(i-1L,l[["SeasonalDifferences"]]) &
+                 SeasonalMovingAverages <= min(i-1,l[["SeasonalMovingAverages"]]) & SeasonalLags <= min(i-1,l[["SeasonalLags"]]) &
                  MaxFourierTerms <= min(i-1L,l[["MaxFourierTerms"]]) & Differences <= min(i-1L,l[["Differences"]])][, temp := runif(.N)][order(temp)][, temp := NULL])
       }
     }
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) {
@@ -451,9 +451,9 @@ GenerateParameterGrids <- function(Model = NULL,
         for(i in seq_len(TotalStratGrids)) {
           data.table::set(GridClusters[[paste0("StratifyParsimonousGrid_",i)]],j = paste0(trainvalidate,tseval), value = -10)
         }
-      }  
+      }
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     ExperimentGrid[, ModelRunNumber := seq_len(ExperimentGrid[, .N])]
@@ -469,15 +469,15 @@ GenerateParameterGrids <- function(Model = NULL,
         data.table::set(ExperimentGrid, j = i, value = FALSE)
       }
     }
-    
+
     # Return objects----
     return(list(
       Grid = Grid,
       GridClusters = GridClusters,
       ExperimentGrid = ExperimentGrid))
-    
+
   } else if(tolower(Model) == "ets") {
-    
+
     # ETS Grid----
     if(MinVal < 0) {
       Grid <- data.table::CJ(
@@ -496,19 +496,19 @@ GenerateParameterGrids <- function(Model = NULL,
         ModelParam2 = c("N","A","M"),
         ModelParam3 = c("N","A","M"))
     }
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["Lambda"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "Custom")
-    
+
     # Store grid in list----
     GridList <- as.list(Grid)
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     for(i in seq_len(ncol(ExperimentGrid))[-1]) {
@@ -525,18 +525,18 @@ GenerateParameterGrids <- function(Model = NULL,
       }
     }
     data.table::set(ExperimentGrid, i = 1L, j= "GridName", value = "AutoETS")
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Return objects----
     return(list(
-      Grid = Grid, 
-      GridList = GridList, 
+      Grid = Grid,
+      GridList = GridList,
       ExperimentGrid = ExperimentGrid,
       ValidationData = ValidationData))
   } else if(tolower(Model) == "tbats") {
-    
+
     # TBATS Grid----
     if(MinVal < 0) {
       Grid <- data.table::CJ(
@@ -546,7 +546,7 @@ GenerateParameterGrids <- function(Model = NULL,
         Damped = c(TRUE,FALSE),
         SeasonalPeriods = c(0,1,2),
         UseARMAErrors = c(TRUE,FALSE),
-        Lags = c(0L, Lags), 
+        Lags = c(0L, Lags),
         MovingAverages = c(0L, MovingAverages))
     } else {
       Grid <- data.table::CJ(
@@ -556,27 +556,27 @@ GenerateParameterGrids <- function(Model = NULL,
         Damped = c(TRUE,FALSE),
         SeasonalPeriods = c(0L, 1L, 2L),
         UseARMAErrors = c(TRUE,FALSE),
-        Lags = c(0L, Lags), 
+        Lags = c(0L, Lags),
         MovingAverages = c(0L, MovingAverages))
     }
-    
+
     # Remove non options----
     Grid <- Grid[!(UseARMAErrors == FALSE & (Lags > 0L | MovingAverages > 0L))]
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["Lambda"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "Custom")
-    
+
     # Store grid in list----
     GridList <- as.list(Grid)
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
-      }  
+      }
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     for(i in seq_len(ncol(ExperimentGrid))[-1L]) {
@@ -593,26 +593,26 @@ GenerateParameterGrids <- function(Model = NULL,
       }
     }
     data.table::set(ExperimentGrid, i = 1L, j= "GridName", value = "AutoETS")
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Return objects----
     return(list(
-      Grid = Grid, 
-      GridList = GridList, 
+      Grid = Grid,
+      GridList = GridList,
       ExperimentGrid = ExperimentGrid,
       ValidationData = ValidationData))
   } else if(tolower(Model) == "nnet") {
-    
+
     # NNET Grid----
     if(MinVal < 0L) {
       Grid <- data.table::CJ(
         DataSetName = DataSetName,
         Scale = c(TRUE,FALSE),
         Lambda = c("skip"),
-        LayerNodes = c(MaxFourierTerms + SeasonalLags + Lags, 
-                       ceiling(sqrt(MaxFourierTerms + SeasonalLags + Lags)), 
+        LayerNodes = c(MaxFourierTerms + SeasonalLags + Lags,
+                       ceiling(sqrt(MaxFourierTerms + SeasonalLags + Lags)),
                        ceiling((MaxFourierTerms + SeasonalLags + Lags)^0.90)),
         Repeats = c(seq_len(20L)),
         MaxFourierTerms = c(0L, seq_len(MaxFourierTerms)),
@@ -623,53 +623,53 @@ GenerateParameterGrids <- function(Model = NULL,
         DataSetName = DataSetName,
         Scale = c(TRUE,FALSE),
         Lambda = c("auto","skip"),
-        LayerNodes = c(MaxFourierTerms + SeasonalLags + Lags, 
-                       ceiling(sqrt(MaxFourierTerms + SeasonalLags + Lags)), 
+        LayerNodes = c(MaxFourierTerms + SeasonalLags + Lags,
+                       ceiling(sqrt(MaxFourierTerms + SeasonalLags + Lags)),
                        ceiling((MaxFourierTerms + SeasonalLags + Lags)^0.90)),
         Repeats = c(seq_len(20L)),
         MaxFourierTerms = c(0L, seq_len(MaxFourierTerms)),
         SeasonalLags = c(0L, max(SeasonalLags)),
         Lags = c(0L, seq_len(Lags)))
     }
-    
+
     # Grid info for Statification Parsimonous----
     l <- as.list(Grid[.N][,4:ncol(Grid)][1,])
     TotalStratGrids <- max(Grid[,6:ncol(Grid)])
-    
+
     # Remove non options----
     Grid <- Grid[!(MaxFourierTerms == 0 & SeasonalLags == 0 & Lags == 0)]
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["Lambda"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "Custom")
-    
+
     # Create GridClusters List----
     GridClusters <- list()
-    
+
     # Create ParsimonousGrid----
     GridClusters[["ParsimonousGrid"]] <- data.table::copy(Grid)
-    
+
     # Create RandomGrid----
     data.table::set(Grid, j = "Random", value = runif(Grid[,.N]))
     data.table::setorderv(Grid, cols = "Random", order = 1)
     data.table::set(Grid, j = "Random", value = NULL)
     GridClusters[["RandomGrid"]] <- data.table::copy(Grid)
-    
+
     # Create Mutually Exclusive StratifyParsimonous Grids----
     for (i in seq_len(TotalStratGrids)) {
       if(i == 1) {
-        GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <- 
-          Grid[(Lags <= min(i,l[["Lags"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) & 
+        GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <-
+          Grid[(Lags <= min(i,l[["Lags"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) &
                   MaxFourierTerms <= min(i,l[["MaxFourierTerms"]]))][, temp := runif(.N)][order(temp)][, temp := NULL]
       } else {
         GridClusters[[paste0("StratifyParsimonousGrid_",i)]] <- data.table::fsetdiff(
-          Grid[(Lags <= min(i,l[["Lags"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) & 
+          Grid[(Lags <= min(i,l[["Lags"]]) & SeasonalLags <= min(i,l[["SeasonalLags"]]) &
                   MaxFourierTerms <= min(i,l[["MaxFourierTerms"]]))][, temp := runif(.N)][order(temp)][, temp := NULL],
-          Grid[(Lags <= min(i-1,l[["Lags"]]) & SeasonalLags <= min(i-1,l[["SeasonalLags"]]) & 
+          Grid[(Lags <= min(i-1,l[["Lags"]]) & SeasonalLags <= min(i-1,l[["SeasonalLags"]]) &
                   MaxFourierTerms <= min(i-1,l[["MaxFourierTerms"]]))][, temp := runif(.N)][order(temp)][, temp := NULL])
       }
     }
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) {
@@ -679,9 +679,9 @@ GenerateParameterGrids <- function(Model = NULL,
         for(i in seq_len(TotalStratGrids)) {
           data.table::set(GridClusters[[paste0("StratifyParsimonousGrid_",i)]],j = paste0(trainvalidate,tseval), value = -10)
         }
-      }  
+      }
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     ExperimentGrid[, ModelRunNumber := seq_len(ExperimentGrid[, .N])]
@@ -697,45 +697,45 @@ GenerateParameterGrids <- function(Model = NULL,
         data.table::set(ExperimentGrid, j = i, value = FALSE)
       }
     }
-    
+
     # Return objects----
     return(
       list(Grid = Grid,
            GridClusters = GridClusters,
            ExperimentGrid = ExperimentGrid))
   } else if(tolower(Model) == "arfima") {
-    
+
     # ARFIMA Grid----
     if(MinVal < 0) {
       Grid <- data.table::CJ(
         DataSetName = DataSetName,
         Lambda = c("skip"),
-        Lags = c(0,Lags), 
+        Lags = c(0,Lags),
         MovingAverages = c(0,MovingAverages),
         Drange = c(0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90))
     } else {
       Grid <- data.table::CJ(
         DataSetName = DataSetName,
         Lambda = c("auto","skip"),
-        Lags = c(0,Lags), 
+        Lags = c(0,Lags),
         MovingAverages = c(0,MovingAverages),
         Drange = c(0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90))
     }
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["Lambda"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "Custom")
-    
+
     # Store grid in list----
     GridList <- as.list(Grid)
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
-      }  
+      }
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     for(i in seq_len(ncol(ExperimentGrid))[-1]) {
@@ -752,19 +752,19 @@ GenerateParameterGrids <- function(Model = NULL,
       }
     }
     data.table::set(ExperimentGrid, i = 1L, j= "GridName", value = "AutoETS")
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Return objects----
     return(
       list(
-        Grid = Grid, 
-        GridList = GridList, 
+        Grid = Grid,
+        GridList = GridList,
         ExperimentGrid = ExperimentGrid,
         ValidationData = ValidationData))
   } else if(tolower(Model) == "tslm") {
-    
+
     # TSLM Grid----
     if(MinVal < 0L) {
       Grid <- data.table::CJ(
@@ -775,21 +775,21 @@ GenerateParameterGrids <- function(Model = NULL,
         DataSetName = DataSetName,
         Lambda = c("auto","skip"))
     }
-    
+
     # Add BiasAdj and GridName to Grid----
     data.table::set(Grid, j = "BiasAdj", value = data.table::fifelse(Grid[["Lambda"]] == "auto", TRUE, FALSE))
     data.table::set(Grid, j = "GridName", value = "Custom")
-    
+
     # Store grid in list----
     GridList <- as.list(Grid)
-    
+
     # Add evaluation metrics columns and fill with dummy values----
     for(trainvalidate in c("Train_","Validate_","Blended_")) {
       for(tseval in c("MSE","MAE","MAPE")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
-      }  
+      }
     }
-    
+
     # Set up results grid to collect parameters tested and results----
     ExperimentGrid <- data.table::copy(Grid)
     for(i in seq_len(ncol(ExperimentGrid))[-1]) {
@@ -806,24 +806,24 @@ GenerateParameterGrids <- function(Model = NULL,
       }
     }
     data.table::set(ExperimentGrid, i = 1L, j= "GridName", value = "AutoETS")
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Return objects----
     return(
       list(
-        Grid = Grid, 
-        GridList = GridList, 
+        Grid = Grid,
+        GridList = GridList,
         ExperimentGrid = ExperimentGrid,
         ValidationData = ValidationData))
   }
 }
 
 #' TimeSeriesDataPrepare is a function that takes raw data and returns time series data
-#' 
+#'
 #' TimeSeriesDataPrepare is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param data Source data.table for forecasting
@@ -843,76 +843,76 @@ GenerateParameterGrids <- function(Model = NULL,
 #' @examples
 #' data <- data.table::fread(file.path(PathNormalizer("C:\\Users\\aantico\\Documents\\Package\\data"),"tsdata.csv"))
 #' TimeSeriesDataPrepare(
-#'   data = data, 
+#'   data = data,
 #'   TargetName = "Weekly_Sales",
-#'   DateName = "Date", 
-#'   Lags = 5, 
+#'   DateName = "Date",
+#'   Lags = 5,
 #'   MovingAverages,
 #'   SeasonalMovingAverages,
 #'   SeasonalLags = 1,
 #'   TimeUnit = "week",
-#'   FCPeriods = 10, 
+#'   FCPeriods = 10,
 #'   HoldOutPeriods = 10,
-#'   TSClean = TRUE, 
+#'   TSClean = TRUE,
 #'   ModelFreq = TRUE,
 #'   FinalBuild = FALSE)
 #' @export
-TimeSeriesDataPrepare <- function(data, 
+TimeSeriesDataPrepare <- function(data,
                                   TargetName,
                                   DateName,
                                   Lags,
                                   SeasonalLags,
                                   MovingAverages,
                                   SeasonalMovingAverages,
-                                  TimeUnit, 
-                                  FCPeriods, 
-                                  HoldOutPeriods, 
-                                  TSClean = TRUE, 
+                                  TimeUnit,
+                                  FCPeriods,
+                                  HoldOutPeriods,
+                                  TSClean = TRUE,
                                   ModelFreq = TRUE,
                                   FinalBuild = FALSE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Turn off warnings----
   options(warn = -1L)
-  
+
   # Convert to data.table if not already
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Time series fill----
   data <- TimeSeriesFill(
-    data = data, 
-    DateColumnName = DateName, 
-    GroupVariables = NULL, 
-    TimeUnit = TimeUnit, 
+    data = data,
+    DateColumnName = DateName,
+    GroupVariables = NULL,
+    TimeUnit = TimeUnit,
     FillType = "Inner")
-  
+
   # Ensure correct ordering and subsetting of data
   keep <- c(DateName, TargetName)
   data <- data[, ..keep]
-  
+
   # Convert to lubridate as_date() or POSIXct----
   if(!tolower(TimeUnit) %chin% tolower(c("1min","1mins","5min","5mins","10min","10mins","15min","15mins","30min","30mins","hour","hours","hr","hrs"))) {
     data[, eval(DateName) := lubridate::as_date(get(DateName))]
   } else {
     data[, eval(DateName) := as.POSIXct(get(DateName))]
   }
-  
+
   # Correct ordering----
   if(is.numeric(data[[1L]]) | is.integer(data[[1L]])) data.table::setcolorder(data, c(2L, 1L))
-  
+
   # Check for min value of data----
   MinVal <- min(data[[2L]])
-  
+
   # Ensure data is sorted----
   data.table::setorderv(x = data, cols = eval(DateName), order = 1L)
-  
+
   # Change Target Name----
   TempTargetName <- TargetName
   data.table::setnames(data, paste0(eval(TargetName)), "Target")
   TargetName <- "Target"
-  
+
   # Create data----
   if(!FinalBuild) {
     data_train <- data[1L:(nrow(data) - HoldOutPeriods)]
@@ -921,14 +921,14 @@ TimeSeriesDataPrepare <- function(data,
     data_train <- data
     data_test <- NULL
   }
-  
+
   # Data for fourier features----
   data_test_fourier <- data
-  
+
   # Check for different time aggregations----
   MaxDate <- data[, max(get(DateName))]
   FC_Data <- data.table::data.table(Date = seq_len(FCPeriods))
-  
+
   # Define TS Frequency----
   if(tolower(TimeUnit) == "hour") {
     UserSuppliedFreq <- 24
@@ -967,13 +967,13 @@ TimeSeriesDataPrepare <- function(data,
     return("TimeUnit is not in hour, day, week, month,
     quarter, or year")
   }
-  
+
   # Coerce SeasonalLags if too large----
   if(UserSuppliedFreq * SeasonalLags > nrow(data_train)) SeasonalLags <- floor(nrow(data_train) / UserSuppliedFreq)
-  
+
   # Coerce SeasonalMovingAverages----
   if(UserSuppliedFreq * SeasonalMovingAverages > nrow(data_train)) SeasonalMovingAverages <- floor(nrow(data_train) / UserSuppliedFreq)
-  
+
   # User Supplied Frequency
   UserSuppliedData <- stats::ts(
     data = data_train,
@@ -981,7 +981,7 @@ TimeSeriesDataPrepare <- function(data,
     frequency = UserSuppliedFreq)[, TargetName]
   UserSuppliedDiff <- tryCatch({forecast::ndiffs(x = UserSuppliedData)},error = function(x) 0L)
   UserSuppliedSeasonalDiff <- tryCatch({forecast::nsdiffs(x = UserSuppliedData)},error = function(x) 0L)
-  
+
   # TSClean Version----
   if(TSClean) {
     if(MinVal > 0) {
@@ -998,7 +998,7 @@ TimeSeriesDataPrepare <- function(data,
     TSCleanDiff <- tryCatch({forecast::ndiffs(x = TSCleanData)},error = function(x) 0L)
     TSCleanSeasonalDiff <- tryCatch({forecast::nsdiffs(x = TSCleanData)},error = function(x) 0L)
   }
-  
+
   # Model-Based Frequency----
   if(ModelFreq) {
     ModelFreqFrequency <- forecast::findfrequency(data_train[, get(names(data_train)[2L])])
@@ -1006,11 +1006,11 @@ TimeSeriesDataPrepare <- function(data,
       stats::ts(data = data_train,
                 start = data_train[, min(get(DateName))][[1]],
                 frequency = ModelFreqFrequency)[, TargetName]
-    
+
     ModelFreqDiff <- tryCatch({forecast::ndiffs(x = ModelFreqData)},error = function(x) 0L)
     ModelFreqSeasonalDiff <- tryCatch({forecast::nsdiffs(x = ModelFreqData)},error = function(x) 0L)
   }
-  
+
   # TSClean & ModelFreq Version----
   if(TSClean & ModelFreq) {
     if(MinVal > 0) {
@@ -1022,12 +1022,12 @@ TimeSeriesDataPrepare <- function(data,
                                                 replace.missing = TRUE,
                                                 lambda = NULL)
     }
-    
+
     # Differencing----
     TSCleanModelFreqDiff <- tryCatch({forecast::ndiffs(x = TSCleanModelFreqData)},error = function(x) 0L)
     TSCleanModelFreqSeasonalDiff <- tryCatch({forecast::nsdiffs(x = TSCleanModelFreqData)},error = function(x) 0L)
   }
-  
+
   # Return time series artifacts----
   return(list(
     TestData = tryCatch({data_test}, error = function(x) NULL),
@@ -1035,7 +1035,7 @@ TimeSeriesDataPrepare <- function(data,
     UserSuppliedData = tryCatch({UserSuppliedData}, error = function(x) NULL),
     ModelFreqData = tryCatch({ModelFreqData}, error = function(x) NULL),
     TSCleanData = tryCatch({TSCleanData}, error = function(x) NULL),
-    TSCleanModelFreqData = tryCatch({TSCleanModelFreqData}, error = function(x) NULL), 
+    TSCleanModelFreqData = tryCatch({TSCleanModelFreqData}, error = function(x) NULL),
     UserSuppliedDiff = tryCatch({UserSuppliedDiff}, error = function(x) NULL),
     UserSuppliedSeasonalDiff = tryCatch({UserSuppliedSeasonalDiff}, error = function(x) NULL),
     TSCleanDiff = tryCatch({TSCleanDiff}, error = function(x) NULL),
@@ -1064,9 +1064,9 @@ TimeSeriesDataPrepare <- function(data,
 }
 
 #' OptimizeArima is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeArima is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -1075,7 +1075,7 @@ TimeSeriesDataPrepare <- function(data,
 #' @param train Training data returned from TimeSeriesDataPrepare()
 #' @param test Test data returned from TimeSeriesDataPrepare()
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -1126,7 +1126,7 @@ OptimizeArima <- function(Output,
                           MinVal = NULL,
                           TargetName = NULL,
                           DateName = NULL,
-                          Lags = NULL, 
+                          Lags = NULL,
                           SeasonalLags = NULL,
                           MovingAverages = NULL,
                           SeasonalMovingAverages = NULL,
@@ -1138,17 +1138,17 @@ OptimizeArima <- function(Output,
                           MaxNumberModels = NULL,
                           MaxRunMinutes = NULL,
                           FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Get grid objects----
     GridObjects <- GenerateParameterGrids(
-      Model = "arima", 
-      MinVal = Output$MinVal, 
+      Model = "arima",
+      MinVal = Output$MinVal,
       DataSetName = DataSetName,
       SeasonalDifferences = SeasonalDifferences,
       SeasonalMovingAverages = SeasonalMovingAverages,
@@ -1161,12 +1161,12 @@ OptimizeArima <- function(Output,
     GridClusters <- GridObjects[["GridClusters"]]
     ExperimentGrid <- GridObjects[["ExperimentGrid"]]
     rm(GridObjects)
-    
+
     # Initialize RL----
     RL_Start <- RL_Initialize(
-      ParameterGridSet = GridClusters, 
-      Alpha = 1, 
-      Beta = 1, 
+      ParameterGridSet = GridClusters,
+      Alpha = 1,
+      Beta = 1,
       SubDivisions = 1000L)
     BanditArmsN <- RL_Start[["BanditArmsN"]]
     Successes <- RL_Start[["Successes"]]
@@ -1174,36 +1174,39 @@ OptimizeArima <- function(Output,
     GridIDs <- RL_Start[["GridIDs"]]
     BanditProbs <- RL_Start[["BanditProbs"]]
     rm(RL_Start)
-    
+
     # Add bandit probs columns to ExperimentGrid----
     data.table::set(ExperimentGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Intitalize Counter----
     run <- 0L
-    
+
+    # Intitalize Antother Counter----
+    run1 <- 0L
+
     # Initialize TotalRunTime----
     TotalRunTime <- 0
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- 1L
     RunsWithoutNewWinner <- 0L
-    
+
     # Build models----
     repeat {
-      
+
       # Increment Counter----
       run <- run + 1L
-      
+
       # Select new grid----
       if(run <= BanditArmsN + 1L) {
         if(run != 1L) NextGrid <- GridClusters[[names(GridClusters)[run-1L]]][1L]
       } else {
         NextGrid <- as.list(GridClusters[[names(GridClusters)[NewGrid]]][Trials[NewGrid]+1L])
       }
-      
+
       # Update Grid Column Values----
       if(run == 1L) {
         data.table::set(ExperimentGrid, i = run, j = "GridName", value = "DefaultAutoArima")
@@ -1218,15 +1221,15 @@ OptimizeArima <- function(Output,
             data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][[cols]][Trials[NewGrid]+1L])
           }
         }
-        
+
         # Fill bandit probabilities
         banditindex <- 0L
         for(BanditCols in c(ncol(ExperimentGrid)-BanditArmsN):(ncol(ExperimentGrid)-1L)) {
-          banditindex <- banditindex + 1L 
+          banditindex <- banditindex + 1L
           data.table::set(ExperimentGrid, i = run, j = BanditCols, value = round(BanditProbs[banditindex], 2L))
         }
       }
-      
+
       # Define lambda----
       if(run != 1L) {
         tryCatch({if(NextGrid$BoxCox[1L] == "skip") {
@@ -1235,7 +1238,7 @@ OptimizeArima <- function(Output,
           lambda <- "auto"
         }}, error = function(x) lambda <- NULL)
       }
-      
+
       # Define Fourier Terms----
       if(run != 1) {
         if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
@@ -1246,10 +1249,10 @@ OptimizeArima <- function(Output,
           XREGFC <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L], h = HoldOutPeriods)}, error = function(x) FALSE)
         }
       }
-      
+
       # Start time---
       Start <- Sys.time()
-      
+
       # Build Models----
       if(run == 1L) {
         if(MinVal > 0) {
@@ -1264,48 +1267,55 @@ OptimizeArima <- function(Output,
       } else {
         if(!is.numeric(XREG) & !is.numeric(XREGFC)) {
           Results <- tryCatch({forecast::Arima(
-            train, 
-            order = c(NextGrid[["Lags"]][1L], NextGrid[["Differences"]][1], NextGrid[["MovingAverages"]][1]), 
-            seasonal = c(NextGrid[["SeasonalLags"]][1L], NextGrid[["SeasonalDifferences"]][1], NextGrid[["SeasonalMovingAverages"]][1]), 
+            train,
+            order = c(NextGrid[["Lags"]][1L], NextGrid[["Differences"]][1], NextGrid[["MovingAverages"]][1]),
+            seasonal = c(NextGrid[["SeasonalLags"]][1L], NextGrid[["SeasonalDifferences"]][1], NextGrid[["SeasonalMovingAverages"]][1]),
             include.drift = NextGrid$IncludeDrift[1L],
-            lambda = lambda,  
+            lambda = lambda,
             biasadj = NextGrid$BiasAdj[1])},
             error = function(x) NULL)
         } else {
           Results <- tryCatch({forecast::Arima(
-            train, 
-            order = c(NextGrid[["Lags"]][1], NextGrid[["Differences"]][1L], NextGrid[["MovingAverages"]][1L]), 
-            seasonal = c(NextGrid[["SeasonalLags"]][1L], NextGrid[["SeasonalDifferences"]][1L], NextGrid[["SeasonalMovingAverages"]][1L]), 
-            include.drift = NextGrid$IncludeDrift[1L], 
-            lambda = lambda, 
+            train,
+            order = c(NextGrid[["Lags"]][1], NextGrid[["Differences"]][1L], NextGrid[["MovingAverages"]][1L]),
+            seasonal = c(NextGrid[["SeasonalLags"]][1L], NextGrid[["SeasonalDifferences"]][1L], NextGrid[["SeasonalMovingAverages"]][1L]),
+            include.drift = NextGrid$IncludeDrift[1L],
+            lambda = lambda,
             xreg = XREG,
             biasadj = NextGrid$BiasAdj[1L])},
             error = function(x) NULL)
         }
       }
-      
+
       # End time---
-      End <- Sys.time()    
-      
+      End <- Sys.time()
+
       # Performance Metrics----
-      tryCatch({ExperimentGrid <- RL_Performance(
+      temp <- tryCatch({RL_Performance(
         Results = Results,
         NextGrid = NextGrid,
         TrainValidateShare = TrainValidateShare,
         MaxFourierTerms = NextGrid[["MaxFourierTerms"]][1L],
         XREGFC = XREGFC,
         ExperimentGrid = ExperimentGrid,
-        run = run, 
+        run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)}, error = function(x) NULL)
-      
+      if(!is.null(temp)) {
+        ExperimentGrid <- temp
+        rm(temp)
+      } else {
+        run1 <- run1 + 1L
+        if(run1 >= 10) break
+      }
+
       # Add run time to ExperimentGrid----
-      data.table::set(ExperimentGrid, i = run, j = "RunTime", value = End - Start)
+      if(!is.null(ExperimentGrid)) data.table::set(ExperimentGrid, i = run, j = "RunTime", value = End - Start)
       TotalRunTime <- TotalRunTime + as.numeric((End - Start))
-      
+
       # RL Update----
-      tryCatch({RL_Update_Output <- RL_Update(
+      RL_Update_Output <- tryCatch({RL_Update(
         ExperimentGrid = ExperimentGrid,
         MetricSelection = MetricSelection,
         ModelRun = run,
@@ -1319,8 +1329,8 @@ OptimizeArima <- function(Output,
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = TotalRunTime,
-        BanditProbabilities = BanditProbs)
-      
+        BanditProbabilities = BanditProbs)}, error = function(x) NULL)
+
       #
       # ExperimentGrid = ExperimentGrid
       # MetricSelection = MetricSelection
@@ -1336,49 +1346,52 @@ OptimizeArima <- function(Output,
       # MaxRunMinutes = MaxRunMinutes
       # TotalRunTime = TotalRunTime
       # BanditProbabilities = BanditProbs
-      # 
-      
-      BanditProbs <- RL_Update_Output[["BanditProbs"]]
-      Trials <- RL_Update_Output[["Trials"]]
-      Successes <- RL_Update_Output[["Successes"]]
-      NewGrid <- RL_Update_Output[["NewGrid"]]
-      Break <- RL_Update_Output[["BreakLoop"]]}, error = function(x) NULL)
-      
+      #
+
+      # Collect updated bandit metadata----
+      if(!is.null(RL_Update_Output)) {
+        BanditProbs <- RL_Update_Output[["BanditProbs"]]
+        Trials <- RL_Update_Output[["Trials"]]
+        Successes <- RL_Update_Output[["Successes"]]
+        NewGrid <- RL_Update_Output[["NewGrid"]]
+        Break <- RL_Update_Output[["BreakLoop"]]
+      }
+
       # Exit repeat loop upon conditions----
       if(Break == "exit") break
     }
-    
+
     # Remove Invalid Columns----
     ResultsGrid <- ExperimentGrid[!is.na(Blended_MAE) & SeasonalLags != -10]
-    
+
     # Add Rank Values----
     ResultsGrid <- ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)]
-    
+
     # Return Results----
     return(ResultsGrid)
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     TSGridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for(run in seq_len(FinalGrid[, .N])) {
-      
+
       # Define lambda----
       if(TSGridList$BoxCox[run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
       }
-      
+
       # Build final models----
       if(FinalGrid[1,GridName] == "DefaultAutoArima") {
         if(Output$MinVal > 0) {
@@ -1396,12 +1409,12 @@ OptimizeArima <- function(Output,
           XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
           if(!is.logical(XREG) & !is.logical(XREGFC)) {
             Results <- tryCatch({forecast::Arima(
-              train, 
-              order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]), 
-              seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]), 
+              train,
+              order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
+              seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
               xreg = XREG,
-              include.drift = TSGridList$IncludeDrift[run], 
-              lambda = lambda, 
+              include.drift = TSGridList$IncludeDrift[run],
+              lambda = lambda,
               biasadj = TSGridList$BiasAdj[run])},
               error = function(x) NULL)
           } else {
@@ -1409,29 +1422,29 @@ OptimizeArima <- function(Output,
           }
         } else {
           Results <- tryCatch({forecast::Arima(
-            train, 
-            order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]), 
-            seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]), 
+            train,
+            order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
+            seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
             include.drift = TSGridList$IncludeDrift[run],
-            lambda = lambda,  
+            lambda = lambda,
             biasadj = TSGridList$BiasAdj[run])},
             error = function(x) NULL)
         }
       }
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
@@ -1448,8 +1461,8 @@ OptimizeArima <- function(Output,
         tryCatch({FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
           FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
         })
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -1458,13 +1471,13 @@ OptimizeArima <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Rbind train and forecast data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Model Identifier Column----
       FinalForecastData[, ModelID := "Supercharged-SARIMA"][, ModelRank := FinalGrid[["ModelRank"]][[1L]]]
-      
+
       # Rbind final forecast data sets----
       if(run == 1) {
         ReturnData <- FinalForecastData
@@ -1472,16 +1485,16 @@ OptimizeArima <- function(Output,
         ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' OptimizeETS is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeETS is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -1490,7 +1503,7 @@ OptimizeArima <- function(Output,
 #' @param train Training data returned from TimeSeriesDataPrepare()
 #' @param test Test data returned from TimeSeriesDataPrepare()
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -1524,39 +1537,39 @@ OptimizeETS <- function(Output,
                         DateName = NULL,
                         TrainValidateShare = NULL,
                         FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Generate Grid Objects----
     GridOutput <- GenerateParameterGrids(
       Model = "ets",
       test = test,
-      MinVal = Output$MinVal, 
+      MinVal = Output$MinVal,
       DataSetName = DataSetName)
     Grid <- GridOutput[["Grid"]]
     GridList <- GridOutput[["GridList"]]
     ExperimentGrid <- GridOutput[["ExperimentGrid"]]
     ValidationData <- GridOutput[["ValidationData"]]
-    
+
     # Build models----
     for (run in seq_len(Grid[,.N])) {
-      
+
       # Update Grid Column Values----
       if(run == 1L) data.table::set(ExperimentGrid,  i = run, j = "GridName", value = "DefaultETS")
-      
+
       # Define lambda----
       if(run != 1) {
         if(GridList[["Lambda"]][run] == "skip") {
           lambda <- NULL
         } else {
           lambda <- "auto"
-        }        
+        }
       }
-      
+
       # Build Models----
       if(run == 1L) {
         if(Output$UserSuppliedFrequency > 24) {
@@ -1567,62 +1580,62 @@ OptimizeETS <- function(Output,
         Results <- tryCatch({
           forecast::ets(
             y = train,
-            lower = 0.0001, 
-            upper = 0.9999, 
+            lower = 0.0001,
+            upper = 0.9999,
             model = modelparam,
             damped = GridList[["Damped"]][run],lambda = NULL)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::ets(
             y = train,
-            lower = 0.0001, 
-            upper = 0.9999, 
+            lower = 0.0001,
+            upper = 0.9999,
             model = paste0(GridList[["ModelParam1"]][run], GridList[["ModelParam2"]][run], GridList[["ModelParam3"]][run]),
             damped = GridList[["Damped"]][run],lambda = NULL)}, error = function(x) NULL)
       }
-      
+
       # Generate performance measures----
       ExperimentGrid <- Regular_Performance(
         Model = "ets",
-        Results = Results, 
+        Results = Results,
         GridList = GridList,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         ExperimentGrid = ExperimentGrid,
         run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)
     }
-    
+
     # Return Experimental Grid----
     ResultsGrid <- ExperimentGrid[Blended_MAE != -10]
-    
+
     # Return Table----
     return(ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)])
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     GridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for(run in seq_len(FinalGrid[, .N])) {
-      
+
       # Define lambda----
       if(GridList$Lambda[run] == "AutoETS" | GridList$Lambda[run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
       }
-      
+
       # Build Models----
       if(run == 1) {
         if(Output$UserSuppliedFrequency > 24) {
@@ -1633,42 +1646,42 @@ OptimizeETS <- function(Output,
         Results <- tryCatch({
           forecast::ets(
             y = train,
-            lower = 0.0001, 
-            upper = 0.9999, 
+            lower = 0.0001,
+            upper = 0.9999,
             model = modelparam,
             damped = GridList[["Damped"]][run],lambda = NULL)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::ets(
             y = train,
-            lower = 0.0001, 
-            upper = 0.9999, 
+            lower = 0.0001,
+            upper = 0.9999,
             model = paste0(GridList[["ModelParam1"]][run], GridList[["ModelParam2"]][run], GridList[["ModelParam3"]][run]),
             damped = GridList[["Damped"]][run],lambda = NULL)}, error = function(x) NULL)
       }
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
         FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1:FCPeriods]]
         FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
         FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1:FCPeriods]]
         FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -1677,13 +1690,13 @@ OptimizeETS <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Bind data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Identifier Column to Later data.table::dcast by----
       FinalForecastData[, ModelID := "ETS"][, ModelRank := FinalGrid[["ModelRank"]][[1]]]
-      
+
       # Create Final Data----
       if(run == 1) {
         ReturnData <<- FinalForecastData
@@ -1691,16 +1704,16 @@ OptimizeETS <- function(Output,
         ReturnData <<- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' OptimizeTBATS is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeTBATS is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -1711,7 +1724,7 @@ OptimizeETS <- function(Output,
 #' @param Lags Max lags
 #' @param MovingAverages Max moving averages
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -1749,45 +1762,45 @@ OptimizeTBATS <- function(Output,
                           DateName = NULL,
                           TrainValidateShare = NULL,
                           FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Generate Grid Objects----
     GridOutput <- GenerateParameterGrids(
       Model = "tbats",
       test = test,
       Lags = Lags,
       MovingAverages = MovingAverages,
-      MinVal = Output$MinVal, 
+      MinVal = Output$MinVal,
       DataSetName = DataSetName)
     Grid <- GridOutput[["Grid"]]
     GridList <- GridOutput[["GridList"]]
     ExperimentGrid <- GridOutput[["ExperimentGrid"]]
     ValidationData <- GridOutput[["ValidationData"]]
-    
+
     # Build models----
     for(run in seq_len(Grid[,.N])) {
-      
+
       # Update Grid Column Values----
       if(run == 1L) data.table::set(ExperimentGrid, i = run, j = "GridName", value = "DefaultTBATS")
-      
+
       # Define lambda----
       if(run != 1L) {
         if(GridList[["Lambda"]][run] == "skip") {
           lambda <- NULL
         } else {
           lambda <- "auto"
-        }        
+        }
       }
-      
+
       # Build Models----
       if(run == 1L) {
         Results <- tryCatch({forecast::tbats(y = train)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::tbats(
@@ -1802,63 +1815,63 @@ OptimizeTBATS <- function(Output,
             max.p = GridList[["Lags"]][run],
             max.q = GridList[["MovingAverages"]][run])}, error = function(x) NULL)
       }
-      
+
       # Generate performance measures----
       ExperimentGrid <- Regular_Performance(
         Model = "tbats",
-        Results = Results, 
+        Results = Results,
         GridList = GridList,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         ExperimentGrid = ExperimentGrid,
         run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)
     }
-    
+
     # Return Experimental Grid----
     ResultsGrid <- ExperimentGrid[Blended_MAE != -10]
-    
+
     # Return Table----
     return(ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)])
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     GridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for(run in seq_len(FinalGrid[, .N])) {
-      
+
       # Define lambda----
       if(GridList$Lambda[run] == "AutoETS" | GridList$Lambda[run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
       }
-      
+
       # Build Models----
       if(run == 1L) {
         Results <- tryCatch({
           forecast::tbats(
-            y = Output$UserSuppliedData, 
-            use.box.cox = TRUE, 
-            use.trend = TRUE, 
-            use.damped.trend = TRUE, 
-            seasonal.periods = 1, 
-            use.arma.errors = TRUE, 
-            use.parallel = FALSE, 
-            biasadj = TRUE, 
-            max.p = Output$Lags, 
+            y = Output$UserSuppliedData,
+            use.box.cox = TRUE,
+            use.trend = TRUE,
+            use.damped.trend = TRUE,
+            seasonal.periods = 1,
+            use.arma.errors = TRUE,
+            use.parallel = FALSE,
+            biasadj = TRUE,
+            max.p = Output$Lags,
             max.q = Output$MovingAverages)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::tbats(
@@ -1873,28 +1886,28 @@ OptimizeTBATS <- function(Output,
             max.p = GridList[["Lags"]][run],
             max.q = GridList[["MovingAverages"]][run])}, error = function(x) NULL)
       }
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
         FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1L:FCPeriods]]
         FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods + 1L):(2 * FCPeriods)]]
         FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1L:FCPeriods]]
         FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -1903,13 +1916,13 @@ OptimizeTBATS <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Bind data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Identifier Column to Later data.table::dcast by----
       FinalForecastData[, ModelID := "TBATS"][, ModelRank := FinalGrid[["ModelRank"]][[1L]]]
-      
+
       # Create Final Data----
       if(run == 1L) {
         ReturnData <<- FinalForecastData
@@ -1917,16 +1930,16 @@ OptimizeTBATS <- function(Output,
         ReturnData <<- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' OptimizeNNET is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeNNET is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -1935,7 +1948,7 @@ OptimizeTBATS <- function(Output,
 #' @param train Training data returned from TimeSeriesDataPrepare()
 #' @param test Test data returned from TimeSeriesDataPrepare()
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -1978,7 +1991,7 @@ OptimizeNNET <- function(Output,
                          MinVal = NULL,
                          TargetName = NULL,
                          DateName = NULL,
-                         Lags = NULL, 
+                         Lags = NULL,
                          SeasonalLags = NULL,
                          MaxFourierTerms = NULL,
                          TrainValidateShare = NULL,
@@ -1986,17 +1999,17 @@ OptimizeNNET <- function(Output,
                          MaxNumberModels = NULL,
                          MaxRunMinutes = NULL,
                          FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Get grid objects----
     GridObjects <- GenerateParameterGrids(
-      Model = "nnet", 
-      MinVal = Output$MinVal, 
+      Model = "nnet",
+      MinVal = Output$MinVal,
       DataSetName = DataSetName,
       SeasonalDifferences = SeasonalDifferences,
       SeasonalMovingAverages = SeasonalMovingAverages,
@@ -2009,12 +2022,12 @@ OptimizeNNET <- function(Output,
     GridClusters <- GridObjects[["GridClusters"]]
     ExperimentGrid <- GridObjects[["ExperimentGrid"]]
     rm(GridObjects)
-    
+
     # Initialize RL----
     RL_Start <- RL_Initialize(
-      ParameterGridSet = GridClusters, 
-      Alpha = 1, 
-      Beta = 1, 
+      ParameterGridSet = GridClusters,
+      Alpha = 1,
+      Beta = 1,
       SubDivisions = 1000L)
     BanditArmsN <- RL_Start[["BanditArmsN"]]
     Successes <- RL_Start[["Successes"]]
@@ -2022,29 +2035,29 @@ OptimizeNNET <- function(Output,
     GridIDs <- RL_Start[["GridIDs"]]
     BanditProbs <- RL_Start[["BanditProbs"]]
     rm(RL_Start)
-    
+
     # Add bandit probs columns to ExperimentGrid----
     data.table::set(ExperimentGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
-    
+
     # HoldOutData----
     ValidationData <- data.table::copy(test)
-    
+
     # Intitalize Counter----
     run <- 0L
-    
+
     # Initialize TotalRunTime----
     TotalRunTime <- 0
-    
+
     # Sample from bandit to select next grid row----
     NewGrid <- 1L
     RunsWithoutNewWinner <- 0L
-    
+
     # Build models----
     repeat {
-      
+
       # Increment Counter----
       run <- run + 1L
-      
+
       # Select new grid----
       if(run <= BanditArmsN + 1) {
         if(run != 1)
@@ -2052,11 +2065,11 @@ OptimizeNNET <- function(Output,
       } else {
         NextGrid <- as.list(GridClusters[[names(GridClusters)[NewGrid]]][Trials[NewGrid]+1])
       }
-      
+
       # Update Grid Column Values----
       if(run == 1) {
         data.table::set(
-          ExperimentGrid, 
+          ExperimentGrid,
           i = run,
           j = "GridName",
           value = "DefaultAutoNNet")
@@ -2064,47 +2077,47 @@ OptimizeNNET <- function(Output,
         for(cols in as.integer(1:10)) {
           if(cols == 1L) {
             data.table::set(
-              ExperimentGrid, 
+              ExperimentGrid,
               i = run,
               j = cols,
               value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1])
           } else if(cols == 12) {
             data.table::set(
-              ExperimentGrid, 
+              ExperimentGrid,
               i = run,
               j = cols,
               value = names(GridClusters)[NewGrid])
           } else {
             # Grab correct cluster group, cluster column, and cluster row
             data.table::set(
-              ExperimentGrid, 
+              ExperimentGrid,
               i = run,
               j = cols,
               value = GridClusters[[names(GridClusters)[NewGrid]]][[cols]][Trials[NewGrid]+1])
           }
         }
-        
+
         # Fill bandit probabilities
         banditindex <- 0L
         for(BanditCols in (ncol(ExperimentGrid)-BanditArmsN):(ncol(ExperimentGrid) - 1L)) {
-          banditindex <- banditindex + 1L 
+          banditindex <- banditindex + 1L
           data.table::set(
-            ExperimentGrid, 
-            i = run, 
-            j = BanditCols, 
-            value = round(BanditProbs[banditindex], 2L))          
+            ExperimentGrid,
+            i = run,
+            j = BanditCols,
+            value = round(BanditProbs[banditindex], 2L))
         }
       }
-      
+
       # Define lambda----
       if(run != 1L) {
         if(NextGrid$Lambda[1L] == "skip") {
           lambda <- NULL
         } else {
           lambda <- "auto"
-        }        
+        }
       }
-      
+
       # Define Fourier Terms----
       if(run != 1L) {
         if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
@@ -2115,10 +2128,10 @@ OptimizeNNET <- function(Output,
           XREGFC <- tryCatch({forecast::fourier(train, K = NextGrid[["MaxFourierTerms"]][1L], h = HoldOutPeriods)}, error = function(x) FALSE)
         }
       }
-      
+
       # Start time----
       Start <- Sys.time()
-      
+
       # Build Models----
       if(run == 1L) {
         if (MinVal > 0L) {
@@ -2137,27 +2150,27 @@ OptimizeNNET <- function(Output,
             repeats = NextGrid[["Repeats"]][1], scale.inputs = NextGrid[["Scale"]][1])}, error = function(x) NULL)
         }
       }
-      
+
       # End time---
       End <- Sys.time()
-      
+
       # Performance Metrics----
       tryCatch({ExperimentGrid <- RL_Performance(
-        Results = Results, 
+        Results = Results,
         NextGrid = NextGrid,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         MaxFourierTerms = NextGrid[["MaxFourierTerms"]][1L],
         XREGFC = XREGFC,
         ExperimentGrid = ExperimentGrid,
-        run = run, 
+        run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)}, error = function(x) NULL)
-      
+
       # Add run time to ExperimentGrid----
       data.table::set(ExperimentGrid, i = run, j = "RunTime", value = End - Start)
       TotalRunTime <- TotalRunTime + as.numeric((End - Start))
-      
+
       # RL Update----
       tryCatch({RL_Update_Output <- RL_Update(
         ExperimentGrid = ExperimentGrid,
@@ -2179,35 +2192,35 @@ OptimizeNNET <- function(Output,
       Successes <- RL_Update_Output[["Successes"]]
       NewGrid <- RL_Update_Output[["NewGrid"]]
       Break <- RL_Update_Output[["BreakLoop"]]}, error = function(x) NULL)
-      
+
       # Exit repeat loop upon conditions----
       if(Break == "exit") break
     }
-    
+
     # Remove Invalid Columns----
     ResultsGrid <- ExperimentGrid[!is.na(Blended_MAE) & SeasonalLags != -10]
-    
+
     # Add Rank Values----
     ResultsGrid <- ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)]
-    
+
     # Return Results----
     return(ResultsGrid)
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     TSGridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for(run in seq_len(FinalGrid[, .N])) {
-      
+
       if(run != 1L) {
         if(TSGridList$Lambda[1L] == "skip") {
           lambda <- NULL
@@ -2215,7 +2228,7 @@ OptimizeNNET <- function(Output,
           lambda <- "auto"
         }
       }
-      
+
       # Build Models----
       if(FinalGrid[1L, GridName] == "DefaultAutoArima") {
         if (MinVal > 0L) {
@@ -2240,20 +2253,20 @@ OptimizeNNET <- function(Output,
             repeats = TSGridList[["Repeats"]][1], scale.inputs = TSGridList[["Scale"]][1])}, error = function(x) NULL)
         }
       }
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         if(TSGridList[["MaxFourierTerms"]][run] != 0) {
           xx <- forecast::forecast(Results, PI=TRUE, xreg = XREGFC, h = FCPeriods)
@@ -2265,7 +2278,7 @@ OptimizeNNET <- function(Output,
         } else {
           xx <- tryCatch({forecast::forecast(Results, PI=TRUE, h = FCPeriods)}, error = function(x) {
             xx <- forecast::forecast(Results, h = FCPeriods)
-            FC_Data[, Forecast := as.numeric(xx$mean)] 
+            FC_Data[, Forecast := as.numeric(xx$mean)]
             FC_Data[, Low80 := NA]
             FC_Data[, Low95 := NA]
             FC_Data[, High80 := NA]
@@ -2277,11 +2290,11 @@ OptimizeNNET <- function(Output,
             FC_Data[, Low95 := as.numeric(xx$lower)[1L:FCPeriods]]
             FC_Data[, Low80 := as.numeric(xx$lower)[(FCPeriods + 1L):(2L * FCPeriods)]]
             FC_Data[, High80 := as.numeric(xx$upper)[1L:FCPeriods]]
-            FC_Data[, High95 := as.numeric(xx$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]                  
+            FC_Data[, High95 := as.numeric(xx$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
           }
         }
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -2290,13 +2303,13 @@ OptimizeNNET <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Rbind train and forecast data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Model Identifier Column----
       FinalForecastData[, ModelID := "Supercharged-NNET"][, ModelRank := FinalGrid[["ModelRank"]][[1]]]
-      
+
       # Rbind final forecast data sets----
       if(run == 1L) {
         ReturnData <- FinalForecastData
@@ -2304,16 +2317,16 @@ OptimizeNNET <- function(Output,
         ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' OptimizeArfima is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeArfima is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -2324,7 +2337,7 @@ OptimizeNNET <- function(Output,
 #' @param Lags Max lags
 #' @param MovingAverages Max moving averages
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -2362,139 +2375,139 @@ OptimizeArfima <- function(Output,
                            DateName = NULL,
                            TrainValidateShare = NULL,
                            FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Generate Grid Objects----
     GridOutput <- GenerateParameterGrids(
       Model = "arfima",
       test = test,
       Lags = Lags,
       MovingAverages = MovingAverages,
-      MinVal = Output$MinVal, 
+      MinVal = Output$MinVal,
       DataSetName = DataSetName)
     Grid <- GridOutput[["Grid"]]
     GridList <- GridOutput[["GridList"]]
     ExperimentGrid <- GridOutput[["ExperimentGrid"]]
     ValidationData <- GridOutput[["ValidationData"]]
-    
+
     # Build models----
     for (run in seq_len(Grid[,.N])) {
-      
+
       # Update Grid Column Values----
       if(run == 1L) {
         data.table::set(
-          ExperimentGrid, 
+          ExperimentGrid,
           i = run,
           j = "GridName",
           value = "DefaultArfima")
       }
-      
+
       # Define lambda----
       if(run != 1L) {
         if(GridList[["Lambda"]][run] == "skip") {
           lambda <- NULL
         } else {
           lambda <- "auto"
-        }        
+        }
       }
-      
+
       # Build Models----
       if(run == 1) {
         Results <- tryCatch({
           forecast::arfima(y = train)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::arfima(
-            y = train, 
+            y = train,
             drange = c(GridList[["Drange"]][run]-0.10,GridList[["Drange"]][run]),
             lambda = lambda,
             max.p = GridList[["Lags"]][run],
             max.q = GridList[["MovingAverages"]][run])}, error = function(x) NULL)
       }
-      
+
       # Generate performance measures----
       ExperimentGrid <- Regular_Performance(
         Model = "arfima",
-        Results = Results, 
+        Results = Results,
         GridList = GridList,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         ExperimentGrid = ExperimentGrid,
         run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)
     }
-    
+
     # Return Experimental Grid----
     ResultsGrid <- ExperimentGrid[Blended_MAE != -10]
-    
+
     # Return Table----
     return(ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)])
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     GridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for(run in seq_len(FinalGrid[, .N])) {
-      
+
       # Define lambda----
       if(GridList$Lambda[run] == "AutoETS" | GridList$Lambda[run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
       }
-      
+
       # Build Models----
       if(run == 1L) {
         Results <- tryCatch({
           forecast::arfima(y = train)}, error = function(x) NULL)
-        
+
       } else {
         Results <- tryCatch({
           forecast::arfima(
-            y = train, 
+            y = train,
             drange = c(GridList[["Drange"]][run]-0.10,GridList[["Drange"]][run]),
             lambda = lambda,
             max.p = GridList[["Lags"]][run],
             max.q = GridList[["MovingAverages"]][run])}, error = function(x) NULL)
       }
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
         FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1L:FCPeriods]]
         FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods + 1L):(2L * FCPeriods)]]
         FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1L:FCPeriods]]
         FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -2503,13 +2516,13 @@ OptimizeArfima <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Bind data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Identifier Column to Later data.table::dcast by----
       FinalForecastData[, ModelID := "ARFIMA"][, ModelRank := FinalGrid[["ModelRank"]][[1]]]
-      
+
       # Create Final Data----
       if(run == 1L) {
         ReturnData <<- FinalForecastData
@@ -2517,16 +2530,16 @@ OptimizeArfima <- function(Output,
         ReturnData <<- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' OptimizeTSLM is a function that takes raw data and returns time series data
-#' 
+#'
 #' OptimizeTSLM is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
@@ -2535,7 +2548,7 @@ OptimizeArfima <- function(Output,
 #' @param train Training data returned from TimeSeriesDataPrepare()
 #' @param test Test data returned from TimeSeriesDataPrepare()
 #' @param FullData Full series data for scoring and ensemble
-#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare() 
+#' @param HoldOutPeriods Holdout periods returned from TimeSeriesDataPrepare()
 #' @param MinVal Minimum value of target variable returned from TimeSeriesDataPrepare()
 #' @param TargetName Target variable name returned from TimeSeriesDataPrepare()
 #' @param DateName Date variable name returned from TimeSeriesDataPrepare()
@@ -2569,102 +2582,102 @@ OptimizeTSLM <- function(Output,
                          DateName = NULL,
                          TrainValidateShare = NULL,
                          FinalGrid = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
-    
+
     # Generate Grid Objects----
     GridOutput <- GenerateParameterGrids(
       Model = "tslm",
       test = test,
-      MinVal = Output$MinVal, 
+      MinVal = Output$MinVal,
       DataSetName = DataSetName)
     Grid <- GridOutput[["Grid"]]
     GridList <- GridOutput[["GridList"]]
     ExperimentGrid <- GridOutput[["ExperimentGrid"]]
     ValidationData <- GridOutput[["ValidationData"]]
-    
+
     # Build models----
     for (run in seq_len(Grid[,.N])) {
-      
+
       # Define lambda----
       if(GridList[["Lambda"]][run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
-      }        
-      
+      }
+
       # Build Models----
       Results <- tryCatch({forecast::tslm(train ~ trend+season,data=train,lambda=lambda,biasadj=GridList[["BiasAdj"]][run])},error=function(x) NULL)
-      
+
       # Generate performance measures----
       ExperimentGrid <- Regular_Performance(
         Model = "tslm",
-        Results = Results, 
+        Results = Results,
         GridList = GridList,
-        TrainValidateShare = TrainValidateShare, 
+        TrainValidateShare = TrainValidateShare,
         ExperimentGrid = ExperimentGrid,
         run = run,
         train = train,
         ValidationData = ValidationData,
         HoldOutPeriods = HoldOutPeriods)
     }
-    
+
     # Return Experimental Grid----
     ResultsGrid <- ExperimentGrid[Blended_MAE != -10]
-    
+
     # Return Table----
     return(ResultsGrid[, ModelRunNumber := seq_len(ResultsGrid[, .N])][order(Blended_MAE)][, ModelRankByDataType := seq_len(ResultsGrid[, .N])][order(ModelRunNumber)])
-    
+
     # Forecast Code
   } else {
-    
+
     # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
-    
+
     # Create list to extract elements for modeling----
     GridList <- as.list(FinalGrid)
-    
+
     # Train number of rows----
     TrainRows <- length(train)
-    
+
     # Build models----
     for (run in seq_len(FinalGrid[,.N])) {
-      
+
       # Define lambda----
       if(GridList$Lambda[run] == "skip") {
         lambda <- NULL
       } else {
         lambda <- "auto"
       }
-      
+
       # Build Models----
       Results <- tryCatch({forecast::tslm(train ~ trend+season,data=train,lambda=lambda,biasadj=GridList[["BiasAdj"]][run])},error=function(x) NULL)
-      
+
       # Collect Forecast Inputs----
       FC_Data <- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
       FCPeriods <- Output$FCPeriods
       Train_Score <- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
-      
+
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
-        
+
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
-        
+
         # Forecast----
         FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
         FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1L:FCPeriods]]
         FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods + 1L):(2L * FCPeriods)]]
         FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1L:FCPeriods]]
         FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
-        
-        # If model fails to rebuild----  
+
+        # If model fails to rebuild----
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
@@ -2673,13 +2686,13 @@ OptimizeTSLM <- function(Output,
         FC_Data[, High80 := NA]
         FC_Data[, High95 := NA]
       }
-      
+
       # Bind data----
       FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
-      
+
       # Add Identifier Column to Later data.table::dcast by----
       FinalForecastData[, ModelID := "TSLM"][, ModelRank := FinalGrid[["ModelRank"]][[1]]]
-      
+
       # Create Final Data----
       if(run == 1) {
         ReturnData <<- FinalForecastData
@@ -2687,14 +2700,14 @@ OptimizeTSLM <- function(Output,
         ReturnData <<- data.table::rbindlist(list(ReturnData, FinalForecastData))
       }
     }
-    
+
     # Return forecast values for all models----
     return(ReturnData)
   }
 }
 
 #' ParallelAutoARIMA to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
@@ -2706,10 +2719,10 @@ OptimizeTSLM <- function(Output,
 #' @param MaxRunMinutes 5
 #' @param MaxRunsWithoutNewWinner 12
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoARIMA(
 #'   MetricSelection = "MAE",
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   MaxRunsWithoutNewWinner = 20,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
@@ -2723,10 +2736,10 @@ ParallelAutoARIMA <- function(
   MaxNumberModels = 20,
   MaxRunMinutes = 5L,
   MaxRunsWithoutNewWinner = 12) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -2749,11 +2762,11 @@ ParallelAutoARIMA <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
-  for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L    
-  
+  for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
@@ -2765,7 +2778,7 @@ ParallelAutoARIMA <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       OptimizeArima(
         Output = Output,
         MetricSelection = MetricSelection,
@@ -2788,7 +2801,7 @@ ParallelAutoARIMA <- function(
         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes)
-      
+
       #
       # Output = Output
       # MetricSelection = MetricSelection
@@ -2813,35 +2826,35 @@ ParallelAutoARIMA <- function(
       # MaxRunMinutes = MaxRunMinutes
       # FinalGrid = NULL
       #
-      
+
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[Validate_MSE != -10]
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Reorder columns----
   data.table::setcolorder(x = Results, neworder = c(1:12,14:ncol(Results),13))
-  
+
   # Return
   return(Results)
 }
 
 #' ParallelAutoETS
-#' 
+#'
 #' ParallelAutoETS to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoETS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -2851,10 +2864,10 @@ ParallelAutoETS <- function(
   Output,
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50, 0.50)) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -2877,15 +2890,15 @@ ParallelAutoETS <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeETS----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) {
     if(!is.null(TrainArtifacts[[i]][["Data"]])) {
-      Counter <- Counter + 1L    
+      Counter <- Counter + 1L
     }
   }
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores    <- parallel::detectCores()
@@ -2910,29 +2923,29 @@ ParallelAutoETS <- function(
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Return----
   return(Results)
 }
 
 #' ParallelAutoTBATS
-#' 
+#'
 #' ParallelAutoTBATS to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoTBATS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -2942,10 +2955,10 @@ ParallelAutoTBATS <- function(
   Output,
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50, 0.50)) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -2968,11 +2981,11 @@ ParallelAutoTBATS <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -2998,7 +3011,7 @@ ParallelAutoTBATS <- function(
         DateName = Output$DateName,
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
-      
+
       #
       # MetricSelection = MetricSelection
       # DataSetName = TrainArtifacts[[i]][["Name"]]
@@ -3014,22 +3027,22 @@ ParallelAutoTBATS <- function(
       # TrainValidateShare = TrainValidateShare
       # FinalGrid = NULL
       #
-      
+
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Return----
   return(Results)
 }
 
 #' ParallelAutoNNET to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
@@ -3041,10 +3054,10 @@ ParallelAutoTBATS <- function(
 #' @param MaxRunMinutes 5
 #' @param MaxRunsWithoutNewWinner 12
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoNNET(
 #'   MetricSelection = "MAE",
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   MaxRunsWithoutNewWinner = 20,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
@@ -3058,10 +3071,10 @@ ParallelAutoNNET <- function(
   MaxNumberModels = 20,
   MaxRunMinutes = 5,
   MaxRunsWithoutNewWinner = 12) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3084,11 +3097,11 @@ ParallelAutoNNET <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3118,33 +3131,33 @@ ParallelAutoNNET <- function(
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes)
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[Validate_MSE != -10]
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Reorder columns----
   data.table::setcolorder(x = Results, neworder = c(1L:9L, 11L:ncol(Results), 10L))
-  
+
   # Return
   return(Results)
 }
 
 #' ParallelAutoArfima
-#' 
+#'
 #' ParallelAutoArfima to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoArfima(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -3154,10 +3167,10 @@ ParallelAutoArfima <- function(
   Output,
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50,0.50)) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3180,11 +3193,11 @@ ParallelAutoArfima <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3211,29 +3224,29 @@ ParallelAutoArfima <- function(
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Return----
   return(Results)
 }
 
 #' ParallelAutoTSLM
-#' 
+#'
 #' ParallelAutoTSLM to run the 4 data sets at once
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' ParallelAutoTSLM(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -3243,10 +3256,10 @@ ParallelAutoTSLM <- function(
   Output,
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50, 0.50)) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3269,11 +3282,11 @@ ParallelAutoTSLM <- function(
       Diff = if(is.null(Output$TSCleanModelFreqDiff)) 0 else Output$TSCleanModelFreqDiff,
       SDiff = if(is.null(Output$TSCleanModelFreqSeasonalDiff)) 0 else Output$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3298,22 +3311,22 @@ ParallelAutoTSLM <- function(
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
-  
+
   # Return----
   return(Results)
 }
 
 #' FinalBuildArima
-#' 
+#'
 #' FinalBuildArima to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -3323,9 +3336,9 @@ ParallelAutoTSLM <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildArima(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3339,10 +3352,10 @@ FinalBuildArima <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 1,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -3367,10 +3380,10 @@ FinalBuildArima <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3393,15 +3406,15 @@ FinalBuildArima <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) {
     if(!is.null(TrainArtifacts[[i]][["Data"]])) {
-      Counter <- Counter + 1L    
+      Counter <- Counter + 1L
     }
   }
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3412,7 +3425,7 @@ FinalBuildArima <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeArima(
@@ -3437,7 +3450,7 @@ FinalBuildArima <- function(
           MaxNumberModels = NumberModelsScore,
           MaxRunMinutes = 100,
           FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-        
+
         # Output = TimeSeriesPrepareOutput
         # MetricSelection = MetricSelection
         # DataSetName = TrainArtifacts[[i]][["Name"]]
@@ -3459,7 +3472,7 @@ FinalBuildArima <- function(
         # MaxNumberModels = NumberModelsScore
         # MaxRunMinutes = 100
         # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
-        
+
       } else {
         Forecasts <- OptimizeArima(
           Output = TimeSeriesPrepareOutput,
@@ -3485,19 +3498,19 @@ FinalBuildArima <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' FinalBuildETS
-#' 
+#'
 #' FinalBuildETS to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -3507,9 +3520,9 @@ FinalBuildArima <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildETS(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3523,10 +3536,10 @@ FinalBuildETS <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 12,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -3551,10 +3564,10 @@ FinalBuildETS <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3577,15 +3590,15 @@ FinalBuildETS <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) {
     if(!is.null(TrainArtifacts[[i]][["Data"]])) {
-      Counter <- Counter + 1L    
+      Counter <- Counter + 1L
     }
   }
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3596,7 +3609,7 @@ FinalBuildETS <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeETS(
@@ -3629,19 +3642,19 @@ FinalBuildETS <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' FinalBuildTBATS
-#' 
+#'
 #' FinalBuildTBATS to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -3651,9 +3664,9 @@ FinalBuildETS <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildTBATS(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3667,10 +3680,10 @@ FinalBuildTBATS <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 1,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -3695,10 +3708,10 @@ FinalBuildTBATS <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3721,11 +3734,11 @@ FinalBuildTBATS <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3736,7 +3749,7 @@ FinalBuildTBATS <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeTBATS(
@@ -3769,19 +3782,19 @@ FinalBuildTBATS <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' FinalBuildNNET
-#' 
+#'
 #' FinalBuildNNET to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -3791,9 +3804,9 @@ FinalBuildTBATS <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildNNET(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3807,10 +3820,10 @@ FinalBuildNNET <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 1,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -3835,10 +3848,10 @@ FinalBuildNNET <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3861,11 +3874,11 @@ FinalBuildNNET <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -3876,7 +3889,7 @@ FinalBuildNNET <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeNNET(
@@ -3918,19 +3931,19 @@ FinalBuildNNET <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' FinalBuildArfima
-#' 
+#'
 #' FinalBuildArfima to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -3940,9 +3953,9 @@ FinalBuildNNET <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildArfima(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3956,10 +3969,10 @@ FinalBuildArfima <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 1,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -3984,10 +3997,10 @@ FinalBuildArfima <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -4010,11 +4023,11 @@ FinalBuildArfima <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -4025,7 +4038,7 @@ FinalBuildArfima <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeArfima(
@@ -4058,19 +4071,19 @@ FinalBuildArfima <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' FinalBuildTSLM
-#' 
+#'
 #' FinalBuildTSLM to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
@@ -4080,9 +4093,9 @@ FinalBuildArfima <- function(
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
-#' @examples 
+#' @examples
 #' FinalBuildTSLM(
-#'   Output = NULL, 
+#'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -4096,10 +4109,10 @@ FinalBuildTSLM <- function(
   MetricSelection = "MAE",
   NumberModelsScore = 1,
   ByDataType = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -4124,10 +4137,10 @@ FinalBuildTSLM <- function(
     } else if(toupper(MetricSelection) == "MSE") {
       ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]      
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
     }
-  } 
-  
+  }
+
   # Store Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -4150,11 +4163,11 @@ FinalBuildTSLM <- function(
       Diff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqDiff,
       SDiff = if(is.null(TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff)) 0 else TimeSeriesPrepareOutput$TSCleanModelFreqSeasonalDiff,
       Name = "TSCleanModelFrequency"))
-  
+
   # Idenity the number of non-null data sets to run through OptimizeArima----
   Counter <- 0L
   for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
-  
+
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
   cores <- parallel::detectCores()
@@ -4165,7 +4178,7 @@ FinalBuildTSLM <- function(
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-      
+
       # Score models----
       if(ByDataType) {
         Forecasts <- OptimizeTSLM(
@@ -4198,19 +4211,19 @@ FinalBuildTSLM <- function(
       }
       Forecasts
     }
-  
+
   # shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
-  
+
   # Return----
   return(Results[!is.na(Forecast)])
 }
 
 #' TimeSeriesEnsembleForecast
-#' 
+#'
 #' TimeSeriesEnsembleForecast to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param TS_Models Select which ts model forecasts to ensemble
@@ -4239,10 +4252,10 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
                                               GridTune = FALSE,
                                               FCPeriods = 5,
                                               MaxNumberModels = 5) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Pull in time series models forecast files----
   i = 1L
   TS_Models <- TS_Models[!TS_Models %chin% "Supercharged-NNET"]
@@ -4291,26 +4304,26 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
       i <- i + 1
     }
   }
-  
+
   # Merge Fourier Features----
   data <- merge(data, FourierFeaturesFull, by = eval(DateName), all.x = TRUE)
-  
+
   # Fill in missing ModelRank for CARMA functions----
   if(any(TS_Models %chin% c("arima","tbats"))) {
-    data.table::set(data, i = which(is.na(data[["ModelRank"]])), j = "ModelRank", value = 1)  
+    data.table::set(data, i = which(is.na(data[["ModelRank"]])), j = "ModelRank", value = 1)
   } else {
     data.table::set(data, j = "ModelRank", value = 1)
   }
-  
+
   # Add Calendar Variables----
   if(CalendarFeatures) {
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateName),
       AsFactor = FALSE,
-      TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))    
+      TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))
   }
-  
+
   # Add Holiday Counts----
   if(HolidayFeatures) {
     data <- CreateHolidayVariables(
@@ -4318,13 +4331,13 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
       DateCols = eval(DateName),
       HolidayGroups = c("USPublicHolidays"),
       Holidays = NULL,
-      GroupingVars = "ModelID")    
+      GroupingVars = "ModelID")
   }
-  
+
   # Subset and Split out data sets----
   keep <- c(eval(DateName),eval(TargetName),"Forecast","ModelID",names(data)[9:ncol(data)])
   if(any(TS_Models %chin% c("arima","tbats"))) {
-    ForecastStartDate <- min(data[is.na(get(TargetName))][[eval(DateName)]])  
+    ForecastStartDate <- min(data[is.na(get(TargetName))][[eval(DateName)]])
   } else {
     startrow <- nrow(data) / length(TS_Models) - FCPeriods + 1L
     ForecastStartDate <- data[startrow, get(DateName)]
@@ -4332,72 +4345,72 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
   TrainData <- data[get(DateName) < eval(ForecastStartDate)]
   TrainData <- TrainData[, ..keep]
   TrainData <- ModelDataPrep(
-    data = TrainData, 
-    Impute = FALSE, 
-    CharToFactor = TRUE, 
-    IntToNumeric = TRUE, 
-    RemoveDates = FALSE, 
+    data = TrainData,
+    Impute = FALSE,
+    CharToFactor = TRUE,
+    IntToNumeric = TRUE,
+    RemoveDates = FALSE,
     MissFactor = "0",
-    MissNum = -1, 
+    MissNum = -1,
     IgnoreCols = NULL)
   if(any(TS_Models %chin% c("arima","tbats"))) {
-    keep <- c(eval(DateName),eval(TargetName),"Forecast","ModelID","Low80","Low95","High80","High95",names(data)[9:ncol(data)])  
+    keep <- c(eval(DateName),eval(TargetName),"Forecast","ModelID","Low80","Low95","High80","High95",names(data)[9:ncol(data)])
   } else {
     keep <- c(eval(DateName),eval(TargetName),"Forecast","ModelID",names(data)[9:ncol(data)])
   }
   ForecastData <- data[get(DateName) >= eval(ForecastStartDate)]
   ForecastData <- ForecastData[, ..keep]
   ForecastData <- ModelDataPrep(
-    data = ForecastData, 
-    Impute = FALSE, 
-    CharToFactor = TRUE, 
+    data = ForecastData,
+    Impute = FALSE,
+    CharToFactor = TRUE,
     IntToNumeric = TRUE,
-    RemoveDates = FALSE, 
+    RemoveDates = FALSE,
     MissFactor = "0",
-    MissNum = -1, 
+    MissNum = -1,
     IgnoreCols = NULL)
   FullData <- data.table::rbindlist(list(TrainData,ForecastData), fill = TRUE)
   data.table::setorderv(FullData, cols = c("ModelID","ModelRank","Date"), order = c(1,1,1))
-  
+
   # Difference series data to build models off of----
   TrainData[, ForecastDiff := data.table::shift(x = Forecast, n = 1, fill = NA, type = "lag"), by = c("ModelID","ModelRank")][, ModForecast := Forecast - ForecastDiff]
   TrainData[, TargetDiff := data.table::shift(x = get(TargetName), n = 1, fill = NA, type = "lag"), by = c("ModelID","ModelRank")][, ModTarget := get(TargetName) - TargetDiff]
   FullData[, ForecastDiff := data.table::shift(x = Forecast, n = 1, fill = NA, type = "lag"), by = c("ModelID","ModelRank")][, ModForecast := Forecast - ForecastDiff]
   FullData[, TargetDiff := data.table::shift(x = get(TargetName), n = 1, fill = NA, type = "lag"), by = c("ModelID","ModelRank")][, ModTarget := get(TargetName) - TargetDiff]
-  
+
   # Subset data for modeling----
   TrainDataModel <- TrainData[!is.na(ModTarget)]
   TrainDataStart <- TrainData[is.na(ModTarget)][, eval(DateName) := as.Date(get(DateName))]
   FullDataModel <- FullData[!is.na(ModForecast)]
-  
+
   # Define model args----
   if(any(TS_Models %chin% c("arima","tbats"))) {
     Features <- setdiff(names(TrainData),c(eval(DateName),eval(TargetName),"ModTarget","TargetDiff","ModelRank","Low80","Low95","High80","High95"))
     idcols <- c(eval(DateName),eval(TargetName),"ModTarget","TargetDiff","ModelRank","Low80","Low95","High80","High95")
   } else {
-    Features <- setdiff(names(TrainData),c(eval(DateName),eval(TargetName),"ModTarget","TargetDiff","ModelRank"))  
+    Features <- setdiff(names(TrainData),c(eval(DateName),eval(TargetName),"ModTarget","TargetDiff","ModelRank"))
     idcols <- c(eval(DateName),eval(TargetName),"ModTarget","TargetDiff","ModelRank")
   }
-  
+
   # Build ML Models----
   ForecastOutputList <- list()
   Counter <- 0L
   for(models in ML_Methods) {
     if(tolower(models) == "h2odrf") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Convert date to character----
       data.table::set(
-        TrainDataModel, 
-        j = eval(DateName), 
+        TrainDataModel,
+        j = eval(DateName),
         value = as.character(TrainDataModel[[eval(DateName)]]))
       data.table::set(
-        FullDataModel, 
-        j = eval(DateName), 
+        FullDataModel,
+        j = eval(DateName),
         value = as.character(FullDataModel[[eval(DateName)]]))
-      
+
       # Build H2O RandomForest----
       Ensemble <- AutoH2oDRFRegression(
         data = TrainDataModel,
@@ -4421,10 +4434,10 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         SaveModelObjects = FALSE,
         IfSaveModel = "mojo",
         H2OShutdown = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score H2O RandomForest Model----
       Forecasts <- AutoH2OMLScoring(
         ScoringData = FullDataModel,
@@ -4448,38 +4461,38 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Recombine data----
       Forecasts[, Date := as.Date(Date)]
       Forecasts <- data.table::rbindlist(list(Forecasts,TrainDataStart),fill = TRUE)
       data.table::setorderv(Forecasts, cols = c("ModelID","ModelRank",eval(DateName)), order = c(1,1,1))
-      
+
       # Fill in NA's----
       data.table::set(Forecasts, i = which(is.na(Forecasts[["Predictions"]])), j = "Predictions", value = Forecasts[which(is.na(Forecasts[["Predictions"]]))][["Forecast"]])
-      
+
       # Overwrite Predictions and Forecast with Actuals----
       Forecasts[, ID := seq_len(.N), by = c("ModelID","ModelRank")]
       Forecasts[ID %in% c(1:length(TrainData[, unique(get(DateName))])), Predictions := get(TargetName)]
       Forecasts[ID %in% c(length(TrainData[, unique(get(DateName))]):length(FullData[, unique(get(DateName))])), Predictions := cumsum(Predictions), by = c("ModelID","ModelRank")][, ID := NULL]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- data.table::copy(Forecasts)
-      
+
     } else if(tolower(models) == "h2ogbm") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Convert date to character----
       data.table::set(
-        TrainDataModel, 
-        j = eval(DateName), 
+        TrainDataModel,
+        j = eval(DateName),
         value = as.character(TrainDataModel[[eval(DateName)]]))
       data.table::set(
-        FullDataModel, 
-        j = eval(DateName), 
+        FullDataModel,
+        j = eval(DateName),
         value = as.character(FullDataModel[[eval(DateName)]]))
-      
+
       # Build H2O GBM----
       Ensemble <- AutoH2oGBMRegression(
         data = TrainDataModel,
@@ -4503,10 +4516,10 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         SaveModelObjects = FALSE,
         IfSaveModel = "mojo",
         H2OShutdown = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score H2O GBM Model----
       Forecasts <- AutoH2OMLScoring(
         ScoringData = FullDataModel,
@@ -4530,38 +4543,38 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Recombine data----
       Forecasts[, Date := as.Date(Date)]
       Forecasts <- data.table::rbindlist(list(Forecasts,TrainDataStart),fill = TRUE)
       data.table::setorderv(Forecasts, cols = c("ModelID","ModelRank",eval(DateName)), order = c(1,1,1))
-      
+
       # Fill in NA's----
       data.table::set(Forecasts, i = which(is.na(Forecasts[["Predictions"]])), j = "Predictions", value = Forecasts[which(is.na(Forecasts[["Predictions"]]))][["Forecast"]])
-      
+
       # Overwrite Predictions and Forecast with Actuals----
       Forecasts[, ID := seq_len(.N), by = c("ModelID","ModelRank")]
       Forecasts[ID %in% c(1:length(TrainData[, unique(get(DateName))])), Predictions := get(TargetName)]
       Forecasts[ID %in% c(length(TrainData[, unique(get(DateName))]):length(FullData[, unique(get(DateName))])), Predictions := cumsum(Predictions), by = c("ModelID","ModelRank")][, ID := NULL]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- data.table::copy(Forecasts)
-      
+
     } else if(tolower(models) == "xgboost") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Convert date to character----
       data.table::set(
-        TrainDataModel, 
-        j = eval(DateName), 
+        TrainDataModel,
+        j = eval(DateName),
         value = as.POSIXct(TrainDataModel[[eval(DateName)]]))
       data.table::set(
-        FullDataModel, 
-        j = eval(DateName), 
+        FullDataModel,
+        j = eval(DateName),
         value = as.POSIXct(FullDataModel[[eval(DateName)]]))
-      
+
       # Build XGBoost----
       Ensemble <- AutoXGBoostRegression(
         data = TrainDataModel,
@@ -4585,20 +4598,20 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         NumOfParDepPlots = 0,
         ReturnModelObjects = TRUE,
         SaveModelObjects = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
       FactorLevelsList <- Ensemble$FactorLevelsList
-      
+
       # Score XGBoost Model----
       Forecasts <- AutoXGBoostScoring(
         ScoringData = FullDataModel,
         ModelObject = Model,
-        TargetType = "regression", 
+        TargetType = "regression",
         FeatureColumnNames = Features,
-        IDcols = idcols, 
+        IDcols = idcols,
         FactorLevelsList = FactorLevelsList,
-        TargetLevels = NULL, 
+        TargetLevels = NULL,
         ModelPath = NULL,
         ModelID = "FC_Model",
         ReturnFeatures = TRUE,
@@ -4613,38 +4626,38 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Recombine data----
       Forecasts[, Date := as.Date(Date)]
       Forecasts <- data.table::rbindlist(list(Forecasts,TrainDataStart),fill = TRUE)
       data.table::setorderv(Forecasts, cols = c("ModelID","ModelRank",eval(DateName)), order = c(1,1,1))
-      
+
       # Fill in NA's----
       data.table::set(Forecasts, i = which(is.na(Forecasts[["Predictions"]])), j = "Predictions", value = Forecasts[which(is.na(Forecasts[["Predictions"]]))][["Forecast"]])
-      
+
       # Overwrite Predictions and Forecast with Actuals----
       Forecasts[, ID := seq_len(.N), by = c("ModelID","ModelRank")]
       Forecasts[ID %in% c(1:length(TrainData[, unique(get(DateName))])), Predictions := get(TargetName)]
       Forecasts[ID %in% c(length(TrainData[, unique(get(DateName))]):length(FullData[, unique(get(DateName))])), Predictions := cumsum(Predictions), by = c("ModelID","ModelRank")][, ID := NULL]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- data.table::copy(Forecasts)
-      
+
     } else if(tolower(models) == "catboost") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Convert date to character----
       data.table::set(
-        TrainDataModel, 
-        j = eval(DateName), 
+        TrainDataModel,
+        j = eval(DateName),
         value = as.character(TrainDataModel[[eval(DateName)]]))
       data.table::set(
-        FullDataModel, 
-        j = eval(DateName), 
+        FullDataModel,
+        j = eval(DateName),
         value = as.character(FullDataModel[[eval(DateName)]]))
-      
+
       # Build CatBoost----
       Ensemble <- AutoCatBoostRegression(
         data = TrainDataModel,
@@ -4667,15 +4680,15 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         NumOfParDepPlots = 0,
         ReturnModelObjects = TRUE,
         SaveModelObjects = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score CatBoost Model----
       Forecasts <- AutoCatBoostScoring(
         ScoringData = FullDataModel,
         ModelObject = Model,
-        TargetType = "regression", 
+        TargetType = "regression",
         FeatureColumnNames = Features,
         IDcols = idcols,
         RemoveModel = TRUE,
@@ -4693,25 +4706,25 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Recombine data----
       Forecasts[, Date := as.Date(Date)]
       Forecasts <- data.table::rbindlist(list(Forecasts,TrainDataStart),fill = TRUE)
       data.table::setorderv(Forecasts, cols = c("ModelID","ModelRank",eval(DateName)), order = c(1,1,1))
-      
+
       # Fill in NA's----
       data.table::set(Forecasts, i = which(is.na(Forecasts[["Predictions"]])), j = "Predictions", value = Forecasts[which(is.na(Forecasts[["Predictions"]]))][["Forecast"]])
-      
+
       # Overwrite Predictions and Forecast with Actuals----
       Forecasts[, ID := seq_len(.N), by = c("ModelID","ModelRank")]
       Forecasts[ID %in% c(1:length(TrainData[, unique(get(DateName))])), Predictions := get(TargetName)]
       Forecasts[ID %in% c(length(TrainData[, unique(get(DateName))]):length(FullData[, unique(get(DateName))])), Predictions := cumsum(Predictions), by = c("ModelID","ModelRank")][, ID := NULL]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- data.table::copy(Forecasts)
     }
   }
-  
+
   # Rbind And Aggregate Data----
   FinalForecast <- data.table::rbindlist(ForecastOutputList, fill = TRUE)
   if(any(TS_Models %chin% c("arima","tbats"))) {
@@ -4721,7 +4734,7 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
                                        Low80 = mean(Low80, na.rm = TRUE),
                                        Low95 = mean(Low95, na.rm = TRUE),
                                        High80 = mean(High80, na.rm = TRUE),
-                                       High95 = mean(High95, na.rm = TRUE)), by = eval(DateName)]  
+                                       High95 = mean(High95, na.rm = TRUE)), by = eval(DateName)]
   } else {
     FinalForecast <- FinalForecast[, .(V1 = mean(get(TargetName), na.rm = TRUE),
                                        Ensemble = mean(Predictions, na.rm = TRUE),
@@ -4729,24 +4742,24 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
   }
   data.table::setnames(FinalForecast, "V1",eval(TargetName))
   data.table::set(
-    FinalForecast, 
-    i = (length(TrainData[, unique(get(DateName))])+1L):(length(FullDataModel[,unique(get(DateName))])+1L), 
-    j = eval(TargetName), 
+    FinalForecast,
+    i = (length(TrainData[, unique(get(DateName))])+1L):(length(FullDataModel[,unique(get(DateName))])+1L),
+    j = eval(TargetName),
     value = NA)
   data.table::set(
-    FinalForecast, 
-    i = (length(TrainData[, unique(get(DateName))])+1L):(length(FullDataModel[,unique(get(DateName))])+1L), 
-    j = eval(TargetName), 
+    FinalForecast,
+    i = (length(TrainData[, unique(get(DateName))])+1L):(length(FullDataModel[,unique(get(DateName))])+1L),
+    j = eval(TargetName),
     value = NA)
-  
+
   # Return Forecast----
   return(FinalForecast)
 }
 
 #' WideTimeSeriesEnsembleForecast
-#' 
+#'
 #' WideTimeSeriesEnsembleForecast to generate forecasts and ensemble data
-#' 
+#'
 #' @author Adrian Antico
 #' @family Time Series
 #' @param TS_Models Select which ts model forecasts to ensemble
@@ -4767,16 +4780,16 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
                                            TaskType = "GPU",
                                            GridTune = FALSE,
                                            MaxNumberModels = 5) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-  
+
   # Pull in time series models forecast files----
   i = 1L
   for(tsf in c(TS_Models)) {
     if(i == 1) {
       if(file.exists(file.path(file.path(Path,paste0(tsf,".csv"))))) {
-        data <- data.table::fread(file.path(Path,paste0(tsf,".csv")))        
+        data <- data.table::fread(file.path(Path,paste0(tsf,".csv")))
         i <- i + 1
       }
     } else {
@@ -4785,7 +4798,7 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
       i <- i + 1
     }
   }
-  
+
   # Subset and Split out data sets----
   keep <- c(eval(DateName),"Target","Forecast","ModelID")
   TrainData <- data[!is.na(Target), ..keep]
@@ -4796,41 +4809,41 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
   TrainDataWide <- data.table::dcast(data = TrainData, Date + Weekly_Sales ~ ModelID, value.var = "Forecast", fun = mean)
   ForecastDataWide <<- data.table::dcast(data = ForecastData, Date ~ ModelID, value.var = "Forecast", fun = mean)
   TrainDataWide <- ModelDataPrep(
-    data = TrainDataWide, 
-    Impute = FALSE, 
-    CharToFactor = TRUE, 
-    IntToNumeric = TRUE, 
-    RemoveDates = FALSE, 
+    data = TrainDataWide,
+    Impute = FALSE,
+    CharToFactor = TRUE,
+    IntToNumeric = TRUE,
+    RemoveDates = FALSE,
     MissFactor = "0",
-    MissNum = -1, 
+    MissNum = -1,
     IgnoreCols = NULL)
   ForecastDataWide <- ModelDataPrep(
-    data = ForecastDataWide, 
-    Impute = FALSE, 
-    CharToFactor = TRUE, 
-    IntToNumeric = TRUE, 
-    RemoveDates = FALSE, 
+    data = ForecastDataWide,
+    Impute = FALSE,
+    CharToFactor = TRUE,
+    IntToNumeric = TRUE,
+    RemoveDates = FALSE,
     MissFactor = "0",
-    MissNum = -1, 
+    MissNum = -1,
     IgnoreCols = NULL)
-  
+
   # Training Diff----
   DiffTrainOutput <- DifferenceData(data = TrainDataWide)
   Train <- DiffTrainOutput$DiffData
-  
+
   # Scoring Diff----
   DiffScoreOutput <- DifferenceData(data = ForecastDataWide)
   Score <- DiffScoreOutput$DiffData
-  
+
   # Build ML Models----
   ForecastOutputList <- list()
   Counter <- 0L
   for(models in ML_Methods) {
     if(tolower(models) == "h2odrf") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Build H2O RandomForest----
       Ensemble <- AutoH2oDRFRegression(
         data = Train,
@@ -4853,10 +4866,10 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         SaveModelObjects = FALSE,
         IfSaveModel = "mojo",
         H2OShutdown = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score H2O RandomForest Model----
       Forecasts <- AutoH2OMLScoring(
         ScoringData = Score,
@@ -4880,29 +4893,29 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Back Transform Differencing----
       Forecasts <- DifferenceDataReverse(
-        data = ForecastDataWide, 
-        ScoreData = Forecasts$Predictions, 
+        data = ForecastDataWide,
+        ScoreData = Forecasts$Predictions,
         LastRow = DiffTrainOutput$LastRow[["TargetName"]])
-      
+
       # StackData
       PlotForecast <- data.table::melt(
-        data = Forecasts, 
+        data = Forecasts,
         id.vars = eval(DateName),
         variable.name = "Model",
         value.name = "Forecast")
       PlotForecast[Model == "Forecast", Model := "H2oDRF"]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- PlotForecast
-      
+
     } else if(tolower(models) == "h2ogbm") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Build H2O GBM----
       Ensemble <- AutoH2oGBMRegression(
         data = Train,
@@ -4925,10 +4938,10 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         SaveModelObjects = FALSE,
         IfSaveModel = "mojo",
         H2OShutdown = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score H2O GBM Model----
       Forecasts <- AutoH2OMLScoring(
         ScoringData = Score,
@@ -4952,29 +4965,29 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Back Transform Differencing----
       Forecasts <- DifferenceDataReverse(
-        data = ForecastDataWide, 
-        ScoreData = Forecasts$Predictions, 
+        data = ForecastDataWide,
+        ScoreData = Forecasts$Predictions,
         LastRow = DiffTrainOutput$LastRow[["TargetName"]])
-      
+
       # StackData
       PlotForecast <- data.table::melt(
-        data = Forecasts, 
+        data = Forecasts,
         id.vars = eval(DateName),
         variable.name = "Model",
         value.name = "Forecast")
       PlotForecast[Model == "Forecast", Model := "H2oGBM"]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- PlotForecast
-      
+
     } else if(tolower(models) == "xgboost") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Build XGBoost----
       Ensemble <- AutoXGBoostRegression(
         data = Train,
@@ -4997,20 +5010,20 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         NumOfParDepPlots = 0,
         ReturnModelObjects = TRUE,
         SaveModelObjects = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
       FactorLevelsList <- Ensemble$FactorLevelsList
-      
+
       # Score XGBoost Model----
       Forecasts <- AutoXGBoostScoring(
         ScoringData = Score,
         ModelObject = Model,
-        TargetType = "regression", 
-        FeatureColumnNames = 2:ncol(Score), 
-        IDcols = eval(DateName), 
+        TargetType = "regression",
+        FeatureColumnNames = 2:ncol(Score),
+        IDcols = eval(DateName),
         FactorLevelsList = FactorLevelsList,
-        TargetLevels = NULL, 
+        TargetLevels = NULL,
         ModelPath = NULL,
         ModelID = "FC_Model",
         ReturnFeatures = TRUE,
@@ -5025,29 +5038,29 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Back Transform Differencing----
       Forecasts <- DifferenceDataReverse(
-        data = ForecastDataWide, 
-        ScoreData = Forecasts$Predictions, 
+        data = ForecastDataWide,
+        ScoreData = Forecasts$Predictions,
         LastRow = DiffTrainOutput$LastRow[["TargetName"]])
-      
+
       # StackData
       PlotForecast <- data.table::melt(
-        data = Forecasts, 
+        data = Forecasts,
         id.vars = eval(DateName),
         variable.name = "Model",
         value.name = "Forecast")
       PlotForecast[Model == "Forecast", Model := "XGBoost"]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- PlotForecast
-      
+
     } else if(tolower(models) == "catboost") {
-      
+
       # Increment----
       Counter <- Counter + 1L
-      
+
       # Build CatBoost----
       Ensemble <- AutoCatBoostRegression(
         data = Train,
@@ -5069,16 +5082,16 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         NumOfParDepPlots = 0,
         ReturnModelObjects = TRUE,
         SaveModelObjects = FALSE)
-      
+
       # Store Model----
       Model <- Ensemble$Model
-      
+
       # Score CatBoost Model----
       Forecasts <- AutoCatBoostScoring(
         ScoringData = Score,
         ModelObject = Model,
-        TargetType = "regression", 
-        FeatureColumnNames = 2:ncol(Score), 
+        TargetType = "regression",
+        FeatureColumnNames = 2:ncol(Score),
         IDcols = eval(DateName),
         RemoveModel = TRUE,
         ModelPath = NULL,
@@ -5095,35 +5108,35 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
-      
+
       # Back Transform Differencing----
       Forecasts <- DifferenceDataReverse(
-        data = ForecastDataWide, 
-        ScoreData = Forecasts$Predictions, 
+        data = ForecastDataWide,
+        ScoreData = Forecasts$Predictions,
         LastRow = DiffTrainOutput$LastRow[["TargetName"]])
-      
+
       # StackData
       PlotForecast <- data.table::melt(
-        data = Forecasts, 
+        data = Forecasts,
         id.vars = eval(DateName),
         variable.name = "Model",
         value.name = "Forecast")
       PlotForecast[Model == "Forecast", Model := "CatBoost"]
-      
+
       # Store forecast data----
       ForecastOutputList[[Counter]] <- PlotForecast
     }
   }
-  
+
   # Rbind And Aggregate Data----
   data.table::set(ForecastData, j = c("Forecast", eval(TargetName)), value = NULL)
-  ForecastDataIntervals <- ForecastData[, .(Low80 = mean(Low80, na.rm = TRUE), Low95 = mean(Low95, na.rm = TRUE), 
+  ForecastDataIntervals <- ForecastData[, .(Low80 = mean(Low80, na.rm = TRUE), Low95 = mean(Low95, na.rm = TRUE),
                                             High80 = mean(High80, na.rm = TRUE), High95 = mean(High95, na.rm = TRUE)), by = eval(DateName)]
   FinalForecast <- data.table::rbindlist(ForecastOutputList)
   FinalForecast <- FinalForecast[Model %in% ML_Methods]
   FinalForecast <- FinalForecast[, .(Forecast = mean(Forecast)), by = eval(DateName)]
   FinalForecast <- merge(x = FinalForecast, y = ForecastDataIntervals, by = c(eval(DateName)), all = FALSE)
-  
+
   # Rbind data----
   TrainData <- TrainData[, .(Target = max(get(TargetName))), by = eval(DateName)]
   data.table::setnames(TrainData, "Target", eval(TargetName))
@@ -5131,13 +5144,13 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
   ReturnData[, eval(TargetName) := as.numeric(get(TargetName))]
   ReturnData[, Forecast := as.numeric(Forecast)]
   ReturnData[, eval(DateName) := as.Date(get(DateName))]
-  
+
   # Return Forecast----
   return(ReturnData)
 }
 
 #' AutoFourierFeatures
-#' 
+#'
 #' #' AutoFourierFeatures
 #' @author Adrian Antico
 #' @family Feature Engineering
@@ -5156,13 +5169,13 @@ AutoFourierFeatures <- function(data,
                                 DateColumn = NULL,
                                 GroupVariable = NULL,
                                 xregs = NonGroupDateNames) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Build features----
   if(!is.null(GroupVariable)) {
-    
+
     # Grouping Variable Case----
     packages <- c("RemixAutoML","data.table","forecast","lubridate","stats")
     cores <- parallel::detectCores()
@@ -5173,44 +5186,44 @@ AutoFourierFeatures <- function(data,
       .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE), x, ..., SIMPLIFY = FALSE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
-        
+
         # Step0: Setup----
         tempdatamerge <- data[get(GroupVariable) == eval(i), .SD, .SDcols = c(eval(GroupVariable), eval(DateColumn), eval(xregs))]
         tempdata <- data[get(GroupVariable) == eval(i), .SD, .SDcols = eval(TargetColumn)]
         minDate <- min(data[get(GroupVariable) == eval(i), get(DateColumn)])
         maxDate <- max(data[get(GroupVariable) == eval(i), get(DateColumn)])
-        
+
         # Step1: Find frequency----
         ModelFreqFrequency <- forecast::findfrequency(as.matrix(tempdata))
-        
+
         # Step2: Model based frequency----
         ModelFreqData <- stats::ts(
           data = tempdata,
           start = minDate,
           frequency = ModelFreqFrequency)[, TargetColumn]
-        
+
         # Step3: Clean data----
         TSCleanModelFreqData <- forecast::tsclean(
           x = ModelFreqData,
           replace.missing = TRUE,
           lambda = "auto")
-        
+
         # Step4: Find kmax----
         kmax <- min(FourierPairs, floor(ModelFreqFrequency/2))
-        
+
         # Step5: Get training values
         HistoricalFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
           TSCleanModelFreqData,
           K = kmax))},
           error = function(x) NULL)
-        
+
         # Step6: Get scoring values
         FutureFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
           TSCleanModelFreqData,
           K = kmax,
           h = (FCPeriods-1)))},
           error = function(x) NULL)
-        
+
         # Step7: Create future date records FutureFourier----
         for(time in seq_len(FCPeriods - 1)) {
           d <- maxDate
@@ -5238,7 +5251,7 @@ AutoFourierFeatures <- function(data,
             temp <- data.table::as.data.table(d + lubridate::years(1*time))
           }
           data.table::setnames(temp, "V1", eval(DateColumn))
-          
+
           # Rbind----
           if(time == 1) {
             tempdate <- temp
@@ -5247,16 +5260,16 @@ AutoFourierFeatures <- function(data,
           }
         }
         FutureFourier <- cbind(GroupVar = i, tempdate, FutureFourier)
-        
+
         # Step8: Create future date records HistoricalFourier----
         HistoricalFourier <- cbind(data[get(GroupVariable) == eval(i), .SD, .SDcols = c(eval(GroupVariable),eval(DateColumn))], HistoricalFourier)
-        
+
         # Step9: Rename columns----
         for(cols in seq_len(ncol(HistoricalFourier)-2)) {
           data.table::setnames(HistoricalFourier, old = names(HistoricalFourier)[cols+2], paste0("Fourier_",cols))
           data.table::setnames(FutureFourier, old = names(FutureFourier)[cols+2], paste0("Fourier_",cols))
         }
-        
+
         # Step10: Merge Training Fouier Terms----
         list(HistoricalData = tempdatamerge,
              HistoricalFourier = HistoricalFourier,
@@ -5264,51 +5277,51 @@ AutoFourierFeatures <- function(data,
       }}, error = function(x) {
         parallel::stopCluster(cl)
       })
-    
+
     # shut down parallel objects----
     tryCatch({parallel::stopCluster(cl)}, error = function(x) "Parallel is already shut down")
-    
+
     # Return Features
     return(Results)
-    
+
   } else {
-    
+
     # No Group Variables----
     tempdata <- data.table::copy(data)
     minDate <- min(data[[eval(DateColumn)]])
     tempdata <- tempdata[, .SD, .SDcols = eval(TargetColumn)]
-    
+
     # Find frequency----
     ModelFreqFrequency <- forecast::findfrequency(as.matrix(tempdata))
-    
+
     # Model based frequency----
     ModelFreqData <- stats::ts(
       data = tempdata,
       start = minDate,
       frequency = ModelFreqFrequency)[, TargetColumn]
-    
+
     # Clean data----
     TSCleanModelFreqData <- forecast::tsclean(
       x = ModelFreqData,
       replace.missing = TRUE,
       lambda = "auto")
-    
+
     # Find kmax----
     kmax <- min(FourierPairs, floor(ModelFreqFrequency/2))
-    
+
     # Training values
     HistoricalFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
       TSCleanModelFreqData,
       K = kmax))},
       error = function(x) FALSE)
-    
+
     # Scoring values
     FutureFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
       TSCleanModelFreqData,
       K = kmax,
       h = (FCPeriods-1)))},
       error = function(x) FALSE)
-    
+
     # Merge Training Fouier Terms----
     data <- cbind(data, HistoricalFourier)
     return(list(HistoricalData = data,
@@ -5318,7 +5331,7 @@ AutoFourierFeatures <- function(data,
 }
 
 #' AutoHierarchicalFourier
-#' 
+#'
 #' AutoHierarchicalFourier reverses the difference
 #' @family Data Wrangling
 #' @author Adrian Antico
@@ -5341,23 +5354,23 @@ AutoHierarchicalFourier <- function(datax = data,
                                     DateColumN = DateColumnName,
                                     HierarchGroups = NULL,
                                     IndependentGroups = NULL) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Stack Fouier Forecast Data----
   overlap <- intersect(names(FourierFC),names(datax))
   FourierFC <- data.table::rbindlist(list(
     FourierFC[, .SD, .SDcols = c(overlap)],
     datax[, .SD, .SDcols = c(overlap)]))
   data.table::setorderv(FourierFC, cols = names(FourierFC)[c(ncol(FourierFC),1)], order = c(1L, 1L))
-  
+
   # Data Wrangling: Standardize column ordering----
   data.table::setkey(x = datax,GroupVar)
   data.table::setkey(x = FourierFC,GroupVar)
   data.table::setcolorder(datax, c(ncol(datax), 1:(ncol(datax)-1)))
   data.table::setcolorder(FourierFC, c(ncol(FourierFC), 1:(ncol(FourierFC)-1)))
-  
+
   # Return data
   return(list(data = datax, FourierFC = FourierFC))
 }

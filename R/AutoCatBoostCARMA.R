@@ -228,14 +228,10 @@ AutoCatBoostCARMA <- function(data,
   # Set Keys for data.table usage----
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
-    if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
-    }
+    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
-    if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
-    }
+    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
   }
 
   # Data Wrangling: Remove Unnecessary Columns----
@@ -244,13 +240,13 @@ AutoCatBoostCARMA <- function(data,
     if(!is.null(GroupVariables)) {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName, GroupVariables)))]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName,                 setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName                )))]
     }
   } else {
     if(!is.null(GroupVariables)) {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables)]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName)]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName                )]
     }
   }
 
@@ -266,14 +262,10 @@ AutoCatBoostCARMA <- function(data,
       }
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      if(GroupVariables != "GroupVar") {
-        data[, eval(GroupVariables) := NULL]
-      }
+      if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
       if(!is.null(XREGS)) {
         XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        if(GroupVariables != "GroupVar") {
-          XREGS[, eval(GroupVariables) := NULL]
-        }
+        if(GroupVariables != "GroupVar") XREGS[, eval(GroupVariables) := NULL]
       }
     }
   }
