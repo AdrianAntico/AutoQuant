@@ -1289,7 +1289,6 @@ OptimizeArima <- function(Output,
 
       # Return if auto.arima fails----
       if(run == 1L & is.null(Results)) {
-        print("Returned because auto.arima failed: Error in forecast::auto.arima(y = train, max.p = Lags, max.q = MovingAverages,  : No suitable ARIMA model found")
         return(ExperimentGrid)
       }
 
