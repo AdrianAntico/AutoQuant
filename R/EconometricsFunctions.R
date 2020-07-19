@@ -985,15 +985,9 @@ TimeSeriesDataPrepare <- function(data,
   # TSClean Version----
   if(TSClean) {
     if(MinVal > 0) {
-      TSCleanData <- forecast::tsclean(
-        x = UserSuppliedData,
-        replace.missing = TRUE,
-        lambda = "auto")
+      TSCleanData <- forecast::tsclean(x = UserSuppliedData, replace.missing = TRUE, lambda = "auto")
     } else {
-      TSCleanData <- forecast::tsclean(
-        x = UserSuppliedData,
-        replace.missing = TRUE,
-        lambda = NULL)
+      TSCleanData <- forecast::tsclean(x = UserSuppliedData, replace.missing = TRUE, lambda = NULL)
     }
     TSCleanDiff <- tryCatch({forecast::ndiffs(x = TSCleanData)},error = function(x) 0L)
     TSCleanSeasonalDiff <- tryCatch({forecast::nsdiffs(x = TSCleanData)},error = function(x) 0L)
@@ -1001,12 +995,8 @@ TimeSeriesDataPrepare <- function(data,
 
   # Model-Based Frequency----
   if(ModelFreq) {
-    ModelFreqFrequency <- forecast::findfrequency(data_train[, get(names(data_train)[2L])])
-    ModelFreqData <-
-      stats::ts(data = data_train,
-                start = data_train[, min(get(DateName))][[1]],
-                frequency = ModelFreqFrequency)[, TargetName]
-
+    ModelFreqFrequency <- forecast::findfrequency(data_train[, as.numeric(get(names(data_train)[2L]))])
+    ModelFreqData <- stats::ts(data = data_train, start = data_train[, min(get(DateName))][[1]], frequency = ModelFreqFrequency)[, TargetName]
     ModelFreqDiff <- tryCatch({forecast::ndiffs(x = ModelFreqData)},error = function(x) 0L)
     ModelFreqSeasonalDiff <- tryCatch({forecast::nsdiffs(x = ModelFreqData)},error = function(x) 0L)
   }
@@ -1014,13 +1004,9 @@ TimeSeriesDataPrepare <- function(data,
   # TSClean & ModelFreq Version----
   if(TSClean & ModelFreq) {
     if(MinVal > 0) {
-      TSCleanModelFreqData <- forecast::tsclean(x = ModelFreqData,
-                                                replace.missing = TRUE,
-                                                lambda = "auto")
+      TSCleanModelFreqData <- forecast::tsclean(x = ModelFreqData, replace.missing = TRUE, lambda = "auto")
     } else {
-      TSCleanModelFreqData <- forecast::tsclean(x = ModelFreqData,
-                                                replace.missing = TRUE,
-                                                lambda = NULL)
+      TSCleanModelFreqData <- forecast::tsclean(x = ModelFreqData, replace.missing = TRUE, lambda = NULL)
     }
 
     # Differencing----
@@ -2766,12 +2752,13 @@ ParallelAutoARIMA <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- min(4L, parallel::detectCores())
+  cores    <- parallel::detectCores()
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   library(doParallel)
+  ParallelSets <- floor(cores / 4)
   Results <- foreach::foreach(
-    i = seq_len(Counter),
+    i = rep(c(1,2,3,4),ParallelSets),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {

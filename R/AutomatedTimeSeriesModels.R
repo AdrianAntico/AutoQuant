@@ -130,8 +130,8 @@
 #'   MaxFourierPairs = 2L,
 #'   TrainWeighting = 0.50,
 #'   MaxConsecutiveFails = 50L,
-#'  MaxNumberModels = 500L,
-#'  MaxRunTimeMinutes = 30L)
+#'   MaxNumberModels = 500L,
+#'   MaxRunTimeMinutes = 30L)
 #'
 #'# View output
 #' Output$Forecast[ModelRank == min(ModelRank)]
@@ -239,6 +239,19 @@ AutoBanditSarima <- function(data,
     TSClean = TRUE,
     ModelFreq = TRUE,
     FinalBuild = FALSE)
+
+  # TargetName = TargetVariableName
+  # DateName = DateColumnName
+  # Lags = ARIMA_Lags
+  # SeasonalLags = ARIMA_SeasonalLags
+  # MovingAverages = ARIMA_MovingAverages
+  # SeasonalMovingAverages = ARIMA_SeasonalMovingAverages
+  # TimeUnit = TimeAggLevel
+  # FCPeriods = NumFCPeriods
+  # HoldOutPeriods = NumHoldOutPeriods
+  # TSClean = TRUE
+  # ModelFreq = TRUE
+  # FinalBuild = FALSE
 
   # 2. Find Best ARIMA Models----
   Arima_ExperimentGrid <- tryCatch({ParallelAutoARIMA(
