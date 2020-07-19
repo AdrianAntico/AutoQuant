@@ -1472,12 +1472,13 @@ OptimizeArima <- function(Output,
       Train_Score[, Target := as.numeric(Target)]
 
       # Generate Forecasts for Forecast Periods----
-      if(!is.null(Results)) {
+      if(!is.null(Results) & !is.null(tryCatch({as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)}, error = function(x) NULL))) {
 
         # Score Training Data for Full Set of Predicted Values----
         Train_Score[, Forecast := as.numeric(Results$fitted)]
 
         # Forecast----
+        if(is.null(z))
         tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
         })
