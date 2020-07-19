@@ -2089,6 +2089,73 @@ For each of the models tested internally, several aspects should be noted:
 ### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="300" />
 <code>AutoTS()</code>
 
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Pull in Walmart Data Set
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+# Build forecast
+CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+
+  # data
+  data = data, # TwoGroup_Data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks"),
+
+  # Productionize
+  TrainOnFull = FALSE,
+  SplitRatios = c(1 - 10 / 143, 10 / 143),
+  FC_Periods = 4,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  ModelCount = 5,
+  TaskType = "GPU",
+  NumGPU = 1,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target Transformations
+  TargetTransformation = TRUE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Difference = FALSE, #TRUE,
+
+  # Date Features
+  CalendarVariables = TRUE,
+  HolidayVariable = TRUE,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time Series Features
+  Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
+  MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = c("q5","q95"),
+
+  # Bonus Features
+  XREGS = NULL,
+  FourierTerms = 4,
+  TimeTrendVariable = TRUE,
+  NTrees = 2500,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  PartitionType = "random")
+```
+
+</p>
+</details>
+
 ##### **AutoCatBoostCARMA()**
 <code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
 
