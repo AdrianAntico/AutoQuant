@@ -566,13 +566,13 @@ AutoH2oMLCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = FALSE)
 
     # Args to jump into AutLagRollStats----
@@ -641,13 +641,13 @@ AutoH2oMLCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = DebugMode)
 
     # Args to jump into AutLagRollStats----
@@ -709,13 +709,13 @@ AutoH2oMLCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = TRUE)
 
     # Args to jump into AutLagRollStats----
@@ -1346,43 +1346,14 @@ AutoH2oMLCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = TRUE)
-
-        # Args to jump into AutLagRollStats----
-        # Data
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = c(eval(TargetColumnName),"ModTarget")
-        # HierarchyGroups      = HierarchSupplyValue
-        # IndependentGroups    = IndependentSupplyValue
-        #
-        # # Services
-        # TimeUnitAgg          = TimeGroups[1]
-        # TimeGroups           = TimeGroups
-        # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        #
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug                = TRUE
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
@@ -1495,13 +1466,13 @@ AutoH2oMLCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
 
         # Args for rolling stats scoring
@@ -1622,40 +1593,13 @@ AutoH2oMLCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected))
-
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = eval(TargetColumnName)
-        # HierarchyGroups      = NULL
-        # IndependentGroups    = NULL
-        #
-        # # Services
-        # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
-        # TimeUnitAgg          = TimeGroups[1]
-        # TimeGroups           = TimeGroups
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        #
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug                = TRUE
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected)
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")

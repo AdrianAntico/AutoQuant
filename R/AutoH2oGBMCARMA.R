@@ -564,13 +564,13 @@ AutoH2oGBMCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = FALSE)
 
     # Keep interaction group as GroupVar----
@@ -612,13 +612,13 @@ AutoH2oGBMCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = DebugMode)
 
     # Keep interaction group as GroupVar----
@@ -654,13 +654,13 @@ AutoH2oGBMCARMA <- function(data,
       SimpleImpute         = TRUE,
 
       # Calculated Columns
-      Lags                  = c(Lags),
-      MA_RollWindows        = c(MA_Periods),
-      SD_RollWindows        = c(SD_Periods),
-      Skew_RollWindows      = c(Skew_Periods),
-      Kurt_RollWindows      = c(Kurt_Periods),
-      Quantile_RollWindows  = c(Quantile_Periods),
-      Quantiles_Selected    = c(Quantiles_Selected),
+      Lags                  = Lags,
+      MA_RollWindows        = MA_Periods,
+      SD_RollWindows        = SD_Periods,
+      Skew_RollWindows      = Skew_Periods,
+      Kurt_RollWindows      = Kurt_Periods,
+      Quantile_RollWindows  = Quantile_Periods,
+      Quantiles_Selected    = Quantiles_Selected,
       Debug                 = TRUE)
   }
 
@@ -1264,13 +1264,13 @@ AutoH2oGBMCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = TRUE)
 
         # Lag / Lead, MA Holiday Variables----
@@ -1384,13 +1384,13 @@ AutoH2oGBMCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected),
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
 
         # Args for rolling stats scoring
@@ -1511,13 +1511,13 @@ AutoH2oGBMCARMA <- function(data,
           SimpleImpute         = TRUE,
 
           # Calculated Columns
-          Lags                 = c(Lags),
-          MA_RollWindows       = c(MA_Periods),
-          SD_RollWindows       = c(SD_Periods),
-          Skew_RollWindows     = c(Skew_Periods),
-          Kurt_RollWindows     = c(Kurt_Periods),
-          Quantile_RollWindows = c(Quantile_Periods),
-          Quantiles_Selected   = c(Quantiles_Selected))
+          Lags                 = Lags,
+          MA_RollWindows       = MA_Periods,
+          SD_RollWindows       = SD_Periods,
+          Skew_RollWindows     = Skew_Periods,
+          Kurt_RollWindows     = Kurt_Periods,
+          Quantile_RollWindows = Quantile_Periods,
+          Quantiles_Selected   = Quantiles_Selected)
 
         # data                 = Temporary
         # RowNumsID            = "ID"
