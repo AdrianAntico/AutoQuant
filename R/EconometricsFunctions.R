@@ -1247,6 +1247,7 @@ OptimizeArima <- function(Output,
           next
         }
 
+        # Update ExperimentGrid----
         for(cols in 1L:12L) {
           if(cols == 1L) {
             data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1L])
@@ -1324,9 +1325,7 @@ OptimizeArima <- function(Output,
       }
 
       # Return if auto.arima fails----
-      if(run == 1L & is.null(Results)) {
-        return(ExperimentGrid)
-      }
+      if(run == 1L & is.null(Results)) return(ExperimentGrid)
 
       # End time---
       End <- Sys.time()
