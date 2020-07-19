@@ -1985,109 +1985,8 @@ RemixAutoML::AutoCatBoostChainLadder(
 </details>
 
 <code>AutoCatBoostChainLadder()** and **AutoChainLadderForecast()</code> are functions for forecasting chain ladder time series models. This is a pretty sophisticated system so read the docs to understand all the various types of feature engineering that goes into this procedure so you can best take advantage of them.
-  
-### **AutoBanditSarima()**
-
-<details><summary>Code Example</summary>
-<p>
- 
-```
-# Pull in data
-data <- data.table::as.data.table(fpp::cafe)
-data.table::setnames(data, "x", "Weekly_Sales")
-data.table::set(data, j = "Date", value = "1982-01-01")
-data.table::setcolorder(data, c(2,1))
-data[, Date := as.POSIXct(Date)]
-
-# "1min"
-data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
-
-# "5min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
-
-# "10min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
-
-# "15min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
-
-# "30min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
-
-# "hour"
-#data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
-
-# Build model
-Output <- RemixAutoML::AutoBanditSarima(
-  data = data,
-  TargetVariableName = "Weekly_Sales",
-  DateColumnName = "Date",
-  TimeAggLevel = "1min",
-  EvaluationMetric = "MAE",
-  NumHoldOutPeriods = 5L,
-  NumFCPeriods = 5L,
-  MaxLags = 5L,
-  MaxSeasonalLags = 0L,
-  MaxMovingAverages = 5L, 
-  MaxSeasonalMovingAverages = 0L,
-  MaxFourierPairs = 2L,
-  TrainWeighting = 0.50,
-  MaxConsecutiveFails = 50L,
-  MaxNumberModels = 500L,
-  MaxRunTimeMinutes = 30L)
-
-# View output
-Output$Forecast[ModelRank == min(ModelRank)]
-View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
-```
-
-</p>
-</details>
-
-<code>AutoBanditSarima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
-
-### **AutoBanditNNet()**
-Same as AutoBanditArima except it uses the nnetar model behind the scenes.
-
-### **AutoTBATS()**
-Same as AutoBanditArima except for the bandit testing and it uses TBATS behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
-
-### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
-<code>AutoTS()</code> 
-
-* Returns a list containing 
-  * A data.table object with a date column and the forecasted values
-  * The model evaluation results
-  * The champion model for later use if desired
-  * The name of the champion model
-  * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
-* The models tested internally include:
-  * DSHW: Double Seasonal Holt-Winters
-  * ARFIMA: Auto Regressive Fractional Integrated Moving Average
-  * ARIMA: Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-  * ETS: Additive and Multiplicative Exponential Smoothing and Holt-Winters
-  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
-  * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
-  * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-
-For each of the models tested internally, several aspects should be noted:
-* Optimal Box-Cox transformations are used in every run where data is strictly positive. The optimal transformation could also be "no transformation". 
-* Four different treatments are tested for each model:
-  * user-specified time frequency + no historical series smoothing & imputation
-  * model-based time frequency + no historical smoothing and imputation
-  * user-specified time frequency + historical series smoothing & imputation
-  * model-based time frequency + historical smoothing & imputation
-
-* You can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy. The Fourier terms will be applied to the ARIMA and NNetar models only.
-* For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
-* For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
-* The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
-* The neural network is setup to test out every combination of lags and seasonal lags and the model with the best holdout score is selected
-* The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
-* The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
 ### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="300" />
-<code>AutoTS()</code>
 
 <details><summary>Code Example</summary>
 <p>
@@ -2209,6 +2108,106 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoH2oMLScoring()</code>
   
+### **AutoBanditSarima()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Pull in data
+data <- data.table::as.data.table(fpp::cafe)
+data.table::setnames(data, "x", "Weekly_Sales")
+data.table::set(data, j = "Date", value = "1982-01-01")
+data.table::setcolorder(data, c(2,1))
+data[, Date := as.POSIXct(Date)]
+
+# "1min"
+data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+
+# "5min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+
+# "10min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+
+# "15min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+
+# "30min"
+#data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+
+# "hour"
+#data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+
+# Build model
+Output <- RemixAutoML::AutoBanditSarima(
+  data = data,
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 5L,
+  NumFCPeriods = 5L,
+  MaxLags = 5L,
+  MaxSeasonalLags = 0L,
+  MaxMovingAverages = 5L, 
+  MaxSeasonalMovingAverages = 0L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 500L,
+  MaxRunTimeMinutes = 30L)
+
+# View output
+Output$Forecast[ModelRank == min(ModelRank)]
+View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
+```
+
+</p>
+</details>
+
+<code>AutoBanditSarima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
+
+### **AutoBanditNNet()**
+Same as AutoBanditArima except it uses the nnetar model behind the scenes.
+
+### **AutoTBATS()**
+Same as AutoBanditArima except for the bandit testing and it uses TBATS behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
+
+### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
+<code>AutoTS()</code> 
+
+* Returns a list containing 
+  * A data.table object with a date column and the forecasted values
+  * The model evaluation results
+  * The champion model for later use if desired
+  * The name of the champion model
+  * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
+* The models tested internally include:
+  * DSHW: Double Seasonal Holt-Winters
+  * ARFIMA: Auto Regressive Fractional Integrated Moving Average
+  * ARIMA: Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
+  * ETS: Additive and Multiplicative Exponential Smoothing and Holt-Winters
+  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
+  * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
+  * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
+
+For each of the models tested internally, several aspects should be noted:
+* Optimal Box-Cox transformations are used in every run where data is strictly positive. The optimal transformation could also be "no transformation". 
+* Four different treatments are tested for each model:
+  * user-specified time frequency + no historical series smoothing & imputation
+  * model-based time frequency + no historical smoothing and imputation
+  * user-specified time frequency + historical series smoothing & imputation
+  * model-based time frequency + historical smoothing & imputation
+
+* You can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy. The Fourier terms will be applied to the ARIMA and NNetar models only.
+* For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
+* For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
+* The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
+* The neural network is setup to test out every combination of lags and seasonal lags and the model with the best holdout score is selected
+* The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
+* The TSLM model utilizes a simple time trend and season depending on the frequency of the data
+
 ### Intermittent Demand Forecasting Functions
 
 ##### **TimeSeriesFill()**
