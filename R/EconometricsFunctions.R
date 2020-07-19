@@ -1478,24 +1478,31 @@ OptimizeArima <- function(Output,
         Train_Score[, Forecast := as.numeric(Results$fitted)]
 
         # Forecast----
-        if(is.null(z))
-        tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
-          FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
-        })
-        tryCatch({FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1:FCPeriods]]
-        })
-        tryCatch({FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
-        })
-        tryCatch({FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1:FCPeriods]]
-        })
-        tryCatch({FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
-        })
-
-        # If model fails to rebuild----
+        z <- as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC))
+        if(!is.null(z)) {
+          tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
+            FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
+          })
+          tryCatch({FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
+            FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1:FCPeriods]]
+          })
+          tryCatch({FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+            FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
+          })
+          tryCatch({FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
+            FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1:FCPeriods]]
+          })
+          tryCatch({FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+            FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
+          })
+        } else {
+          Train_Score[, Forecast := NA]
+          FC_Data[, Forecast := NA]
+          FC_Data[, Low80 := NA]
+          FC_Data[, Low95 := NA]
+          FC_Data[, High80 := NA]
+          FC_Data[, High95 := NA]
+        }
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
