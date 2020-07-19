@@ -1478,7 +1478,7 @@ OptimizeArima <- function(Output,
         Train_Score[, Forecast := as.numeric(Results$fitted)]
 
         # Forecast----
-        z <- as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC))
+        z <- tryCatch({as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC))}, error = function(x) NULL)
         if(!is.null(z)) {
           tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
             FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
