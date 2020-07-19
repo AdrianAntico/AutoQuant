@@ -2752,7 +2752,7 @@ ParallelAutoARIMA <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- parallel::detectCores()
+  cores    <- parallel::detectCores() - 2L
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   library(doParallel)

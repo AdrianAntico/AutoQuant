@@ -170,12 +170,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
     if(NewPerformance < BestPerformance) {
       RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
     } else {
-      RunsWithoutNewWinner <- 0L
-      if(ModelRun == BanditArmsCount) {
-        SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
-      } else {
-        SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
-      }
+      SuccessVector[NEWGrid] <- SuccessVector[NEWGrid] + 1L
     }
 
     # Update Bandit Probabilities----
