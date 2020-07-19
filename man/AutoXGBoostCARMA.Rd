@@ -133,38 +133,46 @@ AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- AutoXGBoostCARMA(
-  
+
+ # Pull in Walmart Data Set
+ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Build forecast
+XGBoostResults <- AutoXGBoostCARMA(
+
   # Data Artifacts
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"), 
+  GroupVariables = c("Store","Dept"),
   TimeUnit = "days",
   TimeGroups = c("days","weeks"),
-  
+
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
   PartitionType = "timeseries",
-  
+
   # Productionize
+  FC_Periods = 4,
   TrainOnFull = FALSE,
   TreeMethod = "hist",
   EvalMetric = "RMSE",
   GridTune = FALSE,
   ModelCount = 5,
-  NThreads = 8, 
+  NThreads = 8,
   Timer = TRUE,
   DebugMode = FALSE,
-  
+
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
-  
+
   # Features
   Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
   MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
@@ -172,19 +180,22 @@ Forecast <- AutoXGBoostCARMA(
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  HolidayLags = 1, 
+  HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   Quantiles_Selected = c("q5","q95"),
   XREGS = xreg,
-  FC_Periods = 4,
   FourierTerms = 4,
   CalendarVariables = TRUE,
   HolidayVariable = TRUE,
   TimeTrendVariable = TRUE,
   NTrees = 300)
-Forecast$TimeSeriesPlot
-Forecast$Forecast
-Forecast$ModelInformation$...
+
+UpdateMetrics <- print(XGBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{

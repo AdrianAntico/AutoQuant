@@ -131,7 +131,14 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 }
 \examples{
 \donttest{
-Forecast <- RemixAutoML::AutoH2oDRFCARMA(
+
+ # Pull in Walmart Data Set
+ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Build forecast
+ H2oDFRResults <- RemixAutoML::AutoH2oDRFCARMA(
 
   # Data Artifacts
   data = data,
@@ -149,6 +156,7 @@ Forecast <- RemixAutoML::AutoH2oDRFCARMA(
   PartitionType = "timeseries",
 
   # Productionize
+  FC_Periods = 4L,
   TrainOnFull = FALSE,
   EvalMetric = "RMSE",
   GridTune = FALSE,
@@ -163,27 +171,29 @@ Forecast <- RemixAutoML::AutoH2oDRFCARMA(
   Difference = TRUE,
 
   # Features
+  HolidayLags = 1L,
+  HolidayMovingAverages = 1:2,
   Lags = c(1:5),
-  HolidayLags = 1,
-  MA_Periods = c(1:5),
+  MA_Periods = c(2L:5L),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
-  HolidayMovingAverages = 1:2,
   XREGS = NULL,
-  FC_Periods = 4,
-  FourierTerms = 4,
+  FourierTerms = 2L,
   CalendarVariables = TRUE,
   HolidayVariable = TRUE,
   TimeTrendVariable = TRUE,
-  NTrees = 300,
+  NTrees = 1000L,
   DebugMode = FALSE)
 
-Forecast$TimeSeriesPlot
-Forecast$Forecast
-Forecast$ModelInformation$...
+UpdateMetrics <- print(H2oDFRResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{

@@ -127,9 +127,14 @@ AutoH2oGLMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts,
 }
 \examples{
 \donttest{
-data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
-xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-Forecast1 <- AutoH2oGLMCARMA(
+
+ # Pull in Walmart Data Set
+ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Build forecast
+ H2oGLMResults <- AutoH2oGLMCARMA(
 
   # Data Artifacts
   data = data,
@@ -181,9 +186,12 @@ Forecast1 <- AutoH2oGLMCARMA(
   TimeTrendVariable = TRUE,
   DebugMode = FALSE)
 
-Forecast1$TimeSeriesPlot
-Forecast1$Forecast
-Forecast1$ModelInformation$...
+UpdateMetrics <- print(H2oGLMResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{

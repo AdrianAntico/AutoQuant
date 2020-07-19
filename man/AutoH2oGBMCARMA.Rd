@@ -133,25 +133,30 @@ AutoH2oGBMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts,
 }
 \examples{
 \donttest{
-data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
-xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-Forecast1 <- RemixAutoML::AutoH2oGBMCARMA(
-  
+
+ # Pull in Walmart Data Set
+ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Build forecast
+H2oGBMResults <- RemixAutoML::AutoH2oGBMCARMA(
+
   # Data Artifacts
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"), 
+  GroupVariables = c("Store","Dept"),
   TimeUnit = "week",
   TimeGroups = c("weeks","months","quarter"),
-  
+
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
   PartitionType = "timeseries",
-  
+
   # Productionize
   TrainOnFull = FALSE,
   FC_Periods = 4,
@@ -162,18 +167,18 @@ Forecast1 <- RemixAutoML::AutoH2oGBMCARMA(
   NTrees = 1000L,
   Timer = TRUE,
   DebugMode = FALSE,
-  
+
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
-  
+
   # Date Features
   CalendarVariables = TRUE,
   HolidayVariable = TRUE,
-  HolidayLags = 1, 
+  HolidayLags = 1,
   HolidayMovingAverages = 1:2,
-  
+
   # Time Series Features
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -181,16 +186,19 @@ Forecast1 <- RemixAutoML::AutoH2oGBMCARMA(
   Skew_Periods = c(3:5),
   Kurt_Periods = c(4:5),
   Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5","q95"), 
-  
+  Quantiles_Selected = c("q5","q95"),
+
   # Bonus Features
   XREGS = xreg,
   FourierTerms = 4L,
   TimeTrendVariable = TRUE)
-  
-Forecast1$TimeSeriesPlot
-Forecast1$Forecast
-Forecast1$ModelInformation$...
+
+UpdateMetrics <- print(H2oGBMResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{

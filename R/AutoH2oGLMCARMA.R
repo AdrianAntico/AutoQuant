@@ -43,9 +43,14 @@
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
-#' data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
-#' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-#' Forecast1 <- AutoH2oGLMCARMA(
+#'
+#'  # Pull in Walmart Data Set
+#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Build forecast
+#'  H2oGLMResults <- AutoH2oGLMCARMA(
 #'
 #'   # Data Artifacts
 #'   data = data,
@@ -97,9 +102,12 @@
 #'   TimeTrendVariable = TRUE,
 #'   DebugMode = FALSE)
 #'
-#' Forecast1$TimeSeriesPlot
-#' Forecast1$Forecast
-#' Forecast1$ModelInformation$...
+#' UpdateMetrics <- print(H2oGLMResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' print(UpdateMetrics)
+#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 #' }
 #' @return Returns a data.table of original series and forecasts, the h2o-gbm model objects (everything returned from AutoH2oGBMRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
@@ -418,22 +426,26 @@ AutoH2oGLMCARMA <- function(data,
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
   if(CalendarVariables) {
+    if(TimeUnit == "hour") {
+      CalendarVariableColumns <- c("hour","wday","mday","yday","week","isoweek","month","quarter","year")
+    } else if(TimeUnit == "day") {
+      CalendarVariableColumns <- c("wday","mday","yday","week","isoweek","month","quarter","year")
+    } else if(TimeUnit == "week") {
+      CalendarVariableColumns <- c("week","month","quarter","year")
+    } else if(TimeUnit == "month") {
+      CalendarVariableColumns <- c("month","quarter","year")
+    } else if(TimeUnit == "quarter") {
+      CalendarVariableColumns <- c("quarter","year")
+    } else if(TimeUnit == "year") {
+      CalendarVariableColumns <- "year"
+    }
+
+    # Create calendar variables
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = c(
-        "second",
-        "minute",
-        "hour",
-        "wday",
-        "mday",
-        "yday",
-        "week",
-        "isoweek",
-        "month",
-        "quarter",
-        "year"))
+      TimeUnits = CalendarVariableColumns)
   }
 
   # Feature Engineering: Add Create Holiday Variables----
@@ -1170,18 +1182,7 @@ AutoH2oGLMCARMA <- function(data,
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
           AsFactor = FALSE,
-          TimeUnits = c(
-            "second",
-            "minute",
-            "hour",
-            "wday",
-            "mday",
-            "yday",
-            "week",
-            "isoweek",
-            "month",
-            "quarter",
-            "year"))
+          TimeUnits = CalendarVariableColumns)
       }
 
       # Update Time Trend feature----

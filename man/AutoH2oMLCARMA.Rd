@@ -126,25 +126,30 @@ AutoH2oMLCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, 
 }
 \examples{
 \donttest{
-data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
-xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-Forecast1 <- AutoH2oMLCARMA(
-  
+
+ # Pull in Walmart Data Set
+ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Build forecast
+ H2oMLResults <- AutoH2oMLCARMA(
+
   # Data Artifacts
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"), 
+  GroupVariables = c("Store","Dept"),
   TimeUnit = "week",
   TimeGroups = c("weeks","months","quarter"),
-  
+
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
   PartitionType = "timeseries",
-  
+
   # Productionize
   TrainOnFull = FALSE,
   Trees = 500,
@@ -153,17 +158,17 @@ Forecast1 <- AutoH2oMLCARMA(
   Timer = TRUE,
   DebugMode = FALSE,
   GridTune = FALSE,
-  
+
   # Target Transformations
   TargetTransformation = TRUE,
   Difference = TRUE,
-  
+
   # Date Features
   CalendarVariables = TRUE,
   HolidayVariable = TRUE,
-  HolidayLags = 1, 
+  HolidayLags = 1,
   HolidayMovingAverages = 1:2,
-  
+
   # Time Series Features
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -171,17 +176,20 @@ Forecast1 <- AutoH2oMLCARMA(
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  Quantiles_Selected = NULL, 
-  
+  Quantiles_Selected = NULL,
+
   # Bonus Features
   XREGS = xreg,
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
   DebugMode = FALSE)
-  
-Forecast1$TimeSeriesPlot
-Forecast1$Forecast
-Forecast1$ModelInformation$...
+
+UpdateMetrics <- print(H2oMLResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{

@@ -45,7 +45,14 @@
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
-#' Forecast <- RemixAutoML::AutoH2oDRFCARMA(
+#'
+#'  # Pull in Walmart Data Set
+#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Build forecast
+#'  H2oDFRResults <- RemixAutoML::AutoH2oDRFCARMA(
 #'
 #'   # Data Artifacts
 #'   data = data,
@@ -63,6 +70,7 @@
 #'   PartitionType = "timeseries",
 #'
 #'   # Productionize
+#'   FC_Periods = 4L,
 #'   TrainOnFull = FALSE,
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
@@ -77,27 +85,29 @@
 #'   Difference = TRUE,
 #'
 #'   # Features
+#'   HolidayLags = 1L,
+#'   HolidayMovingAverages = 1:2,
 #'   Lags = c(1:5),
-#'   HolidayLags = 1,
-#'   MA_Periods = c(1:5),
+#'   MA_Periods = c(2L:5L),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
 #'   Quantile_Periods = NULL,
 #'   Quantiles_Selected = NULL,
-#'   HolidayMovingAverages = 1:2,
 #'   XREGS = NULL,
-#'   FC_Periods = 4,
-#'   FourierTerms = 4,
+#'   FourierTerms = 2L,
 #'   CalendarVariables = TRUE,
 #'   HolidayVariable = TRUE,
 #'   TimeTrendVariable = TRUE,
-#'   NTrees = 300,
+#'   NTrees = 1000L,
 #'   DebugMode = FALSE)
 #'
-#' Forecast$TimeSeriesPlot
-#' Forecast$Forecast
-#' Forecast$ModelInformation$...
+#' UpdateMetrics <- print(H2oDFRResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' print(UpdateMetrics)
+#' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+#' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+#' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+#' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
@@ -425,11 +435,26 @@ AutoH2oDRFCARMA <- function(data,
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
   if(CalendarVariables) {
+    if(TimeUnit == "hour") {
+      CalendarVariableColumns <- c("hour","wday","mday","yday","week","isoweek","month","quarter","year")
+    } else if(TimeUnit == "day") {
+      CalendarVariableColumns <- c("wday","mday","yday","week","isoweek","month","quarter","year")
+    } else if(TimeUnit == "week") {
+      CalendarVariableColumns <- c("week","month","quarter","year")
+    } else if(TimeUnit == "month") {
+      CalendarVariableColumns <- c("month","quarter","year")
+    } else if(TimeUnit == "quarter") {
+      CalendarVariableColumns <- c("quarter","year")
+    } else if(TimeUnit == "year") {
+      CalendarVariableColumns <- "year"
+    }
+
+    # Create calendar variables
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year"))
+      TimeUnits = CalendarVariableColumns)
   }
 
   # Feature Engineering: Add Create Holiday Variables----
@@ -1167,35 +1192,22 @@ AutoH2oDRFCARMA <- function(data,
 
       # Update calendar variables----
       if(DebugMode) print("Update calendar variables----")
-      if (CalendarVariables) {
+      if(CalendarVariables) {
         CalendarFeatures <- CreateCalendarVariables(
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
           AsFactor = FALSE,
-          TimeUnits = c(
-            "second",
-            "minute",
-            "hour",
-            "wday",
-            "mday",
-            "yday",
-            "week",
-            "isoweek",
-            "month",
-            "quarter",
-            "year"))
+          TimeUnits = CalendarVariableColumns)
       }
 
       # Update Time Trend feature----
       if(DebugMode) print("Update Time Trend feature----")
-      if (TimeTrendVariable) {
-        CalendarFeatures[, TimeTrend := N + 1L]
-      }
+      if(TimeTrendVariable) CalendarFeatures[, TimeTrend := N + 1L]
 
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
         temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
       } else {
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
@@ -1208,7 +1220,7 @@ AutoH2oDRFCARMA <- function(data,
 
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if (HolidayVariable == TRUE & !is.null(GroupVariables)) {
+      if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
@@ -1230,9 +1242,10 @@ AutoH2oDRFCARMA <- function(data,
       if(!is.null(GroupVariables) & Difference) {
 
         # Create data for GDL----
-        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        temp <- CarmaCatBoostKeepVarsGDL(
+          IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1334,30 +1347,15 @@ AutoH2oDRFCARMA <- function(data,
       if(!is.null(GroupVariables) & !Difference) {
 
         # Create data for GDL----
-        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        temp <- CarmaCatBoostKeepVarsGDL(
+          IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")
-
-        # QA PRINT ARGS----
-        # if(DebugMode) print("data"); print(Temporary)
-        # if(DebugMode) print("eval(DateColumnName)"); print(eval(DateColumnName))
-        # if(DebugMode) print("HierarchSupplyValue"); print(HierarchSupplyValue)
-        # if(DebugMode) print("IndependentSupplyValue"); print(IndependentSupplyValue)
-        # if(DebugMode) print("TimeUnit"); print(TimeUnit)
-        # if(DebugMode) print("TimeGroups"); print(TimeGroups[1])
-        # if(DebugMode) print("c(Lags)"); print(c(Lags))
-        # if(DebugMode) print("c(MA_Periods)"); print(c(MA_Periods))
-        # if(DebugMode) print("c(SD_Periods)"); print(c(SD_Periods))
-        # if(DebugMode) print("c(Skew_Periods)"); print(c(Skew_Periods))
-        # if(DebugMode) print("c(Kurt_Periods)"); print(c(Kurt_Periods))
-        # if(DebugMode) print("c(Quantile_Periods)"); print(c(Quantile_Periods))
-        # if(DebugMode) print("c(Quantiles_Selected)"); print(c(Quantiles_Selected))
-        # if(DebugMode) print("DebugMode"); print(DebugMode)
 
         # Build Features----
         Temporary <- AutoLagRollStatsScoring(
