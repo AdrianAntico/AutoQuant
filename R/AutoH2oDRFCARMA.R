@@ -645,7 +645,7 @@ AutoH2oDRFCARMA <- function(data,
       # Calculated Columns
       Lags                 = Lags,
       MA_RollWindows       = MA_Periods,
-      SD_RollWindows       = SD_Periods<
+      SD_RollWindows       = SD_Periods,
       Skew_RollWindows     = Skew_Periods,
       Kurt_RollWindows     = Kurt_Periods,
       Quantile_RollWindows = Quantile_Periods,
