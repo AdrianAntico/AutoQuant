@@ -45,30 +45,23 @@
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
-#' data <- data.table::fread(paste0(getwd(),"RawDataXREG.csv"))
-#' xreg <- data.table::fread(paste0(getwd(),"XREG.csv"))
-#' Forecast1 <- RemixAutoML::AutoCatBoostCARMA(
 #'
-#'   # Data Args:
-#'   #  data - this is your data.table with a date column,
-#'   #   a target variable, and possibly some grouping
-#'   #   variables (panel data)
-#'   #  HierarchGroups - create interaction terms for the group
-#'   #   variables. Lags and rolling stats will be generated
-#'   #   for all combinations of interactions and base group
-#'   #   vars. If multiple time aggregations are selected in
-#'   #   the TimeGroups argument, then lags and rolling stats
-#'   #   will be also be computed for those time groups.
-#'   #  TimeGroups must have at least one selected. Order the
-#'   #   time groups from lower to higher in granularity. E.g.
-#'   #   c("day", "week"). Cannot go lower than your data warrants.
-#'   data = data,
+#'  # Pull in Walmart Data Set
+#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Build forecast
+#'  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+#'
+#'   # data
+#'   data = data, # TwoGroup_Data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Store","Dept"),
-#'   TimeUnit = "days",
-#'   TimeGroups = c("days","weeks"),
+#'   TimeUnit = "weeks",
+#'   TimeGroups = c("weeks"),
 #'
 #'   # Productionize
 #'   TrainOnFull = FALSE,
@@ -81,12 +74,12 @@
 #'   TaskType = "GPU",
 #'   NumGPU = 1,
 #'   Timer = TRUE,
-#'   DebugMode = FALSE,
+#'   DebugMode = TRUE,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-#'   Difference = TRUE,
+#'   Difference = FALSE, #TRUE,
 #'
 #'   # Date Features
 #'   CalendarVariables = TRUE,
@@ -104,14 +97,20 @@
 #'   Quantiles_Selected = c("q5","q95"),
 #'
 #'   # Bonus Features
-#'   XREGS = xreg,
+#'   XREGS = NULL,
 #'   FourierTerms = 4,
 #'   TimeTrendVariable = TRUE,
-#'   NTrees = 300)
+#'   NTrees = 2500,
+#'   ZeroPadSeries = NULL,
+#'   DataTruncate = FALSE,
+#'   PartitionType = "random")
 #'
-#' Forecast1$TimeSeriesPlot
-#' Forecast1$Forecast
-#' Forecast1$ModelInformation$...
+#' UpdateMetrics <- print(CatBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' print(UpdateMetrics)
+#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
