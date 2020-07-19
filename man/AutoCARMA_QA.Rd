@@ -11,9 +11,9 @@ AutoCARMA_QA(
   NThreads_ = max(1, parallel::detectCores() - 2),
   TreeMethod__ = "hist",
   TestRows = "ALL",
-  DataPath = "C:/Users/aantico/Documents/Package/Data_For_Functions/CARMA_FUNCTIONS",
+  DataPath = "C:/Users/Bizon/Documents/GitHub/QA_DataSets",
   dataForecastX = "CARMA-WALMART-2GroupVars_FC.csv",
-  dataX = "CARMA-WALMART-2GroupVars.csv",
+  dataX = "OneGroup-Eval-Walmart.csv",
   XREGSX = "CARMA-WALMART-2GroupVars-XREGS_2Var.csv",
   TargetColumnName_ = "Weekly_Sales",
   DateColumnName_ = "Date",
@@ -84,7 +84,7 @@ AutoCARMA_QA(
 
 \item{TimeUnit_}{= "week" # Choices include "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
 
-\item{TimeGroups_}{= c("weeks","months","quarter") # These will tell GDL to build gdl features along the time aggregation dimension 
+\item{TimeGroups_}{= c("weeks","months","quarter") # These will tell GDL to build gdl features along the time aggregation dimension
 # Data Wrangling Features Mapping}
 
 \item{ZeroPadSeries_}{= c('NULL', 'all', 'inner') ZeroPadSeries choose "all", "inner", or NULL. 'Outer' grows missing dates by group to the largest of all groups size. 'Inner' fills in series by using the group level's own max and min values (versus filling all group levels to the max value of the groups level with the widest time gap)}

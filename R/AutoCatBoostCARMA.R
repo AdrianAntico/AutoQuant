@@ -1012,7 +1012,7 @@ AutoCatBoostCARMA <- function(data,
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         if(!is.null(GroupVariables)) {
-          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2L,(N+1L)])], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
           UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         }
@@ -1332,7 +1332,7 @@ AutoCatBoostCARMA <- function(data,
       }
 
       # Group and Diff
-      if(!is.null(GroupVariables)) {
+      if(!is.null(GroupVariables) & !Difference) {
 
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
