@@ -1197,6 +1197,56 @@ OptimizeArima <- function(Output,
       if(run == 1L) {
         data.table::set(ExperimentGrid, i = run, j = "GridName", value = "DefaultAutoArima")
       } else {
+
+        # If NextGrid is all NA because it is empty then skip that cluster
+        if(is.na(NextGrid$DataSetName)) {
+
+          # RL Update----
+          RL_Update_Output <- RL_Update(
+            ExperimentGrid = ExperimentGrid,
+            MetricSelection = MetricSelection,
+            ModelRun = run,
+            NEWGrid = NewGrid,
+            TrialVector = Trials,
+            SuccessVector = Successes,
+            GridIDS = GridIDs,
+            BanditArmsCount = BanditArmsN,
+            RunsWithoutNewWinner = RunsWithoutNewWinner,
+            MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+            MaxNumberModels = MaxNumberModels,
+            MaxRunMinutes = MaxRunMinutes,
+            TotalRunTime = TotalRunTime,
+            BanditProbabilities = BanditProbs)
+
+          #
+          # ExperimentGrid = ExperimentGrid
+          # MetricSelection = MetricSelection
+          # ModelRun = run
+          # NEWGrid = NewGrid
+          # TrialVector = Trials
+          # SuccessVector = Successes
+          # GridIDS = GridIDs
+          # BanditArmsCount = BanditArmsN
+          # RunsWithoutNewWinner = RunsWithoutNewWinner
+          # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+          # MaxNumberModels = MaxNumberModels
+          # MaxRunMinutes = MaxRunMinutes
+          # TotalRunTime = TotalRunTime
+          # BanditProbabilities = BanditProbs
+          #
+
+          # Collect updated bandit metadata----
+          BanditProbs <- RL_Update_Output[["BanditProbs"]]
+          Trials <- RL_Update_Output[["Trials"]]
+          Successes <- RL_Update_Output[["Successes"]]
+          NewGrid <- RL_Update_Output[["NewGrid"]]
+          Break <- RL_Update_Output[["BreakLoop"]]
+
+          # Exit repeat loop upon conditions----
+          if(Break == "exit") break
+          next
+        }
+
         for(cols in 1L:12L) {
           if(cols == 1L) {
             data.table::set(ExperimentGrid, i = run, j = cols, value = GridClusters[[names(GridClusters)[NewGrid]]][["DataSetName"]][Trials[NewGrid]+1L])
@@ -1218,7 +1268,7 @@ OptimizeArima <- function(Output,
 
       # Define lambda----
       if(run != 1L) {
-        tryCatch({if(NextGrid$BoxCox[1L] == "skip") {
+        tryCatch({if(NextGrid$BoxCox[1L] == "skip" | is.na(NextGrid[["MaxFourierTerms"]][1L])) {
           lambda <- NULL
         } else {
           lambda <- "auto"
@@ -1227,7 +1277,7 @@ OptimizeArima <- function(Output,
 
       # Define Fourier Terms----
       if(run != 1) {
-        if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
+        if(NextGrid[["MaxFourierTerms"]][1L] == 0L | is.na(NextGrid[["MaxFourierTerms"]][1L])) {
           XREG <- FALSE
           XREGFC <- FALSE
         } else if(!is.na(NextGrid[["MaxFourierTerms"]][1L])) {
