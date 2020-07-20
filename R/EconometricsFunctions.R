@@ -1534,14 +1534,14 @@ OptimizeArima <- function(Output,
         tryCatch({FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
           FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
-        tryCatch({FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[(FCPeriods+1):(2*FCPeriods)]]
+        tryCatch({FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
         tryCatch({FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
           FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
-        tryCatch({FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[(FCPeriods+1):(2*FCPeriods)]]
+        tryCatch({FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
       } else {
         Train_Score[, Forecast := NA]
