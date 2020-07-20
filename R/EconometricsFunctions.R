@@ -3497,96 +3497,90 @@ FinalBuildArima <- function(
     }
   }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  for(i in seq_len(Counter)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeArima(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = ModelOutputGrid$TestData,
-          Lags = TimeSeriesPrepareOutput$Lags,
-          SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-          MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
-          SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
-          Differences = TrainArtifacts[[i]][["Diff"]],
-          SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]],
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          MaxFourierTerms = 0,
-          TrainValidateShare = c(1.0,0.0),
-          MaxNumberModels = NumberModelsScore,
-          MaxRunMinutes = 100,
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
+    # Score models----
+    if(ByDataType) {
+      Forecasts <- OptimizeArima(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[i]][["Name"]],
+        train = TrainArtifacts[[i]][["Data"]],
+        test = ModelOutputGrid$TestData,
+        Lags = TimeSeriesPrepareOutput$Lags,
+        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
+        MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
+        SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
+        Differences = TrainArtifacts[[i]][["Diff"]],
+        SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]],
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        MaxFourierTerms = 0,
+        TrainValidateShare = c(1.0,0.0),
+        MaxNumberModels = NumberModelsScore,
+        MaxRunMinutes = 100,
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
 
-        # Output = TimeSeriesPrepareOutput
-        # MetricSelection = MetricSelection
-        # DataSetName = TrainArtifacts[[i]][["Name"]]
-        # train = TrainArtifacts[[i]][["Data"]]
-        # test = ModelOutputGrid$TestData
-        # Lags = TimeSeriesPrepareOutput$Lags
-        # SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags
-        # MovingAverages = TimeSeriesPrepareOutput$MovingAverages
-        # SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages
-        # Differences = TrainArtifacts[[i]][["Diff"]]
-        # SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]]
-        # FullData = TimeSeriesPrepareOutput$FullData
-        # HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods
-        # MinVal = TimeSeriesPrepareOutput$MinVal
-        # TargetName = TimeSeriesPrepareOutput$TargetName
-        # DateName = TimeSeriesPrepareOutput$DateName
-        # MaxFourierTerms = 0
-        # TrainValidateShare = c(1.0,0.0)
-        # MaxNumberModels = NumberModelsScore
-        # MaxRunMinutes = 100
-        # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
+      # Output = TimeSeriesPrepareOutput
+      # MetricSelection = MetricSelection
+      # DataSetName = TrainArtifacts[[i]][["Name"]]
+      # train = TrainArtifacts[[i]][["Data"]]
+      # test = ModelOutputGrid$TestData
+      # Lags = TimeSeriesPrepareOutput$Lags
+      # SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags
+      # MovingAverages = TimeSeriesPrepareOutput$MovingAverages
+      # SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages
+      # Differences = TrainArtifacts[[i]][["Diff"]]
+      # SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]]
+      # FullData = TimeSeriesPrepareOutput$FullData
+      # HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods
+      # MinVal = TimeSeriesPrepareOutput$MinVal
+      # TargetName = TimeSeriesPrepareOutput$TargetName
+      # DateName = TimeSeriesPrepareOutput$DateName
+      # MaxFourierTerms = 0
+      # TrainValidateShare = c(1.0,0.0)
+      # MaxNumberModels = NumberModelsScore
+      # MaxRunMinutes = 100
+      # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
 
-      } else {
-        Forecasts <- OptimizeArima(
-          Output = TimeSeriesPrepareOutput,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          Lags = TimeSeriesPrepareOutput$Lags,
-          SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-          MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
-          SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
-          Differences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Diff"]],
-          SeasonalDifferences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["SDiff"]],
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          MaxFourierTerms = 0,
-          TrainValidateShare = c(1.0,0.0),
-          MaxNumberModels = NumberModelsScore,
-          MaxRunMinutes = 100,
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    } else {
+      Forecasts <- OptimizeArima(
+        Output = TimeSeriesPrepareOutput,
+        DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        Lags = TimeSeriesPrepareOutput$Lags,
+        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
+        MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
+        SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
+        Differences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Diff"]],
+        SeasonalDifferences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["SDiff"]],
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        MaxFourierTerms = 0,
+        TrainValidateShare = c(1.0,0.0),
+        MaxNumberModels = NumberModelsScore,
+        MaxRunMinutes = 100,
+        FinalGrid = ScoreGrid[i])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Combine
+    if(i == 1) {
+      FinalFC <- Forecasts
+    } else {
+      FinalFC <- data.table::rbindlist(list(FinalFC, Forecasts))
+    }
+  }
 
   # Return----
-  return(Results[!is.na(Forecast)])
+  return(FinalFC)
 }
 
 #' FinalBuildETS
