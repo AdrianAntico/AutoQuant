@@ -1149,13 +1149,13 @@ OptimizeArima <- function(Output,
     coefs <- object$coef
     narma <- sum(arma[1L:4L])
     if(length(coefs) > narma) {
-      if(names(coefs)[narma + 1L] == "intercept") {
+      if(any(names(coefs) %chin% "intercept")) {
         xreg <- cbind(intercept = rep(1, n), xreg)
         newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
         ncxreg <- ncxreg + 1L
       }
       if(any(names(coefs) == "drift")) {
-        xreg <- cbind(drift = rep(1, n), xreg)
+        xreg <- cbind(drift = rep(object$coef[which(names(object$coef) == "drift")][[1]], n), xreg)
         newxreg <- cbind(drift = rep(1, n.ahead), newxreg)
         ncxreg <- ncxreg + 1L
       }
