@@ -1128,6 +1128,54 @@ OptimizeArima <- function(Output,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
+  # Modify source code of Predict Arima
+  # https://stackoverflow.com/questions/30812088/forecasting-an-arima-model-in-r-returning-strange-error
+  PredictArima <- function(object = Results,
+                           n.ahead = FCPeriods,
+                           newxreg = NULL,
+                           se.fit = TRUE,
+                           ...) {
+    myNCOL <- function(x) if (is.null(x)) 0 else NCOL(x)
+    rsd <- object$residuals
+    xr <- object$call$xreg
+    xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
+    ncxreg <- myNCOL(xreg)
+    if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
+    class(xreg) <- NULL
+    xtsp <- tsp(rsd)
+    n <- length(rsd)
+    arma <- object$arma
+    coefs <- object$coef
+    narma <- sum(arma[1L:4L])
+    if(length(coefs) > narma) {
+      if(names(coefs)[narma + 1L] == "intercept") {
+        xreg <- cbind(intercept = rep(1, n), xreg)
+        newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
+        ncxreg <- ncxreg + 1L
+        xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
+      }
+    } else {
+      xm <- 0
+    }
+    if(arma[2L] > 0L) {
+      ma <- coefs[arma[1L] + 1L:arma[2L]]
+      if(any(Mod(polyroot(c(1, ma))) < 1)) warning("MA part of model is not invertible")
+    }
+    if(arma[4L] > 0L) {
+      ma <- coefs[sum(arma[1L:3L]) + 1L:arma[4L]]
+      if (any(Mod(polyroot(c(1, ma))) < 1))
+        warning("seasonal MA part of model is not invertible")
+    }
+    z <- KalmanForecast(n.ahead, object$model)
+    pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+    if(se.fit) {
+      se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+      list(pred = pred, se = se)
+    } else {
+      pred
+    }
+  }
+
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
 
@@ -1454,7 +1502,7 @@ OptimizeArima <- function(Output,
           }
         } else {
           Results <- tryCatch({forecast::Arima(
-            train,
+            y = train,
             order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
             seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
             include.drift = TSGridList$IncludeDrift[run],
@@ -1472,37 +1520,24 @@ OptimizeArima <- function(Output,
       Train_Score[, Target := as.numeric(Target)]
 
       # Generate Forecasts for Forecast Periods----
-      if(!is.null(Results) & !is.null(tryCatch({as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)}, error = function(x) NULL))) {
+      if(!is.null(Results)) {
 
         # Score Training Data for Full Set of Predicted Values----
-        Train_Score[, Forecast := as.numeric(Results$fitted)]
-
-        # Forecast----
-        z <- tryCatch({as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC))}, error = function(x) NULL)
-        if(!is.null(z)) {
-          tryCatch({FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$mean)]}, error = function(x) {
-            FC_Data[, Forecast := as.numeric(forecast::forecast(Results, h = FCPeriods)$mean)]
-          })
-          tryCatch({FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
-            FC_Data[, Low95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[1:FCPeriods]]
-          })
-          tryCatch({FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-            FC_Data[, Low80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
-          })
-          tryCatch({FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
-            FC_Data[, High80 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[1:FCPeriods]]
-          })
-          tryCatch({FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods, xreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-            FC_Data[, High95 := as.numeric(forecast::forecast(Results, h = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
-          })
-        } else {
-          Train_Score[, Forecast := NA]
-          FC_Data[, Forecast := NA]
-          FC_Data[, Low80 := NA]
-          FC_Data[, Low95 := NA]
-          FC_Data[, High80 := NA]
-          FC_Data[, High95 := NA]
-        }
+        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$mean)]}, error = function(x) {
+          FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$mean)]
+        })
+        tryCatch({FC_Data[, Low95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, Low95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$lower)[1:FCPeriods]]
+        })
+        tryCatch({FC_Data[, Low80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+          FC_Data[, Low80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
+        })
+        tryCatch({FC_Data[, High80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, High80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$upper)[1:FCPeriods]]
+        })
+        tryCatch({FC_Data[, High95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+          FC_Data[, High95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
+        })
       } else {
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
