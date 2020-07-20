@@ -1141,7 +1141,9 @@ OptimizeArima <- function(Output,
     xr <- object$call$xreg
     xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
     ncxreg <- myNCOL(xreg)
+
     if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
+
     class(xreg) <- NULL
     xtsp <- tsp(rsd)
     n <- length(rsd)
@@ -1154,6 +1156,8 @@ OptimizeArima <- function(Output,
         newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
         ncxreg <- ncxreg + 1L
         xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
+      } else {
+        xm <- 0
       }
     } else {
       xm <- 0
@@ -1524,20 +1528,20 @@ OptimizeArima <- function(Output,
       if(!is.null(Results)) {
 
         # Score Training Data for Full Set of Predicted Values----
-        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$mean)]}, error = function(x) {
+        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$pred)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$mean)]
         })
-        tryCatch({FC_Data[, Low95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$lower)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, Low95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$lower)[1:FCPeriods]]
+        tryCatch({FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
-        tryCatch({FC_Data[, Low80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$lower)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, Low80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$lower)[(FCPeriods+1):(2*FCPeriods)]]
+        tryCatch({FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+          FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[(FCPeriods+1):(2*FCPeriods)]]
         })
-        tryCatch({FC_Data[, High80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$upper)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, High80 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$upper)[1:FCPeriods]]
+        tryCatch({FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
+          FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
-        tryCatch({FC_Data[, High95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$upper)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
-          FC_Data[, High95 := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$upper)[(FCPeriods+1):(2*FCPeriods)]]
+        tryCatch({FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[(FCPeriods+1):(2*FCPeriods)]]}, error = function(x) {
+          FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[(FCPeriods+1):(2*FCPeriods)]]
         })
       } else {
         Train_Score[, Forecast := NA]
