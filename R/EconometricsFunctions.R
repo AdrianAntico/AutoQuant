@@ -1141,9 +1141,7 @@ OptimizeArima <- function(Output,
     xr <- object$call$xreg
     xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
     ncxreg <- myNCOL(xreg)
-
     if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
-
     class(xreg) <- NULL
     xtsp <- tsp(rsd)
     n <- length(rsd)
@@ -1155,10 +1153,13 @@ OptimizeArima <- function(Output,
         xreg <- cbind(intercept = rep(1, n), xreg)
         newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
         ncxreg <- ncxreg + 1L
-        xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
-      } else {
-        xm <- 0
       }
+      if(any(names(coefs) == "drift")) {
+        xreg <- cbind(drift = rep(1, n), xreg)
+        newxreg <- cbind(drift = rep(1, n.ahead), newxreg)
+        ncxreg <- ncxreg + 1L
+      }
+      xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
     } else {
       xm <- 0
     }
