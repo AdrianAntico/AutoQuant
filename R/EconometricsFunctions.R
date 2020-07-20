@@ -1129,6 +1129,7 @@ OptimizeArima <- function(Output,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
   # Modify source code of Predict Arima
+  # https://stackoverflow.com/questions/25832817/forecasting-error-in-r-when-passing-around-arguments-in-forecast-and-ar
   # https://stackoverflow.com/questions/30812088/forecasting-an-arima-model-in-r-returning-strange-error
   PredictArima <- function(object = Results,
                            n.ahead = FCPeriods,
