@@ -30,33 +30,33 @@
 #' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
 #'
 #' TestModel <- RemixAutoML::AutoH2oDRFClassifier(
-#' 
+#'
 #'     # Compute management
 #'     MaxMem = "32G",
 #'     NThreads = max(1L, parallel::detectCores() - 2L),
 #'     IfSaveModel = "mojo",
 #'     H2OShutdown = FALSE,
-#'     
-#'     # Model evaluation: 
+#'
+#'     # Model evaluation:
 #'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
+#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
 #'     #     A value of 3 will return plots for the top 3 variables based on variable importance
 #'     #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
 #'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3L,
-#'     
-#'     #'     # Metadata arguments: 
+#'
+#'     #'     # Metadata arguments:
 #'     #   'ModelID' is used to create part of the file names generated when saving to file'
 #'     #   'model_path' is where the minimal model objects for scoring will be stored
 #'     #      'ModelID' will be the name of the saved model object
 #'     #   'metadata_path' is where model evaluation and model interpretation files are saved
 #'     #      objects saved to model_path if metadata_path is null
-#'     #      Saved objects include: 
+#'     #      Saved objects include:
 #'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-#'     #         'ModelID_VariableImportance.csv' is the variable importance. 
+#'     #         'ModelID_VariableImportance.csv' is the variable importance.
 #'     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
 #'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
 #'     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
 #'     model_path = normalizePath("./"),
@@ -64,12 +64,12 @@
 #'     ModelID = "FirstModel",
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
-#'     
+#'
 #'     # Data arguments:
-#'     #   'TrainOnFull' is to train a model with 100 percent of your data. 
+#'     #   'TrainOnFull' is to train a model with 100 percent of your data.
 #'     #     That means no holdout data will be used for evaluation
 #'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
 #'     #     CatBoost categorical treatment is enhanced when supplied
 #'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
 #'     #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
@@ -79,7 +79,7 @@
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-#'     
+#'
 #'     # Model args
 #'     Trees = 50L,
 #'     GridTune = FALSE,
@@ -108,14 +108,14 @@ AutoH2oDRFClassifier <- function(data,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = FALSE,
                                  HurdleModel = FALSE) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-  
+
   # Binary Check Arguments----
   if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) return("eval_metric not in AUC, logloss")
   if(Trees < 1L) return("Trees must be greater than 1")
@@ -129,10 +129,10 @@ AutoH2oDRFClassifier <- function(data,
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
-  
+
   # Binary Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
-  
+
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
@@ -151,16 +151,16 @@ AutoH2oDRFClassifier <- function(data,
     ValidationData <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
-  
+
   # Binary ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
-  
+
   # Binary ModelDataPrep----
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)  
-  
+  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
+
   # Binary ModelDataPrep----
   if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
-  
+
   # Binary Save Names of data----
   if(is.numeric(FeatureColNames)) {
     Names <- data.table::as.data.table(names(data)[FeatureColNames])
@@ -174,17 +174,17 @@ AutoH2oDRFClassifier <- function(data,
     }
   }
   if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
-  
+
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    
+
     # Binary Start Up H2O----
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    
+
     # Binary Define data sets----
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-    
+
     # Binary Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -194,7 +194,7 @@ AutoH2oDRFClassifier <- function(data,
       stopping_rounds      = 10,
       stopping_metric      = eval_metric,
       stopping_tolerance   = 1e-3)
-    
+
     # Binary Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(4, 8, 12, 15),
@@ -206,7 +206,7 @@ AutoH2oDRFClassifier <- function(data,
       nbins                            = c(10, 20, 30),
       nbins_cats                       = c(64, 256, 512),
       histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
-    
+
     # Binary Grid Train Model----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
@@ -225,24 +225,24 @@ AutoH2oDRFClassifier <- function(data,
       stopping_metric      = eval_metric,
       score_tree_interval  = 10,
       seed                 = 1234)
-    
+
     # Binary Get Best Model----
     Grid_Out <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing)
-    
+
     # Binary Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
   }
-  
+
   # Binary Start Up H2O----
   if(!GridTune) {
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
-  
+
   # Binary Build Baseline Model----
   if(!TrainOnFull) {
     base_model <- h2o::h2o.randomForest(
@@ -251,7 +251,7 @@ AutoH2oDRFClassifier <- function(data,
       training_frame   = datatrain,
       validation_frame = datavalidate,
       model_id         = ModelID,
-      ntrees           = Trees)  
+      ntrees           = Trees)
   } else {
     base_model <- h2o::h2o.randomForest(
       x                = FeatureColNames,
@@ -260,7 +260,7 @@ AutoH2oDRFClassifier <- function(data,
       model_id         = ModelID,
       ntrees           = Trees)
   }
-  
+
   # Binary Get Metrics----
   if(GridTune & !TrainOnFull) {
     if(!is.null(TestData)) {
@@ -281,7 +281,7 @@ AutoH2oDRFClassifier <- function(data,
   } else {
     BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
   }
-  
+
   # Binary Evaluate Metrics----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(GridTune & TrainOnFull == FALSE) {
@@ -344,7 +344,7 @@ AutoH2oDRFClassifier <- function(data,
   } else {
     FinalModel <- base_model
   }
-  
+
   # Binary Save Final Model----
   if(SaveModelObjects) {
     if(tolower(IfSaveModel) == "mojo") {
@@ -359,7 +359,7 @@ AutoH2oDRFClassifier <- function(data,
       SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path,force = TRUE)
     }
   }
-  
+
   # Binary Score Final Test Data----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(!is.null(TestData)) {
@@ -371,7 +371,7 @@ AutoH2oDRFClassifier <- function(data,
     } else {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatrain))
       Predict[, p0 := NULL]
-    }  
+    }
   } else {
     if(!is.null(TestData)) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatest))
@@ -384,17 +384,17 @@ AutoH2oDRFClassifier <- function(data,
       data.table::setnames(Predict, "predict", "predict")
     }
   }
-  
+
   # Binary Variable Importance----
   VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-  
+
   # Binary Format Variable Importance Table----
   data.table::setnames(VariableImportance, c("variable","relative_importance","scaled_importance","percentage"), c("Variable","RelativeImportance","ScaledImportance","Percentage"))
   VariableImportance[, ':=' (
     RelativeImportance = round(RelativeImportance, 4),
     ScaledImportance = round(ScaledImportance, 4),
     Percentage = round(Percentage, 4))]
-  
+
   # Binary Save Variable Importance----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
@@ -403,10 +403,10 @@ AutoH2oDRFClassifier <- function(data,
       data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
     }
   }
-  
+
   # Binary H2O Shutdown----
-  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)    
-  
+  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+
   # Binary Create Validation Data----
   if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
@@ -415,10 +415,10 @@ AutoH2oDRFClassifier <- function(data,
   } else {
     ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
   }
-  
+
   # Binary Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-  
+
   # Binary Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
@@ -427,7 +427,7 @@ AutoH2oDRFClassifier <- function(data,
       data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID,"_ValidationData.csv")))
     }
   }
-  
+
   # Binary Evaluation Calibration Plot----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     EvaluationPlot <- EvalPlot(
@@ -436,7 +436,7 @@ AutoH2oDRFClassifier <- function(data,
       TargetColName = Target,
       GraphType = "calibration",
       PercentileBucket = 0.05,
-      aggrfun = function(x) mean(x, na.rm = TRUE))  
+      aggrfun = function(x) mean(x, na.rm = TRUE))
   } else {
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
@@ -446,16 +446,16 @@ AutoH2oDRFClassifier <- function(data,
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
   }
-  
+
   # Binary Evaluation Plot Update Title----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(GridTune) {
       EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Random Forest Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3)))
     } else {
       EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3)))
-    }  
+    }
   }
-  
+
   # Binary Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
@@ -464,7 +464,7 @@ AutoH2oDRFClassifier <- function(data,
       ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID,"_EvaluationPlot.png")))
     }
   }
-  
+
   # Binary AUC Object Create----
   temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
@@ -473,7 +473,7 @@ AutoH2oDRFClassifier <- function(data,
                              na.rm = TRUE,
                              algorithm = 3L,
                              auc = TRUE,
-                             ci = TRUE)  
+                             ci = TRUE)
   } else {
     AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
                              predictor = temp[["Predict"]],
@@ -483,13 +483,13 @@ AutoH2oDRFClassifier <- function(data,
                              ci = TRUE)
   }
   rm(temp)
-  
+
   # Binary AUC Conversion to data.table----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities)
-  
+
   # Binary Plot ROC Curve----
   ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
@@ -497,7 +497,7 @@ AutoH2oDRFClassifier <- function(data,
     ggplot2::ggtitle(paste0("RandomForest AUC: ", 100 * round(AUC_Metrics$auc, 3L), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
@@ -506,7 +506,7 @@ AutoH2oDRFClassifier <- function(data,
       ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
     }
   }
-  
+
   # Binary Save EvaluationMetrics to File----
   if(exists("FinalThresholdTable")) {
     if(SaveModelObjects) {
@@ -515,9 +515,9 @@ AutoH2oDRFClassifier <- function(data,
       } else {
         data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
-    }  
+    }
   }
-  
+
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
@@ -554,16 +554,16 @@ AutoH2oDRFClassifier <- function(data,
       }, error = function(x) "skip")
     }
   }
-  
+
   # Binary Save ParDepPlots to file----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ParDepPlots, file = paste0(metadata_path, "/", ModelID, "_ParDepPlots.R"))
     } else {
-      save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))      
+      save(ParDepPlots, file = paste0(model_path, "/", ModelID, "_ParDepPlots.R"))
     }
   }
-  
+
   # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Percentage), y = Percentage, fill = Percentage)) +
@@ -575,16 +575,17 @@ AutoH2oDRFClassifier <- function(data,
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value")
   }
-  
+
   # Binary Return Objects----
   if(ReturnModelObjects) {
     if(!is.numeric(data[[eval(TargetColumnName)]])) {
+      CostMatrixWeights <- c(ClassWeights[1],0,0,ClassWeights[2])
       return(list(
         Model = FinalModel,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = FinalThresholdTable,
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,
@@ -600,6 +601,6 @@ AutoH2oDRFClassifier <- function(data,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,
         ColNames = Names))
-    }    
+    }
   }
 }
