@@ -12,6 +12,9 @@ PredictArima <- function(object = Results,
                          n.ahead = FCPeriods,
                          newxreg = NULL,
                          se.fit = TRUE) {
+
+  # Article showing how Drift is defined
+  # https://robjhyndman.com/hyndsight/arimaconstants/
   myNCOL <- function(x) if (is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
   xr <- object$call$xreg
