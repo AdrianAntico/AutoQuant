@@ -28,11 +28,8 @@ PredictArima <- function(object = Results,
   coefs <- object$coef
   narma <- sum(arma[1L:4L])
   if(length(coefs) > narma) {
-    if(any(names(coefs) %chin% "intercept")) {
-      xreg <- cbind(intercept = rep(1, n), xreg)
-      newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
-      ncxreg <- ncxreg + 1L
-    }
+
+    # Drift term
     if(any(names(coefs) == "drift")) {
       N <- length(xreg[,1])
       Drift <- length(object$xreg[,1])
@@ -42,6 +39,13 @@ PredictArima <- function(object = Results,
       NN <- n.ahead
       for(i in seq_len(N)) temp[i + N] <- Drift + i
       newxreg <- cbind(drift = temp, newxreg)
+      ncxreg <- ncxreg + 1L
+    }
+
+    # Intercept
+    if(any(names(coefs) %chin% "intercept")) {
+      xreg <- cbind(intercept = rep(1, n), xreg)
+      newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
       ncxreg <- ncxreg + 1L
     }
     xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
