@@ -320,7 +320,6 @@ AutoBanditSarima <- function(data,
 
         # Ensure final models get built and correct grid metric is utilized----
         if(nrow(Forecast) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
-          print(Forecast)
           return(list(Forecast = Forecast, PerformanceGrid = Arima_ExperimentGrid))
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
