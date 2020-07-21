@@ -34,7 +34,7 @@ PredictArima <- function(object = Results,
       ncxreg <- ncxreg + 1L
     }
     if(any(names(coefs) == "drift")) {
-      N <- length(xreg)
+      N <- length(xreg[,1])
       Drift <- length(object$xreg[,1])
       temp <- c()
       for(i in seq_len(N)) temp[i] <- Drift + i
