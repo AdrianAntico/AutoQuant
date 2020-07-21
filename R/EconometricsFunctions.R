@@ -31,8 +31,14 @@ PredictArima <- function(object = Results,
       ncxreg <- ncxreg + 1L
     }
     if(any(names(coefs) == "drift")) {
-      xreg <- cbind(drift = rep(object$coef[which(names(object$coef) == "drift")][[1]], n), xreg)
-      newxreg <- cbind(drift = rep(1, n.ahead), newxreg)
+      N <- length(xreg)
+      Drift <- object$coef[which(names(object$coef) == "drift")][[1]]
+      temp <- c()
+      for(i in seq_len(N)) temp[i] <- Drift * i
+      xreg <- cbind(drift = temp, xreg)
+      NN <- n.ahead
+      for(i in seq_len(N)) temp[i + N] <- Drift * (N + i)
+      newxreg <- cbind(drift = temp, newxreg)
       ncxreg <- ncxreg + 1L
     }
     xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
@@ -3577,11 +3583,13 @@ FinalBuildArima <- function(
         FinalGrid = ScoreGrid[i])
     }
 
-    # Combine
-    if(i == 1) {
-      FinalFC <- Forecasts
+    # Combine----
+    if(i == 1L) {
+      FinalFC <- data.table::copy(Forecasts)
     } else {
-      FinalFC <- data.table::rbindlist(list(FinalFC, Forecasts), use.names = TRUE, fill = TRUE)
+      temp <- data.table::copy(Forecasts)
+      FinalFC <- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+      rm(temp)
     }
   }
 
