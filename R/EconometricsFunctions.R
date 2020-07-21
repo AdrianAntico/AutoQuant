@@ -35,12 +35,12 @@ PredictArima <- function(object = Results,
     }
     if(any(names(coefs) == "drift")) {
       N <- length(xreg)
-      Drift <- object$coef[which(names(object$coef) == "drift")][[1]]
+      Drift <- length(object$xreg[,1])
       temp <- c()
-      for(i in seq_len(N)) temp[i] <- Drift
+      for(i in seq_len(N)) temp[i] <- Drift + i
       xreg <- cbind(drift = temp, xreg)
       NN <- n.ahead
-      for(i in seq_len(N)) temp[i + N] <- Drift
+      for(i in seq_len(N)) temp[i + N] <- Drift + i
       newxreg <- cbind(drift = temp, newxreg)
       ncxreg <- ncxreg + 1L
     }
@@ -470,7 +470,12 @@ GenerateParameterGrids <- function(Model = NULL,
         MovingAverages = c(0L, seq_len(MovingAverages)),
         Lags = c(0L, seq_len(Lags)))
     }
-    Grid <- Grid[!(IncludeDrift == TRUE & Differences > 0)]
+
+    # Concerned about the Drift term (TRUE / FALSE)
+    # Function PredictArima() is a modification of
+    #   getS3method('predict','Arima') - xregs negative consequences
+    #   if output looks terrible
+    # Grid <- Grid[!(IncludeDrift == TRUE & Differences > 0)]
 
     # Grid info for Statification Parsimonous----
     l <- as.list(Grid[.N][, 4L:ncol(Grid)][1L,])
@@ -1511,7 +1516,7 @@ OptimizeArima <- function(Output,
           XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
           if(!is.logical(XREG) & !is.logical(XREGFC)) {
             Results <- tryCatch({forecast::Arima(
-              train,
+              as.numeric(train),
               order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
               seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
               xreg = XREG,
