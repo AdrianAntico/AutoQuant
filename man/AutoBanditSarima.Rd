@@ -171,8 +171,8 @@ Output <- RemixAutoML::AutoBanditSarima(
   MaxFourierPairs = 2L,
   TrainWeighting = 0.50,
   MaxConsecutiveFails = 50L,
- MaxNumberModels = 500L,
- MaxRunTimeMinutes = 30L)
+  MaxNumberModels = 500L,
+  MaxRunTimeMinutes = 30L)
 
 # View output
 Output$Forecast[ModelRank == min(ModelRank)]

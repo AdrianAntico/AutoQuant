@@ -95,7 +95,8 @@ Other Automated Time Series:
 \code{\link{AutoH2oGLMCARMA}()},
 \code{\link{AutoH2oMLCARMA}()},
 \code{\link{AutoTS}()},
-\code{\link{AutoXGBoostCARMA}()}
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{PredictArima}()}
 }
 \author{
 Adrian Antico

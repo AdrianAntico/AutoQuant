@@ -1,3 +1,63 @@
+#' @title PredictArima to forecast an Arima() model from the stats package
+#'
+#' @description PredictArima is a function to overwrite the s3 generic <code>getS3method('predict','Arima')</code>
+#' @author Adrian Antico
+#' @family Automated Time Series
+#' @param object Object that stores the output from Arima()
+#' @param n.ahead Number of forecast periods to forecast
+#' @param newxreg NULL by default. Forward looking independent variables as matrix type
+#' @param se.fit Set to FALSE to not return prediction intervals with the forecast
+#' @export
+PredictArima <- function(object = Results,
+                         n.ahead = FCPeriods,
+                         newxreg = NULL,
+                         se.fit = TRUE) {
+  myNCOL <- function(x) if (is.null(x)) 0 else NCOL(x)
+  rsd <- object$residuals
+  xr <- object$call$xreg
+  xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
+  ncxreg <- myNCOL(xreg)
+  if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
+  class(xreg) <- NULL
+  xtsp <- tsp(rsd)
+  n <- length(rsd)
+  arma <- object$arma
+  coefs <- object$coef
+  narma <- sum(arma[1L:4L])
+  if(length(coefs) > narma) {
+    if(any(names(coefs) %chin% "intercept")) {
+      xreg <- cbind(intercept = rep(1, n), xreg)
+      newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
+      ncxreg <- ncxreg + 1L
+    }
+    if(any(names(coefs) == "drift")) {
+      xreg <- cbind(drift = rep(object$coef[which(names(object$coef) == "drift")][[1]], n), xreg)
+      newxreg <- cbind(drift = rep(1, n.ahead), newxreg)
+      ncxreg <- ncxreg + 1L
+    }
+    xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
+  } else {
+    xm <- 0
+  }
+  if(arma[2L] > 0L) {
+    ma <- coefs[arma[1L] + 1L:arma[2L]]
+    if(any(Mod(polyroot(c(1, ma))) < 1)) warning("MA part of model is not invertible")
+  }
+  if(arma[4L] > 0L) {
+    ma <- coefs[sum(arma[1L:3L]) + 1L:arma[4L]]
+    if(any(Mod(polyroot(c(1, ma))) < 1))
+      warning("seasonal MA part of model is not invertible")
+  }
+  z <- KalmanForecast(n.ahead, object$model)
+  pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+  if(se.fit) {
+    se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+    return(list(pred = pred, se = se))
+  } else {
+    return(pred)
+  }
+}
+
 #' Regular_Performance creates and stores model results in Experiment Grid
 #'
 #' Regular_Performance creates and stores model results in Experiment Grid
@@ -1127,60 +1187,6 @@ OptimizeArima <- function(Output,
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-
-  # Modify source code of Predict Arima
-  # https://stackoverflow.com/questions/25832817/forecasting-error-in-r-when-passing-around-arguments-in-forecast-and-ar
-  # https://stackoverflow.com/questions/30812088/forecasting-an-arima-model-in-r-returning-strange-error
-  PredictArima <- function(object = Results,
-                           n.ahead = FCPeriods,
-                           newxreg = NULL,
-                           se.fit = TRUE,
-                           ...) {
-    myNCOL <- function(x) if (is.null(x)) 0 else NCOL(x)
-    rsd <- object$residuals
-    xr <- object$call$xreg
-    xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
-    ncxreg <- myNCOL(xreg)
-    if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
-    class(xreg) <- NULL
-    xtsp <- tsp(rsd)
-    n <- length(rsd)
-    arma <- object$arma
-    coefs <- object$coef
-    narma <- sum(arma[1L:4L])
-    if(length(coefs) > narma) {
-      if(any(names(coefs) %chin% "intercept")) {
-        xreg <- cbind(intercept = rep(1, n), xreg)
-        newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
-        ncxreg <- ncxreg + 1L
-      }
-      if(any(names(coefs) == "drift")) {
-        xreg <- cbind(drift = rep(object$coef[which(names(object$coef) == "drift")][[1]], n), xreg)
-        newxreg <- cbind(drift = rep(1, n.ahead), newxreg)
-        ncxreg <- ncxreg + 1L
-      }
-      xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
-    } else {
-      xm <- 0
-    }
-    if(arma[2L] > 0L) {
-      ma <- coefs[arma[1L] + 1L:arma[2L]]
-      if(any(Mod(polyroot(c(1, ma))) < 1)) warning("MA part of model is not invertible")
-    }
-    if(arma[4L] > 0L) {
-      ma <- coefs[sum(arma[1L:3L]) + 1L:arma[4L]]
-      if (any(Mod(polyroot(c(1, ma))) < 1))
-        warning("seasonal MA part of model is not invertible")
-    }
-    z <- KalmanForecast(n.ahead, object$model)
-    pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
-    if(se.fit) {
-      se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
-      list(pred = pred, se = se)
-    } else {
-      pred
-    }
-  }
 
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {

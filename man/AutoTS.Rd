@@ -130,7 +130,8 @@ Other Automated Time Series:
 \code{\link{AutoH2oGLMCARMA}()},
 \code{\link{AutoH2oMLCARMA}()},
 \code{\link{AutoXGBoostCARMA}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+\code{\link{IntermittentDemandScoringDataGenerator}()},
+\code{\link{PredictArima}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

@@ -205,7 +205,8 @@ Other Automated Time Series:
 \code{\link{AutoH2oGLMCARMA}()},
 \code{\link{AutoTS}()},
 \code{\link{AutoXGBoostCARMA}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+\code{\link{IntermittentDemandScoringDataGenerator}()},
+\code{\link{PredictArima}()}
 }
 \author{
 Adrian Antico
