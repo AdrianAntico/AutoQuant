@@ -3575,7 +3575,7 @@ FinalBuildArima <- function(
     if(i == 1) {
       FinalFC <- Forecasts
     } else {
-      FinalFC <- data.table::rbindlist(list(FinalFC, Forecasts))
+      FinalFC <- data.table::rbindlist(list(FinalFC, Forecasts), use.names = TRUE, fill = TRUE)
     }
   }
 
