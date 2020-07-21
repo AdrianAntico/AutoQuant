@@ -37,10 +37,10 @@ PredictArima <- function(object = Results,
       N <- length(xreg)
       Drift <- object$coef[which(names(object$coef) == "drift")][[1]]
       temp <- c()
-      for(i in seq_len(N)) temp[i] <- Drift * i
+      for(i in seq_len(N)) temp[i] <- Drift
       xreg <- cbind(drift = temp, xreg)
       NN <- n.ahead
-      for(i in seq_len(N)) temp[i + N] <- Drift * (N + i)
+      for(i in seq_len(N)) temp[i + N] <- Drift
       newxreg <- cbind(drift = temp, newxreg)
       ncxreg <- ncxreg + 1L
     }

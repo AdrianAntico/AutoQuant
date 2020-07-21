@@ -293,12 +293,12 @@ AutoBanditSarima <- function(data,
       FinalBuild = TRUE)
 
     # 4. Generate Final Arima Forecasts----
-    ModelOutputGrid = Arima_ExperimentGrid
-    TimeSeriesPrepareOutput = Arima_Artifacts_Score
-    FCPeriods = NumFCPeriods
-    NumberModelsScore = 1
-    MetricSelection = EvaluationMetric
-    ByDataType = TRUE
+    ModelOutputGrid <- Arima_ExperimentGrid
+    TimeSeriesPrepareOutput <- Arima_Artifacts_Score
+    FCPeriods <- NumFCPeriods
+    NumberModelsScore <- 1
+    MetricSelection <- EvaluationMetric
+    ByDataType <- TRUE
     counter <- 1L
     repeat {
       Forecast <- tryCatch({FinalBuildArima(
@@ -314,8 +314,8 @@ AutoBanditSarima <- function(data,
       if(!is.null(Forecast)) {
 
         # Min, Average, Max values----
-        FC_MinValue <- min(Forecast[["Forecast"]], na.rm = TRUE)
-        FC_AvgValue <- mean(Forecast[["Forecast"]], na.rm = TRUE)
+        #FC_MinValue <- min(Forecast[["Forecast"]], na.rm = TRUE)
+        #FC_AvgValue <- mean(Forecast[["Forecast"]], na.rm = TRUE)
         FC_MaxValue <- max(Forecast[["Forecast"]], na.rm = TRUE)
 
         # Ensure final models get built and correct grid metric is utilized----
