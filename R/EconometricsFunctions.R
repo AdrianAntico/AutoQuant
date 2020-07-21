@@ -470,6 +470,7 @@ GenerateParameterGrids <- function(Model = NULL,
         MovingAverages = c(0L, seq_len(MovingAverages)),
         Lags = c(0L, seq_len(Lags)))
     }
+    Grid <- Grid[!(IncludeDrift == TRUE & Differences > 0)]
 
     # Grid info for Statification Parsimonous----
     l <- as.list(Grid[.N][, 4L:ncol(Grid)][1L,])
