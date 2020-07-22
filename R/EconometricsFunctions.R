@@ -3626,7 +3626,8 @@ FinalBuildArima <- function(
   }
 
   # Return----
-  return(FinalFC)
+  FinalFC_NA <- unique(FinalFC[is.na(Target), ModelRank])
+  return(FinalFC[!ModelRank %in% FinalFC_NA])
 }
 
 #' FinalBuildETS
