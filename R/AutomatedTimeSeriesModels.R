@@ -301,7 +301,7 @@ AutoBanditSarima <- function(data,
     ByDataType <<- TRUE
     counter <<- 1L
     repeat {
-      Forecast <- tryCatch({FinalBuildArima(
+      ForecastOutput <<- tryCatch({FinalBuildArima(
         ModelOutputGrid = Arima_ExperimentGrid,
         TimeSeriesPrepareOutput = Arima_Artifacts_Score,
         FCPeriods = NumFCPeriods,
@@ -311,20 +311,14 @@ AutoBanditSarima <- function(data,
         error = function(x) NULL)
 
       # Move on if model build failure----
-      if(!is.null(Forecast)) {
-
-        # Min, Average, Max values----
-        #FC_MinValue <- min(Forecast[["Forecast"]], na.rm = TRUE)
-        #FC_AvgValue <- mean(Forecast[["Forecast"]], na.rm = TRUE)
-        FC_MaxValue <- max(Forecast[["Forecast"]], na.rm = TRUE)
-
-        # Ensure final models get built and correct grid metric is utilized----
-        if(nrow(Forecast) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
-          return(list(Forecast = Forecast, PerformanceGrid = Arima_ExperimentGrid))
+      if(!is.null(ForecastOutput)) {
+        FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
+        if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
+          return(list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid))
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 10) return(print("Model was not able to be built"))
+          if(counter > 25) return(print("Model was not able to be built"))
         }
       } else {
         return(print("Model was not able to be built"))

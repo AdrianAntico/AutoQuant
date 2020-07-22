@@ -579,13 +579,12 @@ AutoH2oDRFClassifier <- function(data,
   # Binary Return Objects----
   if(ReturnModelObjects) {
     if(!is.numeric(data[[eval(TargetColumnName)]])) {
-      CostMatrixWeights <- c(ClassWeights[1],0,0,ClassWeights[2])
       return(list(
         Model = FinalModel,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData),
+        EvaluationMetrics = FinalThresholdTable,
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,
