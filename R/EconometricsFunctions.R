@@ -15,7 +15,7 @@ PredictArima <- function(object = Results,
 
   # Article showing how Drift is defined
   # https://robjhyndman.com/hyndsight/arimaconstants/
-  myNCOL <- function(x) if (is.null(x)) 0 else NCOL(x)
+  myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
   xr <- object$call$xreg
   xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
@@ -27,6 +27,7 @@ PredictArima <- function(object = Results,
   arma <- object$arma
   coefs <- object$coef
   narma <- sum(arma[1L:4L])
+  if(!is.null(object$lambda)) bcox <- as.numeric(object$lambda) else bcox <- NULL
   if(length(coefs) > narma) {
 
     # Drift term
@@ -48,7 +49,15 @@ PredictArima <- function(object = Results,
       newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
       ncxreg <- ncxreg + 1L
     }
-    xm <- if(narma == 0) drop(as.matrix(newxreg) %*% coefs) else drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
+    if(!is.null(newxreg)) {
+      if(narma == 0) {
+        xm <- drop(as.matrix(newxreg) %*% coefs)
+      }  else {
+        xm <- drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
+      }
+    } else {
+      0
+    }
   } else {
     xm <- 0
   }
@@ -62,8 +71,13 @@ PredictArima <- function(object = Results,
       warning("seasonal MA part of model is not invertible")
   }
   z <- KalmanForecast(n.ahead, object$model)
+  if(!is.null(bcox)) {
+    z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
+    z$var <- (bcox * z$var + 1) ^ (1 / bcox)
+  }
   pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
   if(se.fit) {
+    object$sigma2 <- (object$sigma2 + 1) ^ (1 / bcox)
     se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
     return(list(pred = pred, se = se))
   } else {
