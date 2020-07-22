@@ -14,11 +14,11 @@
 #' @param Function Supply the function you wish to use for aggregation.
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
-#' 
+#'
 #' # Create fake data
 #' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = FALSE)
 #' data.table::setnames(data, "Independent_Variable2", "Predict")
-#' 
+#'
 #' # Build plot
 #' Plot <- RemixAutoML::ParDepCalPlots(
 #'   data,
@@ -40,30 +40,30 @@ ParDepCalPlots <- function(data,
                            PercentileBucket = 0.05,
                            FactLevels  = 10,
                            Function    = function(x) mean(x, na.rm = TRUE)) {
-  
+
   # Turn off ggplot2 warnings----
   options(warn = -1L)
-  
+
   # Subset data if too big----
   if(data[,.N] > MaxRows) data <- data[order(runif(data[,.N]))][1L:MaxRows]
-  
+
   # Build buckets by independent variable of choice----
   preds2 <- data.table::as.data.table(data)
-  
+
   # Subset columns----
   cols <- c(PredictionColName, TargetColName, IndepVar)
   preds2 <- preds2[, ..cols]
-  
+
   # Structure data----
   data <- data[, ..cols]
   data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
-  
+
   # If actual is in factor form, convert to numeric----
   if(!is.numeric(preds2[[TargetColName]])) {
     preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
     GraphType <- "calibration"
   }
-  
+
   # Prepare for both calibration and boxplot----
   if(is.numeric(preds2[[IndepVar]]) | is.integer(preds2[[IndepVar]])) {
     preds2[, rank := 100 * (round(percRank(preds2[[IndepVar]]) / PercentileBucket) * PercentileBucket)]
@@ -88,19 +88,19 @@ ParDepCalPlots <- function(data,
     data.table::setnames(preds3, old = c("get", "V1", "V2"), new = c(IndepVar, TargetColName, PredictionColName))
     preds3 <- preds3[order(-get(PredictionColName))]
   }
-  
+
   # Build plots----
   if(GraphType == "calibration") {
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
-    
+
     # Partial dependence calibration plot----
     plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
       ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
       ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
       ggplot2::ylab("Actual | Predicted") +
       ggplot2::xlab(IndepVar) +
-      ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("blue", "red")) +
+      ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
       ChartTheme(Size = 15) +
       ggplot2::ggtitle("Partial Dependence Calibration Plot")
   } else if (GraphType == "boxplot") {
@@ -143,7 +143,7 @@ ParDepCalPlots <- function(data,
       ggplot2::ylab("Actual | Predicted") +
       ChartTheme(Size = 15)
   }
-  
+
   # Return plot----
   return(plot)
 }
