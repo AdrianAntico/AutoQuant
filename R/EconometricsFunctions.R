@@ -13,6 +13,11 @@ PredictArima <- function(object = Results,
                          newxreg = NULL,
                          se.fit = TRUE) {
 
+
+
+  newxreg = XREGFC
+
+
   # Article showing how Drift is defined
   # https://robjhyndman.com/hyndsight/arimaconstants/
   myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
@@ -34,11 +39,12 @@ PredictArima <- function(object = Results,
     if(any(names(coefs) == "drift")) {
       N <- length(xreg[,1])
       Drift <- length(object$xreg[,1])
-      temp <- c()
-      for(i in seq_len(N)) temp[i] <- Drift + i
+      temp <- c(0L)
+      for(i in seq_len(N)) temp[i] <- i
       xreg <- cbind(drift = temp, xreg)
       NN <- n.ahead
-      for(i in seq_len(N)) temp[i + N] <- Drift + i
+      temp <- c(0L)
+      for(i in seq_len(NN)) temp[i] <- Drift + i
       newxreg <- cbind(drift = temp, newxreg)
       ncxreg <- ncxreg + 1L
     }
@@ -1572,7 +1578,7 @@ OptimizeArima <- function(Output,
       if(!is.null(Results)) {
 
         # Score Training Data for Full Set of Predicted Values----
-        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$pred)]}, error = function(x) {
+        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC, se.fit = TRUE)$pred)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$mean)]
         })
         if(Results$var.coef)
