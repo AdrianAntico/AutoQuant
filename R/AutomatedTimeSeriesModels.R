@@ -325,7 +325,7 @@ AutoBanditSarima <- function(data,
                       "NumberModelsScore",
                       "Output",
                       "TimeSeriesPrepareOutput"),
-             envir = .GlobalEnv)
+             envir = .GlobalEnv)}, error = function(x) NULL)
           return(list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid))
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
