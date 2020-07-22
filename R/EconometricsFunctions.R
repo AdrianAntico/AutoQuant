@@ -2900,7 +2900,7 @@ ParallelAutoARIMA <- function(
   library(doParallel)
   ParallelSets <- floor(cores / 4)
   Results <- foreach::foreach(
-    i = rep(c(1,2,3,4),ParallelSets),
+    i = rep(seq_len(Counter), ParallelSets),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
