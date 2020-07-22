@@ -77,8 +77,12 @@ PredictArima <- function(object = Results,
   }
   pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
   if(se.fit) {
-    object$sigma2 <- (object$sigma2 + 1) ^ (1 / bcox)
-    se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+    if(!length(object$sigma2) == 0) {
+      object$sigma2 <- tryCatch({(object$sigma2 + 1) ^ (1 / bcox)}, error = function(x) NULL)
+    } else {
+      object$sigma2 <- NULL
+    }
+    if(!is.null(object$sigma2)) se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L]) else se <- NULL
     return(list(pred = pred, se = se))
   } else {
     return(pred)
@@ -1571,6 +1575,7 @@ OptimizeArima <- function(Output,
         tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$pred)]}, error = function(x) {
           FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$mean)]
         })
+        if(Results$var.coef)
         tryCatch({FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
           FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
         })
