@@ -2860,7 +2860,8 @@ ParallelAutoARIMA <- function(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 20,
   MaxRunMinutes = 5L,
-  MaxRunsWithoutNewWinner = 12) {
+  MaxRunsWithoutNewWinner = 12,
+  NumCores = max(1L, parallel::detectCores()-2L)) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -2894,17 +2895,16 @@ ParallelAutoARIMA <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- parallel::detectCores() - 2L
+  cores    <- min(NumCores, parallel::detectCores() - 2L)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   library(doParallel)
-  ParallelSets <- floor(cores / 4)
+  ParallelSets <- floor(cores / Counter)
   Results <- foreach::foreach(
-    i = rep(seq_len(Counter), ParallelSets),
+    i = c(rep(seq_len(Counter), ParallelSets), c(seq_len(Counter)[seq_len(cores %% Counter)])),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
-
       OptimizeArima(
         Output = Output,
         MetricSelection = MetricSelection,
@@ -2928,7 +2928,7 @@ ParallelAutoARIMA <- function(
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes)
 
-      #
+      # ARGS FOR TESTING ----
       # Output = Output
       # MetricSelection = MetricSelection
       # DataSetName = TrainArtifacts[[i]][["Name"]]

@@ -11,7 +11,8 @@ ParallelAutoARIMA(
   TrainValidateShare = c(0.5, 0.5),
   MaxNumberModels = 20,
   MaxRunMinutes = 5L,
-  MaxRunsWithoutNewWinner = 12
+  MaxRunsWithoutNewWinner = 12,
+  NumCores = max(1L, parallel::detectCores() - 2L)
 )
 }
 \arguments{

@@ -20,7 +20,8 @@ AutoBanditSarima(
   TrainWeighting = 0.5,
   MaxConsecutiveFails = 25L,
   MaxNumberModels = 100L,
-  MaxRunTimeMinutes = 10L
+  MaxRunTimeMinutes = 10L,
+  NumberCores = max(1L, parallel::detectCores())
 )
 }
 \arguments{
@@ -55,9 +56,11 @@ AutoBanditSarima(
 \item{MaxNumberModels}{Indicate the maximum number of models to test.}
 
 \item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result.}
+
+\item{NumberCores}{Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores}
 }
 \value{
-1. DataSetName - ModelFrequency means that I used forecast::findfrequency() to define the periodicity of the time series data (versus user-supplied)
+data.table containing historical values and the forecast values along with the grid tuning results in full detail, as a second data.table
 
 2. BoxCox - "skip" means I didn't use it
 
@@ -172,7 +175,8 @@ Output <- RemixAutoML::AutoBanditSarima(
   TrainWeighting = 0.50,
   MaxConsecutiveFails = 50L,
   MaxNumberModels = 500L,
-  MaxRunTimeMinutes = 30L)
+  MaxRunTimeMinutes = 30L,
+  NumberCores = max(1L, parallel::detectCores()))
 
 # View output
 Output$Forecast[ModelRank == min(ModelRank)]

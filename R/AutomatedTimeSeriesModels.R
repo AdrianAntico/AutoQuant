@@ -20,7 +20,8 @@
 #' @param MaxConsecutiveFails When a new best model is found MaxConsecutiveFails resets to zero. Indicated the number of model attemps without a new winner before terminating the procedure.
 #' @param MaxNumberModels Indicate the maximum number of models to test.
 #' @param MaxRunTimeMinutes Indicate the maximum number of minutes to wait for a result.
-#' @return 1. DataSetName - ModelFrequency means that I used forecast::findfrequency() to define the periodicity of the time series data (versus user-supplied)
+#' @param NumberCores Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores
+#' @return data.table containing historical values and the forecast values along with the grid tuning results in full detail, as a second data.table
 #'
 #' 2. BoxCox - "skip" means I didn't use it
 #'
@@ -131,7 +132,8 @@
 #'   TrainWeighting = 0.50,
 #'   MaxConsecutiveFails = 50L,
 #'   MaxNumberModels = 500L,
-#'   MaxRunTimeMinutes = 30L)
+#'   MaxRunTimeMinutes = 30L,
+#'   NumberCores = max(1L, parallel::detectCores()))
 #'
 #'# View output
 #' Output$Forecast[ModelRank == min(ModelRank)]
@@ -153,7 +155,8 @@ AutoBanditSarima <- function(data,
                              TrainWeighting = 0.50,
                              MaxConsecutiveFails = 25L,
                              MaxNumberModels = 100L,
-                             MaxRunTimeMinutes = 10L) {
+                             MaxRunTimeMinutes = 10L,
+                             NumberCores = max(1L, parallel::detectCores())) {
 
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
@@ -261,8 +264,8 @@ AutoBanditSarima <- function(data,
     TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate),
     MaxNumberModels = ARIMA_MaxNumberModels,
     MaxRunMinutes = ARIMA_MaxRunTime,
-    MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner)},
-    error = function(x) NULL)
+    MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner,
+    NumCores = NumberCores)}, error = function(x) NULL)
 
   # MetricSelection = EvaluationMetric
   # Output = Arima_Artifacts_Build
