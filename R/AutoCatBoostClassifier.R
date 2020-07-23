@@ -193,6 +193,17 @@ AutoCatBoostClassifier <- function(data,
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
 
+  # Ensure GridTune features are all not null if GridTune = TRUE----
+  if(GridTune) {
+    if(is.null(Trees)) return("Trees cannot be NULL")
+    if(is.null(Depth)) return("Depth cannot be NULL when GridTune = TRUE")
+    if(is.null(LearningRate)) return("LearningRate cannot be NULL when GridTune = TRUE")
+    if(is.null(L2_Leaf_Reg)) return("L2_Leaf_Reg cannot be NULL when GridTune = TRUE")
+    if(is.null(RSM)) return("RSM cannot be NULL when GridTune = TRUE and task_type = 'CPU'")
+    if(is.null(BootStrapType)) return("BootStrapType cannot be NULL when GridTune = TRUE")
+    if(is.null(GrowPolicy)) return("GrowPolicy cannot be NULL when GridTune = TRUE")
+  }
+
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
