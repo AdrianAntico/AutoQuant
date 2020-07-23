@@ -50,6 +50,8 @@ PredictArima <- function(object = Results,
       newxreg <- cbind(intercept = rep(1, n.ahead), newxreg)
       ncxreg <- ncxreg + 1L
     }
+
+    # Do something else
     if(!is.null(newxreg)) {
       if(narma == 0) {
         xm <- drop(as.matrix(newxreg) %*% coefs)
@@ -57,7 +59,7 @@ PredictArima <- function(object = Results,
         xm <- drop(as.matrix(newxreg) %*% coefs[-(1L:narma)])
       }
     } else {
-      0
+      xm <- 0
     }
   } else {
     xm <- 0
@@ -76,19 +78,27 @@ PredictArima <- function(object = Results,
   if(!is.null(bcox)) {
     z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
     z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
-    if(!is.null(z$var)) {
-      z$Lower95 <- z$pred * (1 - z$var * qnorm(0.975))
-      z$Lower80 <- z$pred * (1 - z$var * qnorm(0.90))
-      z$Upper80 <- z$pred * (1 + z$var * qnorm(0.90))
-      z$Upper95 <- z$pred * (1 + z$var * qnorm(0.975))
-      z$Issues <- c(MA_Note, SMA_Note)
-    } else {
-      z$Lower95 <- NULL
-      z$Lower80 <- NULL
-      z$Upper80 <- NULL
-      z$Upper95 <- NULL
-    }
+  } else {
+    z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
   }
+
+  # Transform z$var into actual prediction interval values----
+  # z$var comes in as a value of var / pred which creates a value of
+  #    standard error as a percent of predicted value
+  if(!is.null(z$var)) {
+    z$Lower95 <- z$pred * (1 - z$var * qnorm(0.975))
+    z$Lower80 <- z$pred * (1 - z$var * qnorm(0.90))
+    z$Upper80 <- z$pred * (1 + z$var * qnorm(0.90))
+    z$Upper95 <- z$pred * (1 + z$var * qnorm(0.975))
+    z$Issues <- c(MA_Note, SMA_Note)
+  } else {
+    z$Lower95 <- NULL
+    z$Lower80 <- NULL
+    z$Upper80 <- NULL
+    z$Upper95 <- NULL
+  }
+
+  # Return z----
   return(z)
 }
 
