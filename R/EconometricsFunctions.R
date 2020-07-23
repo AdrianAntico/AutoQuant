@@ -13,18 +13,13 @@ PredictArima <- function(object = Results,
                          newxreg = NULL,
                          se.fit = TRUE) {
 
-
-
-  newxreg = XREGFC
-
-
   # Article showing how Drift is defined
   # https://robjhyndman.com/hyndsight/arimaconstants/
+  # Note: eval.parent() == eval(envir = parent.env())
   myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
-  xr <- object$call$xreg
-  xreg <- if(!is.null(xr)) eval.parent(xr) else NULL
-  ncxreg <- myNCOL(xreg)
+  xreg <- if(!is.null(object$xreg)) object$xreg else NULL
+  ncxreg <- if(!is.null(xreg)) NCOL(XREG) else NULL
   if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
   class(xreg) <- NULL
   xtsp <- tsp(rsd)
@@ -67,32 +62,34 @@ PredictArima <- function(object = Results,
   } else {
     xm <- 0
   }
+  MA_Note <- "If MA was used, the term IS invertible - good news!"
   if(arma[2L] > 0L) {
     ma <- coefs[arma[1L] + 1L:arma[2L]]
-    if(any(Mod(polyroot(c(1, ma))) < 1)) warning("MA part of model is not invertible")
+    if(any(Mod(polyroot(c(1, ma))) < 1)) MA_Note <- "MA part of model is not invertible"
   }
+  SMA_Note <- "If seasonal MA was used, it is invertible - good news"
   if(arma[4L] > 0L) {
     ma <- coefs[sum(arma[1L:3L]) + 1L:arma[4L]]
-    if(any(Mod(polyroot(c(1, ma))) < 1))
-      warning("seasonal MA part of model is not invertible")
+    if(any(Mod(polyroot(c(1, ma))) < 1)) SMA_Note <- "seasonal MA part of model is not invertible"
   }
   z <- KalmanForecast(n.ahead, object$model)
   if(!is.null(bcox)) {
+    z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
     z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
-    z$var <- (bcox * z$var + 1) ^ (1 / bcox)
-  }
-  pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
-  if(se.fit) {
-    if(!length(object$sigma2) == 0) {
-      object$sigma2 <- tryCatch({(object$sigma2 + 1) ^ (1 / bcox)}, error = function(x) NULL)
+    if(!is.null(z$var)) {
+      z$Lower95 <- z$pred * (1 - z$var * qnorm(0.975))
+      z$Lower80 <- z$pred * (1 - z$var * qnorm(0.90))
+      z$Upper80 <- z$pred * (1 + z$var * qnorm(0.90))
+      z$Upper95 <- z$pred * (1 + z$var * qnorm(0.975))
+      z$Issues <- c(MA_Note, SMA_Note)
     } else {
-      object$sigma2 <- NULL
+      z$Lower95 <- NULL
+      z$Lower80 <- NULL
+      z$Upper80 <- NULL
+      z$Upper95 <- NULL
     }
-    if(!is.null(object$sigma2)) se <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L]) else se <- NULL
-    return(list(pred = pred, se = se))
-  } else {
-    return(pred)
   }
+  return(z)
 }
 
 #' Regular_Performance creates and stores model results in Experiment Grid
@@ -1577,24 +1574,17 @@ OptimizeArima <- function(Output,
       # Generate Forecasts for Forecast Periods----
       if(!is.null(Results)) {
 
-        # Score Training Data for Full Set of Predicted Values----
-        tryCatch({FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC, se.fit = TRUE)$pred)]}, error = function(x) {
-          FC_Data[, Forecast := as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$mean)]
-        })
-        if(Results$var.coef)
-        tryCatch({FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, Low95 := Forecast + qnorm(0.05) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
-        })
-        tryCatch({FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, Low80 := Forecast + qnorm(0.20) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
-        })
-        tryCatch({FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, High80 := Forecast + qnorm(0.80) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
-        })
-        tryCatch({FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC)$se)[1:FCPeriods]]}, error = function(x) {
-          FC_Data[, High95 := Forecast + qnorm(0.95) * as.numeric(PredictArima(object = Results, n.ahead = FCPeriods)$se)[1:FCPeriods]]
-        })
+        # Run Modified getS3Generic("predict", "Arima") see top of this file----
+        RawOutput <- PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC, se.fit = TRUE)
+        if(!is.null()) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
+        if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
+        if(!is.null(RawOutput$Lower80)) FC_Data[, Low80 := RawOutput$Lower80] else FC_Data[, Low80 := NA]
+        if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper95] else FC_Data[, High80 := NA]
+        if(!is.null(RawOutput$Upper95)) FC_Data[, High95 := RawOutput$Upper95] else FC_Data[, High95 := NA]
+
       } else {
+
+        # Fill in NA for models that cant be fit----
         Train_Score[, Forecast := NA]
         FC_Data[, Forecast := NA]
         FC_Data[, Low80 := NA]
