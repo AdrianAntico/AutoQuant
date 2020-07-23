@@ -300,71 +300,142 @@ RL_Performance <- function(Results = Results,
                            run = run,
                            train = train,
                            ValidationData = ValidationData,
-                           HoldOutPeriods = HoldOutPeriods) {
+                           HoldOutPeriods = HoldOutPeriods,
+                           FinalScore = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
   # Train Performance----
-  if(!is.null(Results)) {
-    if(run == 1L) {
+  if(!FinalScore) {
+    if(!is.null(Results)) {
+      if(run == 1L) {
 
-      # Train Metrics----
-      TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
-
-      # Compute residuals----
-      data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-
-      # Compute intermediary metrics----
-      data.table::set(TrainMetrics,
-                      j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
-                      value = list(TrainMetrics[["Residuals"]] ^ 2L,
-                                   abs(TrainMetrics[["Residuals"]]),
-                                   abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
-
-      # Fill ExperimentGrid Table----
-      data.table::set(ExperimentGrid,
-                      i = run,
-                      j = c("Train_MSE","Train_MAE","Train_MAPE"),
-                      value = list(mean(TrainMetrics[["SquaredError"]], na.rm = TRUE),
-                                   mean(TrainMetrics[["AbsoluteError"]], na.rm = TRUE),
-                                   mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
-    } else {
-      if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
+        # Train Metrics----
         TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
+
+        # Compute residuals----
+        data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
+
+        # Compute intermediary metrics----
+        data.table::set(TrainMetrics,
+                        j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
+                        value = list(TrainMetrics[["Residuals"]] ^ 2L,
+                                     abs(TrainMetrics[["Residuals"]]),
+                                     abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
+
+        # Fill ExperimentGrid Table----
+        data.table::set(ExperimentGrid,
+                        i = run,
+                        j = c("Train_MSE","Train_MAE","Train_MAPE"),
+                        value = list(mean(TrainMetrics[["SquaredError"]], na.rm = TRUE),
+                                     mean(TrainMetrics[["AbsoluteError"]], na.rm = TRUE),
+                                     mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
       } else {
-        TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
+        if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
+          TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
+        } else {
+          TrainMetrics <- data.table::data.table(Target = as.numeric(train), FC = as.numeric(Results$fitted))
+        }
+
+        # Compute residuals----
+        data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
+
+        # Compute intermediary metrics----
+        data.table::set(TrainMetrics,
+                        j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
+                        value = list(TrainMetrics[["Residuals"]] ^ 2L,
+                                     abs(TrainMetrics[["Residuals"]]),
+                                     abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
+
+        # Fill ExperimentGrid Table----
+        data.table::set(ExperimentGrid,
+                        i = run,
+                        j = c("Train_MSE","Train_MAE","Train_MAPE"),
+                        value = list(mean(TrainMetrics[["SquaredError"]], na.rm = TRUE),
+                                     mean(TrainMetrics[["AbsoluteError"]], na.rm = TRUE),
+                                     mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
       }
-
-      # Compute residuals----
-      data.table::set(TrainMetrics, j = "Residuals", value = TrainMetrics[["Target"]] - TrainMetrics[["FC"]])
-
-      # Compute intermediary metrics----
-      data.table::set(TrainMetrics,
-                      j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
-                      value = list(TrainMetrics[["Residuals"]] ^ 2L,
-                                   abs(TrainMetrics[["Residuals"]]),
-                                   abs(TrainMetrics[["Residuals"]])/(TrainMetrics[["Target"]])))
+    } else {
 
       # Fill ExperimentGrid Table----
       data.table::set(ExperimentGrid,
                       i = run,
                       j = c("Train_MSE","Train_MAE","Train_MAPE"),
-                      value = list(mean(TrainMetrics[["SquaredError"]], na.rm = TRUE),
-                                   mean(TrainMetrics[["AbsoluteError"]], na.rm = TRUE),
-                                   mean(TrainMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
+                      value = list(NA,NA,NA))
     }
-  } else {
-
-    # Fill ExperimentGrid Table----
-    data.table::set(ExperimentGrid,
-                    i = run,
-                    j = c("Train_MSE","Train_MAE","Train_MAPE"),
-                    value = list(NA,NA,NA))
   }
 
   # Validation Performance----
-  if(!is.null(Results)) {
+  if(!FinalScore) {
+    if(!is.null(Results)) {
+      if(run == 1L) {
+
+        # Validation Metrics----
+        ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, h = HoldOutPeriods)$mean))
+
+        # Compute residuals----
+        data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
+
+        # Compute intermediary metrics----
+        data.table::set(ValidationMetrics,
+                        j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
+                        value = list(ValidationMetrics[["Residuals"]] ^ 2L,
+                                     abs(ValidationMetrics[["Residuals"]]),
+                                     abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
+
+        # Fill ExperimentGrid Table----
+        data.table::set(ExperimentGrid,
+                        i = run,
+                        j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
+                        value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
+                                     mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
+                                     mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
+      } else {
+        if(NextGrid[["MaxFourierTerms"]][1L] == 0L) {
+          ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, h = HoldOutPeriods)$mean))
+        } else {
+          ValidationMetrics <- data.table::data.table(Target = as.numeric(ValidationData[[2L]]), FC = as.numeric(forecast::forecast(Results, xreg = XREGFC, h = HoldOutPeriods)$mean))
+        }
+
+        # Compute residuals----
+        data.table::set(ValidationMetrics, j = "Residuals", value = ValidationMetrics[["Target"]] - ValidationMetrics[["FC"]])
+
+        # Compute intermediary metrics----
+        data.table::set(ValidationMetrics,
+                        j = c("SquaredError","AbsoluteError","AbsolutePercentageError"),
+                        value = list(ValidationMetrics[["Residuals"]] ^ 2L,
+                                     abs(ValidationMetrics[["Residuals"]]),
+                                     abs(ValidationMetrics[["Residuals"]])/(ValidationMetrics[["Target"]])))
+
+        # Fill ExperimentGrid Table----
+        data.table::set(ExperimentGrid,
+                        i = run,
+                        j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
+                        value = list(mean(ValidationMetrics[["SquaredError"]], na.rm = TRUE),
+                                     mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
+                                     mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
+      }
+    } else {
+
+      # Fill ExperimentGrid Table----
+      data.table::set(ExperimentGrid,
+                      i = run,
+                      j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
+                      value = list(NA, NA, NA))
+    }
+  }
+
+  # Blended Performance----
+  if(!FinalScore) {
+    data.table::set(ExperimentGrid, i = run, j = c("Blended_MSE","Blended_MAE","Blended_MAPE"),
+                    value = list(TrainValidateShare[1] * ExperimentGrid[run, Train_MSE]  + TrainValidateShare[1] * ExperimentGrid[run, Validate_MSE],
+                                 TrainValidateShare[1] * ExperimentGrid[run, Train_MAE]  + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAE],
+                                 TrainValidateShare[1] * ExperimentGrid[run, Train_MAPE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAPE]))
+  }
+
+  # Score final models----
+  if(FinalScore) {
     if(run == 1L) {
 
       # Validation Metrics----
@@ -412,22 +483,7 @@ RL_Performance <- function(Results = Results,
                                    mean(ValidationMetrics[["AbsoluteError"]], na.rm = TRUE),
                                    mean(ValidationMetrics[["AbsolutePercentageError"]], na.rm = TRUE)))
     }
-  } else {
-
-    # Fill ExperimentGrid Table----
-    data.table::set(ExperimentGrid,
-                    i = run,
-                    j = c("Validate_MSE","Validate_MAE","Validate_MAPE"),
-                    value = list(NA, NA, NA))
   }
-
-  # Blended Performance----
-  data.table::set(ExperimentGrid,
-                  i = run,
-                  j = c("Blended_MSE","Blended_MAE","Blended_MAPE"),
-                  value = list(TrainValidateShare[1] * ExperimentGrid[run, Train_MSE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MSE],
-                               TrainValidateShare[1] * ExperimentGrid[run, Train_MAE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAE],
-                               TrainValidateShare[1] * ExperimentGrid[run, Train_MAPE] + TrainValidateShare[1] * ExperimentGrid[run, Validate_MAPE]))
 
   # Return Grid----
   return(ExperimentGrid)
@@ -1576,7 +1632,7 @@ OptimizeArima <- function(Output,
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
         RawOutput <- PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC, se.fit = TRUE)
-        if(!is.null()) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
+        if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
         if(!is.null(RawOutput$Lower80)) FC_Data[, Low80 := RawOutput$Lower80] else FC_Data[, Low80 := NA]
         if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper95] else FC_Data[, High80 := NA]
