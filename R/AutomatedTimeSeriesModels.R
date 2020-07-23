@@ -296,13 +296,13 @@ AutoBanditSarima <- function(data,
       FinalBuild = TRUE)
 
     # 4. Generate Final Arima Forecasts----
-    ModelOutputGrid <<- Arima_ExperimentGrid
-    TimeSeriesPrepareOutput <<- Arima_Artifacts_Score
-    FCPeriods <<- NumFCPeriods
-    NumberModelsScore <<- 1
-    MetricSelection <<- EvaluationMetric
-    ByDataType <<- TRUE
-    counter <<- 1L
+    # ModelOutputGrid = Arima_ExperimentGrid
+    # TimeSeriesPrepareOutput = Arima_Artifacts_Score
+    # FCPeriods = NumFCPeriods
+    # NumberModelsScore = 1
+    # MetricSelection = EvaluationMetric
+    # ByDataType = TRUE
+    counter <- 1L
     repeat {
       ForecastOutput <<- tryCatch({FinalBuildArima(
         ModelOutputGrid = Arima_ExperimentGrid,
