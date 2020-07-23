@@ -19,7 +19,7 @@ PredictArima <- function(object = Results,
   myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
   xreg <- if(!is.null(object$xreg)) object$xreg else NULL
-  ncxreg <- if(!is.null(xreg)) NCOL(XREG) else NULL
+  ncxreg <- if(!is.null(xreg)) NCOL(xreg) else NULL
   if(myNCOL(newxreg) != ncxreg) stop("'xreg' and 'newxreg' have different numbers of columns")
   class(xreg) <- NULL
   xtsp <- tsp(rsd)
