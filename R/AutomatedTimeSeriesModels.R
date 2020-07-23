@@ -295,16 +295,10 @@ AutoBanditSarima <- function(data,
       ModelFreq = TRUE,
       FinalBuild = TRUE)
 
-    # 4. Generate Final Arima Forecasts----
-    # ModelOutputGrid = Arima_ExperimentGrid
-    # TimeSeriesPrepareOutput = Arima_Artifacts_Score
-    # FCPeriods = NumFCPeriods
-    # NumberModelsScore = 1
-    # MetricSelection = EvaluationMetric
-    # ByDataType = TRUE
+    # Final Build
     counter <- 1L
     repeat {
-      ForecastOutput <<- tryCatch({FinalBuildArima(
+      ForecastOutput <- tryCatch({FinalBuildArima(
         ModelOutputGrid = Arima_ExperimentGrid,
         TimeSeriesPrepareOutput = Arima_Artifacts_Score,
         FCPeriods = NumFCPeriods,
@@ -317,55 +311,19 @@ AutoBanditSarima <- function(data,
       if(!is.null(ForecastOutput)) {
         FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
-          # tryCatch({rm(list = c("ByDataType",
-          #             "counter",
-          #             "FCPeriods",
-          #             "MetricSelection",
-          #             "ModelOutputGrid",
-          #             "NumberModelsScore",
-          #             "Output",
-          #             "TimeSeriesPrepareOutput"),
-          #    envir = .GlobalEnv)}, error = function(x) NULL)
           return(list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid))
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
           if(counter > 25) {
-            # tryCatch({rm(list = c("ByDataType",
-            #             "counter",
-            #             "FCPeriods",
-            #             "MetricSelection",
-            #             "ModelOutputGrid",
-            #             "NumberModelsScore",
-            #             "Output",
-            #             "TimeSeriesPrepareOutput"),
-            #    envir = .GlobalEnv)}, error = function(x) NULL)
             return(print("Model was not able to be built"))
           }
         }
       } else {
-        # tryCatch({rm(list = c("ByDataType",
-        #             "counter",
-        #             "FCPeriods",
-        #             "MetricSelection",
-        #             "ModelOutputGrid",
-        #             "NumberModelsScore",
-        #             "Output",
-        #             "TimeSeriesPrepareOutput"),
-        #    envir = .GlobalEnv)}, error = function(x) NULL)
         return(print("Model was not able to be built"))
       }
     }
   } else {
-    # tryCatch({rm(list = c("ByDataType",
-    #             "counter",
-    #             "FCPeriods",
-    #             "MetricSelection",
-    #             "ModelOutputGrid",
-    #             "NumberModelsScore",
-    #             "Output",
-    #             "TimeSeriesPrepareOutput"),
-    #    envir = .GlobalEnv)}, error = function(x) NULL)
     return(print("Unable to build arima on given data"))
   }
 }
