@@ -3604,6 +3604,7 @@ FinalBuildArima <- function(
   }
 
   # Score models----
+  j <- 1L
   for(i in seq_len(Counter)) {
 
     # Score models----
@@ -3678,12 +3679,18 @@ FinalBuildArima <- function(
     }
 
     # Combine----
-    if(i == 1L) {
-      FinalFC <- data.table::copy(Forecasts)
+    if(j == 1L) {
+      if(Forecasts[,.N] != 0) {
+        FinalFC <- data.table::copy(Forecasts)
+        j <- j + 1L
+      }
     } else {
-      temp <- data.table::copy(Forecasts)
-      FinalFC <- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
-      rm(temp)
+      if(Forecasts[,.N] != 0) {
+        temp <- data.table::copy(Forecasts)
+        j <- j + 1L
+        FinalFC <- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      }
     }
   }
 
