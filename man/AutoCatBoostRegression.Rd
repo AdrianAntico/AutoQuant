@@ -125,22 +125,22 @@ data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostRegression(
-    
+
     # GPU or CPU and the number of available GPUs
     task_type = "GPU",
     NumGPUs = 1,
-    
-    # Metadata arguments: 
+
+    # Metadata arguments:
     #   'ModelID' is used to create part of the file names generated when saving to file'
     #   'model_path' is where the minimal model objects for scoring will be stored
     #      'ModelID' will be the name of the saved model object
     #   'metadata_path' is where model evaluation and model interpretation files are saved
     #      objects saved to model_path if metadata_path is null
-    #      Saved objects include: 
+    #      Saved objects include:
     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance. 
+    #         'ModelID_VariableImportance.csv' is the variable importance.
     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
     ModelID = "Test_Model_1",
@@ -148,12 +148,12 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     metadata_path = NULL,
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
-    
+
     # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data. 
+    #   'TrainOnFull' is to train a model with 100 percent of your data.
     #     That means no holdout data will be used for evaluation
     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
     #     CatBoost categorical treatment is enhanced when supplied
     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
     #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
@@ -167,11 +167,11 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     IDcols = c("IDcol_1","IDcol_2"),
     TransformNumericColumns = "Adrian",
     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-    
-    # Model evaluation: 
+
+    # Model evaluation:
     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
     #   'loss_function' the loss function used in training optimization
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
+    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
     #     A value of 3 will return plots for the top 3 variables based on variable importance
     #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
@@ -192,20 +192,20 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     PassInGrid = NULL,
     GridTune = FALSE,
     MaxModelsInGrid = 100L,
-    MaxRunsWithoutNewWinner = 100L, 
+    MaxRunsWithoutNewWinner = 100L,
     MaxRunMinutes = 60*60,
     Shuffles = 4L,
     BaselineComparison = "default",
-    
+
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
     # The ones below can be set to NULL and the values in the example will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
     Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L), 
-    LearningRate = seq(0.01,0.10,0.01), 
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0), 
+    Depth = seq(4L, 8L, 1L),
+    LearningRate = seq(0.01,0.10,0.01),
+    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))

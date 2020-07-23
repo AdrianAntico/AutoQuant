@@ -14,7 +14,8 @@ RL_Performance(
   run = run,
   train = train,
   ValidationData = ValidationData,
-  HoldOutPeriods = HoldOutPeriods
+  HoldOutPeriods = HoldOutPeriods,
+  FinalScore = FALSE
 )
 }
 \arguments{

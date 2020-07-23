@@ -196,6 +196,8 @@ AutoCatBoostChainLadder(
 
 \item{TargetVariable}{Target Variable Name}
 
+\item{TruncateDate}{NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.}
+
 \item{MaxCohortPeriods}{The maximum number of CohortPeriodsVariable out to include in modeling}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}

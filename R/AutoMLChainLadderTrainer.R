@@ -13,6 +13,7 @@
 #' @param TargetVariable Target Variable Name
 #' @param CalendarDate The name of your date column that represents the calendar date
 #' @param CohortDate The name of your date column that represents the cohort date
+#' @param TruncateDate NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.
 #' @param MaxCohortPeriods The maximum number of CohortPeriodsVariable out to include in modeling
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
@@ -717,6 +718,9 @@ AutoCatBoostChainLadder <- function(data,
     if(!all(class(data[[eval(CohortPeriodsVariable)]]) %chin% "numeric")) data[, eval(CohortPeriodsVariable) := as.numeric(as.character(get(CohortPeriodsVariable)))]
     if(!all(class(data[[eval(CalendarDate)]]) %chin% "Date")) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
     if(!all(class(data[[eval(CohortDate)]]) %chin% "Date")) data[, eval(CohortDate) := as.Date(get(CohortDate))]
+
+    # Filter out historical values via truncation----
+    if(!is.null(TruncateDate)) data <- data[get(CalendarDate) >= eval(TruncateDate)]
 
     # DM: Partition Data----
     if(proc %chin% c("evaluate","eval","evaluation")) {
