@@ -3695,7 +3695,7 @@ FinalBuildArima <- function(
   }
 
   # Return----
-  FinalFC_NA <- unique(FinalFC[is.na(Target), ModelRank])
+  FinalFC_NA <- unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])
   return(FinalFC[!ModelRank %in% FinalFC_NA])
 }
 
