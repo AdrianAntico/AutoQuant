@@ -1618,6 +1618,7 @@ OptimizeArima <- function(Output,
         if(TSGridList[["MaxFourierTerms"]][run] != 0) {
           XREG <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run])}, error = function(x) FALSE)
           XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
+          if(DebugMode) for(pp in 1:10) print("XREG exists ::: ", eval(!is.logical(XREG) & !is.logical(XREGFC)))
           if(!is.logical(XREG) & !is.logical(XREGFC)) {
             Results <- tryCatch({forecast::Arima(
               as.numeric(train),

@@ -281,6 +281,7 @@ AutoBanditSarima <- function(data,
   # MaxNumberModels = ARIMA_MaxNumberModels
   # MaxRunMinutes = ARIMA_MaxRunTime
   # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
+  if(DebugMode) print(paste0("Grid Results from Training ::: ", Arima_ExperimentGrid))
 
   # Reutrn if no suitable models were fit----
   if(Arima_ExperimentGrid[1]$Train_MSE == -7) return(paste0("Unable to fit an arima to this data"))
@@ -323,6 +324,7 @@ AutoBanditSarima <- function(data,
       # ByDataType = TRUE
       # #print(ForecastOutput)
       # print("Output from FinalBuildArima")
+      if(DebugMode) print(paste0("Grid Results from Training ::: ", ForecastOutput))
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
@@ -330,7 +332,7 @@ AutoBanditSarima <- function(data,
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
-          if(DebugMode) print("Final Return object"); print(eval(Output))
+          #if(DebugMode) print("Final Return object"); print(eval(Output))
           return(Output)
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
