@@ -267,6 +267,9 @@ AutoBanditSarima <- function(data,
     MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner,
     NumCores = NumberCores)}, error = function(x) NULL)
 
+  print(Arima_ExperimentGrid)
+  print("Output from ParallelArima")
+
   # MetricSelection = EvaluationMetric
   # Output = Arima_Artifacts_Build
   # MaxFourierTerms = ARIMA_MaxFourierTerms
