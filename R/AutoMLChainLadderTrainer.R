@@ -337,7 +337,7 @@ AutoCatBoostChainLadder <- function(data,
 
   # DM: ConversionRateMeasure if NULL----
   if(is.null(ConversionRateMeasure)) {
-    data[, Rate := get(ConversionMeasure) / (get(BaseFunnelMeasure) + 1)]
+    data[, Rate := get(ConversionMeasure) / (get(BaseFunnelMeasure[1]) + 1)]
     ConversionRateMeasure <- "Rate"
   } else {
     if(ConversionRateMeasure != "Rate") data.table::setnames(data, eval(ConversionRateMeasure), "Rate")
@@ -367,7 +367,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
     }
 
-    # Save Timers to file----
+    # Save Timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     # FE: CreateHolidayVariables() CalendarDate----
@@ -381,7 +381,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 3L, j = "Process", value = "# Add CalendarDate holiday variables----")
     }
 
-    # Save Timers to file----
+    # Save Timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     # FE: CreateHolidayVariables() CohortDate----
@@ -397,7 +397,7 @@ AutoCatBoostChainLadder <- function(data,
 
     # AnomalyDetection for all CohortDates----
     if(!is.null(AnomalyDetection)) {
-      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure))), by = eval(CalendarDate)]
+      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure[1]))), by = eval(CalendarDate)]
       temp <- temp[, ConversionRate := ConversionCheck / (Leads + 1)][, .SD, .SDcols = c(eval(CalendarDate), "ConversionRate")]
       temp <- RemixAutoML::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
       temp <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low, KeepAllCols = TRUE, IsDataScaled = FALSE)
@@ -422,7 +422,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 6L, j = "Process", value = "# Convert CalendarDate to Character to treat as Cohort Group----")
     }
 
-    # Save Timers to file----
+    # Save Timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     # DM: Sort data by CalendarDate and then by CohortPeriodsVariable----
@@ -435,7 +435,7 @@ AutoCatBoostChainLadder <- function(data,
       data.table::set(TimerDataTrain, i = 5L, j = "Process", value = "# Sort data by CalendarDate and then by CohortPeriodsVariable----")
     }
 
-    # Save Timers to file----
+    # Save Timers to file
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     #----
@@ -479,7 +479,7 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 7L, j = "Process", value = "# Rolling stats for CohortDate with CalendarDate as a Grouping Variable----")
       }
 
-      # Save Timers to file----
+      # Save Timers to file
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
 
@@ -536,46 +536,48 @@ AutoCatBoostChainLadder <- function(data,
 
     # FE: AutoLagRollStats() BaseFunnelMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
-      temp <- data[, data.table::first(get(BaseFunnelMeasure)), by = eval(CalendarDate)]
-      data.table::setnames(temp, "V1", eval(BaseFunnelMeasure))
-      x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
+      for(bfm in seq_len(length(BaseFunnelMeasuer))) {
+        temp <- data[, data.table::first(get(BaseFunnelMeasure[bfm])), by = eval(CalendarDate)]
+        data.table::setnames(temp, "V1", eval(BaseFunnelMeasure[bfm]))
+        x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
 
-        # Data
-        data                 = temp,
-        DateColumn           = eval(CalendarDate),
-        Targets              = eval(BaseFunnelMeasure),
-        HierarchyGroups      = NULL,
-        IndependentGroups    = NULL,
-        TimeGroups           = CalendarTimeGroups,
-        TimeUnitAgg          = TimeUnit,
-        TimeUnit             = TimeUnit,
+          # Data
+          data                 = temp,
+          DateColumn           = eval(CalendarDate),
+          Targets              = eval(BaseFunnelMeasure[bfm]),
+          HierarchyGroups      = NULL,
+          IndependentGroups    = NULL,
+          TimeGroups           = CalendarTimeGroups,
+          TimeUnitAgg          = TimeUnit,
+          TimeUnit             = TimeUnit,
 
-        # Services
-        TimeBetween          = NULL,
-        RollOnLag1           = TRUE,
-        Type                 = "Lag",
-        SimpleImpute         = FALSE,
+          # Services
+          TimeBetween          = NULL,
+          RollOnLag1           = TRUE,
+          Type                 = "Lag",
+          SimpleImpute         = FALSE,
 
-        # Calculated Columns
-        Lags                 = CalendarLags,
-        MA_RollWindows       = CalendarMovingAverages,
-        SD_RollWindows       = CalendarStandardDeviations,
-        Skew_RollWindows     = CalendarSkews,
-        Kurt_RollWindows     = CalendarKurts,
-        Quantile_RollWindows = CalendarQuantiles,
-        Quantiles_Selected   = CalendarQuantilesSelected,
-        Debug                = TRUE))
-      if(proc %chin% c("evaluate","eval")) {
-        data.table::set(TimerDataEval, i = 9L, j = "Time", value = x[[3L]])
-        data.table::set(TimerDataEval, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
-      } else if(proc %chin% c("training","train")) {
-        data.table::set(TimerDataTrain, i = 9L, j = "Time", value = x[[3L]])
-        data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
+          # Calculated Columns
+          Lags                 = CalendarLags,
+          MA_RollWindows       = CalendarMovingAverages,
+          SD_RollWindows       = CalendarStandardDeviations,
+          Skew_RollWindows     = CalendarSkews,
+          Kurt_RollWindows     = CalendarKurts,
+          Quantile_RollWindows = CalendarQuantiles,
+          Quantiles_Selected   = CalendarQuantilesSelected,
+          Debug                = TRUE))
+        if(proc %chin% c("evaluate","eval")) {
+          data.table::set(TimerDataEval, i = 9L, j = "Time", value = x[[3L]])
+          data.table::set(TimerDataEval, i = 9L, j = "Process", value = paste0("# Rolling stats for BaseFunnelMeasure ",bfm, "----"))
+        } else if(proc %chin% c("training","train")) {
+          data.table::set(TimerDataTrain, i = 9L, j = "Time", value = x[[3L]])
+          data.table::set(TimerDataTrain, i = 9L, j = "Process", value = paste0("# Rolling stats for BaseFunnelMeasure ",bfm, "----"))
+        }
+
+        # Join back to data----
+        data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
       }
     }
-
-    # Join back to data----
-    data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
 
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
@@ -610,15 +612,15 @@ AutoCatBoostChainLadder <- function(data,
         Debug                = TRUE))
       if(proc %chin% c("evaluate","eval")) {
         data.table::set(TimerDataEval, i = 9L, j = "Time", value = x[[3L]])
-        data.table::set(TimerDataEval, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
+        data.table::set(TimerDataEval, i = 9L, j = "Process", value = "# Rolling stats for ConversionMeasure----")
       } else if(proc %chin% c("training","train")) {
         data.table::set(TimerDataTrain, i = 9L, j = "Time", value = x[[3L]])
-        data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for BaseFunnelMeasure----")
+        data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for ConversionMeasure----")
       }
-    }
 
-    # Join back to data----
-    data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
+      # Join back to data----
+      data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
+    }
 
     # FE: AutoLagRollStats() CalendarDateHolidayCounts Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train") & !is.null(CalendarHolidayLags)) {
@@ -658,10 +660,10 @@ AutoCatBoostChainLadder <- function(data,
         data.table::set(TimerDataTrain, i = 9L, j = "Time", value = x[[3L]])
         data.table::set(TimerDataTrain, i = 9L, j = "Process", value = "# Rolling stats for CalendarHolidayCounts----")
       }
-    }
 
-    # Join back to data
-    data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
+      # Join back to data
+      data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
+    }
 
     # FE: ModelDataPrep() Impute Numeric Columns from AutoLagRollStats()----
     x <- system.time(gcFirst = FALSE, data <- RemixAutoML::ModelDataPrep(

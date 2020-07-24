@@ -331,7 +331,6 @@ AutoBanditSarima <- function(data,
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
-          #if(DebugMode) print("Final Return object"); print(eval(Output))
           return(Output)
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
