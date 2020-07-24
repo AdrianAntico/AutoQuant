@@ -98,11 +98,11 @@ PredictArima <- function(object = Results,
 
   # Backtransform if boxcox was used----
   if(!is.null(bcox)) {
-    z$pred    <- (z$pred    * bcox + 1) ^ (1/bcox)
-    z$Lower95 <- (z$Lower95 * bcox + 1) ^ (1/bcox)
-    z$Lower80 <- (z$Lower80 * bcox + 1) ^ (1/bcox)
-    z$Upper80 <- (z$Upper80 * bcox + 1) ^ (1/bcox)
-    z$Upper95 <- (z$Upper95 * bcox + 1) ^ (1/bcox)
+    z$pred    <- (z$pred    * bcox + 1) ^ (1 / bcox)
+    z$Lower95 <- (z$Lower95 * bcox + 1) ^ (1 / bcox)
+    z$Lower80 <- (z$Lower80 * bcox + 1) ^ (1 / bcox)
+    z$Upper80 <- (z$Upper80 * bcox + 1) ^ (1 / bcox)
+    z$Upper95 <- (z$Upper95 * bcox + 1) ^ (1 / bcox)
   }
 
   # Return z----
@@ -1588,6 +1588,7 @@ OptimizeArima <- function(Output,
     TrainRows <- length(train)
 
     # Build models----
+    j <- 1L
     for(run in seq_len(FinalGrid[, .N])) {
 
       # Define lambda----
@@ -1656,6 +1657,9 @@ OptimizeArima <- function(Output,
         if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper95] else FC_Data[, High80 := NA]
         if(!is.null(RawOutput$Upper95)) FC_Data[, High95 := RawOutput$Upper95] else FC_Data[, High95 := NA]
 
+        # Increment j after successful runs----
+        j <- j + 1L
+
       } else {
 
         # Fill in NA for models that cant be fit----
@@ -1674,7 +1678,7 @@ OptimizeArima <- function(Output,
       FinalForecastData[, ModelID := "Supercharged-SARIMA"][, ModelRank := FinalGrid[["ModelRank"]][[1L]]]
 
       # Rbind final forecast data sets----
-      if(run == 1) {
+      if(j == 1) {
         ReturnData <- FinalForecastData
       } else {
         ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
@@ -1682,6 +1686,7 @@ OptimizeArima <- function(Output,
     }
 
     # Return forecast values for all models----
+    print(paste0("Number of rows in ReturnData", ReturnData[, .N]))
     return(ReturnData)
   }
 }
