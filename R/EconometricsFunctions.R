@@ -16,7 +16,6 @@ PredictArima <- function(object = Results,
   # Article showing how Drift is defined
   # https://robjhyndman.com/hyndsight/arimaconstants/
   # Note: eval.parent() == eval(envir = parent.env())
-  PredictNew <- FALSE
   myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
   xreg <- if(!is.null(object$xreg)) object$xreg else NULL
@@ -65,6 +64,8 @@ PredictArima <- function(object = Results,
   } else {
     xm <- 0
   }
+
+  # Notes about moving average and seasonal moving average----
   MA_Note <- "If MA was used, the term IS invertible - good news!"
   if(arma[2L] > 0L) {
     ma <- coefs[arma[1L] + 1L:arma[2L]]
@@ -80,16 +81,8 @@ PredictArima <- function(object = Results,
   z <- KalmanForecast(n.ahead, object$model)
   z$pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
   z$var <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
-  # if(!is.null(bcox)) {
-  #   z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
-  #   z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
-  # } else {
-  #   z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
-  # }
 
-  # Transform z$var into actual prediction interval values----
-  # z$var comes in as a value of var / pred which creates a value of
-  #    standard error as a percent of predicted value
+  # Create prediction intervals----
   if(!is.null(z$var)) {
     z$Lower95 <- z$pred - z$var * qnorm(0.975)
     z$Lower80 <- z$pred - z$var * qnorm(0.90)
@@ -101,6 +94,15 @@ PredictArima <- function(object = Results,
     z$Lower80 <- NULL
     z$Upper80 <- NULL
     z$Upper95 <- NULL
+  }
+
+  # Backtransform if boxcox was used----
+  if(!is.null(bcox)) {
+    z$pred <- (z$pred * bcox + 1) ^ (1/bcox)
+    z$Lower95 <- (z$Lower95 * bcox + 1) ^ (1/bcox)
+    z$Lower80 <- (z$Lower80 * bcox + 1) ^ (1/bcox)
+    z$Upper80 <- (z$Upper80 * bcox + 1) ^ (1/bcox)
+    z$Upper95 <- (z$Upper95 * bcox + 1) ^ (1/bcox)
   }
 
   # Return z----
