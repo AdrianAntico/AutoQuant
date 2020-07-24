@@ -98,7 +98,7 @@ PredictArima <- function(object = Results,
 
   # Backtransform if boxcox was used----
   if(!is.null(bcox)) {
-    z$pred <- (z$pred * bcox + 1) ^ (1/bcox)
+    z$pred    <- (z$pred    * bcox + 1) ^ (1/bcox)
     z$Lower95 <- (z$Lower95 * bcox + 1) ^ (1/bcox)
     z$Lower80 <- (z$Lower80 * bcox + 1) ^ (1/bcox)
     z$Upper80 <- (z$Upper80 * bcox + 1) ^ (1/bcox)
@@ -108,9 +108,6 @@ PredictArima <- function(object = Results,
   # Return z----
   return(z)
 }
-
-
-
 
 #' Regular_Performance creates and stores model results in Experiment Grid
 #'
@@ -1651,7 +1648,8 @@ OptimizeArima <- function(Output,
       if(!is.null(Results)) {
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
-        RawOutput <- PredictArima(object = Results, n.ahead = FCPeriods, newxreg = XREGFC, se.fit = TRUE)
+        RawOutput <- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
+        print(RawOutput)
         if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
         if(!is.null(RawOutput$Lower80)) FC_Data[, Low80 := RawOutput$Lower80] else FC_Data[, Low80 := NA]
@@ -3620,27 +3618,27 @@ FinalBuildArima <- function(
     # Score models----
     if(ByDataType) {
       Forecasts <- OptimizeArima(
-        Output = TimeSeriesPrepareOutput,
-        MetricSelection = MetricSelection,
-        DataSetName = TrainArtifacts[[i]][["Name"]],
-        train = TrainArtifacts[[i]][["Data"]],
-        test = ModelOutputGrid$TestData,
-        Lags = TimeSeriesPrepareOutput$Lags,
-        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-        MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
-        SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
-        Differences = TrainArtifacts[[i]][["Diff"]],
-        SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]],
-        FullData = TimeSeriesPrepareOutput$FullData,
-        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-        MinVal = TimeSeriesPrepareOutput$MinVal,
-        TargetName = TimeSeriesPrepareOutput$TargetName,
-        DateName = TimeSeriesPrepareOutput$DateName,
+        Output = eval(TimeSeriesPrepareOutput),
+        MetricSelection = eval(MetricSelection),
+        DataSetName = eval(TrainArtifacts[[i]][["Name"]]),
+        train = eval(TrainArtifacts[[i]][["Data"]]),
+        test = eval(ModelOutputGrid$TestData),
+        Lags = eval(TimeSeriesPrepareOutput$Lags),
+        SeasonalLags = eval(TimeSeriesPrepareOutput$SeasonalLags),
+        MovingAverages = eval(TimeSeriesPrepareOutput$MovingAverages),
+        SeasonalMovingAverages = eval(TimeSeriesPrepareOutput$SeasonalMovingAverages),
+        Differences = eval(TrainArtifacts[[i]][["Diff"]]),
+        SeasonalDifferences = eval(TrainArtifacts[[i]][["SDiff"]]),
+        FullData = eval(TimeSeriesPrepareOutput$FullData),
+        HoldOutPeriods = eval(TimeSeriesPrepareOutput$HoldOutPeriods),
+        MinVal = eval(TimeSeriesPrepareOutput$MinVal),
+        TargetName = eval(TimeSeriesPrepareOutput$TargetName),
+        DateName = eval(TimeSeriesPrepareOutput$DateName),
         MaxFourierTerms = 0,
         TrainValidateShare = c(1.0,0.0),
-        MaxNumberModels = NumberModelsScore,
+        MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
+        FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]))
 
       # Output = TimeSeriesPrepareOutput
       # MetricSelection = MetricSelection
@@ -3666,26 +3664,26 @@ FinalBuildArima <- function(
 
     } else {
       Forecasts <- OptimizeArima(
-        Output = TimeSeriesPrepareOutput,
-        DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-        train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-        test = TimeSeriesPrepareOutput$TestData,
-        Lags = TimeSeriesPrepareOutput$Lags,
-        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-        MovingAverages = TimeSeriesPrepareOutput$MovingAverages,
-        SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages,
-        Differences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Diff"]],
-        SeasonalDifferences = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["SDiff"]],
-        FullData = TimeSeriesPrepareOutput$FullData,
-        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-        MinVal = TimeSeriesPrepareOutput$MinVal,
-        TargetName = TimeSeriesPrepareOutput$TargetName,
-        DateName = TimeSeriesPrepareOutput$DateName,
+        Output = eval(TimeSeriesPrepareOutput),
+        DataSetName = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]),
+        train = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]]),
+        test = eval(TimeSeriesPrepareOutput$TestData),
+        Lags = eval(TimeSeriesPrepareOutput$Lags),
+        SeasonalLags = eval(TimeSeriesPrepareOutput$SeasonalLags),
+        MovingAverages = eval(TimeSeriesPrepareOutput$MovingAverages),
+        SeasonalMovingAverages = eval(TimeSeriesPrepareOutput$SeasonalMovingAverages),
+        Differences = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Diff"]]),
+        SeasonalDifferences = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["SDiff"]]),
+        FullData = eval(TimeSeriesPrepareOutput$FullData),
+        HoldOutPeriods = eval(TimeSeriesPrepareOutput$HoldOutPeriods),
+        MinVal = eval(TimeSeriesPrepareOutput$MinVal),
+        TargetName = eval(TimeSeriesPrepareOutput$TargetName),
+        DateName = eval(TimeSeriesPrepareOutput$DateName),
         MaxFourierTerms = 0,
         TrainValidateShare = c(1.0,0.0),
-        MaxNumberModels = NumberModelsScore,
+        MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = ScoreGrid[i])
+        FinalGrid = eval(ScoreGrid[i]))
     }
 
     # Combine----

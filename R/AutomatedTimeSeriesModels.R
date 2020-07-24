@@ -313,14 +313,14 @@ AutoBanditSarima <- function(data,
         error = function(x) NULL)
 
       # Debugging ----
-      ModelOutputGrid = Arima_ExperimentGrid
-      TimeSeriesPrepareOutput = Arima_Artifacts_Score
-      FCPeriods = NumFCPeriods
-      NumberModelsScore = 1
-      MetricSelection = EvaluationMetric
-      ByDataType = TRUE
-      #print(ForecastOutput)
-      print("Output from FinalBuildArima")
+      # ModelOutputGrid = Arima_ExperimentGrid
+      # TimeSeriesPrepareOutput = Arima_Artifacts_Score
+      # FCPeriods = NumFCPeriods
+      # NumberModelsScore = 1
+      # MetricSelection = EvaluationMetric
+      # ByDataType = TRUE
+      # #print(ForecastOutput)
+      # print("Output from FinalBuildArima")
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
