@@ -515,7 +515,6 @@ AutoCatBoostRegression <- function(data,
         }
 
         # Build model----
-        print(base_params)
         RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
 
         # Score and measure model----
