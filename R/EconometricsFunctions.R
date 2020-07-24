@@ -1697,7 +1697,7 @@ OptimizeArima <- function(Output,
     }
 
     # Return forecast values for all models----
-    print(ReturnData)
+    if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == ReturnData[,.N]) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
     for(i in 1:10) print(paste0("Number of rows in ReturnData", ReturnData[, .N]))
     return(ReturnData)
   }
@@ -3660,6 +3660,7 @@ FinalBuildArima <- function(
         FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]),
         DebugMode = DebugMode)
 
+      # DebugMode
       # Output = TimeSeriesPrepareOutput
       # MetricSelection = MetricSelection
       # DataSetName = TrainArtifacts[[i]][["Name"]]
@@ -3681,6 +3682,7 @@ FinalBuildArima <- function(
       # MaxNumberModels = NumberModelsScore
       # MaxRunMinutes = 100
       # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
+      if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[, .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
 
     } else {
       Forecasts <- OptimizeArima(

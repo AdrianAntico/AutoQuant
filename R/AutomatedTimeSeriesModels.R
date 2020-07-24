@@ -271,8 +271,7 @@ AutoBanditSarima <- function(data,
     NumCores = NumberCores)}, error = function(x) NULL)
 
   # Debugging ----
-  # print(Arima_ExperimentGrid)
-  # print("Output from ParallelArima")
+  if(DebugMode) for(jj in 1:10) print(paste0("ParallelAutoARIMA() finished successfully"))
 
   # MetricSelection = EvaluationMetric
   # Output = Arima_Artifacts_Build
