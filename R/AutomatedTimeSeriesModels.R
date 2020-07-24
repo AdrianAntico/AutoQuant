@@ -315,12 +315,10 @@ AutoBanditSarima <- function(data,
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 25) {
-            return(print("Model was not able to be built"))
-          }
+          if(counter > 25) break
         }
       } else {
-        return(print("Model was not able to be built"))
+        break
       }
     }
   } else {
