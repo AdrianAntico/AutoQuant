@@ -3703,7 +3703,8 @@ FinalBuildArima <- function(
         TrainValidateShare = c(1.0,0.0),
         MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = eval(ScoreGrid[i]))
+        FinalGrid = eval(ScoreGrid[i]),
+        DebugMode = DebugMode)
     }
 
     # Combine----
