@@ -83,6 +83,9 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # Create ChainLadderData----
   if(ChainLadderData) {
 
+    # Overwrite N
+    N <- 1000
+
     # Define constants
     MaxCohortDays <- 15L
 
@@ -152,6 +155,8 @@ FakeDataGenerator <- function(Correlation = 0.70,
     ChainLadderData[, Appointments := Leads * Rates]
     ChainLadderData[, Rates := NULL]
     data.table::setcolorder(ChainLadderData, c(1,2,3,5,4))
+    ChainLadderData[, Leads2 := runif(n = ChainLadderData[,.N], min = 100, max = 500)]
+    data.table::setcolorder(ChainLadderData, c(1:4, 6, 5))
     return(ChainLadderData)
   }
 
