@@ -1249,6 +1249,7 @@ TimeSeriesDataPrepare <- function(data,
 #' @param MaxRunsWithoutNewWinner The number of runs without a new winner which if passed tells the function to stop
 #' @param MaxNumberModels The number of models you want to test.
 #' @param FinalGrid If NULL, regular train optimization occurs. If the grid is supplied, final builds are conducted.
+#' @param DebugMode Debugging
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' Results <- OptimizeArima(
@@ -1296,7 +1297,8 @@ OptimizeArima <- function(Output,
                           MaxRunsWithoutNewWinner = 20,
                           MaxNumberModels = NULL,
                           MaxRunMinutes = NULL,
-                          FinalGrid = NULL) {
+                          FinalGrid = NULL,
+                          DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -1598,6 +1600,9 @@ OptimizeArima <- function(Output,
         lambda <- "auto"
       }
 
+      # Debugging----
+      if(DebugMode) print(paste0("BoxCox parameter ::: ", round(lambda, 6)))
+
       # Build final models----
       if(FinalGrid[1,GridName] == "DefaultAutoArima") {
         if(Output$MinVal > 0) {
@@ -1646,6 +1651,11 @@ OptimizeArima <- function(Output,
       Train_Score[, Target := as.numeric(Target)]
 
       # Generate Forecasts for Forecast Periods----
+      if(DebugMode) {
+        for(k in 1:10) print("ModelPrintout")
+        print(Results)
+      }
+
       if(!is.null(Results)) {
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
@@ -3537,6 +3547,7 @@ ParallelAutoTSLM <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode Debugging
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' FinalBuildArima(
@@ -3553,7 +3564,8 @@ FinalBuildArima <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE) {
+  ByDataType = TRUE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3644,7 +3656,8 @@ FinalBuildArima <- function(
         TrainValidateShare = c(1.0,0.0),
         MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]))
+        FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]),
+        DebugMode = DebugMode)
 
       # Output = TimeSeriesPrepareOutput
       # MetricSelection = MetricSelection

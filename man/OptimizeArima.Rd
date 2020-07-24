@@ -26,7 +26,8 @@ OptimizeArima(
   MaxRunsWithoutNewWinner = 20,
   MaxNumberModels = NULL,
   MaxRunMinutes = NULL,
-  FinalGrid = NULL
+  FinalGrid = NULL,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -71,6 +72,8 @@ OptimizeArima(
 \item{MaxNumberModels}{The number of models you want to test.}
 
 \item{FinalGrid}{If NULL, regular train optimization occurs. If the grid is supplied, final builds are conducted.}
+
+\item{DebugMode}{Debugging}
 }
 \value{
 Time series data sets to pass onto auto modeling functions

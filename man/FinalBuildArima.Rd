@@ -10,7 +10,8 @@ FinalBuildArima(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE
+  ByDataType = TRUE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ FinalBuildArima(
 \item{NumberModelsScore}{The value returned from TimeSeriesPrepare()}
 
 \item{ByDataType}{Set to TRUE if you want to have models represented from all data sets utilized in training}
+
+\item{DebugMode}{Debugging}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
