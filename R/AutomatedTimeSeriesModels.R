@@ -21,6 +21,7 @@
 #' @param MaxNumberModels Indicate the maximum number of models to test.
 #' @param MaxRunTimeMinutes Indicate the maximum number of minutes to wait for a result.
 #' @param NumberCores Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores
+#' @param DebugMode Set to TRUE to get print outs of particular steps helpful in tracing errors
 #' @return data.table containing historical values and the forecast values along with the grid tuning results in full detail, as a second data.table
 #'
 #' 2. BoxCox - "skip" means I didn't use it
@@ -156,7 +157,8 @@ AutoBanditSarima <- function(data,
                              MaxConsecutiveFails = 25L,
                              MaxNumberModels = 100L,
                              MaxRunTimeMinutes = 10L,
-                             NumberCores = max(1L, parallel::detectCores())) {
+                             NumberCores = max(1L, parallel::detectCores()),
+                             DebugMode = FALSE) {
 
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
@@ -327,14 +329,16 @@ AutoBanditSarima <- function(data,
         FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
-          return(list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid))
+          Output <- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
+          if(DebugMode) print("Final Return object"); print(eval(Output))
+          return(Output)
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 25) break
+          if(counter > 25) next
         }
       } else {
-        break
+        next
       }
     }
   } else {

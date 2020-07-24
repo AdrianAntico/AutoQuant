@@ -21,7 +21,8 @@ AutoBanditSarima(
   MaxConsecutiveFails = 25L,
   MaxNumberModels = 100L,
   MaxRunTimeMinutes = 10L,
-  NumberCores = max(1L, parallel::detectCores())
+  NumberCores = max(1L, parallel::detectCores()),
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -58,6 +59,8 @@ AutoBanditSarima(
 \item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result.}
 
 \item{NumberCores}{Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores}
+
+\item{DebugMode}{Set to TRUE to get print outs of particular steps helpful in tracing errors}
 }
 \value{
 data.table containing historical values and the forecast values along with the grid tuning results in full detail, as a second data.table
