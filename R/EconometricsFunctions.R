@@ -3654,10 +3654,6 @@ FinalBuildArima <- function(
       # MaxRunMinutes = 100
       # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
 
-      print(i)
-      print(j)
-      print(Forecasts)
-
     } else {
       Forecasts <- OptimizeArima(
         Output = TimeSeriesPrepareOutput,
@@ -3699,8 +3695,8 @@ FinalBuildArima <- function(
   }
 
   # Return----
-  FinalFC_NA <- length(unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank]))
-  if(FinalFC_NA != 0) return(FinalFC[!ModelRank %in% FinalFC_NA]) else return(FinalFC)
+  FinalFC_NA <- unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])
+  if(length(FinalFC_NA) != 0) return(FinalFC[!ModelRank %in% FinalFC_NA]) else return(FinalFC)
 }
 
 #' FinalBuildETS
