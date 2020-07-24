@@ -243,6 +243,7 @@ AutoBanditSarima <- function(data,
     ModelFreq = TRUE,
     FinalBuild = FALSE)
 
+  # Debugging ----
   # TargetName = TargetVariableName
   # DateName = DateColumnName
   # Lags = ARIMA_Lags
@@ -267,8 +268,9 @@ AutoBanditSarima <- function(data,
     MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner,
     NumCores = NumberCores)}, error = function(x) NULL)
 
-  print(Arima_ExperimentGrid)
-  print("Output from ParallelArima")
+  # Debugging ----
+  # print(Arima_ExperimentGrid)
+  # print("Output from ParallelArima")
 
   # MetricSelection = EvaluationMetric
   # Output = Arima_Artifacts_Build
@@ -310,6 +312,7 @@ AutoBanditSarima <- function(data,
         ByDataType = TRUE)},
         error = function(x) NULL)
 
+      # Debugging ----
       # ModelOutputGrid = Arima_ExperimentGrid
       # TimeSeriesPrepareOutput = Arima_Artifacts_Score
       # FCPeriods = NumFCPeriods
@@ -317,8 +320,8 @@ AutoBanditSarima <- function(data,
       # MetricSelection = EvaluationMetric
       # ByDataType = TRUE
 
-      print(ForecastOutput)
-      print("Output from FinalBuildArima")
+      # print(ForecastOutput)
+      # print("Output from FinalBuildArima")
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
