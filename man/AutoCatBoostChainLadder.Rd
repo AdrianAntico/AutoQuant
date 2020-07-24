@@ -13,6 +13,7 @@ AutoCatBoostChainLadder(
   CohortPeriodsVariable = NULL,
   CalendarDate = NULL,
   CohortDate = NULL,
+  TruncateDate = NULL,
   TimeUnit = c("day"),
   CalendarTimeGroups = c("day", "week", "month"),
   CohortTimeGroups = c("day", "week", "month"),
@@ -89,6 +90,8 @@ AutoCatBoostChainLadder(
 \item{CalendarDate}{The name of your date column that represents the calendar date}
 
 \item{CohortDate}{The name of your date column that represents the cohort date}
+
+\item{TruncateDate}{NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.}
 
 \item{TimeUnit}{Base time unit of data. "days", "weeks", "months", "quarters", "years"}
 
@@ -196,8 +199,6 @@ AutoCatBoostChainLadder(
 
 \item{TargetVariable}{Target Variable Name}
 
-\item{TruncateDate}{NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.}
-
 \item{MaxCohortPeriods}{The maximum number of CohortPeriodsVariable out to include in modeling}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
@@ -225,6 +226,7 @@ RemixAutoML::AutoCatBoostChainLadder(
    CohortPeriodsVariable = "CohortDays",
    CalendarDate = "CalendarDateColumn",
    CohortDate = "CohortDateColumn",
+   TruncateDate = NULL,
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
