@@ -8,10 +8,11 @@ FakeDataGenerator(
   Correlation = 0.7,
   N = 1000L,
   ID = 5L,
-  ZIP = 5L,
-  ChainLadderData = FALSE,
   FactorCount = 2L,
   AddDate = TRUE,
+  ZIP = 5L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
   Classification = FALSE,
   MultiClass = FALSE
 )
@@ -23,13 +24,15 @@ FakeDataGenerator(
 
 \item{ID}{Number of IDcols to include}
 
-\item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
-
-\item{ChainLadderData}{Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer}
-
 \item{FactorCount}{Number of factor type columns to create}
 
 \item{AddDate}{Set to TRUE to include a date column}
+
+\item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
+
+\item{TimeSeries}{For testing AutoBanditSarima}
+
+\item{ChainLadderData}{Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer}
 
 \item{Classification}{Set to TRUE to build classification data}
 
@@ -44,10 +47,11 @@ data <- RemixAutoML::FakeDataGenerator(
    Correlation = 0.70,
    N = 1000L,
    ID = 2L,
-   ZIP = 2L,
-   ChainLadderData = FALSE,
    FactorCount = 2L,
    AddDate = TRUE,
+   ZIP = 2L,
+   TimeSeries = FALSE,
+   ChainLadderData = FALSE,
    Classification = FALSE,
    MultiClass = FALSE)
 }

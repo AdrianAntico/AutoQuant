@@ -1,26 +1,28 @@
 #' FakeDataGenerator
-#' 
+#'
 #' @author Adrian Antico
 #' @family Data Wrangling
 #' @param Correlation Set the correlation value for simulated data
 #' @param N Number of records
 #' @param ID Number of IDcols to include
 #' @param ZIP Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large
-#' @param ChainLadderData Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer
 #' @param FactorCount Number of factor type columns to create
 #' @param AddDate Set to TRUE to include a date column
+#' @param TimeSeries For testing AutoBanditSarima
+#' @param ChainLadderData Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer
 #' @param Classification Set to TRUE to build classification data
 #' @param MultiClass Set to TRUE to build MultiClass data
-#' @examples 
+#' @examples
 #' \donttest{
 #' data <- RemixAutoML::FakeDataGenerator(
 #'    Correlation = 0.70,
 #'    N = 1000L,
 #'    ID = 2L,
-#'    ZIP = 2L,
-#'    ChainLadderData = FALSE,
 #'    FactorCount = 2L,
 #'    AddDate = TRUE,
+#'    ZIP = 2L,
+#'    TimeSeries = FALSE,
+#'    ChainLadderData = FALSE,
 #'    Classification = FALSE,
 #'    MultiClass = FALSE)
 #' }
@@ -28,28 +30,71 @@
 FakeDataGenerator <- function(Correlation = 0.70,
                               N = 1000L,
                               ID = 5L,
-                              ZIP = 5L,
-                              ChainLadderData = FALSE,
                               FactorCount = 2L,
                               AddDate = TRUE,
+                              ZIP = 5L,
+                              TimeSeries = FALSE,
+                              ChainLadderData = FALSE,
                               Classification = FALSE,
                               MultiClass = FALSE) {
-  
+
+  # Error checking
+  if(sum(TimeSeries, Classification, MultiClass) > 1) stop("Only one of the following can be set to TRUE: TimeSeries, Classifcation, and MultiClass")
+
+  # TimeSeries----
+  if(TimeSeries) {
+
+    x <- runif(1)
+    n <- 1 / 6
+
+    # Pull in data
+    data <- data.table::as.data.table(fpp::cafe)
+
+    # Change names to common names for other calls in this function
+    data.table::setnames(data, "x", "Weekly_Sales")
+
+    # Pick a starting date
+    data.table::set(data, j = "Date", value = "1982-01-01")
+    data.table::setcolorder(data, c(2,1))
+    data[, Date := as.POSIXct(Date)]
+
+    # "1min"
+    data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+
+    # "5min"
+    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+
+    # "10min"
+    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+
+    # "15min"
+    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+
+    # "30min"
+    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+
+    # "hour"
+    #data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+
+    # Return data
+    return(data)
+  }
+
   # Create ChainLadderData----
   if(ChainLadderData) {
-    
+
     # Define constants
     MaxCohortDays <- 15L
-    
+
     # Start date
     CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2017-01-01"), N), key = "CalendarDateColumn")
-    
+
     # Increment date column so it is sequential
     CalendarDateData[, temp := seq_len(N)]
     CalendarDateData[, CalendarDateColumn := CalendarDateColumn + lubridate::days(temp) - 1L]
     CohortDate_temp <- data.table::copy(CalendarDateData)
     data.table::setnames(x = CohortDate_temp, old = c("CalendarDateColumn"), new = c("CohortDate_temp"))
-    
+
     # Cross join the two data sets
     ChainLadderData <- data.table::setkeyv(data.table::CJ(
       CalendarDateColumn = CalendarDateData$CalendarDateColumn,
@@ -57,25 +102,25 @@ FakeDataGenerator <- function(Correlation = 0.70,
       sorted = TRUE,
       unique = TRUE),
     cols = c("CalendarDateColumn", "CohortDateColumn"))
-    
+
     # Remove starter data sets and N
     rm(CalendarDateData, CohortDate_temp, N)
-    
+
     # Remove impossible dates
     ChainLadderData <- ChainLadderData[CohortDateColumn >= CalendarDateColumn]
-    
+
     # Add CohortPeriods
     ChainLadderData[, CohortDays := as.numeric(difftime(CohortDateColumn, CalendarDateColumn, tz = "MST", units = "day"))]
-    
+
     # Limit the number of CohortTime
     ChainLadderData <- ChainLadderData[CohortDays < MaxCohortDays]
-    
+
     # Add measure columns placeholder values
     ChainLadderData[, ":=" (Leads = 0, Appointments = 0, Rates = 0)]
-    
+
     # Sort decending both date columns
     data.table::setorderv(x = ChainLadderData, cols = c("CalendarDateColumn","CohortDateColumn"), order = c(-1L, 1L))
-    
+
     # Add columns for BaselineMeasure and ConversionMeasure
     UniqueCalendarDates <- unique(ChainLadderData$CalendarDateColumn)
     NN <- length(UniqueCalendarDates)
@@ -84,10 +129,10 @@ FakeDataGenerator <- function(Correlation = 0.70,
     LoopSeq <- c(1, LoopSeq)
     LoopSeq <- c(LoopSeq, seq(135, 15*993, 15))
     for(cal in seq(NN)) {
-      
+
       # Generate first element of decay data
       DecayCurveData <- dgeom(x = 0, prob = runif(n = 1L, min = 0.45, max = 0.55), log = FALSE)
-      
+
       # Fill in remain elements in vector
       if(cal > 1L) {
         zz <- seq_len(min(15L, cal))
@@ -95,11 +140,11 @@ FakeDataGenerator <- function(Correlation = 0.70,
           DecayCurveData <- c(DecayCurveData, c(dgeom(x = i, prob = runif(n = 1L, min = 0.45, max = 0.55), log = FALSE)))
         }
       }
-      
+
       # Fill ChainLadderData
       data.table::set(ChainLadderData, i = (LoopSeq[cal]+1L):LoopSeq[cal + 1L], j = "Rates", value = DecayCurveData[seq_len(min(15L, cal))])
     }
-    
+
     # Fill in Leads and Conversions----
     x <- unique(ChainLadderData[, .SD, .SDcols = c("CalendarDateColumn","Leads")])
     x[, Leads := runif(n = x[, .N], min = 100, max = 500)]
@@ -109,13 +154,13 @@ FakeDataGenerator <- function(Correlation = 0.70,
     data.table::setcolorder(ChainLadderData, c(1,2,3,5,4))
     return(ChainLadderData)
   }
-  
+
   # Modify----
   if(MultiClass & FactorCount == 0L) {
     FactorCount <- 1L
     temp <- 1L
-  } 
-  
+  }
+
   # Create data----
   Correl <- Correlation
   data <- data.table::data.table(Adrian = runif(N))
@@ -133,7 +178,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
   if(ID > 0L) for(i in seq_len(ID)) data[, paste0("IDcol_", i) := runif(N)]
   data[, ":=" (x2 = NULL)]
-  
+
   # FactorCount----
   for(i in seq_len(FactorCount)) {
     RandomValues <- sort(c(runif(n = 4L, min = 0.01, max = 0.99)))
@@ -144,14 +189,14 @@ FakeDataGenerator <- function(Correlation = 0.70,
                                               data.table::fifelse(Independent_Variable2 < RandomValues[3L],  RandomLetters[3L],
                                                                   data.table::fifelse(Independent_Variable2 < RandomValues[4L],  RandomLetters[4L], RandomLetters[5L])))))]
   }
-  
+
   # Add date----
   if(AddDate) {
     data <- data[, DateTime := as.Date(Sys.time())]
     data[, temp := 1L:.N][, DateTime := DateTime - temp][, temp := NULL]
     data <- data[order(DateTime)]
   }
-  
+
   # Zero Inflation Setup----
   if(!Classification & !MultiClass) {
     if(ZIP == 1L) {
@@ -170,19 +215,19 @@ FakeDataGenerator <- function(Correlation = 0.70,
       data[, Adrian := data.table::fifelse(Adrian < 1/6, 0, data.table::fifelse(Adrian < 2/6, log(Adrian * 10), data.table::fifelse(Adrian < 3/6, log(Adrian * 50), data.table::fifelse(Adrian < 4/6, log(Adrian * 250), data.table::fifelse(Adrian < 5/6, log(Adrian * 500), log(Adrian * 1000))))))]
     }
   }
-  
+
   # Classification----
   if(Classification) data[, Adrian := data.table::fifelse(x1 > 0.5, 1, 0)]
-  
+
   # Remove----
   data[, ":=" (x1 = NULL)]
-  
+
   # MultiClass----
   if(MultiClass) {
     data[, Adrian := NULL]
     data.table::setnames(data, "Factor_1", "Adrian")
   }
-  
+
   # Return data----
   return(data)
 }
