@@ -335,10 +335,10 @@ AutoBanditSarima <- function(data,
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 25) next
+          if(counter > 25) break
         }
       } else {
-        next
+        break
       }
     }
   } else {

@@ -1686,7 +1686,8 @@ OptimizeArima <- function(Output,
     }
 
     # Return forecast values for all models----
-    print(paste0("Number of rows in ReturnData", ReturnData[, .N]))
+    print(ReturnData)
+    for(i in 1:10) print(paste0("Number of rows in ReturnData", ReturnData[, .N]))
     return(ReturnData)
   }
 }
