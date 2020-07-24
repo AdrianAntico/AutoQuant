@@ -3564,16 +3564,16 @@ FinalBuildArima <- function(
     }
   } else {
     if(toupper(MetricSelection) == "MAE") {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAE)][seq_len(NumberModelsScore)]
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]
     } else if(toupper(MetricSelection) == "MSE") {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(NumberModelsScore)]
+      ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(NumberModelsScore)]
+      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]
     }
   }
 
   # Store Artifacts----
-  TrainArtifacts = list(
+  TrainArtifacts <<- list(
     UserSupplied = list(
       Data = TimeSeriesPrepareOutput$UserSuppliedData,
       Diff = if(is.null(TimeSeriesPrepareOutput$UserSuppliedDiff)) 0 else TimeSeriesPrepareOutput$UserSuppliedDiff,
@@ -3653,6 +3653,10 @@ FinalBuildArima <- function(
       # MaxNumberModels = NumberModelsScore
       # MaxRunMinutes = 100
       # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
+
+      print(i)
+      print(j)
+      print(Forecasts)
 
     } else {
       Forecasts <- OptimizeArima(

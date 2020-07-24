@@ -310,6 +310,13 @@ AutoBanditSarima <- function(data,
         ByDataType = TRUE)},
         error = function(x) NULL)
 
+      # ModelOutputGrid = Arima_ExperimentGrid
+      # TimeSeriesPrepareOutput = Arima_Artifacts_Score
+      # FCPeriods = NumFCPeriods
+      # NumberModelsScore = 1
+      # MetricSelection = EvaluationMetric
+      # ByDataType = TRUE
+
       print(ForecastOutput)
       print("Output from FinalBuildArima")
 
