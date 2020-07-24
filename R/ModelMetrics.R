@@ -304,7 +304,7 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
       CostMatrix = CostMatrix)
-    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setorderv(temp, cols = "MCC", order = -1L, na.last = TRUE)
     data.table::setnames(
       temp,
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
