@@ -310,6 +310,9 @@ AutoBanditSarima <- function(data,
         ByDataType = TRUE)},
         error = function(x) NULL)
 
+      print(ForecastOutput)
+      print("Output from FinalBuildArima")
+
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
         FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
