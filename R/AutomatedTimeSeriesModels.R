@@ -313,20 +313,20 @@ AutoBanditSarima <- function(data,
         error = function(x) NULL)
 
       # Debugging ----
-      # ModelOutputGrid = Arima_ExperimentGrid
-      # TimeSeriesPrepareOutput = Arima_Artifacts_Score
-      # FCPeriods = NumFCPeriods
-      # NumberModelsScore = 1
-      # MetricSelection = EvaluationMetric
-      # ByDataType = TRUE
-
-      # print(ForecastOutput)
-      # print("Output from FinalBuildArima")
+      ModelOutputGrid = Arima_ExperimentGrid
+      TimeSeriesPrepareOutput = Arima_Artifacts_Score
+      FCPeriods = NumFCPeriods
+      NumberModelsScore = 1
+      MetricSelection = EvaluationMetric
+      ByDataType = TRUE
+      #print(ForecastOutput)
+      print("Output from FinalBuildArima")
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
         FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
+          data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           return(list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid))
         } else {
           Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]

@@ -16,6 +16,7 @@ PredictArima <- function(object = Results,
   # Article showing how Drift is defined
   # https://robjhyndman.com/hyndsight/arimaconstants/
   # Note: eval.parent() == eval(envir = parent.env())
+  PredictNew <- FALSE
   myNCOL <- function(x) if(is.null(x)) 0 else NCOL(x)
   rsd <- object$residuals
   xreg <- if(!is.null(object$xreg)) object$xreg else NULL
@@ -74,22 +75,26 @@ PredictArima <- function(object = Results,
     ma <- coefs[sum(arma[1L:3L]) + 1L:arma[4L]]
     if(any(Mod(polyroot(c(1, ma))) < 1)) SMA_Note <- "seasonal MA part of model is not invertible"
   }
+
+  # Predict new----
   z <- KalmanForecast(n.ahead, object$model)
-  if(!is.null(bcox)) {
-    z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
-    z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
-  } else {
-    z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
-  }
+  z$pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+  z$var <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
+  # if(!is.null(bcox)) {
+  #   z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
+  #   z$pred <- (z$pred * bcox + 1) ^ (1 / bcox)
+  # } else {
+  #   z$var <- tryCatch({z$var / z$pred}, error = function(x) NULL)
+  # }
 
   # Transform z$var into actual prediction interval values----
   # z$var comes in as a value of var / pred which creates a value of
   #    standard error as a percent of predicted value
   if(!is.null(z$var)) {
-    z$Lower95 <- z$pred * (1 - z$var * qnorm(0.975))
-    z$Lower80 <- z$pred * (1 - z$var * qnorm(0.90))
-    z$Upper80 <- z$pred * (1 + z$var * qnorm(0.90))
-    z$Upper95 <- z$pred * (1 + z$var * qnorm(0.975))
+    z$Lower95 <- z$pred - z$var * qnorm(0.975)
+    z$Lower80 <- z$pred - z$var * qnorm(0.90)
+    z$Upper80 <- z$pred + z$var * qnorm(0.90)
+    z$Upper95 <- z$pred + z$var * qnorm(0.975)
     z$Issues <- c(MA_Note, SMA_Note)
   } else {
     z$Lower95 <- NULL
@@ -101,6 +106,9 @@ PredictArima <- function(object = Results,
   # Return z----
   return(z)
 }
+
+
+
 
 #' Regular_Performance creates and stores model results in Experiment Grid
 #'
