@@ -3679,7 +3679,7 @@ FinalBuildArima <- function(
       # MaxNumberModels = NumberModelsScore
       # MaxRunMinutes = 100
       # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
-      if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[, .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
+      if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[!is.na(Target), .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
 
     } else {
       Forecasts <- OptimizeArima(
@@ -3723,8 +3723,7 @@ FinalBuildArima <- function(
   }
 
   # Return----
-  FinalFC_NA <- unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])
-  if(length(FinalFC_NA) != 0) return(FinalFC[!ModelRank %in% FinalFC_NA]) else return(FinalFC)
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' FinalBuildETS
