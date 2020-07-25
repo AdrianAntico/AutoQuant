@@ -3628,23 +3628,28 @@ FinalBuildArima <- function(
   }
 
   # Score models----
-  j <- 1L
-  for(i in seq_len(Counter)) {
+  Success <- 1L
+  for(ModelNum in seq_len(Counter)) {
 
     # Score models----
     if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+
+      # Forecast
       Forecasts <- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
         MetricSelection = eval(MetricSelection),
-        DataSetName = eval(TrainArtifacts[[i]][["Name"]]),
-        train = eval(TrainArtifacts[[i]][["Data"]]),
+        DataSetName = eval(TrainArtifacts[[ModelNum]][["Name"]]),
+        train = eval(TrainArtifacts[[ModelNum]][["Data"]]),
         test = eval(ModelOutputGrid$TestData),
         Lags = eval(TimeSeriesPrepareOutput$Lags),
         SeasonalLags = eval(TimeSeriesPrepareOutput$SeasonalLags),
         MovingAverages = eval(TimeSeriesPrepareOutput$MovingAverages),
         SeasonalMovingAverages = eval(TimeSeriesPrepareOutput$SeasonalMovingAverages),
-        Differences = eval(TrainArtifacts[[i]][["Diff"]]),
-        SeasonalDifferences = eval(TrainArtifacts[[i]][["SDiff"]]),
+        Differences = eval(TrainArtifacts[[ModelNum]][["Diff"]]),
+        SeasonalDifferences = eval(TrainArtifacts[[ModelNum]][["SDiff"]]),
         FullData = eval(TimeSeriesPrepareOutput$FullData),
         HoldOutPeriods = eval(TimeSeriesPrepareOutput$HoldOutPeriods),
         MinVal = eval(TimeSeriesPrepareOutput$MinVal),
@@ -3654,21 +3659,21 @@ FinalBuildArima <- function(
         TrainValidateShare = c(1.0,0.0),
         MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]),
+        FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]),
         DebugMode = DebugMode)
 
       # #DebugMode----
       # Output = TimeSeriesPrepareOutput
       # MetricSelection = MetricSelection
-      # DataSetName = TrainArtifacts[[i]][["Name"]]
-      # train = TrainArtifacts[[i]][["Data"]]
+      # DataSetName = TrainArtifacts[[ModelNum]][["Name"]]
+      # train = TrainArtifacts[[ModelNum]][["Data"]]
       # test = ModelOutputGrid$TestData
       # Lags = TimeSeriesPrepareOutput$Lags
       # SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags
       # MovingAverages = TimeSeriesPrepareOutput$MovingAverages
       # SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages
-      # Differences = TrainArtifacts[[i]][["Diff"]]
-      # SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]]
+      # Differences = TrainArtifacts[[ModelNum]][["Diff"]]
+      # SeasonalDifferences = TrainArtifacts[[ModelNum]][["SDiff"]]
       # FullData = TimeSeriesPrepareOutput$FullData
       # HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods
       # MinVal = TimeSeriesPrepareOutput$MinVal
@@ -3678,21 +3683,21 @@ FinalBuildArima <- function(
       # TrainValidateShare = c(1.0,0.0)
       # MaxNumberModels = NumberModelsScore
       # MaxRunMinutes = 100
-      # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]
+      # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]
       if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[!is.na(Target), .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
 
     } else {
       Forecasts <- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
-        DataSetName = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]),
-        train = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]]),
+        DataSetName = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]),
+        train = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]]),
         test = eval(TimeSeriesPrepareOutput$TestData),
         Lags = eval(TimeSeriesPrepareOutput$Lags),
         SeasonalLags = eval(TimeSeriesPrepareOutput$SeasonalLags),
         MovingAverages = eval(TimeSeriesPrepareOutput$MovingAverages),
         SeasonalMovingAverages = eval(TimeSeriesPrepareOutput$SeasonalMovingAverages),
-        Differences = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Diff"]]),
-        SeasonalDifferences = eval(TrainArtifacts[[ScoreGrid[i,1][[1]]]][["SDiff"]]),
+        Differences = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Diff"]]),
+        SeasonalDifferences = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["SDiff"]]),
         FullData = eval(TimeSeriesPrepareOutput$FullData),
         HoldOutPeriods = eval(TimeSeriesPrepareOutput$HoldOutPeriods),
         MinVal = eval(TimeSeriesPrepareOutput$MinVal),
@@ -3702,26 +3707,26 @@ FinalBuildArima <- function(
         TrainValidateShare = c(1.0,0.0),
         MaxNumberModels = eval(NumberModelsScore),
         MaxRunMinutes = 100,
-        FinalGrid = eval(ScoreGrid[i]),
+        FinalGrid = eval(ScoreGrid[ModelNum]),
         DebugMode = DebugMode)
     }
 
     # Debug output
     if(DebugMode) {
-      print(paste0("Forecast output for scoring iteration: ", i))
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
       print(Forecasts)
     }
 
     # Combine----
-    if(j == 1L) {
+    if(Success == 1L) {
       if(Forecasts[,.N] != 0) {
         FinalFC <- data.table::copy(Forecasts)
-        j <- j + 1L
+        Success <- Success + 1L
       }
     } else {
       if(Forecasts[,.N] != 0) {
         temp <- data.table::copy(Forecasts)
-        j <- j + 1L
+        Success <- Success + 1L
         FinalFC <- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
         rm(temp)
       }

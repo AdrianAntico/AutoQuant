@@ -310,10 +310,11 @@ AutoBanditSarima <- function(data,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
         MetricSelection = EvaluationMetric,
-        ByDataType = TRUE)},
+        ByDataType = TRUE,
+        DebugMode = TRUE)},
         error = function(x) NULL)
 
-      # Debugging ----
+      # # Debugging ----
       # ModelOutputGrid = Arima_ExperimentGrid
       # TimeSeriesPrepareOutput = Arima_Artifacts_Score
       # FCPeriods = NumFCPeriods
