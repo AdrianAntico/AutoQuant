@@ -335,7 +335,7 @@ AutoBanditSarima <- function(data,
           if(counter > 25) break
         }
       } else {
-        break
+        if(counter > 25) break
       }
     }
   } else {
