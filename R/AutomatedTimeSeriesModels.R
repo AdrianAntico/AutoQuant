@@ -310,7 +310,7 @@ AutoBanditSarima <- function(data,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
         MetricSelection = EvaluationMetric,
-        ByDataType = TRUE,
+        ByDataType = FALSE,
         DebugMode = TRUE)},
         error = function(x) NULL)
 
@@ -341,7 +341,7 @@ AutoBanditSarima <- function(data,
       }
     }
   } else {
-    return(print("Unable to build arima on given data"))
+    if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
   }
 }
 

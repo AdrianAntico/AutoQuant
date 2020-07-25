@@ -3636,6 +3636,8 @@ FinalBuildArima <- function(
 
       # Debugging
       if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
 
       # Forecast
       Forecasts <- OptimizeArima(
@@ -3734,6 +3736,7 @@ FinalBuildArima <- function(
   }
 
   # Return----
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
   return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
