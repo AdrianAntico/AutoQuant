@@ -280,7 +280,6 @@ AutoBanditSarima <- function(data,
   # MaxNumberModels = ARIMA_MaxNumberModels
   # MaxRunMinutes = ARIMA_MaxRunTime
   # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
-  #if(DebugMode) print(paste0("Grid Results from Training ::: ", Arima_ExperimentGrid))
 
   # Reutrn if no suitable models were fit----
   if(Arima_ExperimentGrid[1]$Train_MSE == -7) return(paste0("Unable to fit an arima to this data"))
@@ -321,8 +320,7 @@ AutoBanditSarima <- function(data,
       # NumberModelsScore = 1
       # MetricSelection = EvaluationMetric
       # ByDataType = TRUE
-      # #print(ForecastOutput)
-      # print("Output from FinalBuildArima")
+
       if(DebugMode) print(paste0("Grid Results from Training ::: ", ForecastOutput))
 
       # Move on if model build failure----

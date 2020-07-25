@@ -1601,7 +1601,7 @@ OptimizeArima <- function(Output,
       }
 
       # Debugging----
-      if(DebugMode) print(paste0("BoxCox parameter ::: ", round(lambda, 6)))
+      if(DebugMode) print(paste0("BoxCox parameter ::: ", lambda))
 
       # Build final models----
       if(FinalGrid[1,GridName] == "DefaultAutoArima") {
@@ -1618,7 +1618,6 @@ OptimizeArima <- function(Output,
         if(TSGridList[["MaxFourierTerms"]][run] != 0) {
           XREG <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run])}, error = function(x) FALSE)
           XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
-          if(DebugMode) for(pp in 1:10) print("XREG exists ::: ", eval(!is.logical(XREG) & !is.logical(XREGFC)))
           if(!is.logical(XREG) & !is.logical(XREGFC)) {
             Results <- tryCatch({forecast::Arima(
               as.numeric(train),
@@ -1656,7 +1655,6 @@ OptimizeArima <- function(Output,
         for(k in 1:10) print("ModelPrintout")
         print(Results)
       }
-
       if(!is.null(Results)) {
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
@@ -3660,7 +3658,7 @@ FinalBuildArima <- function(
         FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]]),
         DebugMode = DebugMode)
 
-      # DebugMode
+      # #DebugMode----
       # Output = TimeSeriesPrepareOutput
       # MetricSelection = MetricSelection
       # DataSetName = TrainArtifacts[[i]][["Name"]]
