@@ -1,7 +1,7 @@
 #' AutoChainLadderForecast()
-#' 
+#'
 #' AutoChainLadderForecast() for generating forecasts
-#' 
+#'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param data Name of your data.table
@@ -16,7 +16,7 @@
 #' AutoChainLadderForecast(
 #'    data,
 #'    OutputFilePath = getwd(),
-#'    FC_BaseFunnelMeasure,
+#'    FC_BaseFunnelMeasure = xx,
 #'    SegmentName = NULL,
 #'    MaxDateForecasted = NULL,
 #'    MaxCalendarDate = NULL,
@@ -27,41 +27,49 @@
 #' @export
 AutoChainLadderForecast <- function(data,
                                     OutputFilePath = NULL,
-                                    FC_BaseFunnelMeasure,
+                                    FC_BaseFunnelMeasure = NULL,
                                     SegmentName = NULL,
                                     MaxDateForecasted = NULL,
                                     MaxCalendarDate = NULL,
                                     ArgsList = NULL,
                                     MaxCohortPeriods = NULL) {
-  
+
   # Forecasting start and end periods----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   if(is.null(MaxDateForecasted)) MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   if(is.null(MaxCalendarDate)) MaxCalendarDate <- FC_BaseFunnelMeasure[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   if(is.null(SegmentName)) SegmentName <- ArgsList$ModelID
-  
+
   # Loop through all periods to forecast----
   FC_Period <- 0L
   while(MaxDateForecasted < MaxCalendarDate) {
-    
+
     # Increment FC_Period----
     FC_Period <- FC_Period + 1L
     for(bla in seq_len(20L)) print(paste0("Working on Forecast for period: ", FC_Period, " ::: Periods left to forecast: ", difftime(MaxCalendarDate, MaxDateForecasted)))
-    
+
     # DE: Prepare data----
     print("# Prepare data----")
+
+    # Convert to date
     if(class(data[[eval(ArgsList$CalendarDate)]]) != "Date") data[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     if(class(data[[ArgsList$CohortDate]]) != "Date") data[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
+
+    # Add indicator variable for AutoLagRollStatsScoring() so it knows what to score and what not to. A value of 1 indicates that the record should be scored. All others are not scored
     data[, ScoreRecords := 2]
+
+    # Type conversion
     if(class(data[[eval(ArgsList$CohortPeriodsVariable)]]) == "factor") data[, eval(ArgsList$CohortPeriodsVariable) := as.numeric(as.character(get(ArgsList$CohortPeriodsVariable)))]
+
+    # Create single future value for all cohorts
     maxct <- data[, list(max(get(ArgsList$CohortPeriodsVariable)), data.table::first(ScoreRecords)), by = list(get(ArgsList$CalendarDate))]
     data.table::setnames(maxct, c("get","V1","V2"), c(ArgsList$CalendarDate, ArgsList$CohortPeriodsVariable, "ScoreRecords"))
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
     maxct[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CalendarDate)) + lubridate::days(get(ArgsList$CohortPeriodsVariable))]
     maxct[, Segment := eval(ArgsList$ModelID)]
     data.table::setnames(maxct, "Segment", eval(SegmentName))
-    
-    # DE: Subset data and update data----
+
+    # DE: Subset data and update data
     print("# Subset data and update data----")
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[get(ArgsList$CalendarDate) > max(maxct[[eval(ArgsList$CalendarDate)]])]
     NextFCPeriod <- FC_BaseFunnelMeasure[1L]
@@ -69,8 +77,8 @@ AutoChainLadderForecast <- function(data,
     NextFCPeriod[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
     NextFCPeriod[, ScoreRecords := 1]
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[2L:.N]
-    
-    # DE: Merge on next date of Inquiries----
+
+    # DE: Merge on next date of Inquiries
     print("# Merge on next date of Inquiries----")
     temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
     data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure))
@@ -80,16 +88,16 @@ AutoChainLadderForecast <- function(data,
     maxct[, Rate := 0]
     maxct[, ScoreRecords := 1]
     maxct <- data.table::rbindlist(list(maxct, NextFCPeriod), use.names = TRUE)
-    
-    # DE: Remove CohortPeriods beyond MaxCohortPeriods----
+
+    # DE: Remove CohortPeriods beyond MaxCohortPeriods
     maxct <- maxct[get(ArgsList$CohortPeriodsVariable) <= MaxCohortPeriods]
     ScoreDate <- maxct[, max(get(ArgsList$CohortDate))]
-    
-    # DE: Stack onto modeling data for ArgsList$ModelID----
+
+    # DE: Stack onto modeling data for ArgsList$ModelID
     print("# Stack onto modeling data for ArgsList$ModelID----")
     data <- data.table::rbindlist(list(data, maxct), fill = TRUE, use.names = TRUE)
     rm(maxct)
-    
+
     # FE: Calendar & Holiday Variables----
     print("# Feature Engineering----")
     data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
@@ -98,16 +106,16 @@ AutoChainLadderForecast <- function(data,
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CohortDate,"HolidayCounts"))
     data.table::setorderv(data, cols = c(ArgsList$CalendarDate,eval(ArgsList$CohortPeriodsVariable)), c(1L, 1L))
-    
-    # Add anomaly detection zeros----
+
+    # Add Anomaly detection zeros----
     if(!is.null(ArgsList[["AnomalyDetection"]])) data[, ":=" (AnomHigh = 0, AnomLow = 0)]
-    
-    # FE: Transfers and Rate AutoLagRollStatsScoring----
+
+    # FE: ConversionMeasure and Rate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
     data.table::set(temp, j = ArgsList$CalendarDate, value = as.character(temp[[ArgsList$CalendarDate]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
-      
+
       # Data
       data                 = temp,
       DateColumn           = ArgsList$CohortDate,
@@ -119,13 +127,13 @@ AutoChainLadderForecast <- function(data,
       TimeUnit             = ArgsList$TimeUnit,
       TimeGroups           = ArgsList$CohortTimeGroups,
       TimeUnitAgg          = ArgsList$TimeUnit,
-      
+
       # Services
       TimeBetween          = NULL,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
       SimpleImpute         = FALSE,
-      
+
       # Calculated Columns
       Lags                 = ArgsList$CohortLags,
       MA_RollWindows       = ArgsList$CohortMovingAverages,
@@ -135,19 +143,19 @@ AutoChainLadderForecast <- function(data,
       Quantile_RollWindows = ArgsList$Quantiles,
       Quantiles_Selected   = ArgsList$CohortQuantilesSelected,
       Debug                = TRUE)
-    
+
     # Join datasets
     print("# Combine datasets----")
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate), setdiff(names(temp), names(data)))], by = c(eval(ArgsList$CalendarDate), eval(ArgsList$CohortDate)), all.x = TRUE)
     rm(temp)
-    
+
     # FE: CohortDateHolidayCounts AutoLagRollStatsScoring----
     print("# TransferHolidayCounts AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.character(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
-      
+
       # Data
       data                 = temp,
       DateColumn           = ArgsList$CohortDate,
@@ -159,13 +167,13 @@ AutoChainLadderForecast <- function(data,
       TimeUnit             = ArgsList$TimeUnit,
       TimeGroups           = ArgsList$TimeUnit,
       TimeUnitAgg          = ArgsList$TimeUnit,
-      
+
       # Services
       TimeBetween          = NULL,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
       SimpleImpute         = FALSE,
-      
+
       # Calculated Columns
       Lags                 = ArgsList$CohortHolidayLags,
       MA_RollWindows       = ArgsList$CohortHolidayMovingAverages,
@@ -175,56 +183,58 @@ AutoChainLadderForecast <- function(data,
       Quantile_RollWindows = NULL,
       Quantiles_Selected   = NULL,
       Debug                = TRUE)
-    
+
     # Join datasets
     print("# Combine datasets----")
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), eval(ArgsList$CohortDate), setdiff(names(temp), names(data)))], by = c(eval(ArgsList$CalendarDate), eval(ArgsList$CohortDate)), all.x = TRUE)
     rm(temp)
-    
-    # FE: Inquiry AutoLagRollStatsScoring----
+
+    # FE: BaseFunnelMeasure AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
-    temp <- data.table::copy(data)
-    temp <- temp[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$BaseFunnelMeasure)))
-    temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
-    data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
-    temp <- RemixAutoML::AutoLagRollStatsScoring(
-      
-      # Data
-      data                 = temp,
-      DateColumn           = ArgsList$CalendarDate,
-      Targets              = ArgsList$BaseFunnelMeasure,
-      HierarchyGroups      = NULL,
-      IndependentGroups    = NULL,
-      TimeGroups           = ArgsList$CalendarTimeGroups,
-      TimeUnit             = ArgsList$TimeUnit,
-      TimeUnitAgg          = ArgsList$TimeUnit,
-      
-      # Services
-      RowNumsID            = "ScoreRecords",
-      RowNumsKeep          = 1,
-      TimeBetween          = NULL,
-      RollOnLag1           = TRUE,
-      Type                 = "Lag",
-      SimpleImpute         = FALSE,
-      
-      # Calculated Columns
-      Lags                 = ArgsList$CalendarLags,
-      MA_RollWindows       = ArgsList$CalendarMovingAverages,
-      SD_RollWindows       = ArgsList$CalendarStandardDeviations,
-      Skew_RollWindows     = ArgsList$CalendarSkews,
-      Kurt_RollWindows     = ArgsList$CalendarKurts,
-      Quantile_RollWindows = ArgsList$CalendarQuantiles,
-      Quantiles_Selected   = ArgsList$CalendarQuantilesSelected,
-      Debug                = TRUE)
-    
-    # Join datasets
-    print("# Combine datasets----")
-    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
-    data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp), names(data)))], by = eval(ArgsList$CalendarDate), all.x = TRUE)
-    rm(temp)
-    
+    for(bfm in ArgsList$BaseFunnelMeasure) {
+      temp <- data.table::copy(data)
+      temp <- temp[, list(data.table::first(get(ArgsList$BaseFunnelMeasure[bfm]))), by = list(get(ArgsList$CalendarDate))]
+      data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$BaseFunnelMeasure[bfm])))
+      temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
+      data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
+      temp <- RemixAutoML::AutoLagRollStatsScoring(
+
+        # Data
+        data                 = temp,
+        DateColumn           = ArgsList$CalendarDate,
+        Targets              = ArgsList$BaseFunnelMeasure[bfm],
+        HierarchyGroups      = NULL,
+        IndependentGroups    = NULL,
+        TimeGroups           = ArgsList$CalendarTimeGroups,
+        TimeUnit             = ArgsList$TimeUnit,
+        TimeUnitAgg          = ArgsList$TimeUnit,
+
+        # Services
+        RowNumsID            = "ScoreRecords",
+        RowNumsKeep          = 1,
+        TimeBetween          = NULL,
+        RollOnLag1           = TRUE,
+        Type                 = "Lag",
+        SimpleImpute         = FALSE,
+
+        # Calculated Columns
+        Lags                 = ArgsList$CalendarLags,
+        MA_RollWindows       = ArgsList$CalendarMovingAverages,
+        SD_RollWindows       = ArgsList$CalendarStandardDeviations,
+        Skew_RollWindows     = ArgsList$CalendarSkews,
+        Kurt_RollWindows     = ArgsList$CalendarKurts,
+        Quantile_RollWindows = ArgsList$CalendarQuantiles,
+        Quantiles_Selected   = ArgsList$CalendarQuantilesSelected,
+        Debug                = TRUE)
+
+      # Join datasets
+      print("# Combine datasets----")
+      temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
+      data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp), names(data)))], by = eval(ArgsList$CalendarDate), all.x = TRUE)
+      rm(temp)
+    }
+
     # FE: Total Transfers by CalendarDate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
@@ -233,7 +243,7 @@ AutoChainLadderForecast <- function(data,
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
-      
+
       # Data
       data                 = temp,
       DateColumn           = ArgsList$CalendarDate,
@@ -243,7 +253,7 @@ AutoChainLadderForecast <- function(data,
       TimeGroups           = ArgsList$CalendarTimeGroups,
       TimeUnit             = ArgsList$TimeUnit,
       TimeUnitAgg          = ArgsList$TimeUnit,
-      
+
       # Services
       RowNumsID            = "ScoreRecords",
       RowNumsKeep          = 1,
@@ -251,7 +261,7 @@ AutoChainLadderForecast <- function(data,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
       SimpleImpute         = FALSE,
-      
+
       # Calculated Columns
       Lags                 = ArgsList$CalendarLags,
       MA_RollWindows       = ArgsList$CalendarMovingAverages,
@@ -261,13 +271,13 @@ AutoChainLadderForecast <- function(data,
       Quantile_RollWindows = ArgsList$CalendarQuantiles,
       Quantiles_Selected   = ArgsList$CalendarQuantilesSelected,
       Debug                = TRUE)
-    
+
     # Join datasets
     print("# Combine datasets----")
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp),names(data)))], by = eval(ArgsList$CalendarDate), all.x = TRUE)
     rm(temp)
-    
+
     # FE: CalendarDateHolidayCounts AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
@@ -276,7 +286,7 @@ AutoChainLadderForecast <- function(data,
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
     temp <- RemixAutoML::AutoLagRollStatsScoring(
-      
+
       # Data
       data                 = temp,
       DateColumn           = eval(ArgsList$CalendarDate),
@@ -286,7 +296,7 @@ AutoChainLadderForecast <- function(data,
       TimeGroups           = ArgsList$TimeUnit,
       TimeUnitAgg          = ArgsList$TimeUnit,
       TimeUnit             = ArgsList$TimeUnit,
-      
+
       # Services
       RowNumsID            = "ScoreRecords",
       RowNumsKeep          = 1,
@@ -294,7 +304,7 @@ AutoChainLadderForecast <- function(data,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
       SimpleImpute         = FALSE,
-      
+
       # Calculated Columns
       Lags                 = ArgsList$CalendarHolidayLags,
       MA_RollWindows       = ArgsList$CalendarHolidayMovingAverages,
@@ -304,13 +314,13 @@ AutoChainLadderForecast <- function(data,
       Quantile_RollWindows = NULL,
       Quantiles_Selected   = NULL,
       Debug                = TRUE)
-    
+
     # Join datasets
     print("# Combine datasets----")
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     data <- merge(data, temp[, .SD, .SDcols = c(eval(ArgsList$CalendarDate), setdiff(names(temp),names(data)))], by = c(eval(ArgsList$CalendarDate)), all.x = TRUE)
     rm(temp)
-    
+
     # DE: Model data prep----
     print("# Model data prep----")
     data <- RemixAutoML::ModelDataPrep(
@@ -324,17 +334,17 @@ AutoChainLadderForecast <- function(data,
       MissFactor   = "0",
       MissNum      = ArgsList$ImputeRollStats,
       IgnoreCols   = NULL)
-    
+
     # DE: Type Change: CorhortDaysOut as numeric and the dates as Dates----
     print("# Convert features types to correct ones----")
     if(!all(class(data[[ArgsList$CohortPeriodsVariable]]) %chin% "numeric")) data[, eval(ArgsList$CohortPeriodsVariable) := as.numeric(as.character(get(ArgsList$CohortPeriodsVariable)))]
     if(!all(class(data[[ArgsList$CalendarDate]]) %chin% "Date")) data[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     if(!all(class(data[[ArgsList$CohortDate]]) %chin% "Date")) data[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
-    
+
     # DE: Load model artifacts----
     print("# Load model artifacts----")
     if(FC_Period == 1L) load(file = file.path(normalizePath(eval(ArgsList$ModelPath)), paste0(ArgsList$ModelID, "_FinalTrain.Rdata")))
-    
+
     # ML: Score Model----
     print("# Score Model----")
     temp1 <- data.table::copy(data)
@@ -362,17 +372,17 @@ AutoChainLadderForecast <- function(data,
       MDP_MissFactor = "0",
       MDP_MissNum = -1,
       RemoveModel = FALSE)
-    
+
     # DE: Update forecast data----
     print("# Update forecast data----")
     temp1[ScoreRecords == 1, Rate := temp[which(Predictions < 0), Predictions := 0][[1L]]]
     temp1[ScoreRecords == 1, eval(ArgsList$ConversionMeasure) := Rate * (get(ArgsList$BaseFunnelMeasure) + 1)]
     temp1 <- temp1[ScoreRecords == 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),SegmentName,eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")]
     data <- data.table::rbindlist(list(data[ScoreRecords != 1, .SD, .SDcols = c(eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),SegmentName,eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),"Rate")], temp1), fill = TRUE, use.names = TRUE)
-    
+
     # DE: Save forecasts to file----
     data.table::fwrite(data, file = file.path(normalizePath(eval(OutputFilePath)), paste0(ArgsList$ModelID, "_Forecasts.csv")))
-    
+
     # DE: Update MaxDateForecasted to know when to stop----
     MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate))]
   }

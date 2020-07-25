@@ -7,7 +7,7 @@
 AutoChainLadderForecast(
   data,
   OutputFilePath = NULL,
-  FC_BaseFunnelMeasure,
+  FC_BaseFunnelMeasure = NULL,
   SegmentName = NULL,
   MaxDateForecasted = NULL,
   MaxCalendarDate = NULL,
@@ -41,7 +41,7 @@ AutoChainLadderForecast() for generating forecasts
 AutoChainLadderForecast(
    data,
    OutputFilePath = getwd(),
-   FC_BaseFunnelMeasure,
+   FC_BaseFunnelMeasure = xx,
    SegmentName = NULL,
    MaxDateForecasted = NULL,
    MaxCalendarDate = NULL,
