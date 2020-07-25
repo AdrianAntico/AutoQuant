@@ -64,57 +64,57 @@ FakeDataGenerator <- function(Correlation = 0.70,
 
     # "1min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("1min","1mins","minutes","min","mins","01min","01mins")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * 1:.N)][, xx := NULL]
     }
 
     # "5min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("5min","5mins","5minutes","min5","mins5","05min")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+      data[, xx := ][, Date := Date + lubridate::minutes(5 * 1:.N)][, xx := NULL]
     }
 
     # "10min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("10min","10mins","10minutes","min10","mins10")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+      data[, Date := Date + lubridate::minutes(10 * 1:.N)]
     }
 
     # "15min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("15min","15mins","15minutes","min15","mins15")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+      data[, Date := Date + lubridate::minutes(15 * 1:.N)]
     }
 
     # "30min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("30min","30mins","30minutes","min30","mins30")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+      data[, Date := Date + lubridate::minutes(30 * 1:.N)]
     }
 
     # "hour"
     if(tolower(TimeSeriesTimeAgg) %chin% c("hour","hours","hr","hrs","our","ours")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::hours(1:.N)]
     }
 
     # "day"
     if(tolower(TimeSeriesTimeAgg) %chin% c("day","days","daily","dy","das")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::days(1:.N)]
     }
 
     # "week"
     if(tolower(TimeSeriesTimeAgg) %chin% c("week","weeks","wk","wks")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::weeks(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::weeks(1:.N)]
     }
 
     # "month"
     if(tolower(TimeSeriesTimeAgg) %chin% c("month","months","mth","mths")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::month(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::month(1:.N)]
     }
 
     # "quarter"
     if(tolower(TimeSeriesTimeAgg) %chin% c("quarter","quarters"," qtr","qtrs","qarter")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::quarter(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::quarter(1:.N)]
     }
 
     # "year"
     if(tolower(TimeSeriesTimeAgg) %chin% c("year","years","yr","yrs","yts")) {
-      data[, xx := 1:.N][, Date := Date + lubridate::years(xx)][, xx := NULL]
+      data[, Date := Date + lubridate::years(1:.N)]
     }
 
     # Return data
