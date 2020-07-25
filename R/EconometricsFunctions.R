@@ -3571,28 +3571,28 @@ FinalBuildArima <- function(
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
-      ScoreGrid <- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]))
     } else if(toupper(MetricSelection) == "MSE") {
-      ScoreGrid <- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]))
     } else {
-      ScoreGrid <- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
-      ScoreGrid <- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- ModelOutputGrid[DataSetName == "UserSupplied"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "ModelFrequency"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSClean"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
+      ScoreGrid <<- data.table::rbindlist(list(ScoreGrid, ModelOutputGrid[DataSetName == "TSCleanModelFrequency"][order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]))
     }
   } else {
     if(toupper(MetricSelection) == "MAE") {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- ModelOutputGrid[order(Blended_MAE)][seq_len(ceiling(NumberModelsScore))]
     } else if(toupper(MetricSelection) == "MSE") {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- ModelOutputGrid[order(Blended_MSE)][seq_len(ceiling(NumberModelsScore))]
     } else {
-      ScoreGrid <- ModelOutputGrid[order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]
+      ScoreGrid <<- ModelOutputGrid[order(Blended_MAPE)][seq_len(ceiling(NumberModelsScore))]
     }
   }
 
@@ -3620,16 +3620,16 @@ FinalBuildArima <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) {
-    if(!is.null(TrainArtifacts[[i]][["Data"]])) {
-      Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
     }
   }
 
   # Score models----
-  Success <- 1L
-  for(ModelNum in seq_len(Counter)) {
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
     # Score models----
     if(ByDataType) {
@@ -3720,16 +3720,16 @@ FinalBuildArima <- function(
     }
 
     # Combine----
-    if(Success == 1L) {
+    if(Successs == 1L) {
       if(Forecasts[,.N] != 0) {
-        FinalFC <- data.table::copy(Forecasts)
-        Success <- Success + 1L
+        FinalFC <<- data.table::copy(Forecasts)
+        Successs <<- Successs + 1L
       }
     } else {
       if(Forecasts[,.N] != 0) {
         temp <- data.table::copy(Forecasts)
-        Success <- Success + 1L
-        FinalFC <- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
         rm(temp)
       }
     }

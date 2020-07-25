@@ -286,7 +286,7 @@ AutoBanditSarima <- function(data,
 
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
-    Arima_Artifacts_Score <- TimeSeriesDataPrepare(
+    Arima_Artifacts_Score <<- TimeSeriesDataPrepare(
       data = data,
       TargetName = TargetVariableName,
       DateName = DateColumnName,
@@ -302,16 +302,16 @@ AutoBanditSarima <- function(data,
       FinalBuild = TRUE)
 
     # Final Build - returns NULLs which is a bitch to troubleshoot
-    counter <- 1L
+    counter <<- 1L
     repeat {
-      ForecastOutput <- tryCatch({FinalBuildArima(
+      ForecastOutput <<- tryCatch({FinalBuildArima(
         ModelOutputGrid = Arima_ExperimentGrid,
         TimeSeriesPrepareOutput = Arima_Artifacts_Score,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
         MetricSelection = EvaluationMetric,
         ByDataType = FALSE,
-        DebugMode = TRUE)},
+        DebugMode = DebugMode)},
         error = function(x) NULL)
 
       # # Debugging ----
@@ -320,23 +320,23 @@ AutoBanditSarima <- function(data,
       # FCPeriods = NumFCPeriods
       # NumberModelsScore = 1
       # MetricSelection = EvaluationMetric
-      # ByDataType = TRUE
+      # ByDataType = FALSE
       if(DebugMode) if(is.null(ForecastOutput)) for(kk in 1:10) print("Forecast output is NULL") else for(kk in 1:10) print("Forecast output is NOT NULL")
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
-        FC_MaxValue <- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
+        FC_MaxValue <<- max(ForecastOutput[["Forecast"]], na.rm = TRUE)
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
-          Output <- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
+          Output <<- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
           return(Output)
         } else {
-          Arima_ExperimentGrid <- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
-          counter <- counter + 1L
+          Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
+          counter <<- counter + 1L
           if(counter > 25) break
         }
       } else {
-        counter <- counter + 1L
+        counter <<- counter + 1L
         if(counter > 25) break
       }
     }
