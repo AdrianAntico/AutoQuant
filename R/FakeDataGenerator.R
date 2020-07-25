@@ -69,7 +69,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
 
     # "5min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("5min","5mins","5minutes","min5","mins5","05min")) {
-      data[, xx := ][, Date := Date + lubridate::minutes(5 * 1:.N)][, xx := NULL]
+      data[, Date := Date + lubridate::minutes(5 * 1:.N)]
     }
 
     # "10min"
