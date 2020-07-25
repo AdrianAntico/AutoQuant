@@ -325,22 +325,25 @@ AutoH2oDRFCARMA <- function(data,
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-    if(is.character(data[[eval(DateColumnName)]])) {
-      x <- data[1,get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    }
-    if(!is.null(XREGS)) {
+  if(is.character(data[[eval(DateColumnName)]])) {
+    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
+      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+        x <- data[1,get(DateColumnName)]
+        x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+        data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+      } else {
+        data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+      }
+    })
+  }
+  if(!is.null(XREGS)) {
+    tryCatch({XREGS[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
       if(is.character(XREGS[[eval(DateColumnName)]])) {
         x <- XREGS[1,get(DateColumnName)]
         x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
         XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
       }
-    }
-  } else {
-    data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    if(!is.null(XREGS)) XREGS[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    })
   }
 
   # Data Wrangling: Ensure TargetColumnName is Numeric----

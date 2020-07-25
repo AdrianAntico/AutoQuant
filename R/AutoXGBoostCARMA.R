@@ -294,24 +294,25 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-    if(is.character(data[[eval(DateColumnName)]])) {
-      x <- data[1,get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    }
-    if(!is.null(XREGS)) {
+  if(is.character(data[[eval(DateColumnName)]])) {
+    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
+      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+        x <- data[1,get(DateColumnName)]
+        x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+        data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+      } else {
+        data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+      }
+    })
+  }
+  if(!is.null(XREGS)) {
+    tryCatch({XREGS[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
       if(is.character(XREGS[[eval(DateColumnName)]])) {
         x <- XREGS[1,get(DateColumnName)]
         x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
         XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
       }
-    }
-  } else {
-    data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    if(!is.null(XREGS)) {
-      XREGS[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
+    })
   }
 
   # Data Wrangling: Ensure TargetColumnName is Numeric----
@@ -434,26 +435,18 @@ AutoXGBoostCARMA <- function(data,
       HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL,
       GroupingVars = "GroupVar")
-
-    # Convert to lubridate as_date() or POSIXct----
-    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-    } else {
-      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
+    })
   } else if(HolidayVariable) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
       HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
-
-    # Convert to lubridate as_date() or POSIXct----
-    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-    } else {
-      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
+    })
   }
 
   # Feature Engineering: Add Target Transformation----
@@ -1072,7 +1065,7 @@ AutoXGBoostCARMA <- function(data,
         }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) {
           if(!is.null(HierarchGroups)) {
@@ -1235,11 +1228,10 @@ AutoXGBoostCARMA <- function(data,
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      tryCatch({temp[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
         temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-      } else {
-        temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-      }
+      })
+
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
       if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
