@@ -1666,9 +1666,6 @@ OptimizeArima <- function(Output,
         if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper95] else FC_Data[, High80 := NA]
         if(!is.null(RawOutput$Upper95)) FC_Data[, High95 := RawOutput$Upper95] else FC_Data[, High95 := NA]
 
-        # Increment j after successful runs----
-        j <- j + 1L
-
       } else {
 
         # Fill in NA for models that cant be fit----
@@ -1689,8 +1686,10 @@ OptimizeArima <- function(Output,
       # Rbind final forecast data sets----
       if(j == 1) {
         ReturnData <- FinalForecastData
+        j <- j + 1L
       } else {
         ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
+        j <- j + 1L
       }
     }
 
