@@ -9,6 +9,7 @@
 #' @param FactorCount Number of factor type columns to create
 #' @param AddDate Set to TRUE to include a date column
 #' @param TimeSeries For testing AutoBanditSarima
+#' @param TimeSeriesTimeAgg Choose from "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year",
 #' @param ChainLadderData Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer
 #' @param Classification Set to TRUE to build classification data
 #' @param MultiClass Set to TRUE to build MultiClass data
@@ -34,6 +35,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
                               AddDate = TRUE,
                               ZIP = 5L,
                               TimeSeries = FALSE,
+                              TimeSeriesTimeAgg = "day",
                               ChainLadderData = FALSE,
                               Classification = FALSE,
                               MultiClass = FALSE) {
@@ -44,8 +46,8 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # TimeSeries----
   if(TimeSeries) {
 
-    x <- runif(1)
-    n <- 1 / 6
+    # Error msg
+    if(is.null(TimeSeriesTimeAgg)) stop("TimeSeriesAgg cannot be NULL when using TimeSeries = TRUE")
 
     # Pull in data
     data <- data.table::as.data.table(fpp::cafe)
@@ -59,22 +61,59 @@ FakeDataGenerator <- function(Correlation = 0.70,
     data[, Date := as.POSIXct(Date)]
 
     # "1min"
-    data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("1min","1mins","minutes","min","mins","01min","01mins")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
+    }
 
     # "5min"
-    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("5min","5mins","5minutes","min5","mins5","05min")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
+    }
 
     # "10min"
-    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("10min","10mins","10minutes","min10","mins10")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
+    }
 
     # "15min"
-    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("15min","15mins","15minutes","min15","mins15")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
+    }
 
     # "30min"
-    #data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("30min","30mins","30minutes","min30","mins30")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
+    }
 
     # "hour"
-    #data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+    if(tolower(TimeSeriesTimeAgg) == c("hour","hours","hr","hrs","our","ours")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
+    }
+
+    # "day"
+    if(tolower(TimeSeriesTimeAgg) == c("day","days","daily","dy","das")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+    }
+
+    # "week"
+    if(tolower(TimeSeriesTimeAgg) == c("week","weeks","wk","wks")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+    }
+
+    # "month"
+    if(tolower(TimeSeriesTimeAgg) == c("month","months","mth","mths")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+    }
+
+    # "quarter"
+    if(tolower(TimeSeriesTimeAgg) == c("quarter","quarters"," qtr","qtrs","qarter")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+    }
+
+    # "year"
+    if(tolower(TimeSeriesTimeAgg) == c("year","years","yr","yrs","yts")) {
+      data[, xx := 1:.N][, Date := Date + lubridate::days(xx)][, xx := NULL]
+    }
 
     # Return data
     return(data)

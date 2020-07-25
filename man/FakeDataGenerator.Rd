@@ -12,6 +12,7 @@ FakeDataGenerator(
   AddDate = TRUE,
   ZIP = 5L,
   TimeSeries = FALSE,
+  TimeSeriesTimeAgg = "day",
   ChainLadderData = FALSE,
   Classification = FALSE,
   MultiClass = FALSE
@@ -31,6 +32,8 @@ FakeDataGenerator(
 \item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
 
 \item{TimeSeries}{For testing AutoBanditSarima}
+
+\item{TimeSeriesTimeAgg}{Choose from "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year",}
 
 \item{ChainLadderData}{Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer}
 
