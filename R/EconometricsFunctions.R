@@ -1695,7 +1695,7 @@ OptimizeArima <- function(Output,
 
     # Return forecast values for all models----
     if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == ReturnData[,.N]) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
-    for(i in 1:10) print(paste0("Number of rows in ReturnData", ReturnData[, .N]))
+    for(kk in 1:10) print(paste0("Number of rows in ReturnData: ", ReturnData[, .N]))
     return(ReturnData)
   }
 }
@@ -3704,6 +3704,12 @@ FinalBuildArima <- function(
         MaxRunMinutes = 100,
         FinalGrid = eval(ScoreGrid[i]),
         DebugMode = DebugMode)
+    }
+
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", i))
+      print(Forecasts)
     }
 
     # Combine----
