@@ -320,8 +320,7 @@ AutoBanditSarima <- function(data,
       # NumberModelsScore = 1
       # MetricSelection = EvaluationMetric
       # ByDataType = TRUE
-
-      if(DebugMode) print(paste0("Grid Results from Training ::: ", ForecastOutput))
+      if(DebugMode) if(is.null(ForecastOutput)) for(kk in 1:10) print("Forecast output is NULL") else for(kk in 1:10) print("Forecast output is NOT NULL")
 
       # Move on if model build failure----
       if(!is.null(ForecastOutput)) {
