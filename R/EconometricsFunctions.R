@@ -1590,7 +1590,7 @@ OptimizeArima <- function(Output,
     TrainRows <- length(train)
 
     # Build models----
-    j <- 1L
+    RunSuccess <- 1L
     for(run in seq_len(FinalGrid[, .N])) {
 
       # Define lambda----
@@ -1684,17 +1684,17 @@ OptimizeArima <- function(Output,
       FinalForecastData[, ModelID := "Supercharged-SARIMA"][, ModelRank := FinalGrid[["ModelRank"]][[1L]]]
 
       # Rbind final forecast data sets----
-      if(j == 1) {
+      if(RunSuccess == 1) {
         ReturnData <- FinalForecastData
-        j <- j + 1L
+        RunSuccess <- RunSuccess + 1L
       } else {
         ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
-        j <- j + 1L
+        RunSuccess <- RunSuccess + 1L
       }
     }
 
     # Return forecast values for all models----
-    if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == ReturnData[,.N]) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
+    if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == length(train)) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
     for(kk in 1:10) print(paste0("Number of rows in ReturnData: ", ReturnData[, .N]))
     return(ReturnData)
   }
