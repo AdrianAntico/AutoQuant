@@ -301,7 +301,7 @@ AutoBanditSarima <- function(data,
       ModelFreq = TRUE,
       FinalBuild = TRUE)
 
-    # Final Build
+    # Final Build - returns NULLs which is a bitch to troubleshoot
     counter <- 1L
     repeat {
       ForecastOutput <- tryCatch({FinalBuildArima(
@@ -335,6 +335,7 @@ AutoBanditSarima <- function(data,
           if(counter > 25) break
         }
       } else {
+        counter <- counter + 1L
         if(counter > 25) break
       }
     }
