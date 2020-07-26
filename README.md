@@ -76,7 +76,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Package Background:
+## Background:
 
 <details><summary>Expand to view content</summary>
 <p>
