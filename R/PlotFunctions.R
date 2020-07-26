@@ -260,7 +260,11 @@ TimeSeriesPlotter <- function(data = data,
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2]), color = "Forecast")) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1]), color = "Actuals")) +
       ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, Color)) +
-      ChartTheme(Size = TextSize,AngleX = AngleX,AngleY = AngleY,ChartColor = ChartColor,BorderColor = BorderColor,TextColor = TextColor,GridColor = GridColor,BackGroundColor = BackGroundColor,LegendPosition = LegendPosition)
+      ChartTheme(Size=TextSize, AngleX=AngleX, AngleY=AngleY, ChartColor=ChartColor, BorderColor=BorderColor, TextColor=TextColor, GridColor=GridColor, BackGroundColor=BackGroundColor, LegendPosition=LegendPosition) +
+      ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable))
+
+    # Title: add metrics----
+    Plot <- Plot + ggplot2::ggtitle(label = paste0("SARIMA: MAE = ", round(min(Output$PerformanceGrid$Blended_MAE, na.rm = TRUE), 2L)))
 
     # Check if it works correctly
     if(!is.null(XTickMarks)) {
@@ -272,9 +276,6 @@ TimeSeriesPlotter <- function(data = data,
         Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
       }
     }
-
-    # Add labels----
-    Plot <- Plot + ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable))
 
     # Prediction Intervals
     if(PredictionIntervals) {
