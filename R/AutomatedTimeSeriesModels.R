@@ -361,7 +361,8 @@ AutoBanditSarima <- function(data,
   } else {
     rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
 
-    if(TimeAggLevel %chin% c("hour","hours","hr", "hrs")) XTickMarkss <- "1 hour"
+    # Build plot
+    if(!TimeAggLevel %chin% c("day","days","dy","dys","week","weeks","wk","wks","month","months","mth","mths","quarter","quarters","year","years","yr","yrs")) XTickMarkss <- "1 hour"
     if(TimeAggLevel %chin% c("day","days","dy","dys")) XTickMarkss <- "1 day"
     if(TimeAggLevel %chin% c("week","weeks","wk","wks")) XTickMarkss <- "1 week"
     if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 month"
