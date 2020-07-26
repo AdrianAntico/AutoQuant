@@ -278,7 +278,7 @@ TimeSeriesPlotter <- function(data = data,
 
     # Prediction Intervals
     if(PredictionIntervals) {
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$High95, ymax = dataSubset$High80), fill = PredictionIntervalColorOuter, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$High80, ymax = dataSubset$High95), fill = PredictionIntervalColorOuter, alpha = 0.25)
       Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$High80), fill = PredictionIntervalColorInner, alpha = 0.25)
       Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$Low95), fill = PredictionIntervalColorOuter, alpha = 0.25)
       Plot <- Plot + ggplot2::geom_line(ggplot2::aes(y = dataSubset$Low95), color = ForecastLineColor, lwd = 0.25) +
