@@ -160,6 +160,8 @@ AutoBanditSarima <- function(data,
                              NumberCores = max(1L, parallel::detectCores()),
                              DebugMode = FALSE) {
 
+  GlobalObjectsPreRun <- ls(envir = .GlobalEnv)
+
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
@@ -329,7 +331,8 @@ AutoBanditSarima <- function(data,
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <<- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
-          rm(envir = .GlobalEnv, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
+          rm(!ls(envir = .GlobalEnv) %chin% GlobalObjectsPreRun)
+          #rm(envir = .GlobalEnv, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
           return(Output)
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
@@ -342,7 +345,8 @@ AutoBanditSarima <- function(data,
       }
     }
   } else {
-    rm(envir = .GlobalEnv, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
+    rm(!ls(envir = .GlobalEnv) %chin% GlobalObjectsPreRun)
+    #rm(envir = .GlobalEnv, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
     if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
   }
 }
