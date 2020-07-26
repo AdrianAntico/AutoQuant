@@ -313,7 +313,6 @@ AutoBanditSarima <- function(data,
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <<- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
-          rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
           Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c("Weekly_Sales","Forecast"),
@@ -347,6 +346,7 @@ AutoBanditSarima <- function(data,
             PredictionIntervalColorInner = "white",
             PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
           Output$ErrorLagMA2x2 <- AutoBanditSarima2x2LagMA(Output)
+          rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
           return(Output)
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
@@ -359,7 +359,6 @@ AutoBanditSarima <- function(data,
       }
     }
   } else {
-    rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
 
     # Build plot
     if(!TimeAggLevel %chin% c("day","days","dy","dys","week","weeks","wk","wks","month","months","mth","mths","quarter","quarters","year","years","yr","yrs")) XTickMarkss <- "1 hour"
@@ -401,6 +400,7 @@ AutoBanditSarima <- function(data,
       PredictionIntervalColorInner = "white",
       PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
     Output$ErrorLagMA2x2 <- AutoBanditSarima2x2LagMA(Output)
+    rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
     if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
   }
 }
