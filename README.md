@@ -1984,7 +1984,7 @@ RemixAutoML::AutoCatBoostChainLadder(
 </p>
 </details>
 
-<code>AutoCatBoostChainLadder()** and **AutoChainLadderForecast()</code> are functions for forecasting chain ladder time series models. This is a pretty sophisticated system so read the docs to understand all the various types of feature engineering that goes into this procedure so you can best take advantage of them.
+<code>AutoCatBoostChainLadder() and AutoChainLadderForecast()</code> are functions for forecasting chain ladder time series models. This is a pretty sophisticated system so read the docs to understand all the various types of feature engineering that goes into this procedure so you can best take advantage of them.
 
 ### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="300" />
 
