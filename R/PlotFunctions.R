@@ -265,7 +265,14 @@ TimeSeriesPlotter <- function(data = data,
 
     # Title: add metrics----
     Plot <- Plot + ggplot2::labs(
-      title = paste0("SARIMA Winning Model"),
+      title = paste0("SARIMA: (",Output$PerformanceGrid$Lags[1][[1]],
+                     ", ",Output$PerformanceGrid$Differences[1][[1]],
+                     ", ",Output$PerformanceGrid$MovingAverages[1][[1]],
+                     ") (",Output$PerformanceGrid$SeasonalLags[1][[1]],
+                     ", ",Output$PerformanceGrid$SeasonalDifferences[1][[1]],
+                     ", ",Output$PerformanceGrid$SeasonalMovingAverages[1][[1]],"); ",
+                     "BoxCox = '",Output$PerformanceGrid$BoxCox[1][[1]],"'; ",
+                     "Include Drift = ",as.character(Output$PerformanceGrid$IncludeDrift[1][[1]])),
       subtitle = paste0(
         "MAPE = ", round(100 * min(Output$PerformanceGrid$Blended_MAPE, na.rm = TRUE), 2L),"%",
         " :: ",
