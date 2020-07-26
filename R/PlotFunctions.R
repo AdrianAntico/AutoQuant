@@ -256,24 +256,21 @@ TimeSeriesPlotter <- function(data = data,
     }
 
     # Plot data----
-    Plot <- ggplot2::ggplot(dataSubset, ggplot2::aes(as.POSIXct(get(DateVariable)))) +
+    Plot <- ggplot2::ggplot(dataSubset, ggplot2::aes(x = as.POSIXct(get(DateVariable)))) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2]), color = "Forecast")) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1]), color = "Actuals")) +
-      ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, "blue")) +
-      ChartTheme(
-        Size = TextSize,
-        AngleX = AngleX,
-        AngleY = AngleY,
-        ChartColor = ChartColor,
-        BorderColor = BorderColor,
-        TextColor = TextColor,
-        GridColor = GridColor,
-        BackGroundColor = BackGroundColor,
-        LegendPosition = LegendPosition)
+      ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, Color)) +
+      ChartTheme(Size = TextSize,AngleX = AngleX,AngleY = AngleY,ChartColor = ChartColor,BorderColor = BorderColor,TextColor = TextColor,GridColor = GridColor,BackGroundColor = BackGroundColor,LegendPosition = LegendPosition)
+
+    # Check if it works correctly
     if(!is.null(XTickMarks)) {
-      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      if(as.numeric(difftime(time1 = dataSubset[2,1][[1]],dataSubset[1,1][[1]], units = "hour")) >= 1) {
+        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      }
     } else {
-      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+      if(as.numeric(difftime(time1 = dataSubset[2,1][[1]],dataSubset[1,1][[1]], units = "hour")) >= 1) {
+        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+      }
     }
 
     # Add labels----
@@ -281,15 +278,14 @@ TimeSeriesPlotter <- function(data = data,
 
     # Prediction Intervals
     if(PredictionIntervals) {
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset[[9]], ymax = dataSubset[[8]]), fill = PredictionIntervalColorOuter, alpha = 0.25)
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset[[8]], ymax = dataSubset[[7]]), fill = PredictionIntervalColorInner, alpha = 0.25)
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset[[6]], ymax = dataSubset[[7]]), fill = PredictionIntervalColorOuter, alpha = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$Low95)), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$Low80)), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$High80)), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$High95)), color = ForecastLineColor, lwd = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$High95, ymax = dataSubset$High80), fill = PredictionIntervalColorOuter, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$High80), fill = PredictionIntervalColorInner, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$Low95), fill = PredictionIntervalColorOuter, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_line(ggplot2::aes(y = dataSubset$Low95), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = dataSubset$Low80), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = dataSubset$High80), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = dataSubset$High95), color = ForecastLineColor, lwd = 0.25)
     }
-    Plot <- Plot + ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable[1]))
 
     # Return
     return(Plot)

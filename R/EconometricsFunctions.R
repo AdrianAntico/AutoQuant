@@ -1676,7 +1676,7 @@ OptimizeArima <- function(Output,
         if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
         if(!is.null(RawOutput$Lower80)) FC_Data[, Low80 := RawOutput$Lower80] else FC_Data[, Low80 := NA]
-        if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper95] else FC_Data[, High80 := NA]
+        if(!is.null(RawOutput$Upper80)) FC_Data[, High80 := RawOutput$Upper80] else FC_Data[, High80 := NA]
         if(!is.null(RawOutput$Upper95)) FC_Data[, High95 := RawOutput$Upper95] else FC_Data[, High95 := NA]
 
       } else {
