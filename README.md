@@ -1901,7 +1901,7 @@ ________________________________________________________________________________
 <details><summary>Expand to view content</summary>
 <p>
  
-### **AutoCatBoostChainLadder()** and **AutoChainLadderForecast()**
+### AutoCatBoostChainLadder() and AutoChainLadderForecast()
 
 <details><summary>Code Example</summary>
 <p>
