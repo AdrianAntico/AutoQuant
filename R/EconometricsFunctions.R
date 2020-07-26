@@ -1665,7 +1665,7 @@ OptimizeArima <- function(Output,
       if(!is.null(Results)) {
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
-        RawOutput< <- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
+        RawOutput <<- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
         print(RawOutput)
         if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
