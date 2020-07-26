@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Time Series
 #' @param data Source data.table
+#' @param ByDataType TRUE returns the best model from the four base sets of possible models. FALSE returns the best model.
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
 #' @param TimeAggLevel Choose from "year", "quarter", "month", "week", "day", "hour"
@@ -119,6 +120,7 @@
 #' # Build model
 #' Output <- RemixAutoML::AutoBanditSarima(
 #'   data = data,
+#'   ByDataType = TRUE,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   TimeAggLevel = "1min",
@@ -142,6 +144,7 @@
 #' }
 #' @export
 AutoBanditSarima <- function(data,
+                             ByDataType = TRUE,
                              TargetVariableName,
                              DateColumnName,
                              TimeAggLevel = "week",
