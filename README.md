@@ -76,7 +76,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Intro to RemixAutoML:
+## Package Background:
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -99,7 +99,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Common Workflows with RemixAutoML:
+## Common Workflows:
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -142,7 +142,7 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-## RemixAutoML Blogs: 
+## A Few Blogs: 
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -166,7 +166,7 @@ Supply a data.table to run the functions below:
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FunctionsReference.png" align="center" width="350" />
 
-## Automated Feature Engineering Functions: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
+## Feature Engineering: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -527,7 +527,7 @@ TestData <- dataSets$TestData
 </p>
 </details>
 
-## Automated Supervised Learning Functions: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
+## Supervised Learning: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary> 
 <p>
   
@@ -1841,7 +1841,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Model Scoring Functions: <img src="Images/ModelScoringImage.png" align="right" width="80" />
+## Model Scoring: <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
   
@@ -1865,7 +1865,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Model Evaluation Functions: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
+## Model Evaluation: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
   
@@ -1897,7 +1897,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Automated Time Series Modeling Functions: <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Time Series, Panel Data, and Chain Ladder: <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
