@@ -335,6 +335,38 @@ AutoBanditSarima <- function(data,
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <<- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
           rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
+          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+            data = Output$Forecast,
+            TargetVariable = c("Weekly_Sales","Forecast"),
+            DateVariable = "Date",
+            GroupVariables = NULL,
+            VLineDate = NULL,
+            Aggregate = NULL,
+            NumberGroupsDisplay = 0,
+            LevelsToDisplay = NULL,
+            OtherGroupLabel = "Other",
+            DisplayOtherGroup = FALSE,
+            TextSize = 12,
+            LineWidth = 1,
+            Color = "blue",
+            XTickMarks = "1 year",
+            Size = 12,
+            AngleX = 35,
+            AngleY = 0,
+            ChartColor = "lightsteelblue1",
+            BorderColor = "darkblue",
+            TextColor = "darkblue",
+            GridColor = "white",
+            BackGroundColor = "gray95",
+            LegendPosition = "bottom",
+            LegendTextColor = "darkblue",
+            LegendTextSize = 10,
+            ForecastLineColor = "black",
+            Forecast = TRUE,
+            PredictionIntervals = TRUE,
+            TS_ModelID = NULL,
+            PredictionIntervalColorInner = "white",
+            PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
           return(Output)
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
@@ -348,6 +380,38 @@ AutoBanditSarima <- function(data,
     }
   } else {
     rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
+    Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+      data = Output$Forecast,
+      TargetVariable = c("Weekly_Sales","Forecast"),
+      DateVariable = "Date",
+      GroupVariables = NULL,
+      VLineDate = NULL,
+      Aggregate = NULL,
+      NumberGroupsDisplay = 0,
+      LevelsToDisplay = NULL,
+      OtherGroupLabel = "Other",
+      DisplayOtherGroup = FALSE,
+      TextSize = 12,
+      LineWidth = 1,
+      Color = "blue",
+      XTickMarks = "1 year",
+      Size = 12,
+      AngleX = 35,
+      AngleY = 0,
+      ChartColor = "lightsteelblue1",
+      BorderColor = "darkblue",
+      TextColor = "darkblue",
+      GridColor = "white",
+      BackGroundColor = "gray95",
+      LegendPosition = "bottom",
+      LegendTextColor = "darkblue",
+      LegendTextSize = 10,
+      ForecastLineColor = "black",
+      Forecast = TRUE,
+      PredictionIntervals = TRUE,
+      TS_ModelID = NULL,
+      PredictionIntervalColorInner = "white",
+      PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
     if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
   }
 }
