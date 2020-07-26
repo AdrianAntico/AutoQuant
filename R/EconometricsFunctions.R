@@ -1584,20 +1584,20 @@ OptimizeArima <- function(Output,
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
 
     # Create list to extract elements for modeling----
-    TSGridList <- as.list(FinalGrid)
+    TSGridList <<- as.list(FinalGrid)
 
     # Train number of rows----
-    TrainRows <- length(train)
+    TrainRows <<- length(train)
 
     # Build models----
-    RunSuccess <- 1L
+    RunSuccess <<- 1L
     for(run in seq_len(FinalGrid[, .N])) {
 
       # Define lambda----
       if(TSGridList$BoxCox[run] == "skip") {
-        lambda <- NULL
+        lambda <<- NULL
       } else {
-        lambda <- "auto"
+        lambda <<- "auto"
       }
 
       # Debugging----
@@ -1606,20 +1606,20 @@ OptimizeArima <- function(Output,
       # Build final models----
       if(FinalGrid[1,GridName] == "DefaultAutoArima") {
         if(Output$MinVal > 0) {
-          Results <- forecast::auto.arima(
+          Results <<- forecast::auto.arima(
             y=train,max.p=Lags,max.q=MovingAverages,max.P=SeasonalLags,max.Q=SeasonalMovingAverages,max.d=Differences,max.D=SeasonalDifferences,
             ic="aicc",lambda=TRUE,biasadj=TRUE,stepwise=TRUE,parallel=TRUE,num.cores=parallel::detectCores())
         } else {
-          Results <- forecast::auto.arima(
+          Results <<- forecast::auto.arima(
             y=train,max.p=Lags,max.q=MovingAverages,max.P=SeasonalLags,max.Q=SeasonalMovingAverages,max.d=Differences,max.D=SeasonalDifferences,
             ic="aicc",lambda=FALSE,biasadj=FALSE,stepwise=TRUE,parallel=TRUE,num.cores=1L)
         }
       } else {
         if(TSGridList[["MaxFourierTerms"]][run] != 0) {
-          XREG <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run])}, error = function(x) FALSE)
-          XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
+          XREG <<- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run])}, error = function(x) FALSE)
+          XREGFC <<- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][run], h = FCPeriods)}, error = function(x) FALSE)
           if(!is.logical(XREG) & !is.logical(XREGFC)) {
-            Results <- tryCatch({forecast::Arima(
+            Results <<- tryCatch({forecast::Arima(
               as.numeric(train),
               order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
               seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
@@ -1629,10 +1629,17 @@ OptimizeArima <- function(Output,
               biasadj = TSGridList$BiasAdj[run])},
               error = function(x) NULL)
           } else {
-            Results <- NULL
+            Results <<- tryCatch({forecast::Arima(
+              y = train,
+              order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
+              seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
+              include.drift = TSGridList$IncludeDrift[run],
+              lambda = lambda,
+              biasadj = TSGridList$BiasAdj[run])},
+              error = function(x) NULL)
           }
         } else {
-          Results <- tryCatch({forecast::Arima(
+          Results <<- tryCatch({forecast::Arima(
             y = train,
             order = c(TSGridList[["Lags"]][run], TSGridList[["Differences"]][run], TSGridList[["MovingAverages"]][run]),
             seasonal = c(TSGridList[["SeasonalLags"]][run], TSGridList[["SeasonalDifferences"]][run], TSGridList[["SeasonalMovingAverages"]][run]),
@@ -1644,10 +1651,10 @@ OptimizeArima <- function(Output,
       }
 
       # Collect Forecast Inputs----
-      FC_Data <- data.table::copy(Output$FC_Data)
+      FC_Data <<- data.table::copy(Output$FC_Data)
       FC_Data[, Target := NA]
-      FCPeriods <- Output$FCPeriods
-      Train_Score <- data.table::copy(Output$FullData)
+      FCPeriods <<- Output$FCPeriods
+      Train_Score <<- data.table::copy(Output$FullData)
       Train_Score[, Target := as.numeric(Target)]
 
       # Generate Forecasts for Forecast Periods----
@@ -1658,7 +1665,7 @@ OptimizeArima <- function(Output,
       if(!is.null(Results)) {
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
-        RawOutput <- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
+        RawOutput< <- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
         print(RawOutput)
         if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
@@ -1678,18 +1685,18 @@ OptimizeArima <- function(Output,
       }
 
       # Rbind train and forecast data----
-      FinalForecastData <- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
+      FinalForecastData <<- data.table::rbindlist(list(Train_Score,FC_Data), fill = TRUE)
 
       # Add Model Identifier Column----
       FinalForecastData[, ModelID := "Supercharged-SARIMA"][, ModelRank := FinalGrid[["ModelRank"]][[1L]]]
 
       # Rbind final forecast data sets----
       if(RunSuccess == 1) {
-        ReturnData <- FinalForecastData
-        RunSuccess <- RunSuccess + 1L
+        ReturnData <<- FinalForecastData
+        RunSuccess <<- RunSuccess + 1L
       } else {
-        ReturnData <- data.table::rbindlist(list(ReturnData, FinalForecastData))
-        RunSuccess <- RunSuccess + 1L
+        ReturnData <<- data.table::rbindlist(list(ReturnData, FinalForecastData))
+        RunSuccess <<- RunSuccess + 1L
       }
     }
 
@@ -3640,7 +3647,7 @@ FinalBuildArima <- function(
       if(DebugMode) print(TimeSeriesPrepareOutput)
 
       # Forecast
-      Forecasts <- OptimizeArima(
+      Forecasts <<- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
         MetricSelection = eval(MetricSelection),
         DataSetName = eval(TrainArtifacts[[ModelNum]][["Name"]]),
@@ -3689,7 +3696,7 @@ FinalBuildArima <- function(
       if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[!is.na(Target), .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
 
     } else {
-      Forecasts <- OptimizeArima(
+      Forecasts <<- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
         DataSetName = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]),
         train = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]]),
