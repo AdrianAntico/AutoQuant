@@ -141,6 +141,7 @@ ChartTheme <- function(Size = 12,
     panel.grid.minor = ggplot2::element_line(colour = BorderColor, size = 0.01, color = GridColor, linetype = 1),
     legend.position = LegendPosition,
     legend.title = ggplot2::element_text(color = BorderColor, size = Size, face = "bold"),
+    plot.subtitle = ggplot2::element_text(color = "darkred", size = max(1,floor(Size*5/6)), face = "bold"),
     legend.background = ggplot2::element_rect(fill = BackGroundColor, size = 1, linetype = "solid", color = BorderColor),
     plot.title = ggplot2::element_text(color = TextColor, size = Size, face = "bold"),
     axis.title = ggplot2::element_text(color = TextColor, size = Size, face = "bold"),
@@ -260,11 +261,18 @@ TimeSeriesPlotter <- function(data = data,
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2]), color = "Forecast")) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1]), color = "Actuals")) +
       ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, Color)) +
-      ChartTheme(Size=TextSize, AngleX=AngleX, AngleY=AngleY, ChartColor=ChartColor, BorderColor=BorderColor, TextColor=TextColor, GridColor=GridColor, BackGroundColor=BackGroundColor, LegendPosition=LegendPosition) +
       ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable))
 
     # Title: add metrics----
-    Plot <- Plot + ggplot2::ggtitle(label = paste0("SARIMA: MAE = ", round(min(Output$PerformanceGrid$Blended_MAE, na.rm = TRUE), 2L)))
+    Plot <- Plot + ggplot2::labs(
+      title = paste0("SARIMA Winning Model"),
+      subtitle = paste0(
+        "MAPE = ", round(100 * min(Output$PerformanceGrid$Blended_MAPE, na.rm = TRUE), 2L),"%",
+        " :: ",
+        "MAE = ", round(min(Output$PerformanceGrid$Blended_MAE, na.rm = TRUE), 2L),
+        " :: ",
+        "RMSE = ", round(sqrt(min(Output$PerformanceGrid$Blended_MSE, na.rm = TRUE)), 2L))) +
+      ChartTheme(Size=TextSize, AngleX=AngleX, AngleY=AngleY, ChartColor=ChartColor, BorderColor=BorderColor, TextColor=TextColor, GridColor=GridColor, BackGroundColor=BackGroundColor, LegendPosition=LegendPosition)
 
     # Check if it works correctly
     if(!is.null(XTickMarks)) {
