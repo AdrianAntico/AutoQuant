@@ -98,11 +98,17 @@ PredictArima <- function(object = Results,
 
   # Backtransform if boxcox was used----
   if(!is.null(bcox)) {
-    z$pred    <- (z$pred    * bcox + 1) ^ (1 / bcox)
-    z$Lower95 <- (z$Lower95 * bcox + 1) ^ (1 / bcox)
-    z$Lower80 <- (z$Lower80 * bcox + 1) ^ (1 / bcox)
-    z$Upper80 <- (z$Upper80 * bcox + 1) ^ (1 / bcox)
-    z$Upper95 <- (z$Upper95 * bcox + 1) ^ (1 / bcox)
+    z$pred    <- as.numeric((z$pred    * bcox + 1) ^ (1 / bcox))
+    z$Lower95 <- as.numeric((z$Lower95 * bcox + 1) ^ (1 / bcox))
+    z$Lower80 <- as.numeric((z$Lower80 * bcox + 1) ^ (1 / bcox))
+    z$Upper80 <- as.numeric((z$Upper80 * bcox + 1) ^ (1 / bcox))
+    z$Upper95 <- as.numeric((z$Upper95 * bcox + 1) ^ (1 / bcox))
+  } else {
+    z$pred    <- as.numeric(z$pred)
+    z$Lower95 <- as.numeric(z$Lower95)
+    z$Lower80 <- as.numeric(z$Lower80)
+    z$Upper80 <- as.numeric(z$Upper80)
+    z$Upper95 <- as.numeric(z$Upper95)
   }
 
   # Return z----
