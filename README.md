@@ -2110,6 +2110,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   
 ### **AutoBanditSarima()**
 
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/AutoBanditSarimaFCPlot.png" align="center" width="350" />
+
 <details><summary>Code Example</summary>
 <p>
  
