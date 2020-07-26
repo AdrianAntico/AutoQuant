@@ -367,6 +367,7 @@ AutoBanditSarima <- function(data,
             TS_ModelID = NULL,
             PredictionIntervalColorInner = "white",
             PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
+          Output$ErrorLagMA2x2 <- AutoBanditSarima2x2LagMA(Output)
           return(Output)
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
@@ -412,6 +413,7 @@ AutoBanditSarima <- function(data,
       TS_ModelID = NULL,
       PredictionIntervalColorInner = "white",
       PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
+    Output$ErrorLagMA2x2 <- AutoBanditSarima2x2LagMA(Output)
     if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
   }
 }
