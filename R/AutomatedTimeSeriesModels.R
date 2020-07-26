@@ -144,8 +144,6 @@ AutoBanditSarima <- function(data,
                              NumberCores = max(1L, parallel::detectCores()),
                              DebugMode = FALSE) {
 
-  GlobalObjectsPreRun <- ls(envir = .GlobalEnv)
-
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
