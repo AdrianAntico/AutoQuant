@@ -8,7 +8,7 @@
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
-## Install RemixAutoML:
+## Installation:
 
 <details><summary>Expand to view content</summary>
 <p>
