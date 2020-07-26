@@ -1672,7 +1672,7 @@ OptimizeArima <- function(Output,
 
         # Run Modified getS3Generic("predict", "Arima") see top of this file----
         RawOutput <<- PredictArima(object = eval(Results), n.ahead = eval(FCPeriods), newxreg = eval(XREGFC), se.fit = TRUE)
-        print(RawOutput)
+        if(DebugMode) print(RawOutput)
         if(!is.null(RawOutput$pred)) FC_Data[, Forecast := RawOutput$pred] else FC_Data[, Forecast := NA]
         if(!is.null(RawOutput$Lower95)) FC_Data[, Low95 := RawOutput$Lower95] else FC_Data[, Low95 := NA]
         if(!is.null(RawOutput$Lower80)) FC_Data[, Low80 := RawOutput$Lower80] else FC_Data[, Low80 := NA]
@@ -1708,7 +1708,7 @@ OptimizeArima <- function(Output,
 
     # Return forecast values for all models----
     if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == length(train)) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
-    for(kk in 1:10) print(paste0("Number of rows in ReturnData: ", ReturnData[, .N]))
+    if(DebugMode) for(kk in 1:10) print(paste0("Number of rows in ReturnData: ", ReturnData[, .N]))
     return(ReturnData)
   }
 }
