@@ -522,3 +522,26 @@ TimeSeriesPlotter <- function(data = data,
     return(Plot)
   }
 }
+
+#' @noRd
+AutoBanditSarima2x2LagMA <- function(Output) {
+
+  # Metric selection
+  ErrorMetric <- Output$PerformanceGrid$Blended_MAE[!Output$PerformanceGrid$Lags %in% -7]
+
+  # Built plot
+  LagsMAPlot <- ggplot2::ggplot(
+    data = Output$PerformanceGrid[!Output$PerformanceGrid$Lags %in% -7],
+    ggplot2::aes(x = Output$PerformanceGrid$Lags[!Output$PerformanceGrid$Lags %in% -7],
+                 y = Output$PerformanceGrid$MovingAverages[!Output$PerformanceGrid$Lags %in% -7],
+                 fill = ErrorMetric)) +
+    ggplot2::geom_tile() + ChartTheme(ChartColor = "gray25") +
+    ggplot2::ylab("Moving AVerages") + ggplot2::xlab("Lags") +
+    ggplot2::theme(legend.title = ggplot2::element_blank()) +
+    ggplot2::labs(title = "MAE by Lags and Moving Average") +
+    ggplot2::scale_fill_gradient(low = "darkblue", high = "green") +
+    ggplot2::theme(legend.key.size = ggplot2::unit(1.75, "cm"))
+
+  # Return
+  return(MA_LAG_HeatMapEval)
+}
