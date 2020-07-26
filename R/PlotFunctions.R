@@ -543,5 +543,5 @@ AutoBanditSarima2x2LagMA <- function(Output) {
     ggplot2::theme(legend.key.size = ggplot2::unit(1.75, "cm"))
 
   # Return
-  return(MA_LAG_HeatMapEval)
+  return(LagsMAPlot)
 }
