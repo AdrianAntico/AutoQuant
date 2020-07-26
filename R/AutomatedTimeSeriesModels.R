@@ -313,6 +313,12 @@ AutoBanditSarima <- function(data,
         if(nrow(ForecastOutput) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
           data.table::setnames(ForecastOutput, "Target", eval(TargetVariableName))
           Output <<- list(Forecast = ForecastOutput, PerformanceGrid = Arima_ExperimentGrid)
+          if(!TimeAggLevel %chin% c("day","days","dy","dys","week","weeks","wk","wks","month","months","mth","mths","quarter","quarters","year","years","yr","yrs")) XTickMarkss <- "1 hour"
+          if(TimeAggLevel %chin% c("day","days","dy","dys")) XTickMarkss <- "1 day"
+          if(TimeAggLevel %chin% c("week","weeks","wk","wks")) XTickMarkss <- "1 week"
+          if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 month"
+          if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "1 quarter"
+          if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "1 year"
           Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c("Weekly_Sales","Forecast"),
@@ -327,7 +333,7 @@ AutoBanditSarima <- function(data,
             TextSize = 12,
             LineWidth = 1,
             Color = "blue",
-            XTickMarks = "1 year",
+            XTickMarks = XTickMarkss,
             Size = 12,
             AngleX = 35,
             AngleY = 0,
