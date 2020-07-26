@@ -139,55 +139,36 @@ AutoBanditSarima is a multi-armed bandit model testing framework for SARIMA. Ran
 }
 \examples{
 \donttest{
-# Pull in data
-data <- data.table::as.data.table(fpp::cafe)
-data.table::setnames(data, "x", "Weekly_Sales")
-data.table::set(data, j = "Date", value = "1982-01-01")
-data.table::setcolorder(data, c(2,1))
-data[, Date := as.POSIXct(Date)]
-
-# "1min"
-data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
-
-# "5min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(5 * xx)][, xx := NULL]
-
-# "10min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(10 * xx)][, xx := NULL]
-
-# "15min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(15 * xx)][, xx := NULL]
-
-# "30min"
-#data[, xx := 1:.N][, Date := Date + lubridate::minutes(30 * xx)][, xx := NULL]
-
-# "hour"
-#data[, xx := 1:.N][, Date := Date + lubridate::hours(xx)][, xx := NULL]
-
 # Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Pimping
 Output <- RemixAutoML::AutoBanditSarima(
   data = data,
-  ByDataType = TRUE,
+  ByDataType = FALSE,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
   TimeAggLevel = "1min",
   EvaluationMetric = "MAE",
-  NumHoldOutPeriods = 5L,
-  NumFCPeriods = 5L,
-  MaxLags = 5L,
+  NumHoldOutPeriods = 12L,
+  NumFCPeriods = 16L,
+  MaxLags = 10L,
   MaxSeasonalLags = 0L,
-  MaxMovingAverages = 5L,
+  MaxMovingAverages = 3L,
   MaxSeasonalMovingAverages = 0L,
   MaxFourierPairs = 2L,
   TrainWeighting = 0.50,
   MaxConsecutiveFails = 50L,
-  MaxNumberModels = 500L,
-  MaxRunTimeMinutes = 30L,
-  NumberCores = max(1L, parallel::detectCores()))
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = 12,
+  DebugMode = FALSE)
 
-# View output
-Output$Forecast[ModelRank == min(ModelRank)]
-View(Output$PerformanceGrid[DataSetName == "TSCleanModelFrequency"])
+# Output
+Output$ForecastPlot
+Output$Forecast
+Output$PerformanceGrid
+Output$ErrorLagMA2x2
 }
 }
 \seealso{
