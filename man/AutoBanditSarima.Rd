@@ -6,6 +6,7 @@
 \usage{
 AutoBanditSarima(
   data,
+  ByDataType = TRUE,
   TargetVariableName,
   DateColumnName,
   TimeAggLevel = "week",
@@ -27,6 +28,8 @@ AutoBanditSarima(
 }
 \arguments{
 \item{data}{Source data.table}
+
+\item{ByDataType}{TRUE returns the best model from the four base sets of possible models. FALSE returns the best model.}
 
 \item{TargetVariableName}{Name of your time series target variable}
 
@@ -164,6 +167,7 @@ data[, xx := 1:.N][, Date := Date + lubridate::minutes(1 * xx)][, xx := NULL]
 # Build model
 Output <- RemixAutoML::AutoBanditSarima(
   data = data,
+  ByDataType = TRUE,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
   TimeAggLevel = "1min",
