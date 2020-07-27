@@ -316,9 +316,9 @@ AutoBanditSarima <- function(data,
           if(!TimeAggLevel %chin% c("day","days","dy","dys","week","weeks","wk","wks","month","months","mth","mths","quarter","quarters","year","years","yr","yrs")) XTickMarkss <- "1 day"
           if(TimeAggLevel %chin% c("day","days","dy","dys")) XTickMarkss <- "1 week"
           if(TimeAggLevel %chin% c("week","weeks","wk","wks")) XTickMarkss <- "1 month"
-          if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "3 month"
-          if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "1 year"
-          if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "2 year"
+          if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
+          if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
+          if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
           Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c("Weekly_Sales","Forecast"),
@@ -370,7 +370,7 @@ AutoBanditSarima <- function(data,
     if(!TimeAggLevel %chin% c("day","days","dy","dys","week","weeks","wk","wks","month","months","mth","mths","quarter","quarters","year","years","yr","yrs")) XTickMarkss <- "1 day"
     if(TimeAggLevel %chin% c("day","days","dy","dys")) XTickMarkss <- "1 week"
     if(TimeAggLevel %chin% c("week","weeks","wk","wks")) XTickMarkss <- "1 month"
-    if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "2 year"
+    if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
     if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
     if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
     Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
