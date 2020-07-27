@@ -109,7 +109,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
 
     # "quarter"
     if(tolower(TimeSeriesTimeAgg) %chin% c("quarter","quarters"," qtr","qtrs","qarter")) {
-      data[, Date := Date + lubridate::quarter(1:.N)]
+      data[, Date := Date %m+% month(3 * 1:.N)]
     }
 
     # "year"
