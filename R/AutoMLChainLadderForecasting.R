@@ -91,7 +91,7 @@ AutoChainLadderForecast <- function(data,
 
     # DE: Remove CohortPeriods beyond MaxCohortPeriods
     maxct <- maxct[get(ArgsList$CohortPeriodsVariable) <= MaxCohortPeriods]
-    ScoreDate <- maxct[, max(get(ArgsList$CohortDate))]
+    ScoreDate <- maxct[, max(get(ArgsList$CalendarDate))]
 
     # DE: Stack onto modeling data for ArgsList$ModelID
     print("# Stack onto modeling data for ArgsList$ModelID----")
