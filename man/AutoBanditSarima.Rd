@@ -140,7 +140,7 @@ AutoBanditSarima is a multi-armed bandit model testing framework for SARIMA. Ran
 \examples{
 \donttest{
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Pimping
 Output <- RemixAutoML::AutoBanditSarima(

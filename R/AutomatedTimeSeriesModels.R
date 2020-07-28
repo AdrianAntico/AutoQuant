@@ -93,7 +93,7 @@
 #' @examples
 #' \donttest{
 #' # Build model
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 #'
 #' # Pimping
 #' Output <- RemixAutoML::AutoBanditSarima(

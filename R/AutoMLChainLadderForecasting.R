@@ -192,7 +192,7 @@ AutoChainLadderForecast <- function(data,
 
     # FE: BaseFunnelMeasure AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
-    for(bfm in ArgsList$BaseFunnelMeasure) {
+    for(bfm in seq_len(length(ArgsList$BaseFunnelMeasure))) {
       temp <- data.table::copy(data)
       temp <- temp[, list(data.table::first(get(ArgsList$BaseFunnelMeasure[bfm]))), by = list(get(ArgsList$CalendarDate))]
       data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$BaseFunnelMeasure[bfm])))
