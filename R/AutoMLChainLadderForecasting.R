@@ -102,7 +102,8 @@ AutoChainLadderForecast <- function(data,
     maxct[, eval(ArgsList$ConversionMeasure) := 0]
     maxct[, Rate := 0]
     maxct[, ScoreRecords := 1]
-    maxct <- data.table::rbindlist(list(maxct, NextFCPeriod), use.names = TRUE)
+    maxct <- data.table::rbindlist(list(maxct, NextFCPeriod), use.names = TRUE, fill = TRUE)
+    for(xxxx in seq_len(ncol(maxct))) data.table::set(maxct, i = which(is.na(maxct[[xxxx]])), j = xxxx, value = 0)
 
     # DE: Remove CohortPeriods beyond MaxCohortPeriods
     maxct <- maxct[get(ArgsList$CohortPeriodsVariable) <= MaxCohortPeriods]
