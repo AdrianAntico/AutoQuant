@@ -1897,7 +1897,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Time Series, Panel Data, and Chain Ladder: <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Time Series, Panel Data, and Chain Ladder Forecasting: <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
