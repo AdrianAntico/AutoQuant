@@ -80,8 +80,23 @@ AutoChainLadderForecast <- function(data,
 
     # DE: Merge on next date of Inquiries
     print("# Merge on next date of Inquiries----")
-    temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure))), by = list(get(ArgsList$CalendarDate))]
-    data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure))
+    if(length(ArgsList$BaseFunnelMeasure) == 1) {
+      temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure[1]))), by = list(get(ArgsList$CalendarDate))]
+      data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1]))
+    } else if(length(ArgsList$BaseFunnelMeasure) == 2) {
+      temp <- data[, list(
+        data.table::first(get(ArgsList$BaseFunnelMeasure[1])),
+        data.table::first(get(ArgsList$BaseFunnelMeasure[2]))), by = list(get(ArgsList$CalendarDate))]
+      data.table::setnames(temp, c("get","V1","V2","V3"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1],ArgsList$BaseFunnelMeasure[2]))
+    } else if(length(ArgsList$BaseFunnelMeasure) == 3) {
+      temp <- data[, list(
+        data.table::first(get(ArgsList$BaseFunnelMeasure[1])),
+        data.table::first(get(ArgsList$BaseFunnelMeasure[2])),
+        data.table::first(get(ArgsList$BaseFunnelMeasure[3]))), by = list(get(ArgsList$CalendarDate))]
+      data.table::setnames(temp, c("get","V1","V2","V3"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1],ArgsList$BaseFunnelMeasure[2],ArgsList$BaseFunnelMeasure[3]))
+    }
+
+
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     maxct <- merge(maxct, temp, by = ArgsList$CalendarDate, all.x = TRUE)
     maxct[, eval(ArgsList$ConversionMeasure) := 0]
