@@ -263,21 +263,6 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
   }
 }
 
-#' SQL_Server_DBConnection
-#'
-#' SQL_Server_DBConnection is a function to return data dictionary data in table form
-#'
-#' @author Adrian Antico
-#' @family Data Wrangling
-#' @param DataBaseName Name of the database
-#' @param Server Name of the server to use
-#' @export
-SQL_Server_DBConnection <- function(DataBaseName = "", Server = "") {
-  return(RODBC::odbcDriverConnect(connection  = paste0("Driver={SQL Server};
-                                  server=",Server,"; database=",DataBaseName,";
-                                  trusted_connection=yes;")))
-}
-
 #' AutoDataDictionaries
 #'
 #' AutoDataDictionaries is a function to return data dictionary data in table form
@@ -656,4 +641,165 @@ AutoDataDictionaries <- function(Type = "sqlserver",
     if(CloseChannel) close(DBConnection)
     return(x)
   }
+}
+
+#' SQL_Server_DBConnection
+#'
+#' SQL_Server_DBConnection is a function to return data dictionary data in table form
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DataBaseName Name of the database
+#' @param Server Name of the server to use
+#' @export
+SQL_Server_DBConnection <- function(DataBaseName = "",
+                                    Server = "") {
+  return(RODBC::odbcDriverConnect(connection  = paste0("Driver={SQL Server};
+                                  server=",Server,"; database=",DataBaseName,";
+                                  trusted_connection=yes;")))
+}
+
+#' SQL_Query
+#'
+#' SQL_Query get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param Query The SQL statement you want to run
+#' @param ASIS Auto column typing
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @export
+SQL_Query <- function(DBConnection,
+                      Query,
+                      ASIS = FALSE,
+                      CloseChannel = TRUE,
+                      RowsPerBatch = 1024) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!is.null(Query)) {
+    x <- data.table::as.data.table(RODBC::sqlQuery(channel = DBConnection, query = Query, as.is = ASIS, rows_at_time = RowsPerBatch))
+    if(CloseChannel) close(DBConnection)
+    return(x)
+  }
+}
+
+#' SQL_ClearTable
+#'
+#' SQL_ClearTable get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param SQLTableName The SQL statement you want to run
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
+#' @export
+SQL_ClearTable <- function(DBConnection,
+                           SQLTableName = "",
+                           CloseChannel = TRUE,
+                           Errors = TRUE) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  RODBC::sqlClear(
+    channel = DBConnection,
+    sqtable = SQLTableName,
+    errors  = Errors)
+  if(CloseChannel) close(DBConnection)
+}
+
+#' SQL_DropTable
+#'
+#' SQL_DropTable get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param SQLTableName The SQL statement you want to run
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
+#' @export
+SQL_DropTable <- function(DBConnection,
+                          SQLTableName = "",
+                          CloseChannel = TRUE,
+                          Errors = TRUE) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  RODBC::sqlClear(
+    channel = DBConnection,
+    sqtable = SQLTableName,
+    errors  = Errors)
+  if(CloseChannel) close(DBConnection)
+}
+
+#' SQL_SaveTable
+#'
+#' SQL_SaveTable get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DataToPush data to be sent to warehouse
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param SQLTableName The SQL statement you want to run
+#' @param AppendData TRUE or FALSE
+#' @param AddPK Add a PK column to table
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
+#' @export
+SQL_SaveTable <- function(DataToPush,
+                          DBConnection,
+                          SQLTableName = "",
+                          CloseChannel = TRUE,
+                          AppendData = FALSE,
+                          AddPK = TRUE,
+                          Errors = TRUE) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  RODBC::sqlSave(
+    channel   = DBConnection,
+    dat       = DataToPush,
+    tablename = SQLTableName,
+    addPK     = AddPK,
+    append    = AppendData,
+    errors    = Errors)
+  if(CloseChannel) close(DBConnection)
+}
+
+#' SQL_UpdateTable
+#'
+#' SQL_UpdateTable get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DataToPush Update data table in warehouse with new values
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param SQLTableName The SQL statement you want to run
+#' @param Index Column name of index
+#' @param Verbose TRUE or FALSE
+#' @param Test Set to TRUE to see if what you plan to do will work
+#' @param NAString Supply character string to supply missing values
+#' @param Fast Set to TRUE to update table in one shot versus row by row
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @export
+SQL_UpdateTable <- function(DataToPush,
+                            DBConnection,
+                            SQLTableName = "",
+                            Index = NULL,
+                            CloseChannel = TRUE,
+                            Verbose = TRUE,
+                            Test = FALSE,
+                            NAString = "NA",
+                            Fast = TRUE) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  RODBC::sqlUpdate(
+    channel   = DBConnection,
+    dat       = DataToPush,
+    tablename = SQLTableName,
+    index     = Index,
+    verbose   = Verbose,
+    test      = Test,
+    nastring  = NAString,
+    fast      = Fast)
+  if(CloseChannel) close(DBConnection)
 }

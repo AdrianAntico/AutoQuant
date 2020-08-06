@@ -36,7 +36,12 @@ Other Data Wrangling:
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
 \code{\link{FullFactorialCatFeatures}()},
+\code{\link{SQL_ClearTable}()},
+\code{\link{SQL_DropTable}()},
+\code{\link{SQL_Query}()},
+\code{\link{SQL_SaveTable}()},
 \code{\link{SQL_Server_DBConnection}()},
+\code{\link{SQL_UpdateTable}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{

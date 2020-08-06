@@ -98,7 +98,7 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
 #' @param UploadLocation The location to where the data is saved in the Azure Storage Explorer
 #' @param DataStoreName The name of the store in data factory where you uploaded your data
 #' @export
-DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'TransfersRawData.csv',
+DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'data.csv',
                                            SaveCSVFilePath = file.path(Root),
                                            SaveCSVName = "RawData.csv",
                                            UploadLocation = 'Analytics Sandbox/Machine Learning',

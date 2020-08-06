@@ -5,7 +5,7 @@
 \title{DownloadCSVFromStorageExplorer}
 \usage{
 DownloadCSVFromStorageExplorer(
-  UploadCSVObjectName = "TransfersRawData.csv",
+  UploadCSVObjectName = "data.csv",
   SaveCSVFilePath = file.path(Root),
   SaveCSVName = "RawData.csv",
   UploadLocation = "Analytics Sandbox/Machine Learning",
