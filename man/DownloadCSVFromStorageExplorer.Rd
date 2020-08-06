@@ -9,7 +9,7 @@ DownloadCSVFromStorageExplorer(
   SaveCSVFilePath = file.path(Root),
   SaveCSVName = "RawData.csv",
   UploadLocation = "Analytics Sandbox/Machine Learning",
-  DataStoreName = "johnstestdatastore"
+  DataStoreName = NULL
 )
 }
 \arguments{
