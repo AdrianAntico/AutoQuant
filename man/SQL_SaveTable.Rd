@@ -8,10 +8,14 @@ SQL_SaveTable(
   DataToPush,
   DBConnection,
   SQLTableName = "",
+  RowNames = NULL,
+  ColNames = TRUE,
+  VarTypes = NULL,
   CloseChannel = TRUE,
   AppendData = FALSE,
   AddPK = TRUE,
-  Errors = TRUE
+  Errors = TRUE,
+  Safer = TRUE
 )
 }
 \arguments{
@@ -21,6 +25,8 @@ SQL_SaveTable(
 
 \item{SQLTableName}{The SQL statement you want to run}
 
+\item{VarTypes}{= NULL,}
+
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
 
 \item{AppendData}{TRUE or FALSE}
@@ -28,6 +34,8 @@ SQL_SaveTable(
 \item{AddPK}{Add a PK column to table}
 
 \item{Errors}{Set to TRUE to halt, FALSE to return -1 in cases of errors}
+
+\item{rownames}{c("Segment","Date")}
 }
 \description{
 SQL_SaveTable get data from a database
