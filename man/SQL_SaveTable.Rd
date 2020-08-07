@@ -14,7 +14,6 @@ SQL_SaveTable(
   CloseChannel = TRUE,
   AppendData = FALSE,
   AddPK = TRUE,
-  Errors = TRUE,
   Safer = TRUE
 )
 }
@@ -32,8 +31,6 @@ SQL_SaveTable(
 \item{AppendData}{TRUE or FALSE}
 
 \item{AddPK}{Add a PK column to table}
-
-\item{Errors}{Set to TRUE to halt, FALSE to return -1 in cases of errors}
 
 \item{rownames}{c("Segment","Date")}
 }

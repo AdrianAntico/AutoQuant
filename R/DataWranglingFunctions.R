@@ -746,7 +746,6 @@ SQL_DropTable <- function(DBConnection,
 #' @param AppendData TRUE or FALSE
 #' @param AddPK Add a PK column to table
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
-#' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
 #' @export
 SQL_SaveTable <- function(DataToPush,
                           DBConnection,
@@ -757,7 +756,6 @@ SQL_SaveTable <- function(DataToPush,
                           CloseChannel = TRUE,
                           AppendData = FALSE,
                           AddPK = TRUE,
-                          Errors = TRUE,
                           Safer = TRUE) {
   library(RODBC)
   if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
@@ -770,7 +768,6 @@ SQL_SaveTable <- function(DataToPush,
     tablename = SQLTableName,
     addPK     = AddPK,
     append    = AppendData,
-    errors    = Errors,
     safer     = Safer)
   if(CloseChannel) close(DBConnection)
 }
