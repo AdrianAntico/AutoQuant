@@ -742,7 +742,6 @@ SQL_DropTable <- function(DBConnection,
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param rownames c("Segment","Date")
-#' @param VarTypes = NULL,
 #' @param AppendData TRUE or FALSE
 #' @param AddPK Add a PK column to table
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
@@ -752,23 +751,13 @@ SQL_SaveTable <- function(DataToPush,
                           SQLTableName = "",
                           RowNames = NULL,
                           ColNames = TRUE,
-                          VarTypes = NULL,
                           CloseChannel = TRUE,
                           AppendData = FALSE,
                           AddPK = TRUE,
                           Safer = TRUE) {
   library(RODBC)
   if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
-  RODBC::sqlSave(
-    rownames  = RowNames,
-    colnames  = ColNames,
-    varTypes  = VarTypes,
-    channel   = DBConnection,
-    dat       = DataToPush,
-    tablename = SQLTableName,
-    addPK     = AddPK,
-    append    = AppendData,
-    safer     = Safer)
+  RODBC::sqlSave(rownames=RowNames,colnames=ColNames,channel=DBConnection,dat=DataToPush,tablename=SQLTableName,addPK=AddPK,append=AppendData,safer=Safer)
   if(CloseChannel) close(DBConnection)
 }
 

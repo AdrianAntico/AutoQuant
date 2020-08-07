@@ -10,7 +10,6 @@ SQL_SaveTable(
   SQLTableName = "",
   RowNames = NULL,
   ColNames = TRUE,
-  VarTypes = NULL,
   CloseChannel = TRUE,
   AppendData = FALSE,
   AddPK = TRUE,
@@ -23,8 +22,6 @@ SQL_SaveTable(
 \item{DBConnection}{RemixAutoML::SQL_Server_DBConnection()}
 
 \item{SQLTableName}{The SQL statement you want to run}
-
-\item{VarTypes}{= NULL,}
 
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
 
