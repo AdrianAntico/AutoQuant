@@ -134,7 +134,8 @@ If you're having still having trouble installing see if the issue below helps ou
  
 Supply a data.table to run the functions below:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (a)
+2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2oMLCARMA()</code>, <code>AutoH2oGBMCARMA()</code>, <code>AutoH2oGLMCARMA()</code>, or <code>AutoH2oDRFCARMA()</code> or build a loop and run functions from (1)
+3. If you have to do any funnel forecasting, check out AutoCatBoostChainLadder(). First you need to structure you data like the help example. When you think you have found a good configuration, set the parameter SaveModelObjects = TRUE. Then you can run the AutoMLChainLadderForecasting(). 
 
 </p>
 </details>
