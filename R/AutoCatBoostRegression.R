@@ -853,7 +853,7 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Evaluation Metrics----
   if(!TrainOnFull) {
-    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 8L))
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
     i <- 0L
     for(metric in c("mae", "mape", "rmse", "r2")) {
       i <- i + 1L
