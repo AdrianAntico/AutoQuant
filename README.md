@@ -200,7 +200,7 @@ data <- RemixAutoML::AutoLagRollStats(
   HierarchyGroups      = c("Factor1","Factor2"),
   IndependentGroups    = NULL,
   TimeUnitAgg          = "days",
-  TimeGroups           = c("days", "weeks"),
+  TimeGroups           = c("days", "weeks", "months", "quarters"),
   TimeBetween          = NULL,
   TimeUnit             = "days",
   
@@ -210,13 +210,13 @@ data <- RemixAutoML::AutoLagRollStats(
   SimpleImpute         = TRUE,
 
   # Calculated Columns
-  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  SD_RollWindows        = NULL,
-  Skew_RollWindows      = NULL,
-  Kurt_RollWindows      = NULL,
-  Quantile_RollWindows  = NULL,
-  Quantiles_Selected   = c("q5","q10","q95"),
+  Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  SD_RollWindows       = NULL,
+  Skew_RollWindows     = NULL,
+  Kurt_RollWindows     = NULL,
+  Quantile_RollWindows = NULL,
+  Quantiles_Selected   = NULL,
   Debug                = FALSE)
 ```
 
@@ -254,7 +254,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
   HierarchyGroups      = c("Factor1","Factor2"),
   IndependentGroups    = NULL,
   TimeUnitAgg          = "days",
-  TimeGroups           = c("days", "weeks"),
+  TimeGroups           = c("days", "weeks", "months", "quarters"),
   TimeBetween          = NULL,
   TimeUnit             = "days",
   
@@ -264,8 +264,8 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
   SimpleImpute         = TRUE,
 
   # Calculated Columns
-  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+  Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
   SD_RollWindows        = NULL,
   Skew_RollWindows      = NULL,
   Kurt_RollWindows      = NULL,
