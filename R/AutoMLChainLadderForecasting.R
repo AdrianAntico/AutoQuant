@@ -35,7 +35,7 @@ AutoChainLadderForecast <- function(data,
                                     MaxCohortPeriods = NULL) {
 
   # Forecasting start and end periods----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = parallel::detectCores() - 2L) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
   if(is.null(MaxDateForecasted)) MaxDateForecasted <- data[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   if(is.null(MaxCalendarDate)) MaxCalendarDate <- FC_BaseFunnelMeasure[, max(get(ArgsList$CalendarDate), na.rm = TRUE)]
   if(is.null(SegmentName)) SegmentName <- ArgsList$ModelID
@@ -78,8 +78,8 @@ AutoChainLadderForecast <- function(data,
     NextFCPeriod[, ScoreRecords := 1]
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[2L:.N]
 
-    # DE: Merge on next date of Inquiries
-    print("# Merge on next date of Inquiries----")
+    # DE: Merge on next date of BaseFunnelMeasure
+    print("# Merge on next date of BaseFunnelMeasure----")
     if(length(ArgsList$BaseFunnelMeasure) == 1) {
       temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure[1]))), by = list(get(ArgsList$CalendarDate))]
       data.table::setnames(temp, c("get","V1"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1]))
@@ -96,7 +96,7 @@ AutoChainLadderForecast <- function(data,
       data.table::setnames(temp, c("get","V1","V2","V3"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1],ArgsList$BaseFunnelMeasure[2],ArgsList$BaseFunnelMeasure[3]))
     }
 
-
+    # Merge data----
     temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     maxct <- merge(maxct, temp, by = ArgsList$CalendarDate, all.x = TRUE)
     maxct[, eval(ArgsList$ConversionMeasure) := 0]

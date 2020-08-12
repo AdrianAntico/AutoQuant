@@ -483,7 +483,7 @@ AutoCatBoostChainLadder <- function(data,
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
 
-    # FE: AutoLagRollStats() ConversionMeasure HolidayCounts with CalendarDate as a Grouping Variable----
+    # FE: AutoLagRollStats() CohortDate HolidayCounts with CalendarDate as a Grouping Variable----
     if(proc %in% c("evaluate","evaluation","eval","train","training") & !is.null(CohortHolidayLags)) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
 
@@ -499,7 +499,7 @@ AutoCatBoostChainLadder <- function(data,
 
         # Services
         TimeBetween          = NULL,
-        RollOnLag1           = TRUE,
+        RollOnLag1           = FALSE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
 
@@ -553,7 +553,7 @@ AutoCatBoostChainLadder <- function(data,
 
           # Services
           TimeBetween          = NULL,
-          RollOnLag1           = TRUE,
+          RollOnLag1           = FALSE,
           Type                 = "Lag",
           SimpleImpute         = FALSE,
 
@@ -640,7 +640,7 @@ AutoCatBoostChainLadder <- function(data,
 
         # Services
         TimeBetween          = NULL,
-        RollOnLag1           = TRUE,
+        RollOnLag1           = FALSE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
 
