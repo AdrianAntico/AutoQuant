@@ -20,7 +20,7 @@ AutoChainLadderForecast(
 
 \item{OutputFilePath}{Pathfile for where you want to store you forecast data}
 
-\item{FC_BaseFunnelMeasure}{Dataset containing the forward looking FC_BaseFunnelMeasure}
+\item{FC_BaseFunnelMeasure}{data.table containing the forward looking FC_BaseFunnelMeasure}
 
 \item{MaxDateForecasted}{Supply a value if you want to backtest}
 

@@ -82,7 +82,7 @@ AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics wi
 }
 \examples{
 data <- RemixAutoML::AutoLagRollStatsScoring(
-  
+
   # Data
   data                 = data,
   RowNumsID            = "ScoreRecords",
@@ -98,7 +98,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
   RollOnLag1           = TRUE,
   Type                 = "Lag",
   SimpleImpute         = TRUE,
-     
+
   # Calculated Columns
   Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),

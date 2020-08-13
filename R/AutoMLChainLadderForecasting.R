@@ -5,8 +5,8 @@
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param data Name of your data.table
+#' @param FC_BaseFunnelMeasure data.table containing the forward looking FC_BaseFunnelMeasure
 #' @param OutputFilePath Pathfile for where you want to store you forecast data
-#' @param FC_BaseFunnelMeasure Dataset containing the forward looking FC_BaseFunnelMeasure
 #' @param MaxDateForecasted Supply a value if you want to backtest
 #' @param MaxCalendarDate Supply a value if you want to backtest
 #' @param ArgsList Argument list returned from AutoCatBoostChainLadder
@@ -51,17 +51,17 @@ AutoChainLadderForecast <- function(data,
     # DE: Prepare data----
     print("# Prepare data----")
 
-    # Convert to date
+    # Convert to date----
     if(class(data[[eval(ArgsList$CalendarDate)]]) != "Date") data[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     if(class(data[[ArgsList$CohortDate]]) != "Date") data[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
 
-    # Add indicator variable for AutoLagRollStatsScoring() so it knows what to score and what not to. A value of 1 indicates that the record should be scored. All others are not scored
+    # Add indicator variable for AutoLagRollStatsScoring() so it knows what to score and what not to. A value of 1 indicates that the record should be scored. All others are not scored----
     data[, ScoreRecords := 2]
 
-    # Type conversion
+    # Type conversion----
     if(class(data[[eval(ArgsList$CohortPeriodsVariable)]]) == "factor") data[, eval(ArgsList$CohortPeriodsVariable) := as.numeric(as.character(get(ArgsList$CohortPeriodsVariable)))]
 
-    # Create single future value for all cohorts
+    # Create single future value for all cohorts----
     maxct <- data[, list(max(get(ArgsList$CohortPeriodsVariable)), data.table::first(ScoreRecords)), by = list(get(ArgsList$CalendarDate))]
     data.table::setnames(maxct, c("get","V1","V2"), c(ArgsList$CalendarDate, ArgsList$CohortPeriodsVariable, "ScoreRecords"))
     maxct[, eval(ArgsList$CohortPeriodsVariable) := get(ArgsList$CohortPeriodsVariable) + 1L]
@@ -69,7 +69,7 @@ AutoChainLadderForecast <- function(data,
     maxct[, Segment := eval(ArgsList$ModelID)]
     data.table::setnames(maxct, "Segment", eval(SegmentName))
 
-    # DE: Subset data and update data
+    # DE: Subset data and update data----
     print("# Subset data and update data----")
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[get(ArgsList$CalendarDate) > max(maxct[[eval(ArgsList$CalendarDate)]])]
     NextFCPeriod <- FC_BaseFunnelMeasure[1L]
@@ -78,7 +78,7 @@ AutoChainLadderForecast <- function(data,
     NextFCPeriod[, ScoreRecords := 1]
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[2L:.N]
 
-    # DE: Merge on next date of BaseFunnelMeasure
+    # DE: Merge on next date of BaseFunnelMeasure----
     print("# Merge on next date of BaseFunnelMeasure----")
     if(length(ArgsList$BaseFunnelMeasure) == 1) {
       temp <- data[, list(data.table::first(get(ArgsList$BaseFunnelMeasure[1]))), by = list(get(ArgsList$CalendarDate))]
