@@ -499,7 +499,7 @@ AutoCatBoostChainLadder <- function(data,
 
         # Services
         TimeBetween          = NULL,
-        RollOnLag1           = FALSE,
+        RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
 
@@ -553,7 +553,7 @@ AutoCatBoostChainLadder <- function(data,
 
           # Services
           TimeBetween          = NULL,
-          RollOnLag1           = FALSE,
+          RollOnLag1           = TRUE,
           Type                 = "Lag",
           SimpleImpute         = FALSE,
 
@@ -640,7 +640,7 @@ AutoCatBoostChainLadder <- function(data,
 
         # Services
         TimeBetween          = NULL,
-        RollOnLag1           = FALSE,
+        RollOnLag1           = TRUE,
         Type                 = "Lag",
         SimpleImpute         = FALSE,
 
