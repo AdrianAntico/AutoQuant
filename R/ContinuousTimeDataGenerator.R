@@ -30,9 +30,9 @@
 #' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
 #' @param HolidayGroups Input the holiday groups of your choice from the CreateHolidayVariable() function in this package
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
-#' @param PowerRate 
-#' @param SampleRate Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate. 
-#' @param PrintSteps Set to TRUE to have operation steps printed to the console 
+#' @param PowerRate Sampling parameter
+#' @param SampleRate Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate.
+#' @param PrintSteps Set to TRUE to have operation steps printed to the console
 #' @examples
 #' \donttest{
 #' DataSets <- ContinuousTimeDataGenerator(data,
@@ -67,7 +67,7 @@
 #'                                                               "quarter",
 #'                                                               "year"),
 #'                                         HolidayGroups = "USPublicHolidays",
-#'                                         PowerRate = 0.5,             
+#'                                         PowerRate = 0.5,
 #'                                         SampleRate = 5,
 #'                                         TargetWindowSamples = 5,
 #'                                         PrintSteps = TRUE)
@@ -116,15 +116,15 @@ ContinuousTimeDataGenerator <- function(data,
                                         SampleRate = 5,
                                         TargetWindowSamples = 5,
                                         PrintSteps = TRUE) {
-  
+
   # Initialize timer list----
   ProfilerList <- list()
-  
+
   # Ensure is data.table----
   if(PrintSteps) print("Running initial data prep")
   DataPrepStart <- Sys.time()
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Ensure Date Column is a Date----
   DateTypeConversionStart <- Sys.time()
   if(is.character(data[[eval(DateVariableName)]])) {
@@ -138,25 +138,25 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["DateConversion"]] <- DateTypeConversionEnd - DateTypeConversionStart
   print("DateConversion run time")
   print(ProfilerList[["DateConversion"]])
-  
-  # Round down dates (add option to not do this)----
+
+  # Round down dates (add option to not do this----
   RoundDatesStart <- Sys.time()
   if(TimeUnit != "raw") data.table::set(data, j = eval(DateVariableName), value = lubridate::floor_date(data[[eval(DateVariableName)]], unit = TimeUnit))
   RoundDatesEnd <- Sys.time()
   ProfilerList[["RoundDownDates"]] <- RoundDatesEnd - RoundDatesStart
   print("RoundDownDates run time")
   print(ProfilerList[["RoundDownDates"]])
-  
+
   # Group Concatenation----
   GroupConcatenationStart <- Sys.time()
   if(!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupingVariables]
-      data[, eval(GroupingVariables) := NULL]      
+      data[, eval(GroupingVariables) := NULL]
     } else {
       data.table::setnames(data, eval(GroupingVariables), "GroupVar")
     }
-    
+
     # Modify GroupingVariables argument
     ReverseGroupingVariables <- GroupingVariables
     GroupingVariables <- "GroupVar"
@@ -165,7 +165,7 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["GroupConcatenation"]] <- GroupConcatenationEnd - GroupConcatenationStart
   print("GroupConcatenation run time")
   print(ProfilerList[["GroupConcatenation"]])
-  
+
   # Ensure data is aggregated to proper time unit----
   if(Case == 1L) {
     if(TimeUnit != "raw") {
@@ -175,13 +175,13 @@ ContinuousTimeDataGenerator <- function(data,
       ProfilerList[["AggregateByTimeUnit"]] <- AggregateTimeUnitEnd - AggregateTimeUnitStart
     }
   }
-  
+
   # Update timing list----
   DataPrepEnd <- Sys.time()
   ProfilerList[["InitialDataPrepAll"]] <- DataPrepEnd - DataPrepStart
   print("InitialDataPrepAll run time")
   print(ProfilerList[["InitialDataPrepAll"]])
-  
+
   # Generate Metadata----
   if(PrintSteps) print("Running ID_MetadataGenerator()")
   MetaDataStart <- Sys.time()
@@ -196,33 +196,33 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["MetaDataGeneratorAll"]] <- MetaDataEnd - MetaDataStart
   print("MetaDataGeneratorAll run time")
   print(ProfilerList[["MetaDataGeneratorAll"]])
-  
+
   # Save Data----
   if(SaveData) data.table::fwrite(MetaData, file = file.path(normalizePath(FilePath), "MetaData.csv"))
-  
+
   # Add Calendar Variables----
   if(PrintSteps) print("Running CreateCalendarVariables()")
   CreateCalendarVariablesStart <- Sys.time()
   if(!is.null(CalendarVariables)) {
     data <- CreateCalendarVariables(
-      data, 
+      data,
       DateCols = DateVariableName,
-      AsFactor = FALSE, 
-      TimeUnits = CalendarVariables)    
+      AsFactor = FALSE,
+      TimeUnits = CalendarVariables)
   }
   CreateCalendarVariablesEnd <- Sys.time()
   ProfilerList[["CreateCalendarVariables()"]] <- CreateCalendarVariablesEnd - CreateCalendarVariablesStart
   print("CreateCalendarVariables() run time")
   print(ProfilerList[["CreateCalendarVariables()"]])
-  
+
   # Add Holiday Variables----
   if(PrintSteps) print("Running CreateHolidayVariables()")
   CreateHolidayVariablesStart <- Sys.time()
   if(!is.null(HolidayGroups)) {
     data <- CreateHolidayVariables(
-      data, 
+      data,
       DateCols = DateVariableName,
-      HolidayGroups = HolidayGroups, 
+      HolidayGroups = HolidayGroups,
       Holidays = NULL,
       GroupingVars = "GroupVar")
   }
@@ -230,20 +230,20 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["CreateHolidayVariables()"]] <- CreateHolidayVariablesEnd - CreateHolidayVariablesStart
   print("CreateHolidayVariables() run time")
   print(ProfilerList[["CreateHolidayVariables()"]])
-  
+
   # Holiday Lags and Moving Average----
   if(PrintSteps) print("Running AutoLagRollStats() for Holiday Counts")
   CreateHolidayLagsStart <- Sys.time()
   if(!is.null(HolidayGroups)) {
     data <- AutoLagRollStats(
-      
+
       # Data Args
       data                 = data,
       DateColumn           = eval(DateVariableName),
       Targets              = "HolidayCounts",
       HierarchyGroups      = NULL,
       IndependentGroups    = "GroupVar",
-      
+
       # Services
       TimeBetween          = TimeBetween,
       TimeUnit             = if(tolower(TimeUnit) == "raw") "day" else TimeUnit,
@@ -252,7 +252,7 @@ ContinuousTimeDataGenerator <- function(data,
       RollOnLag1           = FALSE,
       Type                 = "Lag",
       SimpleImpute         = TRUE,
-      
+
       # Calculated Columns
       Lags                  = HolidayLags,
       MA_RollWindows        = HolidayMovingAverages,
@@ -266,19 +266,19 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["HolidayLags"]] <- CreateHolidayLagsEnd - CreateHolidayLagsStart
   print("HolidayLags run time")
   print(ProfilerList[["HolidayLags"]])
-  
+
   # Add in the time varying features----
   if(PrintSteps) print("Running AutoLagRollStats()")
   AutoLagRollStatsStart <- Sys.time()
   data <- AutoLagRollStats(
-    
+
     # Data Args
     data                 = data,
     DateColumn           = eval(DateVariableName),
     Targets              = GDL_Targets,
     HierarchyGroups      = NULL,
     IndependentGroups    = "GroupVar",
-    
+
     # Services
     TimeBetween          = TimeBetween,
     TimeUnit             = if(tolower(TimeUnit) == "raw") "day" else TimeUnit,
@@ -287,7 +287,7 @@ ContinuousTimeDataGenerator <- function(data,
     RollOnLag1           = FALSE,
     Type                 = "Lag",
     SimpleImpute         = TRUE,
-    
+
     # Calculated Columns
     Lags                  = c(Lags),
     MA_RollWindows        = c(MA_Periods),
@@ -300,7 +300,7 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["AutoLagRollStats()"]] <- AutoLagRollStatsEnd - AutoLagRollStatsStart
   print("AutoLagRollStats() run time")
   print(ProfilerList[["AutoLagRollStats()"]])
-  
+
   # Add Time Trend Variable----
   if(PrintSteps) print("Running Time Trend Calculation")
   TimeTrendStart <- Sys.time()
@@ -315,20 +315,20 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["TimeTrend"]] <- TimeTrendEnd - TimeTrendStart
   print("TimeTrend run time")
   print(ProfilerList[["TimeTrend"]])
-  
+
   # Run Final Build----
   if(PrintSteps) print("Running ID_BuildTrainDataSets()")
   BuildDataSetsStart <- Sys.time()
   packages <- c("RemixAutoML","data.table","forecast","lubridate")
   cores <- parallel::detectCores()
-  
+
   # Create File Splitter Column Indicator----
   MetaData <- MetaData[, ID := runif(MetaData[,.N])][order(ID)][, ID := NULL]
   MetaData[, SelectRows := sample(c(seq_len(cores)), size = MetaData[,.N], replace = TRUE, prob = c(rep(1/cores, cores)))]
   data.table::set(MetaData, j = "GroupVar", value = as.character(MetaData[["GroupVar"]]))
   data.table::set(data, j = "GroupVar", value = as.character(data[["GroupVar"]]))
   data <- merge(x = data, y = MetaData[,.SD, .SDcols = c("GroupVar","SelectRows")], by = "GroupVar", all = FALSE)
-  
+
   # Parallelize Build----
   if(PrintSteps) print("Running Parallel Build")
   cl <- parallel::makePSOCKcluster(max(1L, min(as.numeric(cores), length(unique(MetaData[["SelectRows"]])))))
@@ -339,7 +339,7 @@ ContinuousTimeDataGenerator <- function(data,
       .combine = function(x, ...) mapply(function(...) data.table::rbindlist(list(...), use.names = TRUE, fill = TRUE), x, ..., SIMPLIFY = FALSE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
-        
+
         # Loops----
         ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
@@ -353,7 +353,7 @@ ContinuousTimeDataGenerator <- function(data,
           PowerRate = PowerRate,
           SampleRate = SampleRate,
           TargetWindowSamples = TargetWindowSamples)}, error = function(x) NULL)
-        
+
         # Store individual file outputs----
         if(!is.null(ModelDataSets)) {
           if(Case == 1L) {
@@ -372,7 +372,7 @@ ContinuousTimeDataGenerator <- function(data,
       .combine = function(...) data.table::rbindlist(list(...), use.names = TRUE, fill = TRUE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
-        
+
         # Loops----
         ModelDataSets <- tryCatch({ID_BuildTrainDataSets(
           MetaData = MetaData[SelectRows == eval(i)],
@@ -386,12 +386,12 @@ ContinuousTimeDataGenerator <- function(data,
           PowerRate = PowerRate,
           SampleRate = SampleRate,
           TargetWindowSamples = TargetWindowSamples)}, error = function(x) NULL)
-        
+
         # Store individual file outputs----
         if(!is.null(ModelDataSets)) ModelDataSets$CountModelData
       }
   }
-  
+
   # Store results----
   if(Case == 1L) {
     CountModelData <- Results$CountModelData
@@ -400,7 +400,7 @@ ContinuousTimeDataGenerator <- function(data,
   } else if(Case == 2L) {
     CountModelData <- Results
   }
-  
+
   # Shut down parallel objects----
   parallel::stopCluster(cl)
   rm(cl)
@@ -408,7 +408,7 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["BuildDataSets"]] <- BuildDataSetsEnd - BuildDataSetsStart
   print("BuildDataSets run time")
   print(ProfilerList[["BuildDataSets"]])
-  
+
   # Back-transform GroupingVariables----
   if(PrintSteps) print("Final Data Wrangling")
   BackTransformStart <- Sys.time()
@@ -424,10 +424,10 @@ ContinuousTimeDataGenerator <- function(data,
   ProfilerList[["BackTransform"]] <- BackTransformEnd - BackTransformStart
   print("Backtransform run time")
   print(ProfilerList[["BackTransform"]])
-  
+
   # Save Data----
   if(SaveData) {
-    
+
     # Save modeling data sets----
     if(Case == 1L) {
       data.table::fwrite(CountModelData, file = file.path(normalizePath(FilePath), "CountModelData.csv"))
@@ -435,24 +435,24 @@ ContinuousTimeDataGenerator <- function(data,
       data.table::fwrite(CountModelData, file = file.path(normalizePath(FilePath), "ModelingData.csv"))
     }
     if(exists("SizeModelData")) data.table::fwrite(SizeModelData, file = file.path(normalizePath(FilePath), "SizeModelData.csv"))
-    
+
     # Save column names for modeling data----
     CountPredNames <- names(CountModelData)
     if(exists("SizeModelData")) SizeModelData <- names(SizeModelData)
     save(CountPredNames, file = file.path(FilePath,"ModelDataColumnNames.csv"))
     if(exists("SizeModelData")) save(SizeModelData, file = file.path(normalizePath(FilePath), "SizePredNames.Rdata"))
   }
-  
+
   # Remove select rows----
   if("SelectRows" %chin% names(CountModelData)) data.table::set(CountModelData, j = "SelectRows", value = NULL)
-  
+
   # Reorder columns----
   if("TimeTrend" %chin% names(CountModelData)) {
     data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-2L):ncol(CountModelData), 1L:(ncol(CountModelData)-3L)))
   } else {
     data.table::setcolorder(x = CountModelData, neworder = c((ncol(CountModelData)-1L):ncol(CountModelData), 1L:(ncol(CountModelData)-2L)))
   }
-  
+
   # Return data sets----
   if(Case == 1L) {
     return(list(CountData = CountModelData, SizeData = SizeModelData, ProfilerList = ProfilerList))
@@ -495,17 +495,17 @@ ID_MetadataGenerator <- function(data,
                                  MinTimeWindow = 1L,
                                  MinTxnRecords = 2L,
                                  DateInterval = "day") {
-  
+
   # Define max date for sampling window----
   if(RestrictDateRange) {
-    
+
     # Per entity ID
     data[, max_date := max(get(DateVariableName)), by = list(GroupVar)]
-    
+
     # Set up base table----
     Step1 <- data[, .(.N, max(lubridate::floor_date(as.Date(max_date, unit = DateInterval)))), by = list(GroupVar)]
     data.table::setorderv(Step1, "N", -1L)
-    
+
   } else {
     if(tolower(DateInterval) == "week") {
       max_date <- data[, max(get(DateVariableName))][[1L]] - 7L * MinTimeWindow
@@ -514,37 +514,37 @@ ID_MetadataGenerator <- function(data,
     } else if(tolower(DateInterval) == "month") {
       max_date <- data[, max(get(DateVariableName))][[1L]] %m+% months(-MinTimeWindow)
     }
-    
+
     # Set up base table----
     Step1 <- data[, .(.N, lubridate::floor_date(as.Date(max_date, unit = DateInterval))), by = list(GroupVar)]
     data.table::setorderv(Step1, "N", -1)
   }
-  
+
   # Gather second to last distinct date by GroupingVariable----
   Step2 <- data[, .(.N, get(DateVariableName)), by = list(GroupVar)][order(GroupVar,-V2)][, sum(N), by = c(eval(GroupingVariables),"V2")][, txn := .N:1L, by = list(GroupVar)][txn == MinTxnRecords][, txn := NULL]
   data.table::setnames(Step2,c("V1","V2"),c("Txns","MinDate"))
   Step2 <- Step2[, .SD, .SDcols = c(eval(GroupingVariables),"MinDate")]
-  
+
   # Merge, change names, filter out infrequent levels----
   BaseTable2 <- merge(Step2, Step1, by = eval(GroupingVariables), all = FALSE)
   data.table::setnames(BaseTable2, c("N","V2"), c("Txns", "MaxDate"))
   if(tolower(DateInterval) == "raw") {
     BaseTable2 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = "day"))][order(-Txns)]
   } else {
-    BaseTable2 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = DateInterval))][order(-Txns)]  
+    BaseTable2 <- BaseTable2[, Date_Range := as.numeric(difftime(MaxDate, MinDate, units = DateInterval))][order(-Txns)]
   }
-  
+
   # Remove levels with less than MinTxnRecords distinct past dates----
   MetaData <- BaseTable2[Txns >= eval(MinTxnRecords)][Date_Range > 0L]
-  
+
   # Return data----
   return(MetaData)
 }
 
 #' ID_TrainingDataGenerator for subsetting data
-#' 
+#'
 #' ID_TrainingDataGenerator for subsetting data for the IntermittentDemandBootStrapper() function.
-#' 
+#'
 #' @param data Source data
 #' @param Type "timetoevent1", "eventinwindow1"
 #' @param TargetVariableName Name of the variables to run feature engineering on. List the actual target variable name first.
@@ -564,14 +564,14 @@ ID_TrainingDataGenerator <- function(data,
                                      RandomStartDate = NULL,
                                      TimeUnit = NULL,
                                      TargetWindow = NULL) {
-  
+
   # historical data <--> point in time <--> target window----
   histDemandRaw <- data[get(DateVariableName) < eval(RandomStartDate)]
-  
+
   # Data within target window----
   counter <- 0L
   for(tar in TargetWindow) {
-    
+
     # Target variable data
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       targetDemand  <- data[
@@ -582,19 +582,19 @@ ID_TrainingDataGenerator <- function(data,
         get(DateVariableName) >= eval(RandomStartDate) &
           get(DateVariableName) - eval(tar) <= eval(RandomStartDate)]
     }
-    
+
     # Add in the time since last demand instance from RandomStartDate----
     histDemandRaw <- histDemandRaw[order(-get(DateVariableName))][, TimeSinceLastDemand := as.numeric(difftime(RandomStartDate,get(DateVariableName), units = TimeUnit))]
-    
+
     # Remove meta data for feature creation set----
     features <- histDemandRaw[order(-get(DateVariableName))][, paste0(eval(DateVariableName)) := NULL][1L,]
     data.table::set(features, j = "FC_Window", value = tar)
-    
+
     # Remove data and rename target variable----
     keep <- eval(TargetVariableName)
     targetDemand <- targetDemand[, ..keep]
     data.table::setnames(targetDemand, old = eval(TargetVariableName[1L]), new = "Size")
-    
+
     # Merge Features and Targets----
     if(nrow(targetDemand) != 0L) {
       TargetCount <- cbind(targetDemand[, .(Counts = .N)], features)
@@ -604,7 +604,7 @@ ID_TrainingDataGenerator <- function(data,
       TargetSize  <- cbind(data.table::data.table(Temp = 0L), features)
       data.table::setnames(TargetSize, "Temp", "Size")
     }
-    
+
     # Combine data sets----
     counter <- counter + 1L
     if(counter == 1L) {
@@ -615,15 +615,15 @@ ID_TrainingDataGenerator <- function(data,
       SizeFinal <- data.table::rbindlist(list(SizeFinal,TargetSize), fill = TRUE)
     }
   }
-  
+
   # Output data file----
   return(list(CountData = CountFinal, SizeData = SizeFinal))
 }
 
 #' ID_TrainingDataGenerator2 for subsetting data
-#' 
+#'
 #' ID_TrainingDataGenerator2 for subsetting data for the IntermittentDemandBootStrapper() function.
-#' 
+#'
 #' @param data Source data
 #' @param TargetVariableName vector of variable names
 #' @param Level The individual level of your group variable
@@ -641,24 +641,24 @@ ID_TrainingDataGenerator2 <- function(data,
                                       RandomStartDate = NULL,
                                       TimeUnit = NULL,
                                       TargetWindow = NULL) {
-  
+
   # historical data <--> point in time <--> target window----
   histDemandRaw <- data[get(DateVariableName) < eval(RandomStartDate)]
-  
+
   # Data within target window----
   counter <- 0L
   for(tar in TargetWindow) {
-    
+
     # Classification target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - 86400L * eval(tar) <= eval(RandomStartDate), get(TargetVariableName[1L])], na.rm = TRUE)
     } else {
       binarytarget <- min(data[get(DateVariableName) > eval(RandomStartDate) & get(DateVariableName) - eval(tar) <= eval(RandomStartDate), get(TargetVariableName[1L])], na.rm = TRUE)
     }
-    
+
     # Build records----
     if(!is.finite(binarytarget)) binarytarget <- 0L
-    
+
     # Time to event target variable data----
     if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
       temp <- data[get(DateVariableName) > eval(RandomStartDate), get(TargetVariableName[1L])]
@@ -669,47 +669,47 @@ ID_TrainingDataGenerator2 <- function(data,
       temp <- temp[!is.na(temp)]
       if(is.na(temp[1L])) timetoevent <- 0L else timetoevent <- temp[length(temp)]
     }
-    
+
     # Build records----
     if(is.numeric(timetoevent) | is.integer(timetoevent)) {
-      
+
       # Time to event target variable data----
       if(lubridate::is.POSIXct(data[[eval(DateVariableName)]])) {
         outcome <- as.character(data[get(DateVariableName) - 86400 * eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1L])
       } else {
         outcome <- as.character(data[get(DateVariableName) - eval(tar) > eval(RandomStartDate), get(TargetVariableName[2L])][1L])
       }
-      
+
       # Add in the time since last demand instance from RandomStartDate----
       data.table::setorderv(x = histDemandRaw, cols = eval(DateVariableName), order = -1L)
       features <- histDemandRaw[1L]
       data.table::set(features, j = "TimeSinceLastDemand", value = as.numeric(difftime(RandomStartDate, features[[eval(DateVariableName)]], units = TimeUnit)))
-        
+
       # Remove meta data for feature creation set----
       data.table::set(features, j = unique(TargetVariableName), value = NULL)
       data.table::set(features, j = "FC_Window", value = tar)
-      
+
       # Merge Features and Targets----
       temp <- cbind(binarytarget, timetoevent, outcome, features)
       data.table::setnames(temp, names(temp)[1L], "BinaryOutcome")
       data.table::setnames(temp, names(temp)[2L], "TimeToEvent")
       data.table::setnames(temp, names(temp)[3L], "Outcome")
       data.table::set(temp, j = "BinaryOutcome", value = data.table::fifelse(temp[["BinaryOutcome"]] == 0L, 1L, 0L))
-      
+
       # Combine data sets----
       counter <- counter + 1L
       if(counter == 1L) Final <- temp else Final <- data.table::rbindlist(list(Final,temp), use.names = TRUE, fill = TRUE)
     }
   }
-  
+
   # Output data file----
   return(data = Final)
 }
 
 #' ID_BuildTrainDataSets for assembling data
-#' 
+#'
 #' ID_BuildTrainDataSets for assembling data for the IntermittentDemandBootStrapper() function.
-#' 
+#'
 #' @param MetaData This is the metadata returned from the ID_MetadataGenerator() function
 #' @param data This is your transactional data
 #' @param Case Indicate which data constructor method to use
@@ -718,7 +718,7 @@ ID_TrainingDataGenerator2 <- function(data,
 #' @param GroupingVariables Your grouping variables
 #' @param FC_Periods The number of periods to forecast
 #' @param TimeUnit The time period unit, such as "day", "week", or "month"
-#' @param PowerRate The calculated for determining the total samples is number of records to the power of PowerRate. Then that values is multiplied by the SampleRate. This ensures that a more representative sample is generated across the data set. 
+#' @param PowerRate The calculated for determining the total samples is number of records to the power of PowerRate. Then that values is multiplied by the SampleRate. This ensures that a more representative sample is generated across the data set.
 #' @param SampleRate The value used to sample from each level of the grouping variables
 #' @param TargetWindowSamples The number of different targets to utilize for a single random start date
 #' @noRd
@@ -734,7 +734,7 @@ ID_BuildTrainDataSets <- function(MetaData,
                                   PowerRate = 0.5,
                                   SampleRate = 5L,
                                   TargetWindowSamples = 5L) {
-  
+
   # Define DateUnit----
   if(TimeUnit == "week") {
     DateUnit <- 7L
@@ -746,64 +746,64 @@ ID_BuildTrainDataSets <- function(MetaData,
     DateUnit <- 1L
     TimeUnit <- "day"
   }
-  
+
   # Set up collection objects----
   SMD <- list()
   CMD <- list()
   j <- 0L
-  
+
   # Store levels in vector----
   LevelVector <- as.character(MetaData[, get(GroupingVariables)])
-  
+
   # Store number of levels to go through----
   LevelCount <- length(LevelVector)
-  
+
   # Create modeling data----
   for(level in LevelVector) {
-    
+
     # Set iterations----
     issuances  <- as.numeric(ceiling(MetaData[get(GroupingVariables) == eval(level), "Txns"][[1L]]))
     iterations <- ceiling((issuances^PowerRate)*SampleRate)
-    
+
     # Check to ensure issuances and iterations exist----
     if(length(issuances) == 0L | length(iterations) == 0L) next
     j <- j + 1L
-    
+
     # Track progress----
     print(j / LevelCount)
-    
+
     # Initialize / reset storage lists----
     countData <- list()
     sizeData  <- list()
-    
+
     # Subset data before looping through a single GroupingVariable----
     level_data <- data[get(GroupingVariables) == eval(level)]
-    
+
     # Set date range----
     DateRange <- MetaData[GroupVar == eval(level), "Date_Range"][[1]]
-    
+
     # Data generator
     for(i in seq_len(iterations)) {
-      
+
       # Set Random Starting Date----
       if(lubridate::is.POSIXct(MetaData$MinDate[1])) {
-        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] + 
+        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1]] +
           DateUnit * ceiling(sample(86400L:(86400L * DateUnit * DateRange), 1L))
       } else {
-        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1L]] + 
+        RandomStartDate <- MetaData[GroupVar == eval(level), "MinDate"][[1L]] +
           DateUnit * ceiling(sample(1L:(DateUnit*DateRange), 1L))
       }
-      
+
       # Set Target Window Max Sample Window----
       TargetWindowMax <- min(ceiling(as.numeric(difftime(
-              lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1L]], unit = TimeUnit), 
-              RandomStartDate, 
+              lubridate::floor_date(MetaData[get(GroupingVariables) == eval(level), "MaxDate"][[1L]], unit = TimeUnit),
+              RandomStartDate,
               units = TimeUnit))),
               FC_Periods)
-      
+
       # Set Target Window----
       TargetWindow <- sample(x = seq_len(TargetWindowMax), size = TargetWindowSamples, replace = TRUE)
-      
+
       # Create samples----
       if(Case == 1L) {
         SampleData <- ID_TrainingDataGenerator(
@@ -822,7 +822,7 @@ ID_BuildTrainDataSets <- function(MetaData,
           TimeUnit = TimeUnit,
           TargetWindow = TargetWindow)
       }
-      
+
       # Build data sets----
       if(Case == 1L) {
         if(i == 1L) {
@@ -840,7 +840,7 @@ ID_BuildTrainDataSets <- function(MetaData,
         }
       }
     }
-    
+
     # Collect samples----
     if(Case == 1L) {
       if(j == 1L) {
@@ -858,7 +858,7 @@ ID_BuildTrainDataSets <- function(MetaData,
       }
     }
   }
-  
+
   # Return data----
   if(Case == 1L) {
     return(list(CountModelData = CMD, SizeModelData = SMD))

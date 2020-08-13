@@ -93,7 +93,7 @@ ContinuousTimeDataGenerator(
 
 \item{HolidayGroups}{Input the holiday groups of your choice from the CreateHolidayVariable() function in this package}
 
-\item{PowerRate}{}
+\item{PowerRate}{Sampling parameter}
 
 \item{SampleRate}{Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate.}
 
@@ -139,7 +139,7 @@ DataSets <- ContinuousTimeDataGenerator(data,
                                                               "quarter",
                                                               "year"),
                                         HolidayGroups = "USPublicHolidays",
-                                        PowerRate = 0.5,             
+                                        PowerRate = 0.5,
                                         SampleRate = 5,
                                         TargetWindowSamples = 5,
                                         PrintSteps = TRUE)
