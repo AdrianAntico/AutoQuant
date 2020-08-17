@@ -670,6 +670,28 @@ SQL_Server_DBConnection <- function(DataBaseName = "",
 #' @param ASIS Auto column typing
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @export
+SQL_Query_Push <- function(DBConnection,
+                           Query,
+                           CloseChannel = TRUE) {
+  library(RODBC)
+  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!is.null(Query)) {
+    RODBC::sqlQuery(channel = DBConnection, query = Query)
+    if(CloseChannel) close(DBConnection)
+  }
+}
+
+#' SQL_Query
+#'
+#' SQL_Query get data from a database
+#'
+#' @author Adrian Antico
+#' @family Data Wrangling
+#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param Query The SQL statement you want to run
+#' @param ASIS Auto column typing
+#' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @export
 SQL_Query <- function(DBConnection,
                       Query,
                       ASIS = FALSE,
