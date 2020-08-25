@@ -36,19 +36,6 @@ Saves metadata and models to files of your choice. Also returns metadata and mod
 \description{
 AutoChainLadderForecast() for generating forecasts
 }
-\examples{
-\donttest{
-AutoChainLadderForecast(
-   data,
-   OutputFilePath = getwd(),
-   FC_BaseFunnelMeasure = xx,
-   SegmentName = NULL,
-   MaxDateForecasted = NULL,
-   MaxCalendarDate = NULL,
-   ArgsList = NULL,
-   MaxCohortPeriods = NULL)
-}
-}
 \seealso{
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},

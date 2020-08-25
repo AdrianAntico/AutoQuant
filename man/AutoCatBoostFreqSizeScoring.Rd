@@ -58,7 +58,6 @@ FinalData <- AutoCatBoostFreqSizeScoring(
 \seealso{
 Other Automated Time Series: 
 \code{\link{AutoCatBoostCARMA}()},
-\code{\link{AutoCatBoostChainLadder}()},
 \code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFCARMA}()},
 \code{\link{AutoH2oGBMCARMA}()},
@@ -66,6 +65,7 @@ Other Automated Time Series:
 \code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoH2oGLMCARMA}()},
 \code{\link{AutoH2oMLCARMA}()},
+\code{\link{AutoMLChainLadder}()},
 \code{\link{AutoTS}()},
 \code{\link{AutoXGBoostCARMA}()},
 \code{\link{IntermittentDemandScoringDataGenerator}()},
