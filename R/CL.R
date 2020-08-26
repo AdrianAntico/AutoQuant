@@ -70,6 +70,7 @@
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
+#' @export
 CLTrainer <- function(data,
                       PartitionRatios = c(0.70,0.20,0.10),
                       BaseFunnelMeasure = NULL,
@@ -846,6 +847,7 @@ CLTrainer <- function(data,
 #' @param ArgsList Argument list returned from AutoCatBoostChainLadder
 #' @param MaxCohortPeriods The maximum amount of ArgsList$CohortPeriodsVariable to utilize for forecasting
 #' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
+#' @export
 CLForecast <- function(data,
                        OutputFilePath = NULL,
                        FC_BaseFunnelMeasure = NULL,
