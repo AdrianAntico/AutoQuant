@@ -2,7 +2,7 @@
 % Please edit documentation in R/CL.R
 \name{CLForecast}
 \alias{CLForecast}
-\title{AutoChainLadderForecast()}
+\title{CLForecast()}
 \usage{
 CLForecast(
   data,
@@ -34,7 +34,7 @@ CLForecast(
 Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
 }
 \description{
-AutoChainLadderForecast() for generating forecasts
+CLForecast() for generating forecasts
 }
 \seealso{
 Other Automated Model Scoring: 
