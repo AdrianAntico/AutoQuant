@@ -16,22 +16,22 @@ CLForecast(
 )
 }
 \arguments{
-\item{data}{Name of your data.table}
+\item{data}{N}
 
-\item{OutputFilePath}{Pathfile for where you want to store you forecast data}
+\item{OutputFilePath}{P}
 
-\item{FC_BaseFunnelMeasure}{data.table containing the forward looking FC_BaseFunnelMeasure}
+\item{FC_BaseFunnelMeasure}{d}
 
-\item{MaxDateForecasted}{Supply a value if you want to backtest}
+\item{MaxDateForecasted}{S}
 
-\item{MaxCalendarDate}{Supply a value if you want to backtest}
+\item{MaxCalendarDate}{S}
 
-\item{ArgsList}{Argument list returned from AutoCatBoostChainLadder}
+\item{ArgsList}{A}
 
-\item{MaxCohortPeriods}{The maximum amount of ArgsList$CohortPeriodsVariable to utilize for forecasting}
+\item{MaxCohortPeriods}{T}
 }
 \value{
-Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
+S
 }
 \description{
 CLForecast for generating forecasts

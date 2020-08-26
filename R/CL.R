@@ -4,72 +4,72 @@
 #'
 #' @author Adrian Antico
 #' @family Automated Time Series
-#' @param data data object
-#' @param PartitionRatios Requires three values for train, validation, and test data sets
-#' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
-#' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
-#' @param ConversionRateMeasure Conversions over Leads for every cohort
-#' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date.
-#' @param TargetVariable Target Variable Name
-#' @param CalendarDate The name of your date column that represents the calendar date
-#' @param CohortDate The name of your date column that represents the cohort date
-#' @param TruncateDate NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.
-#' @param MaxCohortPeriods The maximum number of CohortPeriodsVariable out to include in modeling
-#' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
-#' @param TransformTargetVariable TRUE or FALSe
-#' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
-#' @param AnomalyDetection Provide a named list. See examples
-#' @param Jobs Default is "eval" and "train"
-#' @param CalendarTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
-#' @param CohortTimeGroups TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".
-#' @param ModelPath Path to where you want your models saved
-#' @param MetaDataPath Path to where you want your metadata saved. If NULL, function will try ModelPath if it is not NULL.
-#' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
-#' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
-#' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
-#' @param TaskType "GPU" or "CPU" for catboost training
-#' @param NumGPUs Number of GPU's you would like to utilize
-#' @param EvaluationMetric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
-#' @param NumOfParDepPlots Number of partial dependence plots to return
-#' @param MetricPeriods Number of trees to build before the internal catboost eval step happens
-#' @param DT_Threads Number of threads to use for data.table. Default is Total - 2
-#' @param ImputeRollStats Constant value to fill NA after running AutoLagRollStats()
-#' @param CohortHolidayLags c(1L, 2L, 7L),
-#' @param CohortHolidayMovingAverages c(3L, 7L),
-#' @param CalendarHolidayLags c(1L, 2L, 7L),
-#' @param CalendarHolidayMovingAverages = c(3L, 7L),
-#' @param CalendarLags List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarMovingAverages List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarSkews List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarKurts List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarQuantiles List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CalendarQuantilesSelected Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"
-#' @param CohortLags List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortMovingAverages List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortStandardDeviations List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortSkews List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortKurts List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortQuantiles List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))
-#' @param CohortQuantilesSelected Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"
-#' @param CalendarVariables "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
-#' @param HolidayGroups c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts")
-#' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
-#' @param MaxModelsInGrid Number of models to test from grid options
-#' @param MaxRunMinutes Maximum number of minutes to let this run
-#' @param MaxRunsWithoutNewWinner Number of models built before calling it quits
-#' @param Trees Bandit grid partitioned. The maximum number of trees you want in your models
-#' @param Depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
-#' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
-#' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
-#' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
-#' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
-#' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
-#' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
+#' @param data data
+#' @param PartitionRatios R
+#' @param BaseFunnelMeasure E into the future. You should have two months into the future of values of BaseFunnelMeasure
+#' @param ConversionMeasure E
+#' @param ConversionRateMeasure C
+#' @param CohortPeriodsVariable N
+#' @param TargetVariable T
+#' @param CalendarDate T
+#' @param CohortDate T
+#' @param TruncateDate N
+#' @param MaxCohortPeriods T
+#' @param TimeUnit B
+#' @param TransformTargetVariable T
+#' @param TransformMethods C
+#' @param AnomalyDetection P
+#' @param Jobs D
+#' @param CalendarTimeGroups T
+#' @param CohortTimeGroups T
+#' @param ModelPath P
+#' @param MetaDataPath P
+#' @param ModelID A
+#' @param NumOfParDepPlots T
+#' @param ReturnModelObjects S
+#' @param SaveModelObjects S
+#' @param TaskType t
+#' @param NumGPUs N
+#' @param EvaluationMetric T
+#' @param LossFunction U
+#' @param NumOfParDepPlots N
+#' @param MetricPeriods N
+#' @param DT_Threads N
+#' @param ImputeRollStats C
+#' @param CohortHolidayLags c
+#' @param CohortHolidayMovingAverages c
+#' @param CalendarHolidayLags c
+#' @param CalendarHolidayMovingAverages c
+#' @param CalendarLags L
+#' @param CalendarMovingAverages L
+#' @param CalendarStandardDeviations L
+#' @param CalendarSkews L
+#' @param CalendarKurts L
+#' @param CalendarQuantiles L
+#' @param CalendarQuantilesSelected S
+#' @param CohortLags L
+#' @param CohortMovingAverages L
+#' @param CohortStandardDeviations L
+#' @param CohortSkews L
+#' @param CohortKurts L
+#' @param CohortQuantiles L
+#' @param CohortQuantilesSelected S
+#' @param CalendarVariables w
+#' @param HolidayGroups c
+#' @param PassInGrid D
+#' @param GridTune S
+#' @param BaselineComparison S
+#' @param MaxModelsInGrid N
+#' @param MaxRunMinutes M
+#' @param MaxRunsWithoutNewWinner N
+#' @param Trees B
+#' @param Depth B
+#' @param LearningRate B
+#' @param L2_Leaf_Reg R
+#' @param RSM C
+#' @param BootStrapType R
+#' @param GrowPolicy R
+#' @return S
 #' @export
 CLTrainer <- function(data,
                       PartitionRatios = c(0.70,0.20,0.10),
@@ -839,14 +839,14 @@ CLTrainer <- function(data,
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
-#' @param data Name of your data.table
-#' @param FC_BaseFunnelMeasure data.table containing the forward looking FC_BaseFunnelMeasure
-#' @param OutputFilePath Pathfile for where you want to store you forecast data
-#' @param MaxDateForecasted Supply a value if you want to backtest
-#' @param MaxCalendarDate Supply a value if you want to backtest
-#' @param ArgsList Argument list returned from AutoCatBoostChainLadder
-#' @param MaxCohortPeriods The maximum amount of ArgsList$CohortPeriodsVariable to utilize for forecasting
-#' @return Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
+#' @param data N
+#' @param FC_BaseFunnelMeasure d
+#' @param OutputFilePath P
+#' @param MaxDateForecasted S
+#' @param MaxCalendarDate S
+#' @param ArgsList A
+#' @param MaxCohortPeriods T
+#' @return S
 #' @export
 CLForecast <- function(data,
                        OutputFilePath = NULL,
