@@ -202,9 +202,9 @@ Other Automated Time Series:
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoH2oGLMCARMA}()},
-\code{\link{AutoMLChainLadder}()},
 \code{\link{AutoTS}()},
 \code{\link{AutoXGBoostCARMA}()},
+\code{\link{CLTrainer}()},
 \code{\link{IntermittentDemandScoringDataGenerator}()},
 \code{\link{PredictArima}()}
 }

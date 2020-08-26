@@ -104,11 +104,11 @@ Preds <- AutoCatBoostScoring(TargetType = "regression",
 }
 \seealso{
 Other Automated Model Scoring: 
-\code{\link{AutoChainLadderForecast}()},
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoH2OModeler}()},
 \code{\link{AutoHurdleScoring}()},
-\code{\link{AutoXGBoostScoring}()}
+\code{\link{AutoXGBoostScoring}()},
+\code{\link{CLForecast}()}
 }
 \author{
 Adrian Antico
