@@ -833,9 +833,9 @@ CLTrainer <- function(data,
   return(ArgsList)
 }
 
-#' CLForecast()
+#' CLForecast
 #'
-#' CLForecast() for generating forecasts
+#' CLForecast for generating forecasts
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
