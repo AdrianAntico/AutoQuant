@@ -1898,7 +1898,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Time Series, and Panel Data: <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Time Series and Panel Data: <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
