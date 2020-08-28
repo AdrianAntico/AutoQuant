@@ -71,5 +71,5 @@ PrintObjectsSize <- function(N = 10) {
 #' data[, Percentile := percRank(A)]
 #' @export
 percRank <- function(x) {
-  trunc(rank(x)) / length(x)
+  trunc(data.table::frank(x)) / length(x)
 }
