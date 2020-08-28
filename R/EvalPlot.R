@@ -15,7 +15,7 @@
 #' # Create fake data
 #' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = TRUE)
 #' data.table::setnames(data, "IDcol_1", "Predict")
-#' 
+#'
 #' # Run function
 #' EvalPlot(data,
 #'          MaxRows = 100000L,
@@ -32,27 +32,27 @@ EvalPlot <- function(data,
                      GraphType        = c("calibration"),
                      PercentileBucket = 0.05,
                      aggrfun     = function(x) mean(x, na.rm = TRUE)) {
-  
+
   # Turn data into data.table if not already----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Structure data
   data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName))]
   data.table::setcolorder(data, c(PredictionColName, TargetColName))
   data.table::setnames(data, c(PredictionColName, TargetColName), c("preds", "acts"))
-  
+
   # If actual is in factor form, convert to numeric----
   if(!is.numeric(data[["acts"]])) {
     data.table::set(data, j = "acts", value = as.numeric(as.character(data[["acts"]])))
     GraphType <- "calibration"
   }
-  
+
   # Subset data if too big----
   if(data[,.N] > MaxRows) data <- data[order(runif(data[,.N]))][1L:MaxRows]
-  
+
   # Add a column that ranks predicted values----
   data[, rank := 100 * (round(percRank(preds) / PercentileBucket) * PercentileBucket)]
-  
+
   # Plot----
   if(GraphType == "boxplot") {
     data.table::set(data, j = "rank", value = as.factor(data[["rank"]]))
@@ -72,7 +72,7 @@ EvalPlot <- function(data,
       ggplot2::ylab("Observed Values") +
       ChartTheme(Size = 15) +
       ggplot2::scale_fill_manual(values = c("blue", "red"))
-    
+
   } else {
     data <- data[, lapply(.SD, noquote(aggrfun)), by = list(rank)]
     plot  <- ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
