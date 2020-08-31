@@ -44,6 +44,9 @@ ParDepCalPlots <- function(data,
   # Build buckets by independent variable of choice----
   preds2 <- data.table::as.data.table(data)
 
+  # Cap number of records----
+  if(data[.N] > 1000000) data <- data[order(runif(.N))][1:1000000]
+
   # Subset columns----
   cols <- c(PredictionColName, TargetColName, IndepVar)
   preds2 <- preds2[, ..cols]

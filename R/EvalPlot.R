@@ -33,6 +33,9 @@ EvalPlot <- function(data,
   # Turn data into data.table if not already----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # Cap number of records----
+  if(data[.N] > 1000000) data <- data[order(runif(.N))][1:1000000]
+
   # Structure data
   data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName))]
   data.table::setcolorder(data, c(PredictionColName, TargetColName))
