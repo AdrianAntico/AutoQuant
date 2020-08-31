@@ -4,7 +4,6 @@
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
-#' @param MaxRows Defaults to 100000 rows
 #' @param PredictionColName Predicted values column names
 #' @param TargetColName Target value column names
 #' @param IndepVar Independent variable column names
@@ -22,7 +21,6 @@
 #' # Build plot
 #' Plot <- RemixAutoML::ParDepCalPlots(
 #'   data,
-#'   MaxRows = 100000L,
 #'   PredictionColName = "Predict",
 #'   TargetColName = "Adrian",
 #'   IndepVar = "Independent_Variable1",
@@ -32,7 +30,6 @@
 #'   Function = function(x) mean(x, na.rm = TRUE))
 #' @export
 ParDepCalPlots <- function(data,
-                           MaxRows = 100000L,
                            PredictionColName = c("PredictedValues"),
                            TargetColName  = c("ActualValues"),
                            IndepVar    = c("Independent_Variable_Name"),
@@ -43,9 +40,6 @@ ParDepCalPlots <- function(data,
 
   # Turn off ggplot2 warnings----
   options(warn = -1L)
-
-  # Subset data if too big----
-  if(data[,.N] > MaxRows) data <- data[order(runif(data[,.N]))][1L:MaxRows]
 
   # Build buckets by independent variable of choice----
   preds2 <- data.table::as.data.table(data)
@@ -66,7 +60,7 @@ ParDepCalPlots <- function(data,
 
   # Prepare for both calibration and boxplot----
   if(is.numeric(preds2[[IndepVar]]) | is.integer(preds2[[IndepVar]])) {
-    preds2[, rank := 100 * (round(percRank(preds2[[IndepVar]]) / PercentileBucket) * PercentileBucket)]
+    preds2[, rank := data.table::frank(preds2[[IndepVar]])]
   } else {
     GraphType <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]

@@ -4,7 +4,6 @@
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
 #' @param data Data containing predicted values and actual values for comparison
-#' @param MaxRows Defaults to 100000 rows
 #' @param PredictionColName String representation of column name with predicted values from model
 #' @param TargetColName String representation of column name with target values from model
 #' @param GraphType Calibration or boxplot - calibration aggregated data based on summary statistic; boxplot shows variation
@@ -18,7 +17,6 @@
 #'
 #' # Run function
 #' EvalPlot(data,
-#'          MaxRows = 100000L,
 #'          PredictionColName = "Predict",
 #'          TargetColName = "Adrian",
 #'          GraphType = "calibration",
@@ -26,7 +24,6 @@
 #'          aggrfun = function(x) mean(x, na.rm = TRUE))
 #' @export
 EvalPlot <- function(data,
-                     MaxRows = 100000L,
                      PredictionColName = c("PredictedValues"),
                      TargetColName  = c("ActualValues"),
                      GraphType        = c("calibration"),
@@ -46,9 +43,6 @@ EvalPlot <- function(data,
     data.table::set(data, j = "acts", value = as.numeric(as.character(data[["acts"]])))
     GraphType <- "calibration"
   }
-
-  # Subset data if too big----
-  if(data[,.N] > MaxRows) data <- data[order(runif(data[,.N]))][1L:MaxRows]
 
   # Add a column that ranks predicted values----
   data[, rank := data.table::frank(preds)]

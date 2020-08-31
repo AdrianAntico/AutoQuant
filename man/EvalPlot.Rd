@@ -6,7 +6,6 @@
 \usage{
 EvalPlot(
   data,
-  MaxRows = 100000L,
   PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"),
   GraphType = c("calibration"),
@@ -16,8 +15,6 @@ EvalPlot(
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
-
-\item{MaxRows}{Defaults to 100000 rows}
 
 \item{PredictionColName}{String representation of column name with predicted values from model}
 
@@ -42,7 +39,6 @@ data.table::setnames(data, "IDcol_1", "Predict")
 
 # Run function
 EvalPlot(data,
-         MaxRows = 100000L,
          PredictionColName = "Predict",
          TargetColName = "Adrian",
          GraphType = "calibration",

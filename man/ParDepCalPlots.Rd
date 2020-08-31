@@ -6,7 +6,6 @@
 \usage{
 ParDepCalPlots(
   data,
-  MaxRows = 100000L,
   PredictionColName = c("PredictedValues"),
   TargetColName = c("ActualValues"),
   IndepVar = c("Independent_Variable_Name"),
@@ -18,8 +17,6 @@ ParDepCalPlots(
 }
 \arguments{
 \item{data}{Data containing predicted values and actual values for comparison}
-
-\item{MaxRows}{Defaults to 100000 rows}
 
 \item{PredictionColName}{Predicted values column names}
 
@@ -50,7 +47,6 @@ data.table::setnames(data, "Independent_Variable2", "Predict")
 # Build plot
 Plot <- RemixAutoML::ParDepCalPlots(
   data,
-  MaxRows = 100000L,
   PredictionColName = "Predict",
   TargetColName = "Adrian",
   IndepVar = "Independent_Variable1",
