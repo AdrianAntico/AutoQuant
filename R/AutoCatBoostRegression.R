@@ -756,7 +756,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Regression Save Model----
-  if (SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
+  if(SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
 
   # Regression Score Final Test Data----
   if(!is.null(TestData)) {

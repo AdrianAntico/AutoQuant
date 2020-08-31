@@ -35,7 +35,6 @@ Other Misc:
 \code{\link{ChartTheme}()},
 \code{\link{PrintObjectsSize}()},
 \code{\link{SimpleCap}()},
-\code{\link{percRank}()},
 \code{\link{tempDatesFun}()},
 \code{\link{tokenizeH2O}()}
 }

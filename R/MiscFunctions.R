@@ -54,22 +54,3 @@ PrintObjectsSize <- function(N = 10) {
     object.size(get(x))
   }))[1:z] / 1024 / 1024)
 }
-
-#' Percentile rank function
-#'
-#' This function computes percentile ranks for each row in your data like Excel's PERCENT_RANK
-#'
-#' @author Adrian Antico
-#' @family Misc
-#' @param x X is your variable of interest
-#' @examples
-#' data <- data.table::data.table(A = runif(100))
-#' data[, Rank := percRank(A)]
-#' @return vector of percentile ranks
-#' @examples
-#' data <- data.table::data.table(A = runif(100))
-#' data[, Percentile := percRank(A)]
-#' @export
-percRank <- function(x) {
-  trunc(data.table::frank(x)) / length(x)
-}

@@ -51,7 +51,7 @@ EvalPlot <- function(data,
   if(data[,.N] > MaxRows) data <- data[order(runif(data[,.N]))][1L:MaxRows]
 
   # Add a column that ranks predicted values----
-  data[, rank := 100 * (round(percRank(preds) / PercentileBucket) * PercentileBucket)]
+  data[, rank := data.table::frank(preds)]
 
   # Plot----
   if(GraphType == "boxplot") {

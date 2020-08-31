@@ -26,7 +26,6 @@ Other Misc:
 \code{\link{ChartTheme}()},
 \code{\link{RPM_Binomial_Bandit}()},
 \code{\link{SimpleCap}()},
-\code{\link{percRank}()},
 \code{\link{tempDatesFun}()},
 \code{\link{tokenizeH2O}()}
 }

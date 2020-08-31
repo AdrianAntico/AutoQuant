@@ -41,7 +41,6 @@ Other Misc:
 \code{\link{PrintObjectsSize}()},
 \code{\link{RPM_Binomial_Bandit}()},
 \code{\link{SimpleCap}()},
-\code{\link{percRank}()},
 \code{\link{tempDatesFun}()},
 \code{\link{tokenizeH2O}()}
 }
