@@ -48,7 +48,7 @@ EvalPlot <- function(data,
   }
 
   # Add a column that ranks predicted values----
-  data[, rank := data.table::frank(preds)]
+  data[, rank := round(data.table::frank(preds) * (1/PercentileBucket) /.N) * PercentileBucket]
 
   # Plot----
   if(GraphType == "boxplot") {

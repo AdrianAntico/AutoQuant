@@ -63,7 +63,7 @@ ParDepCalPlots <- function(data,
 
   # Prepare for both calibration and boxplot----
   if(is.numeric(preds2[[IndepVar]]) | is.integer(preds2[[IndepVar]])) {
-    preds2[, rank := data.table::frank(preds2[[IndepVar]])]
+    preds2[, rank := round(data.table::frank(preds2[[IndepVar]]) * (1/PercentileBucket) /.N) * PercentileBucket]
   } else {
     GraphType <- "FactorVar"
     preds2[, id := seq_len(.N), by = get(IndepVar)]
