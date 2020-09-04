@@ -868,7 +868,7 @@ AutoCatBoostRegression <- function(data,
           ValidationData[, Metric := (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2]
           Metric <- sqrt(ValidationData[, mean(Metric, na.rm = TRUE)])
         } else if(tolower(metric) == "r2") {
-          ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName)]] - MeanTrainTarget) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2)]
+          ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName)]] - TrainData[, mean(get(TargetColumnName))]) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName)]] - Predict) ^ 2)]
           Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] / ValidationData[, sum(Metric1, na.rm = TRUE)]
         }
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
