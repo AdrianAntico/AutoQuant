@@ -504,7 +504,9 @@ CLTrainer <- function(data,
 
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
-      temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
+      #temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
+      temp <- data[, sum(get(ConversionMeasure)), by = eval(CohortDate)]
+      data.table::setnames(temp, eval(CohortDate), eval(CalendarDate))
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
 
@@ -875,8 +877,8 @@ CLForecast <- function(data,
     print("# Prepare data----")
 
     # Convert to date----
-    if(class(data[[eval(ArgsList$CalendarDate)]]) != "Date") data[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
-    if(class(data[[ArgsList$CohortDate]]) != "Date") data[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
+    if(!all(class(data[[eval(ArgsList$CalendarDate)]]) %chin% "Date")) data[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
+    if(!all(class(data[[eval(ArgsList$CohortDate)]]) != "Date")) data[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
 
     # Add indicator variable for AutoLagRollStatsScoring() so it knows what to score and what not to. A value of 1 indicates that the record should be scored. All others are not scored----
     data[, ScoreRecords := 2]
