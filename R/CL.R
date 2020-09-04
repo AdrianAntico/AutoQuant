@@ -1076,10 +1076,11 @@ CLForecast <- function(data,
       rm(temp)
     }
 
-    # FE: Total Transfers by CalendarDate AutoLagRollStatsScoring----
+    # FE: Total Conversion Measure by CalendarDate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
-    temp <- temp[get(ArgsList$CohortDate) == get(ArgsList$CalendarDate), list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CalendarDate))]
+    #temp <- temp[get(ArgsList$CohortDate) == get(ArgsList$CalendarDate), list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CalendarDate))]
+    temp <- temp[, list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CohortDate))]
     data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$ConversionMeasure)))
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
