@@ -281,7 +281,8 @@ CLTrainer <- function(data,
     }
 
     # FE: CreateCalendarVariables() CalendarDate and CohortDate----
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate), eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
+    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
+    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables)
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
@@ -941,7 +942,8 @@ CLForecast <- function(data,
 
     # FE: Calendar & Holiday Variables----
     print("# Feature Engineering----")
-    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(ArgsList$CalendarDate, ArgsList$CohortDate), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
+    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(ArgsList$CalendarDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
+    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(ArgsList$CohortDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CalendarDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CalendarDate,"HolidayCounts"))
     data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
