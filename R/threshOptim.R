@@ -44,16 +44,16 @@ threshOptim <- function(data,
                         MinThresh = 0.001,
                         MaxThresh = 0.999,
                         ThresholdPrecision = 0.001) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Check data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Convert factor target to numeric
-  data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
-  
+  if(!is.numeric(data[[eval(actTar)]])) data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
+
   # Optimize each column's classification threshold ::
   popTrue <- mean(data[[(actTar)]])
   store <- list()
@@ -65,7 +65,7 @@ threshOptim <- function(data,
     tn <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] <  i, 1, 0))
     fp <- sum(data.table::fifelse(data[[actTar]] == 0 & data[[predTar]] >= i, 1, 0))
     fn <- sum(data.table::fifelse(data[[actTar]] == 1 & data[[predTar]] <  i, 1, 0))
-    tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn)) 
+    tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
     fpr <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
     utility <- popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))
     store[[j]] <- c(i, utility)
@@ -78,11 +78,11 @@ threshOptim <- function(data,
   results <- cbind(utilities, thresholds)[, c(-1,-3)]
   thresh <- results[order(-Utilities)][1, 2][[1]]
   options(warn = 1)
-  
+
   # Plot of results
-  Plot <- ggplot2::ggplot(results, ggplot2::aes(x = Thresholds, y = Utilities)) + 
+  Plot <- ggplot2::ggplot(results, ggplot2::aes(x = Thresholds, y = Utilities)) +
     ggplot2::geom_line(color = "blue") +
-    ChartTheme(AngleX = 0) + 
+    ChartTheme(AngleX = 0) +
     ggplot2::ggtitle(paste0("Threshold Optimization: best cutoff at ",thresh)) +
     ggplot2::geom_vline(xintercept = thresh, linetype="dotted", color = "red", size=1.5)
   return(list(Thresholds = thresh, EvaluationTable = results, Plot = Plot))
