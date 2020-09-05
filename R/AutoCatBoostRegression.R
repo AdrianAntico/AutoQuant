@@ -289,7 +289,7 @@ AutoCatBoostRegression <- function(data,
         Path = NULL)
 
       # Transform TestData----
-      if (!is.null(TestData)) {
+      if(!is.null(TestData)) {
         TestData <- AutoTransformationScore(
           ScoringData = TestData,
           Type = "Apply",
@@ -350,7 +350,7 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(TestData)) {
     if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
       keep1 <- names(TestData)[c(FeatureColNames)]
-      if (!is.null(IDcols)) {
+      if(!is.null(IDcols)) {
         keep <- c(IDcols, keep1, Target)
       } else {
         keep <- c(keep1, Target)
@@ -358,7 +358,7 @@ AutoCatBoostRegression <- function(data,
       TestData <- TestData[, ..keep]
     } else {
       keep1 <- c(FeatureColNames)
-      if (!is.null(IDcols)) {
+      if(!is.null(IDcols)) {
         keep <- c(IDcols, FeatureColNames, Target)
       } else {
         keep <- c(FeatureColNames, Target)
@@ -378,7 +378,7 @@ AutoCatBoostRegression <- function(data,
   CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
 
   # Regression Convert CatFeatures to 1-indexed----
-  if (length(CatFeatures) > 0L) for (i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
+  if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
   # Regression Train ModelDataPrep----
   dataTrain <- ModelDataPrep(
@@ -425,7 +425,7 @@ AutoCatBoostRegression <- function(data,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
+  if(SaveModelObjects) data.table::fwrite(Names, file.path(model_path, paste0(ModelID, "_ColNames.csv")))
 
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
@@ -582,25 +582,6 @@ AutoCatBoostRegression <- function(data,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = ExperimentalGrid[RunTime != -1L][, sum(RunTime, na.rm = TRUE)],
         BanditProbabilities = BanditProbs)
-
-      # ExperimentGrid = ExperimentalGrid
-      # ModelRun = counter
-      # ModelType = "regression"
-      # NEWGrid = NewGrid
-      # NewPerformance = NewPerformance
-      # BestPerformance = BestPerformance
-      # TrialVector = Trials
-      # SuccessVector = Successes
-      # GridIDS = GridIDs
-      # BanditArmsCount = BanditArmsN
-      # RunsWithoutNewWinner = RunsWithoutNewWinner
-      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-      # MaxNumberModels = MaxModelsInGrid
-      # MaxRunMinutes = MaxRunMinutes
-      # TotalRunTime = ExperimentalGrid[RunTime != -1L][, sum(RunTime, na.rm = TRUE)]
-      # BanditProbabilities = BanditProbs
-
-
       BanditProbs <- RL_Update_Output[["BanditProbs"]]
       Trials <- RL_Update_Output[["Trials"]]
       Successes <- RL_Update_Output[["Successes"]]
@@ -625,7 +606,7 @@ AutoCatBoostRegression <- function(data,
 
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
   if(!is.null(PassInGrid)) {
-    if(PassInGrid[,.N] > 1L) PassInGrid <- PassInGrid[order(EvalMetric)][1]
+    if(PassInGrid[,.N] > 1L) PassInGrid <- PassInGrid[order(EvalMetric)][1L]
     if(PassInGrid[, BanditProbs_Grid_1] == -10) {
       PassInGrid <- NULL
     }
@@ -680,7 +661,7 @@ AutoCatBoostRegression <- function(data,
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
 
     # Set parameters from winning grid----
-    if (BestGrid$RunNumber[1L] == 1L) {
+    if(BestGrid$RunNumber[1L] == 1L) {
       base_params <- list(
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -693,7 +674,7 @@ AutoCatBoostRegression <- function(data,
         devices              = NumGPUs,
         allow_writing_files  = FALSE)
     } else {
-      if (tolower(task_type) == "gpu") {
+      if(tolower(task_type) == "gpu") {
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
@@ -858,7 +839,7 @@ AutoCatBoostRegression <- function(data,
     for(metric in c("mae", "mape", "rmse", "r2")) {
       i <- i + 1L
       tryCatch({
-        if (tolower(metric) == "mae") {
+        if(tolower(metric) == "mae") {
           ValidationData[, Metric := abs(ValidationData[[eval(TargetColumnName)]] - Predict)]
           Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
         } else if(tolower(metric) == "mape") {
