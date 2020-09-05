@@ -34,16 +34,16 @@ ProblematicFeatures <- function(data,
                                 NA_Rate = 0.20,
                                 Zero_Rate = 0.20,
                                 HighSkewThresh = 10) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Convert to data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Subset columns of interest----
   data <- data[, .SD, .SDcols = names(data)[ColumnNumbers]]
-  
+
   # Define Functions for Calculations----
   LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
     if(is.null(NearZeroVarThresh)) return(NULL)
@@ -164,46 +164,46 @@ ProblematicFeatures <- function(data,
       return(NULL)
     }
   }
-  
+
   # Initalize collection
   collect <- list()
   z <- 0L
-  
+
   # LowVarianceFeatures Run----
   a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)}, error = function(x) NULL)
   if(!is.null(a)) {
     z <- z + 1L
     collect[[z]] <- a
   }
-  
+
   # HighCardinalityFeatures Run----
   b <- tryCatch({HighCardinalityFeatures(data, CharUniqThresh = CharUniqThresh)}, error = function(x) NULL)
   if(!is.null(b)) {
     z <- z + 1L
     collect[[z]] <- b
   }
-  
+
   # HighMissingCountFeatures Run----
   c <- tryCatch({HighMissingCountFeatures(data, NA_Rate = NA_Rate)}, error = function(x) NULL)
   if(!is.null(c)) {
     z <- z + 1L
     collect[[z]] <- c
   }
-  
+
   # HighZeroCountFeatures Run----
   d <- tryCatch({HighZeroCountFeatures(data, Zero_Rate = Zero_Rate)}, error = function(x) NULL)
   if(!is.null(d)) {
     z <- z + 1L
     collect[[z]] <- d
   }
-  
+
   # HighSkewFeatures Run----
   e <- tryCatch({HighSkewFeatures(data, HighSkewThresh = HighSkewThresh)}, error = function(x) NULL)
   if(!is.null(e)) {
     z <- z + 1L
     collect[[z]] <- e
   }
-  
+
   # Combine Outputs
   if(length(collect) == 0L) {
     return(NULL)
