@@ -32,11 +32,11 @@
 ParDepCalPlots <- function(data,
                            PredictionColName = c("PredictedValues"),
                            TargetColName  = c("ActualValues"),
-                           IndepVar    = c("Independent_Variable_Name"),
-                           GraphType        = c("calibration"),
+                           IndepVar = c("Independent_Variable_Name"),
+                           GraphType = c("calibration"),
                            PercentileBucket = 0.05,
-                           FactLevels  = 10,
-                           Function    = function(x) mean(x, na.rm = TRUE)) {
+                           FactLevels = 10,
+                           Function = function(x) mean(x, na.rm = TRUE)) {
 
   # Turn off ggplot2 warnings----
   options(warn = -1L)
@@ -71,8 +71,8 @@ ParDepCalPlots <- function(data,
     if(nrow(preds2) > FactLevels) {
       temp1 <- preds2[1:FactLevels][, V3 := NULL]
       temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
-      temp2[, ':=' (V1 = V1 * V3 / base::sum(V3), V2 = V2 * V3 / base::sum(V3))]
-      temp3 <- temp2[, .(base::sum(V1), base::sum(V2))]
+      temp2[, ':=' (V1 = V1 * V3 / sum(V3), V2 = V2 * V3 / sum(V3))]
+      temp3 <- temp2[, list(sum(V1), sum(V2))]
       temp3[, get := "Other"]
       data.table::setcolorder(temp3, c(3L, 1L, 2L))
     }
