@@ -986,6 +986,11 @@ AutoLagRollStatsScoring <- function(data,
     }
   }
 
+  # Simple impute missed----
+  for(i in seq_len(ncol(KeepData)) {
+    data.table::set(KeepData, i = which(is.na(KeepData[[i]])), j = i, value = -1)
+  }
+
   # Return data----
   if("TEMPDATE" %chin% names(KeepData)) data.table::setnames(KeepData, "TEMPDATE", DateColumn)
   return(KeepData)
