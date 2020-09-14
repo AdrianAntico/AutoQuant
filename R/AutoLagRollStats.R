@@ -925,7 +925,7 @@ AutoLagRollStatsScoring <- function(data,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
             statsFUNs       = RollFunctions,
             targets         = Targets,
-            groupingVars    = IndependentGroups,
+            groupingVars    = Fact,
             sortDateName    = "TEMPDATE",
             timeDiffTarget  = TimeBetween,
             timeAgg         = timeaggs,
@@ -946,7 +946,7 @@ AutoLagRollStatsScoring <- function(data,
           # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
           # statsFUNs       = RollFunctions
           # targets         = Targets
-          # groupingVars    = IndependentGroups
+          # groupingVars    = Fact
           # sortDateName    = "TEMPDATE"
           # timeDiffTarget  = TimeBetween
           # timeAgg         = timeaggs
