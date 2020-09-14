@@ -901,7 +901,7 @@ AutoLagRollStatsScoring <- function(data,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
-            sortDateName    = DateColumn,
+            sortDateName    = "TEMPDATE",
             timeDiffTarget  = TimeBetween,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
@@ -965,7 +965,8 @@ AutoLagRollStatsScoring <- function(data,
           # I need to match up date aggregation to join properly----
           if(timeaggs != TimeGroups[1L]) {
             KeepData <- merge(
-              x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
+              #x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
+              x = KeepData,
               y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
               by = c(eval(Fact),"TEMPDATE"),
               all.x = TRUE)
@@ -985,7 +986,7 @@ AutoLagRollStatsScoring <- function(data,
     }
   }
 
-  # Return data
-  if("TEMPDATE" %chin% names(KeepData)) data.table::set(KeepData, j = "TEMPDATE", value = NULL)
+  # Return data----
+  if("TEMPDATE" %chin% names(KeepData)) data.table::setnames(KeepData, "TEMPDATE", DateColumn)
   return(KeepData)
 }

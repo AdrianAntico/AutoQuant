@@ -449,7 +449,6 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
           keep <- c(ColKeep, unlist(LagKeeps), PeriodKeep)
           FinalData <- data1[, ..keep]
         } else {
-          print("here motherfucker")
           keep <- c("TEMPDATE",AscRowByGroup, unlist(LagKeeps), PeriodKeep)
           FinalData <- merge(FinalData, data1[, ..keep], by = "TEMPDATE", all = FALSE)
         }
@@ -482,7 +481,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Done----
-    if(AscRowRemove) return(FinalData[, eval(AscRowByGroup) := NULL]) else return(FinalData)
+    if(AscRowRemove) if(eval(AscRowByGroup) %chin% names(FinalData)) return(FinalData[, eval(AscRowByGroup) := NULL]) else return(FinalData)
 
     # Non-grouping case----
   } else {
