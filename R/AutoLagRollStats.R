@@ -621,7 +621,7 @@ AutoLagRollStatsScoring <- function(data,
     Counter <- 0L
 
     # Loop through the time aggs----
-    for (timeaggs in TimeGroups) {
+    for(timeaggs in TimeGroups) {
 
       # Increment----
       Counter <- Counter + 1L
@@ -768,71 +768,51 @@ AutoLagRollStatsScoring <- function(data,
 
           # Build features----
           tempData <- Partial_DT_GDL_Feature_Engineering(
-            data = tempData,
+            data            = tempData,
             lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
             periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
             Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
             Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
-            statsFUNs = RollFunctions,
-            targets = Targets,
-            groupingVars = Fact,
-            sortDateName = "TEMPDATE",
-            timeDiffTarget = TimeBetween,
-            timeAgg = timeaggs,
-            WindowingLag = RollOnLag1,
-            Type = Type,
-            Timer = FALSE,
-            SimpleImpute = SimpleImpute,
-            AscRowByGroup = RowNumsID,
-            RecordsKeep = RowNumsKeep,
-            AscRowRemove = TRUE)
+            statsFUNs       = RollFunctions,
+            targets         = Targets,
+            groupingVars    = Fact,
+            sortDateName    = "TEMPDATE",
+            timeDiffTarget  = TimeBetween,
+            timeAgg         = timeaggs,
+            WindowingLag    = RollOnLag1,
+            Type            = Type,
+            Timer           = FALSE,
+            SimpleImpute    = SimpleImpute,
+            AscRowByGroup   = RowNumsID,
+            RecordsKeep     = RowNumsKeep,
+            AscRowRemove    = TRUE)
 
         } else {
 
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
-            tempData,
+            data            = tempData,
             lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
             periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows,
             Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows,
             Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
-            statsFUNs = RollFunctions,
-            targets = Targets,
-            groupingVars = Fact,
-            sortDateName = "TEMPDATE",
-            timeDiffTarget = TimeBetween,
-            timeAgg = timeaggs,
-            WindowingLag = RollOnLag1,
-            Type = Type,
-            Timer = FALSE,
-            SimpleImpute = SimpleImpute,
-            AscRowByGroup = RowNumsID,
-            RecordsKeep = RowNumsKeep,
-            AscRowRemove = TRUE)
-
-          # lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags
-          # periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows
-          # SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows
-          # Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows
-          # Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows
-          # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
-          # statsFUNs = RollFunctions
-          # targets = Targets
-          # groupingVars = Fact
-          # sortDateName = "TEMPDATE"
-          # timeDiffTarget = TimeBetween
-          # timeAgg = timeaggs
-          # WindowingLag = RollOnLag1
-          # Type = Type
-          # Timer = FALSE
-          # SimpleImpute = SimpleImpute
-          # AscRowByGroup = RowNumsID
-          # RecordsKeep = RowNumsKeep
-          # AscRowRemove = TRUE
+            statsFUNs       = RollFunctions,
+            targets         = Targets,
+            groupingVars    = Fact,
+            sortDateName    = "TEMPDATE",
+            timeDiffTarget  = TimeBetween,
+            timeAgg         = timeaggs,
+            WindowingLag    = RollOnLag1,
+            Type            = Type,
+            Timer           = FALSE,
+            SimpleImpute    = SimpleImpute,
+            AscRowByGroup   = RowNumsID,
+            RecordsKeep     = RowNumsKeep,
+            AscRowRemove    = TRUE)
 
           # Update vals----
           data.table::set(KeepData, j = eval(DateColumn), value = KeepData[["TEMPDATE"]])
@@ -840,8 +820,6 @@ AutoLagRollStatsScoring <- function(data,
         }
 
         # Merge data----
-
-        # When Fact changes, dates are different - find out where the date changes
         if(Counter > 1L) {
 
           # I need to match up date aggregation to join properly----
@@ -913,58 +891,58 @@ AutoLagRollStatsScoring <- function(data,
 
           # Build features----
           tempData <- Partial_DT_GDL_Feature_Engineering(
-            data = tempData,
+            data            = tempData,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
             Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
             Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
-            statsFUNs = RollFunctions,
-            targets = Targets,
-            groupingVars = Fact,
-            sortDateName = "TEMPDATE",
-            timeDiffTarget = TimeBetween,
-            timeAgg = timeaggs,
-            WindowingLag = RollOnLag1,
-            Type = Type,
-            Timer = FALSE,
-            SimpleImpute = SimpleImpute,
-            AscRowByGroup = RowNumsID,
-            RecordsKeep = RowNumsKeep,
-            AscRowRemove = TRUE)
+            statsFUNs       = RollFunctions,
+            targets         = Targets,
+            groupingVars    = Fact,
+            sortDateName    = "TEMPDATE",
+            timeDiffTarget  = TimeBetween,
+            timeAgg         = timeaggs,
+            WindowingLag    = RollOnLag1,
+            Type            = Type,
+            Timer           = FALSE,
+            SimpleImpute    = SimpleImpute,
+            AscRowByGroup   = RowNumsID,
+            RecordsKeep     = RowNumsKeep,
+            AscRowRemove    = TRUE)
 
         } else {
 
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
-            data = data,
+            data            = data,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
             Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows,
             Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows,
             Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows,
-            statsFUNs = RollFunctions,
-            targets = Targets,
-            groupingVars = IndependentGroups,
-            sortDateName = DateColumn,
-            timeDiffTarget = TimeBetween,
-            timeAgg = timeaggs,
-            WindowingLag = RollOnLag1,
-            Type = Type,
-            Timer = FALSE,
-            SimpleImpute = SimpleImpute,
-            AscRowByGroup = RowNumsID,
-            RecordsKeep = RowNumsKeep,
-            AscRowRemove = TRUE)
+            statsFUNs       = RollFunctions,
+            targets         = Targets,
+            groupingVars    = IndependentGroups,
+            sortDateName    = "TEMPDATE",
+            timeDiffTarget  = TimeBetween,
+            timeAgg         = timeaggs,
+            WindowingLag    = RollOnLag1,
+            Type            = Type,
+            Timer           = FALSE,
+            SimpleImpute    = SimpleImpute,
+            AscRowByGroup   = RowNumsID,
+            RecordsKeep     = RowNumsKeep,
+            AscRowRemove    = TRUE)
         }
 
         # When IndependentGroups changes, dates are different - find out where the date changes
         if(Counter > 1L) {
 
           # I need to match up date aggregation to join properly----
-          if(timeaggs != TimeGroups[1]) {
+          if(timeaggs != TimeGroups[1L]) {
             KeepData <- merge(
               x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
               y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
@@ -973,7 +951,7 @@ AutoLagRollStatsScoring <- function(data,
           }
 
           # I need to match up date aggregation to join properly----
-          if(timeaggs == TimeGroups[1]) {
+          if(timeaggs == TimeGroups[1L]) {
             data.table::set(KeepData, j = "TEMPDATE", value = KeepData[[eval(DateColumn)]])
             KeepData <- merge(
               x = KeepData,

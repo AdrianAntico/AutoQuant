@@ -902,6 +902,8 @@ CLForecast <- function(data,
     NextFCPeriod[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
     NextFCPeriod[, eval(ArgsList$CohortDate) := as.Date(get(ArgsList$CohortDate))]
     NextFCPeriod[, ScoreRecords := 1]
+    NextFCPeriod[, eval(ArgsList$CohortPeriodsVariable) := 0]
+    NextFCPeriod[, Rate := 0.0]
     FC_BaseFunnelMeasure <- FC_BaseFunnelMeasure[2L:.N]
 
     # DE: Merge on next date of BaseFunnelMeasure----
