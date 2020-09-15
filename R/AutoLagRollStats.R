@@ -916,7 +916,7 @@ AutoLagRollStatsScoring <- function(data,
 
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
-            data            = data,
+            data            = tempData,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
