@@ -187,7 +187,7 @@ AutoXGBoostCARMA <- function(data,
   # Check for any Target Variable hiding in XREGS
   if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
 
-  # Merge data and XREG for Training
+  # Merge data and XREG for Training a
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
       data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
