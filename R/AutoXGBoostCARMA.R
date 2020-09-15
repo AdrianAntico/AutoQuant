@@ -433,18 +433,12 @@ AutoXGBoostCARMA <- function(data,
       HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL,
       GroupingVars = "GroupVar")
-    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
-      data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-    })
   } else if(HolidayVariable) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
       HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
       Holidays = NULL)
-    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
-      data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-    })
   }
 
   # Feature Engineering: Add Target Transformation----
