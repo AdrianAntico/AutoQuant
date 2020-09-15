@@ -200,7 +200,7 @@ AutoXGBoostCARMA <- function(data,
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
     }
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
@@ -213,7 +213,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName, GroupVariables)))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))]
     } else {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
     }
@@ -1057,7 +1057,8 @@ AutoXGBoostCARMA <- function(data,
         }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]
+        if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+        if(any(class(Preds[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) Preds[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) {
           if(!is.null(HierarchGroups)) {
@@ -1162,13 +1163,11 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(XREGS)) {
 
         # Ensure Grouping Variables are Character----
-        for(zz in seq_len(length(GroupVariables))) {
-          if(!is.character(CalendarFeatures[[eval(GroupVariables[zz])]])) {
-            data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
-          }
-          if(!is.character(XREGS[[eval(GroupVariables[zz])]])) {
-            data.table::set(XREGS, j = eval(GroupVariables[zz]), value = as.character(XREGS[[eval(GroupVariables[zz])]]))
-          }
+        if(!is.character(CalendarFeatures[["GroupVar"]])) {
+          data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+        }
+        if(!is.character(XREGS[["GroupVar"]])) {
+          data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
         }
 
         # Match GroupVariables Type----
@@ -1225,7 +1224,8 @@ AutoXGBoostCARMA <- function(data,
       # })
 
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      if(any(class(temp[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) temp[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
 
       # Update holiday feature----
@@ -1450,7 +1450,6 @@ AutoXGBoostCARMA <- function(data,
             Quantiles_Selected   = NULL)
 
           # Join Holiday Lags and Moving Averages back to UpdateData----
-          # Join Holiday Lags and Moving Averages back to UpdateData----
           if(!"GroupVar" %chin% names(Temporary)) {
             keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
             Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
@@ -1462,7 +1461,7 @@ AutoXGBoostCARMA <- function(data,
 
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
-        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
+        UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
 
       }
 
