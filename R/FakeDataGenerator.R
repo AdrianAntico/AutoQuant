@@ -238,9 +238,15 @@ FakeDataGenerator <- function(Correlation = 0.70,
 
   # Add date----
   if(AddDate) {
-    data <- data[, DateTime := as.Date(Sys.time())]
-    data[, temp := 1L:.N][, DateTime := DateTime - temp][, temp := NULL]
-    data <- data[order(DateTime)]
+    if(FactorCount == 0) {
+      data <- data[, DateTime := as.Date(Sys.time())]
+      data[, temp := 1L:.N][, DateTime := DateTime - temp][, temp := NULL]
+      data <- data[order(DateTime)]
+    } else {
+      data <- data[, DateTime := as.Date(Sys.time())]
+      data[, temp := 1L:.N, by = "Factor_1"][, DateTime := DateTime - temp][, temp := NULL]
+      data <- data[order(Factor_1, DateTime)]
+    }
   }
 
   # Zero Inflation Setup----
