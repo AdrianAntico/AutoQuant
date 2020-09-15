@@ -1172,7 +1172,7 @@ AutoXGBoostCARMA <- function(data,
         # Ensure Grouping Variables are Character----
         for(zz in seq_len(length(GroupVariables))) {
           if(!is.character(CalendarFeatures[[eval(GroupVariables[zz])]])) {
-            data.table::set(CalendarFeatures, j == eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+            data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
           }
           if(!is.character(XREGS[[eval(GroupVariables[zz])]])) {
             data.table::set(XREGS, j = eval(GroupVariables[zz]), value = as.character(XREGS[[eval(GroupVariables[zz])]]))
