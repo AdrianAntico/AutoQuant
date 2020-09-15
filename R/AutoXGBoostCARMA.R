@@ -190,7 +190,7 @@ AutoXGBoostCARMA <- function(data,
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = by.x = c("GroupVar", eval(DateColumnName)), all = FALSE)
+      data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
     }
