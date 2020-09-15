@@ -901,7 +901,7 @@ AutoLagRollStatsScoring <- function(data,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
-            sortDateName    = "TEMPDATE",
+            sortDateName    = DateColumn,
             timeDiffTarget  = TimeBetween,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
@@ -936,6 +936,27 @@ AutoLagRollStatsScoring <- function(data,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
             AscRowRemove    = TRUE)
+
+          # data            = tempData
+          # lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags
+          # periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows
+          # SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows
+          # Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows
+          # Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows
+          # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
+          # statsFUNs       = RollFunctions
+          # targets         = Targets
+          # groupingVars    = IndependentGroups
+          # sortDateName    = "TEMPDATE"
+          # timeDiffTarget  = TimeBetween
+          # timeAgg         = timeaggs
+          # WindowingLag    = RollOnLag1
+          # Type            = Type
+          # Timer           = FALSE
+          # SimpleImpute    = SimpleImpute
+          # AscRowByGroup   = RowNumsID
+          # RecordsKeep     = RowNumsKeep
+          # AscRowRemove    = TRUE
         }
 
         # When IndependentGroups changes, dates are different - find out where the date changes
