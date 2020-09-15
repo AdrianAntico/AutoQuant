@@ -875,6 +875,9 @@ AutoXGBoostCARMA <- function(data,
       subsample = seq(0.55, 1.0, 0.05),
       colsample_bytree = seq(0.55, 1.0, 0.05))
 
+  # Return if TrainOnFull is FALSE----
+  if(!TrainOnFull) return(TestModel)
+
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
 
