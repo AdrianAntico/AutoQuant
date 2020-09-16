@@ -1011,7 +1011,7 @@ AutoXGBoostCARMA <- function(data,
         UpdateData <- cbind(FutureDateData[2L:(N+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
-        if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
