@@ -1059,7 +1059,7 @@ AutoXGBoostCARMA <- function(data,
         if(Difference) {
           Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
         } else {
-          if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+          if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
           Preds[, eval(TargetColumnName) := Preds]
         }
         Preds[, Predictions := Preds][, Preds := NULL]
