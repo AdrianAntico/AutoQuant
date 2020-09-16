@@ -127,18 +127,18 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     # GPU or CPU
     TreeMethod = "hist",
     NThreads = 8L,
-  
-    # Metadata arguments: 
+
+    # Metadata arguments:
     #   'ModelID' is used to create part of the file names generated when saving to file'
     #   'model_path' is where the minimal model objects for scoring will be stored
     #      'ModelID' will be the name of the saved model object
     #   'metadata_path' is where model evaluation and model interpretation files are saved
     #      objects saved to model_path if metadata_path is null
-    #      Saved objects include: 
+    #      Saved objects include:
     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance. 
+    #         'ModelID_VariableImportance.csv' is the variable importance.
     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE. 
+    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
     model_path = normalizePath("./"),
@@ -146,13 +146,13 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,   
-  
+    SaveModelObjects = FALSE,
+
     # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data. 
+    #   'TrainOnFull' is to train a model with 100 percent of your data.
     #     That means no holdout data will be used for evaluation
     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted. 
+    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
     #     CatBoost categorical treatment is enhanced when supplied
     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
     #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
@@ -165,11 +165,11 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     IDcols = c("IDcols_1","IDcols_2"),
     TransformNumericColumns = NULL,
     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-  
+
     # Model evaluation
     eval_metric = "rmse",
     NumOfParDepPlots = 3L,
-  
+
     # Grid tuning arguments - PassInGrid is the best of GridMetrics
     PassInGrid = NULL,
     GridTune = TRUE,
@@ -179,10 +179,10 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
-  
+
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used 
+    # The ones below can be set to NULL and the values in the example will be used
     Shuffles = 1L,
     Trees = seq(50L, 500L, 50L),
     eta = seq(0.05,0.40,0.05),

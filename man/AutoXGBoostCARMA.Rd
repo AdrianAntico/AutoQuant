@@ -124,6 +124,8 @@ AutoXGBoostCARMA(
 \item{Timer}{Setting to TRUE prints out the forecast number while it is building}
 
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
+
+\item{NonNegativePred}{TRUE or FALSE}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.

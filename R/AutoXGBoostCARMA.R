@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
+#' @param NonNegativePred TRUE or FALSE
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -950,8 +951,7 @@ AutoXGBoostCARMA <- function(data,
         # Score model----
         Preds <- AutoXGBoostScoring(
           TargetType = "regression",
-          # Keep GroupVar in Step1SCore since it might fuck shit up downstream
-          ScoringData = Step1SCore, # Auto_Scoring should ignore non-ModelFeatures so just throw everything in there? Otherwise use: if("GroupVar" %chin% names(Step1SCore) & !"GroupVar" %chin% ModelFeatures) Step1SCore[, .SD, .SDcols = setdiff(names(Step1SCore), "GroupVar")] else Step1SCore,
+          ScoringData = Step1SCore,
           FeatureColumnNames = ModelFeatures,
           OneHot = FALSE,
           IDcols = IDcols,
@@ -974,7 +974,7 @@ AutoXGBoostCARMA <- function(data,
 
       } else {
 
-        # i = 1 Define IDcols----
+        # Score model----
         if(DebugMode) print("# i = 1 Define IDcols----")
         IDcols <- eval(TargetVariable)
         Preds <- AutoXGBoostScoring(
@@ -1009,6 +1009,7 @@ AutoXGBoostCARMA <- function(data,
         UpdateData <- cbind(FutureDateData[2L:(N+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
+        if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1056,6 +1057,7 @@ AutoXGBoostCARMA <- function(data,
         if(Difference) {
           Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
         } else {
+          if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
           Preds[, eval(TargetColumnName) := Preds]
         }
         Preds[, Predictions := Preds][, Preds := NULL]
@@ -1096,6 +1098,7 @@ AutoXGBoostCARMA <- function(data,
           MDP_MissNum = -1)
 
         # Update data non-group case----
+        if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1]])
       }
     }

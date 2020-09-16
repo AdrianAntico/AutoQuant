@@ -75,139 +75,217 @@ CLTrainer(
 )
 }
 \arguments{
-\item{data}{data}
+\item{data}{data object}
 
-\item{PartitionRatios}{R}
+\item{PartitionRatios}{Requires three values for train, validation, and test data sets}
 
-\item{BaseFunnelMeasure}{E into the future. You should have two months into the future of values of BaseFunnelMeasure}
+\item{BaseFunnelMeasure}{E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure}
 
-\item{ConversionMeasure}{E}
+\item{ConversionMeasure}{E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out}
 
-\item{ConversionRateMeasure}{C}
+\item{ConversionRateMeasure}{Conversions over Leads for every cohort}
 
-\item{CohortPeriodsVariable}{N}
+\item{CohortPeriodsVariable}{Numeric. Numerical value of the the number of periods since cohort base date.}
 
-\item{CalendarDate}{T}
+\item{CalendarDate}{The name of your date column that represents the calendar date}
 
-\item{CohortDate}{T}
+\item{CohortDate}{The name of your date column that represents the cohort date}
 
-\item{TruncateDate}{N}
+\item{TruncateDate}{NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.}
 
-\item{TimeUnit}{B}
+\item{TimeUnit}{Base time unit of data. "days", "weeks", "months", "quarters", "years"}
 
-\item{CalendarTimeGroups}{T}
+\item{CalendarTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
 
-\item{CohortTimeGroups}{T}
+\item{CohortTimeGroups}{TimeUnit value must be included. If you want to generate lags and moving averages in several time based aggregations, choose from "days", "weeks", "months", "quarters", "years".}
 
-\item{TransformTargetVariable}{T}
+\item{TransformTargetVariable}{TRUE or FALSe}
 
-\item{TransformMethods}{C}
+\item{TransformMethods}{Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
 
-\item{AnomalyDetection}{P}
+\item{AnomalyDetection}{Provide a named list. See examples}
 
-\item{Jobs}{D}
+\item{Jobs}{Default is "eval" and "train"}
 
-\item{SaveModelObjects}{S}
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
-\item{ModelID}{A}
+\item{ModelID}{A character string to name your model and output}
 
-\item{ModelPath}{P}
+\item{ModelPath}{Path to where you want your models saved}
 
-\item{MetaDataPath}{P}
+\item{MetaDataPath}{Path to where you want your metadata saved. If NULL, function will try ModelPath if it is not NULL.}
 
-\item{TaskType}{t}
+\item{TaskType}{"GPU" or "CPU" for catboost training}
 
-\item{NumGPUs}{N}
+\item{NumGPUs}{Number of GPU's you would like to utilize}
 
-\item{DT_Threads}{N}
+\item{DT_Threads}{Number of threads to use for data.table. Default is Total - 2}
 
-\item{EvaluationMetric}{T}
+\item{EvaluationMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
 
-\item{LossFunction}{U}
+\item{LossFunction}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
 
-\item{NumOfParDepPlots}{N}
+\item{NumOfParDepPlots}{Number of partial dependence plots to return}
 
-\item{MetricPeriods}{N}
+\item{MetricPeriods}{Number of trees to build before the internal catboost eval step happens}
 
-\item{CalendarVariables}{w}
+\item{CalendarVariables}{"wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
-\item{HolidayGroups}{c}
+\item{HolidayGroups}{c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts")}
 
-\item{ImputeRollStats}{C}
+\item{ImputeRollStats}{Constant value to fill NA after running AutoLagRollStats()}
 
-\item{CohortHolidayLags}{c}
+\item{CohortHolidayLags}{c(1L, 2L, 7L),}
 
-\item{CohortHolidayMovingAverages}{c}
+\item{CohortHolidayMovingAverages}{c(3L, 7L),}
 
-\item{CalendarHolidayLags}{c}
+\item{CalendarHolidayLags}{c(1L, 2L, 7L),}
 
-\item{CalendarHolidayMovingAverages}{c}
+\item{CalendarHolidayMovingAverages}{= c(3L, 7L),}
 
-\item{CalendarLags}{L}
+\item{CalendarLags}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarMovingAverages}{L}
+\item{CalendarMovingAverages}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarStandardDeviations}{L}
+\item{CalendarStandardDeviations}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarSkews}{L}
+\item{CalendarSkews}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarKurts}{L}
+\item{CalendarKurts}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarQuantiles}{L}
+\item{CalendarQuantiles}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CalendarQuantilesSelected}{S}
+\item{CalendarQuantilesSelected}{Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"}
 
-\item{CohortLags}{L}
+\item{CohortLags}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortMovingAverages}{L}
+\item{CohortMovingAverages}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortStandardDeviations}{L}
+\item{CohortStandardDeviations}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortSkews}{L}
+\item{CohortSkews}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortKurts}{L}
+\item{CohortKurts}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortQuantiles}{L}
+\item{CohortQuantiles}{List of the form list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L))}
 
-\item{CohortQuantilesSelected}{S}
+\item{CohortQuantilesSelected}{Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"}
 
-\item{PassInGrid}{D}
+\item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
-\item{GridTune}{S}
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{BaselineComparison}{S}
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
-\item{MaxModelsInGrid}{N}
+\item{MaxModelsInGrid}{Number of models to test from grid options}
 
-\item{MaxRunMinutes}{M}
+\item{MaxRunMinutes}{Maximum number of minutes to let this run}
 
-\item{MaxRunsWithoutNewWinner}{N}
+\item{MaxRunsWithoutNewWinner}{Number of models built before calling it quits}
 
-\item{Trees}{B}
+\item{Trees}{Bandit grid partitioned. The maximum number of trees you want in your models}
 
-\item{Depth}{B}
+\item{Depth}{Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
 
-\item{LearningRate}{B}
+\item{LearningRate}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
 
-\item{L2_Leaf_Reg}{R}
+\item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
 
-\item{RSM}{C}
+\item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{R}
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
-\item{GrowPolicy}{R}
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 
-\item{TargetVariable}{T}
+\item{TargetVariable}{Target Variable Name}
 
-\item{MaxCohortPeriods}{T}
+\item{MaxCohortPeriods}{The maximum number of CohortPeriodsVariable out to include in modeling}
 
-\item{ReturnModelObjects}{S}
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 }
 \value{
-S
+Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
 }
 \description{
 CLTrainer is a forecasting model for chain ladder style forecasting
+}
+\examples{
+\donttest{
+# Create simulated data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
+# Build model
+RemixAutoML::AutoCatBoostChainLadder(
+
+   # Data Arguments----
+   data = data,
+   PartitionRatios = c(0.70,0.20,0.10),
+   BaseFunnelMeasure = "Leads",
+   ConversionMeasure = "Appointments",
+   ConversionRateMeasure = NULL,
+   CohortPeriodsVariable = "CohortDays",
+   CalendarDate = "CalendarDateColumn",
+   CohortDate = "CohortDateColumn",
+   TruncateDate = NULL,
+   TimeUnit = "days",
+   TransformTargetVariable = TRUE,
+   TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
+   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+
+   # MetaData Arguments----
+   Jobs = c("eval","train"),
+   SaveModelObjects = TRUE,
+   ModelID = "ModelTest",
+   ModelPath = getwd(),
+   MetaDataPath = NULL,
+   TaskType = "GPU",
+   NumGPUs = 1,
+   DT_Threads = max(1L, parallel::detectCores() - 2L),
+   EvaluationMetric = "RMSE",
+   LossFunction = "RMSE",
+   NumOfParDepPlots = 1L,
+   MetricPeriods = 50L,
+
+   # Feature Engineering Arguments----
+   ImputeRollStats = -0.001,
+   CalendarTimeGroups = c("days","weeks","months"),
+   CohortTimeGroups = c("days", "weeks"),
+   CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+   CohortHolidayLags = c(1L,2L,7L),
+   CohortHolidayMovingAverages = c(3L,7L),
+   CalendarHolidayLags = c(1L,2L,7L),
+   CalendarHolidayMovingAverages = c(3L,7L),
+   CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+   CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+   CalendarStandardDeviations = NULL,
+   CalendarSkews = NULL,
+   CalendarKurts = NULL,
+   CalendarQuantiles = NULL,
+   CalendarQuantilesSelected = "q50",
+   CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+   CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+   CohortStandardDeviations = NULL,
+   CohortSkews = NULL,
+   CohortKurts = NULL,
+   CohortQuantiles = NULL,
+   CohortQuantilesSelected = "q50",
+
+   # Grid Tuning
+   PassInGrid = NULL,
+   GridTune = FALSE,
+   BaselineComparison = "default",
+   MaxModelsInGrid = 25L,
+   MaxRunMinutes = 180L,
+   MaxRunsWithoutNewWinner = 10L,
+   Trees = 1000L,
+   Depth = seq(4L,8L,1L),
+   LearningRate = seq(0.01,0.10,0.01),
+   L2_Leaf_Reg = seq(1.0,10.0,1.0),
+   RSM = c(0.80,0.85,0.90,0.95,1.0),
+   BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
+   GrowPolicy = c("SymmetricTree","Depthwise","Lossguide"))
+}
 }
 \seealso{
 Other Automated Time Series: 
