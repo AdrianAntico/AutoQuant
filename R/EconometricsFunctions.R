@@ -5604,6 +5604,17 @@ AutoHierarchicalFourier <- function(datax = data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
+  # Create fourier vars----
+  FourierFC <- AutoFourierFeatures(
+    data = datax,
+    FourierPairs = FourierTerms,
+    FCPeriods = FC_PeriodS,
+    Time_Unit = TimeUniT,
+    TargetColumn = TargetColumN,
+    DateColumn = DateColumN,
+    GroupVariable = IndependentGroups,
+    xregs = NonGroupDateNames)
+
   # Stack Fouier Forecast Data----
   overlap <- intersect(names(FourierFC),names(datax))
   FourierFC <- data.table::rbindlist(list(
