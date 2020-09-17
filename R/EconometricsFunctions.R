@@ -5604,6 +5604,9 @@ AutoHierarchicalFourier <- function(datax = data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
+  # xRegs non group names
+  NonGroupDateNames <- xRegs[!xRegs %chin% "GroupVar"]
+
   # Create fourier vars----
   FourierFC <- AutoFourierFeatures(
     data = datax,
@@ -5615,18 +5618,9 @@ AutoHierarchicalFourier <- function(datax = data,
     GroupVariable = IndependentGroups,
     xregs = NonGroupDateNames)
 
-  # Stack Fouier Forecast Data----
-  overlap <- intersect(names(FourierFC),names(datax))
-  FourierFC <- data.table::rbindlist(list(
-    FourierFC[, .SD, .SDcols = c(overlap)],
-    datax[, .SD, .SDcols = c(overlap)]))
-  data.table::setorderv(FourierFC, cols = names(FourierFC)[c(ncol(FourierFC),1)], order = c(1L, 1L))
-
-  # Data Wrangling: Standardize column ordering----
-  data.table::setkey(x = datax,GroupVar)
-  data.table::setkey(x = FourierFC,GroupVar)
-  data.table::setcolorder(datax, c(ncol(datax), 1:(ncol(datax)-1)))
-  data.table::setcolorder(FourierFC, c(ncol(FourierFC), 1:(ncol(FourierFC)-1)))
+  # Prepare data to return----
+  datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+  FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
 
   # Return data
   return(list(data = datax, FourierFC = FourierFC))
