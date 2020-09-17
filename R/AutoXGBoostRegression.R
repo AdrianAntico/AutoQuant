@@ -83,7 +83,7 @@
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-#'     IDcols = c("IDcols_1","IDcols_2"),
+#'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = NULL,
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'

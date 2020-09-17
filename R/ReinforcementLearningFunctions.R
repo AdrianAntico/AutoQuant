@@ -432,6 +432,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 CatBoostRegressionParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
                                      HasTime = NULL,
@@ -566,6 +567,7 @@ CatBoostRegressionParams <- function(counter = NULL,
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 CatBoostClassifierParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
                                      HasTime = NULL,
@@ -699,6 +701,7 @@ CatBoostClassifierParams <- function(counter = NULL,
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 CatBoostMultiClassParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
                                      HasTime = NULL,
@@ -897,6 +900,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 XGBoostClassifierParams <- function(counter = NULL,
                                     NThreads = -1L,
                                     BanditArmsN = NULL,
@@ -971,6 +975,7 @@ XGBoostClassifierParams <- function(counter = NULL,
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 XGBoostRegressionParams <- function(counter = NULL,
                                     NThreads = -1L,
                                     BanditArmsN = NULL,
@@ -1038,6 +1043,7 @@ XGBoostRegressionParams <- function(counter = NULL,
 #' @param MinVal = -1L,
 #' @param calibEval Passthrough
 #' @noRd
+#' @export
 XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
                                      calibEval) {
@@ -1089,6 +1095,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
 #' @noRd
+#' @export
 XGBoostMultiClassParams <- function(counter = NULL,
                                     num_class=NULL,
                                     NThreads = -1L,
