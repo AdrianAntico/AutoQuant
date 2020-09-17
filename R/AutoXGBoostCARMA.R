@@ -216,7 +216,9 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))]
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- xx[!xx %chin% "GroupVar"]
+      data <- data[, .SD, .SDcols = xx]
     } else {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
     }
