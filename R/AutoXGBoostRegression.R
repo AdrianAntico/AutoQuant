@@ -979,7 +979,7 @@ AutoXGBoostRegression <- function(data,
       # Regression Partial Dependence----
       ParDepPlots <- list()
       ParDepBoxPlots <- list()
-      if(NumOfParDepPlots == 0L) {
+      if(NumOfParDepPlots != 0L) {
         j <- 0L
         k <- 0L
         for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
