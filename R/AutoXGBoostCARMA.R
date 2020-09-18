@@ -696,7 +696,11 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if(DataTruncate) data <- data[val:.N]
+  if(DataTruncate) {
+    mindate <- data[, min(get(DateColumnName))]
+    newdate <- mindate + val + 1
+    data <- data[get(DateColumnName) >= eval(newdate)]
+  }
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
