@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
+#' @param NonNegativePred TRUE or FALSE
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -56,6 +57,7 @@
 #'
 #'   # data
 #'   data = data, # TwoGroup_Data,
+#'   NonNegativePred = FALSE,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
@@ -115,6 +117,7 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostCARMA <- function(data,
+                              NonNegativePred = FALSE,
                               TrainOnFull = FALSE,
                               TargetColumnName = "Target",
                               DateColumnName = "DateTime",
@@ -218,7 +221,7 @@ AutoCatBoostCARMA <- function(data,
   # Merge data and XREG for Training
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- merge(data, XREGS, by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+      data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
     }
@@ -227,45 +230,43 @@ AutoCatBoostCARMA <- function(data,
   # Set Keys for data.table usage----
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
-    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+    if(!is.null(XREGS)) {
+      data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
+    }
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
-    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
+    if(!is.null(XREGS)) {
+      data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
+    }
   }
 
   # Data Wrangling: Remove Unnecessary Columns----
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName, GroupVariables)))]
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- xx[!xx %chin% "GroupVar"]
+      data <- data[, .SD, .SDcols = xx]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName,                 setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName                )))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
     }
   } else {
     if(!is.null(GroupVariables)) {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables)]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName                )]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName)]
     }
   }
 
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
-  if (!is.null(GroupVariables)) {
+  if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
-      if(!is.null(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        XREGS[, eval(GroupVariables) := NULL]
-      }
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
-      if(!is.null(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        if(GroupVariables != "GroupVar") XREGS[, eval(GroupVariables) := NULL]
-      }
     }
   }
 
@@ -327,24 +328,20 @@ AutoCatBoostCARMA <- function(data,
   # Data Wrangling: Convert DateColumnName to Date or POSIXct----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
   if(is.character(data[[eval(DateColumnName)]])) {
-    tryCatch({data[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
-      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-        x <- data[1,get(DateColumnName)]
-        x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-        data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-      } else {
-        data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-      }
-    })
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      x <- data[1,get(DateColumnName)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+    } else {
+      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    }
   }
   if(!is.null(XREGS)) {
-    tryCatch({XREGS[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
-      if(is.character(XREGS[[eval(DateColumnName)]])) {
-        x <- XREGS[1,get(DateColumnName)]
-        x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-        XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-      }
-    })
+    if(is.character(XREGS[[eval(DateColumnName)]])) {
+      x <- XREGS[1,get(DateColumnName)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
+    }
   }
 
   # Data Wrangling: Ensure TargetColumnName is Numeric----
@@ -498,10 +495,6 @@ AutoCatBoostCARMA <- function(data,
   # Copy data for non grouping + difference----
   if(DebugMode) print("Copy data for non grouping + difference----")
   if(is.null(GroupVariables) & Difference) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
-
-  # Store Date Info----
-  if(DebugMode) print("Store Date Info----")
-  FutureDateData <- unique(data[, get(DateColumnName)])
 
   # Feature Engineering: Add Difference Data----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
@@ -730,7 +723,15 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if(DataTruncate) data <- data[val:.N]
+  if(DataTruncate) {
+    mindate <- data[, min(get(DateColumnName))]
+    newdate <- mindate + val + 1
+    data <- data[get(DateColumnName) >= eval(newdate)]
+  }
+
+  # Store Date Info----
+  if(DebugMode) print("Store Date Info----")
+  FutureDateData <- unique(data[, get(DateColumnName)])
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
@@ -826,7 +827,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) options(warn = 0)
 
   # Run AutoCatBoostRegression and return list of ml objects
-  TestModel <- RemixAutoML::AutoCatBoostRegression(
+  TestModel <- AutoCatBoostRegression(
 
       # GPU or CPU and the number of available GPUs
       task_type = TaskType,
@@ -1033,6 +1034,7 @@ AutoCatBoostCARMA <- function(data,
         }
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
+        if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1074,6 +1076,7 @@ AutoCatBoostCARMA <- function(data,
         # Update data group case----
         if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
+        if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
@@ -1167,16 +1170,6 @@ AutoCatBoostCARMA <- function(data,
       # Update colname for date----
       if(DebugMode) print("Update colname for date----")
       data.table::setnames(CalendarFeatures, names(CalendarFeatures)[ncol(CalendarFeatures)], eval(DateColumnName))
-
-      # Merge XREGS if not null----
-      if(DebugMode) print("Merge XREGS if not null----")
-      if(!is.null(XREGS)) {
-        if(!is.null(GroupVariables)) {
-          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar", eval(DateColumnName)), all = FALSE)
-        } else {
-          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
-        }
-      }
 
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")

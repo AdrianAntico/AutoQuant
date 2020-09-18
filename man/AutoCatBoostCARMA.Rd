@@ -6,6 +6,7 @@
 \usage{
 AutoCatBoostCARMA(
   data,
+  NonNegativePred = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -48,6 +49,8 @@ AutoCatBoostCARMA(
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{NonNegativePred}{TRUE or FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -144,6 +147,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 
   # data
   data = data, # TwoGroup_Data,
+  NonNegativePred = FALSE,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
