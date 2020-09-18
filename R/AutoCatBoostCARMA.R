@@ -876,7 +876,7 @@ AutoCatBoostCARMA <- function(data,
       eval_metric = EvalMetric,
       loss_function = EvalMetric,
       MetricPeriods = 10L,
-      NumOfParDepPlots = 0L,
+      NumOfParDepPlots = 10L,
       EvalPlots = TRUE,
 
       # Grid tuning arguments:

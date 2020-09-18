@@ -850,7 +850,7 @@ AutoXGBoostCARMA <- function(data,
 
       # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 5,
+      NumOfParDepPlots = 10,
 
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
       PassInGrid = NULL,
