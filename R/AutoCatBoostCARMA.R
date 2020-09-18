@@ -908,6 +908,9 @@ AutoCatBoostCARMA <- function(data,
       BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
       GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 
+  # Return model object for when TrainOnFull is FALSE ----
+  if(!TrainOnFull) return(TestModel)
+
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
 
