@@ -3,9 +3,9 @@
 #' @noRd
 #' @export
 CARMA_GroupHierarchyCheck <- function(data = data,
-                                      Group_Variables = GroupVariables, 
+                                      Group_Variables = GroupVariables,
                                       HierarchyGroups = HierarchGroups) {
-  
+
   # Simple organization of option sets
   if(length(Group_Variables) > 1 & !is.null(HierarchyGroups)) {
     data[, eval(Group_Variables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
@@ -22,9 +22,9 @@ CARMA_GroupHierarchyCheck <- function(data = data,
 }
 
 #' CARMA_Define_Args
-#' 
+#'
 #' CARMA_Define_Args is to help manage carma code
-#' 
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param TimeUnit = TimeUnit
@@ -40,9 +40,9 @@ CARMA_GroupHierarchyCheck <- function(data = data,
 #' @param Kurt_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(4L,5L,6L,25L)
 #' @param Quantile_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(5L,6L,25L)
 #' @export
-CARMA_Define_Args <- function(TimeUnit = NULL, 
-                              TimeGroups = NULL, 
-                              HierarchGroups = NULL, 
+CARMA_Define_Args <- function(TimeUnit = NULL,
+                              TimeGroups = NULL,
+                              HierarchGroups = NULL,
                               GroupVariables = NULL,
                               FC_Periods = NULL,
                               PartitionType = NULL,
@@ -52,7 +52,7 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
                               Skew_Periods = 0L,
                               Kurt_Periods = 0L,
                               Quantile_Periods = 0L) {
-  
+
   # TimeUnit and TimeGroups Args----
   TimeGroupPlaceHolder <- c()
   if(any(tolower(c("hours","hour","hr","hrs","hourly")) %chin% tolower(TimeGroups))) {
@@ -91,17 +91,17 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
   if(any(tolower(c("years","year","annual","yearly","annually","ann","yr","yrly")) %chin% tolower(TimeUnit))) {
     TimeUnit <- "year"
   }
-  
+
   # IndependentVariablePass is for referencing the interaction group column names----
   IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
-  
+
   # FC Periods----
   if(FC_Periods <= 1L) {
     FC_Periods <- 2L
   } else {
     FC_Periods <- FC_Periods + 1L
   }
-  
+
   # Check arguments----
   if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
     return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
@@ -109,10 +109,10 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
   if (tolower(PartitionType) == "timeseries" & is.null(GroupVariables)) {
     PartitionType <- "time"
   }
-  
+
   # Return args----
   return(list(TimeUnit              = TimeUnit,
-              TimeGroups            = TimeGroupPlaceHolder, 
+              TimeGroups            = TimeGroupPlaceHolder,
               IndepentVariablesPass = IndepentVariablesPass,
               HierarchGroups        = HierarchGroups,
               GroupVariables        = GroupVariables,
@@ -124,15 +124,15 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
 }
 
 #' CARMA_Get_IndepentVariablesPass
-#' 
+#'
 #' CARMA_Get_IndepentVariablesPass is to help manage carma code
-#' 
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param HierarchGroups Supply HierarchGroups
 #' @export
 CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
-  
+
   # Determine how to define IndependentVariablePass based on HierarchGroups----
   if(!is.null(HierarchGroups)) {
     for(zzz in seq_len(length(HierarchGroups))) {
@@ -145,15 +145,15 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
   } else {
     IndepentVariablesPass <- "GroupVar"
   }
-  
+
   # Return----
   return(IndepentVariablesPass)
 }
 
 #' CarmaH2OKeepVarsGDL
-#' 
+#'
 #' CarmaH2OKeepVarsGDL is to help manage carma code
-#' 
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param data Supply data
@@ -183,7 +183,7 @@ CarmaH2OKeepVarsGDL <- function(data,
                                 HolidayVariable,
                                 TargetColumnName,
                                 DateColumnName) {
-  
+
   if(any(is.na(UpdateData[["Predictions"]]))) {
     data.table::set(UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
   }
@@ -223,7 +223,7 @@ CarmaH2OKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -231,7 +231,7 @@ CarmaH2OKeepVarsGDL <- function(data,
     } else {
       return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
     }
-    
+
   } else if (!is.null(GroupVariables)) {
     if(!is.null(HierarchGroups)) {
       data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
@@ -265,7 +265,7 @@ CarmaH2OKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -273,9 +273,9 @@ CarmaH2OKeepVarsGDL <- function(data,
     } else {
       return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
     }
-    
+
   } else {
-    
+
     if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
@@ -305,7 +305,7 @@ CarmaH2OKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -317,9 +317,9 @@ CarmaH2OKeepVarsGDL <- function(data,
 }
 
 #' CarmaXGBoostKeepVarsGDL
-#' 
+#'
 #' CarmaXGBoostKeepVarsGDL is to help manage carma code
-#' 
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param data Supply data
@@ -349,7 +349,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
                                     HolidayVariable,
                                     TargetColumnName,
                                     DateColumnName) {
-  
+
   if(any(is.na(UpdateData[["Predictions"]]))) data.table::set(UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
   if(Difference & !is.null(GroupVariables)) {
     if(any(is.na(UpdateData[["ModTarget"]]))) {
@@ -427,7 +427,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -435,7 +435,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
     } else {
       return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
     }
-    
+
   } else if(!is.null(GroupVariables)) {
     if(!is.null(HierarchGroups)) {
       data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
@@ -452,7 +452,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           }
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector)[2:length(GroupVarVector)],"ID",names(CalendarFeatures),"HolidayCounts"))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))
         }
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
@@ -468,14 +468,14 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector)[2:length(GroupVarVector)],"ID",names(CalendarFeatures)))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
         }
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures)))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))
         }
       }
     } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
@@ -484,14 +484,14 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector)[2:length(GroupVarVector)],"ID","HolidayCounts"))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID","HolidayCounts"))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID","HolidayCounts"))
         }
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID","HolidayCounts"))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID","HolidayCounts"))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID","HolidayCounts"))
         }
       }
     } else {
@@ -500,18 +500,18 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector)[2:length(GroupVarVector)],"ID"))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID"))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID"))
         }
       } else {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",IndepVarPassTRUE,"ID"))
         } else {
-          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))  
+          keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))
         }
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -519,7 +519,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
     } else {
       return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
     }
-    
+
   } else {
     UpdateData <- UpdateData[order(get(DateColumnName))]
     UpdateData[, ID := .N:1]
@@ -552,7 +552,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -564,9 +564,9 @@ CarmaXGBoostKeepVarsGDL <- function(data,
 }
 
 #' CarmaCatBoostKeepVarsGDL
-#' 
+#'
 #' CarmaCatBoostKeepVarsGDL is to help manage carma code
-#' 
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param data Supply data
@@ -596,8 +596,7 @@ CarmaCatBoostKeepVarsGDL <- function(data,
                                      HolidayVariable,
                                      TargetColumnName,
                                      DateColumnName) {
-  
-  print(any(is.na(UpdateData[["Predictions"]])))
+
   if(any(is.na(UpdateData[["Predictions"]]))) {
     data.table::set(x = UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
   }
@@ -637,7 +636,7 @@ CarmaCatBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -678,7 +677,7 @@ CarmaCatBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))
@@ -686,7 +685,7 @@ CarmaCatBoostKeepVarsGDL <- function(data,
     } else {
       return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
     }
-    
+
   } else {
     UpdateData <- UpdateData[order(get(DateColumnName))]
     UpdateData[, ID := .N:1]
@@ -719,7 +718,7 @@ CarmaCatBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID"))
       }
     }
-    
+
     # Return data based on GDL condition in CARMA----
     if(!is.null(IndepVarPassTRUE)) {
       keep <- unique(c(keep,IndepVarPassTRUE))

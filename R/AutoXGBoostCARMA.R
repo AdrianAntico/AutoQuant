@@ -364,17 +364,6 @@ AutoXGBoostCARMA <- function(data,
       IndependentGroups = IndependentSupplyValue)},
       error = function(x) NULL)
 
-    # ARGS TO TROUBLESHOOT
-    # datax = data
-    # xRegs = names(XREGS)
-    # FourierTermS = FourierTerms
-    # TimeUniT = TimeUnit
-    # FC_PeriodS = FC_Periods
-    # TargetColumN = TargetColumnName
-    # DateColumN = DateColumnName
-    # HierarchGroups = HierarchSupplyValue
-    # IndependentGroups = IndependentSupplyValue
-
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
       data <- Output$data

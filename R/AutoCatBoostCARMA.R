@@ -370,15 +370,10 @@ AutoCatBoostCARMA <- function(data,
   if(FourierTerms > 0) {
 
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
-    if(!is.null(GroupVariables)) {
-      Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
-      data <- Output$data
-      HierarchSupplyValue <- Output$HierarchSupplyValue
-      IndependentSupplyValue <- Output$IndependentSupplyValue
-    } else {
-      HierarchSupplyValue <- NULL
-      IndependentSupplyValue <- NULL
-    }
+    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+    data <- Output$data
+    HierarchSupplyValue <- Output$HierarchSupplyValue
+    IndependentSupplyValue <- Output$IndependentSupplyValue
 
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
@@ -1034,7 +1029,7 @@ AutoCatBoostCARMA <- function(data,
         }
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
-        if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
+        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
