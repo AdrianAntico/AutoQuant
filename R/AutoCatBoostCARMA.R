@@ -1026,11 +1026,11 @@ AutoCatBoostCARMA <- function(data,
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         if(!is.null(GroupVariables)) {
-          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2L,(N+1L)])], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+          UpdateData <- cbind(FutureDateData, Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
           UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         }
-        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+        data.table::setnames(UpdateData, "FutureDateData", eval(DateColumnName))
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
@@ -1074,7 +1074,7 @@ AutoCatBoostCARMA <- function(data,
         # Update data group case----
         if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
-        if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
+        if(NonNegativePred & !Difference) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
@@ -1169,6 +1169,7 @@ AutoCatBoostCARMA <- function(data,
       if(DebugMode) print("Update colname for date----")
       data.table::setnames(CalendarFeatures, names(CalendarFeatures)[ncol(CalendarFeatures)], eval(DateColumnName))
 
+      # Merge XREGS if not null----
       if(DebugMode) print("Merge XREGS if not null----")
       if(!is.null(XREGS)) {
 
@@ -1596,6 +1597,7 @@ AutoCatBoostCARMA <- function(data,
     UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
     UpdateData <- UpdateData[, .SD, .SDcols = c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar")]
     data.table::set(UpdateData, j = "Predictions", value = UpdateData[[eval(TargetColumnName)]])
+    if(NonNegativePred) UpdateData[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
   }
 
   # BackTransform----
