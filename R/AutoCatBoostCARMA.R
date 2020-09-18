@@ -1169,6 +1169,33 @@ AutoCatBoostCARMA <- function(data,
       if(DebugMode) print("Update colname for date----")
       data.table::setnames(CalendarFeatures, names(CalendarFeatures)[ncol(CalendarFeatures)], eval(DateColumnName))
 
+      if(DebugMode) print("Merge XREGS if not null----")
+      if(!is.null(XREGS)) {
+
+        # Ensure Grouping Variables are Character----
+        if(!is.character(CalendarFeatures[["GroupVar"]])) {
+          data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+        }
+        if(!is.character(XREGS[["GroupVar"]])) {
+          data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
+        }
+
+        # Match GroupVariables Type----
+        if(!is.null(GroupVariables)) {
+          if(!"GroupVar" %chin% names(XREGS)) {
+            if(IndepentVariablesPass %chin% names(XREGS)) {
+              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
+            } else {
+              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(GroupVariables,eval(DateColumnName)), all = FALSE)
+            }
+          } else {
+            CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          }
+        } else {
+          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+        }
+      }
+
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")
       if(is.null(GroupVariables) & FourierTerms > 0) {
