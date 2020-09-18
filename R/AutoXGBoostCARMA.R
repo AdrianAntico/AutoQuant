@@ -460,10 +460,6 @@ AutoXGBoostCARMA <- function(data,
     TransformObject <- TransformResults$FinalResults
   }
 
-  # Store Date Info----
-  if(DebugMode) print("Store Date Info----")
-  FutureDateData <- unique(data[, get(DateColumnName)])
-
   # Copy data for non grouping + difference----
   if(DebugMode) print("Copy data for non grouping + difference----")
   if(is.null(GroupVariables) & Difference == TRUE) {
@@ -701,6 +697,10 @@ AutoXGBoostCARMA <- function(data,
     newdate <- mindate + val + 1
     data <- data[get(DateColumnName) >= eval(newdate)]
   }
+
+  # Store Date Info----
+  if(DebugMode) print("Store Date Info----")
+  FutureDateData <- unique(data[, get(DateColumnName)])
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
